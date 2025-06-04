@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
     // 7. Return { success: true, redirect: "https://{subdomain}.shop-copilot.com/ja/dashboard" }.
     
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT!;
-    const productionUrl = process.env.NEXT_PRIVATE_PRODUCTION_URL || "https://shop-copilot.com";
+    const productionUrl = process.env.NEXT_PRIVATE_PRODUCTION_URL || "baoan.jp";
     let redirectUrl = `https://${subdomain}.${productionUrl}/${defaultLanguage}/dashboard`;
     if (isDevelopment) {
       redirectUrl = `http://localhost:3000/${defaultLanguage}/dashboard`;

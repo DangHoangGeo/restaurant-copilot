@@ -11,8 +11,8 @@ export async function middleware(req: NextRequest) {
   const subdomain = parts.length > 2 ? parts[0] : null;
 
   // If no subdomain (root domain), allow visit: signup, login, landing pages
-  // Also allow if subdomain is "shop-copilot" (the root domain itself)
-  if (!subdomain || subdomain === "shop-copilot") {
+  // Also allow if subdomain is "baoan.jp" (the root domain itself)
+  if (!subdomain || subdomain === "baoan.jp") {
     return nextIntlMiddleware(req); // Pass to next-intl middleware
   }
 
@@ -25,7 +25,7 @@ export async function middleware(req: NextRequest) {
 
   if (!exists) {
     // Redirect to the root domain's 404 page
-    return NextResponse.redirect(new URL("https://shop-copilot.com/404"));
+    return NextResponse.redirect(new URL("https://baoan.jp/404"));
   }
 
   // Attach subdomain to searchParams so downstream can read it
