@@ -22,12 +22,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false }, { status: 400 });
     }
     return NextResponse.json({ valid: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let message = "An unknown error occurred";
+    let stack;
+
+    if (error instanceof Error) {
+      message = error.message;
+      stack = error.stack;
+    }
+
     await logEvent({
       level: "ERROR",
       endpoint: "/api/v1/verify-captcha",
-      message: error.message,
-      metadata: { ip, stack: error.stack },
+      message: message,
+      metadata: { ip, stack: stack },
     });
     return new Response("Internal Server Error", { status: 500 });
   }

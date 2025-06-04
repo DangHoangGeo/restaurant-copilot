@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logEvent } from "../../../../../lib/logger";
 
-let ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
+const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
 
 function rateLimit(ip: string, limit = 10, windowSec = 60): boolean {
   const now = Date.now();
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       return new Response("Too Many Requests", { status: 429 });
     }
 
-    const { captchaToken, ...forgotPasswordData } = await req.json();
+    const { captchaToken /*, ...forgotPasswordData*/ } = await req.json();
 
     const captchaRes = await fetch(`${req.nextUrl.origin}/api/v1/verify-captcha`, {
       method: "POST",
@@ -44,12 +44,20 @@ export async function POST(req: NextRequest) {
 
     // …rest of forgot password logic (using forgotPasswordData)…
     return NextResponse.json({ message: "Forgot password logic goes here." });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let message = "An unknown error occurred";
+    let stack;
+
+    if (error instanceof Error) {
+      message = error.message;
+      stack = error.stack;
+    }
+
     await logEvent({
       level: "ERROR",
       endpoint: "/api/v1/forgot-password",
-      message: error.message,
-      metadata: { ip, stack: error.stack },
+      message: message,
+      metadata: { ip, stack: stack },
     });
     return new Response("Internal Server Error", { status: 500 });
   }
