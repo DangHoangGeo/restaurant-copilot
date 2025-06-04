@@ -111,6 +111,7 @@ export default function SignupPage() {
         return;
       }
     } catch (error) {
+      console.error("Captcha verification failed:", error);
       setServerError(t("captchaVerificationFailed"));
       return;
     }
@@ -139,6 +140,7 @@ export default function SignupPage() {
         router.push(registerData.redirect);
       }
     } catch (error) {
+      console.error("Registration failed:", error);
       setServerError(t("registrationFailed"));
     }
   };

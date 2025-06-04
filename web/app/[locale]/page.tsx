@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect, ReactNode, createContext, useContext } from 'react';
+import Image from 'next/image'; // Added Image import
 import {
-  ChevronRight, CheckCircle, PlayCircle, Users, MessageSquare, BarChart2, Settings, QrCode, ShoppingCart, Menu as MenuIcon, Zap, Star, ShieldCheck, ArrowRight, Plus, Minus, Globe, Sun, Moon, Building, CreditCard, Wifi, ThumbsUp, Sparkles, Clock, Smile, Package, Coffee, ChefHat, Phone, Mail, Lock, Lightbulb, DollarSign, TrendingUp, UsersRound, CalendarDays, Percent, Server, DownloadCloud, Palette,
-  PlusCircle
+  ChevronRight, PlayCircle, Users, MessageSquare, BarChart2, QrCode, Menu as MenuIcon, Zap, ShieldCheck, ArrowRight, Plus, Minus, Globe, Sun, Moon, Building,
+   ThumbsUp, Clock, Smile, Coffee, Phone, Lightbulb, DollarSign, TrendingUp, CalendarDays, Server, Palette,PlusCircle
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -69,7 +70,6 @@ const LanguageSwitcherLanding = () => {
     setIsOpen(false);
   };
   const selectedLocale = locales.find(l => l.code === currentLocale) || locales[0];
-  const t = useTranslations('LandingPage');
 
   return (
     <div className="relative">
@@ -139,9 +139,11 @@ const HeroSection = () => {
           </div>
           <div className="relative">
             {/* Placeholder for a dynamic, attractive visual */}
-            <img 
+            <Image // Changed img to Image
               src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZGFzaGJvYXJkfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60" // Replace with actual product screenshot/mockup
               alt={t('hero.image_alt')}
+              width={800} // Added width
+              height={500} // Added height (800 * 10/16)
               className="rounded-2xl shadow-2xl aspect-[16/10] object-cover"
             />
             <div className="absolute -bottom-4 -right-4 -z-10 w-32 h-32 bg-[--brand-color-landing]/20 rounded-full blur-2xl"></div>
@@ -186,9 +188,9 @@ const SocialProofSection = () => {
             <Card key={idx} className="relative">
               <Icon name={MessageSquare} size={32} className="absolute top-6 left-6 text-[--brand-color-landing]/20 dark:text-[--brand-color-landing]/30" />
               <blockquote className="relative z-10">
-                <p className="text-lg text-slate-700 dark:text-slate-200">"{t(testimonial.quote)}"</p>
+                <p className="text-lg text-slate-700 dark:text-slate-200">{t(testimonial.quote)}</p>
                 <footer className="mt-6 flex items-center">
-                  <img src={testimonial.image} alt={testimonial.name} className="w-12 h-12 rounded-full object-cover" />
+                  <Image src={testimonial.image} alt={testimonial.name} width={48} height={48} className="w-12 h-12 rounded-full object-cover" />
                   <div className="ml-4">
                     <p className="font-semibold text-slate-800 dark:text-slate-100">{testimonial.name}</p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">{testimonial.role}</p>
@@ -445,10 +447,7 @@ const FooterSection = () => {
 };
 
 // Main Landing Page Component
-export const ShopCopilotLandingPage = () => {
-  // Removed forceUpdate as it's no longer needed with next-intl's routing
-  // if (typeof window !== 'undefined') (window as any).shopCopilotLandingPage = { forceUpdate: () => forceUpdate({}) };
-
+function Page() {
   return (
     <ThemeProviderLanding>
       <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased">
@@ -466,13 +465,6 @@ export const ShopCopilotLandingPage = () => {
       </div>
     </ThemeProviderLanding>
   );
-};
+}
 
-// To use this in your main App.tsx or a router:
-// if (isLandingPage) {
-//   return <ShopCopilotLandingPage />;
-// } else {
-//   return <App />; // Your existing multi-tenant app
-// }
-
-export default ShopCopilotLandingPage;
+export default Page;

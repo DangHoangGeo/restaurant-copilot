@@ -3,8 +3,9 @@ import { logEvent } from "../../../../../lib/logger";
 import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
+import { ZodError } from "zod"; // Import ZodError explicitly
 
-let ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
+const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
 
 function rateLimit(ip: string, limit = 10, windowSec = 60): boolean {
   const now = Date.now();
@@ -26,7 +27,7 @@ function rateLimit(ip: string, limit = 10, windowSec = 60): boolean {
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || "unknown";
-  let body: any; // Declare body outside try block
+  let body: z.infer<typeof signupSchema> | null = null; // Initialize body to null
   try {
     if (!rateLimit(ip)) {
       await logEvent({
@@ -158,15 +159,23 @@ export async function POST(req: NextRequest) {
       metadata: { email, subdomain, restaurantId },
     });
     return NextResponse.json({ success: true, redirect: redirectUrl });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // 8. On any error, call logEvent({ level: "ERROR", endpoint: "/api/v1/register", message: error.message })
+    let message = "An unknown error occurred";
+    let stack;
+
+    if (error instanceof Error) {
+      message = error.message;
+      stack = error.stack;
+    }
+
     await logEvent({
       level: "ERROR",
       endpoint: "/api/v1/register",
-      message: error.message,
-      metadata: { ip, stack: error.stack, body: JSON.stringify(body) }, // Log body for debugging
+      message: message,
+      metadata: { ip, stack: stack, body: JSON.stringify(body) }, // Log body for debugging
     });
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       return NextResponse.json({ error: "Invalid input data", details: error.errors }, { status: 400 });
     }
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
