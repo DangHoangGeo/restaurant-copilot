@@ -1,7 +1,8 @@
 {
   "HomePage": {
-    "title": "Hello world!",
-    "about": "Go to the about page"
+    "heroTitle": "Modernize Your Restaurant with Shop-Copilot",
+    "heroSubtitle": "All-in-one, mobile-first platform for menus, orders, bookings, staff, and analytics. Delight customers and empower your team—anywhere, anytime.",
+    "cta": "Get Started Free"
   },
   "SIGN_UP_TITLE": "Register Your Restaurant",
   "LOGIN_TITLE": "Login",
@@ -33,5 +34,147 @@
     "registrationFailed": "Registration failed. Please try again.",
     "registering": "Registering...",
     "registerButton": "Register"
+  },
+  "LandingPage": {
+    "header": {
+      "logo_aria_label": "Shop-Copilot logo",
+      "login": "Login",
+      "signup": "Sign Up"
+    },
+    "theme": {
+      "toggle": "Toggle theme"
+    },
+    "hero": {
+      "headline_part1": "Mobile-First, AI-Augmented SaaS for ",
+      "headline_part2": "Small Restaurants.",
+      "subheadline": "Shop-Copilot empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet.",
+      "cta": {
+        "signup": "Start Free Trial",
+        "demo": "Watch Demo",
+        "subtext": "No credit card required. 14-day free trial."
+      },
+      "image_alt": "Shop-Copilot Dashboard Mockup"
+    },
+    "social_proof": {
+      "trusted_by": "Powering Success for Restaurants Like Yours",
+      "testimonial1": {
+        "quote": "Shop-Copilot transformed our daily operations. Orders are smoother, staff is happier, and our customers love the QR ordering!"
+      },
+      "testimonial2": {
+        "quote": "The analytics dashboard is a game-changer. We can now make data-driven decisions that truly impact our bottom line."
+      },
+      "security_badge1": "SSL Encrypted",
+      "security_badge2": "99.9% Uptime",
+      "security_badge3": "GDPR Compliant"
+    },
+    "features": {
+      "title": "Powerful Features to Accelerate Your Business",
+      "subtitle": "Shop-Copilot is packed with features designed to streamline your operations and delight your customers.",
+      "menu_management": {
+        "title": "Intuitive Menu Management",
+        "description": "Easily create, update, and organize your digital menus with photos, descriptions, and pricing. Supports multiple languages.",
+        "benefit": "Update menus in minutes, not hours."
+      },
+      "qr_ordering": {
+        "title": "Seamless QR Ordering",
+        "description": "Customers scan a QR code at their table to view the menu, place orders, and even pay directly from their smartphone.",
+        "benefit": "Increase order accuracy and table turnover."
+      },
+      "booking_preordering": {
+        "title": "Advanced Booking & Pre-ordering",
+        "description": "Manage table reservations and allow customers to pre-order their meals for a smooth dining experience.",
+        "benefit": "Reduce wait times and improve customer flow."
+      },
+      "smart_analytics": {
+        "title": "Smart Analytics & Reporting",
+        "description": "Gain real-time insights into sales, popular dishes, staff performance, and customer feedback to optimize your business.",
+        "benefit": "Make data-driven decisions for growth."
+      },
+      "staff_management": {
+        "title": "Efficient Staff Management",
+        "description": "Assign roles, manage shifts, and track staff performance with a dedicated mobile app for your team.",
+        "benefit": "Empower your team with mobile tools."
+      },
+      "mobile_first": {
+        "title": "True Mobile-First Experience",
+        "description": "Manage your entire restaurant from any smartphone or tablet. No bulky hardware or complex setups required.",
+        "benefit": "Run your business from anywhere."
+      }
+    },
+    "howitworks": {
+      "title": "Get Started in Minutes",
+      "subtitle": "Launch your modern restaurant platform with a few simple steps.",
+      "step1": {
+        "title": "Sign Up & Customize",
+        "description": "Create your account, set up your restaurant profile, and customize your digital menu and branding."
+      },
+      "step2": {
+        "title": "Generate QR Codes",
+        "description": "Print unique QR codes for each table or section. Customers scan to access your menu and order."
+      },
+      "step3": {
+        "title": "Start Serving & Growing",
+        "description": "Receive orders directly on your staff app, manage tables, and watch your business thrive with smart insights."
+      }
+    },
+    "benefits": {
+      "title": "Real Results for Your Restaurant",
+      "subtitle": "Shop-Copilot isn't just software; it's a growth partner. See how we help:",
+      "item1": "Increase Revenue by up to 20%",
+      "item2": "Save up to 10 hours/week on admin tasks",
+      "item3": "Boost Customer Satisfaction Scores",
+      "item4": "Streamline Order & Table Management",
+      "item5": "Empower Your Staff with Mobile Tools",
+      "item6": "Gain Actionable Business Insights"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "item1": {
+        "q": "What kind of restaurants is Shop-Copilot for?",
+        "a": "Shop-Copilot is designed for small to medium-sized restaurants, cafes, bars, and food trucks looking to modernize their operations and improve customer experience."
+      },
+      "item2": {
+        "q": "Is it difficult to set up?",
+        "a": "Not at all! Our intuitive interface and guided setup process allow you to get started in minutes. No technical expertise required."
+      },
+      "item3": {
+        "q": "Do I need special hardware?",
+        "a": "No, Shop-Copilot is mobile-first. You can manage everything from your existing smartphones or tablets. No expensive POS systems needed."
+      },
+      "item4": {
+        "q": "What about customer support?",
+        "a": "We offer comprehensive online support, tutorials, and a dedicated support team ready to assist you with any questions or issues."
+      }
+    },
+    "cta_section": {
+      "title": "Ready to Transform Your Restaurant?",
+      "subtitle": "Join hundreds of restaurants simplifying their operations and boosting profits with Shop-Copilot.",
+      "cta": {
+        "signup": "Get Started For Free",
+        "contact_sales": "Request a Demo"
+      }
+    },
+    "footer": {
+      "tagline": "Modernizing small restaurants, one order at a time.",
+      "links": {
+        "product_title": "Product",
+        "features": "Features",
+        "pricing": "Pricing",
+        "integrations": "Integrations",
+        "company_title": "Company",
+        "about_us": "About Us",
+        "careers": "Careers",
+        "blog": "Blog",
+        "support_title": "Support",
+        "help_center": "Help Center",
+        "contact_us": "Contact Us",
+        "status": "Status"
+      },
+      "privacy_policy": "Privacy Policy",
+      "terms_of_service": "Terms of Service"
+    }
+  },
+  "common": {
+    "all_rights_reserved": "All rights reserved."
   }
 }

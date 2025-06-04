@@ -1,7 +1,8 @@
 {
   "HomePage": {
-    "title": "Xin chào thế giới!",
-    "about": "Đi đến trang giới thiệu"
+    "heroTitle": "Hiện đại hóa nhà hàng của bạn với Shop-Copilot",
+    "heroSubtitle": "Nền tảng tất cả trong một, ưu tiên di động cho thực đơn, đơn hàng, đặt bàn, nhân viên và phân tích. Làm hài lòng khách hàng và nâng cao hiệu quả đội ngũ—mọi lúc, mọi nơi.",
+    "cta": "Bắt đầu miễn phí"
   },
   "SIGN_UP_TITLE": "Đăng ký nhà hàng của bạn",
   "LOGIN_TITLE": "Đăng nhập",
