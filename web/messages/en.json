@@ -176,5 +176,10 @@
   },
   "common": {
     "all_rights_reserved": "All rights reserved."
+  },
+  "404": {
+    "title": "Page Not Found",
+    "description": "Sorry, the page you are looking for doesn't exist or has been moved.",
+    "back_home": "Back to Home"
   }
 }

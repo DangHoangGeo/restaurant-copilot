@@ -34,5 +34,10 @@
     "registrationFailed": "Đăng ký thất bại. Vui lòng thử lại.",
     "registering": "Đang đăng ký...",
     "registerButton": "Đăng ký"
+  },
+  "404": {
+    "title": "Không Tìm Thấy Trang",
+    "description": "Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển.",
+    "back_home": "Về Trang Chủ"
   }
 }

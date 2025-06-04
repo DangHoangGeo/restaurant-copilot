@@ -140,7 +140,7 @@ const HeroSection = () => {
           <div className="relative">
             {/* Placeholder for a dynamic, attractive visual */}
             <Image // Changed img to Image
-              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZGFzaGJvYXJkfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60" // Replace with actual product screenshot/mockup
+              src="/myorder-dashboard.jpg" // Replace with actual product screenshot/mockup
               alt={t('hero.image_alt')}
               width={800} // Added width
               height={500} // Added height (800 * 10/16)
@@ -164,8 +164,8 @@ const SocialProofSection = () => {
     { name: "LocalEats Award", icon: ThumbsUp },
   ];
   const testimonials = [
-    { quote: "social_proof.testimonial1.quote", name: "Maria R.", role: "Owner, The Cozy Corner", image: "https://placehold.co/100x100/E2E8F0/334155?text=MR" },
-    { quote: "social_proof.testimonial2.quote", name: "Kenji T.", role: "Chef, Sushi Express", image: "https://placehold.co/100x100/A3BFFA/1E293B?text=KT" },
+    { quote: "social_proof.testimonial1.quote", name: "Maria R.", role: "Owner, The Cozy Corner", image: "/myorder-dashboard.jpg" },
+    { quote: "social_proof.testimonial2.quote", name: "Kenji T.", role: "Chef, Sushi Express", image: "/myorder-dashboard.jpg" },
   ];
 
   return (

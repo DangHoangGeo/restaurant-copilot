@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
     const productionUrl = process.env.NEXT_PRIVATE_PRODUCTION_URL || "baoan.jp";
     let redirectUrl = `https://${subdomain}.${productionUrl}/${defaultLanguage}/dashboard`;
     if (isDevelopment) {
-      redirectUrl = `http://localhost:3000/${defaultLanguage}/dashboard`;
+      redirectUrl = `http://${subdomain}.localhost:3000/${defaultLanguage}/dashboard`;
     }
     await logEvent({
       level: "INFO",

@@ -7,19 +7,46 @@ const nextIntlMiddleware = createMiddleware(routing);
 
 const ROOT_DOMAIN = 'baoan.jp';
 const W_ROOT_DOMAIN = 'www.baoan.jp';
-export async function middleware(req: NextRequest) {
-  const host = req.headers.get("host") || "";
-  console.log("Middleware host:", host);
-  // If we're on the root domain exactly, just pass to next-intl
-  if (host === ROOT_DOMAIN || host === W_ROOT_DOMAIN) {
-    return nextIntlMiddleware(req);
+
+function extractSubdomain(request: NextRequest): string | null {
+  const host = request.headers.get('host') || '';
+  const hostname = host.split(':')[0];
+  const url = request.url;
+
+  // Local development environment
+  if (url.includes('localhost') || url.includes('127.0.0.1')) {
+    // Try to extract subdomain from the full URL
+    const fullUrlMatch = url.match(/http:\/\/([^.]+)\.localhost/);
+    if (fullUrlMatch && fullUrlMatch[1]) {
+      return fullUrlMatch[1];
+    }
+
+    // Fallback to host header approach
+    if (hostname.includes('.localhost')) {
+      return hostname.split('.')[0];
+    }
+
+    return null;
   }
-  
+
+  // Handle preview deployment URLs (tenant---branch-name.vercel.app)
+  if (hostname.includes('---') && hostname.endsWith('.vercel.app')) {
+    const parts = hostname.split('---');
+    return parts.length > 0 ? parts[0] : null;
+  }
+
+  // Regular subdomain detection for production
+  if (host === ROOT_DOMAIN || host === W_ROOT_DOMAIN) {
+    return null;
+  }
+
   const parts = host.split(".");
-  // Only consider it a subdomain if we have more than 2 parts AND 
-  // the last two parts match our root domain
   const isSubdomain = parts.length > 2 && `${parts[parts.length-2]}.${parts[parts.length-1]}` === ROOT_DOMAIN;
-  const subdomain = isSubdomain ? parts[0] : null;
+  return isSubdomain ? parts[0] : null;
+}
+
+export async function middleware(req: NextRequest) {
+  const subdomain = extractSubdomain(req);
 
   // If no subdomain, allow visit: signup, login, landing pages
   if (!subdomain) {
@@ -28,19 +55,29 @@ export async function middleware(req: NextRequest) {
 
   // Validate subdomain
   const apiCheckUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}/api/v1/restaurant/exists?subdomain=${subdomain}`;
-  const res = await fetch(apiCheckUrl);
-  const { exists } = await res.json();
+  try {
+    const res = await fetch(apiCheckUrl);
+    const { exists } = await res.json();
 
-  if (!exists) {
-    // Redirect to the root domain's 404 page
-    return NextResponse.redirect(new URL(`https://${ROOT_DOMAIN}/404`));
+    if (!exists) {
+      // Redirect to the root domain's 404 page
+      return NextResponse.redirect(new URL(`https://${ROOT_DOMAIN}/404`));
+    }
+
+    // Block access to admin pages from subdomains
+    if (req.nextUrl.pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+
+    // Attach subdomain to searchParams so downstream can read it
+    req.nextUrl.searchParams.set("restaurant", subdomain);
+
+    // Continue with next-intl middleware
+    return nextIntlMiddleware(req);
+  } catch (error) {
+    console.error('Error validating subdomain:', error);
+    return NextResponse.redirect(new URL(`https://${ROOT_DOMAIN}/500`));
   }
-
-  // Attach subdomain to searchParams so downstream can read it
-  req.nextUrl.searchParams.set("restaurant", subdomain);
-
-  // Continue with next-intl middleware
-  return nextIntlMiddleware(req);
 }
 
 export const config = {
