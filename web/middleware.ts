@@ -5,27 +5,35 @@ import {routing} from './i18n/routing';
 
 const nextIntlMiddleware = createMiddleware(routing);
 
+const ROOT_DOMAIN = 'baoan.jp';
+
 export async function middleware(req: NextRequest) {
   const host = req.headers.get("host") || "";
+  
+  // If we're on the root domain exactly, just pass to next-intl
+  if (host === ROOT_DOMAIN) {
+    return nextIntlMiddleware(req);
+  }
+  
   const parts = host.split(".");
-  const subdomain = parts.length > 2 ? parts[0] : null;
+  // Only consider it a subdomain if we have more than 2 parts AND 
+  // the last two parts match our root domain
+  const isSubdomain = parts.length > 2 && `${parts[parts.length-2]}.${parts[parts.length-1]}` === ROOT_DOMAIN;
+  const subdomain = isSubdomain ? parts[0] : null;
 
-  // If no subdomain (root domain), allow visit: signup, login, landing pages
-  // Also allow if subdomain is "baoan.jp" (the root domain itself)
-  if (!subdomain || subdomain === "baoan.jp") {
-    return nextIntlMiddleware(req); // Pass to next-intl middleware
+  // If no subdomain, allow visit: signup, login, landing pages
+  if (!subdomain) {
+    return nextIntlMiddleware(req);
   }
 
   // Validate subdomain
-  // Construct the URL for the API call carefully.
-  // req.nextUrl.origin gives the protocol and host of the current request.
   const apiCheckUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}/api/v1/restaurant/exists?subdomain=${subdomain}`;
   const res = await fetch(apiCheckUrl);
   const { exists } = await res.json();
 
   if (!exists) {
     // Redirect to the root domain's 404 page
-    return NextResponse.redirect(new URL("https://baoan.jp/404"));
+    return NextResponse.redirect(new URL(`https://${ROOT_DOMAIN}/404`));
   }
 
   // Attach subdomain to searchParams so downstream can read it
