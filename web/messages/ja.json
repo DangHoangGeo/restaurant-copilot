@@ -1,0 +1,9 @@
+{
+  "HomePage": {
+    "title": "こんにちは世界！",
+    "about": "紹介ページへ行く"
+  },
+  "SIGN_UP_TITLE": "店舗登録",
+  "LOGIN_TITLE": "ログイン",
+  "FORGOT_PASSWORD_TITLE": "パスワードを忘れた場合"
+}
