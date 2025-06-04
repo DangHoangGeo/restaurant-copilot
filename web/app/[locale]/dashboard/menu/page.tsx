@@ -40,7 +40,7 @@ export default async function MenuPage({ params, searchParams }: MenuPageProps) 
   const restaurantId = await getCurrentRestaurantId(searchParams);
 
   if (!restaurantId) {
-    return <div>Error: Restaurant could not be determined. Ensure 'restaurantId' query param is set for now.</div>;
+    return <div>Error: Restaurant could not be determined. Ensure &apos;restaurantId&apos; query param is set for now.</div>;
   }
 
   const { data: categories, error } = await supabase

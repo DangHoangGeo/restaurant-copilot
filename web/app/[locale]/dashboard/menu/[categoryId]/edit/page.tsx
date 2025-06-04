@@ -25,7 +25,7 @@ async function EditCategoryFormLoader({ params, searchParams }: EditCategoryPage
   const restaurantId = await getRestaurantId(searchParams);
 
   if (!restaurantId) {
-    return <div>Error: Restaurant ID is required to edit a category. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div>Error: Restaurant ID is required to edit a category. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
 
   const { data: category, error } = await supabase

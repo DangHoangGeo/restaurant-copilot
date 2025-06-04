@@ -1,4 +1,4 @@
-import EmployeeList from "../../../../../components/EmployeeList"; // Adjust path
+import EmployeeList from '@/components/EmployeeList';
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { Suspense } from "react";
@@ -64,7 +64,10 @@ async function EmployeeListLoader({ params, searchParams }: EmployeesPageProps) 
     return <div className="text-gray-600 p-4">No employees found for this restaurant.</div>;
   }
 
-  return <EmployeeList initialEmployees={employees as EmployeeWithUser[]} locale={locale} restaurantId={restaurantId} />;
+  return <EmployeeList initialEmployees={employees.map(employee => ({
+    ...employee,
+    users: Array.isArray(employee.users) ? employee.users[0] : employee.users
+  })) as EmployeeWithUser[]} locale={locale} restaurantId={restaurantId} />;
 }
 
 export default async function EmployeesPage({ params, searchParams }: EmployeesPageProps) {

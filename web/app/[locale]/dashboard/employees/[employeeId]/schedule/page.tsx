@@ -1,4 +1,4 @@
-import ScheduleCalendar from "../../../../../../../components/ScheduleCalendar"; // Adjust path
+import ScheduleCalendar from '@/components/ScheduleCalendar';
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { Suspense } from "react";
@@ -33,7 +33,7 @@ async function ScheduleLoader({ params, searchParams }: SchedulePageProps) {
   const restaurantId = await getRestaurantId(searchParams);
 
   if (!restaurantId) {
-    return <div className="text-red-600 p-4">Error: Restaurant ID is required. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div className="text-red-600 p-4">Error: Restaurant ID is required. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
   if (!employeeId) {
     return <div className="text-red-600 p-4">Error: Employee ID is required.</div>;
@@ -42,7 +42,7 @@ async function ScheduleLoader({ params, searchParams }: SchedulePageProps) {
   // Fetch employee's name
   const { data: empData, error: empError } = await supabase
     .from("employees")
-    .select("users(name)")
+    .select("users!inner(name)") // Ensure 'users' is joined correctly
     .eq("id", employeeId)
     .eq("restaurant_id", restaurantId) // Ensure employee belongs to current restaurant
     .single();
@@ -51,10 +51,10 @@ async function ScheduleLoader({ params, searchParams }: SchedulePageProps) {
     console.error("Error fetching employee name:", empError);
     return <div className="text-red-600 p-4">Error loading employee data: {empError.message}.</div>;
   }
-  if (!empData || !empData.users?.name) {
+  if (!empData || !empData.users || !empData.users[0].name) {
     return <div className="text-red-600 p-4">Employee not found or name is missing.</div>;
   }
-  const employeeName = empData.users.name;
+  const employeeName = empData.users[0].name;
 
   // Fetch existing shifts for this employee at this restaurant
   const { data: shifts, error: shiftsError } = await supabase

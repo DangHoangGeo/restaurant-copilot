@@ -61,7 +61,7 @@ async function ReportsLoader({ params, searchParams }: ReportsPageProps) {
   const dateFrom7Days = format(subDays(new Date(), 6), 'yyyy-MM-dd');
 
   if (!restaurantId) {
-    return <div className="text-red-600 p-4">Error: Restaurant ID is required. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div className="text-red-600 p-4">Error: Restaurant ID is required. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
 
   // --- Data for Dashboard Cards ---

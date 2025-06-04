@@ -34,7 +34,7 @@ async function EditEmployeeFormLoader({ params, searchParams }: EditEmployeePage
   const restaurantId = await getRestaurantId(searchParams);
 
   if (!restaurantId) {
-    return <div className="text-red-600 p-4">Error: Restaurant ID is required. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div className="text-red-600 p-4">Error: Restaurant ID is required. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
   if (!employeeId) {
     return <div className="text-red-600 p-4">Error: Employee ID is required.</div>;
@@ -62,7 +62,10 @@ async function EditEmployeeFormLoader({ params, searchParams }: EditEmployeePage
     return <div className="text-red-600 p-4">Employee not found or does not belong to this restaurant.</div>;
   }
 
-  return <EmployeeForm initialData={employeeData as EmployeeFormData} restaurantId={restaurantId} locale={locale} />;
+  return <EmployeeForm initialData={{
+    ...employeeData,
+    users: Array.isArray(employeeData.users) ? employeeData.users[0] : employeeData.users
+  } as EmployeeFormData} restaurantId={restaurantId} locale={locale} />;
 }
 
 

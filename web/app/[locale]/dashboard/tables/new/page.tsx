@@ -20,7 +20,7 @@ async function TableFormLoader({ searchParams, locale }: { searchParams: NewTabl
   const restaurantId = await getRestaurantId(searchParams);
 
   if (!restaurantId) {
-    return <div className="text-red-600 p-4">Error: Restaurant ID is required to create a new table. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div className="text-red-600 p-4">Error: Restaurant ID is required to create a new table. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
 
   return <TableForm restaurantId={restaurantId} locale={locale} />;

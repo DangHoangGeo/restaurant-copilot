@@ -1,4 +1,4 @@
-import QrCodeDisplayPageClient from "../../../../../../../components/QrCodeDisplayPageClient"; // Adjust path
+import QrCodeDisplayPageClient from '@/components/QrCodeDisplayPageClient';
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { Suspense } from "react";
@@ -24,7 +24,7 @@ async function QrCodeLoader({ params, searchParams }: QrPageProps) {
   const restaurantId = await getRestaurantId(searchParams);
 
   if (!restaurantId) {
-    return <div className="text-red-600 p-4">Error: Restaurant ID is required. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div className="text-red-600 p-4">Error: Restaurant ID is required. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
   if (!tableId) {
     return <div className="text-red-600 p-4">Error: Table ID is required.</div>;

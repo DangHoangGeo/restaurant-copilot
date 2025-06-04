@@ -22,7 +22,7 @@ async function MenuItemFormLoader({ params, searchParams }: NewMenuItemPageProps
   const { locale, categoryId } = params;
 
   if (!restaurantId) {
-    return <div>Error: Restaurant ID is required to create a new menu item. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div>Error: Restaurant ID is required to create a new menu item. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
   if (!categoryId) {
     return <div>Error: Category ID is required.</div>;

@@ -31,7 +31,7 @@ async function TableListLoader({ params, searchParams }: TablesPageProps) {
   const { locale } = params;
 
   if (!restaurantId) {
-    return <div>Error: Restaurant ID is required to view tables. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div>Error: Restaurant ID is required to view tables. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
 
   const { data: tables, error } = await supabase

@@ -22,7 +22,7 @@ async function CategoryFormLoader({ searchParams, locale }: { searchParams: NewC
   const restaurantId = await getRestaurantId(searchParams);
 
   if (!restaurantId) {
-    return <div>Error: Restaurant ID is required to create a new category. Please ensure 'restaurantId' is in the URL query parameters.</div>;
+    return <div>Error: Restaurant ID is required to create a new category. Please ensure &apos;restaurantId&apos; is in the URL query parameters.</div>;
   }
 
   return <CategoryForm restaurantId={restaurantId} locale={locale} />;
