@@ -1,36 +1,376 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shop-Copilot Web App
+
+Shop-Copilot is a multi-tenant SaaS platform for small restaurants, built with Next.js (App Router), Tailwind CSS, and TypeScript. Each restaurant uses its own subdomain (e.g., `restaurantabc.shop-copilot.com`) to manage menus, tables, orders, employees, reports, and more. Customers access a localized ordering site (Japanese, English, Vietnamese) via QR codes on tables.
+
+This repository contains the **Next.js web frontend** (Admin Dashboard + Customer Ordering Site). All UI components use [shadcn/ui](https://ui.shadcn.com/) for consistent styling and layout, and [lucide-react](https://lucide.dev/docs/react/) for icons.
+
+---
+
+## Table of Contents
+
+1. [Features](#features)  
+2. [Tech Stack](#tech-stack)  
+3. [Getting Started](#getting-started)  
+   - [Prerequisites](#prerequisites)  
+   - [Environment Variables](#environment-variables)  
+   - [Installation](#installation)  
+   - [Development](#development)  
+   - [Building & Deployment](#building--deployment)  
+4. [Folder Structure](#folder-structure)  
+5. [UI/UX Conventions](#uiux-conventions)  
+   - [Layout & Styling](#layout--styling)  
+   - [Components & Icons](#components--icons)  
+   - [Forms & Validation](#forms--validation)  
+   - [Internationalization](#internationalization)  
+   - [Feature Flags](#feature-flags)  
+6. [API & Data Layer](#api--data-layer)  
+   - [Supabase Integration](#supabase-integration)  
+   - [Row-Level Security (RLS)](#row-level-security-rls)  
+7. [Testing](#testing)  
+8. [Contributing](#contributing)  
+9. [License](#license)
+
+---
+
+## Features
+
+- **Multi-Tenant Subdomains**: Each restaurant has its own subdomain (e.g., `restaurantabc.shop-copilot.com`), isolating data via Supabase RLS.
+- **Admin Dashboard**:  
+  - Restaurant profile & branding (logo, brand color, default language).  
+  - Menu management (categories drag-and-drop, multi-language item creation, per-weekday visibility).  
+  - Table & QR code management (auto-generated QR codes, PNG download).  
+  - Employee & schedule management (weekly calendar view).  
+  - Booking & preorder approval workflow.  
+  - Reports & analytics (sales, items, feedback, recommendations).
+- **Customer Ordering Site**:  
+  - QR-driven session creation (table scan → new session).  
+  - Localized menu browsing (Japanese/English/Vietnamese).  
+  - Sorting/filtering by top seller, price, ratings.  
+  - Floating cart & cash-only checkout.  
+  - Booking & preordering form.  
+  - Thank-you page + dish review submission.
+- **Internationalization (i18n)**: Native support for `ja`, `en`, `vi` via `next-intl`.
+- **Feature Flags**: Enable or disable payments, AI chatbot, online reviews, low-stock alerts, table booking without refactoring.
+- **Strong Security**:  
+  - Supabase Auth + custom JWT claims (`restaurant_id`, `role`).  
+  - Row-Level Security (RLS) on all tenant data.  
+  - Rate limiting on critical endpoints.  
+  - CAPTCHA on auth flows.  
+  - Web Application Firewall (WAF) via Vercel.
+- **Modern UI**:  
+  - Tailwind CSS + shadcn/ui components.  
+  - lucide-react icons.  
+  - Responsive, mobile-first design.
+- **Testing & CI/CD**:  
+  - Jest & React Testing Library for unit/integration tests.  
+  - ESLint, Prettier, `npm audit`.  
+  - GitHub Actions → Vercel deployment (staging on `develop`, production on `main`).
+
+---
+
+## Tech Stack
+
+- **Framework**: Next.js (App Router, Server & Client Components)  
+- **Styling**: Tailwind CSS, shadcn/ui  
+- **Icons**: lucide-react  
+- **Language**: TypeScript  
+- **Forms & Validation**: React Hook Form + Zod  
+- **i18n**: next-intl  
+- **Backend & Auth**: Supabase (Postgres, Auth, Storage, Edge Functions)  
+- **Deployment**: Vercel (Frontend), Supabase (Database & Functions)  
+- **Linting & Formatting**: ESLint, Prettier  
+- **Testing**: Jest, React Testing Library  
+- **CI/CD**: GitHub Actions → Vercel
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js ≥ 18.x  
+- npm (or yarn)  
+- A Supabase project with the following enabled:  
+  - Postgres (with UUID extension, RLS)  
+  - Supabase Auth (with email/password, custom JWT claims)  
+  - Supabase Storage (`restaurant-uploads` bucket)  
+  - pg_cron (for scheduled SQL functions)  
+- Vercel account for deployment (wildcard domain configured).  
+
+### Environment Variables
+
+Create a `.env.local` (never commit secrets) with the following keys:
+
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+NEXT_PUBLIC_CAPTCHA_SITE_KEY=your_captcha_site_key
+NEXT_PRIVATE_CAPTCHA_SECRET=your_captcha_secret_key
+
+NEXT_PUBLIC_FEATURE_PAYMENTS=false
+NEXT_PUBLIC_FEATURE_AI=false
+NEXT_PUBLIC_FEATURE_REVIEWS=true
+NEXT_PUBLIC_FEATURE_LOWSTOCK=true
+NEXT_PUBLIC_FEATURE_TABLEBOOKING=true
+
+# If enabling payments later:
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+NEXT_PRIVATE_STRIPE_SECRET_KEY=your_stripe_secret_key
+
+# If enabling AI later:
+NEXT_PRIVATE_OPENAI_API_KEY=your_openai_api_key
+````
+
+Refer to `/web/.env.example` for a template. CI/CD pipelines must inject real production/staging secrets—do not commit `.env.local`.
+
+### Installation
+
+1. Clone this repository and navigate to the `web` folder:
+
+   ```bash
+   git clone https://github.com/your-org/shop-copilot.git
+   cd shop-copilot/web
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+   or
+
+   ```bash
+   yarn install
+   ```
+
+### Development
+
+To run the development server (with hot reload and mock subdomain routing):
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+* The default locale is Japanese (`/ja`).
+* To preview English or Vietnamese, navigate to `http://localhost:3000/en` or `http://localhost:3000/vi`.
+* To simulate a restaurant’s subdomain locally, add an entry in `/etc/hosts`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+  ```
+  127.0.0.1   restaurantabc.localhost
+  ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+  Then visit `http://restaurantabc.localhost:3000/ja/signup` for signup.
 
-## Learn More
+### Building & Deployment
 
-To learn more about Next.js, take a look at the following resources:
+Build for production:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Preview the production build locally:
 
-## Deploy on Vercel
+```bash
+npm run start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Vercel Deployment**:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* On push to `develop`, GitHub Actions triggers deploy to the `staging.shop-copilot.com` environment (staging Supabase project).
+* On push to `main`, deploy to `shop-copilot.com` (production Supabase project).
+* Ensure your Vercel settings include:
+
+  * Wildcard domain `*.shop-copilot.com`
+  * Environment variables matching those in `.env.local` (staging vs. production).
+
+---
+
+## Folder Structure
+
+```
+/web
+  ├── /app
+  │   ├── /[locale]
+  │   │   ├── /api
+  │   │   │   ├── /v1
+  │   │   │   └── /v2
+  │   │   ├── /customer
+  │   │   ├── /dashboard
+  │   │   ├── /login
+  │   │   ├── /signup
+  │   │   └── /thank-you
+  │   ├── /components
+  │   ├── /i18n
+  │   │   └── /locales
+  │   │       ├── ja.json
+  │   │       ├── en.json
+  │   │       └── vi.json
+  │   ├── globals.css
+  │   ├── layout.tsx
+  │   └── middleware.ts
+  ├── /config
+  │   └── feature-flags.ts
+  ├── /lib
+  │   ├── api.ts
+  │   ├── logger.ts
+  │   └── supabaseAdmin.ts
+  ├── /shared
+  │   └── /schemas
+  │       ├── signup.ts
+  │       ├── booking.ts
+  │       └── menuItem.ts
+  ├── /styles
+  │   └── tailwind.config.js
+  ├── /public
+  │   └── favicon.ico
+  ├── .eslintrc.js
+  ├── .prettierrc
+  ├── next.config.js
+  ├── tsconfig.json
+  └── package.json
+```
+
+* **`/app/[locale]/dashboard`**: Admin Dashboard pages (Server + Client Components).
+* **`/app/[locale]/customer`**: Customer Ordering pages.
+* **`/app/[locale]/signup`, `/login`**: Tenant registration & authentication.
+* **`/app/api/v1` & `/api/v2`**: Edge Functions and API routes (v1 = stable, v2 = breaking/new).
+* **`/components`**: Reusable UI components (buttons, forms, cards, charts).
+* **`/config/feature-flags.ts`**: Defines feature flags read from environment.
+* **`/lib`**: Helpers for Supabase, logging, tenant context.
+* **`/shared/schemas`**: Zod schemas shared between frontend and API.
+* **`/i18n/locales`**: Translation JSON files for `ja`, `en`, `vi`.
+
+---
+
+## UI/UX Conventions
+
+### Layout & Styling
+
+* **Framework**: Next.js App Router + Server Components for data fetching.
+* **Styling**: Tailwind CSS + `shadcn/ui` components. Always use existing `shadcn/ui` components (Card, Button, Input, Select, Modal, etc.) for consistent appearance.
+* **Brand Color**: Each restaurant’s brand color (hex code) is applied via a CSS variable (e.g., `--brand-color`) at runtime. Use `bg-[var(--brand-color)]` or the `Button`’s `intent="primary"` variant to style primary actions.
+* **Spacing & Typography**:
+
+  * Padding: use multiples of 4 (`p-4`, `px-6`, `py-8`).
+  * Font sizes: `text-2xl` for page titles, `text-xl` for section headings, `text-base` for body text, `text-sm` for captions.
+  * Rounded corners: `rounded-2xl` on cards and buttons.
+  * Shadows: `shadow-lg` on modals, cards, and popovers.
+
+### Components & Icons
+
+* **shadcn/ui**:
+
+  * Import from `@/components/ui` (e.g., `Button`, `Card`, `Dialog`, `Tabs`, `DataTable`).
+  * Leverage built-in variants (`primary`, `secondary`, `destructive`) for buttons.
+  * Use `Dialog` or `Modal` for all “Add/Edit” forms, confirm dialogs, and checkout flow.
+* **lucide-react**:
+
+  * Use icons imported directly, e.g. `import { Plus, Pencil, Trash2, Calendar, ChartPie } from "lucide-react"`.
+  * Keep icon size at `20px`–`24px` for buttons or `32px` for section headers.
+  * Always provide an `aria-label` on icon‐only buttons (e.g., `<Button aria-label={t("ADD_CATEGORY")}><Plus /></Button>`).
+
+### Forms & Validation
+
+* **React Hook Form + Zod**:
+
+  * All forms (signup, login, menu item, booking, review, settings) use React Hook Form with a Zod resolver.
+  * Define schemas in `/shared/schemas`, import in both client and API.
+  * Show inline error messages under each field in red (`text-red-600`).
+  * Disable “Submit” until form is valid and any file uploads have completed.
+
+### Internationalization
+
+* **next-intl**:
+
+  * Wrap root `layout.tsx` in `NextIntlClientProvider`, loading messages from `/i18n/locales/{locale}.json`.
+  * All text uses `const t = useTranslations("namespace.key")` or `<FormattedMessage id="namespace.key" />`.
+  * Language switcher in header (`<LanguageSwitcher />`) switches locale without losing query params.
+  * Date/number formatting via `Intl.DateTimeFormat(locale)` and `Intl.NumberFormat(locale, { style: "currency", currency: "JPY" })`.
+
+### Feature Flags
+
+* **`/config/feature-flags.ts`** exports `FEATURE_FLAGS` object.
+* Gate entire sections with flags:
+
+  ```tsx
+  if (!FEATURE_FLAGS.tableBooking) {
+    return <ComingSoon message={t("TABLE_BOOKING_COMING_SOON")} />;
+  }
+  ```
+* Hide tabs or pages entirely when flags are off.
+
+---
+
+## API & Data Layer
+
+### Supabase Integration
+
+* **Supabase Client** (`lib/supabaseAdmin.ts` for server, `lib/supabaseClient.ts` for client).
+* **Server Components** use `supabaseAdmin` (service role key) to fetch tenant data in `getServersideProps`–style or `cache()` calls.
+* **Client Components** use `createServerComponentClient` or `createClientComponentClient` (from `@supabase/auth-helpers-nextjs`) with the user’s JWT for RLS-protected queries.
+
+### Row-Level Security (RLS)
+
+* Every tenant-scoped table (e.g., `menu_items`, `orders`, `bookings`) has RLS enabled.
+* Policies require `restaurant_id = auth.jwt() →> 'restaurant_id'` for all CRUD operations.
+* Supabase Storage bucket `restaurant-uploads` uses RLS to restrict file paths to `restaurants/{restaurant_id}/…`.
+
+---
+
+## Testing
+
+* **Unit & Integration**:
+
+  * Jest and React Testing Library tests live under `/web/__tests__`.
+  * Examples:
+
+    * RLS Protection test: verify client with Restaurant A’s JWT cannot fetch Restaurant B’s data.
+    * Signup form validation (invalid subdomain, missing CAPTCHA).
+    * Order creation API validation (invalid sessionId, unavailable item).
+    * Internationalization tests for English/Vietnamese.
+    * Feature flag rendering: hide payment UI when disabled.
+* **Linting & Formatting**:
+
+  * Run `npm run lint` (ESLint) and `npm run format:check` (Prettier).
+  * All code must pass without warnings.
+* **Security Audit**:
+
+  * Run `npm audit` and fail on high or critical vulnerabilities.
+
+### Sample Test Commands
+
+```bash
+npm run lint
+npm run test
+npm run format:check
+npm audit --audit-level=high
+```
+
+---
+
+## Contributing
+
+1. **Fork & Branch**: Create a feature branch off `develop` (e.g., `feature/menu-reorder`).
+2. **Coding Conventions**:
+
+   * Follow `.eslintrc.js` rules.
+   * Use `shadcn/ui` components and `lucide-react` icons only—do not introduce new UI libraries.
+   * Write all new UI in TypeScript with strict typing.
+   * Add translations for any UI text in all three locales (`ja.json`, `en.json`, `vi.json`).
+3. **Pull Request**:
+
+   * Base your PR against `develop`.
+   * Ensure all tests pass, linting/formatting checks pass, and no security vulnerabilities are introduced.
+   * Describe your changes and reference related issues.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+```
