@@ -1,0 +1,180 @@
+{
+  "HomePage": {
+    "heroTitle": "Shop-Copilotでレストランを近代化",
+    "heroSubtitle": "メニュー、注文、予約、スタッフ、分析をすべてスマホで管理。顧客満足とチーム力をどこでも実現。",
+    "cta": "無料で始める"
+  },
+  "SIGN_UP_TITLE": "店舗登録",
+  "LOGIN_TITLE": "ログイン",
+  "FORGOT_PASSWORD_TITLE": "パスワードを忘れた場合",
+  "SignupPage": {
+    "title": "店舗を登録する",
+    "nameLabel": "店舗名",
+    "subdomainLabel": "サブドメイン",
+    "subdomainChecking": "利用可能性を確認中...",
+    "subdomainAvailable": "利用可能です！",
+    "subdomainNotAvailable": "利用できません",
+    "subdomainErrors": {
+      "invalid_format": "サブドメインは3〜30文字の小文字、数字、またはハイフンである必要があります。",
+      "not_available": "このサブドメインはすでに使用されています。",
+      "check_failed": "サブドメインの利用可能性の確認に失敗しました。もう一度お試しください。"
+    },
+    "emailLabel": "メールアドレス",
+    "passwordLabel": "パスワード",
+    "confirmPasswordLabel": "パスワードを再入力",
+    "defaultLanguageLabel": "デフォルト言語",
+    "languageOption": {
+      "en": "英語",
+      "ja": "日本語",
+      "vi": "ベトナム語"
+    },
+    "captchaRequired": "CAPTCHAを完了してください。",
+    "captchaInvalid": "CAPTCHA認証に失敗しました。もう一度お試しください。",
+    "captchaExpired": "CAPTCHAの有効期限が切れました。再認証してください。",
+    "registrationFailed": "登録に失敗しました。もう一度お試しください。",
+    "registering": "登録中...",
+    "registerButton": "登録"
+  },
+  "LandingPage": {
+    "header": {
+      "logo_aria_label": "Shop-Copilotロゴ",
+      "login": "ログイン",
+      "signup": "サインアップ"
+    },
+    "theme": {
+      "toggle": "テーマを切り替える"
+    },
+    "hero": {
+      "headline_part1": "レストラン運営を簡単に、",
+      "headline_part2": "顧客満足度を向上",
+      "subheadline": "Shop-Copilotは、小規模レストラン向けのオールインワンプラットフォームです。注文、メニュー、テーブル管理、そして成長を支援します。煩雑さから解放され、効率性を手に入れましょう。",
+      "cta": {
+        "signup": "無料で始める",
+        "demo": "デモを見る",
+        "subtext": "クレジットカード不要。14日間無料トライアル。"
+      },
+      "image_alt": "Shop-Copilotダッシュボードモックアップ"
+    },
+    "social_proof": {
+      "trusted_by": "あなたのレストランの成功を後押し",
+      "testimonial1": {
+        "quote": "Shop-Copilotは私たちの日常業務を変革しました。注文はよりスムーズになり、スタッフはより幸せになり、お客様はQR注文を気に入っています！"
+      },
+      "testimonial2": {
+        "quote": "分析ダッシュボードは画期的です。今では、収益に真に影響を与えるデータ駆動型の意思決定を行うことができます。"
+      },
+      "security_badge1": "SSL暗号化",
+      "security_badge2": "99.9%稼働時間",
+      "security_badge3": "GDPR準拠"
+    },
+    "features": {
+      "title": "ビジネスを加速するパワフルな機能",
+      "subtitle": "Shop-Copilotには、業務を効率化し、顧客を喜ばせるための機能が満載です。",
+      "menu_management": {
+        "title": "直感的なメニュー管理",
+        "description": "写真、説明、価格を含むデジタルメニューを簡単に作成、更新、整理できます。多言語に対応しています。",
+        "benefit": "数時間ではなく数分でメニューを更新。"
+      },
+      "qr_ordering": {
+        "title": "シームレスなQR注文",
+        "description": "お客様はテーブルのQRコードをスキャンしてメニューを表示し、注文し、スマートフォンから直接支払うこともできます。",
+        "benefit": "注文の正確性とテーブル回転率を向上。"
+      },
+      "booking_preordering": {
+        "title": "高度な予約と事前注文",
+        "description": "テーブル予約を管理し、お客様がスムーズな食事体験のために食事を事前注文できるようにします。",
+        "benefit": "待ち時間を短縮し、顧客の流れを改善。"
+      },
+      "smart_analytics": {
+        "title": "スマート分析とレポート",
+        "description": "売上、人気料理、スタッフのパフォーマンス、顧客からのフィードバックに関するリアルタイムの洞察を得て、ビジネスを最適化します。",
+        "benefit": "成長のためのデータ駆動型意思決定。"
+      },
+      "staff_management": {
+        "title": "効率的なスタッフ管理",
+        "description": "チーム専用のモバイルアプリで、役割の割り当て、シフトの管理、スタッフのパフォーマンスの追跡を行います。",
+        "benefit": "モバイルツールでチームを強化。"
+      },
+      "mobile_first": {
+        "title": "真のモバイルファースト体験",
+        "description": "既存のスマートフォンやタブレットからレストラン全体を管理できます。かさばるハードウェアや複雑なセットアップは不要です。",
+        "benefit": "どこからでもビジネスを運営。"
+      }
+    },
+    "howitworks": {
+      "title": "数分で始められます",
+      "subtitle": "いくつかの簡単なステップで、最新のレストランプラットフォームを立ち上げましょう。",
+      "step1": {
+        "title": "サインアップとカスタマイズ",
+        "description": "アカウントを作成し、レストランのプロフィールを設定し、デジタルメニューとブランドをカスタマイズします。"
+      },
+      "step2": {
+        "title": "QRコードを生成",
+        "description": "各テーブルまたはセクションに固有のQRコードを印刷します。お客様はスキャンしてメニューにアクセスし、注文します。"
+      },
+      "step3": {
+        "title": "サービスを開始し、成長する",
+        "description": "スタッフアプリで直接注文を受け取り、テーブルを管理し、スマートな洞察でビジネスが繁栄するのを見守ります。"
+      }
+    },
+    "benefits": {
+      "title": "あなたのレストランのための真の結果",
+      "subtitle": "Shop-Copilotは単なるソフトウェアではありません。成長パートナーです。どのように役立つかをご覧ください：",
+      "item1": "収益を最大20%増加",
+      "item2": "管理タスクで週に最大10時間節約",
+      "item3": "顧客満足度スコアを向上",
+      "item4": "注文とテーブル管理を効率化",
+      "item5": "モバイルツールでスタッフを強化",
+      "item6": "実用的なビジネスインサイトを獲得"
+    },
+    "faq": {
+      "title": "よくある質問",
+      "item1": {
+        "q": "Shop-Copilotはどのようなレストラン向けですか？",
+        "a": "Shop-Copilotは、業務を近代化し、顧客体験を向上させたい中小規模のレストラン、カフェ、バー、フードトラック向けに設計されています。"
+      },
+      "item2": {
+        "q": "セットアップは難しいですか？",
+        "a": "まったく難しくありません！直感的なインターフェースとガイド付きのセットアッププロセスにより、数分で開始できます。技術的な専門知識は不要です。"
+      },
+      "item3": {
+        "q": "特別なハードウェアが必要ですか？",
+        "a": "いいえ、Shop-Copilotはモバイルファーストです。既存のスマートフォンやタブレットからすべてを管理できます。高価なPOSシステムは不要です。"
+      },
+      "item4": {
+        "q": "カスタマーサポートはどうですか？",
+        "a": "包括的なオンラインサポート、チュートリアル、およびご質問や問題に対応する専任のサポートチームを提供しています。"
+      }
+    },
+    "cta_section": {
+      "title": "レストランを変革する準備はできましたか？",
+      "subtitle": "Shop-Copilotで業務を簡素化し、利益を増やしている何百ものレストランに参加しましょう。",
+      "cta": {
+        "signup": "無料で始める",
+        "contact_sales": "デモをリクエスト"
+      }
+    },
+    "footer": {
+      "tagline": "一度に1つの注文で小規模レストランを近代化。",
+      "links": {
+        "product_title": "製品",
+        "features": "機能",
+        "pricing": "価格",
+        "integrations": "統合",
+        "company_title": "会社",
+        "about_us": "会社概要",
+        "careers": "採用情報",
+        "blog": "ブログ",
+        "support_title": "サポート",
+        "help_center": "ヘルプセンター",
+        "contact_us": "お問い合わせ",
+        "status": "ステータス"
+      },
+      "privacy_policy": "プライバシーポリシー",
+      "terms_of_service": "利用規約"
+    }
+  },
+  "common": {
+    "all_rights_reserved": "全著作権所有。"
+  }
+}

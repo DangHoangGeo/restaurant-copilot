@@ -1,0 +1,38 @@
+{
+  "HomePage": {
+    "heroTitle": "Hiện đại hóa nhà hàng của bạn với Shop-Copilot",
+    "heroSubtitle": "Nền tảng tất cả trong một, ưu tiên di động cho thực đơn, đơn hàng, đặt bàn, nhân viên và phân tích. Làm hài lòng khách hàng và nâng cao hiệu quả đội ngũ—mọi lúc, mọi nơi.",
+    "cta": "Bắt đầu miễn phí"
+  },
+  "SIGN_UP_TITLE": "Đăng ký nhà hàng của bạn",
+  "LOGIN_TITLE": "Đăng nhập",
+  "FORGOT_PASSWORD_TITLE": "Quên mật khẩu",
+  "SignupPage": {
+    "title": "Đăng ký nhà hàng của bạn",
+    "nameLabel": "Tên nhà hàng",
+    "subdomainLabel": "Tên miền phụ",
+    "subdomainChecking": "Đang kiểm tra tính khả dụng...",
+    "subdomainAvailable": "Khả dụng!",
+    "subdomainNotAvailable": "Không khả dụng",
+    "subdomainErrors": {
+      "invalid_format": "Tên miền phụ phải có từ 3-30 chữ cái thường, số hoặc dấu gạch ngang.",
+      "not_available": "Tên miền phụ này đã được sử dụng.",
+      "check_failed": "Không thể kiểm tra tính khả dụng của tên miền phụ. Vui lòng thử lại."
+    },
+    "emailLabel": "Email",
+    "passwordLabel": "Mật khẩu",
+    "confirmPasswordLabel": "Xác nhận mật khẩu",
+    "defaultLanguageLabel": "Ngôn ngữ mặc định",
+    "languageOption": {
+      "en": "Tiếng Anh",
+      "ja": "Tiếng Nhật",
+      "vi": "Tiếng Việt"
+    },
+    "captchaRequired": "Vui lòng hoàn thành CAPTCHA.",
+    "captchaInvalid": "Xác minh CAPTCHA thất bại. Vui lòng thử lại.",
+    "captchaExpired": "CAPTCHA đã hết hạn. Vui lòng xác minh lại.",
+    "registrationFailed": "Đăng ký thất bại. Vui lòng thử lại.",
+    "registering": "Đang đăng ký...",
+    "registerButton": "Đăng ký"
+  }
+}

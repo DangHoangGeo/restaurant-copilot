@@ -87,7 +87,7 @@
        id: userData.id, restaurant_id: restaurantId, email, name, role: "owner" 
      }]);
      ```
-  7. Return `{ success: true, redirect: "https://{subdomain}.shop-copilot.com/ja/dashboard" }`.
+  7. Return `{ success: true, redirect: "https://{subdomain}.baoan.jp/ja/dashboard" }`.
   8. On any error, call `logEvent({ level: "ERROR", endpoint: "/api/v1/register", message: error.message })`.
      (Req 3.3)
 * Test by submitting a valid signup → verify in Supabase that:
@@ -98,11 +98,18 @@
 
 ### 3.4. **Configure Wildcard Subdomain & Middleware**
 
-* DNS: Point `*.shop-copilot.com` to Vercel by creating a CNAME record to `cname.vercel-dns.com`.
+* DNS: Point `*.baoan.jp` to Vercel by creating a CNAME record to `cname.vercel-dns.com`.
+* In Godady:
+```
+Type:   CNAME
+Name:   *
+Value:  cname.vercel-dns.com.
+TTL:    Default (or 1 hour)
+```
 * In Vercel, add two domains:
 
-  1. `shop-copilot.com` (root)
-  2. `*.shop-copilot.com` (wildcard)
+  1. `baoan.jp` (root)
+  2. `*.baoan.jp` (wildcard)
 * Create Next.js middleware in `/web/middleware.ts`:
 
   ```ts
@@ -115,7 +122,7 @@
     const subdomain = parts.length > 2 ? parts[0] : null;
 
     // If no subdomain (root domain), allow visit: signup, login, landing pages
-    if (!subdomain || subdomain === "shop-copilot") {
+    if (!subdomain || subdomain === "baoan") {
       return NextResponse.next();
     }
 
@@ -123,7 +130,7 @@
     const res = await fetch(`https://${req.headers.get("host")}/api/v1/restaurant/exists?subdomain=${subdomain}`);
     const { exists } = await res.json();
     if (!exists) {
-      return NextResponse.redirect("https://shop-copilot.com/404");
+      return NextResponse.redirect("https://baoan.jp/404");
     }
 
     // Attach subdomain to searchParams so downstream can read it
