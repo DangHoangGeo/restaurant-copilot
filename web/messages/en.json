@@ -5,5 +5,33 @@
   },
   "SIGN_UP_TITLE": "Register Your Restaurant",
   "LOGIN_TITLE": "Login",
-  "FORGOT_PASSWORD_TITLE": "Forgot Password"
+  "FORGOT_PASSWORD_TITLE": "Forgot Password",
+  "SignupPage": {
+    "title": "Register Your Restaurant",
+    "nameLabel": "Restaurant Name",
+    "subdomainLabel": "Subdomain",
+    "subdomainChecking": "Checking availability...",
+    "subdomainAvailable": "Available!",
+    "subdomainNotAvailable": "Not available",
+    "subdomainErrors": {
+      "invalid_format": "Subdomain must be 3-30 lowercase letters, numbers, or hyphens.",
+      "not_available": "This subdomain is already taken.",
+      "check_failed": "Failed to check subdomain availability. Please try again."
+    },
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "defaultLanguageLabel": "Default Language",
+    "languageOption": {
+      "en": "English",
+      "ja": "Japanese",
+      "vi": "Vietnamese"
+    },
+    "captchaRequired": "Please complete the CAPTCHA.",
+    "captchaInvalid": "CAPTCHA verification failed. Please try again.",
+    "captchaExpired": "CAPTCHA expired. Please re-verify.",
+    "registrationFailed": "Registration failed. Please try again.",
+    "registering": "Registering...",
+    "registerButton": "Register"
+  }
 }

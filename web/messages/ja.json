@@ -5,5 +5,33 @@
   },
   "SIGN_UP_TITLE": "店舗登録",
   "LOGIN_TITLE": "ログイン",
-  "FORGOT_PASSWORD_TITLE": "パスワードを忘れた場合"
+  "FORGOT_PASSWORD_TITLE": "パスワードを忘れた場合",
+  "SignupPage": {
+    "title": "店舗を登録する",
+    "nameLabel": "店舗名",
+    "subdomainLabel": "サブドメイン",
+    "subdomainChecking": "利用可能性を確認中...",
+    "subdomainAvailable": "利用可能です！",
+    "subdomainNotAvailable": "利用できません",
+    "subdomainErrors": {
+      "invalid_format": "サブドメインは3〜30文字の小文字、数字、またはハイフンである必要があります。",
+      "not_available": "このサブドメインはすでに使用されています。",
+      "check_failed": "サブドメインの利用可能性の確認に失敗しました。もう一度お試しください。"
+    },
+    "emailLabel": "メールアドレス",
+    "passwordLabel": "パスワード",
+    "confirmPasswordLabel": "パスワードを再入力",
+    "defaultLanguageLabel": "デフォルト言語",
+    "languageOption": {
+      "en": "英語",
+      "ja": "日本語",
+      "vi": "ベトナム語"
+    },
+    "captchaRequired": "CAPTCHAを完了してください。",
+    "captchaInvalid": "CAPTCHA認証に失敗しました。もう一度お試しください。",
+    "captchaExpired": "CAPTCHAの有効期限が切れました。再認証してください。",
+    "registrationFailed": "登録に失敗しました。もう一度お試しください。",
+    "registering": "登録中...",
+    "registerButton": "登録"
+  }
 }

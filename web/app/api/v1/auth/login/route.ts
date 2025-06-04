@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logEvent } from "../../../lib/logger";
+import { logEvent } from "../../../../../lib/logger";
 
 let ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       return new Response("Too Many Requests", { status: 429 });
     }
 
-    const { captchaToken, ...forgotPasswordData } = await req.json();
+    const { captchaToken, ...loginData } = await req.json();
 
     const captchaRes = await fetch(`${req.nextUrl.origin}/api/v1/verify-captcha`, {
       method: "POST",
@@ -42,12 +42,12 @@ export async function POST(req: NextRequest) {
       return new Response("Invalid CAPTCHA", { status: 400 });
     }
 
-    // …rest of forgot password logic (using forgotPasswordData)…
-    return NextResponse.json({ message: "Forgot password logic goes here." });
+    // …rest of login logic (using loginData)…
+    return NextResponse.json({ message: "Login logic goes here." });
   } catch (error: any) {
     await logEvent({
       level: "ERROR",
-      endpoint: "/api/v1/forgot-password",
+      endpoint: "/api/v1/login",
       message: error.message,
       metadata: { ip, stack: error.stack },
     });
