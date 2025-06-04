@@ -9,7 +9,7 @@ const ROOT_DOMAIN = 'baoan.jp';
 const W_ROOT_DOMAIN = 'www.baoan.jp';
 export async function middleware(req: NextRequest) {
   const host = req.headers.get("host") || "";
-  
+  console.log("Middleware host:", host);
   // If we're on the root domain exactly, just pass to next-intl
   if (host === ROOT_DOMAIN || host === W_ROOT_DOMAIN) {
     return nextIntlMiddleware(req);
