@@ -572,5 +572,11 @@
       "title": "Feedback",
       "description_last_50": "Last 50 reviews"
     }
+  },
+  "CustomerHome": {
+    "welcome": "Welcome to {restaurantName}",
+    "menu_title": "Menu",
+    "add_to_cart": "Add to Cart",
+    "no_menu_items": "No menu items available"
   }
 }
