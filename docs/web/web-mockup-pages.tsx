@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import {
-  BarChart2, Briefcase, Calendar, CheckCircle, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Clock, Coffee, CreditCard, DollarSign, Edit2, Eye, FileText, Filter, Grid, Home, LogOut, Menu as MenuIcon, MessageSquare, Moon, MoreVertical, Package, Percent, Phone, PlusCircle, Printer, QrCode, RefreshCw, Search, Settings, ShoppingBag, ShoppingCart, Sun, Trash2, TrendingUp, Truck, Users, UserPlus, X, Zap, Star, MapPin, Edit, List, LayoutGrid, ClipboardList, UserCog, Palette, Type, Smile, ThumbsUp, AlertTriangle, Info, Mail, User, Lock, XCircle, Globe, UploadCloud, Tag, CalendarDays, UsersRound, FileDown, TableIcon as TableSimpleIcon, Building, Languages, SquarePen, ShieldCheck, Sparkles, BookUser, TicketPercent, CalendarCheck2, MessageCircleMore, BarChartBig, PieChartIcon, FileCsv, FilePdf
+  BarChart2, Briefcase, Calendar, CheckCircle, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Clock, Coffee, CreditCard, DollarSign, Edit2, Eye, FileText, Filter, Grid, Home, LogOut, Menu as MenuIcon, MessageSquare, Moon, MoreVertical, Package, Percent, Phone, PlusCircle, Printer, QrCode, RefreshCw, Search, Settings, ShoppingBag, ShoppingCart, Sun, Trash2, TrendingUp, Truck, Users, UserPlus, X, Zap, Star, MapPin, Edit, List, LayoutGrid, ClipboardList, UserCog, Palette, Type, Smile, ThumbsUp, AlertTriangle, Info, Mail, User, Lock, XCircle, Globe, UploadCloud, Tag, CalendarDays, UsersRound, FileDown, TableIcon as TableSimpleIcon, Building, Languages, SquarePen, ShieldCheck, Sparkles, BookUser, TicketPercent, CalendarCheck2, MessageCircleMore, BarChartBig, PieChartIcon, FileSpreadsheet, File // Replaced FileCsv, FilePdf
 } from 'lucide-react'; // Added new icons
 
 // --- I18N Placeholder ---
@@ -1101,8 +1101,8 @@ const SalesReportsTab = ({ dateRange, setDateRange }) => (
           <option value="last30days">{t('admin.reports.daterange.last_30_days')}</option>
           {/* Custom date range picker would go here */}
         </Select>
-        <Button variant="secondary" size="sm" iconLeft={FileCsv}>{t('common.export_csv')}</Button>
-        <Button variant="secondary" size="sm" iconLeft={FilePdf}>{t('common.export_pdf')}</Button>
+        <Button variant="secondary" size="sm" iconLeft={FileSpreadsheet}>{t('common.export_csv')}</Button> 
+        <Button variant="secondary" size="sm" iconLeft={FileText}>{t('common.export_pdf')}</Button>
       </div>
     </div>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1124,8 +1124,8 @@ const ItemsReportTab = () => (
     <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700">
       <h3 className="text-xl font-semibold">{t('admin.reports.items.title')}</h3>
       <div className="flex items-center gap-2">
-        <Button variant="secondary" size="sm" iconLeft={FileCsv}>{t('common.export_csv')}</Button>
-        <Button variant="secondary" size="sm" iconLeft={FilePdf}>{t('common.export_pdf')}</Button>
+        <Button variant="secondary" size="sm" iconLeft={FileSpreadsheet}>{t('common.export_csv')}</Button>
+        <Button variant="secondary" size="sm" iconLeft={FileText}>{t('common.export_pdf')}</Button>
       </div>
     </div>
     <div className="overflow-x-auto">
