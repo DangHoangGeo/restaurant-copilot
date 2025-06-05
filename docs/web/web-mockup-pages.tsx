@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import {
-  BarChart2, Briefcase, Calendar, CheckCircle, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Clock, Coffee, CreditCard, DollarSign, Edit2, Eye, FileText, Filter, Grid, Home, LogOut, Menu as MenuIcon, MessageSquare, Moon, MoreVertical, Package, Percent, Phone, PlusCircle, Printer, QrCode, RefreshCw, Search, Settings, ShoppingBag, ShoppingCart, Sun, Trash2, TrendingUp, Truck, Users, UserPlus, X, Zap, Star, MapPin, Edit, List, LayoutGrid, ClipboardList, UserCog, Palette, Type, Smile, ThumbsUp, AlertTriangle, Info, Mail, User, Lock, XCircle, Globe, UploadCloud, Tag, CalendarDays, UsersRound, FileDown, TableIcon as TableSimpleIcon, Building, Languages, SquarePen, ShieldCheck, Sparkles, BookUser, TicketPercent, CalendarCheck2, MessageCircleMore, BarChartBig, PieChartIcon, FileCsv, FilePdf
+  BarChart2, Briefcase, Calendar, CheckCircle, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Clock, Coffee, CreditCard, DollarSign, Edit2, Eye, FileText, Filter, Grid, Home, LogOut, Menu as MenuIcon, MessageSquare, Moon, MoreVertical, Package, Percent, Phone, PlusCircle, Printer, QrCode, RefreshCw, Search, Settings, ShoppingBag, ShoppingCart, Sun, Trash2, TrendingUp, Truck, Users, UserPlus, X, Zap, Star, MapPin, Edit, List, LayoutGrid, ClipboardList, UserCog, Palette, Type, Smile, ThumbsUp, AlertTriangle, Info, Mail, User, Lock, XCircle, Globe, UploadCloud, Tag, CalendarDays, UsersRound, FileDown, TableIcon as TableSimpleIcon, Building, Languages, SquarePen, ShieldCheck, Sparkles, BookUser, TicketPercent, CalendarCheck2, MessageCircleMore, BarChartBig, PieChartIcon, FileSpreadsheet, File // Replaced FileCsv, FilePdf
 } from 'lucide-react'; // Added new icons
 
 // --- I18N Placeholder ---
@@ -21,14 +21,14 @@ const t = (key: string, params?: object) => {
   // Mock translations for a few keys to show concept
   const mockTranslations = {
     'ja': {
-      'admin.dashboard.title': 'ダッシュボード',
+      'admin_dashboard_title': 'ダッシュボード',
       'admin.menu.add_category': 'カテゴリを追加',
       'customer.menu.add_to_cart': 'カートに追加',
       'common.confirm': '確認',
       'common.cancel': 'キャンセル',
     },
     'vi': {
-      'admin.dashboard.title': 'Bảng điều khiển',
+      'admin_dashboard_title': 'Bảng điều khiển',
       'admin.menu.add_category': 'Thêm danh mục',
       'customer.menu.add_to_cart': 'Thêm vào giỏ',
       'common.confirm': 'Xác nhận',
@@ -366,7 +366,7 @@ const AdminHeader = ({ toggleSidebar, currentViewName, restaurantSettings }) => 
     <header className="bg-white dark:bg-slate-800 shadow-lg sticky top-0 z-30">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center">
-          <Button variant="ghost" onClick={toggleSidebar} className="lg:hidden mr-2" aria-label={t('admin.sidebar.toggle')}>
+          <Button variant="ghost" onClick={toggleSidebar} className="lg:hidden mr-2" aria-label={t('admin_sidebar_toggle')}>
             <Icon name={MenuIcon} />
           </Button>
           <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{t(currentViewName)}</h1>
@@ -420,25 +420,25 @@ const AdminSidebar = ({ currentView, setView, isOpen, setIsOpen, restaurantSetti
             <img src={restaurantSettings.logoUrl} alt={`${restaurantSettings.name} ${t('logo_alt_suffix')}`} className="h-8 w-8 rounded-md mr-2 object-contain bg-slate-200 p-0.5" />
             <span className="text-xl font-bold text-slate-800 dark:text-slate-100 truncate" title={restaurantSettings.name}>{restaurantSettings.name}</span>
           </div>
-          <Button variant="ghost" onClick={() => setIsOpen(false)} className="lg:hidden" aria-label={t('admin.sidebar.close')}>
+          <Button variant="ghost" onClick={() => setIsOpen(false)} className="lg:hidden" aria-label={t('admin_sidebar_close')}>
             <Icon name={X} />
           </Button>
         </div>
         <nav className="p-4 space-y-1.5 flex-grow">
-          <NavItem icon={Home} label="admin.sidebar.dashboard" viewName="adminDashboard" />
-          <NavItem icon={Settings} label="admin.sidebar.restaurant_settings" viewName="adminSettings" />
-          <NavItem icon={ClipboardList} label="admin.sidebar.menu_management" viewName="adminMenu" />
-          <NavItem icon={TableSimpleIcon} label="admin.sidebar.table_qr_management" viewName="adminTables" />
-          <NavItem icon={UserCog} label="admin.sidebar.employees_schedules" viewName="adminEmployees" />
-          {FEATURE_FLAGS.tableBooking && <NavItem icon={BookUser} label="admin.sidebar.bookings_preorders" viewName="adminBookings" />}
-          <NavItem icon={BarChartBig} label="admin.sidebar.reports_analytics" viewName="adminReports" />
+          <NavItem icon={Home} label="admin_sidebar_dashboard" viewName="adminDashboard" />
+          <NavItem icon={Settings} label="admin_sidebar_restaurant_settings" viewName="adminSettings" />
+          <NavItem icon={ClipboardList} label="admin_sidebar_menu_management" viewName="adminMenu" />
+          <NavItem icon={TableSimpleIcon} label="admin_sidebar_table_qr_management" viewName="adminTables" />
+          <NavItem icon={UserCog} label="admin_sidebar_employees_schedules" viewName="adminEmployees" />
+          {FEATURE_FLAGS.tableBooking && <NavItem icon={BookUser} label="admin_sidebar_bookings_preorders" viewName="adminBookings" />}
+          <NavItem icon={BarChartBig} label="admin_sidebar_reports_analytics" viewName="adminReports" />
           
           <hr className="my-3 border-slate-200 dark:border-slate-700" />
-          <NavItem icon={Palette} label="admin.sidebar.design_system" viewName="designSystem" />
+          <NavItem icon={Palette} label="admin_sidebar_design_system" viewName="designSystem" />
         </nav>
         <div className="p-4 mt-auto flex-shrink-0 border-t dark:border-slate-700">
-          <NavItem icon={Eye} label="admin.sidebar.view_customer_site" viewName="customerLanding" />
-          <NavItem icon={LogOut} label="admin.sidebar.logout" viewName="logout" />
+          <NavItem icon={Eye} label="admin_sidebar_view_customer_site" viewName="customerLanding" />
+          <NavItem icon={LogOut} label="admin_sidebar_logout" viewName="logout" />
         </div>
       </aside>
       {isOpen && <div className="fixed inset-0 z-30 bg-black opacity-50 lg:hidden" onClick={() => setIsOpen(false)}></div>}
@@ -505,7 +505,7 @@ const DashboardScreen = ({ restaurantSettings }) => {
           <div className="space-y-3">
             <Button variant="primary" className="w-full" iconLeft={PlusCircle}>{t('admin.menu.add_item_short')}</Button>
             <Button variant="secondary" className="w-full" iconLeft={QrCode}>{t('admin.tables.generate_qr_short')}</Button>
-            <Button variant="secondary" className="w-full" iconLeft={UserPlus}>{t('admin.employees.add_employee_short')}</Button>
+            <Button variant="secondary" className="w-full" iconLeft={UserPlus}>{t('admin_employees_add_employee_short')}</Button>
           </div>
         </Card>
       </div>
@@ -549,7 +549,7 @@ const RestaurantSettingsScreen = ({ restaurantSettings, setRestaurantSettingsGlo
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('admin.settings.title')}</h2>
+        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('admin_settings_title')}</h2>
       </div>
       {showNotification && <Alert type="success" message={t('admin.settings.save_success_msg')} onClose={() => setShowNotification(false)} className="mb-4" />}
       <Card>
@@ -677,7 +677,7 @@ const MenuManagementScreen = ({ restaurantSettings }) => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('admin.menu.title')}</h2>
+        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('admin_menu_title')}</h2>
         <Button onClick={() => handleOpenCategoryModal()} iconLeft={PlusCircle}>{t('admin.menu.add_category')}</Button>
       </div>
       <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('admin.menu.drag_reorder_hint')}</p>
@@ -786,7 +786,7 @@ const TableManagementScreen = ({ restaurantSettings }) => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('admin.tables.title')}</h2>
+        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('admin_tables_title')}</h2>
         <Button onClick={() => handleOpenTableModal()} iconLeft={PlusCircle}>{t('admin.tables.add_table')}</Button>
       </div>
       
@@ -845,13 +845,13 @@ const EmployeeManagementScreen = () => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('admin.employees.title')}</h2>
+        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('admin_employees_title')}</h2>
         <div className="flex items-center space-x-2">
           <div className="p-0.5 bg-slate-200 dark:bg-slate-700 rounded-xl flex">
             <Button size="sm" variant={viewMode === 'list' ? 'primary' : 'ghost'} onClick={() => setViewMode('list')} className={`rounded-lg ${viewMode === 'list' ? '' : 'text-slate-600 dark:text-slate-300'}`}><Icon name={List} className="mr-1 sm:mr-2" /> {t('common.list')}</Button>
             <Button size="sm" variant={viewMode === 'schedule' ? 'primary' : 'ghost'} onClick={() => setViewMode('schedule')} className={`rounded-lg ${viewMode === 'schedule' ? '' : 'text-slate-600 dark:text-slate-300'}`}><Icon name={Calendar} className="mr-1 sm:mr-2" /> {t('common.schedule')}</Button>
           </div>
-          <Button onClick={() => handleOpenModal()} iconLeft={UserPlus}>{t('admin.employees.add_employee')}</Button>
+          <Button onClick={() => handleOpenModal()} iconLeft={UserPlus}>{t('admin_employees_add_employee')}</Button>
         </div>
       </div>
 
@@ -873,12 +873,12 @@ const EmployeeManagementScreen = () => {
 
       {viewMode === 'schedule' && (
         <Card noPadding>
-          <p className="p-4 text-sm text-slate-600 dark:text-slate-400">{t('admin.employees.schedule_calendar_note')}</p>
+          <p className="p-4 text-sm text-slate-600 dark:text-slate-400">{t('admin_employees_schedule_calendar_note')}</p>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px] text-sm border-collapse">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-700">
-                  <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-700 p-2 border dark:border-slate-600 text-left">{t('admin.employees.employee_name')}</th>
+                  <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-700 p-2 border dark:border-slate-600 text-left">{t('admin_employees_employee_name')}</th>
                   {daysOfWeek.map(day => <th key={day} className="p-2 border dark:border-slate-600 text-center">{t(`weekdays.${day.toLowerCase()}`)}</th>)}
                 </tr>
               </thead>
@@ -901,17 +901,17 @@ const EmployeeManagementScreen = () => {
             </table>
           </div>
           <div className="p-4 border-t dark:border-slate-700 text-right">
-            <Button iconLeft={CalendarCheck2} onClick={() => alert(t('admin.employees.edit_shifts_action'))}>{t('admin.employees.edit_shifts')}</Button>
+            <Button iconLeft={CalendarCheck2} onClick={() => alert(t('admin_employees_edit_shifts_action'))}>{t('admin_employees_edit_shifts')}</Button>
           </div>
         </Card>
       )}
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingEmployee?.id ? t('admin.employees.edit_employee') : t('admin.employees.add_employee')} size="lg">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingEmployee?.id ? t('admin_employees_edit_employee') : t('admin_employees_add_employee')} size="lg">
         {editingEmployee && (
           <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-            <Input label="admin.employees.form.full_name" name="name" value={editingEmployee.name} onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value})} required />
-            <Input label="admin.employees.form.email_lookup" name="email" type="email" value={editingEmployee.email} onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} required placeholder={t('admin.employees.form.email_lookup_placeholder')}/>
-            <Select label="admin.employees.form.role" name="role" value={editingEmployee.role} onChange={e => setEditingEmployee({...editingEmployee, role: e.target.value})}>
+            <Input label="admin_employees_form.full_name" name="name" value={editingEmployee.name} onChange={e => setEditingEmployee({...editingEmployee, name: e.target.value})} required />
+            <Input label="admin_employees_form.email_lookup" name="email" type="email" value={editingEmployee.email} onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} required placeholder={t('admin_employees_form.email_lookup_placeholder')}/>
+            <Select label="admin_employees_form.role" name="role" value={editingEmployee.role} onChange={e => setEditingEmployee({...editingEmployee, role: e.target.value})}>
               {roles.map(role => <option key={role} value={role}>{t(`roles.${role}`)}</option>)}
             </Select>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-4">{t('common.zod_form_hint')}</p>
@@ -950,14 +950,14 @@ const BookingsManagementScreen = ({ restaurantSettings }) => {
 
     return (
     <div>
-      <h2 className="text-2xl font-semibold mb-6">{t('admin.bookings.title')}</h2>
+      <h2 className="text-2xl font-semibold mb-6">{t('admin_bookings_title')}</h2>
       <Card noPadding>
         <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
             <tr>
               {['customer_name', 'contact', 'date_time', 'party_size', 'status', 'actions'].map(col => (
-                <th key={col} scope="col" className="px-4 py-3">{t(`admin.bookings.table.${col}`)}</th>
+                <th key={col} scope="col" className="px-4 py-3">{t(`admin_bookings_table.${col}`)}</th>
               ))}
             </tr>
           </thead>
@@ -979,18 +979,18 @@ const BookingsManagementScreen = ({ restaurantSettings }) => {
         </div>
       </Card>
 
-      <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title={t('admin.bookings.details_title')} size="lg">
+      <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title={t('admin_bookings_details_title')} size="lg">
         {selectedBooking && (
           <div>
-            <p><strong>{t('admin.bookings.table.customer_name')}:</strong> {selectedBooking.customerName}</p>
-            <p><strong>{t('admin.bookings.table.contact')}:</strong> {selectedBooking.contact}</p>
-            <p><strong>{t('admin.bookings.table.date_time')}:</strong> {selectedBooking.date} @ {selectedBooking.time}</p>
-            <p><strong>{t('admin.bookings.table.party_size')}:</strong> {selectedBooking.partySize}</p>
-            <p><strong>{t('admin.bookings.table.status')}:</strong> {statusBadge(selectedBooking.status)}</p>
+            <p><strong>{t('admin_bookings_table.customer_name')}:</strong> {selectedBooking.customerName}</p>
+            <p><strong>{t('admin_bookings_table.contact')}:</strong> {selectedBooking.contact}</p>
+            <p><strong>{t('admin_bookings_table.date_time')}:</strong> {selectedBooking.date} @ {selectedBooking.time}</p>
+            <p><strong>{t('admin_bookings_table.party_size')}:</strong> {selectedBooking.partySize}</p>
+            <p><strong>{t('admin_bookings_table.status')}:</strong> {statusBadge(selectedBooking.status)}</p>
             
             {selectedBooking.preOrderItems.length > 0 && (
                 <div className="mt-4">
-                    <h4 className="font-semibold mb-1">{t('admin.bookings.preorder_items')}:</h4>
+                    <h4 className="font-semibold mb-1">{t('admin_bookings_preorder_items')}:</h4>
                     <ul className="list-disc list-inside text-sm">
                         {selectedBooking.preOrderItems.map(itemOrder => {
                             const menuItem = menuItems.find(mi => mi.id === itemOrder.itemId);
@@ -999,7 +999,7 @@ const BookingsManagementScreen = ({ restaurantSettings }) => {
                     </ul>
                 </div>
             )}
-            {selectedBooking.preOrderItems.length === 0 && <p className="text-sm mt-2 text-slate-500">{t('admin.bookings.no_preorder_items')}</p>}
+            {selectedBooking.preOrderItems.length === 0 && <p className="text-sm mt-2 text-slate-500">{t('admin_bookings_no_preorder_items')}</p>}
 
             {selectedBooking.status === 'pending' && (
                 <div className="mt-6 flex justify-end space-x-2">
@@ -1043,7 +1043,7 @@ const ReportsScreen = ({ restaurantSettings }) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">{t('admin.reports.title')}</h2>
+      <h2 className="text-2xl font-semibold">{t('admin_reports_title')}</h2>
       
       {/* Reports Home Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1101,8 +1101,8 @@ const SalesReportsTab = ({ dateRange, setDateRange }) => (
           <option value="last30days">{t('admin.reports.daterange.last_30_days')}</option>
           {/* Custom date range picker would go here */}
         </Select>
-        <Button variant="secondary" size="sm" iconLeft={FileCsv}>{t('common.export_csv')}</Button>
-        <Button variant="secondary" size="sm" iconLeft={FilePdf}>{t('common.export_pdf')}</Button>
+        <Button variant="secondary" size="sm" iconLeft={FileSpreadsheet}>{t('common.export_csv')}</Button> 
+        <Button variant="secondary" size="sm" iconLeft={FileText}>{t('common.export_pdf')}</Button>
       </div>
     </div>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1124,8 +1124,8 @@ const ItemsReportTab = () => (
     <div className="flex justify-between items-center p-4 sm:p-6 border-b dark:border-slate-700">
       <h3 className="text-xl font-semibold">{t('admin.reports.items.title')}</h3>
       <div className="flex items-center gap-2">
-        <Button variant="secondary" size="sm" iconLeft={FileCsv}>{t('common.export_csv')}</Button>
-        <Button variant="secondary" size="sm" iconLeft={FilePdf}>{t('common.export_pdf')}</Button>
+        <Button variant="secondary" size="sm" iconLeft={FileSpreadsheet}>{t('common.export_csv')}</Button>
+        <Button variant="secondary" size="sm" iconLeft={FileText}>{t('common.export_pdf')}</Button>
       </div>
     </div>
     <div className="overflow-x-auto">
@@ -1719,14 +1719,14 @@ function App() {
   };
 
   const adminViewNameMap = {
-    adminDashboard: "admin.sidebar.dashboard",
-    adminSettings: "admin.sidebar.restaurant_settings",
-    adminMenu: "admin.sidebar.menu_management",
-    adminTables: "admin.sidebar.table_qr_management",
-    adminEmployees: "admin.sidebar.employees_schedules",
-    adminBookings: "admin.sidebar.bookings_preorders",
-    adminReports: "admin.sidebar.reports_analytics",
-    designSystem: "admin.sidebar.design_system",
+    adminDashboard: "admin_sidebar_dashboard",
+    adminSettings: "admin_sidebar_restaurant_settings",
+    adminMenu: "admin_sidebar_menu_management",
+    adminTables: "admin_sidebar_table_qr_management",
+    adminEmployees: "admin_sidebar_employees_schedules",
+    adminBookings: "admin_sidebar_bookings_preorders",
+    adminReports: "admin_sidebar_reports_analytics",
+    designSystem: "admin_sidebar_design_system",
   };
 
   let content;

@@ -172,9 +172,32 @@
       },
       "privacy_policy": "プライバシーポリシー",
       "terms_of_service": "利用規約"
+    },
+    "common": {
+      "all_rights_reserved": "全著作権所有。"
     }
   },
-  "common": {
-    "all_rights_reserved": "全著作権所有。"
+  "404": {
+    "title": "ページが見つかりません",
+    "description": "申し訳ありませんが、お探しのページは存在しないか、移動されました。",
+    "back_home": "ホームに戻る"
+  },
+  "Dashboard": {
+    "dashboard": "ダッシュボード",
+    "recentOrders": "最近の注文",
+    "orderId": "注文ID",
+    "type": "Type",
+    "status": "ステータス",
+    "total": "合計",
+    "quickActions": "クイックアクション",
+    "addNewMenuItem": "新しいメニューアイテムを追加",
+    "generateQRForTable": "テーブル用のQRを生成",
+    "addNewEmployee": "新しい従業員を追加",
+    "orderStatus": {
+      "new": "New",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "completed": "Completed"
+    }
   }
 }

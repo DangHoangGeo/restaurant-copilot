@@ -507,6 +507,11 @@ CREATE POLICY "Tenant can SELECT users"
   ON users
   FOR SELECT
   USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  
+CREATE POLICY "User can select self"
+  ON users
+  FOR SELECT
+  USING (id = auth.uid());
 
 CREATE POLICY "Tenant can INSERT users"
   ON users

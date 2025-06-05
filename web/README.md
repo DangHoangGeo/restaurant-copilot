@@ -193,45 +193,145 @@ npm run start
 
 ```
 /web
-  ├── /app
-  │   ├── /[locale]
-  │   │   ├── /api
-  │   │   │   ├── /v1
-  │   │   │   └── /v2
-  │   │   ├── /customer
-  │   │   ├── /dashboard
-  │   │   ├── /login
-  │   │   ├── /signup
-  │   │   └── /thank-you
-  │   ├── /components
-  │   ├── /i18n
-  │   │   └── /locales
-  │   │       ├── ja.json
-  │   │       ├── en.json
-  │   │       └── vi.json
-  │   ├── globals.css
-  │   ├── layout.tsx
-  │   └── middleware.ts
-  ├── /config
-  │   └── feature-flags.ts
-  ├── /lib
-  │   ├── api.ts
-  │   ├── logger.ts
-  │   └── supabaseAdmin.ts
-  ├── /shared
-  │   └── /schemas
-  │       ├── signup.ts
-  │       ├── booking.ts
-  │       └── menuItem.ts
-  ├── /styles
-  │   └── tailwind.config.js
-  ├── /public
-  │   └── favicon.ico
-  ├── .eslintrc.js
-  ├── .prettierrc
-  ├── next.config.js
-  ├── tsconfig.json
-  └── package.json
+├── app
+│   ├── (admin)                                 // Route group for admin
+│   │   └── [locale]
+│   │       └── dashboard
+│   │           ├── layout.tsx                  // Admin Protected Layout
+│   │           ├── page.tsx                    // Dashboard Home
+│   │           ├── settings
+│   │           │   └── page.tsx                // Restaurant Settings Page
+│   │           ├── menu
+│   │           │   ├── page.tsx                // Menu Management List
+│   │           │   ├── new                     // Add Category Page
+│   │           │   │   └── page.tsx
+│   │           │   ├── [categoryId]
+│   │           │   │   ├── edit
+│   │           │   │   │   └── page.tsx        // Edit Category Page
+│   │           │   │   └── items
+│   │           │   │       ├── new
+│   │           │   │       │   └── page.tsx    // Add Menu Item Page
+│   │           │   │       └── [itemId]
+│   │           │   │           └── edit
+│   │           │   │               └── page.tsx // Edit Menu Item Page
+│   │           ├── tables
+│   │           │   └── page.tsx                // Table List
+│   │           │   // ... other table CRUD pages & QR page
+│   │           ├── employees
+│   │           │   └── page.tsx
+│   │           │   // ... other employee CRUD pages & schedule page
+│   │           ├── bookings
+│   │           │   └── page.tsx
+│   │           └── reports
+│   │               └── page.tsx
+│   ├── (customer)                              // Route group for customer
+│   │   └── [locale]
+│   │       └── customer
+│   │           ├── layout.tsx                  // Customer Layout
+│   │           ├── page.tsx                    // Customer Menu/Landing Page (QR/Session handling)
+│   │           ├── checkout
+│   │           │   └── page.tsx
+│   │           ├── thank-you
+│   │           │   └── page.tsx
+│   │           ├── review
+│   │           │   └── [menuItemId]
+│   │           │       └── page.tsx
+│   │           └── booking
+│   │               └── page.tsx
+│   ├── api
+│   │   └── v1
+│   │       ├── restaurant
+│   │       │   └── exists
+│   │       │       └── route.ts
+│   │       ├── subdomain
+│   │       │   └── check
+│   │       │       └── route.ts
+│   │       ├── register
+│   │       │   └── route.ts
+│   │       ├── menu
+│   │       │   └── reorder
+│   │       │       └── route.ts
+│   │       ├── sessions
+│   │       │   └── create
+│   │       │       └── route.ts
+│   │       ├── orders
+│   │       │   └── create
+│   │       │       └── route.ts
+│   │       ├── bookings
+│   │       │   └── create
+│   │       │       └── route.ts
+│   │       └── reviews
+│   │           ├── create
+│   │           │   └── route.ts
+│   │           └── resolve
+│   │               └── route.ts
+│   ├── [locale]
+│   │   ├── layout.tsx                          // Locale specific layout
+│   │   └── page.tsx                            // Root public page (e.g. main landing if any, or redirect)
+│   │   // ... login, signup pages
+│   └── layout.tsx                              // Root Layout
+├── components
+│   ├── common                                  // General reusable components
+│   │   ├── language-switcher.tsx
+│   │   ├── star-rating.tsx
+│   │   ├── icon.tsx
+│   │   └── qrcode-display.tsx
+│   ├── layout                                  // Layout specific components
+│   │   ├── admin-header.tsx
+│   │   ├── admin-sidebar.tsx
+│   │   ├── protected-layout.tsx
+│   │   ├── customer-header.tsx
+│   │   └── customer-footer.tsx
+│   ├── providers                               // Context providers
+│   │   ├── theme-provider.tsx
+│   │   └── cart-provider.tsx
+│   ├── features                                // Feature-specific components
+│   │   ├── admin
+│   │   │   ├── dashboard
+│   │   │   │   └── stat-card.tsx
+│   │   │   ├── settings
+│   │   │   │   └── settings-form.tsx
+│   │   │   ├── menu
+│   │   │   │   ├── category-list.tsx
+│   │   │   │   ├── category-form.tsx
+│   │   │   │   ├── menu-item-card.tsx
+│   │   │   │   ├── menu-item-form.tsx
+│   │   │   │   └── weekday-selector.tsx
+│   │   │   // ... other admin feature components
+│   │   └── customer
+│   │       ├── menu
+│   │       │   ├── customer-menu-client.tsx
+│   │       │   └── customer-menu-item-card.tsx
+│   │       ├── checkout
+│   │       │   └── checkout-client.tsx
+│   │       ├── booking
+│   │       │   └── booking-form.tsx
+│   │       └── review
+│   │           └── review-form.tsx
+│   └── ui                                      // Shadcn UI components (auto-generated)
+├── i18n
+│   ├── locales
+│   │   ├── en.json
+│   │   ├── ja.json
+│   │   └── vi.json
+│   └── index.ts                                // next-intl config
+├── lib
+│   ├── i18n.ts                                 // next-intl middleware config (if needed separately)
+│   ├── restaurant.ts                           // Helpers for restaurant data (subdomain -> ID)
+│   ├── supabase
+│   │   ├── client.ts                           // Supabase browser client
+│   │   └── admin.ts                            // Supabase admin client (service_role)
+│   └── utils.ts                                // General utility functions
+├── middleware.ts                               // Next.js middleware for subdomain & auth
+├── public
+├── shared                                      // For Zod schemas, types
+│   └── schemas
+│       ├── settings-schema.ts
+│       ├── category-schema.ts
+│       └── menu-item-schema.ts
+│       // ... other schemas
+└── config
+    └── feature-flags.ts
 ```
 
 - **`/app/[locale]/dashboard`**: Admin Dashboard pages (Server + Client Components).

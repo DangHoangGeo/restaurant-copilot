@@ -4,11 +4,23 @@
     "heroSubtitle": "All-in-one, mobile-first platform for menus, orders, bookings, staff, and analytics. Delight customers and empower your team—anywhere, anytime.",
     "cta": "Get Started Free"
   },
-  "SIGN_UP_TITLE": "Register Your Restaurant",
-  "LOGIN_TITLE": "Login",
-  "FORGOT_PASSWORD_TITLE": "Forgot Password",
-  "SignupPage": {
-    "title": "Register Your Restaurant",
+  "auth": {
+    "title": {
+      "login": "Login",
+      "signup": "Register Your Restaurant",
+      "forgotPassword": "Forgot Password"
+    },
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "loginButton": "Login",
+    "loggingIn": "Logging in...",
+    "forgotPassword": "Forgot Password",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign Up",
+    "loginFailed": "Login failed. Please check your credentials and try again.",
+    "subdomainNotFound": "Subdomain not found.",
+    "anErrorOccurred": "An error occurred. Please try again.",
     "nameLabel": "Restaurant Name",
     "subdomainLabel": "Subdomain",
     "subdomainChecking": "Checking availability...",
@@ -19,8 +31,6 @@
       "not_available": "This subdomain is already taken.",
       "check_failed": "Failed to check subdomain availability. Please try again."
     },
-    "emailLabel": "Email",
-    "passwordLabel": "Password",
     "confirmPasswordLabel": "Confirm Password",
     "defaultLanguageLabel": "Default Language",
     "languageOption": {
@@ -172,9 +182,156 @@
       },
       "privacy_policy": "Privacy Policy",
       "terms_of_service": "Terms of Service"
+    },
+    "common": {
+      "all_rights_reserved": "All rights reserved."
     }
   },
-  "common": {
-    "all_rights_reserved": "All rights reserved."
+  "404": {
+    "title": "Page Not Found",
+    "description": "Sorry, the page you are looking for doesn't exist or has been moved.",
+    "back_home": "Back to Home"
+  },
+  "Common": {
+    "loading": "Loading...",
+    "all_rights_reserved": "All rights reserved.",
+    "powered_by": "Powered by",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "view_details": "View Details",
+    "close_modal": "Close modal",
+    "search": "Search...",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "list": "List",
+    "schedule": "Schedule",
+    "off_duty": "Off Duty",
+    "export_csv": "Export CSV",
+    "export_pdf": "Export PDF",
+    "unknown_item": "Unknown Item",
+    "total": "Total",
+    "admin_panel_button": "Admin Panel",
+    "needs_attention": "Needs Attention",
+    "all_good": "All Good",
+    "zod_form_hint": "Form validation is handled by Zod. Please ensure all required fields are filled correctly.",
+    "coming_soon": "Coming Soon!",
+    "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
+    "order_status": {
+      "new": "New",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "completed": "Completed",
+      "canceled": "Canceled"
+    },
+    "weekdays": {
+      "mon": "Monday", "tue": "Tuesday", "wed": "Wednesday", "thu": "Thursday", "fri": "Friday", "sat": "Saturday", "sun": "Sunday",
+      "mon_short": "Mon", "tue_short": "Tue", "wed_short": "Wed", "thu_short": "Thu", "fri_short": "Fri", "sat_short": "Sat", "sun_short": "Sun"
+    },
+    "language_switcher": {
+      "toggle_label": "Change language"
+    },
+    "rating": {
+      "set_stars": "Set {count} star rating",
+      "current_stars": "Current rating: {count} stars",
+      "no_reviews": "No reviews yet"
+    },
+    "alert": {
+        "info": { "title": "Information" },
+        "success": { "title": "Success" },
+        "warning": { "title": "Warning" },
+        "error": { "title": "Error" }
+    },
+    "currency_format": "{value, number, ::currency/JPY}",
+    "mark_resolved": "Mark Resolved",
+    "mark_unresolved": "Mark Unresolved"
+  },
+  "AdminLayout": {
+    "sidebar": {
+      "toggle_aria_label": "Toggle sidebar navigation",
+      "close_aria_label": "Close sidebar"
+    },
+    "theme": {
+      "toggle_aria_label": "Toggle light/dark theme",
+      "toggle_label": "Toggle Theme"
+    },
+    "user_menu": {
+      "admin_user_placeholder": "Admin User",
+      "my_account_label": "My Account",
+      "profile_link": "Profile",
+      "settings_link": "Restaurant Settings",
+      "logout_button": "Logout"
+    },
+    "default_restaurant_name": "Shop-Copilot"
+  },
+  "AdminNav": {
+    "admin_sidebar_dashboard": "Dashboard",
+    "admin_sidebar_restaurant_settings": "Restaurant Settings",
+    "admin_sidebar_menu_management": "Menu Management",
+    "admin_sidebar_table_qr_management": "Tables & QR Codes",
+    "admin_sidebar_employees_schedules": "Employees & Schedules",
+    "admin_sidebar_bookings_preorders": "Bookings & Preorders",
+    "admin_sidebar_reports_analytics": "Reports & Analytics",
+    "admin_sidebar_design_system": "Design System Guide",
+    "admin_sidebar_view_customer_site": "View Customer Site",
+    "admin_sidebar_logout": "Logout",
+    "admin_dashboard_title": "Dashboard Overview",
+    "admin_settings_title": "Restaurant Settings",
+    "admin_menu_title": "Menu Management",
+    "admin_tables_title": "Table & QR Management",
+    "admin_employees_title": "Employee & Schedule Management",
+    "admin_bookings_title": "Booking Management",
+    "admin_reports_title": "Reports & Analytics"
+  },
+  "AdminDashboard": {
+    "title": "Dashboard",
+    "cards": {
+      "todays_sales": "Today's Sales",
+      "active_orders": "Active Orders",
+      "top_seller_today": "Top Seller Today",
+      "top_seller_unavailable": "N/A",
+      "low_stock_alerts": "Low Stock Alerts",
+      "needs_attention": "Needs Attention!",
+      "all_good": "All Good",
+      "sold_units": "sold"
+    },
+    "quick_actions": {
+      "title": "Quick Actions",
+      "add_menu_item": "Add New Menu Item",
+      "generate_qr": "Generate Table QR Code",
+      "add_employee": "Add New Employee"
+    },
+    "recent_orders": {
+      "title": "Recent Orders",
+      "no_recent_orders": "No recent orders to display.",
+      "table_header_order": "Order / Table",
+      "table_header_items": "Items",
+      "table_header_total": "Total",
+      "table_header_status": "Status",
+      "table_prefix": "Table"
+    },
+    "charts": {
+        "sales_over_time_placeholder": "Sales Over Time Chart - Coming Soon",
+        "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
+    },
+    "errors": {
+      "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
+      "data_fetch_error": "Failed to load dashboard data. Please try again later.",
+      "unauthorized_access": "Access Denied: You are not authorized to view this page.",
+      "mismatched_restaurant_access": "Access Denied: You are not authorized to view this restaurant's data."
+    },
+    "feature": {
+        "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard"
+    }
+  },
+  "Metadata": {
+    "admin_dashboard_title": "Admin Dashboard - Shop Copilot"
+  },
+  "logout": {
+    "title": "Logging You Out...",
+    "message": "You have been successfully logged out. Redirecting you shortly.",
+    "login_again_button": "Login Again"
   }
 }
