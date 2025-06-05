@@ -25,9 +25,15 @@ function rateLimit(ip: string, limit = 10, windowSec = 60): boolean {
   return false;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key"; // TODO: Use a strong, environment-variable-based secret
+// JWT_SECRET will be retrieved and checked within the POST handler.
 
 export async function POST(req: NextRequest) {
+  const JWT_SECRET = process.env.JWT_SECRET;
+  if (!JWT_SECRET) {
+    console.error("FATAL: JWT_SECRET environment variable is not set.");
+    return new Response("Internal Server Error: JWT_SECRET not configured.", { status: 500 });
+  }
+
   const ip = req.headers.get("x-forwarded-for") || "unknown";
   try {
     if (!rateLimit(ip)) {

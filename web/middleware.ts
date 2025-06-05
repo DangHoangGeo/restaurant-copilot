@@ -9,7 +9,11 @@ const nextIntlMiddleware = createMiddleware(routing);
 
 const ROOT_DOMAIN = 'baoan.jp';
 const W_ROOT_DOMAIN = 'www.baoan.jp';
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "your-super-secret-jwt-key"); // Must be a Uint8Array
+const jwtSecretEnv = process.env.JWT_SECRET;
+if (!jwtSecretEnv) {
+  throw new Error("JWT_SECRET environment variable is not set.");
+}
+const JWT_SECRET = new TextEncoder().encode(jwtSecretEnv); // Must be a Uint8Array
 
 function extractSubdomain(request: NextRequest): string | null {
   const host = request.headers.get('host') || '';
