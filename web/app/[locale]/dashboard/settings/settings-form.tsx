@@ -168,7 +168,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       reset({
         ...data,
         logoFile: null, // Clear file input after successful upload
-        logoUrl: publicLogoUrl, // Ensure this is the latest URL
+        logoUrl: updatedSettings.logo_url || publicLogoUrl, // Ensure this is the latest URL
       });
       // Manually update logoPreview if it was just uploaded and not from initialSettings
       if (data.logoFile) {
