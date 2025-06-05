@@ -213,6 +213,12 @@
     "zod_form_hint": "Form validation is handled by Zod. Please ensure all required fields are filled correctly.",
     "coming_soon": "Coming Soon!",
     "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
+    "form_placeholder": "Form fields go here.",
+    "recharts_note": "Charts powered by Recharts.",
+    "datatable_component_note": "Data table component placeholder.",
+    "sold": "sold",
+    "cancel_booking": "Cancel Booking",
+    "confirm_booking": "Confirm Booking",
     "order_status": {
       "new": "New",
       "preparing": "Preparing",
@@ -474,6 +480,97 @@
           "noSettingsFoundMessage": "No settings data found for this restaurant."
         }
       }
+    }
+  }
+  ,
+  "AdminTables": {
+    "add_table": "Add Table",
+    "edit_table": "Edit Table",
+    "capacity": "Capacity",
+    "position": "Position",
+    "generate_qr": "Generate QR",
+    "qr_for_table": "QR for Table",
+    "download_png": "Download PNG",
+    "download_png_action": "Downloading PNG..."
+  },
+  "AdminEmployees": {
+    "add_employee": "Add Employee",
+    "edit_employee": "Edit Employee",
+    "employee_name": "Employee Name",
+    "schedule_calendar_note": "Weekly schedule overview.",
+    "edit_shifts": "Edit Shifts",
+    "edit_shifts_action": "Edit shifts action",
+    "form": {
+      "full_name": "Full Name",
+      "email_lookup": "Email",
+      "email_lookup_placeholder": "employee@example.com",
+      "role": "Role"
+    }
+  },
+  "Roles": {
+    "manager": "Manager",
+    "chef": "Chef",
+    "server": "Server",
+    "cashier": "Cashier"
+  },
+  "AdminBookings": {
+    "details_title": "Booking Details",
+    "preorder_items": "Pre-Order Items",
+    "no_preorder_items": "No pre-order items",
+    "table": {
+      "customer_name": "Customer Name",
+      "contact": "Contact",
+      "date_time": "Date & Time",
+      "party_size": "Party Size",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "Bookings": {
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "canceled": "Canceled"
+    }
+  },
+  "AdminReports": {
+    "tabs": {
+      "sales": "Sales",
+      "items": "Items",
+      "feedback": "Feedback"
+    },
+    "summary": {
+      "total_sales_today": "Total Sales Today",
+      "active_orders_count": "Active Orders",
+      "top_selling_item_today": "Top Selling Item Today",
+      "low_stock_alerts_count": "Low Stock Alerts"
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "description_7_days": "Based on the last 7 days",
+      "apply_button": "Apply Recommendations"
+    },
+    "sales": {
+      "title": "Sales Report",
+      "daily_revenue_chart_placeholder": "Daily revenue chart placeholder",
+      "category_breakdown_chart_placeholder": "Category breakdown placeholder"
+    },
+    "daterange": {
+      "last_7_days": "Last 7 Days",
+      "last_30_days": "Last 30 Days"
+    },
+    "items": {
+      "title": "Items Report",
+      "table": {
+        "item_name": "Item Name",
+        "total_sold": "Total Sold",
+        "total_revenue": "Total Revenue",
+        "avg_rating": "Avg Rating"
+      }
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description_last_50": "Last 50 reviews"
     }
   }
 }
