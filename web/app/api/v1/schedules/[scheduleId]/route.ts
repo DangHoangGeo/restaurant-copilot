@@ -33,14 +33,10 @@ async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<str
   return session.user?.user_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
 }
 
-interface RouteParams {
-  params: { scheduleId: string };
-}
-
 // PATCH handler for updating a schedule
-export async function PATCH(req: NextRequest, { params }: RouteParams) {
+export async function PATCH(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
-  const { scheduleId } = params;
+  const scheduleId = req.nextUrl.searchParams.get("scheduleId") || "";
 
   if (!scheduleId) {
     return NextResponse.json({ error: 'Schedule ID is required.' }, { status: 400 });
@@ -109,9 +105,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
 
 // DELETE handler for removing a schedule
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
-  const { scheduleId } = params;
+  const scheduleId = req.nextUrl.searchParams.get("scheduleId") || "";
 
   if (!scheduleId) {
     return NextResponse.json({ error: 'Schedule ID is required.' }, { status: 400 });

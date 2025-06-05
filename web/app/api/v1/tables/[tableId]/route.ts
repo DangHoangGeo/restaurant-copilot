@@ -14,14 +14,9 @@ async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<str
   return session.user?.user_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
 }
 
-interface RouteParams {
-  params: { tableId: string };
-}
-
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
-  const { tableId } = params;
-
+  const tableId = req.nextUrl.searchParams.get("tableId") || "";
   if (!tableId) {
     return NextResponse.json({ error: 'Table ID is required.' }, { status: 400 });
   }
