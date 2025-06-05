@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logEvent } from "../../../../../lib/logger";
 import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
-import jwt from "jsonwebtoken";
+import { SignJWT } from "jose";
+import { TextEncoder } from "util";
 import { serialize } from "cookie";
 
 const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
@@ -124,15 +125,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      {
+    const secretKey = new TextEncoder().encode(JWT_SECRET);
+    const token = await new SignJWT({
         userId: data.user.id,
         restaurantId: restaurantId,
         subdomain: restaurantSubdomain,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 1 week expiration
-      },
-      JWT_SECRET
-    );
+      })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('7d') // 7 days from now
+      .sign(secretKey);
 
     // Set JWT as an HTTP-only cookie
     const cookie = serialize("auth_token", token, {
@@ -140,7 +142,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NEXT_PRIVATE_DEVELOPMENT !== "true", // Use secure in production
       sameSite: "lax",
       path: "/",
-      domain: process.env.NEXT_PRIVATE_DEVELOPMENT !== "true" ? "."+process.env.NEXT_PRIVATE_PRODUCTION_URL:undefined, // Set domain for cross-subdomain access in production
+      domain: process.env.NEXT_PRIVATE_DEVELOPMENT === "true" ? "localhost" : "." + process.env.NEXT_PRIVATE_PRODUCTION_URL, // Set domain for cross-subdomain access
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT!;

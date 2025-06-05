@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect, ReactNode, createContext, useContext } from 'react';
-import Image from 'next/image'; // Added Image import
+import React, { useState, useEffect, ReactNode, useContext } from 'react';
+import Image from 'next/image';
 import {
   ChevronRight, PlayCircle, Users, MessageSquare, BarChart2, QrCode, Menu as MenuIcon, Zap, ShieldCheck, ArrowRight, Plus, Minus, Globe, Sun, Moon, Building,
-   ThumbsUp, Clock, Smile, Coffee, Phone, Lightbulb, DollarSign, TrendingUp, CalendarDays, Server, Palette,PlusCircle
+  ThumbsUp, Clock, Smile, Coffee, Phone, Lightbulb, DollarSign, TrendingUp, CalendarDays, Server, Palette, PlusCircle
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -43,7 +43,16 @@ interface Category {
 
 // --- Theme Context (can be shared or separate for landing) ---
 // For simplicity, assuming the same ThemeContext is available
-const ThemeContextLanding = createContext({ theme: 'light', toggleTheme: () => {} });
+interface ThemeContextType {
+  theme: string;
+  toggleTheme: () => void;
+}
+
+const ThemeContextLanding = React.createContext<ThemeContextType>({
+  theme: 'light',
+  toggleTheme: () => {},
+});
+
 const ThemeProviderLanding = ({ children } : {children: ReactNode}) => {
   const [theme, setTheme] = useState('light');
   const toggleTheme = () => setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));

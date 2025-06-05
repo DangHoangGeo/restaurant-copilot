@@ -1,32 +1,32 @@
 "use client";
 
-import { useSessionContext } from "@supabase/auth-helpers-react";
-import { useRouter, useParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 
-export default function ProtectedLayout({
+export function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isLoading, session } = useSessionContext();
-  const router = useRouter();
-  const params = useParams();
-  const locale = params.locale || "en"; // Default to 'en' if locale is not in params
-
+  const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
-    if (!isLoading && !session) {
-      router.push(`/${locale}/login`);
-    }
-  }, [isLoading, session, router, locale]);
+    // Initial load complete
+    setIsLoading(false);
+  }, []);
 
+  // Show loading state
   if (isLoading) {
-    return <div>Loading...</div>; // Replace with a proper loading indicator
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (session) {
-    return <>{children}</>;
-  }
-
-  return null; // Or a fallback UI if needed before redirect
+  // Show authenticated content
+  return children;
 }
