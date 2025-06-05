@@ -1,7 +1,7 @@
 import { DashboardClientContent, DashboardData } from './dashboard-client-content';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/utils/supabase/server'; // Your server Supabase client
-import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
+import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings'; // Assuming this exists
 import { headers } from 'next/headers';
 import { RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable'; // Import the type
