@@ -39,8 +39,7 @@ interface AdminHeaderProps {
 }
 
 export function AdminHeader({ 
-  toggleSidebar, 
-  restaurantSettings,
+  toggleSidebar,
   currentLocale,
   onLocaleChange 
 }: AdminHeaderProps) {

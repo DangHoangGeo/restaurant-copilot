@@ -4,7 +4,6 @@ import { useState, ReactNode } from 'react';
 import { AdminHeader } from '@/components/layout/admin-header';
 import { AdminSidebar } from '@/components/layout/admin-sidebar';
 import { cn } from '@/lib/utils';
-import { useLocale } from 'next-intl';
 
 interface AdminLayoutClientProps {
   children: ReactNode;
