@@ -157,13 +157,13 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 // This mapping should ideally live in a config or be more dynamic
 const viewNameMap = {
-  '/dashboard': 'admin.sidebar.dashboard',
-  '/dashboard/settings': 'admin.sidebar.restaurant_settings',
-  '/dashboard/menu': 'admin.sidebar.menu_management',
-  '/dashboard/tables': 'admin.sidebar.table_qr_management',
-  '/dashboard/employees': 'admin.sidebar.employees_schedules',
-  '/dashboard/bookings': 'admin.sidebar.bookings_preorders',
-  '/dashboard/reports': 'admin.sidebar.reports_analytics',
+  '/dashboard': 'admin_sidebar_dashboard',
+  '/dashboard/settings': 'admin_sidebar_restaurant_settings',
+  '/dashboard/menu': 'admin_sidebar_menu_management',
+  '/dashboard/tables': 'admin_sidebar_table_qr_management',
+  '/dashboard/employees': 'admin_sidebar_employees_schedules',
+  '/dashboard/bookings': 'admin_sidebar_bookings_preorders',
+  '/dashboard/reports': 'admin_sidebar_reports_analytics',
   // Add other routes as needed
 };
 
@@ -190,13 +190,13 @@ export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
   // Determine current page title based on pathname
   // Remove locale from pathname for matching
   const basePath = pathname.replace(`/${locale}`, '');
-  let currentPageTitleKey = viewNameMap[basePath] || 'admin.dashboard.title'; // Default title
+  let currentPageTitleKey = viewNameMap[basePath] || 'admin_dashboard_title'; // Default title
    if (basePath.startsWith('/dashboard/menu/') && basePath !== '/dashboard/menu') {
-    currentPageTitleKey = 'admin.sidebar.menu_management';
+    currentPageTitleKey = 'admin_sidebar_menu_management';
   } else if (basePath.startsWith('/dashboard/tables/') && basePath !== '/dashboard/tables') {
-    currentPageTitleKey = 'admin.sidebar.table_qr_management';
+    currentPageTitleKey = 'admin_sidebar_table_qr_management';
   } else if (basePath.startsWith('/dashboard/employees/') && basePath !== '/dashboard/employees') {
-    currentPageTitleKey = 'admin.sidebar.employees_schedules';
+    currentPageTitleKey = 'admin_sidebar_employees_schedules';
   }
   // Add more specific checks for sub-pages if needed
 
@@ -446,17 +446,17 @@ interface AdminSidebarProps {
 }
 
 const navItemsConfig = [
-  { icon: Home, labelKey: 'admin.sidebar.dashboard', href: '/dashboard', exact: true },
-  { icon: Settings, labelKey: 'admin.sidebar.restaurant_settings', href: '/dashboard/settings' },
-  { icon: ClipboardList, labelKey: 'admin.sidebar.menu_management', href: '/dashboard/menu' },
-  { icon: TableSimpleIcon, labelKey: 'admin.sidebar.table_qr_management', href: '/dashboard/tables' },
-  { icon: UserCog, labelKey: 'admin.sidebar.employees_schedules', href: '/dashboard/employees' },
-  { icon: BookUser, labelKey: 'admin.sidebar.bookings_preorders', href: '/dashboard/bookings', featureFlag: FEATURE_FLAGS.tableBooking },
-  { icon: BarChartBig, labelKey: 'admin.sidebar.reports_analytics', href: '/dashboard/reports' },
+  { icon: Home, labelKey: 'admin_sidebar_dashboard', href: '/dashboard', exact: true },
+  { icon: Settings, labelKey: 'admin_sidebar_restaurant_settings', href: '/dashboard/settings' },
+  { icon: ClipboardList, labelKey: 'admin_sidebar_menu_management', href: '/dashboard/menu' },
+  { icon: TableSimpleIcon, labelKey: 'admin_sidebar_table_qr_management', href: '/dashboard/tables' },
+  { icon: UserCog, labelKey: 'admin_sidebar_employees_schedules', href: '/dashboard/employees' },
+  { icon: BookUser, labelKey: 'admin_sidebar_bookings_preorders', href: '/dashboard/bookings', featureFlag: FEATURE_FLAGS.tableBooking },
+  { icon: BarChartBig, labelKey: 'admin_sidebar_reports_analytics', href: '/dashboard/reports' },
 ];
 
 const utilityNavItemsConfig = [
-   { icon: Palette, labelKey: 'admin.sidebar.design_system', href: '/dashboard/design-system' }, // Example, if you keep it
+   { icon: Palette, labelKey: 'admin_sidebar_design_system', href: '/dashboard/design-system' }, // Example, if you keep it
 ];
 
 
@@ -539,10 +539,10 @@ export function AdminSidebar({ restaurantSettings, isOpen, setIsOpen }: AdminSid
             className="flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out text-muted-foreground hover:bg-muted hover:text-foreground group"
           >
             <Eye className="mr-3 h-5 w-5 text-muted-foreground group-hover:text-foreground" />
-            <span>{t('admin.sidebar.view_customer_site')}</span>
+            <span>{t('admin_sidebar_view_customer_site')}</span>
           </a>
           {/* Logout button is in AdminHeader for better UX, but can be duplicated here if desired */}
-          {/* <NavItem icon={LogOut} labelKey="admin.sidebar.logout" href="/logout" /> */}
+          {/* <NavItem icon={LogOut} labelKey="admin_sidebar_logout" href="/logout" /> */}
         </div>
       </aside>
       {isOpen && <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setIsOpen(false)}></div>}

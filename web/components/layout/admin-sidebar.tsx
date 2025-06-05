@@ -40,17 +40,17 @@ interface NavItemProps {
 }
 
 const navItemsConfig: NavItemConfig[] = [
-  { icon: Home, labelKey: 'admin.sidebar.dashboard', href: '/dashboard', exact: true },
-  { icon: Settings, labelKey: 'admin.sidebar.restaurant_settings', href: '/dashboard/settings' },
-  { icon: ClipboardList, labelKey: 'admin.sidebar.menu_management', href: '/dashboard/menu' },
-  { icon: TableSimpleIcon, labelKey: 'admin.sidebar.table_qr_management', href: '/dashboard/tables' },
-  { icon: UserCog, labelKey: 'admin.sidebar.employees_schedules', href: '/dashboard/employees' },
-  { icon: BookUser, labelKey: 'admin.sidebar.bookings_preorders', href: '/dashboard/bookings', featureFlag: FEATURE_FLAGS.tableBooking },
-  { icon: BarChartBig, labelKey: 'admin.sidebar.reports_analytics', href: '/dashboard/reports' },
+  { icon: Home, labelKey: 'admin_sidebar_dashboard', href: '/dashboard', exact: true },
+  { icon: Settings, labelKey: 'admin_sidebar_restaurant_settings', href: '/dashboard/settings' },
+  { icon: ClipboardList, labelKey: 'admin_sidebar_menu_management', href: '/dashboard/menu' },
+  { icon: TableSimpleIcon, labelKey: 'admin_sidebar_table_qr_management', href: '/dashboard/tables' },
+  { icon: UserCog, labelKey: 'admin_sidebar_employees_schedules', href: '/dashboard/employees' },
+  { icon: BookUser, labelKey: 'admin_sidebar_bookings_preorders', href: '/dashboard/bookings', featureFlag: FEATURE_FLAGS.tableBooking },
+  { icon: BarChartBig, labelKey: 'admin_sidebar_reports_analytics', href: '/dashboard/reports' },
 ];
 
 const utilityNavItemsConfig: NavItemConfig[] = [
-  { icon: Palette, labelKey: 'admin.sidebar.design_system', href: '/dashboard/design-system' },
+  { icon: Palette, labelKey: 'admin_sidebar_design_system', href: '/dashboard/design-system' },
 ];
 
 export function AdminSidebar({ restaurantSettings, isOpen, setIsOpen }: AdminSidebarProps) {
@@ -144,7 +144,7 @@ export function AdminSidebar({ restaurantSettings, isOpen, setIsOpen }: AdminSid
             className="flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out text-muted-foreground hover:bg-muted hover:text-foreground group"
           >
             <Eye className="mr-3 h-5 w-5 text-muted-foreground group-hover:text-foreground" />
-            <span>{t('admin.sidebar.view_customer_site')}</span>
+            <span>{t('admin_sidebar_view_customer_site')}</span>
           </a>
         </div>
       </aside>

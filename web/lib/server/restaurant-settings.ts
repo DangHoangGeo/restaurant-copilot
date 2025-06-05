@@ -1,5 +1,6 @@
 import 'server-only';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { createClient as createSupabaseServerClient } from '@/utils/supabase/server';
 
 export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
   if (!subdomain) return null;
@@ -27,6 +28,29 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
     };
   } catch (e) {
     console.error(`Exception fetching restaurant by subdomain ${subdomain}:`, e);
+    return null;
+  }
+}
+
+export async function getRestaurantIdFromSubdomain(subdomain: string): Promise<string | null> {
+  if (!subdomain) return null;
+
+  try {
+    console.log(`Fetching restaurant ID for subdomain: ${subdomain}`);
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from('restaurants')
+      .select('id')
+      .eq('subdomain', subdomain)
+      .single();
+    
+    if (error) {
+      console.error(`Error fetching restaurant ID for subdomain ${subdomain}:`, error.message);
+      return null;
+    }
+    return data?.id || null;
+  } catch (e) {
+    console.error(`Exception fetching restaurant ID for subdomain ${subdomain}:`, e);
     return null;
   }
 }

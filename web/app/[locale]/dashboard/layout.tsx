@@ -3,8 +3,15 @@ import { AdminLayoutClient } from './admin-layout-client';
 import { getRestaurantSettingsFromSubdomain } from '@/lib/server/restaurant-settings';
 import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
+import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
+import { redirect } from 'next/navigation';
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string }}) {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
   return {
     title: t('admin_dashboard_title'),
@@ -12,29 +19,42 @@ export async function generateMetadata({ params: { locale } }: { params: { local
 }
 
 export default async function DashboardLayout({
-  children
+  children,
+  params,
 }: {
   children: React.ReactNode;
-  params?: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const user = getUserFromRequest();
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale || 'en';
+  if (!user) {
+    redirect(`/${locale}/login`);
+  }
   const headersList = await headers();
   const host = headersList.get("host") || "";
   let subdomain = null;
   const parts = host.split('.');
-  const rootDomainParts = (process.env.NEXT_PRIVATE_PRODUCTION_URL || 'qorder.jp').split('.').length;
-  if (parts.length > rootDomainParts) {
-    subdomain = parts[0];
-  }
+	// Determine root domain parts for production and handle localhost in development
+	let rootDomainParts = (process.env.NEXT_PRIVATE_PRODUCTION_URL || 'qorder.jp').split('.').length;
+	// If running on localhost, treat 'localhost' as the root domain
+	if (host.includes('localhost')) {
+		rootDomainParts = 1; // 'abc.localhost:3000' => ['abc', 'localhost:3000']
+	}
+	if (parts.length > rootDomainParts) {
+		subdomain = parts[0];
+	}
 
   if (!subdomain) {
     // This scenario should be handled by middleware redirecting to a selection page
+	console.log("locale:", locale);
     console.error("DashboardLayout: Subdomain could not be determined from host:", host);
   }
   
   const restaurantSettings = subdomain 
     ? await getRestaurantSettingsFromSubdomain(subdomain) 
     : null;
-
+  console.log("restaurantSettings:", restaurantSettings);
   if (!restaurantSettings && subdomain) {
     console.warn(`No restaurant settings found for subdomain: ${subdomain}`);
     const MOCK_RESTAURANT_INFO_FALLBACK = {

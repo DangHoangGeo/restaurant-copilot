@@ -45,8 +45,8 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      if (data.redirect) {
-        router.push(data.redirect);
+      if (data.redirectUrl) {
+        router.push(data.redirectUrl);
       }
       else {
         // Fallback or error if subdomain is not returned

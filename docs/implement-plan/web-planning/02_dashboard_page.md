@@ -691,11 +691,11 @@ export function formatCurrency(
     }
   },
   "AdminNav": { // For sidebar and header titles
-    "admin.sidebar.dashboard": "Dashboard",
-    "admin.sidebar.restaurant_settings": "Restaurant Settings",
-    "admin.sidebar.menu_management": "Menu Management",
+    "admin_sidebar_dashboard": "Dashboard",
+    "admin_sidebar_restaurant_settings": "Restaurant Settings",
+    "admin_sidebar_menu_management": "Menu Management",
     // ... other nav keys
-    "admin.dashboard.title": "Dashboard" // Default if no match
+    "admin_dashboard_title": "Dashboard" // Default if no match
   }
   // ... other namespaces
 }

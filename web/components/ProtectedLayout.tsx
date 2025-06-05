@@ -1,56 +1,92 @@
 "use client";
 
-import { useSessionContext } from "@supabase/auth-helpers-react";
-import { useRouter, useParams } from "next/navigation";
-import { useEffect } from "react";
-import { Loader2 } from "lucide-react"; // Assuming you're using lucide-react for icons
+import { useRouter, useParams, usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+
+function parseJwt(token: string) {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (e) {
+    return null;
+  }
+}
+
+function getAuthToken() {
+  if (typeof document === 'undefined') return null;
+  const cookies = document.cookie.split(';');
+  const authCookie = cookies.find(c => c.trim().startsWith('auth_token='));
+  if (!authCookie) return null;
+  
+  const token = authCookie.split('=')[1];
+  if (!token) return null;
+
+  const decoded = parseJwt(token);
+  if (!decoded || Date.now() >= decoded.exp * 1000) return null;
+  
+  return token;
+}
 
 export function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isLoading, session, error } = useSessionContext();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const params = useParams();
-  const locale = params.locale || "en";
+  const locale = params.locale as string || "en";
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !session) {
-      // Redirect to login page with the current URL as the redirect target
-      const currentPath = window.location.pathname;
-      const redirectUrl = `/${locale}/login?redirect=${encodeURIComponent(currentPath)}`;
-      router.push(redirectUrl);
-    }
-  }, [isLoading, session, router, locale]);
+    let mounted = true;
+
+    const checkAuth = () => {
+      if (!mounted) return;
+
+      const token = getAuthToken();
+      if (token) {
+        setIsAuthed(true);
+        setIsChecking(false);
+      } else if (!pathname.endsWith('/login')) {
+        const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+        const loginUrl = `/${locale}/login${currentUrl ? `?redirect=${encodeURIComponent(currentUrl)}` : ''}`;
+        router.replace(loginUrl);
+      } else {
+        setIsChecking(false);
+      }
+    };
+
+    // Initial check
+    checkAuth();
+
+    // Set up interval to periodically check token expiration
+    const interval = setInterval(checkAuth, 60000); // Check every minute
+
+    // Clean up
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [router, pathname, searchParams, locale]);
 
   // Show loading state
-  if (isLoading) {
+  if (isChecking) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[--brand-color]" />
+      <div className="flex h-screen w-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  // Show error state if there's an authentication error
-  if (error) {
-    return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4">
-        <p className="text-destructive">Authentication error. Please try logging in again.</p>
-        <button
-          onClick={() => router.push(`/${locale}/login`)}
-          className="text-primary hover:underline"
-        >
-          Go to Login
-        </button>
-      </div>
-    );
-  }
-
-  // If authenticated, render children
-  if (session) {
-    return <>{children}</>;
+  // Show authenticated content
+  if (isAuthed) {
+    return children;
   }
 
   // Return null while redirecting

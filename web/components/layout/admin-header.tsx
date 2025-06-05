@@ -15,18 +15,17 @@ import { LanguageSwitcher } from '@/components/common/language-switcher';
 import { usePathname, useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 // This mapping should ideally live in a config file
 const viewNameMap: Record<string, string> = {
-  '/dashboard': 'admin.sidebar.dashboard',
-  '/dashboard/settings': 'admin.sidebar.restaurant_settings',
-  '/dashboard/menu': 'admin.sidebar.menu_management',
-  '/dashboard/tables': 'admin.sidebar.table_qr_management',
-  '/dashboard/employees': 'admin.sidebar.employees_schedules',
-  '/dashboard/bookings': 'admin.sidebar.bookings_preorders',
-  '/dashboard/reports': 'admin.sidebar.reports_analytics',
-  '/dashboard/profile': 'admin.sidebar.profile',
+  '/dashboard': 'admin_sidebar_dashboard',
+  '/dashboard/settings': 'admin_sidebar_restaurant_settings',
+  '/dashboard/menu': 'admin_sidebar_menu_management',
+  '/dashboard/tables': 'admin_sidebar_table_qr_management',
+  '/dashboard/employees': 'admin_sidebar_employees_schedules',
+  '/dashboard/bookings': 'admin_sidebar_bookings_preorders',
+  '/dashboard/reports': 'admin_sidebar_reports_analytics',
+  '/dashboard/profile': 'admin_sidebar_profile',
 };
 
 interface AdminHeaderProps {
@@ -44,11 +43,10 @@ export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
-  const supabase = useSupabaseClient();
   const locale = params.locale as string || 'en';
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    //await supabase.auth.signOut();
     router.push(`/${locale}/login`);
   };
 
@@ -60,17 +58,17 @@ export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
   // Handle dynamic routes
   if (!currentPageTitleKey) {
     if (basePath.startsWith('/dashboard/menu/')) {
-      currentPageTitleKey = 'admin.sidebar.menu_management';
+      currentPageTitleKey = 'admin_sidebar_menu_management';
     } else if (basePath.startsWith('/dashboard/tables/')) {
-      currentPageTitleKey = 'admin.sidebar.table_qr_management';
+      currentPageTitleKey = 'admin_sidebar_table_qr_management';
     } else if (basePath.startsWith('/dashboard/employees/')) {
-      currentPageTitleKey = 'admin.sidebar.employees_schedules';
+      currentPageTitleKey = 'admin_sidebar_employees_schedules';
     }
   }
 
   // Fallback to dashboard if no match found
   if (!currentPageTitleKey) {
-    currentPageTitleKey = 'admin.sidebar.dashboard';
+    currentPageTitleKey = 'admin_sidebar_dashboard';
   }
 
   return (
