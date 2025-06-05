@@ -34,9 +34,15 @@ interface AdminHeaderProps {
     name: string; 
     logoUrl?: string | null;
   };
+  currentLocale: string;
+  onLocaleChange: (locale: string) => void;
 }
 
-export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
+export function AdminHeader({ 
+  toggleSidebar,
+  currentLocale,
+  onLocaleChange 
+}: AdminHeaderProps) {
   const { theme, setTheme } = useTheme();
   const t = useTranslations('AdminLayout');
   const tNav = useTranslations('AdminNav');
@@ -47,6 +53,18 @@ export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
 
   const handleLogout = async () => {
     //await supabase.auth.signOut();
+    // call lougout API endpoint
+    const response = await fetch('/api/v1/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Logout failed:', errorData);
+      return;
+    }
     router.push(`/${locale}/login`);
   };
 
@@ -89,7 +107,7 @@ export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
           </h1>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-3">
-          <LanguageSwitcher />
+          <LanguageSwitcher currentLocale={currentLocale} onLocaleChange={onLocaleChange} />
           <Button
             variant="ghost"
             size="icon"

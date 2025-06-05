@@ -54,7 +54,7 @@ export default async function DashboardLayout({
   const restaurantSettings = subdomain 
     ? await getRestaurantSettingsFromSubdomain(subdomain) 
     : null;
-  console.log("restaurantSettings:", restaurantSettings);
+  
   if (!restaurantSettings && subdomain) {
     console.warn(`No restaurant settings found for subdomain: ${subdomain}`);
     const MOCK_RESTAURANT_INFO_FALLBACK = {
@@ -65,7 +65,7 @@ export default async function DashboardLayout({
     } as const;
     return (
       <ProtectedLayout>
-        <AdminLayoutClient restaurantSettings={MOCK_RESTAURANT_INFO_FALLBACK}>
+        <AdminLayoutClient locale={locale} restaurantSettings={MOCK_RESTAURANT_INFO_FALLBACK}>
           <div className="p-8 text-center">
             <h1 className="text-xl font-semibold text-destructive">Restaurant Configuration Error</h1>
             <p className="text-muted-foreground">Could not load settings for subdomain: {subdomain}. Displaying with fallback.</p>
@@ -86,7 +86,7 @@ export default async function DashboardLayout({
       } as const;
     return (
       <ProtectedLayout>
-        <AdminLayoutClient restaurantSettings={GENERIC_ADMIN_SETTINGS}>
+        <AdminLayoutClient locale={locale} restaurantSettings={GENERIC_ADMIN_SETTINGS}>
           <div className="p-8 text-center">
             <h1 className="text-xl font-semibold text-destructive">Error: No Restaurant Context</h1>
             <p className="text-muted-foreground">This dashboard requires a restaurant subdomain.</p>
@@ -100,7 +100,7 @@ export default async function DashboardLayout({
   // At this point restaurantSettings is guaranteed to be non-null if we reach here
   return (
     <ProtectedLayout>
-      <AdminLayoutClient restaurantSettings={restaurantSettings!}>
+      <AdminLayoutClient locale={locale} restaurantSettings={restaurantSettings!}>
         {children}
       </AdminLayoutClient>
     </ProtectedLayout>

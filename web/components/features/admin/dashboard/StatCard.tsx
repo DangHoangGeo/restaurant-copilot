@@ -28,7 +28,7 @@ export function StatCard({
   isAlert = false,
   isLoading = false,
 }: StatCardProps) {
-  const t = useTranslations('AdminDashboard.cards'); // Specific namespace for card titles
+  const t = useTranslations('AdminDashboard'); // Specific namespace for card titles
   const tCommon = useTranslations('Common');
 
   if (isLoading) {
@@ -67,7 +67,7 @@ export function StatCard({
             )}
           >
             {/* Assuming trend is a pre-formatted string or an i18n key */}
-            {trend.startsWith('+') || trend.startsWith('-') ? trend : tCommon(trend || 'trend.neutral')}
+            {trend.startsWith('+') || trend.startsWith('-') ? trend : tCommon('all_good')}
           </p>
         )}
       </CardContent>

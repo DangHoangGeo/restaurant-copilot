@@ -1,6 +1,6 @@
 import 'server-only';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { createClient as createSupabaseServerClient } from '@/utils/supabase/server';
+import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
   if (!subdomain) return null;
@@ -36,8 +36,7 @@ export async function getRestaurantIdFromSubdomain(subdomain: string): Promise<s
   if (!subdomain) return null;
 
   try {
-    console.log(`Fetching restaurant ID for subdomain: ${subdomain}`);
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from('restaurants')
       .select('id')

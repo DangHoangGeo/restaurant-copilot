@@ -198,6 +198,72 @@
       "preparing": "Preparing",
       "ready": "Ready",
       "completed": "Completed"
+    },
+    "Settings": {
+      "labels": {
+        "restaurantName": "レストラン名",
+        "defaultLanguage": "デフォルト言語",
+        "brandColor": "ブランドカラー",
+        "logo": "ロゴ",
+        "contactInfo": "連絡先情報",
+        "address": "住所",
+        "hours": "営業時間",
+        "description": "説明"
+      },
+      "placeholders": {
+        "restaurantName": "レストラン名を入力してください",
+        "brandColor": "#RRGGBB",
+        "contactInfo": "例：電話番号、メールアドレス",
+        "address": "レストランの完全な住所",
+        "hours": "例：月〜金：午前9時〜午後10時、土〜日：午前10時〜午後11時",
+        "description": "レストランの簡単な説明"
+      },
+      "buttons": {
+        "saveChanges": "変更を保存",
+        "uploadingLogo": "アップロード中...",
+        "updatingSettings": "更新中..."
+      },
+      "notifications": {
+        "successTitle": "設定が更新されました",
+        "successMessage": "レストランの設定が正常に更新されました。",
+        "errorTitle": "更新失敗",
+        "errorMessage": "設定を更新できませんでした：{error}",
+        "logoUploadErrorTitle": "ロゴのアップロード失敗",
+        "logoUploadErrorMessage": "ロゴをアップロードできませんでした：{error}",
+        "logoRemovedMessage": "ロゴが削除されました。変更を保存して確認してください。",
+        "fileTooLarge": "ファイルサイズが大きすぎます。最大5MBです。",
+        "invalidFileType": "無効なファイルタイプです。画像をアップロードしてください。"
+      },
+      "altText": {
+        "logoPreview": "レストランロゴのプレビュー",
+        "logoIconFallback": "ロゴ"
+      },
+      "text": {
+        "dragDropLogo": "ドラッグ＆ドロップまたはクリックしてロゴを選択",
+        "currentBrandColor": "現在のブランドカラー",
+        "nameRequired": "名前は必須です",
+        "nameMaxLength": "名前は100文字以内である必要があります",
+        "languageRequired": "デフォルト言語は必須です",
+        "invalidHexFormat": "無効な16進カラー形式（例：#RRGGBB）",
+        "contactInfoMaxLength": "連絡先情報は500文字以内である必要があります",
+        "addressMaxLength": "住所は500文字以内である必要があります",
+        "hoursMaxLength": "営業時間は200文字以内である必要があります",
+        "descriptionMaxLength": "説明は1000文字以内である必要があります",
+        "logoUrlInvalid": "ロゴのURL形式が無効です。"
+      },
+      "Page": {
+        "title": "レストラン設定",
+        "errors": {
+          "noSubdomainDetected": "レストランのサブドメインが検出できませんでした。",
+          "noRestaurantIdForSubdomain": "指定されたサブドメインのレストランIDが見つかりませんでした。",
+          "noRestaurantIdTitle": "レストランが特定できません",
+          "noRestaurantIdMessage": "レストランIDを特定できませんでした。正しくアクセスしているか確認してください。",
+          "fetchErrorTitle": "設定の読み込みエラー",
+          "fetchErrorMessage": "レストラン設定の取得中に問題が発生しました。後でもう一度お試しください。",
+          "noSettingsFoundTitle": "設定が見つかりません",
+          "noSettingsFoundMessage": "このレストランの設定データが見つかりませんでした。"
+        }
+      }
     }
   }
 }

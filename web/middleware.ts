@@ -51,18 +51,16 @@ function extractSubdomain(request: NextRequest): string | null {
 export async function middleware(req: NextRequest) {
   const subdomain = extractSubdomain(req);
   const pathname = req.nextUrl.pathname;
-  const isDashboardRoute = pathname.startsWith('/dashboard'); // Adjust as needed for other protected routes
+  const isDashboardRoute = pathname.startsWith('/dashboard');
   const isLoginPage = pathname.startsWith('/login');
   const isSignupPage = pathname.startsWith('/signup');
   const isForgotPasswordPage = pathname.startsWith('/forgot-password');
 
-  // Handle authentication for dashboard routes
   if (isDashboardRoute) {
     const cookies = parse(req.headers.get('cookie') || '');
     const authToken = cookies.auth_token;
 
     if (!authToken) {
-      // No token, redirect to login page
       const loginUrl = new URL(`/${req.nextUrl.locale}/login`, req.url);
       return NextResponse.redirect(loginUrl);
     }

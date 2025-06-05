@@ -130,7 +130,7 @@ const LanguageSwitcherLanding = () => {
 
 // --- Landing Page Sections ---
 
-const LandingPageHeader = () => {
+const LandingPageHeader = ({ locale }: { locale: string }) => {
   const { theme, toggleTheme } = useThemeLanding();
   const t = useTranslations('LandingPage');
   return (
@@ -146,8 +146,8 @@ const LandingPageHeader = () => {
             <Button variant="ghost" size="sm" onClick={toggleTheme} className="!shadow-none" aria-label={t('theme.toggle')} iconLeft={null} iconRight={null} href="#">
               <Icon name={theme === 'light' ? Moon : Sun} />
             </Button>
-            <Button href="/login" variant="ghost" size="sm" className="hidden sm:inline-flex !shadow-none" onClick={() => {}} iconLeft={null} iconRight={null}>{t('header.login')}</Button>
-            <Button href="/signup" variant="primary" size="sm" onClick={() => {}} iconLeft={null} iconRight={null}>{t('header.signup')}</Button>
+            <Button href={locale+"/login"} variant="ghost" size="sm" className="hidden sm:inline-flex !shadow-none" onClick={() => {}} iconLeft={null} iconRight={null}>{t('header.login')}</Button>
+            <Button href={locale+"/signup"} variant="primary" size="sm" onClick={() => {}} iconLeft={null} iconRight={null}>{t('header.signup')}</Button>
           </div>
         </div>
       </div>
@@ -623,7 +623,7 @@ function Page() {
   return (
     <ThemeProviderLanding>
       <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased">
-        <LandingPageHeader />
+        <LandingPageHeader locale={locale} />
         <main>
           <HeroSection />
           <SocialProofSection />

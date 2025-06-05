@@ -76,7 +76,7 @@ export function DashboardClientContent({ initialData, recentOrders, isLoading, e
             titleKey="cards.low_stock_alerts"
             value={initialData ? initialData.lowStockItemsCount : 'N/A'}
             icon={AlertTriangle}
-            trend={initialData && initialData.lowStockItemsCount > 0 ? t('cards.needs_attention') : t('cards.all_good')}
+            trend={initialData && initialData.lowStockItemsCount > 0 ? tCommon('needs_attention') : tCommon('all_good')}
             colorClass="text-amber-600 dark:text-amber-400"
             bgColorClass="bg-amber-100 dark:bg-amber-900/30"
             isAlert={initialData ? initialData.lowStockItemsCount > 0 : false}
