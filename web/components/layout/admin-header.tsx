@@ -34,9 +34,16 @@ interface AdminHeaderProps {
     name: string; 
     logoUrl?: string | null;
   };
+  currentLocale: string;
+  onLocaleChange: (locale: string) => void;
 }
 
-export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
+export function AdminHeader({ 
+  toggleSidebar, 
+  restaurantSettings,
+  currentLocale,
+  onLocaleChange 
+}: AdminHeaderProps) {
   const { theme, setTheme } = useTheme();
   const t = useTranslations('AdminLayout');
   const tNav = useTranslations('AdminNav');
@@ -101,7 +108,7 @@ export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
           </h1>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-3">
-          <LanguageSwitcher />
+          <LanguageSwitcher currentLocale={currentLocale} onLocaleChange={onLocaleChange} />
           <Button
             variant="ghost"
             size="icon"

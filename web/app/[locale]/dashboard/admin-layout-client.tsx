@@ -4,6 +4,7 @@ import { useState, ReactNode } from 'react';
 import { AdminHeader } from '@/components/layout/admin-header';
 import { AdminSidebar } from '@/components/layout/admin-sidebar';
 import { cn } from '@/lib/utils';
+import { useLocale } from 'next-intl';
 
 interface AdminLayoutClientProps {
   children: ReactNode;
@@ -13,10 +14,12 @@ interface AdminLayoutClientProps {
     subdomain?: string; 
     primaryColor?: string; 
   };
+  locale: string ;
 }
 
-export function AdminLayoutClient({ children, restaurantSettings }: AdminLayoutClientProps) {
+export function AdminLayoutClient({ children, restaurantSettings, locale }: AdminLayoutClientProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedLocale, setSelectedLocale] = useState(locale);
 
   return (
     <div className={cn(
@@ -43,6 +46,8 @@ export function AdminLayoutClient({ children, restaurantSettings }: AdminLayoutC
         <AdminHeader 
           toggleSidebar={() => setIsSidebarOpen(prev => !prev)} 
           restaurantSettings={restaurantSettings}
+          currentLocale={selectedLocale}
+          onLocaleChange={setSelectedLocale}
         />
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
           {children}

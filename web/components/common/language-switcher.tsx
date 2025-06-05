@@ -9,30 +9,42 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { localeDetails } from '@/config/i18n.config';
 
-export function LanguageSwitcher({ preserveQuery = true }: { preserveQuery?: boolean }) {
+interface LanguageSwitcherProps {
+  currentLocale: string;
+  onLocaleChange: (locale: string) => void;
+  preserveQuery?: boolean;
+}
+
+export function LanguageSwitcher({ currentLocale, onLocaleChange, preserveQuery = true }: LanguageSwitcherProps) {
   const router = useRouter();
   const currentPathname = usePathname();
-  //const currentParams = useParams();
-  const currentLocale = useLocale();
   const t = useTranslations('Common');
 
   const switchLocale = (newLocale: string) => {
-    // Remove current locale from pathname
-    let newPathname = currentPathname;
-    if (currentPathname.startsWith(`/${currentLocale}`)) {
-      newPathname = currentPathname.substring(`/${currentLocale}`.length) || '/';
-    }
-    
-    // Preserve search params if preserveQuery is true
+    const segments = currentPathname.split('/').filter(Boolean);
+    const pathWithoutLocale = segments.length > 0 && localeDetails.some(l => l.code === segments[0])
+      ? '/' + segments.slice(1).join('/')
+      : currentPathname;
     const search = preserveQuery && typeof window !== 'undefined' ? window.location.search : '';
-    router.push(`/${newLocale}${newPathname}${search}`);
-    router.refresh(); // Recommended by Next.js docs for locale changes
+    
+    // Update the parent component's state
+    onLocaleChange(newLocale);
+    
+    // Navigate to the new locale
+    router.push(`/${newLocale}${pathWithoutLocale}${search}`);
+    router.refresh();
   };
 
   const selectedLocaleDetail = localeDetails.find(l => l.code === currentLocale) || localeDetails[0];
+  
+  // Reorder locales to put current locale at the top
+  const orderedLocales = [
+    ...localeDetails.filter(l => l.code === currentLocale),
+    ...localeDetails.filter(l => l.code !== currentLocale)
+  ];
 
   return (
     <DropdownMenu>
@@ -44,12 +56,12 @@ export function LanguageSwitcher({ preserveQuery = true }: { preserveQuery?: boo
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        {localeDetails.map(localeDetail => (
+        {orderedLocales.map(localeDetail => (
           <DropdownMenuItem
             key={localeDetail.code}
             onClick={() => switchLocale(localeDetail.code)}
             className="cursor-pointer"
-            disabled={currentLocale === localeDetail.code}
+            disabled={localeDetail.code === currentLocale}
           >
             <span className="mr-2 text-lg">{localeDetail.flag}</span> {localeDetail.name}
           </DropdownMenuItem>
