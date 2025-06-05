@@ -15,6 +15,8 @@ struct ContentView: View {
     @EnvironmentObject var tenantViewModel: TenantViewModel
     /// View model for managing authentication state. Injected from the environment.
     @EnvironmentObject var authViewModel: AuthenticationViewModel
+    /// Service for managing active orders.
+    @EnvironmentObject var orderService: OrderService
 
     // MARK: - State Variables
 
@@ -119,6 +121,11 @@ struct ContentView: View {
             // Conditional TabView content based on the selected user role.
             if authViewModel.selectedRole == .ownerAdmin {
                 // MARK: Owner/Admin Tabs
+                OrderListView(orderService: orderService)
+                    .tabItem {
+                        Label(NSLocalizedString("tab_orders", comment: "Orders tab label"), systemImage: "list.bullet.rectangle")
+                    }
+
                 OwnerAdminDashboardView()
                     .tabItem {
                         Label(NSLocalizedString("tab_dashboard", comment: "Dashboard tab label"), systemImage: "chart.pie.fill")
@@ -169,6 +176,7 @@ struct ContentView: View {
         // might be redundant but ensures clarity for these specific sub-hierarchies.
         .environmentObject(authViewModel)
         .environmentObject(tenantViewModel)
+        .environmentObject(orderService)
     }
 }
 
@@ -177,15 +185,8 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
-            .environmentObject(TenantViewModel()) // Provide dummy for preview
-            .environmentObject(AuthenticationViewModel()) // Provide dummy for preview
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-            .environmentObject(TenantViewModel()) // Provide dummy for preview
-            .environmentObject(AuthenticationViewModel()) // Provide dummy for preview
+            .environmentObject(TenantViewModel())
+            .environmentObject(AuthenticationViewModel())
+            .environmentObject(OrderService())
     }
 }

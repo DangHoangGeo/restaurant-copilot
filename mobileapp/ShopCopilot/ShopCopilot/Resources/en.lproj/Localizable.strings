@@ -67,3 +67,17 @@
 "tab_menu" = "Menu";
 "tab_my_orders" = "Orders";
 "tab_customer_profile" = "Profile";
+
+/* Orders */
+"orders_title" = "Orders";
+"table_number_format" = "Table %@";
+"status_new" = "New";
+"status_preparing" = "Preparing";
+"status_ready" = "Ready";
+"status_completed" = "Completed";
+"order_detail_title" = "Order Details";
+"total_label" = "Total";
+"mark_preparing_button" = "Mark Preparing";
+"mark_ready_button" = "Mark Ready";
+"complete_print_button" = "Complete & Print";
+"tab_orders" = "Orders";
