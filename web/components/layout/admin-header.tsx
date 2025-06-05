@@ -47,6 +47,18 @@ export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
 
   const handleLogout = async () => {
     //await supabase.auth.signOut();
+    // call lougout API endpoint
+    const response = await fetch('/api/v1/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Logout failed:', errorData);
+      return;
+    }
     router.push(`/${locale}/login`);
   };
 
