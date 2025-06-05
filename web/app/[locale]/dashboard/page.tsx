@@ -6,6 +6,7 @@ import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings';
 import { headers } from 'next/headers';
 import { RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable'; // Import the type
 import { FEATURE_FLAGS } from '@/config/feature-flags';
+import { redirect } from 'next/navigation';
 
 // Helper to get subdomain, this should be robust
 function getSubdomainFromHost(host: string): string | null {
@@ -69,8 +70,8 @@ export default async function DashboardPage({
   if (!authUser) {
     console.error("Security Alert: No authenticated user found. Cannot display dashboard.");
     // Option: redirect to login
-    // return redirect(`/${locale}/login`);
-    return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.unauthorized_access')} />;
+    return redirect(`/${locale}/login`);
+    //return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.unauthorized_access')} />;
   }
 
   if (!restaurantIdFromSubdomainUrl) {
