@@ -32,12 +32,6 @@
       "check_failed": "Failed to check subdomain availability. Please try again."
     },
     "confirmPasswordLabel": "Confirm Password",
-    "defaultLanguageLabel": "Default Language",
-    "languageOption": {
-      "en": "English",
-      "ja": "Japanese",
-      "vi": "Vietnamese"
-    },
     "captchaRequired": "Please complete the CAPTCHA.",
     "captchaInvalid": "CAPTCHA verification failed. Please try again.",
     "captchaExpired": "CAPTCHA expired. Please re-verify.",
@@ -233,6 +227,13 @@
     "language_switcher": {
       "toggle_label": "Change language"
     },
+    "defaultLanguageLabel": "Default Language",
+    "defaultLanguagePlaceholder": "Select default language",
+    "languageOption": {
+      "en": "English",
+      "ja": "Japanese",
+      "vi": "Vietnamese"
+    },
     "rating": {
       "set_stars": "Set {count} star rating",
       "current_stars": "Current rating: {count} stars",
@@ -334,5 +335,76 @@
     "title": "Logging You Out...",
     "message": "You have been successfully logged out. Redirecting you shortly.",
     "login_again_button": "Login Again"
+  },
+  "Dashboard": {
+    "Settings": {
+      "labels": {
+        "restaurantName": "Restaurant Name",
+        "defaultLanguage": "Default Language",
+        "brandColor": "Brand Color",
+        "logo": "Logo",
+        "contactInfo": "Contact Information",
+        "address": "Address",
+        "hours": "Operating Hours",
+        "description": "Description"
+      },
+      "placeholders": {
+        "restaurantName": "Enter your restaurant's name",
+        "brandColor": "#RRGGBB",
+        "contactInfo": "e.g., phone number, email",
+        "address": "Restaurant's full address",
+        "hours": "e.g., Mon-Fri: 9am-10pm, Sat-Sun: 10am-11pm",
+        "description": "A brief description of your restaurant"
+      },
+      "buttons": {
+        "saveChanges": "Save Changes",
+        "uploadingLogo": "Uploading...",
+        "updatingSettings": "Updating..."
+      },
+      "notifications": {
+        "successTitle": "Settings Updated",
+        "successMessage": "Your restaurant settings have been updated successfully.",
+        "settingsSaved": "Settings saved successfully.",
+        "saveError": "Error saving settings. Please try again.",
+        "uploadError": "Error uploading logo. Please try again.",
+        "errorTitle": "Update Failed",
+        "errorMessage": "Could not update settings: {error}",
+        "logoUploadErrorTitle": "Logo Upload Failed",
+        "logoUploadErrorMessage": "Could not upload logo: {error}",
+        "logoRemovedMessage": "Logo removed. Save changes to confirm.",
+        "fileTooLarge": "File is too large. Max 5MB.",
+        "invalidFileType": "Invalid file type. Please upload an image."
+      },
+      "altText": {
+        "logoPreview": "Restaurant logo preview",
+        "logoIconFallback": "Logo"
+      },
+      "text": {
+        "dragDropLogo": "Drag & drop or click to select logo",
+        "currentBrandColor": "Current brand color",
+        "nameRequired": "Name is required",
+        "nameMaxLength": "Name must be 100 characters or less",
+        "languageRequired": "Default language is required",
+        "invalidHexFormat": "Invalid hex color format (e.g. #RRGGBB)",
+        "contactInfoMaxLength": "Contact info must be 500 characters or less",
+        "addressMaxLength": "Address must be 500 characters or less",
+        "hoursMaxLength": "Hours must be 200 characters or less",
+        "descriptionMaxLength": "Description must be 1000 characters or less",
+        "logoUrlInvalid": "Invalid URL format for logo."
+      },
+      "Page": {
+        "title": "Restaurant Settings",
+        "errors": {
+          "noSubdomainDetected": "No subdomain could be detected for the restaurant.",
+          "noRestaurantIdForSubdomain": "Could not find a restaurant ID for the provided subdomain.",
+          "noRestaurantIdTitle": "Restaurant Not Identified",
+          "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
+          "fetchErrorTitle": "Error Loading Settings",
+          "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
+          "noSettingsFoundTitle": "Settings Not Found",
+          "noSettingsFoundMessage": "No settings data found for this restaurant."
+        }
+      }
+    }
   }
 }

@@ -198,6 +198,72 @@
       "preparing": "Preparing",
       "ready": "Ready",
       "completed": "Completed"
+    },
+    "Settings": {
+      "labels": {
+        "restaurantName": "Tên Nhà Hàng",
+        "defaultLanguage": "Ngôn Ngữ Mặc Định",
+        "brandColor": "Màu Thương Hiệu",
+        "logo": "Logo",
+        "contactInfo": "Thông Tin Liên Hệ",
+        "address": "Địa Chỉ",
+        "hours": "Giờ Hoạt Động",
+        "description": "Mô Tả"
+      },
+      "placeholders": {
+        "restaurantName": "Nhập tên nhà hàng của bạn",
+        "brandColor": "#RRGGBB",
+        "contactInfo": "Ví dụ: số điện thoại, email",
+        "address": "Địa chỉ đầy đủ của nhà hàng",
+        "hours": "Ví dụ: Thứ 2-Thứ 6: 9h-22h, Thứ 7-CN: 10h-23h",
+        "description": "Mô tả ngắn về nhà hàng của bạn"
+      },
+      "buttons": {
+        "saveChanges": "Lưu Thay Đổi",
+        "uploadingLogo": "Đang tải lên...",
+        "updatingSettings": "Đang cập nhật..."
+      },
+      "notifications": {
+        "successTitle": "Cài Đặt Đã Được Cập Nhật",
+        "successMessage": "Cài đặt nhà hàng của bạn đã được cập nhật thành công.",
+        "errorTitle": "Cập Nhật Thất Bại",
+        "errorMessage": "Không thể cập nhật cài đặt: {error}",
+        "logoUploadErrorTitle": "Tải Lên Logo Thất Bại",
+        "logoUploadErrorMessage": "Không thể tải lên logo: {error}",
+        "logoRemovedMessage": "Logo đã được xóa. Lưu thay đổi để xác nhận.",
+        "fileTooLarge": "Tệp quá lớn. Tối đa 5MB.",
+        "invalidFileType": "Loại tệp không hợp lệ. Vui lòng tải lên một hình ảnh."
+      },
+      "altText": {
+        "logoPreview": "Xem trước logo nhà hàng",
+        "logoIconFallback": "Logo"
+      },
+      "text": {
+        "dragDropLogo": "Kéo và thả hoặc nhấp để chọn logo",
+        "currentBrandColor": "Màu thương hiệu hiện tại",
+        "nameRequired": "Tên là bắt buộc",
+        "nameMaxLength": "Tên phải dài 100 ký tự trở xuống",
+        "languageRequired": "Ngôn ngữ mặc định là bắt buộc",
+        "invalidHexFormat": "Định dạng màu hex không hợp lệ (ví dụ: #RRGGBB)",
+        "contactInfoMaxLength": "Thông tin liên hệ phải dài 500 ký tự trở xuống",
+        "addressMaxLength": "Địa chỉ phải dài 500 ký tự trở xuống",
+        "hoursMaxLength": "Giờ hoạt động phải dài 200 ký tự trở xuống",
+        "descriptionMaxLength": "Mô tả phải dài 1000 ký tự trở xuống",
+        "logoUrlInvalid": "Định dạng URL cho logo không hợp lệ."
+      },
+      "Page": {
+        "title": "Cài Đặt Nhà Hàng",
+        "errors": {
+          "noSubdomainDetected": "Không thể phát hiện tên miền phụ cho nhà hàng.",
+          "noRestaurantIdForSubdomain": "Không thể tìm thấy ID nhà hàng cho tên miền phụ được cung cấp.",
+          "noRestaurantIdTitle": "Không Xác Định Được Nhà Hàng",
+          "noRestaurantIdMessage": "Không thể xác định ID nhà hàng. Vui lòng đảm bảo bạn đang truy cập trang này một cách chính xác.",
+          "fetchErrorTitle": "Lỗi Tải Cài Đặt",
+          "fetchErrorMessage": "Đã có sự cố khi truy xuất cài đặt nhà hàng. Vui lòng thử lại sau.",
+          "noSettingsFoundTitle": "Không Tìm Thấy Cài Đặt",
+          "noSettingsFoundMessage": "Không tìm thấy dữ liệu cài đặt cho nhà hàng này."
+        }
+      }
     }
   }
 }
