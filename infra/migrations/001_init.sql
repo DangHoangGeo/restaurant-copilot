@@ -38,7 +38,9 @@ CREATE INDEX ON users (restaurant_id, role);
 CREATE TABLE IF NOT EXISTS categories (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
-  name text NOT NULL,
+  name_ja text NOT NULL,
+  name_en text NOT NULL,
+  name_vi text NOT NULL,
   position integer NOT NULL DEFAULT 0,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -58,6 +60,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
   price numeric NOT NULL CHECK (price >= 0),
   tags text[] DEFAULT '{}',
   image_url text,
+  stock_level integer DEFAULT 0 CHECK (stock_level >= 0),
   available boolean NOT NULL DEFAULT true,
   weekday_visibility integer[] NOT NULL DEFAULT ARRAY[1,2,3,4,5,6,7],
   position integer NOT NULL DEFAULT 0,
@@ -230,10 +233,12 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users ENABLE ROW LEVEL SECURITY; -- Users table also needs RLS
 
 -- RLS Policies for categories
+/**
 CREATE POLICY "Tenant can SELECT categories"
   ON categories
   FOR SELECT
   USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+*/
 
 CREATE POLICY "Tenant can INSERT categories"
   ON categories
@@ -252,10 +257,12 @@ CREATE POLICY "Tenant can DELETE categories"
   USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
 
 -- RLS Policies for menu_items
+/**
 CREATE POLICY "Tenant can SELECT menu_items"
   ON menu_items
   FOR SELECT
   USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+*/
 
 CREATE POLICY "Tenant can INSERT menu_items"
   ON menu_items
