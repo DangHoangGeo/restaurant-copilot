@@ -7,6 +7,19 @@ CREATE TABLE IF NOT EXISTS restaurants (
   default_language text NOT NULL CHECK (default_language IN ('ja','en','vi')),
   logo_url text,
   brand_color text,
+  address text,
+  phone text,
+  email text UNIQUE,
+  website text,
+  description text,
+  opening_hours jsonb,               -- e.g. {"mon": "09:00-21:00", "tue": "09:00-21:00", ...}
+  social_links jsonb,                -- e.g. {"facebook": "https://...", "instagram": "https://..."}
+  timezone text NOT NULL DEFAULT 'Asia/Tokyo',
+  currency text NOT NULL DEFAULT 'JPY',
+  payment_methods text[] DEFAULT '{}', -- e.g. ['cash', 'credit_card', 'mobile_payment']
+  delivery_options text[] DEFAULT '{}', -- e.g. ['pickup', 'delivery']
+  is_active boolean NOT NULL DEFAULT true,
+  is_verified boolean NOT NULL DEFAULT false,
   contact_info text,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()

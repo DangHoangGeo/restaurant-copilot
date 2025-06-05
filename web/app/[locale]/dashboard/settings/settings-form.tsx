@@ -24,20 +24,10 @@ import {
 import { Label } from "@/components/ui/label"; // Assuming @ alias is web
 import { toast } from "sonner";
 import { Image as ImageIcon, Loader2 } from "lucide-react";
+import { Restaurant } from "./page";
 
 // Local Restaurant type for the form's initial settings prop.
 // If a global Database type were available from Supabase, we might use generated types.
-type Restaurant = {
-  id: string;
-  name: string | null;
-  default_language: "en" | "ja" | "vi" | null;
-  brand_color: string | null;
-  contact_info: string | null;
-  address: string | null;
-  hours: string | null;
-  description: string | null;
-  logo_url: string | null;
-};
 
 interface SettingsFormProps {
   initialSettings: Restaurant;
@@ -50,7 +40,7 @@ const settingsSchema = z.object({
   brandColor: z.string().regex(/^#([0-9A-Fa-f]{6})$/, "Invalid hex color format (e.g. #RRGGBB)").nullable().optional(),
   contactInfo: z.string().max(500, "Contact info must be 500 characters or less").optional().nullable(),
   address: z.string().max(500, "Address must be 500 characters or less").optional().nullable(),
-  hours: z.string().max(200, "Hours must be 200 characters or less").optional().nullable(),
+  opening_hours: z.string().max(200, "Hours must be 200 characters or less").optional().nullable(),
   description: z.string().max(1000, "Description must be 1000 characters or less").optional().nullable(),
   logoFile: z.instanceof(File).refine(file => file.size <= 5 * 1024 * 1024, `Logo must be 5MB or less.`).optional().nullable(),
   logoUrl: z.string().url("Invalid URL format for logo.").optional().nullable(),
@@ -82,7 +72,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       brandColor: initialSettings.brand_color || "#FFFFFF",
       contactInfo: initialSettings.contact_info || "",
       address: initialSettings.address || "",
-      hours: initialSettings.hours || "",
+      opening_hours: initialSettings.opening_hours || "",
       description: initialSettings.description || "",
       logoUrl: initialSettings.logo_url || null,
       logoFile: null,
@@ -141,26 +131,34 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       setValue("logoUrl", publicLogoUrl); // Update form state with new URL
     }
 
-    const updatePayload = {
-      name: data.name,
-      default_language: data.defaultLanguage,
-      brand_color: data.brandColor,
-      contact_info: data.contactInfo,
-      address: data.address,
-      hours: data.hours,
-      description: data.description,
-      logo_url: publicLogoUrl,
-    };
-
     try {
-      const { error: updateError } = await supabase
-        .from("restaurants")
-        .update(updatePayload)
-        .eq("id", initialSettings.id);
+      // Get the current subdomain from the initialSettings
+      const subdomain = initialSettings.subdomain;
+      
+      // Call the settings API endpoint
+      const response = await fetch(`/api/v1/restaurant/settings?subdomain=${subdomain}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: data.name,
+          default_language: data.defaultLanguage,
+          brand_color: data.brandColor,
+          contact_info: data.contactInfo,
+          address: data.address,
+          opening_hours: data.opening_hours,
+          description: data.description,
+          logo_url: publicLogoUrl,
+        }),
+      });
 
-      if (updateError) {
-        throw updateError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save settings');
       }
+
+      const updatedSettings = await response.json();
 
       toast.success(t("notifications.settingsSaved"));
       if (data.brandColor !== currentBrandColor) {
@@ -300,12 +298,12 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
           <Label htmlFor="hours">{t("labels.hours")}</Label>
           <Textarea
             id="hours"
-            {...register("hours")}
+            {...register("opening_hours")}
             maxLength={200}
             placeholder={t("placeholders.hours")}
             rows={3}
           />
-          {errors.hours && <p className="text-sm text-red-500 mt-1">{errors.hours.message}</p>}
+          {errors.opening_hours && <p className="text-sm text-red-500 mt-1">{errors.opening_hours.message}</p>}
         </div>
 
         <div>
