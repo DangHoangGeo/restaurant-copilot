@@ -32,12 +32,6 @@
       "check_failed": "Failed to check subdomain availability. Please try again."
     },
     "confirmPasswordLabel": "Confirm Password",
-    "defaultLanguageLabel": "Default Language",
-    "languageOption": {
-      "en": "English",
-      "ja": "Japanese",
-      "vi": "Vietnamese"
-    },
     "captchaRequired": "Please complete the CAPTCHA.",
     "captchaInvalid": "CAPTCHA verification failed. Please try again.",
     "captchaExpired": "CAPTCHA expired. Please re-verify.",
@@ -233,6 +227,13 @@
     "language_switcher": {
       "toggle_label": "Change language"
     },
+    "defaultLanguageLabel": "Default Language",
+    "defaultLanguagePlaceholder": "Select default language",
+    "languageOption": {
+      "en": "English",
+      "ja": "Japanese",
+      "vi": "Vietnamese"
+    },
     "rating": {
       "set_stars": "Set {count} star rating",
       "current_stars": "Current rating: {count} stars",
@@ -363,6 +364,9 @@
       "notifications": {
         "successTitle": "Settings Updated",
         "successMessage": "Your restaurant settings have been updated successfully.",
+        "settingsSaved": "Settings saved successfully.",
+        "saveError": "Error saving settings. Please try again.",
+        "uploadError": "Error uploading logo. Please try again.",
         "errorTitle": "Update Failed",
         "errorMessage": "Could not update settings: {error}",
         "logoUploadErrorTitle": "Logo Upload Failed",

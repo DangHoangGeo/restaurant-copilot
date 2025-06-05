@@ -60,6 +60,7 @@ type SettingsFormData = z.infer<typeof settingsSchema>;
 
 export default function SettingsForm({ initialSettings, locale }: SettingsFormProps) {
   const t = useTranslations("Dashboard.Settings");
+  const tCommon = useTranslations("Common");
   const supabase = createClientComponentClient(); // Untyped client
   const [logoPreview, setLogoPreview] = useState<string | null>(initialSettings.logo_url || null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -77,7 +78,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       name: initialSettings.name || "",
-      defaultLanguage: initialSettings.default_language || "en",
+      defaultLanguage: initialSettings.default_language || (["en", "ja", "vi"].includes(locale) ? locale as "en" | "ja" | "vi" : "en"),
       brandColor: initialSettings.brand_color || "#FFFFFF",
       contactInfo: initialSettings.contact_info || "",
       address: initialSettings.address || "",
@@ -163,7 +164,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
 
       toast.success(t("notifications.settingsSaved"));
       if (data.brandColor !== currentBrandColor) {
-        setCurrentBrandColor(data.brandColor);
+        setCurrentBrandColor(data.brandColor ?? null);
       }
       // Reset form with new values to make it "clean"
       reset({
@@ -177,8 +178,11 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       }
 
 
-    } catch (error: any) {
-      toast.error(t("notifications.saveError", { error: error.message }));
+    } catch (error) {
+      const errorMessage = typeof error === "object" && error !== null && "message" in error
+        ? (error as { message: string }).message
+        : String(error);
+      toast.error(t("notifications.saveError", { error: errorMessage }));
     } finally {
       setIsSubmitting(false);
     }
@@ -189,25 +193,25 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       {/* Column 1: Name, Language, Color */}
       <div className="md:col-span-1 space-y-6">
         <div>
-          <Label htmlFor="name">{t("fields.name.label")}</Label>
+          <Label htmlFor="name">{t("labels.restaurantName")}</Label>
           <Input id="name" {...register("name")} maxLength={100} />
           {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
         </div>
 
         <div>
-          <Label htmlFor="defaultLanguage">{t("fields.defaultLanguage.label")}</Label>
+          <Label htmlFor="defaultLanguage">{tCommon("defaultLanguageLabel")}</Label>
           <Controller
             name="defaultLanguage"
             control={control}
             render={({ field }) => (
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger id="defaultLanguage">
-                  <SelectValue placeholder={t("fields.defaultLanguage.placeholder")} />
+                  <SelectValue placeholder={tCommon("defaultLanguagePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">{t("fields.defaultLanguage.options.en")}</SelectItem>
-                  <SelectItem value="ja">{t("fields.defaultLanguage.options.ja")}</SelectItem>
-                  <SelectItem value="vi">{t("fields.defaultLanguage.options.vi")}</SelectItem>
+                  <SelectItem value="en">{tCommon("languageOption.en")}</SelectItem>
+                  <SelectItem value="ja">{tCommon("languageOption.ja")}</SelectItem>
+                  <SelectItem value="vi">{tCommon("languageOption.vi")}</SelectItem>
                 </SelectContent>
               </Select>
             )}
@@ -216,7 +220,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
         </div>
 
         <div>
-          <Label htmlFor="brandColor">{t("fields.brandColor.label")}</Label>
+          <Label htmlFor="brandColor">{t("labels.brandColor")}</Label>
           <div className="flex items-center gap-2">
             <Input
               id="brandColorText"
@@ -240,10 +244,10 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       {/* Column 2: Logo, Contact Info, Address */}
       <div className="md:col-span-1 space-y-6">
         <div>
-          <Label htmlFor="logoFile">{t("fields.logo.label")}</Label>
+          <Label htmlFor="logoFile">{t("labels.logo")}</Label>
           <div className="flex items-center space-x-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={logoPreview || undefined} alt={t("fields.logo.alt")} />
+              <AvatarImage src={logoPreview || undefined} alt={t("altText.logoPreview")} />
               <AvatarFallback>
                 <ImageIcon className="h-10 w-10 text-gray-400" />
               </AvatarFallback>
@@ -266,24 +270,24 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
         </div>
 
         <div>
-          <Label htmlFor="contactInfo">{t("fields.contactInfo.label")}</Label>
+          <Label htmlFor="contactInfo">{t("labels.contactInfo")}</Label>
           <Textarea
             id="contactInfo"
             {...register("contactInfo")}
             maxLength={500}
-            placeholder={t("fields.contactInfo.placeholder")}
+            placeholder={t("placeholders.contactInfo")}
             rows={3}
           />
           {errors.contactInfo && <p className="text-sm text-red-500 mt-1">{errors.contactInfo.message}</p>}
         </div>
 
         <div>
-          <Label htmlFor="address">{t("fields.address.label")}</Label>
+          <Label htmlFor="address">{t("labels.address")}</Label>
           <Textarea
             id="address"
             {...register("address")}
             maxLength={500}
-            placeholder={t("fields.address.placeholder")}
+            placeholder={t("placeholders.address")}
             rows={3}
           />
           {errors.address && <p className="text-sm text-red-500 mt-1">{errors.address.message}</p>}
@@ -293,24 +297,24 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       {/* Column 3: Hours, Description */}
       <div className="md:col-span-1 space-y-6">
         <div>
-          <Label htmlFor="hours">{t("fields.hours.label")}</Label>
+          <Label htmlFor="hours">{t("labels.hours")}</Label>
           <Textarea
             id="hours"
             {...register("hours")}
             maxLength={200}
-            placeholder={t("fields.hours.placeholder")}
+            placeholder={t("placeholders.hours")}
             rows={3}
           />
           {errors.hours && <p className="text-sm text-red-500 mt-1">{errors.hours.message}</p>}
         </div>
 
         <div>
-          <Label htmlFor="description">{t("fields.description.label")}</Label>
+          <Label htmlFor="description">{t("labels.description")}</Label>
           <Textarea
             id="description"
             {...register("description")}
             maxLength={1000}
-            placeholder={t("fields.description.placeholder")}
+            placeholder={t("placeholders.description")}
             rows={5}
           />
           {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}

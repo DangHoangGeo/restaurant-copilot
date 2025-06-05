@@ -1,50 +1,13 @@
 import { DashboardClientContent, DashboardData } from './dashboard-client-content';
 import { getTranslations } from 'next-intl/server';
-import { createClient } from '@/utils/supabase/server'; // Your server Supabase client
+import { createClient } from '@/lib/supabase/server'; // Your server Supabase client
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings'; // Assuming this exists
 import { headers } from 'next/headers';
 import { RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable'; // Import the type
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { redirect } from 'next/navigation';
-
-// Helper to get subdomain, this should be robust
-function getSubdomainFromHost(host: string): string | null {
-  if (!host) return null;
-
-  const hostname = host.split(':')[0]; // Remove port
-
-  // Handle localhost
-  if (hostname.includes('localhost')) {
-    const parts = hostname.split('.');
-    if (parts.length > 1 && parts[0] !== 'localhost') { // e.g., sub.localhost
-      return parts[0];
-    }
-    return null; // Just 'localhost' or invalid
-  }
-
-  // Handle production domain
-  const rootDomain = process.env.NEXT_PRIVATE_PRODUCTION_URL || 'baoan.jp'; // Consistent root domain
-  
-  if (hostname === rootDomain || hostname === `www.${rootDomain}`) {
-    return null;
-  }
-
-  const parts = hostname.split('.');
-  if (parts.length > 2) {
-    // Check if the end of the hostname matches the rootDomain
-    // e.g., if host is sub.example.com, parts = [sub, example, com]
-    // and rootDomain is example.com
-    const potentialSubdomain = parts.slice(0, parts.length - (rootDomain.split('.').length)).join('.');
-    const reconstructedDomain = parts.slice(parts.length - (rootDomain.split('.').length)).join('.');
-
-    if (reconstructedDomain === rootDomain && potentialSubdomain) {
-      return potentialSubdomain;
-    }
-  }
-
-  return null;
-}
+import { getSubdomainFromHost } from '@/lib/utils';
 
 
 export default async function DashboardPage({
@@ -54,7 +17,7 @@ export default async function DashboardPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({locale, namespace: 'AdminDashboard'});
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const authUser = await getUserFromRequest();
 
