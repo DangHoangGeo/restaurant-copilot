@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks, @next/next/no-img-element */
 
-import { useState, createContext, useContext, ReactNode } from 'react'
+import React, { useState, createContext, useContext, ReactNode } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import {
@@ -85,13 +85,25 @@ const MOCK_TABLES_BASE = [
 ]
 
 // Cart context
+interface MenuItem {
+  id: string;
+  name: any; // Can be localized object or string
+  description: any; // Can be localized object or string
+  price: number;
+  imageUrl?: string;
+  available: boolean;
+  weekdayVisibility: string[];
+  averageRating?: number;
+  reviewCount?: number;
+}
+
 interface CartItem {
-  itemId: string
-  name: any
-  price: number
-  qty: number
-  imageUrl?: string
-  description?: any
+  itemId: string;
+  name: any;
+  price: number;
+  qty: number;
+  imageUrl?: string;
+  description?: any;
 }
 interface CartContextType {
   cart: CartItem[]
@@ -213,7 +225,8 @@ function CustomerLayout({ children, setView, restaurantSettings }: { children: R
             <MessageCircleMore className="h-5 w-5" />
           </Button>
         )}
-        <Button onClick={() => setView('admin')} iconLeft={Briefcase} variant="secondary" size="sm" className="hidden sm:flex">
+        <Button onClick={() => setView('admin')} variant="secondary" size="sm" className="hidden sm:flex">
+          <Briefcase className="h-5 w-5 mr-2" />
           {t('admin_panel_button')}
         </Button>
       </div>
@@ -279,7 +292,8 @@ function CustomerMenuScreen({ setView, restaurantSettings, viewProps }: { setVie
                           <Button size="sm" variant="secondary" onClick={() => updateQuantity(item.id, itemInCartQty + 1)} className="p-2 aspect-square rounded-full" aria-label={t('menu.increase_quantity')}>+</Button>
                         </div>
                       ) : (
-                        <Button size="sm" onClick={() => handleAddToCart(item)} iconLeft={PlusCircle} style={{ backgroundColor: restaurantSettings.primaryColor }} className="text-white hover:opacity-90">
+                        <Button size="sm" onClick={() => handleAddToCart(item)} style={{ backgroundColor: restaurantSettings.primaryColor }} className="text-white hover:opacity-90">
+                          <PlusCircle className="h-4 w-4 mr-1" />
                           {t('menu.add_to_cart')}
                         </Button>
                       )}
@@ -298,8 +312,9 @@ function CustomerMenuScreen({ setView, restaurantSettings, viewProps }: { setVie
                 <p className="font-semibold">{t('cart.items_in_cart_plural', { count: totalCartItems })}</p>
                 <p className="text-sm">{t('common.total')}: {t('currency_format', { value: totalCartPrice })}</p>
               </div>
-              <Button onClick={() => setView('checkout', { tableId })} size="md" iconRight={ShoppingCart} className="bg-white hover:bg-slate-100" style={{ color: restaurantSettings.primaryColor }}>
+              <Button onClick={() => setView('checkout', { tableId })} className="bg-white hover:bg-slate-100" style={{ color: restaurantSettings.primaryColor }}>
                 {t('cart.checkout_button')}
+                <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           </Card>
@@ -307,7 +322,8 @@ function CustomerMenuScreen({ setView, restaurantSettings, viewProps }: { setVie
       )}
       {FEATURE_FLAGS.tableBooking && (
         <div className="text-center mt-12">
-          <Button onClick={() => setView('booking')} size="lg" iconLeft={CalendarDays} style={{ backgroundColor: restaurantSettings.secondaryColor }} className="text-white hover:opacity-90">
+          <Button onClick={() => setView('booking')} size="lg" style={{ backgroundColor: restaurantSettings.secondaryColor }} className="text-white hover:opacity-90">
+          <CalendarDays className="h-4 w-4 mr-1" />
             {t('booking.book_table_button')}
           </Button>
         </div>
@@ -332,7 +348,8 @@ function CheckoutScreen({ setView, restaurantSettings, viewProps }: { setView: (
   }
   return (
     <div>
-      <Button onClick={() => setView('menu', viewProps)} iconLeft={ChevronLeft} variant="ghost" className="mb-4 -ml-2">
+      <Button onClick={() => setView('menu', viewProps)} variant="ghost" className="mb-4 -ml-2">
+        <ChevronLeft className="h-4 w-4 mr-1" />
         {t('checkout.back_to_menu')}
       </Button>
       <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">{t('checkout.title')}</h2>
@@ -413,7 +430,7 @@ function ThankYouScreen({ setView, restaurantSettings, viewProps }: { setView: (
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-3">{t('thankyou.rate_dishes_title')}</h3>
           <div className="space-y-3 max-w-md mx-auto">
-            {items.slice(0, 3).map(item => (
+            {items.slice(0, 3).map((item: CartItem) => (
               <Button key={item.itemId} variant="secondary" className="w-full justify-between" onClick={() => setView('review', { menuItemId: item.itemId, menuItemName: getLocalizedText(item.name, locale) })}>
                 {t('thankyou.rate_this_dish_button', { dish: getLocalizedText(item.name, locale) })}
                 <ChevronRight className="h-4 w-4" />
@@ -422,7 +439,8 @@ function ThankYouScreen({ setView, restaurantSettings, viewProps }: { setView: (
           </div>
         </div>
       )}
-      <Button onClick={() => setView('menu')} size="lg" iconLeft={MenuIcon} className="mt-10 text-white hover:opacity-90" style={{ backgroundColor: restaurantSettings.primaryColor }}>
+      <Button onClick={() => setView('menu')} size="lg" className="mt-10 text-white hover:opacity-90" style={{ backgroundColor: restaurantSettings.primaryColor }}>
+        <MenuIcon className="h-4 w-4 mr-1" />
         {t('thankyou.back_to_menu_button')}
       </Button>
     </div>
@@ -459,7 +477,8 @@ function ReviewScreen({ setView, restaurantSettings, viewProps }: { setView: (v:
   }
   return (
     <div>
-      <Button onClick={() => setView('menu')} iconLeft={ChevronLeft} variant="ghost" className="mb-4 -ml-2">
+      <Button onClick={() => setView('menu')} variant="ghost" className="mb-4 -ml-2">
+        <ChevronLeft className="h-4 w-4 mr-1" />
         {t('checkout.back_to_menu')}
       </Button>
       <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">{t('review.title')}</h2>
@@ -469,7 +488,7 @@ function ReviewScreen({ setView, restaurantSettings, viewProps }: { setView: (v:
           <div className="mb-6">
             <label className="block text-sm font-medium text-center mb-2">{t('review.rating_label')}</label>
             <div className="flex justify-center">
-              <StarRating value={rating} size="lg" interactive onRate={setRating} />
+              <StarRating value={rating} size="lg" count={rating}  onRate={setRating} />
             </div>
           </div>
           <Textarea name="comment" value={comment} onChange={e => setComment(e.target.value)} rows={4} placeholder={t('review.comment_placeholder')} />
@@ -502,17 +521,22 @@ function BookingScreen({ setView, restaurantSettings }: { setView: (v: string, p
     return <p>Coming Soon</p>
   }
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, checked } = e.target
+    const { name, value } = e.target;
+    const checked = (e.target as HTMLInputElement).checked; // Explicitly cast to HTMLInputElement for 'checked'
+
     if (name === 'preOrderItems') {
-      const itemId = value
+      const itemId = value;
       setFormData(prev => ({
         ...prev,
         preOrderItems: checked ? [...prev.preOrderItems, { itemId, quantity: 1 }] : prev.preOrderItems.filter(item => item.itemId !== itemId),
-      }))
+      }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }))
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
-  }
+  };
+  const handleSelectChange = (value: string) => {
+    setFormData(prev => ({ ...prev, tableId: value }));
+  };
   const handlePreOrderItemQuantityChange = (itemId: string, quantity: string) => {
     const numQuantity = parseInt(quantity)
     if (numQuantity > 0) {
@@ -547,14 +571,15 @@ function BookingScreen({ setView, restaurantSettings }: { setView: (v: string, p
   }
   return (
     <div>
-      <Button onClick={() => setView('menu')} iconLeft={ChevronLeft} variant="ghost" className="mb-4 -ml-2">
+      <Button onClick={() => setView('menu')} variant="ghost" className="mb-4 -ml-2">
+        <ChevronLeft className="h-4 w-4 mr-1" />
         {t('checkout.back_to_menu')}
       </Button>
       <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">{t('booking.title')}</h2>
       {error && <Alert variant="destructive" className="mb-4">{error}</Alert>}
       <Card className="max-w-lg mx-auto">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Select name="tableId" value={formData.tableId} onChange={handleChange} required>
+          <Select name="tableId" value={formData.tableId} onValueChange={handleSelectChange} required>
             <option value="" disabled>
               {t('booking.form.table_select_placeholder')}
             </option>

@@ -83,10 +83,6 @@ export function AdminSidebar({ restaurantSettings, isOpen, setIsOpen }: AdminSid
     );
   };
 
-  const customerSiteUrl = restaurantSettings.subdomain 
-    ? `https://${restaurantSettings.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'shop-copilot.com'}/${locale}/customer`
-    : `/${locale}/customer`;
-
   return (
     <>
       <aside
@@ -138,8 +134,7 @@ export function AdminSidebar({ restaurantSettings, isOpen, setIsOpen }: AdminSid
         </nav>
         <div className="p-3 mt-auto flex-shrink-0 border-t space-y-1.5">
           <a
-            href={customerSiteUrl}
-            target="_blank"
+            href={`/${locale}/customer`}
             rel="noopener noreferrer"
             className="flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out text-muted-foreground hover:bg-muted hover:text-foreground group"
           >

@@ -62,7 +62,7 @@ export function BookingsClientContent() {
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-6">{t('AdminNav.admin_bookings_title')}</h2>
-      <Card noPadding>
+      <Card className="p-2">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
@@ -81,7 +81,9 @@ export function BookingsClientContent() {
                   <td className="px-4 py-3 text-center">{booking.partySize}</td>
                   <td className="px-4 py-3">{statusBadge(booking.status)}</td>
                   <td className="px-4 py-3">
-                    <Button size="sm" variant="ghost" iconLeft={Eye} onClick={() => handleViewDetails(booking)}>{t('Common.view_details')}</Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleViewDetails(booking)}>
+                      <Eye className="h-4 w-4 mr-1" />
+                    {t('Common.view_details')}</Button>
                   </td>
                 </tr>
               ))}
@@ -104,8 +106,8 @@ export function BookingsClientContent() {
               {selectedBooking.preOrderItems.length === 0 && <p className="text-sm mt-2 text-slate-500">{t('AdminBookings.no_preorder_items')}</p>}
               {selectedBooking.status === 'pending' && (
                 <div className="mt-6 flex justify-end space-x-2">
-                  <Button variant="danger" onClick={() => handleUpdateStatus(selectedBooking.id, 'canceled')}>{t('Common.cancel_booking')}</Button>
-                  <Button variant="primary" onClick={() => handleUpdateStatus(selectedBooking.id, 'confirmed')}>{t('Common.confirm_booking')}</Button>
+                  <Button onClick={() => handleUpdateStatus(selectedBooking.id, 'canceled')}>{t('Common.cancel_booking')}</Button>
+                  <Button variant="secondary" onClick={() => handleUpdateStatus(selectedBooking.id, 'confirmed')}>{t('Common.confirm_booking')}</Button>
                 </div>
               )}
             </div>
