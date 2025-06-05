@@ -1,0 +1,66 @@
+/* Base App Title */
+"app_title" = "ショップコパイロット";
+
+/* Login Screen */
+"login_title" = "ログイン";
+"username_label" = "ユーザー名";
+"password_label" = "パスワード";
+"select_role_label" = "役割を選択:";
+"role_owner_admin" = "オーナー/管理者";
+"role_customer" = "顧客";
+"login_button" = "ログイン";
+"logout_button" = "ログアウト";
+
+/* Tenant Selection */
+"tenant_selection_prompt" = "サブドメインを入力:";
+"tenant_id_placeholder" = "例: resto1";
+"load_tenant_button" = "テナントを読み込む";
+
+/* Error Messages */
+"error_prefix" = "エラー: ";
+"error_invalid_credentials" = "ユーザー名、パスワード、または役割が無効です。";
+"error_unknown" = "不明なエラーが発生しました。もう一度お試しください。"; /* General unknown error */
+"tenant_not_found" = "要求されたテナントが見つかりませんでした。";
+"error_subdomain_empty" = "サブドメインは空にできません。サブドメインを入力してください。";
+"error_unknown_fetching_tenant" = "テナント詳細の取得中に不明なエラーが発生しました。もう一度お試しください。";
+"error_unexpected_login" = "ログイン中に予期しないエラーが発生しました。もう一度お試しください。";
+
+/* Language Selection */
+"language_selection_title" = "言語を選択";
+"language_english" = "英語";
+"language_japanese" = "日本語";
+"language_vietnamese" = "ベトナム語";
+"language_change_restart_notice" = "言語の変更を完全に有効にするには、アプリを再起動してください。";
+
+/* General UI */
+"done_button" = "完了";
+
+/* Logged In Messages */
+"logged_in_message" = "%1$@ としてログイン中 (%2$@)";
+"welcome_message" = "ショップコパイロットへようこそ！";
+"welcome_to_tenant_message" = "%1$@ へようこそ";
+
+/* Owner/Admin Dashboard */
+"owner_admin_dashboard_title" = "管理者ダッシュボード";
+"welcome_owner_admin" = "ようこそ、管理者様！";
+"admin_settings_title" = "管理者設定";
+"managing_tenant_label" = "管理テナント:";
+"logged_in_as_label" = "ログインユーザー:";
+
+/* Customer Menu */
+"customer_menu_title" = "メニュー";
+"welcome_customer_menu" = "私たちの提供品をご覧ください！";
+"viewing_menu_for_tenant" = "%1$@ のメニューを表示中";
+"no_tenant_selected_menu" = "メニューを表示するレストランが選択されていません。";
+"my_orders_title" = "私の注文";
+"customer_profile_title" = "私のプロフィール";
+"menu_item_placeholder_1" = "メニュー項目アルファ";
+"menu_item_placeholder_2" = "メニュー項目ベータ";
+"menu_item_placeholder_3" = "メニュー項目ガンマ";
+
+/* TabView Labels */
+"tab_dashboard" = "ダッシュボード";
+"tab_admin_settings" = "設定";
+"tab_menu" = "メニュー";
+"tab_my_orders" = "注文";
+"tab_customer_profile" = "プロフィール";

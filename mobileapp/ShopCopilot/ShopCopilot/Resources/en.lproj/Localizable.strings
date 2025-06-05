@@ -1,0 +1,69 @@
+/* Base App Title */
+"app_title" = "ShopCopilot";
+
+/* Login Screen */
+"login_title" = "Login";
+"username_label" = "Username";
+"password_label" = "Password";
+"select_role_label" = "Select Role:";
+"role_owner_admin" = "Owner/Admin";
+"role_customer" = "Customer";
+"login_button" = "Login";
+"logout_button" = "Logout";
+
+/* Tenant Selection */
+"tenant_selection_prompt" = "Enter Subdomain:";
+"tenant_id_placeholder" = "e.g., resto1";
+"load_tenant_button" = "Load Tenant";
+
+/* Error Messages */
+"error_prefix" = "Error: ";
+"error_invalid_credentials" = "Invalid username, password, or role.";
+"error_unknown" = "An unknown error occurred. Please try again."; /* General unknown error */
+"tenant_not_found" = "The requested tenant could not be found.";
+"error_subdomain_empty" = "Subdomain cannot be empty. Please enter a subdomain.";
+"error_unknown_fetching_tenant" = "An unknown error occurred while fetching tenant details. Please try again.";
+"error_unexpected_login" = "An unexpected error occurred during login. Please try again.";
+
+
+/* Language Selection */
+"language_selection_title" = "Select Language";
+"language_english" = "English";
+"language_japanese" = "Japanese";
+"language_vietnamese" = "Vietnamese";
+"language_change_restart_notice" = "Please restart the app for the language change to take full effect.";
+
+/* General UI */
+"done_button" = "Done";
+
+/* Logged In Messages */
+"logged_in_message" = "Logged in as %1$@ (%2$@)";
+"welcome_message" = "Welcome to ShopCopilot!";
+"welcome_to_tenant_message" = "Welcome to %1$@";
+
+/* Owner/Admin Dashboard */
+"owner_admin_dashboard_title" = "Admin Dashboard";
+"welcome_owner_admin" = "Welcome, Administrator!";
+"admin_settings_title" = "Admin Settings";
+"managing_tenant_label" = "Managing Tenant:";
+"logged_in_as_label" = "Logged in as:";
+
+
+/* Customer Menu */
+"customer_menu_title" = "Menu";
+"welcome_customer_menu" = "Explore our offerings!";
+"viewing_menu_for_tenant" = "Viewing menu for %1$@";
+"no_tenant_selected_menu" = "No restaurant selected to display menu.";
+"my_orders_title" = "My Orders";
+"customer_profile_title" = "My Profile";
+"menu_item_placeholder_1" = "Menu Item Alpha";
+"menu_item_placeholder_2" = "Menu Item Beta";
+"menu_item_placeholder_3" = "Menu Item Gamma";
+
+
+/* TabView Labels */
+"tab_dashboard" = "Dashboard";
+"tab_admin_settings" = "Settings";
+"tab_menu" = "Menu";
+"tab_my_orders" = "Orders";
+"tab_customer_profile" = "Profile";
