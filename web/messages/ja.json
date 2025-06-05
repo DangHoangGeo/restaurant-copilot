@@ -199,5 +199,114 @@
       "ready": "Ready",
       "completed": "Completed"
     }
+  },
+  "CustomerLayout": {
+    "cart": "カート",
+    "adminPanel": "管理パネル",
+    "aiChat": "AIチャット",
+    "poweredBy": "Powered by Shop-Copilot",
+    "copyright": "© {year} {restaurantName}. 全著作権所有。"
+  },
+  "CustomerMenu": {
+    "menuTitle": "メニュー",
+    "bookTableButton": "テーブルを予約",
+    "addToCart": "カートに追加",
+    "addedToCart": "カートに追加しました！",
+    "checkout": "チェックアウト",
+    "item": "品目",
+    "items": "品目",
+    "sessionExpiredMessage": "セッションの有効期限が切れました。QRコードを再スキャンするか、ページを更新してください。",
+    "sessionStatusTitle": "セッションステータス",
+    "noMenuItems": "現在利用可能なメニュー項目はありません。後でもう一度ご確認ください。",
+    "categoryTitle": "カテゴリー"
+  },
+  "StarRating": {
+    "rating": "{rating} / {maxRating} 星",
+    "setStarRating": "{count}つ星評価を設定",
+    "currentRating": "現在の評価: {count}つ星"
+  },
+  "CheckoutPage": {
+    "yourCartTitle": "カート内容",
+    "totalLabel": "合計:",
+    "itemLabel": "商品",
+    "quantityLabel": "数量",
+    "priceLabel": "価格",
+    "removeLabel": "削除",
+    "confirmCashOrderButton": "現金での注文を確定",
+    "confirmingOrder": "確定中...",
+    "confirmOrderModalTitle": "注文を確定",
+    "confirmOrderModalDescription": "この注文を現金払いで確定しますか？",
+    "confirmButton": "確定",
+    "cancelButton": "キャンセル",
+    "orderConfirmed": "注文が確定しました！",
+    "cartEmpty": "カートに商品がありません。メニューから商品を追加してください。",
+    "cartEmptyRedirect": "カートに商品がありません。メニューにリダイレクトします...",
+    "errorPlacingOrder": "注文処理中にエラーが発生しました。もう一度お試しください。",
+    "sessionNotFound": "セッションが見つかりません。メニューに戻って再度お試しください。"
+  },
+  "ThankYouPage": {
+    "title": "ありがとうございます！",
+    "orderPlacedMessage": "ご注文は正常に処理されました。",
+    "orderSummaryTitle": "ご注文内容",
+    "orderIdLabel": "注文ID:",
+    "totalAmountLabel": "合計金額:",
+    "tableIdLabel": "テーブル: {tableId}",
+    "orderedItemsTitle": "ご注文の商品",
+    "quantityLabel": "数量:",
+    "rateDishButton": "料理を評価",
+    "backToMenuButton": "メニューに戻る",
+    "orderNotFound": "申し訳ありませんが、ご注文の詳細が見つかりませんでした。注文IDを確認するか、サポートにお問い合わせください。"
+  },
+  "ReviewPage": {
+    "formTitle": "レビュー: {itemName}",
+    "formSubtitle": "この料理についての感想をお聞かせください！",
+    "yourRatingLabel": "評価",
+    "yourCommentLabel": "コメント (任意)",
+    "commentPlaceholder": "体験について詳しく教えてください...",
+    "submitButton": "レビューを送信",
+    "reviewSubmittedTitle": "レビュー送信完了！",
+    "thankYouFeedback": "貴重なご意見ありがとうございます。",
+    "backToMenuButton": "メニューに戻る",
+    "selectRatingError": "送信前に評価を選択してください。",
+    "errorSubmittingReview": "レビューの送信中にエラーが発生しました。もう一度お試しください。",
+    "featureUnavailable": "申し訳ありませんが、レビュー機能は現在利用できません。"
+  },
+  "StarRatingInput": {
+    "starLabel": "星 {index}",
+    "starLabelActive": "星 {index} (アクティブ)"
+  },
+  "BookingPage": {
+    "formTitle": "テーブルを予約",
+    "nameLabel": "氏名",
+    "phoneLabel": "電話番号",
+    "emailLabel": "メールアドレス (任意)",
+    "tableLabel": "テーブルを選択",
+    "selectTablePlaceholder": "利用可能なテーブルを選択",
+    "partySizeLabel": "人数",
+    "dateLabel": "日付",
+    "selectDatePlaceholder": "日付を選択",
+    "timeLabel": "時間",
+    "notesLabel": "備考 (任意)",
+    "notesPlaceholder": "特別なご要望や情報など...",
+    "preOrderTitle": "事前注文 (任意)",
+    "selectItemsPrompt": "事前注文する商品を選択してください",
+    "itemColumnHeader": "商品",
+    "priceColumnHeader": "価格",
+    "quantityColumnHeader": "数量",
+    "addToBookingCheckbox": "予約に追加",
+    "submitButton": "予約リクエストを送信",
+    "bookingSubmittedTitle": "予約リクエスト送信完了！",
+    "bookingSubmittedMessage": "予約リクエストが正常に送信されました。確認のため、まもなくご連絡いたします。",
+    "backToMenuButton": "メニューに戻る",
+    "errorSubmittingBooking": "予約の送信中にエラーが発生しました。もう一度お試しください。",
+    "errorConflict": "選択したテーブルのこの時間帯は既に予約されているか、保留中です。別の時間またはテーブルを選択してください。",
+    "featureUnavailable": "申し訳ありませんが、テーブル予約機能は現在利用できません。"
+  },
+  "AIChatWidget": {
+    "title": "AIアシスタント",
+    "inputPlaceholder": "メッセージを入力...",
+    "sendButton": "送信",
+    "openChatLabel": "AIアシスタントチャットを開く",
+    "noMessagesYet": "メニューやレストランについて何でも聞いてください！"
   }
 }

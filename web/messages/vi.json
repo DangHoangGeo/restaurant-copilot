@@ -199,5 +199,114 @@
       "ready": "Ready",
       "completed": "Completed"
     }
+  },
+  "CustomerLayout": {
+    "cart": "Giỏ hàng",
+    "adminPanel": "Trang quản trị",
+    "aiChat": "AI Chat",
+    "poweredBy": "Phát triển bởi Shop-Copilot",
+    "copyright": "© {year} {restaurantName}. Đã đăng ký bản quyền."
+  },
+  "CustomerMenu": {
+    "menuTitle": "Thực Đơn Của Chúng Tôi",
+    "bookTableButton": "Đặt Bàn",
+    "addToCart": "Thêm vào giỏ hàng",
+    "addedToCart": "Đã thêm vào giỏ hàng!",
+    "checkout": "Thanh toán",
+    "item": "món",
+    "items": "món",
+    "sessionExpiredMessage": "Phiên của bạn đã hết hạn. Vui lòng quét lại mã QR hoặc làm mới trang.",
+    "sessionStatusTitle": "Trạng Thái Phiên",
+    "noMenuItems": "Hiện không có món nào trong thực đơn. Vui lòng kiểm tra lại sau.",
+    "categoryTitle": "Danh Mục"
+  },
+  "StarRating": {
+    "rating": "{rating} trên {maxRating} sao",
+    "setStarRating": "Đặt {count} sao đánh giá",
+    "currentRating": "Đánh giá hiện tại: {count} sao"
+  },
+  "CheckoutPage": {
+    "yourCartTitle": "Giỏ Hàng Của Bạn",
+    "totalLabel": "Tổng cộng:",
+    "itemLabel": "Món",
+    "quantityLabel": "Số lượng",
+    "priceLabel": "Giá",
+    "removeLabel": "Xóa",
+    "confirmCashOrderButton": "Xác Nhận Đơn Hàng (Tiền Mặt)",
+    "confirmingOrder": "Đang xác nhận...",
+    "confirmOrderModalTitle": "Xác Nhận Đơn Hàng",
+    "confirmOrderModalDescription": "Bạn có chắc chắn muốn xác nhận đơn hàng này và thanh toán bằng tiền mặt không?",
+    "confirmButton": "Xác nhận",
+    "cancelButton": "Hủy",
+    "orderConfirmed": "Đã xác nhận đơn hàng!",
+    "cartEmpty": "Giỏ hàng của bạn đang trống. Vui lòng thêm món từ thực đơn.",
+    "cartEmptyRedirect": "Giỏ hàng trống. Đang chuyển hướng đến thực đơn...",
+    "errorPlacingOrder": "Đã xảy ra lỗi khi đặt hàng. Vui lòng thử lại.",
+    "sessionNotFound": "Không tìm thấy phiên làm việc. Vui lòng quay lại thực đơn và thử lại."
+  },
+  "ThankYouPage": {
+    "title": "Cảm ơn bạn!",
+    "orderPlacedMessage": "Đơn hàng của bạn đã được đặt thành công.",
+    "orderSummaryTitle": "Tóm Tắt Đơn Hàng",
+    "orderIdLabel": "Mã Đơn Hàng:",
+    "totalAmountLabel": "Tổng Tiền:",
+    "tableIdLabel": "Bàn số: {tableId}",
+    "orderedItemsTitle": "Các Món Đã Đặt",
+    "quantityLabel": "SL:",
+    "rateDishButton": "Đánh Giá Món",
+    "backToMenuButton": "Quay Lại Thực Đơn",
+    "orderNotFound": "Xin lỗi, chúng tôi không tìm thấy chi tiết đơn hàng của bạn. Vui lòng kiểm tra lại Mã Đơn Hàng hoặc liên hệ hỗ trợ."
+  },
+  "ReviewPage": {
+    "formTitle": "Đánh giá: {itemName}",
+    "formSubtitle": "Hãy chia sẻ cảm nhận của bạn về món ăn này!",
+    "yourRatingLabel": "Đánh giá của bạn",
+    "yourCommentLabel": "Bình luận của bạn (Không bắt buộc)",
+    "commentPlaceholder": "Hãy cho chúng tôi biết thêm về trải nghiệm của bạn...",
+    "submitButton": "Gửi Đánh Giá",
+    "reviewSubmittedTitle": "Đã Gửi Đánh Giá!",
+    "thankYouFeedback": "Cảm ơn bạn đã đóng góp ý kiến.",
+    "backToMenuButton": "Quay Lại Thực Đơn",
+    "selectRatingError": "Vui lòng chọn một mức đánh giá trước khi gửi.",
+    "errorSubmittingReview": "Đã có lỗi xảy ra khi gửi đánh giá của bạn. Vui lòng thử lại.",
+    "featureUnavailable": "Xin lỗi, tính năng đánh giá hiện không khả dụng."
+  },
+  "StarRatingInput": {
+    "starLabel": "Sao {index}",
+    "starLabelActive": "Sao {index} (kích hoạt)"
+  },
+  "BookingPage": {
+    "formTitle": "Đặt Bàn",
+    "nameLabel": "Họ và Tên",
+    "phoneLabel": "Số Điện Thoại",
+    "emailLabel": "Email (Không bắt buộc)",
+    "tableLabel": "Chọn Bàn",
+    "selectTablePlaceholder": "Chọn một bàn còn trống",
+    "partySizeLabel": "Số Lượng Khách",
+    "dateLabel": "Ngày",
+    "selectDatePlaceholder": "Chọn ngày",
+    "timeLabel": "Thời Gian",
+    "notesLabel": "Ghi Chú (Không bắt buộc)",
+    "notesPlaceholder": "Yêu cầu đặc biệt hoặc thông tin thêm...",
+    "preOrderTitle": "Đặt Món Trước (Không bắt buộc)",
+    "selectItemsPrompt": "Chọn các món bạn muốn đặt trước",
+    "itemColumnHeader": "Món Ăn",
+    "priceColumnHeader": "Giá",
+    "quantityColumnHeader": "Số Lượng",
+    "addToBookingCheckbox": "Thêm vào đặt bàn",
+    "submitButton": "Gửi Yêu Cầu Đặt Bàn",
+    "bookingSubmittedTitle": "Đã Gửi Yêu Cầu Đặt Bàn!",
+    "bookingSubmittedMessage": "Yêu cầu đặt bàn của bạn đã được gửi thành công. Chúng tôi sẽ sớm liên hệ để xác nhận.",
+    "backToMenuButton": "Quay Lại Thực Đơn",
+    "errorSubmittingBooking": "Đã xảy ra lỗi khi gửi yêu cầu đặt bàn của bạn. Vui lòng thử lại.",
+    "errorConflict": "Khung giờ này cho bàn đã chọn đã được đặt hoặc đang chờ xử lý. Vui lòng chọn thời gian hoặc bàn khác.",
+    "featureUnavailable": "Xin lỗi, tính năng đặt bàn hiện không khả dụng."
+  },
+  "AIChatWidget": {
+    "title": "Trợ Lý AI",
+    "inputPlaceholder": "Nhập tin nhắn của bạn...",
+    "sendButton": "Gửi",
+    "openChatLabel": "Mở Trò Chuyện với Trợ Lý AI",
+    "noMessagesYet": "Hỏi tôi bất cứ điều gì về thực đơn hoặc nhà hàng!"
   }
 }
