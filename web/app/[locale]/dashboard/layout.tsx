@@ -54,7 +54,7 @@ export default async function DashboardLayout({
   const restaurantSettings = subdomain 
     ? await getRestaurantSettingsFromSubdomain(subdomain) 
     : null;
-  console.log("restaurantSettings:", restaurantSettings);
+  
   if (!restaurantSettings && subdomain) {
     console.warn(`No restaurant settings found for subdomain: ${subdomain}`);
     const MOCK_RESTAURANT_INFO_FALLBACK = {

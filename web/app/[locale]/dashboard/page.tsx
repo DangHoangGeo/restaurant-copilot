@@ -75,8 +75,6 @@ export default async function DashboardPage({
 
   if (!restaurantIdFromSubdomainUrl) {
     // This case is already handled: restaurantId not found, shows error.
-    // But now, ensure it's distinguished from unauthorized access if needed.
-    // For now, the existing handling is okay, but authUser check should come first.
     console.log("Restaurant ID not found for subdomain, rendering error state.");
     return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.restaurant_not_found')} />;
   }
@@ -97,7 +95,6 @@ export default async function DashboardPage({
     const today = new Date().toISOString().split("T")[0];
 
     // 1. Today's Total Sales (from analytics_snapshots)
-    console.log("Fetching Today's Total Sales...");
     // For mockup, let's use a simplified sum from orders if analytics_snapshots is not populated yet.
     // In production, analytics_snapshots would be preferred.
     const { data: salesData, error: salesError } = await supabase
@@ -110,7 +107,6 @@ export default async function DashboardPage({
 
     if (salesError) throw salesError;
     const todaySales = salesData?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
-    console.log("Today's Total Sales fetched:", todaySales);
 
     // 2. Active Orders Count
     console.log("Fetching Active Orders Count...");
@@ -121,7 +117,6 @@ export default async function DashboardPage({
       .not('status', 'in', '("completed", "canceled")'); // Active = not completed or canceled
     
     if (activeOrdersError) throw activeOrdersError;
-    console.log("Active Orders Count fetched:", activeOrdersCount);
 
     // 3. Top-Selling Item Today
     console.log("Fetching Top-Selling Item Today...");
@@ -176,11 +171,8 @@ export default async function DashboardPage({
     } else {
       topSellerTodayData = { name: t('cards.top_seller_unavailable'), metricValue: '' };
     }
-    console.log("Top-Selling Item Today fetched:", topSellerTodayData);
-
 
     // 4. Low-Stock Alerts
-    console.log("Fetching Low-Stock Alerts...");
     let lowStockItemsCount = 0;
     if (FEATURE_FLAGS.lowStockAlerts) {
       const { data: lowStockData, error: lowStockError } = await supabase
@@ -193,7 +185,6 @@ export default async function DashboardPage({
       if (lowStockError) throw lowStockError;
       lowStockItemsCount = lowStockData?.filter(item => item.stock_level <= (item.threshold || 5)).length || 0;
     }
-    console.log("Low-Stock Alerts fetched:", lowStockItemsCount);
     
     dashboardData = {
       todaySales: todaySales,
@@ -201,7 +192,6 @@ export default async function DashboardPage({
       topSellerToday: topSellerTodayData,
       lowStockItemsCount: lowStockItemsCount,
     };
-    console.log("Dashboard data compiled:", dashboardData);
 
     // Fetch Recent Orders
     console.log("Fetching Recent Orders...");
@@ -221,7 +211,6 @@ export default async function DashboardPage({
       status: o.status as RecentOrder['status'],
       createdAt: new Date(o.created_at),
     })) || [];
-    console.log("Recent Orders fetched (initial):", recentOrdersData.length);
     
     // Simulate fetching items count for recent orders (this should be optimized in a real app, e.g., with an RPC or view)
     for (const order of recentOrdersData) {
@@ -233,8 +222,6 @@ export default async function DashboardPage({
             order.itemsCount = count;
         }
     }
-    console.log("Recent Orders fetched (with item counts):", recentOrdersData.length);
-
 
   } catch (error) {
     console.error("Error fetching dashboard data:", error);

@@ -119,7 +119,7 @@ export function AdminSidebar({ restaurantSettings, isOpen, setIsOpen }: AdminSid
             size="icon" 
             onClick={() => setIsOpen(false)} 
             className="lg:hidden" 
-            aria-label={t('sidebar.close_aria_label')}
+            aria-label={t('sidebar_close_aria_label')}
           >
             <X className="h-5 w-5" />
           </Button>

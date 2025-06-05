@@ -283,7 +283,8 @@
     "admin_tables_title": "Table & QR Management",
     "admin_employees_title": "Employee & Schedule Management",
     "admin_bookings_title": "Booking Management",
-    "admin_reports_title": "Reports & Analytics"
+    "admin_reports_title": "Reports & Analytics",
+    "sidebar_close_aria_label": "Close sidebar"
   },
   "AdminDashboard": {
     "title": "Dashboard",
