@@ -56,7 +56,7 @@ export default async function MenuPage({
         error={null}
       />
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching menu data:", error);
     return <MenuClientContent initialData={null} error={t('errors.data_fetch_error')} />;
   }

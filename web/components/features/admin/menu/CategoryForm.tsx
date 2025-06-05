@@ -26,9 +26,9 @@ interface CategoryFormProps {
   locale: string;
 }
 
-export function CategoryForm({ initialData, restaurantId, locale }: CategoryFormProps) {
+export function CategoryForm({ initialData, locale }: CategoryFormProps) {
   const t = useTranslations('AdminMenuPage.category_form');
-  const tValidation = useTranslations('Validation');
+  //const tValidation = useTranslations('Validation');
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -70,9 +70,9 @@ export function CategoryForm({ initialData, restaurantId, locale }: CategoryForm
       toast(initialData?.id ? t('update_success_desc') : t('create_success_desc'));
       router.push(`/${locale}/dashboard/menu`);
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving category:", error);
-      toast(error.message || t('error_desc') );
+      toast(error instanceof Error ? error.message : t('error_desc') );
     } finally {
       setIsLoading(false);
     }

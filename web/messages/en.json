@@ -299,6 +299,8 @@
     "form_hint": "Fields marked with * are required.",
     "cancel": "Cancel",
     "save": "Save",
+    "available": "Available",
+    "unavailable": "Unavailable",
     "category": {
       "update_success": "Category updated successfully!",
       "create_success": "Category created successfully!",
@@ -318,6 +320,15 @@
       "fri": "Friday",
       "sat": "Saturday",
       "sun": "Sunday"
+    },
+    "weekdays_short": {
+      "1_short": "Monday",
+      "2_short": "Tuesday",
+      "3_short": "Wednesday",
+      "4_short": "Thursday",
+      "5_short": "Friday",
+      "6_short": "Saturday",
+      "7_short": "Sunday"
     },
     "item": {
       "update_success": "Menu item updated successfully!",

@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings';
 import { headers } from 'next/headers';
-import { get } from 'http';
 import { getSubdomainFromHost } from '@/lib/utils';
 
 const categorySchema = z.object({
@@ -11,7 +10,7 @@ const categorySchema = z.object({
   position: z.number().optional().nullable(),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const host = (await headers()).get("host") || "";
     const subdomain = getSubdomainFromHost(host);
@@ -66,9 +65,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ categories }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json({ message: 'Internal server error', details: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknow error!" }, { status: 500 });
   }
 }
 
@@ -104,8 +103,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: 'Category created successfully', category: data }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json({ message: 'Internal server error', details: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknow error!" }, { status: 500 });
   }
 }

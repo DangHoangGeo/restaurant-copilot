@@ -12,11 +12,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
 // Define the schema for multi-language text
+/*
 const localizedStringSchema = z.object({
   en: z.string().min(1, { message: "validation.required_field" }).max(100, { message: "validation.max_length_100" }),
   ja: z.string().max(100, { message: "validation.max_length_100" }).optional(),
@@ -25,6 +26,7 @@ const localizedStringSchema = z.object({
   message: "validation.at_least_one_language_required",
   path: ["en"],
 });
+*/
 
 const menuItemFormSchema = z.object({
   name_en: z.string().min(1, { message: "validation.required_field" }).max(100, { message: "validation.max_length_100" }),
@@ -90,10 +92,10 @@ const WeekdaySelector = ({ selectedDays, onChange }: { selectedDays: string[], o
 };
 
 
-export function MenuItemForm({ initialData, restaurantId, categoryId, locale }: MenuItemFormProps) {
+export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormProps) {
   const t = useTranslations('AdminMenuPage.item_form');
   const tCommon = useTranslations('Common');
-  const tValidation = useTranslations('Validation');
+  //const tValidation = useTranslations('Validation');
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url || null);
@@ -203,9 +205,9 @@ export function MenuItemForm({ initialData, restaurantId, categoryId, locale }: 
       toast(initialData?.id ? t('update_success_desc') : t('create_success_desc') );
       router.push(`/${locale}/dashboard/menu`);
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving menu item:", error);
-      toast( error.message || t('error_desc') );
+      toast( error instanceof Error ? error.message : t('error_desc') );
     } finally {
       setIsLoading(false);
     }

@@ -20,12 +20,13 @@ import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
+/*
 interface LocalizedText {
   [key: string]: string | undefined;
   name_en?: string;
   name_ja?: string;
   name_vi?: string;
-}
+}*/
 
 interface MenuItem {
   id: string;
@@ -163,8 +164,9 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       }
 
       setIsCategoryModalOpen(false);
+	  setMenuData([]);
       router.refresh(); // Refresh the server component to get updated data
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving category:', error);
       toast.error(t('category.save_error'));
     }
@@ -181,7 +183,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       
       toast.success(t('category.delete_success'));
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting category:', error);
       toast.error(t('category.delete_error'));
     }
@@ -225,10 +227,11 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         if (error) throw error;
         toast.success(t('item.create_success'));
       }
+	  
 
       setIsItemModalOpen(false);
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving menu item:', error);
       toast.error(t('item.save_error'));
     }
@@ -245,7 +248,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       
       toast.success(t('item.delete_error'));
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting menu item:', error);
       toast.error(t('item.delete_error'));
     }
@@ -363,7 +366,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
                                   key={day}
                                   className="text-xs bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded"
                                 >
-                                  {t(`weekdays.${day.toLowerCase()}_short`)}
+                                  {day && t(`weekdays_short.${day}_short`)}
                                 </span>
                               ))}
                             </div>
