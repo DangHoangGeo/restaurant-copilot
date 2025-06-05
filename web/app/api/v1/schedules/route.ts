@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createRouteHandlerClient, SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -23,7 +23,7 @@ const createScheduleSchema = z.object({
 
 
 // Placeholder for getting restaurant_id from user session or JWT
-async function getRestaurantIdFromSession(supabase: any): Promise<string | null> {
+async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<string | null> {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError || !session) {
     console.error("Session error for schedule create:", sessionError);
@@ -86,11 +86,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(createdSchedule, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Unexpected error in create schedule API:', error);
-    if (error.name === 'SyntaxError') { // Handle JSON parsing error
+    if ((error as Error).name === 'SyntaxError') { // Handle JSON parsing error
         return NextResponse.json({ error: 'Invalid JSON format in request body.' }, { status: 400 });
     }
-    return NextResponse.json({ error: 'An unexpected error occurred.', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: 'An unexpected error occurred.', details: errorMessage }, { status: 500 });
   }
 }

@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 type SignupFormInputs = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
-  const t = useTranslations('SignupPage');
+  const t = useTranslations('auth');
   const router = useRouter();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -148,7 +148,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">{t('title')}</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">{t('title.signup')}</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">

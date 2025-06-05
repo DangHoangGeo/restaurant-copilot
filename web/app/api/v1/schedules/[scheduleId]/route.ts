@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createRouteHandlerClient, SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -24,7 +24,7 @@ const updateScheduleSchema = z.object({
 
 
 // Placeholder for getting restaurant_id from user session or JWT
-async function getRestaurantIdFromSession(supabase: any): Promise<string | null> {
+async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<string | null> {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError || !session) {
     console.error("Session error for schedule update/delete:", sessionError);
@@ -97,12 +97,13 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(updatedSchedule, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Unexpected error in update schedule API:', error);
-     if (error.name === 'SyntaxError') {
-        return NextResponse.json({ error: 'Invalid JSON format.' }, { status: 400 });
+    if ((error as Error).name === 'SyntaxError') { // Handle JSON parsing error
+      return NextResponse.json({ error: 'Invalid JSON format in request body.' }, { status: 400 });
     }
-    return NextResponse.json({ error: 'An unexpected error occurred.', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: 'An unexpected error occurred.', details: errorMessage }, { status: 500 });
   }
 }
 
@@ -140,8 +141,9 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ message: 'Schedule deleted successfully.' }, { status: 200 }); // Or 204 No Content
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Unexpected error in delete schedule API:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred.', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: 'An unexpected error occurred.', details: errorMessage }, { status: 500 });
   }
 }

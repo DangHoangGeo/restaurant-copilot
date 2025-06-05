@@ -1,10 +1,10 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createRouteHandlerClient, SupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Placeholder for getting restaurant_id from user session or JWT
 // In a real app, this would involve decoding a JWT or querying a session table
-async function getRestaurantIdFromSession(supabase: any): Promise<string | null> {
+async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<string | null> {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError || !session) {
     console.error("Session error or no session for table delete:", sessionError);
@@ -53,8 +53,9 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ message: 'Table deleted successfully.' }, { status: 200 }); // Or 204 No Content
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Unexpected error in delete table API:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred.', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: 'An unexpected error occurred.', details: errorMessage }, { status: 500 });
   }
 }

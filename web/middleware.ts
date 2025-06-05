@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import createMiddleware from 'next-intl/middleware';
 import {routing} from './i18n/routing';
+import { jwtVerify } from 'jose';
+import { parse } from 'cookie';
 
 const nextIntlMiddleware = createMiddleware(routing);
 
 const ROOT_DOMAIN = 'baoan.jp';
 const W_ROOT_DOMAIN = 'www.baoan.jp';
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "your-super-secret-jwt-key"); // Must be a Uint8Array
 
 function extractSubdomain(request: NextRequest): string | null {
   const host = request.headers.get('host') || '';
@@ -47,6 +50,56 @@ function extractSubdomain(request: NextRequest): string | null {
 
 export async function middleware(req: NextRequest) {
   const subdomain = extractSubdomain(req);
+  const pathname = req.nextUrl.pathname;
+  const isDashboardRoute = pathname.startsWith('/dashboard'); // Adjust as needed for other protected routes
+  const isLoginPage = pathname.startsWith('/login');
+  const isSignupPage = pathname.startsWith('/signup');
+  const isForgotPasswordPage = pathname.startsWith('/forgot-password');
+
+  // Handle authentication for dashboard routes
+  if (isDashboardRoute) {
+    const cookies = parse(req.headers.get('cookie') || '');
+    const authToken = cookies.auth_token;
+
+    if (!authToken) {
+      // No token, redirect to login page
+      const loginUrl = new URL(`/${req.nextUrl.locale}/login`, req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    try {
+      // Verify the token
+      const { payload } = await jwtVerify(authToken, JWT_SECRET);
+
+      // Optionally, attach user/restaurant info to request headers for server components
+      // req.headers.set('x-user-id', payload.userId as string);
+      // req.headers.set('x-restaurant-id', payload.restaurantId as string);
+      // req.headers.set('x-restaurant-subdomain', payload.subdomain as string);
+
+    } catch (error) {
+      console.error('JWT verification failed:', error);
+      // Invalid token, redirect to login page
+      const loginUrl = new URL(`/${req.nextUrl.locale}/login`, req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  } else if (isLoginPage || isSignupPage || isForgotPasswordPage) {
+    // If user is already logged in (has a token) and tries to access login/signup, redirect to dashboard
+    const cookies = parse(req.headers.get('cookie') || '');
+    const authToken = cookies.auth_token;
+    if (authToken) {
+      try {
+        const { payload } = await jwtVerify(authToken, JWT_SECRET);
+        const userSubdomain = payload.subdomain as string;
+        if (userSubdomain) {
+          const dashboardUrl = new URL(`https://${userSubdomain}.baoan.jp/${req.nextUrl.locale}/dashboard`);
+          return NextResponse.redirect(dashboardUrl);
+        }
+      } catch (error) {
+        // Token invalid, allow access to login/signup
+        console.warn('Invalid token on login/signup page, allowing access.');
+      }
+    }
+  }
 
   // If no subdomain, allow visit: signup, login, landing pages
   if (!subdomain) {
@@ -81,5 +134,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|static|favicon.ico).*)"],
+  matcher: ["/((?!api|_next|static|favicon.ico|.*\\..*).*)"], // Exclude static assets and files with extensions
 };
