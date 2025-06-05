@@ -16,6 +16,10 @@ struct ShopCopilotApp: App {
     /// Instantiated as a `@StateObject` to ensure it persists throughout the app's lifecycle.
     @StateObject var authViewModel = AuthenticationViewModel()
 
+    /// Service responsible for managing active orders. In a real app this would
+    /// connect to Supabase Realtime.
+    @StateObject var orderService = OrderService()
+
     /// A unique identifier used to force re-rendering of the `ContentView` when critical
     /// global settings (like language) change. This is a common workaround in SwiftUI
     /// for scenarios where direct state binding might not trigger a deep refresh of the view hierarchy.
@@ -30,6 +34,8 @@ struct ShopCopilotApp: App {
                 .environmentObject(tenantViewModel)
                 // Provide the AuthenticationViewModel to the view hierarchy as an environment object.
                 .environmentObject(authViewModel)
+                // Provide order management service throughout the app.
+                .environmentObject(orderService)
                 // Apply the unique ID to the ContentView. Changing this ID will cause SwiftUI
                 // to reconstruct the ContentView and its children, helping to reflect global state changes.
                 .id(viewID)

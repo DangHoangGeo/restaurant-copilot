@@ -64,3 +64,17 @@
 "tab_menu" = "メニュー";
 "tab_my_orders" = "注文";
 "tab_customer_profile" = "プロフィール";
+
+/* Orders */
+"orders_title" = "注文一覧";
+"table_number_format" = "テーブル%@";
+"status_new" = "新規";
+"status_preparing" = "調理中";
+"status_ready" = "準備完了";
+"status_completed" = "完了";
+"order_detail_title" = "注文詳細";
+"total_label" = "合計";
+"mark_preparing_button" = "調理開始";
+"mark_ready_button" = "提供準備";
+"complete_print_button" = "完了して印刷";
+"tab_orders" = "注文";

@@ -64,3 +64,17 @@
 "tab_menu" = "Thực đơn";
 "tab_my_orders" = "Đơn hàng";
 "tab_customer_profile" = "Hồ sơ";
+
+/* Orders */
+"orders_title" = "Đơn hàng";
+"table_number_format" = "Bàn %@";
+"status_new" = "Mới";
+"status_preparing" = "Đang chuẩn bị";
+"status_ready" = "Sẵn sàng";
+"status_completed" = "Hoàn tất";
+"order_detail_title" = "Chi tiết đơn";
+"total_label" = "Tổng";
+"mark_preparing_button" = "Đánh dấu chuẩn bị";
+"mark_ready_button" = "Đánh dấu sẵn sàng";
+"complete_print_button" = "Hoàn tất & In";
+"tab_orders" = "Đơn hàng";
