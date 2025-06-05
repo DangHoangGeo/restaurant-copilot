@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logEvent } from "../../../../../lib/logger";
 import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
-import { SignJWT } from "jose/jwt";
+import { SignJWT } from "jose";
 import { TextEncoder } from "util";
 import { serialize } from "cookie";
 

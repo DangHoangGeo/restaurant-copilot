@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose/jwt';
+import { jwtVerify } from 'jose';
 import { TextEncoder } from 'util';
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key";
