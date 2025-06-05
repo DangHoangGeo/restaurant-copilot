@@ -318,7 +318,9 @@
     },
     "errors": {
       "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
-      "data_fetch_error": "Failed to load dashboard data. Please try again later."
+      "data_fetch_error": "Failed to load dashboard data. Please try again later.",
+      "unauthorized_access": "Access Denied: You are not authorized to view this page.",
+      "mismatched_restaurant_access": "Access Denied: You are not authorized to view this restaurant's data."
     },
     "feature": {
         "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard"

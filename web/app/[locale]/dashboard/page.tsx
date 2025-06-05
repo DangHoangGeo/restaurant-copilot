@@ -1,6 +1,7 @@
 import { DashboardClientContent, DashboardData } from './dashboard-client-content';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/utils/supabase/server'; // Your server Supabase client
+import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings'; // Assuming this exists
 import { headers } from 'next/headers';
 import { RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable'; // Import the type
@@ -8,17 +9,38 @@ import { FEATURE_FLAGS } from '@/config/feature-flags';
 
 // Helper to get subdomain, this should be robust
 function getSubdomainFromHost(host: string): string | null {
+  if (!host) return null;
+
+  const hostname = host.split(':')[0]; // Remove port
+
+  // Handle localhost
+  if (hostname.includes('localhost')) {
+    const parts = hostname.split('.');
+    if (parts.length > 1 && parts[0] !== 'localhost') { // e.g., sub.localhost
+      return parts[0];
+    }
+    return null; // Just 'localhost' or invalid
+  }
+
+  // Handle production domain
+  const rootDomain = process.env.NEXT_PRIVATE_PRODUCTION_URL || 'baoan.jp'; // Consistent root domain
   
-  const parts = host.split('.');
-	// Determine root domain parts for production and handle localhost in development
-	let rootDomainParts = (process.env.NEXT_PRIVATE_PRODUCTION_URL || 'qorder.jp').split('.').length;
-	// If running on localhost, treat 'localhost' as the root domain
-	if (host.includes('localhost')) {
-		rootDomainParts = 1; // 'abc.localhost:3000' => ['abc', 'localhost:3000']
-	}
-	if (parts.length > rootDomainParts) {
-		return parts[0];
-	}
+  if (hostname === rootDomain || hostname === `www.${rootDomain}`) {
+    return null;
+  }
+
+  const parts = hostname.split('.');
+  if (parts.length > 2) {
+    // Check if the end of the hostname matches the rootDomain
+    // e.g., if host is sub.example.com, parts = [sub, example, com]
+    // and rootDomain is example.com
+    const potentialSubdomain = parts.slice(0, parts.length - (rootDomain.split('.').length)).join('.');
+    const reconstructedDomain = parts.slice(parts.length - (rootDomain.split('.').length)).join('.');
+
+    if (reconstructedDomain === rootDomain && potentialSubdomain) {
+      return potentialSubdomain;
+    }
+  }
 
   return null;
 }
@@ -33,19 +55,36 @@ export default async function DashboardPage({
   const t = await getTranslations({locale, namespace: 'AdminDashboard'});
   const supabase = createClient();
 
-  let restaurantId: string | null = null;
+  const authUser = await getUserFromRequest();
+
+  let restaurantIdFromSubdomainUrl: string | null = null;
   const host = (await headers()).get("host") || "";
   const subdomain = getSubdomainFromHost(host);
 
   if (subdomain) {
-    restaurantId = await getRestaurantIdFromSubdomain(subdomain); // Implement this function
+    restaurantIdFromSubdomainUrl = await getRestaurantIdFromSubdomain(subdomain); // Implement this function
   }
 
-  if (!restaurantId) {
-    // Handle case where restaurantId couldn't be determined
-    // This might involve redirecting or showing an error specific to multi-tenancy setup
-    console.log("Restaurant ID not found, rendering error state."); // Add this log
+  // Security Check
+  if (!authUser) {
+    console.error("Security Alert: No authenticated user found. Cannot display dashboard.");
+    // Option: redirect to login
+    // return redirect(`/${locale}/login`);
+    return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.unauthorized_access')} />;
+  }
+
+  if (!restaurantIdFromSubdomainUrl) {
+    // This case is already handled: restaurantId not found, shows error.
+    // But now, ensure it's distinguished from unauthorized access if needed.
+    // For now, the existing handling is okay, but authUser check should come first.
+    console.log("Restaurant ID not found for subdomain, rendering error state.");
     return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.restaurant_not_found')} />;
+  }
+
+  if (authUser.restaurantId !== restaurantIdFromSubdomainUrl) {
+    console.error(`Security Alert: User ${authUser.userId} (Restaurant ID: ${authUser.restaurantId}) attempted to access dashboard for restaurant ${restaurantIdFromSubdomainUrl} via subdomain ${subdomain}.`);
+    return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.mismatched_restaurant_access')} />;
+    // Ensure 'errors.mismatched_restaurant_access' is a valid translation key or add it.
   }
   
   let dashboardData: DashboardData | null = null;
@@ -64,7 +103,7 @@ export default async function DashboardPage({
     const { data: salesData, error: salesError } = await supabase
       .from('orders')
       .select('total_amount')
-      .eq('restaurant_id', restaurantId)
+      .eq('restaurant_id', restaurantIdFromSubdomainUrl)
       .gte('created_at', `${today}T00:00:00.000Z`)
       .lte('created_at', `${today}T23:59:59.999Z`)
       .eq('status', 'completed'); // Only completed orders for sales
@@ -78,7 +117,7 @@ export default async function DashboardPage({
     const { count: activeOrdersCount, error: activeOrdersError } = await supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
-      .eq('restaurant_id', restaurantId)
+      .eq('restaurant_id', restaurantIdFromSubdomainUrl)
       .not('status', 'in', '("completed", "canceled")'); // Active = not completed or canceled
     
     if (activeOrdersError) throw activeOrdersError;
@@ -94,7 +133,7 @@ export default async function DashboardPage({
         quantity,
         menu_items (id, name_en, name_ja, name_vi)
       `)
-      .eq('restaurant_id', restaurantId)
+      .eq('restaurant_id', restaurantIdFromSubdomainUrl)
       // .filter('orders.created_at', 'gte', `${today}T00:00:00.000Z`) // Requires join with orders table
       // .filter('orders.created_at', 'lte', `${today}T23:59:59.999Z`)
       .limit(50); // Fetch recent items to aggregate
@@ -147,7 +186,7 @@ export default async function DashboardPage({
       const { data: lowStockData, error: lowStockError } = await supabase
         .from('inventory_items') // Ensure this table name and columns are correct
         .select('id, stock_level, threshold')
-        .eq('restaurant_id', restaurantId)
+        .eq('restaurant_id', restaurantIdFromSubdomainUrl)
         // .lte('stock_level', 'threshold_column_name'); // If threshold is a column
         // If threshold is a fixed value or per-item, adjust query
       
@@ -169,7 +208,7 @@ export default async function DashboardPage({
     const { data: orders, error: ordersError } = await supabase
       .from('orders')
       .select('id, table_id, total_amount, status, created_at, tables (name)') // Join with tables to get table name
-      .eq('restaurant_id', restaurantId)
+      .eq('restaurant_id', restaurantIdFromSubdomainUrl)
       .order('created_at', { ascending: false })
       .limit(5); // Get last 5 orders
 
