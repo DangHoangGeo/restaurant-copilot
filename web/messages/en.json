@@ -245,7 +245,6 @@
         "warning": { "title": "Warning" },
         "error": { "title": "Error" }
     },
-    "currency_format": "{value, number, ::currency/JPY}",
     "mark_resolved": "Mark Resolved",
     "mark_unresolved": "Mark Unresolved"
   },
@@ -286,6 +285,65 @@
     "admin_bookings_title": "Booking Management",
     "admin_reports_title": "Reports & Analytics",
     "sidebar_close_aria_label": "Close sidebar"
+  },
+  "AdminMenu": {
+    "title": "Menu Management",
+    "add_category": "Add Category",
+    "add_item": "Add Item",
+    "edit": "Edit",
+    "delete": "Delete",
+    "low_stock": "Low Stock",
+    "no_items_in_category": "No menu items in this category yet. Click 'Add Item' to add one.",
+    "edit_category": "Edit Category",
+    "edit_item": "Edit Item",
+    "form_hint": "Fields marked with * are required.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "category": {
+      "update_success": "Category updated successfully!",
+      "create_success": "Category created successfully!",
+      "save_error": "Failed to save category. Please try again.",
+      "delete_success": "Category deleted successfully!",
+      "delete_error": "Failed to delete category. Please try again.",
+      "name_en": "Category Name (English)",
+      "name_ja": "Category Name (Japanese)",
+      "name_vi": "Category Name (Vietnamese)",
+      "order": "Display Order"
+    },
+    "weekdays": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    },
+    "item": {
+      "update_success": "Menu item updated successfully!",
+      "create_success": "Menu item created successfully!",
+      "save_error": "Failed to save menu item. Please try again.",
+      "delete_error": "Failed to delete menu item. Please try again.",
+      "name_en": "Item Name (English)",
+      "name_ja": "Item Name (Japanese)",
+      "name_vi": "Item Name (Vietnamese)",
+      "description_en": "Description (English)",
+      "description_ja": "Description (Japanese)",
+      "description_vi": "Description (Vietnamese)",
+      "price": "Price",
+      "image_url": "Image URL",
+      "upload_image": "Upload Image",
+      "image_upload_note": "Upload an image for the menu item (max 5MB).",
+      "stock_level": "Stock Level",
+      "is_available": "Is Available?",
+      "weekday_visibility": "Visible on Weekdays"
+    },
+    "errors": {
+      "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
+      "data_fetch_error": "Failed to load menu data. Please try again later.",
+      "no_categories_found": "No menu categories found. Please add a category to get started."
+    },
+    "currency_format": "{value, number, ::currency/JPY}"
   },
   "AdminDashboard": {
     "title": "Dashboard",
