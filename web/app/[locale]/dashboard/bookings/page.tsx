@@ -10,5 +10,25 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
   const host = (await headers()).get('host') || ''
   const subdomain = getSubdomainFromHost(host)
   const restaurantSettings = subdomain ? await getRestaurantSettingsFromSubdomain(subdomain) : null
-  return <BookingsClientContent restaurantSettings={restaurantSettings ?? { name: 'Restaurant', logoUrl: null }} />
+
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
+  const apiUrl = `${baseUrl}/api/v1/bookings`
+  let initialBookings = null
+  try {
+    const res = await fetch(apiUrl, { headers: { 'Content-Type': 'application/json' }, cache: 'no-store' })
+    if (res.ok) {
+      const data = await res.json()
+      initialBookings = data.bookings
+    }
+  } catch (e) {
+    console.error('Failed to fetch bookings', e)
+  }
+
+  return (
+    <BookingsClientContent
+      restaurantSettings={restaurantSettings ?? { name: 'Restaurant', logoUrl: null }}
+      initialBookings={initialBookings}
+    />
+  )
 }
