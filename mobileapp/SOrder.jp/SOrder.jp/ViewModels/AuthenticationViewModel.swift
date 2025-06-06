@@ -24,6 +24,9 @@ class AuthenticationViewModel: ObservableObject {
     @AppStorage("restaurantId") private var restaurantId: String = ""
     @AppStorage("userRole") var userRole: String = "" // Stores the role derived from JWT
 
+    /// Published copy of `restaurantId` for views to observe changes.
+    @Published var restaurantIdPublished: String = ""
+
     // MARK: - Properties
 
     /// The service responsible for performing authentication operations.
@@ -39,6 +42,7 @@ class AuthenticationViewModel: ObservableObject {
     init(authService: AuthService = AuthService(), orderService: OrderService) {
         self.authService = authService
         self.orderService = orderService
+        self.restaurantIdPublished = restaurantId
         // Check if a token exists on init, potentially validate it and set isAuthenticated
         if !jwtToken.isEmpty {
             // Basic check, ideally validate token expiry etc.
@@ -157,6 +161,7 @@ class AuthenticationViewModel: ObservableObject {
         }
 
         self.restaurantId = restaurantIdClaim
+        self.restaurantIdPublished = restaurantIdClaim
         self.userRole = roleClaim
 
         if let emailFromToken = json["email"] as? String {
@@ -187,6 +192,7 @@ class AuthenticationViewModel: ObservableObject {
             self.currentUsername = ""
             self.jwtToken = ""
             self.restaurantId = ""
+            self.restaurantIdPublished = ""
             self.userRole = ""
             // Don't clear self.authError here if called from parsing, as it's set by the caller.
             // If called from logout(), authError is cleared explicitly after this.

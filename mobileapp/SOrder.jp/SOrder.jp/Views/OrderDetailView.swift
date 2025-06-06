@@ -11,6 +11,12 @@ struct OrderDetailView: View {
     @EnvironmentObject var service: OrderService // Use EnvironmentObject
     @Environment(\.dismiss) private var dismiss
     @State private var updateError: String? = nil // For showing errors
+    @State private var isPrinting = false
+    @State private var printError: String? = nil
+    @State private var showPrintSuccess = false
+
+    private let printerService = PrinterService.shared
+    private let formatter = PrintFormatter()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -74,6 +80,17 @@ struct OrderDetailView: View {
                 }
             }
         }
+        .alert(NSLocalizedString("print_error_title", comment: ""), isPresented: Binding<Bool>(
+            get: { printError != nil },
+            set: { if !$0 { printError = nil } }
+        )) {
+            Button("OK", role: .cancel) { printError = nil }
+        } message: {
+            Text(printError ?? "")
+        }
+        .alert(NSLocalizedString("print_success_title", comment: ""), isPresented: $showPrintSuccess) {
+            Button("OK", role: .cancel) { }
+        }
     }
 
     @ViewBuilder
@@ -83,6 +100,11 @@ struct OrderDetailView: View {
 
         HStack { // Use HStack for horizontal layout of buttons if multiple can appear
             Spacer()
+            Button(NSLocalizedString("print_button", comment: "")) {
+                Task { await printOrder() }
+            }
+            .buttonStyle(.bordered)
+            .disabled(isPrinting)
             switch order.status {
             case .new:
                 Button(NSLocalizedString("mark_preparing_button", comment: "")) {
@@ -131,6 +153,22 @@ struct OrderDetailView: View {
                 print("Error updating order status: \(error.localizedDescription)")
                 self.updateError = error.localizedDescription
             }
+        }
+    }
+
+    private func printOrder() async {
+        isPrinting = true
+        printError = nil
+        defer { isPrinting = false }
+        guard let data = formatter.formatOrderForKitchen(order: order) else {
+            printError = NSLocalizedString("print_format_error", comment: "")
+            return
+        }
+        do {
+            try await printerService.connectAndSendData(data: data)
+            showPrintSuccess = true
+        } catch {
+            printError = error.localizedDescription
         }
     }
 }
