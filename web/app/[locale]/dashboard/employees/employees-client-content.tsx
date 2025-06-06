@@ -33,7 +33,7 @@ export function EmployeesClientContent() {
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
   const handleOpenModal = (employee: Employee | null = null) => {
-    setEditingEmployee(employee || { name: '', email: '', role: 'server', shifts: {} })
+    setEditingEmployee(employee || { id: '', name: '', email: '', role: 'server', shifts: {} })
     setIsModalOpen(true)
   }
   const handleSave = () => {
@@ -49,7 +49,9 @@ export function EmployeesClientContent() {
             <Button size="sm" variant={viewMode === 'list' ? 'primary' : 'ghost'} onClick={() => setViewMode('list')} className={`rounded-lg ${viewMode === 'list' ? '' : 'text-slate-600 dark:text-slate-300'}`}><List className="mr-1 sm:mr-2" /> {t('Common.list')}</Button>
             <Button size="sm" variant={viewMode === 'schedule' ? 'primary' : 'ghost'} onClick={() => setViewMode('schedule')} className={`rounded-lg ${viewMode === 'schedule' ? '' : 'text-slate-600 dark:text-slate-300'}`}><Calendar className="mr-1 sm:mr-2" /> {t('Common.schedule')}</Button>
           </div>
-          <Button onClick={() => handleOpenModal()} iconLeft={UserPlus}>{t('AdminEmployees.add_employee')}</Button>
+          <Button onClick={() => handleOpenModal()}>
+            <UserPlus className="mr-1 sm:mr-2" />
+            {t('AdminEmployees.add_employee')}</Button>
         </div>
       </div>
       {viewMode === 'list' && (
@@ -60,14 +62,16 @@ export function EmployeesClientContent() {
               <p className="text-sm text-[--brand-color]">{t(`Roles.${emp.role}`)}</p>
               <p className="text-sm text-slate-500 dark:text-slate-400">{emp.email}</p>
               <div className="mt-4 flex justify-end">
-                <Button size="sm" variant="secondary" iconLeft={SquarePen} onClick={() => handleOpenModal(emp)}>{t('Common.edit')}</Button>
+                <Button size="sm" variant="secondary" onClick={() => handleOpenModal(emp)}>
+                  <SquarePen className="mr-1 sm:mr-2" />
+                  {t('Common.edit')}</Button>
               </div>
             </Card>
           ))}
         </div>
       )}
       {viewMode === 'schedule' && (
-        <Card noPadding>
+        <Card className="p-4 space-y-4">
           <p className="p-4 text-sm text-slate-600 dark:text-slate-400">{t('AdminEmployees.schedule_calendar_note')}</p>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px] text-sm border-collapse">
@@ -85,7 +89,7 @@ export function EmployeesClientContent() {
                     </td>
                     {daysOfWeek.map(day => (
                       <td key={day} className="p-1 border dark:border-slate-600 text-center align-top">
-                        <div className={`p-1.5 rounded text-xs min-h-[30px] ${emp.shifts[day] ? 'bg-[--brand-color]/20 text-[--brand-color]-700 dark:text-[--brand-color]-300' : 'text-slate-400 dark:text-slate-500'}`}>{emp.shifts[day] || t('Common.off_duty')}</div>
+                        <div className={`p-1.5 rounded text-xs min-h-[30px] ${(emp.shifts as Record<string, string | null>)[day] ? 'bg-[--brand-color]/20 text-[--brand-color]-700 dark:text-[--brand-color]-300' : 'text-slate-400 dark:text-slate-500'}`}>{((emp.shifts as Record<string, string | null>)[day]) || t('Common.off_duty')}</div>
                       </td>
                     ))}
                   </tr>
@@ -94,7 +98,9 @@ export function EmployeesClientContent() {
             </table>
           </div>
           <div className="p-4 border-t dark:border-slate-700 text-right">
-            <Button iconLeft={CalendarCheck2} onClick={() => alert(t('AdminEmployees.edit_shifts_action'))}>{t('AdminEmployees.edit_shifts')}</Button>
+            <Button onClick={() => alert(t('AdminEmployees.edit_shifts_action'))}>
+              <CalendarCheck2 className="mr-1 sm:mr-2" />
+              {t('AdminEmployees.edit_shifts')}</Button>
           </div>
         </Card>
       )}

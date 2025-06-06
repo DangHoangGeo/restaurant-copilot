@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle, Sparkles } from 'lucide-react'
 
-const MOCK_MENU_CATEGORIES_BASE = [{ items: [{ id: 'item1', name: { en: 'Sample Item' } }] }]
+const MOCK_MENU_CATEGORIES_BASE = [{ items: [{ id: 'item1', name: { en: 'Sample Item' } as Record<string, string> }] }]
 
 export function ReportsClientContent() {
   const t = useTranslations()
@@ -15,7 +15,7 @@ export function ReportsClientContent() {
   const locale = (params.locale as string) || 'en'
   const [activeTab, setActiveTab] = useState<'sales' | 'items' | 'feedback'>('sales')
 
-  const SummaryCard = ({ title, value, icon: IconComponent, color }: { title: string; value: string | number; icon: React.ComponentType<{ size?: number }>; color: string }) => (
+  const SummaryCard = ({ title, value, icon: IconComponent, color }: { title: string; value: string | number; icon: React.ComponentType<{ size?: number; className?: string }>; color: string }) => (
     <Card className="p-4">
       <div className="flex items-center justify-between">
         <div>
@@ -75,7 +75,9 @@ export function ReportsClientContent() {
         <ul className="space-y-1 text-sm">
           <li><span>{MOCK_MENU_CATEGORIES_BASE[0].items[0].name[locale] || 'Item'}</span> <span className="font-medium">10 {t('Common.sold')}</span></li>
         </ul>
-        <Button variant="primary" className="mt-4 w-full sm:w-auto" iconLeft={Sparkles}>{t('AdminReports.recommendations.apply_button')}</Button>
+        <Button variant="primary" className="mt-4 w-full sm:w-auto">
+          <Sparkles className="mr-2" />
+          {t('AdminReports.recommendations.apply_button')}</Button>
       </Card>
     </div>
   )

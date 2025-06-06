@@ -58,7 +58,9 @@ export function TablesClientContent({ restaurantSettings }: { restaurantSettings
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('AdminNav.admin_tables_title')}</h2>
-        <Button onClick={() => handleOpenTableModal()} iconLeft={PlusCircle}>{t('AdminTables.add_table')}</Button>
+        <Button onClick={() => handleOpenTableModal()}> 
+          <PlusCircle className="mr-2" />
+          {t('AdminTables.add_table')}</Button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {tables.map(table => (
@@ -67,8 +69,12 @@ export function TablesClientContent({ restaurantSettings }: { restaurantSettings
             <p className="text-sm text-slate-500 dark:text-slate-400">{t('AdminTables.capacity')}: {table.capacity}</p>
             {table.position && <p className="text-sm text-slate-500 dark:text-slate-400">{t('AdminTables.position')}: {table.position}</p>}
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button size="sm" variant="secondary" iconLeft={SquarePen} onClick={() => handleOpenTableModal(table)}>{t('Common.edit')}</Button>
-              <Button size="sm" variant="primary" iconLeft={QrCode} onClick={() => handleGenerateQr(table)}>{t('AdminTables.generate_qr')}</Button>
+              <Button size="sm" variant="secondary" onClick={() => handleOpenTableModal(table)}>
+                <SquarePen className="mr-1" />
+                {t('Common.edit')}</Button>
+              <Button size="sm" variant="primary" onClick={() => handleGenerateQr(table)}>
+                <QrCode className="mr-1" />
+                {t('AdminTables.generate_qr')}</Button>
             </div>
           </Card>
         ))}
@@ -94,7 +100,8 @@ export function TablesClientContent({ restaurantSettings }: { restaurantSettings
           {selectedTableForQr && (
             <div className="text-center">
               <QRCodeDisplay value={qrCodeUrl} size={256} />
-              <Button variant="primary" iconLeft={FileDown} className="mt-6 w-full" onClick={() => alert(t('AdminTables.download_png_action'))}>
+              <Button variant="primary" className="mt-6 w-full" onClick={() => alert(t('AdminTables.download_png_action'))}>
+                <FileDown className="mr-2" />
                 {t('AdminTables.download_png')}
               </Button>
             </div>

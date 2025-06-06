@@ -85,6 +85,7 @@ const MOCK_TABLES_BASE = [
 ]
 
 // Cart context
+/**
 interface MenuItem {
   id: string;
   name: any; // Can be localized object or string
@@ -95,7 +96,7 @@ interface MenuItem {
   weekdayVisibility: string[];
   averageRating?: number;
   reviewCount?: number;
-}
+} */
 
 interface CartItem {
   itemId: string;
@@ -633,7 +634,7 @@ export function CustomerClientContent({ restaurantSettings }: { restaurantSettin
     window.scrollTo(0, 0)
   }
 
-  let Screen: JSX.Element | null = null
+  let Screen: ReactNode | null = null
   if (view === 'menu') Screen = <CustomerMenuScreen setView={setView} restaurantSettings={restaurantSettings} viewProps={viewProps} />
   if (view === 'checkout') Screen = <CheckoutScreen setView={setView} restaurantSettings={restaurantSettings} viewProps={viewProps} />
   if (view === 'thankyou') Screen = <ThankYouScreen setView={setView} restaurantSettings={restaurantSettings} viewProps={viewProps} />

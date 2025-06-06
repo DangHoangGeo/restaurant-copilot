@@ -29,13 +29,24 @@ interface Booking {
   preOrderItems: PreOrderItem[]
 }
 
-export function BookingsClientContent() {
+interface BookingsClientContentProps {
+  restaurantSettings: {
+    name: string;
+    logoUrl: string | null;
+    subdomain?: string;
+    primaryColor?: string;
+    defaultLocale?: string;
+  };
+}
+
+export function BookingsClientContent({ restaurantSettings }: BookingsClientContentProps) {
   const t = useTranslations()
   const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS_BASE)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
 
   if (!process.env.NEXT_PUBLIC_FEATURE_TABLEBOOKING) {
+    console.warn('Table booking feature is not enabled.',restaurantSettings.name)
     return <Card className="p-4">Coming soon</Card>
   }
 
