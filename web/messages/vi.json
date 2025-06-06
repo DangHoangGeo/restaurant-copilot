@@ -33,7 +33,11 @@
     "captchaExpired": "CAPTCHA đã hết hạn. Vui lòng xác minh lại.",
     "registrationFailed": "Đăng ký thất bại. Vui lòng thử lại.",
     "registering": "Đang đăng ký...",
-    "registerButton": "Đăng ký"
+    "registerButton": "Đăng ký",
+    "twoFactorTitle": "Xác minh hai bước",
+    "otpLabel": "Mã xác thực",
+    "verifyOtpButton": "Xác minh",
+    "otpInvalid": "Mã không hợp lệ. Vui lòng thử lại."
   },
   "LandingPage": {
     "header": {

@@ -33,7 +33,11 @@
     "captchaExpired": "CAPTCHAの有効期限が切れました。再認証してください。",
     "registrationFailed": "登録に失敗しました。もう一度お試しください。",
     "registering": "登録中...",
-    "registerButton": "登録"
+    "registerButton": "登録",
+    "twoFactorTitle": "二段階認証",
+    "otpLabel": "認証コード",
+    "verifyOtpButton": "確認する",
+    "otpInvalid": "コードが正しくありません。もう一度お試しください。"
   },
   "LandingPage": {
     "header": {

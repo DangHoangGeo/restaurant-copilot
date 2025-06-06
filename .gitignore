@@ -8,6 +8,8 @@
 # testing
 /coverage
 
+*.plist
+
 # next.js
 /.next/
 /out/

@@ -37,7 +37,11 @@
     "captchaExpired": "CAPTCHA expired. Please re-verify.",
     "registrationFailed": "Registration failed. Please try again.",
     "registering": "Registering...",
-    "registerButton": "Register"
+    "registerButton": "Register",
+    "twoFactorTitle": "Two-Factor Verification",
+    "otpLabel": "Authentication Code",
+    "verifyOtpButton": "Verify Code",
+    "otpInvalid": "Invalid code. Please try again."
   },
   "LandingPage": {
     "header": {

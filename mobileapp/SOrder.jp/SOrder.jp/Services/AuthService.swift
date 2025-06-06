@@ -28,6 +28,7 @@ class AuthService {
     private let supabaseClient: SupabaseClient
 
     init() {
+        //print("Initializing AuthService", Config.supabaseUrl)
         self.supabaseClient = SupabaseClient(
             supabaseURL: URL(string: Config.supabaseUrl)!,
             supabaseKey: Config.supabaseAnonKey
@@ -44,6 +45,7 @@ class AuthService {
     func login(email: String, password: String, completion: @escaping (Result<Session, AuthError>) -> Void) {
         Task {
             do {
+                print("Logining in")
                 // Basic validation: email and password should not be empty.
                 guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                       !password.isEmpty else {
@@ -52,7 +54,8 @@ class AuthService {
                 }
 
                 let session = try await supabaseClient.auth.signIn(email: email, password: password)
-                    completion(.success(session))
+                print("Login successful, session: \(session)")
+                completion(.success(session))
                 
             } catch {
                 // If the error is a GoTrueError, handle invalid credentials specifically

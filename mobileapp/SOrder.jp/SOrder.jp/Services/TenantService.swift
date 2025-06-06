@@ -27,7 +27,7 @@ class TenantService {
             case "thuanviet":
                 let tenantA = Tenant(
                     id: UUID(),
-                    name: "The Gourmet Place",
+                    name: "Thuan Viet Quan",
                     subdomain: "thuanviet",
                     logoUrl: "https://example.com/logos/resto1_logo.png",
                     primaryColorHex: "#A0522D",
@@ -37,7 +37,7 @@ class TenantService {
             case "coviet":
                 let tenantB = Tenant(
                     id: UUID(),
-                    name: "Ocean Breeze Cafe",
+                    name: "Co Viet",
                     subdomain: "coviet",
                     logoUrl: "https://example.com/logos/resto2_logo.png",
                     primaryColorHex: "#1E90FF",
