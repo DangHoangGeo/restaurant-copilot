@@ -93,7 +93,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Category name (name_en or name) is required.' }, { status: 400 });
     }
 
-    const categoryData: any = {
+    const categoryData: Record<string, unknown> = {
         restaurant_id: user.restaurantId, // Use authenticated user's restaurant ID
         name_en: primaryName,
     };

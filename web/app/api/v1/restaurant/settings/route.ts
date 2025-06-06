@@ -23,7 +23,7 @@ const settingsSchema = z.object({
   logo_url: z.string().url().nullable().optional(), // Removed double nullable()
 });
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
 
