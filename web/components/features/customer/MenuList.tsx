@@ -2,13 +2,15 @@
 import { useState, useMemo } from "react";
 import { CategoryTabs } from "./CategoryTabs";
 import { FoodCard, FoodItem } from "./FoodCard";
-import { getLocalizedText, LocalizedText } from "./utils";
+import { getLocalizedText } from "./utils";
 
 interface Category {
-  id: string;
-  order: number;
-  name: LocalizedText | string;
-  items: FoodItem[];
+  id: string
+  position: number
+  name_en: string
+  name_ja: string
+  name_vi: string
+  menu_items: FoodItem[]
 }
 
 interface Props {
@@ -33,18 +35,21 @@ export function MenuList({
   recommended = [],
 }: Props) {
   const [search, setSearch] = useState("");
-  const [active, setActive] = useState(categories[0]?.id);
-  const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
+  const [active, setActive] = useState(categories[0]?.id)
+  const today = new Date().getDay() === 0 ? 7 : new Date().getDay()
   const filteredCats = useMemo(() => {
     const keyword = search.toLowerCase();
     return categories.map((cat) => ({
       ...cat,
-      items: cat.items.filter((item) => {
-        const text = getLocalizedText(item.name, locale).toLowerCase();
+      menu_items: cat.menu_items.filter((item) => {
+        const text = getLocalizedText(
+          item as unknown as Record<string, unknown>,
+          locale,
+        ).toLowerCase();
         return (
           text.includes(keyword) &&
           item.available &&
-          item.weekdayVisibility.includes(today)
+          item.weekday_visibility.includes(today)
         );
       }),
     }));
@@ -91,10 +96,10 @@ export function MenuList({
             className="text-xl font-semibold mb-4 pb-2 border-b-2"
             style={{ borderColor: brandColor, color: brandColor }}
           >
-            {getLocalizedText(cat.name, locale)}
+            {getLocalizedText(cat as unknown as Record<string, unknown>, locale)}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {cat.items.map((item) => (
+            {cat.menu_items.map((item) => (
               <FoodCard
                 key={item.id}
                 item={item}

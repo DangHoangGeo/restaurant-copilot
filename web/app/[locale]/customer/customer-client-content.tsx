@@ -32,6 +32,39 @@ import { StarRating } from "@/components/ui/star-rating";
 import { MenuList } from "@/components/features/customer/MenuList";
 import { FloatingCart } from "@/components/features/customer/FloatingCart";
 
+interface MenuItem {
+  id: string
+  name_en: string
+  name_ja: string
+  name_vi: string
+  description_en?: string | null
+  description_ja?: string | null
+  description_vi?: string | null
+  price: number
+  image_url?: string | null
+  available: boolean
+  weekday_visibility: number[]
+  averageRating?: number
+  reviewCount?: number
+}
+
+interface Category {
+  id: string
+  position: number
+  name_en: string
+  name_ja: string
+  name_vi: string
+  menu_items: MenuItem[]
+}
+
+interface TableInfo {
+  id: string
+  name: string
+  position_x: number | null
+  position_y: number | null
+  capacity: number | null
+}
+
 interface RestaurantSettings {
   name: string;
   logoUrl: string | null;
@@ -46,63 +79,8 @@ const FEATURE_FLAGS = {
   advancedReviews: true,
 };
 
-const MOCK_MENU_CATEGORIES_BASE = [
-  {
-    id: "cat1",
-    order: 1,
-    name: { en: "Starters" },
-    items: [
-      {
-        id: "item1",
-        name: { en: "Spring Rolls" },
-        description: { en: "Crispy fried rolls." },
-        price: 8.99,
-        imageUrl: "https://placehold.co/150x100/E2E8F0/334155?text=Food",
-        available: true,
-        weekdayVisibility: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        averageRating: 4.5,
-        reviewCount: 10,
-      },
-    ],
-  },
-  {
-    id: "cat2",
-    order: 2,
-    name: { en: "Mains" },
-    items: [
-      {
-        id: "item3",
-        name: { en: "Beef Steak" },
-        description: { en: "Served with fries." },
-        price: 22,
-        imageUrl: "https://placehold.co/150x100/E2E8F0/334155?text=Food",
-        available: true,
-        weekdayVisibility: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        averageRating: 4.8,
-        reviewCount: 20,
-      },
-    ],
-  },
-];
-
-const MOCK_TABLES_BASE = [
-  { id: "t1", name: "Table 1", position: "Window", capacity: 4 },
-  { id: "t2", name: "Table 2", position: "Center", capacity: 2 },
-];
 
 // Cart context
-/**
-interface MenuItem {
-  id: string;
-  name: any; // Can be localized object or string
-  description: any; // Can be localized object or string
-  price: number;
-  imageUrl?: string;
-  available: boolean;
-  weekdayVisibility: string[];
-  averageRating?: number;
-  reviewCount?: number;
-} */
 
 interface CartItem {
   itemId: string;
@@ -135,11 +113,11 @@ function CartProvider({ children }: { children: ReactNode }) {
         ...prev,
         {
           itemId: item.id,
-          name: item.name,
+          name: item,
           price: item.price,
           qty: quantity,
-          imageUrl: item.imageUrl,
-          description: item.description,
+          imageUrl: item.image_url || undefined,
+          description: item,
         },
       ];
     });
@@ -180,8 +158,11 @@ function getCurrentLocale() {
   return (params.locale as string) || "en";
 }
 function getLocalizedText(obj: any, locale: string) {
-  if (typeof obj === "string") return obj;
-  return obj?.[locale] || obj?.en || "";
+  if (!obj) return ""
+  if (typeof obj === "string") return obj
+  if (obj[`name_${locale}`]) return obj[`name_${locale}`]
+  if (obj[`description_${locale}`]) return obj[`description_${locale}`]
+  return obj?.[locale] || obj?.en || obj?.name_en || ""
 }
 
 function CustomerHeader({
@@ -312,32 +293,35 @@ function CustomerMenuScreen({
   setView,
   restaurantSettings,
   viewProps,
+  categories,
 }: {
-  setView: (v: string, props?: any) => void;
-  restaurantSettings: RestaurantSettings;
-  viewProps?: any;
+  setView: (v: string, props?: any) => void
+  restaurantSettings: RestaurantSettings
+  viewProps?: any
+  categories: Category[]
 }) {
   const t = useTranslations("Customer");
   const { cart, addToCart, updateQuantity, totalCartItems, totalCartPrice } =
     useCart();
   const [showAddedToCartMsg, setShowAddedToCartMsg] = useState("");
-  const [menu] = useState(MOCK_MENU_CATEGORIES_BASE);
+  const [menu] = useState<Category[]>(categories)
   const locale = getCurrentLocale();
   const tableId = viewProps?.tableId;
   const sessionStatus = viewProps?.sessionStatus || "new";
 
   const handleAddToCart = (item: any, quantity = 1) => {
-    addToCart(item, quantity);
+    addToCart(item, quantity)
     setShowAddedToCartMsg(
       t("menu.item_added_to_cart_msg", {
-        item: getLocalizedText(item.name, locale),
+        item: getLocalizedText(item as unknown as Record<string, unknown>, locale),
       }),
-    );
+    )
     setTimeout(() => setShowAddedToCartMsg(""), 2000);
   };
   const getQuantityInCart = (itemId: string) =>
-    cart.find((ci) => ci.itemId === itemId)?.qty || 0;
-  const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
+    cart.find((ci) => ci.itemId === itemId)?.qty || 0
+  const today = new Date().getDay() === 0 ? 7 : new Date().getDay()
+  const weekdays = ["", "mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
   if (sessionStatus === "expired") {
     return (
@@ -358,7 +342,7 @@ function CustomerMenuScreen({
         {t("menu.title")}
       </h2>
       <p className="text-center text-sm mb-6 text-slate-500 dark:text-slate-400">
-        {t("menu.serving_today", { day: t(`weekdays.${today.toLowerCase()}`) })}
+        {t("menu.serving_today", { day: t(`weekdays.${weekdays[today]}`) })}
       </p>
       {showAddedToCartMsg && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100]">
@@ -366,14 +350,14 @@ function CustomerMenuScreen({
         </div>
       )}
       <MenuList
-        categories={menu.sort((a, b) => a.order - b.order)}
+        categories={menu.sort((a, b) => a.position - b.position)}
         locale={locale}
         searchPlaceholder={t("menu.search_placeholder")}
         addToCart={handleAddToCart}
         updateQty={updateQuantity}
         getQty={getQuantityInCart}
         brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
-        recommended={menu[0]?.items.slice(0, 2)}
+        recommended={menu[0]?.menu_items.slice(0, 2)}
       />
       <FloatingCart
         count={totalCartItems}
@@ -453,12 +437,12 @@ function CheckoutScreen({
                   item.imageUrl ||
                   "https://placehold.co/60x40/E2E8F0/334155?text=Item"
                 }
-                alt={getLocalizedText(item.name, getCurrentLocale())}
+                alt={getLocalizedText(item.name || item, getCurrentLocale())}
                 className="w-12 h-10 object-cover rounded mr-3"
               />
               <div>
                 <p className="font-medium">
-                  {getLocalizedText(item.name, getCurrentLocale())}
+                  {getLocalizedText(item.name || item, getCurrentLocale())}
                 </p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   {item.qty} x {t("currency_format", { value: item.price })}
@@ -560,7 +544,7 @@ function ThankYouScreen({
         {items.map((item: CartItem) => (
           <div key={item.itemId} className="flex justify-between text-sm py-1">
             <span>
-              {item.qty}x {getLocalizedText(item.name, locale)}
+              {item.qty}x {getLocalizedText(item.name || item, locale)}
             </span>
             <span>
               {t("currency_format", { value: item.price * item.qty })}
@@ -591,12 +575,12 @@ function ThankYouScreen({
                 onClick={() =>
                   setView("review", {
                     menuItemId: item.itemId,
-                    menuItemName: getLocalizedText(item.name, locale),
+                    menuItemName: getLocalizedText(item.name || item, locale),
                   })
                 }
               >
                 {t("thankyou.rate_this_dish_button", {
-                  dish: getLocalizedText(item.name, locale),
+                  dish: getLocalizedText(item.name || item, locale),
                 })}
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -720,9 +704,13 @@ function ReviewScreen({
 function BookingScreen({
   setView,
   restaurantSettings,
+  tables,
+  categories,
 }: {
-  setView: (v: string, props?: any) => void;
-  restaurantSettings: RestaurantSettings;
+  setView: (v: string, props?: any) => void
+  restaurantSettings: RestaurantSettings
+  tables: TableInfo[]
+  categories: Category[]
 }) {
   const t = useTranslations("Customer");
   const [formData, setFormData] = useState({
@@ -734,11 +722,11 @@ function BookingScreen({
     partySize: 2,
     preOrderItems: [] as { itemId: string; quantity: number }[],
   });
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
-  const menuItems = MOCK_MENU_CATEGORIES_BASE.flatMap(
-    (cat) => cat.items,
-  ).filter((item) => item.available);
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState("")
+  const menuItems = categories
+    .flatMap((cat) => cat.menu_items)
+    .filter((item) => item.available)
   const locale = getCurrentLocale();
   if (!FEATURE_FLAGS.tableBooking) {
     setView("menu");
@@ -854,10 +842,10 @@ function BookingScreen({
             <option value="" disabled>
               {t("booking.form.table_select_placeholder")}
             </option>
-            {MOCK_TABLES_BASE.map((table) => (
+            {tables.map((table) => (
               <option key={table.id} value={table.id}>
                 {table.name} (
-                {t("booking.form.table_capacity", { count: table.capacity })})
+                {t("booking.form.table_capacity", { count: table.capacity ?? 0 })})
               </option>
             ))}
           </Select>
@@ -923,7 +911,7 @@ function BookingScreen({
                       className="form-checkbox h-4 w-4 text-[--brand-color] rounded"
                     />
                     <span>
-                      {getLocalizedText(item.name, locale)} (
+                      {getLocalizedText(item, locale)} (
                       {t("currency_format", { value: item.price })})
                     </span>
                   </label>
@@ -962,8 +950,12 @@ function BookingScreen({
 
 export function CustomerClientContent({
   restaurantSettings,
+  categories,
+  tables,
 }: {
-  restaurantSettings: RestaurantSettings;
+  restaurantSettings: RestaurantSettings
+  categories: Category[]
+  tables: TableInfo[]
 }) {
   const [view, setViewState] = useState<
     "menu" | "checkout" | "thankyou" | "review" | "booking" | "admin"
@@ -982,6 +974,7 @@ export function CustomerClientContent({
         setView={setView}
         restaurantSettings={restaurantSettings}
         viewProps={viewProps}
+        categories={categories}
       />
     );
   if (view === "checkout")
@@ -1013,6 +1006,8 @@ export function CustomerClientContent({
       <BookingScreen
         setView={setView}
         restaurantSettings={restaurantSettings}
+        tables={tables}
+        categories={categories}
       />
     );
 

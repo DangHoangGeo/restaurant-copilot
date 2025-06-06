@@ -2,11 +2,11 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-import type { LocalizedText } from "./utils";
-
 interface Category {
-  id: string;
-  name: LocalizedText | string;
+  id: string
+  name_en: string
+  name_ja: string
+  name_vi: string
 }
 
 interface Props {
@@ -27,8 +27,14 @@ export function CategoryTabs({
     setCurrent(id);
     onSelect(id);
   };
-  const getText = (obj: LocalizedText | string) =>
-    typeof obj === "string" ? obj : obj?.[locale] || obj?.en || "";
+  const getText = (cat: Category) => {
+    const map: Record<string, string> = {
+      en: cat.name_en,
+      ja: cat.name_ja,
+      vi: cat.name_vi,
+    }
+    return map[locale] || cat.name_en
+  }
   return (
     <div className="flex overflow-x-auto space-x-3 pb-2 scrollbar-hide">
       {categories.map((cat) => (
@@ -42,7 +48,7 @@ export function CategoryTabs({
               : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
           )}
         >
-          {getText(cat.name)}
+          {getText(cat)}
         </button>
       ))}
     </div>

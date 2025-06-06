@@ -3,19 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StarRating } from "@/components/ui/star-rating";
 import { PlusCircle } from "lucide-react";
-import { getLocalizedText, LocalizedText } from "./utils";
+import { getLocalizedText } from "./utils";
 import { useTranslations } from "next-intl";
 
 export interface FoodItem {
-  id: string;
-  name: LocalizedText | string;
-  description: LocalizedText | string;
-  price: number;
-  imageUrl?: string;
-  available: boolean;
-  weekdayVisibility: string[];
-  averageRating?: number;
-  reviewCount?: number;
+  id: string
+  name_en: string
+  name_ja: string
+  name_vi: string
+  description_en?: string | null
+  description_ja?: string | null
+  description_vi?: string | null
+  price: number
+  image_url?: string | null
+  available: boolean
+  weekday_visibility: number[]
+  averageRating?: number
+  reviewCount?: number
 }
 
 interface FoodCardProps {
@@ -42,19 +46,26 @@ export function FoodCard({
     <Card className="flex flex-col">
       <img
         src={
-          item.imageUrl ||
+          item.image_url ||
           "https://placehold.co/300x200/E2E8F0/334155?text=Food"
         }
-        alt={getLocalizedText(item.name, locale)}
+        alt={getLocalizedText(item as unknown as Record<string, unknown>, locale)}
         className="w-full h-40 object-cover rounded-t-2xl mb-3"
         loading="lazy"
       />
       <div className="flex-grow">
         <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-          {getLocalizedText(item.name, locale)}
+          {getLocalizedText(item as unknown as Record<string, unknown>, locale)}
         </h4>
         <p className="text-sm text-slate-600 dark:text-slate-300 mb-1 h-10 overflow-hidden">
-          {getLocalizedText(item.description, locale)}
+          {getLocalizedText(
+            {
+              [`description_${locale}`]:
+                item[`description_${locale as 'en' | 'ja' | 'vi'}` as keyof FoodItem],
+              description_en: item.description_en,
+            },
+            locale,
+          )}
         </p>
         <StarRating
           value={item.averageRating || 0}
