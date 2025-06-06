@@ -79,26 +79,26 @@ struct OrderDetailView: View {
     @ViewBuilder
     private var actionButtons: some View {
         // Disable buttons if status is completed, or if an update is in progress (not shown here)
-        let disableActions = order.status == .completed // Use enum case
+        let disableActions = order.status == .completed
 
         HStack { // Use HStack for horizontal layout of buttons if multiple can appear
             Spacer()
-            switch order.status { // Switch on OrderStatus
+            switch order.status {
             case .new:
                 Button(NSLocalizedString("mark_preparing_button", comment: "")) {
-                    updateStatus(.preparing) // Pass enum case
+                    updateStatus(.preparing)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
             case .preparing:
                 Button(NSLocalizedString("mark_ready_button", comment: "")) {
-                    updateStatus(.ready) // Pass enum case
+                    updateStatus(.ready)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
             case .ready:
                 Button(NSLocalizedString("complete_print_button", comment: "")) {
-                    updateStatus(.completed) // Pass enum case
+                    updateStatus(.completed)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
@@ -110,7 +110,7 @@ struct OrderDetailView: View {
         }
     }
 
-    private func updateStatus(_ newStatus: OrderStatus) { // Changed parameter to OrderStatus
+    private func updateStatus(_ newStatus: OrderStatus) {
         Task {
             do {
                 // Pass rawValue to the service, as it still expects a String
@@ -120,8 +120,7 @@ struct OrderDetailView: View {
                 // If the change to "completed" is confirmed by the backend and reflected,
                 // the .onReceive might trigger dismiss if the order is removed from activeOrders.
                 // For immediate UI feedback on this action:
-                if newStatus == .completed { // Compare with enum case
-                    // Optimistically update local state with the enum case, then dismiss.
+                if newStatus == .completed {
                     // The .onReceive might also try to update it, which should be fine.
                     self.order.status = newStatus // Assign OrderStatus
                     dismiss()
@@ -143,7 +142,7 @@ struct OrderDetailView_Previews: PreviewProvider {
             id: "previewOrder123",
             tableId: "T5",
             totalAmount: 125.50,
-            status: .new, // Use OrderStatus enum
+            status: .new, // Change to .preparing, .ready to see different buttons
             createdAt: Date(),
             items: [
                 OrderItem(id: "item1", menuItemId: "menuItem1", menuItemName: "Sushi Platter", quantity: 1, notes: "Extra wasabi"),
@@ -152,7 +151,7 @@ struct OrderDetailView_Previews: PreviewProvider {
         )! // Force unwrap for preview simplicity, ensure mock data is valid
 
         // If you want to test the "completed" state or other states:
-        // mockOrder.status = "preparing"
+        // mockOrder.status = .preparing
 
         // Simulate adding it to the service's active orders so .onReceive can find it
         // mockService.activeOrders = [mockOrder]

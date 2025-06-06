@@ -34,6 +34,7 @@
 
 /* General UI */
 "done_button" = "完了";
+"change_language_accessibility" = "言語を変更";
 
 /* Logged In Messages */
 "logged_in_message" = "%1$@ としてログイン中 (%2$@)";
@@ -72,6 +73,7 @@
 "status_preparing" = "調理中";
 "status_ready" = "準備完了";
 "status_completed" = "完了";
+"status_completed_message" = "注文は完了しました";
 "order_detail_title" = "注文詳細";
 "total_label" = "合計";
 "mark_preparing_button" = "調理開始";

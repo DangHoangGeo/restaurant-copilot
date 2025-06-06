@@ -45,18 +45,25 @@ struct OrderListView: View {
         }
     }
 
-    private func statusColor(_ status: OrderStatus) -> Color { // Changed to OrderStatus
+
+    private func statusColor(_ status: OrderStatus) -> Color {
         switch status {
         case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
-        case .completed: return .gray // Added completed case, though active orders usually won't be completed
+        case .completed: return .gray
+        case .unknown: return .gray
         }
     }
 
-    private func statusText(for status: OrderStatus) -> String { // Changed to OrderStatus
-        // Use the localizedString method from the enum itself
-        return status.localizedString()
+    private func statusText(for status: OrderStatus) -> String {
+        switch status {
+        case .new: return NSLocalizedString("status_new", comment: "")
+        case .preparing: return NSLocalizedString("status_preparing", comment: "")
+        case .ready: return NSLocalizedString("status_ready", comment: "")
+        case .completed: return NSLocalizedString("status_completed", comment: "")
+        case .unknown: return status.rawValue
+        }
     }
 }
 
@@ -65,6 +72,12 @@ struct OrderListView_Previews: PreviewProvider {
         // Create a mock OrderService for the preview
         let mockOrderServiceEmpty = OrderService()
         mockOrderServiceEmpty.activeOrders = []
+        // You might want to populate mockOrderService.activeOrders with some sample data here
+        // for a more representative preview. For example:
+        // mockOrderService.activeOrders = [
+        //     Order(id: "1", tableId: "T1", totalAmount: 10.0, status: .new, createdAt: Date(), items: []),
+        //     Order(id: "2", tableId: "T2", totalAmount: 20.0, status: .preparing, createdAt: Date(), items: [])
+        // ]
 
         let mockOrderServiceWithOrders = OrderService()
         // Populate mockOrderService.activeOrders with sample data using OrderStatus

@@ -1,10 +1,20 @@
 import Foundation
 
-struct Order: Identifiable, Codable {
+/// Represents the state of an order. Using an enum avoids stringly‑typed
+/// comparisons throughout the app and keeps the code safer and clearer.
+enum OrderStatus: String, Codable, CaseIterable {
+    case new
+    case preparing
+    case ready
+    case completed
+    case unknown
+}
+
+struct Order: Identifiable {
     let id: String
     let tableId: String
     var totalAmount: Double
-    var status: OrderStatus // Changed to OrderStatus
+    var status: OrderStatus
     let createdAt: Date
     var items: [OrderItem]
 
@@ -13,8 +23,8 @@ struct Order: Identifiable, Codable {
         guard let id = dict["id"] as? String, // Assuming UUID is sent as String
               let tableId = dict["table_id"] as? String,
               let totalAmount = dict["total_amount"] as? Double,
-              let statusString = dict["status"] as? String, // Read as String first
               let status = OrderStatus(rawValue: statusString), // Then initialize OrderStatus
+              let statusString = dict["status"] as? String,
               let createdAtString = dict["created_at"] as? String,
               let createdAt = ISO8601DateFormatter().date(from: createdAtString),
               let itemsArray = dict["items"] as? [[String: Any]] else {
@@ -24,7 +34,7 @@ struct Order: Identifiable, Codable {
         self.id = id
         self.tableId = tableId
         self.totalAmount = totalAmount
-        self.status = status // Assign OrderStatus
+        self.status = OrderStatus(rawValue: statusString) ?? .unknown
         self.createdAt = createdAt
         self.items = itemsArray.compactMap { OrderItem(from: $0) }
 

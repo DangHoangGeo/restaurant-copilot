@@ -76,6 +76,7 @@ struct ContentView: View {
                         showingLanguageSelection = true
                     } label: {
                         Image(systemName: "globe")
+                            .accessibilityLabel(Text(NSLocalizedString("change_language_accessibility", comment: "")))
                     }
                 }
             }
