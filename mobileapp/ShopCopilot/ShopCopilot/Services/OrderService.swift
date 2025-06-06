@@ -2,6 +2,10 @@ import Foundation
 import Supabase
 import Combine
 
+/// Service responsible for listening to realtime order updates and exposing an
+/// array of active orders to the UI. Annotated with `@MainActor` so that all
+/// published changes occur on the main thread.
+@MainActor
 class OrderService: ObservableObject {
     @Published var activeOrders: [Order] = []
 
@@ -92,7 +96,7 @@ class OrderService: ObservableObject {
                     items:order_items (id, menu_item_id, menu_item_name, quantity, notes)
                     """) // Adjust columns as per your actual schema
                     .eq(column: "restaurant_id", value: restaurantId)
-                    .neq(column: "status", value: "completed") // Fetch only active orders
+                    .neq(column: "status", value: OrderStatus.completed.rawValue) // Fetch only active orders
                     .order(column: "created_at", ascending: false)
 
                 let response: [Order] = try await query.execute().value
@@ -146,7 +150,7 @@ class OrderService: ObservableObject {
         DispatchQueue.main.async {
             switch payload.eventType {
             case .insert:
-                if order.status != "completed" {
+                if order.status != .completed {
                     if !self.activeOrders.contains(where: { $0.id == order.id }) {
                         self.activeOrders.append(order)
                         print("OrderService: Inserted order \(order.id)")
@@ -156,14 +160,14 @@ class OrderService: ObservableObject {
                 }
             case .update:
                 if let index = self.activeOrders.firstIndex(where: { $0.id == order.id }) {
-                    if order.status == "completed" {
+                    if order.status == .completed {
                         self.activeOrders.remove(at: index)
                         print("OrderService: Order \(order.id) completed and removed.")
                     } else {
                         self.activeOrders[index] = order
                         print("OrderService: Updated order \(order.id)")
                     }
-                } else if order.status != "completed" {
+                } else if order.status != .completed {
                     // If an update is for an order not in the list (e.g. status changed from completed to active)
                     self.activeOrders.append(order)
                     print("OrderService: Order \(order.id) became active and was added.")
@@ -181,7 +185,7 @@ class OrderService: ObservableObject {
         activeOrders.sort { $0.createdAt > $1.createdAt }
     }
 
-    func updateOrderStatus(orderId: String, newStatus: String) async throws {
+    func updateOrderStatus(orderId: String, newStatus: OrderStatus) async throws {
         guard let client = client else {
             print("OrderService: Supabase client not initialized.")
             throw OrderServiceError.clientNotInitialized
@@ -190,7 +194,7 @@ class OrderService: ObservableObject {
         struct OrderStatusUpdate: Encodable {
             let status: String
         }
-        let updateData = OrderStatusUpdate(status: newStatus)
+        let updateData = OrderStatusUpdate(status: newStatus.rawValue)
 
         do {
             try await client.database
@@ -198,7 +202,7 @@ class OrderService: ObservableObject {
                 .update(values: updateData)
                 .eq(column: "id", value: orderId)
                 .execute()
-            print("OrderService: Successfully requested status update for order \(orderId) to \(newStatus). Realtime should reflect change.")
+            print("OrderService: Successfully requested status update for order \(orderId) to \(newStatus.rawValue). Realtime should reflect change.")
         } catch {
             print("OrderService: Error updating order status in Supabase: \(error.localizedDescription)")
             throw error

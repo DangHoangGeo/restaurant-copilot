@@ -34,6 +34,7 @@
 
 /* General UI */
 "done_button" = "Xong";
+"change_language_accessibility" = "Thay đổi ngôn ngữ";
 
 /* Logged In Messages */
 "logged_in_message" = "Đã đăng nhập với tên %1$@ (%2$@)";
@@ -72,6 +73,7 @@
 "status_preparing" = "Đang chuẩn bị";
 "status_ready" = "Sẵn sàng";
 "status_completed" = "Hoàn tất";
+"status_completed_message" = "Đơn hàng đã hoàn tất";
 "order_detail_title" = "Chi tiết đơn";
 "total_label" = "Tổng";
 "mark_preparing_button" = "Đánh dấu chuẩn bị";

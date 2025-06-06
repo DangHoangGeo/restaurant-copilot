@@ -65,7 +65,7 @@ struct OrderDetailView: View {
                 // The order might have been completed or deleted from activeOrders
                 // If the current view is for an order that no longer exists in activeOrders (e.g. completed)
                 // you might want to dismiss the view.
-                if self.order.status != "completed" { // Avoid dismissing if we manually set to completed and are about to dismiss
+                if self.order.status != .completed { // Avoid dismissing if we manually set to completed and are about to dismiss
                    // This logic might need refinement based on desired UX when an order disappears from active list
                    // For now, if it's not found and not explicitly completed by this view, it might mean it was remotely completed.
                    // Consider if dismiss() is always the right action here.
@@ -79,26 +79,26 @@ struct OrderDetailView: View {
     @ViewBuilder
     private var actionButtons: some View {
         // Disable buttons if status is completed, or if an update is in progress (not shown here)
-        let disableActions = order.status == "completed"
+        let disableActions = order.status == .completed
 
         HStack { // Use HStack for horizontal layout of buttons if multiple can appear
             Spacer()
             switch order.status {
-            case "new":
+            case .new:
                 Button(NSLocalizedString("mark_preparing_button", comment: "")) {
-                    updateStatus("preparing")
+                    updateStatus(.preparing)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
-            case "preparing":
+            case .preparing:
                 Button(NSLocalizedString("mark_ready_button", comment: "")) {
-                    updateStatus("ready")
+                    updateStatus(.ready)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
-            case "ready":
+            case .ready:
                 Button(NSLocalizedString("complete_print_button", comment: "")) {
-                    updateStatus("completed")
+                    updateStatus(.completed)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
@@ -110,7 +110,7 @@ struct OrderDetailView: View {
         }
     }
 
-    private func updateStatus(_ newStatus: String) {
+    private func updateStatus(_ newStatus: OrderStatus) {
         Task {
             do {
                 try await service.updateOrderStatus(orderId: order.id, newStatus: newStatus)
@@ -119,7 +119,7 @@ struct OrderDetailView: View {
                 // If the change to "completed" is confirmed by the backend and reflected,
                 // the .onReceive might trigger dismiss if the order is removed from activeOrders.
                 // For immediate UI feedback on this action:
-                if newStatus == "completed" {
+                if newStatus == .completed {
                     // Optimistically update local state, then dismiss.
                     // The .onReceive might also try to update it, which should be fine.
                     self.order.status = newStatus
@@ -142,7 +142,7 @@ struct OrderDetailView_Previews: PreviewProvider {
             id: "previewOrder123",
             tableId: "T5",
             totalAmount: 125.50,
-            status: "new", // Change to "preparing", "ready" to see different buttons
+            status: .new, // Change to .preparing, .ready to see different buttons
             createdAt: Date(),
             items: [
                 OrderItem(id: "item1", menuItemId: "menuItem1", menuItemName: "Sushi Platter", quantity: 1, notes: "Extra wasabi"),
@@ -151,7 +151,7 @@ struct OrderDetailView_Previews: PreviewProvider {
         )! // Force unwrap for preview simplicity, ensure mock data is valid
 
         // If you want to test the "completed" state or other states:
-        // mockOrder.status = "preparing"
+        // mockOrder.status = .preparing
 
         // Simulate adding it to the service's active orders so .onReceive can find it
         // mockService.activeOrders = [mockOrder]

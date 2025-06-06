@@ -35,6 +35,7 @@
 
 /* General UI */
 "done_button" = "Done";
+"change_language_accessibility" = "Change Language";
 
 /* Logged In Messages */
 "logged_in_message" = "Logged in as %1$@ (%2$@)";
@@ -75,6 +76,7 @@
 "status_preparing" = "Preparing";
 "status_ready" = "Ready";
 "status_completed" = "Completed";
+"status_completed_message" = "Order is completed";
 "order_detail_title" = "Order Details";
 "total_label" = "Total";
 "mark_preparing_button" = "Mark Preparing";
