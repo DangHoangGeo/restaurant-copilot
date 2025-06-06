@@ -372,14 +372,14 @@ function CustomerMenuScreen({
         addToCart={handleAddToCart}
         updateQty={updateQuantity}
         getQty={getQuantityInCart}
-        brandColor={restaurantSettings.primaryColor}
+        brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
         recommended={menu[0]?.items.slice(0, 2)}
       />
       <FloatingCart
         count={totalCartItems}
         total={totalCartPrice}
         onCheckout={() => setView("checkout", { tableId })}
-        brandColor={restaurantSettings.primaryColor}
+        brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
       />
       {FEATURE_FLAGS.tableBooking && (
         <div className="text-center mt-12">
