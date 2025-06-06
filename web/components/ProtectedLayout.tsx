@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client"; // Import client-side Supabase
-import { useRouter } from "next/navigation"; // For client-side navigation
+import { useRouter, usePathname } from "next/navigation";
 // Or, if using next-intl for navigation:
 // import { useRouter } from '@/i18n/navigation';
 
@@ -16,24 +15,24 @@ export function ProtectedLayout({
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await createClient().auth.getSession();
-
-        if (error) {
-          console.error("Error getting session:", error.message);
-          setIsAuthenticated(false);
-        } else if (!session) {
-          setIsAuthenticated(false);
+        const res = await fetch('/api/v1/auth/session');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated) {
+            setIsAuthenticated(true);
+          } else {
+            setIsAuthenticated(false);
+          }
         } else {
-          // Session exists, user is authenticated
-          // You could add further checks here, e.g., token expiry, user roles, etc.
-          setIsAuthenticated(true);
+          setIsAuthenticated(false);
         }
       } catch (e) {
-        console.error("Exception in checkSession:", e);
+        console.error('Exception in checkSession:', e);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -41,16 +40,18 @@ export function ProtectedLayout({
     };
 
     checkSession();
-  }, []); // Run once on mount
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       // If loading is complete and user is not authenticated, redirect to login.
       // Ensure you have a login page route, e.g., '/login' or locale-specific.
       // This assumes your login page is at the root '/login'. Adjust if it's namespaced by locale.
-      router.push('/login');
+      // Derive locale from the current pathname to redirect correctly
+      const locale = pathname.split('/')[1] || 'en';
+      router.push(`/${locale}/login`);
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router, pathname]);
 
   if (isLoading) {
     return (
