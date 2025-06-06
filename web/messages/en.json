@@ -226,6 +226,7 @@
       "completed": "Completed",
       "canceled": "Canceled"
     },
+    "view_cart_label":"View Cart",
     "weekdays": {
       "mon": "Monday", "tue": "Tuesday", "wed": "Wednesday", "thu": "Thursday", "fri": "Friday", "sat": "Saturday", "sun": "Sunday",
       "mon_short": "Mon", "tue_short": "Tue", "wed_short": "Wed", "thu_short": "Thu", "fri_short": "Fri", "sat_short": "Sat", "sun_short": "Sun"
@@ -652,6 +653,15 @@
       "error_loading_booking": "Error loading booking form. Please try again later.",
       "error_loading_order_summary": "Error loading order summary. Please try again later.",
       "error_loading_review_form": "Error loading review form. Please try again later."
+    },
+    "weekdays": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
     },
     "currency_format": "$",
     "ordering_for_table": "Ordering for Table {tableId}",
