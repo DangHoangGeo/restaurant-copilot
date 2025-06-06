@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const t = useTranslations("auth");
+  const locale = useLocale();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,11 +47,11 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      if (data.redirectUrl) {
+      if (data.twoFactorRequired && data.token) {
+        router.push(`/${locale}/two-factor?token=${encodeURIComponent(data.token)}`);
+      } else if (data.redirectUrl) {
         router.push(data.redirectUrl);
-      }
-      else {
-        // Fallback or error if subdomain is not returned
+      } else {
         setError(t("subdomainNotFound"));
       }
     } catch (err) {

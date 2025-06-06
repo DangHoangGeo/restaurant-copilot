@@ -12,7 +12,10 @@ function rateLimit(ip: string, limit = 10, windowSec = 60): boolean {
   const entry = ipCounters[ip] || { tokens: limit, lastRefill: now };
 
   const timePassed = (now - entry.lastRefill) / 1000;
-  entry.tokens = Math.min(limit, entry.tokens + timePassed * (limit / windowSec));
+  entry.tokens = Math.min(
+    limit,
+    entry.tokens + timePassed * (limit / windowSec),
+  );
   entry.lastRefill = now;
 
   if (entry.tokens >= 1) {
@@ -31,7 +34,9 @@ export async function POST(req: NextRequest) {
   const JWT_SECRET = process.env.JWT_SECRET;
   if (!JWT_SECRET) {
     console.error("FATAL: JWT_SECRET environment variable is not set.");
-    return new Response("Internal Server Error: JWT_SECRET not configured.", { status: 500 });
+    return new Response("Internal Server Error: JWT_SECRET not configured.", {
+      status: 500,
+    });
   }
 
   const ip = req.headers.get("x-forwarded-for") || "unknown";
@@ -43,11 +48,14 @@ export async function POST(req: NextRequest) {
     const { email, password, captchaToken } = await req.json();
 
     // Verify CAPTCHA
-    const captchaRes = await fetch(`${req.nextUrl.origin}/api/v1/verify-captcha`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: captchaToken }),
-    });
+    const captchaRes = await fetch(
+      `${req.nextUrl.origin}/api/v1/verify-captcha`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: captchaToken }),
+      },
+    );
 
     const captchaData = await captchaRes.json();
 
@@ -56,10 +64,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Authenticate user with Supabase
-    const { data, error: authError } = await supabaseAdmin.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error: authError } =
+      await supabaseAdmin.auth.signInWithPassword({
+        email,
+        password,
+      });
 
     if (authError) {
       await logEvent({
@@ -78,14 +87,16 @@ export async function POST(req: NextRequest) {
         message: "Authentication successful but no user data returned.",
         metadata: { ip, email },
       });
-      return new Response("Authentication failed: No user data", { status: 401 });
+      return new Response("Authentication failed: No user data", {
+        status: 401,
+      });
     }
 
     // Fetch user's restaurant_id and subdomain
     // 1. Get the user's restaurant_id
     const { data: userRecord, error } = await supabaseAdmin
       .from("users")
-      .select("restaurant_id")
+      .select("restaurant_id, two_factor_enabled, role")
       .eq("id", data.user.id)
       .single();
 
@@ -98,7 +109,10 @@ export async function POST(req: NextRequest) {
         message: `Failed to retrieve user data: ${error?.message || "No restaurant_id found"}`,
         metadata: { ip, userId: data.user.id },
       });
-      return new Response("Failed to retrieve user information: No restaurant_id", { status: 500 });
+      return new Response(
+        "Failed to retrieve user information: No restaurant_id",
+        { status: 500 },
+      );
     }
 
     // 2. Get the restaurant's subdomain
@@ -115,7 +129,10 @@ export async function POST(req: NextRequest) {
         message: `Failed to retrieve restaurant data: ${restError?.message || "No subdomain found"}`,
         metadata: { ip, userId: data.user.id },
       });
-      return new Response("Failed to retrieve restaurant information: No subdomain", { status: 500 });
+      return new Response(
+        "Failed to retrieve restaurant information: No subdomain",
+        { status: 500 },
+      );
     }
 
     const restaurantSubdomain = restaurant.subdomain;
@@ -127,19 +144,36 @@ export async function POST(req: NextRequest) {
         message: "Restaurant subdomain not found for user.",
         metadata: { ip, userId: data.user.id },
       });
-      return new Response("Failed to retrieve restaurant information: Subdomain missing", { status: 500 });
+      return new Response(
+        "Failed to retrieve restaurant information: Subdomain missing",
+        { status: 500 },
+      );
+    }
+
+    if (userRecord.two_factor_enabled && userRecord.role === "owner") {
+      const tempToken = await new SignJWT({
+        userId: data.user.id,
+        restaurantId: restaurantId,
+        subdomain: restaurantSubdomain,
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("5m")
+        .sign(new TextEncoder().encode(JWT_SECRET));
+
+      return NextResponse.json({ twoFactorRequired: true, token: tempToken });
     }
 
     // Generate JWT token
     const secretKey = new TextEncoder().encode(JWT_SECRET);
     const token = await new SignJWT({
-        userId: data.user.id,
-        restaurantId: restaurantId,
-        subdomain: restaurantSubdomain,
-      })
-      .setProtectedHeader({ alg: 'HS256' })
+      userId: data.user.id,
+      restaurantId: restaurantId,
+      subdomain: restaurantSubdomain,
+    })
+      .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime('7d') // 7 days from now
+      .setExpirationTime("7d") // 7 days from now
       .sign(secretKey);
 
     // Set JWT as an HTTP-only cookie
@@ -148,7 +182,10 @@ export async function POST(req: NextRequest) {
       secure: process.env.NEXT_PRIVATE_DEVELOPMENT !== "true", // Use secure in production
       sameSite: "lax",
       path: "/",
-      domain: process.env.NEXT_PRIVATE_DEVELOPMENT === "true" ? "localhost" : "." + process.env.NEXT_PRIVATE_PRODUCTION_URL, // Set domain for cross-subdomain access
+      domain:
+        process.env.NEXT_PRIVATE_DEVELOPMENT === "true"
+          ? "localhost"
+          : "." + process.env.NEXT_PRIVATE_PRODUCTION_URL, // Set domain for cross-subdomain access
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT!;
@@ -165,7 +202,6 @@ export async function POST(req: NextRequest) {
     });
     response.headers.set("Set-Cookie", cookie);
     return response;
-
   } catch (error: unknown) {
     let message = "An unknown error occurred";
     let stack;
