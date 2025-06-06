@@ -226,10 +226,22 @@
       "completed": "Completed",
       "canceled": "Canceled"
     },
-    "view_cart_label":"View Cart",
+    "view_cart_label": "View Cart",
     "weekdays": {
-      "mon": "Monday", "tue": "Tuesday", "wed": "Wednesday", "thu": "Thursday", "fri": "Friday", "sat": "Saturday", "sun": "Sunday",
-      "mon_short": "Mon", "tue_short": "Tue", "wed_short": "Wed", "thu_short": "Thu", "fri_short": "Fri", "sat_short": "Sat", "sun_short": "Sun"
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday",
+      "mon_short": "Mon",
+      "tue_short": "Tue",
+      "wed_short": "Wed",
+      "thu_short": "Thu",
+      "fri_short": "Fri",
+      "sat_short": "Sat",
+      "sun_short": "Sun"
     },
     "language_switcher": {
       "toggle_label": "Change language"
@@ -247,10 +259,10 @@
       "no_reviews": "No reviews yet"
     },
     "alert": {
-        "info": { "title": "Information" },
-        "success": { "title": "Success" },
-        "warning": { "title": "Warning" },
-        "error": { "title": "Error" }
+      "info": { "title": "Information" },
+      "success": { "title": "Success" },
+      "warning": { "title": "Warning" },
+      "error": { "title": "Error" }
     },
     "mark_resolved": "Mark Resolved",
     "mark_unresolved": "Mark Unresolved"
@@ -391,8 +403,8 @@
       "table_prefix": "Table"
     },
     "charts": {
-        "sales_over_time_placeholder": "Sales Over Time Chart - Coming Soon",
-        "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
+      "sales_over_time_placeholder": "Sales Over Time Chart - Coming Soon",
+      "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
     },
     "errors": {
       "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
@@ -401,7 +413,7 @@
       "mismatched_restaurant_access": "Access Denied: You are not authorized to view this restaurant's data."
     },
     "feature": {
-        "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard"
+      "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard"
     }
   },
   "Metadata": {
@@ -482,8 +494,7 @@
         }
       }
     }
-  }
-  ,
+  },
   "AdminTables": {
     "add_table": "Add Table",
     "edit_table": "Edit Table",
@@ -590,10 +601,11 @@
       "out_of_stock": "Out of Stock",
       "quantity": "Quantity",
       "total_price": "Total Price",
+      "search_placeholder": "Search menu...",
       "add_to_cart_success": "{itemName} added to your cart.",
       "add_to_cart_error": "Failed to add {itemName} to cart. Please try again."
     },
-      "cart": {
+    "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",
       "checkout_button": "Checkout"
     },
@@ -642,8 +654,8 @@
         "submit_button": "Confirm Booking"
       }
     },
-    "common":{
-      "total":"Total",
+    "common": {
+      "total": "Total",
       "cancel": "Cancel Order",
       "confirm": "Confirm Order",
       "restaurant_not_found": "Restaurant not found. Please check the URL or contact support.",
