@@ -81,3 +81,4 @@
 "mark_ready_button" = "Mark Ready";
 "complete_print_button" = "Complete & Print";
 "tab_orders" = "Orders";
+"no_active_orders_message" = "No active orders";

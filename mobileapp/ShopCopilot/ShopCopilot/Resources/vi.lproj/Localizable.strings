@@ -78,3 +78,4 @@
 "mark_ready_button" = "Đánh dấu sẵn sàng";
 "complete_print_button" = "Hoàn tất & In";
 "tab_orders" = "Đơn hàng";
+"no_active_orders_message" = "Không có đơn hàng nào đang hoạt động";

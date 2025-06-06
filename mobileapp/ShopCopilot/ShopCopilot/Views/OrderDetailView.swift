@@ -65,7 +65,7 @@ struct OrderDetailView: View {
                 // The order might have been completed or deleted from activeOrders
                 // If the current view is for an order that no longer exists in activeOrders (e.g. completed)
                 // you might want to dismiss the view.
-                if self.order.status != "completed" { // Avoid dismissing if we manually set to completed and are about to dismiss
+                if self.order.status != .completed { // Avoid dismissing if we manually set to completed and are about to dismiss
                    // This logic might need refinement based on desired UX when an order disappears from active list
                    // For now, if it's not found and not explicitly completed by this view, it might mean it was remotely completed.
                    // Consider if dismiss() is always the right action here.
@@ -79,30 +79,30 @@ struct OrderDetailView: View {
     @ViewBuilder
     private var actionButtons: some View {
         // Disable buttons if status is completed, or if an update is in progress (not shown here)
-        let disableActions = order.status == "completed"
+        let disableActions = order.status == .completed // Use enum case
 
         HStack { // Use HStack for horizontal layout of buttons if multiple can appear
             Spacer()
-            switch order.status {
-            case "new":
+            switch order.status { // Switch on OrderStatus
+            case .new:
                 Button(NSLocalizedString("mark_preparing_button", comment: "")) {
-                    updateStatus("preparing")
+                    updateStatus(.preparing) // Pass enum case
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
-            case "preparing":
+            case .preparing:
                 Button(NSLocalizedString("mark_ready_button", comment: "")) {
-                    updateStatus("ready")
+                    updateStatus(.ready) // Pass enum case
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
-            case "ready":
+            case .ready:
                 Button(NSLocalizedString("complete_print_button", comment: "")) {
-                    updateStatus("completed")
+                    updateStatus(.completed) // Pass enum case
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
-            default:
+            case .completed: // Added case for completed
                 Text(NSLocalizedString("status_completed_message", comment: "Order is completed"))
                     .foregroundColor(.green)
             }
@@ -110,19 +110,20 @@ struct OrderDetailView: View {
         }
     }
 
-    private func updateStatus(_ newStatus: String) {
+    private func updateStatus(_ newStatus: OrderStatus) { // Changed parameter to OrderStatus
         Task {
             do {
-                try await service.updateOrderStatus(orderId: order.id, newStatus: newStatus)
+                // Pass rawValue to the service, as it still expects a String
+                try await service.updateOrderStatus(orderId: order.id, newStatus: newStatus.rawValue)
                 // The @State order.status might become stale.
                 // The .onReceive handler for service.$activeOrders should update it.
                 // If the change to "completed" is confirmed by the backend and reflected,
                 // the .onReceive might trigger dismiss if the order is removed from activeOrders.
                 // For immediate UI feedback on this action:
-                if newStatus == "completed" {
-                    // Optimistically update local state, then dismiss.
+                if newStatus == .completed { // Compare with enum case
+                    // Optimistically update local state with the enum case, then dismiss.
                     // The .onReceive might also try to update it, which should be fine.
-                    self.order.status = newStatus
+                    self.order.status = newStatus // Assign OrderStatus
                     dismiss()
                 }
                 self.updateError = nil // Clear any previous error
@@ -142,7 +143,7 @@ struct OrderDetailView_Previews: PreviewProvider {
             id: "previewOrder123",
             tableId: "T5",
             totalAmount: 125.50,
-            status: "new", // Change to "preparing", "ready" to see different buttons
+            status: .new, // Use OrderStatus enum
             createdAt: Date(),
             items: [
                 OrderItem(id: "item1", menuItemId: "menuItem1", menuItemName: "Sushi Platter", quantity: 1, notes: "Extra wasabi"),

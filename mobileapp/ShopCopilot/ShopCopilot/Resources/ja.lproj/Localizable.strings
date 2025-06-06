@@ -78,3 +78,4 @@
 "mark_ready_button" = "提供準備";
 "complete_print_button" = "完了して印刷";
 "tab_orders" = "注文";
+"no_active_orders_message" = "進行中の注文はありません";

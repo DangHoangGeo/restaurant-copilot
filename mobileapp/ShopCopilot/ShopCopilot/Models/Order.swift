@@ -1,10 +1,10 @@
 import Foundation
 
-struct Order: Identifiable {
+struct Order: Identifiable, Codable {
     let id: String
     let tableId: String
     var totalAmount: Double
-    var status: String
+    var status: OrderStatus // Changed to OrderStatus
     let createdAt: Date
     var items: [OrderItem]
 
@@ -13,7 +13,8 @@ struct Order: Identifiable {
         guard let id = dict["id"] as? String, // Assuming UUID is sent as String
               let tableId = dict["table_id"] as? String,
               let totalAmount = dict["total_amount"] as? Double,
-              let status = dict["status"] as? String,
+              let statusString = dict["status"] as? String, // Read as String first
+              let status = OrderStatus(rawValue: statusString), // Then initialize OrderStatus
               let createdAtString = dict["created_at"] as? String,
               let createdAt = ISO8601DateFormatter().date(from: createdAtString),
               let itemsArray = dict["items"] as? [[String: Any]] else {
@@ -23,7 +24,7 @@ struct Order: Identifiable {
         self.id = id
         self.tableId = tableId
         self.totalAmount = totalAmount
-        self.status = status
+        self.status = status // Assign OrderStatus
         self.createdAt = createdAt
         self.items = itemsArray.compactMap { OrderItem(from: $0) }
 
@@ -36,7 +37,7 @@ struct Order: Identifiable {
     }
 }
 
-struct OrderItem: Identifiable {
+struct OrderItem: Identifiable, Codable { // Added Codable
     let id: String // Assuming UUID is sent as String for id
     let menuItemId: String // Assuming UUID for menu_item_id
     let menuItemName: String
