@@ -9,38 +9,6 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import "../globals.css";
 
-// Define types for restaurant and menu data
-interface Restaurant {
-  id: string;
-  name: string;
-  subdomain: string;
-  logo_url?: string;
-  brand_color?: string;
-  contact_info?: string;
-  default_language: string;
-}
-
-interface MenuItem {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  description_en?: string;
-  description_ja?: string;
-  description_vi?: string;
-  price: number;
-  image_url?: string;
-  category_id: string;
-  // Add other relevant fields
-}
-
-interface Category {
-  id: string;
-  name: string;
-  position: number;
-  menu_items: MenuItem[]; // Nested menu items
-}
-
 // --- Theme Context (can be shared or separate for landing) ---
 // For simplicity, assuming the same ThemeContext is available
 interface ThemeContextType {
@@ -487,76 +455,6 @@ const FooterSection = () => {
   );
 };
 
-// Restaurant-specific Homepage Component
-const RestaurantHomePage = ({ restaurant, menu, locale }: { restaurant: Restaurant, menu: Category[], locale: string }) => {
-  const t = useTranslations('RestaurantPage'); // Assuming a 'RestaurantPage' namespace
-  const getTranslatedName = (item: MenuItem) => {
-    if (locale === 'ja') return item.name_ja;
-    if (locale === 'vi') return item.name_vi;
-    return item.name_en;
-  };
-  const getTranslatedDescription = (item: MenuItem) => {
-    if (locale === 'ja') return item.description_ja;
-    if (locale === 'vi') return item.description_vi;
-    return item.description_en;
-  };
-
-  return (
-    <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased">
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              {restaurant.logo_url && (
-                <Image src={restaurant.logo_url} alt={`${restaurant.name} Logo`} width={40} height={40} className="rounded-full mr-3" />
-              )}
-              <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">{restaurant.name}</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <LanguageSwitcherLanding /> {/* Re-use if applicable, or create a specific one */}
-              {/* Add other restaurant-specific header elements like "Order Now" button */}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <section className="text-center my-12">
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">{t('welcome', { restaurantName: restaurant.name })}</h1>
-          {restaurant.contact_info && <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">{restaurant.contact_info}</p>}
-        </section>
-
-        <section className="my-12">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-8">{t('menuTitle')}</h2>
-          {menu.length > 0 ? (
-            menu.map(category => (
-              <div key={category.id} className="mb-10">
-                <h3 className="text-2xl font-semibold text-slate-800 dark:text-slate-200 mb-6 border-b pb-2">{category.name}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {category.menu_items.map(item => (
-                    <Card key={item.id} className="flex flex-col">
-                      {item.image_url && (
-                        <Image src={item.image_url} alt={getTranslatedName(item)} width={300} height={200} className="rounded-md object-cover w-full h-48 mb-4" />
-                      )}
-                      <h4 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{getTranslatedName(item)}</h4>
-                      {getTranslatedDescription(item) && <p className="mt-2 text-slate-600 dark:text-slate-300 flex-grow">{getTranslatedDescription(item)}</p>}
-                      <p className="mt-4 text-lg font-bold text-[--brand-color-landing]">${item.price.toFixed(2)}</p>
-                      {/* Add "Add to Cart" or "Order" button here */}
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-slate-600 dark:text-slate-300">{t('noMenuItems')}</p>
-          )}
-        </section>
-      </main>
-
-      <FooterSection /> {/* Re-use generic footer or create restaurant-specific */}
-    </div>
-  );
-};
 
 
 // Main Landing Page Component
@@ -564,59 +462,16 @@ function Page() {
   const searchParams = useSearchParams();
   const subdomain = searchParams.get('restaurant');
   const locale = useLocale();
-
-  const [restaurantData, setRestaurantData] = useState<Restaurant | null>(null);
-  const [menuData, setMenuData] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchRestaurantData = async () => {
-      if (subdomain) {
-        try {
-          setLoading(true);
-          setError(null);
+    if (subdomain) {
+      router.replace(`/${locale}/customer`);
+    }
+  }, [subdomain, locale, router]);
 
-          const response = await fetch(`/api/v1/restaurant/data?subdomain=${subdomain}`);
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to load restaurant data');
-          }
-
-          setRestaurantData(data.restaurant);
-          setMenuData(data.menu);
-        } catch (err) {
-          setError((err instanceof Error ? err.message : "An unknown error occurred") || "Failed to load restaurant data.");
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false); // No subdomain, so no loading for restaurant data
-      }
-    };
-
-    fetchRestaurantData();
-  }, [subdomain]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <p className="text-lg text-slate-700 dark:text-slate-300">Loading restaurant details...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
-        <p className="text-lg">Error: {error}</p>
-      </div>
-    );
-  }
-
-  if (subdomain && restaurantData) {
-    return <RestaurantHomePage restaurant={restaurantData} menu={menuData} locale={locale} />;
+  if (subdomain) {
+    return null;
   }
 
   // Original generic landing page content

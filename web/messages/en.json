@@ -213,6 +213,12 @@
     "zod_form_hint": "Form validation is handled by Zod. Please ensure all required fields are filled correctly.",
     "coming_soon": "Coming Soon!",
     "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
+    "form_placeholder": "Form fields go here.",
+    "recharts_note": "Charts powered by Recharts.",
+    "datatable_component_note": "Data table component placeholder.",
+    "sold": "sold",
+    "cancel_booking": "Cancel Booking",
+    "confirm_booking": "Confirm Booking",
     "order_status": {
       "new": "New",
       "preparing": "Preparing",
@@ -475,5 +481,187 @@
         }
       }
     }
+  }
+  ,
+  "AdminTables": {
+    "add_table": "Add Table",
+    "edit_table": "Edit Table",
+    "capacity": "Capacity",
+    "position": "Position",
+    "generate_qr": "Generate QR",
+    "qr_for_table": "QR for Table",
+    "download_png": "Download PNG",
+    "download_png_action": "Downloading PNG..."
+  },
+  "AdminEmployees": {
+    "add_employee": "Add Employee",
+    "edit_employee": "Edit Employee",
+    "employee_name": "Employee Name",
+    "schedule_calendar_note": "Weekly schedule overview.",
+    "edit_shifts": "Edit Shifts",
+    "edit_shifts_action": "Edit shifts action",
+    "form": {
+      "full_name": "Full Name",
+      "email_lookup": "Email",
+      "email_lookup_placeholder": "employee@example.com",
+      "role": "Role"
+    }
+  },
+  "Roles": {
+    "manager": "Manager",
+    "chef": "Chef",
+    "server": "Server",
+    "cashier": "Cashier"
+  },
+  "AdminBookings": {
+    "details_title": "Booking Details",
+    "preorder_items": "Pre-Order Items",
+    "no_preorder_items": "No pre-order items",
+    "table": {
+      "customer_name": "Customer Name",
+      "contact": "Contact",
+      "date_time": "Date & Time",
+      "party_size": "Party Size",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "Bookings": {
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "canceled": "Canceled"
+    }
+  },
+  "AdminReports": {
+    "tabs": {
+      "sales": "Sales",
+      "items": "Items",
+      "feedback": "Feedback"
+    },
+    "summary": {
+      "total_sales_today": "Total Sales Today",
+      "active_orders_count": "Active Orders",
+      "top_selling_item_today": "Top Selling Item Today",
+      "low_stock_alerts_count": "Low Stock Alerts"
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "description_7_days": "Based on the last 7 days",
+      "apply_button": "Apply Recommendations"
+    },
+    "sales": {
+      "title": "Sales Report",
+      "daily_revenue_chart_placeholder": "Daily revenue chart placeholder",
+      "category_breakdown_chart_placeholder": "Category breakdown placeholder"
+    },
+    "daterange": {
+      "last_7_days": "Last 7 Days",
+      "last_30_days": "Last 30 Days"
+    },
+    "items": {
+      "title": "Items Report",
+      "table": {
+        "item_name": "Item Name",
+        "total_sold": "Total Sold",
+        "total_revenue": "Total Revenue",
+        "avg_rating": "Avg Rating"
+      }
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description_last_50": "Last 50 reviews"
+    }
+  },
+  "CustomerHome": {
+    "welcome": "Welcome to {restaurantName}",
+    "menu_title": "Menu",
+    "add_to_cart": "Add to Cart",
+    "no_menu_items": "No menu items available"
+  },
+  "Customer": {
+    "menu": {
+      "title": "Menu",
+      "serving_today": "Serving Today",
+      "view_menu": "View Menu",
+      "item_details": "Item Details",
+      "add_to_cart": "Add to Cart",
+      "out_of_stock": "Out of Stock",
+      "quantity": "Quantity",
+      "total_price": "Total Price",
+      "add_to_cart_success": "{itemName} added to your cart.",
+      "add_to_cart_error": "Failed to add {itemName} to cart. Please try again."
+    },
+      "cart": {
+      "items_in_cart_plural": "{count} item(s) in cart",
+      "checkout_button": "Checkout"
+    },
+    "checkout": {
+      "redirecting_empty_cart": "Cart is empty. Redirecting to menu...",
+      "back_to_menu": "Back to Menu",
+      "title": "Checkout",
+      "order_summary": "Order Summary",
+      "payment_instruction_table": "Please proceed to the counter or call a staff member to complete your payment for Table {tableId}.",
+      "payment_instruction_counter": "Please proceed to the counter to complete your payment.",
+      "confirm_cash_order_button": "Confirm Cash Order",
+      "confirm_modal_title": "Confirm Order",
+      "confirm_modal_text": "Are you sure you want to confirm your order for {total}?"
+    },
+    "thankyou": {
+      "title": "Thank You!",
+      "subtitle": "Your order has been placed successfully.",
+      "order_id_label": "Order ID",
+      "order_summary_title": "Order Summary",
+      "table_number_label": "Table Number",
+      "rate_dishes_title": "Rate Your Dishes",
+      "rate_this_dish_button": "Rate {dish}",
+      "back_to_menu_button": "Back to Menu"
+    },
+    "review": {
+      "rating_required_alert": "Please provide a rating.",
+      "submission_thank_you_title": "Review Submitted!",
+      "submission_thank_you_message": "Thank you for your valuable feedback!",
+      "title": "Rate Your Dish",
+      "rating_label": "Your Rating",
+      "comment_placeholder": "Add a comment (optional)",
+      "submit_button": "Submit Review"
+    },
+    "booking": {
+      "title": "Table Booking",
+      "submission_thank_you_title": "Booking Confirmed!",
+      "book_table_button": "Book a Table",
+      "submission_thank_you_message": "Your table booking has been successfully confirmed. We look forward to seeing you!",
+      "form": {
+        "validation_error_fill_fields": "Please fill in all required fields.",
+        "table_select_placeholder": "Select a Table",
+        "table_capacity": "{count} people",
+        "name_placeholder": "Your Full Name",
+        "contact_placeholder": "Your Phone or Email",
+        "preorder_optional_title": "Pre-order (Optional)",
+        "submit_button": "Confirm Booking"
+      }
+    },
+    "common":{
+      "total":"Total",
+      "cancel": "Cancel Order",
+      "confirm": "Confirm Order",
+      "restaurant_not_found": "Restaurant not found. Please check the URL or contact support.",
+      "error_loading_menu": "Error loading menu. Please try again later.",
+      "error_loading_cart": "Error loading cart. Please try again later.",
+      "error_loading_checkout": "Error loading checkout. Please try again later.",
+      "error_loading_booking": "Error loading booking form. Please try again later.",
+      "error_loading_order_summary": "Error loading order summary. Please try again later.",
+      "error_loading_review_form": "Error loading review form. Please try again later."
+    },
+    "currency_format": "$",
+    "ordering_for_table": "Ordering for Table {tableId}",
+    "serving_today": "Serving Today: {day}",
+    "item_added_to_cart_msg": "{item} added to cart!",
+    "decrease_quantity": "Decrease quantity",
+    "increase_quantity": "Increase quantity",
+    "admin_panel_button": "Admin Panel"
+  },
+  "ai_chat": {
+    "toggle_label": "Toggle AI Chat"
   }
 }
