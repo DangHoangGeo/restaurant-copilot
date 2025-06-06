@@ -1,9 +1,8 @@
-# Customer UI Review & Improvement Plan
+# Customer Facing UI Improvement Plan
 
 ## Overview
-The existing customer interface under `web/app/[locale]/customer` is a prototype. It provides a menu view, checkout, booking form and basic thank‑you screen. Mock data is used for menu items and tables (see `customer-client-content.tsx`). The design is functional but lacks production‑ready structure and mobile polish.
-
-This document reviews the current implementation and proposes a set of reusable components, session logic improvements and mobile‑first enhancements.
+The existing customer interface under `web/app/[locale]/customer` is not completed and too complecated to maintain. The design is functional but lacks production‑ready structure and mobile polish. Follow the bellow instruction to complete the current 
+customer facing UI and ordering flow.
 
 ## Key Improvements Needed
 1. **Componentization** – Extract shared UI pieces from the mockup into clear components (e.g., `MenuList`, `FoodCard`, `CategoryTabs`, `OrderSummary`).
@@ -25,6 +24,7 @@ This document reviews the current implementation and proposes a set of reusable 
 These components can live inside `web/components/features/customer` for reuse across pages.
 
 ## Session & Order Flow
+- **Order processing, booking APIs and reviews** – there are no API routes for orders, bookings or review creation yet. The customer UI contains placeholders for these actions but they are not backed by server code.
 1. **Session Creation** – When the URL `/[locale]/customer/order?tableId=...` is visited, call an API (`/api/v1/sessions/create`) to create a new `orders` row with `status:"new"` and return `sessionId`.
 2. **Active Session** – Store `sessionId` in localStorage or a cookie. All subsequent order or booking requests send this ID.
 3. **Adding Items** – Customers can navigate back to the menu and the cart persists thanks to `sessionId`.
@@ -74,15 +74,4 @@ Store rating and optional comment via `/api/v1/reviews/create`.
 5. **Recommended Items** – Create static or analytics‑driven data and display via new component.
 6. **Polish Mobile Styles** – Audit Tailwind classes for spacing, sizes, and responsive breakpoints.
 7. **Thank You & Review** – After checkout show `ThankYouScreen` with review links; implement `ReviewForm` page for rating.
-
-## Sample Flow Diagram
-```mermaid
-flowchart TD
-  QR[Scan Table QR] --> |create session| Menu
-  Menu --> Checkout
-  Checkout --> OrderPlaced[Order Created]
-  OrderPlaced --> |status:new| Menu
-  Menu --> |user checks out| ThankYou
-  ThankYou --> Review
-```
 
