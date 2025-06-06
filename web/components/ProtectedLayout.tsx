@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/lib/supabase/client"; // Import client-side Supabase
+import { createClient } from "@/lib/supabase/client"; // Import client-side Supabase
 import { useRouter } from "next/navigation"; // For client-side navigation
 // Or, if using next-intl for navigation:
 // import { useRouter } from '@/i18n/navigation';
@@ -20,7 +20,7 @@ export function ProtectedLayout({
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await createClient().auth.getSession();
 
         if (error) {
           console.error("Error getting session:", error.message);
@@ -48,7 +48,7 @@ export function ProtectedLayout({
       // If loading is complete and user is not authenticated, redirect to login.
       // Ensure you have a login page route, e.g., '/login' or locale-specific.
       // This assumes your login page is at the root '/login'. Adjust if it's namespaced by locale.
-      router.replace('/login');
+      router.push('/login');
     }
   }, [isLoading, isAuthenticated, router]);
 
