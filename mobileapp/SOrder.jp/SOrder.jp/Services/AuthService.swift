@@ -44,6 +44,7 @@ class AuthService {
     func login(email: String, password: String, completion: @escaping (Result<Session, AuthError>) -> Void) {
         Task {
             do {
+                print("Logining in")
                 // Basic validation: email and password should not be empty.
                 guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                       !password.isEmpty else {
