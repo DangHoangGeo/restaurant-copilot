@@ -23,6 +23,7 @@ struct Order: Identifiable {
         guard let id = dict["id"] as? String, // Assuming UUID is sent as String
               let tableId = dict["table_id"] as? String,
               let totalAmount = dict["total_amount"] as? Double,
+              let status = OrderStatus(rawValue: statusString), // Then initialize OrderStatus
               let statusString = dict["status"] as? String,
               let createdAtString = dict["created_at"] as? String,
               let createdAt = ISO8601DateFormatter().date(from: createdAtString),
@@ -46,7 +47,7 @@ struct Order: Identifiable {
     }
 }
 
-struct OrderItem: Identifiable {
+struct OrderItem: Identifiable, Codable { // Added Codable
     let id: String // Assuming UUID is sent as String for id
     let menuItemId: String // Assuming UUID for menu_item_id
     let menuItemName: String

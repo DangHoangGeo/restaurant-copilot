@@ -102,7 +102,7 @@ struct OrderDetailView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(disableActions)
-            default:
+            case .completed: // Added case for completed
                 Text(NSLocalizedString("status_completed_message", comment: "Order is completed"))
                     .foregroundColor(.green)
             }
@@ -113,16 +113,16 @@ struct OrderDetailView: View {
     private func updateStatus(_ newStatus: OrderStatus) {
         Task {
             do {
-                try await service.updateOrderStatus(orderId: order.id, newStatus: newStatus)
+                // Pass rawValue to the service, as it still expects a String
+                try await service.updateOrderStatus(orderId: order.id, newStatus: newStatus.rawValue)
                 // The @State order.status might become stale.
                 // The .onReceive handler for service.$activeOrders should update it.
                 // If the change to "completed" is confirmed by the backend and reflected,
                 // the .onReceive might trigger dismiss if the order is removed from activeOrders.
                 // For immediate UI feedback on this action:
                 if newStatus == .completed {
-                    // Optimistically update local state, then dismiss.
                     // The .onReceive might also try to update it, which should be fine.
-                    self.order.status = newStatus
+                    self.order.status = newStatus // Assign OrderStatus
                     dismiss()
                 }
                 self.updateError = nil // Clear any previous error
