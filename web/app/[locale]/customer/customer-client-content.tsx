@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks, @next/next/no-img-element */
 
-import React, { useState, createContext, useContext, ReactNode } from "react";
+import React, { useState, createContext, useContext, ReactNode, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -31,6 +31,7 @@ import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { StarRating } from "@/components/ui/star-rating";
 import { MenuList } from "@/components/features/customer/MenuList";
 import { FloatingCart } from "@/components/features/customer/FloatingCart";
+import { OrderSummary } from "@/components/features/customer/OrderSummary";
 
 interface MenuItem {
   id: string
@@ -308,6 +309,21 @@ function CustomerMenuScreen({
   const locale = getCurrentLocale();
   const tableId = viewProps?.tableId;
   const sessionStatus = viewProps?.sessionStatus || "new";
+  useEffect(() => {
+    if (tableId) {
+      const existing = localStorage.getItem("sessionId");
+      if (!existing) {
+        fetch(`/api/v1/sessions/create?tableId=${tableId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.sessionId) {
+              localStorage.setItem("sessionId", data.sessionId);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  }, [tableId]);
 
   const handleAddToCart = (item: any, quantity = 1) => {
     addToCart(item, quantity)
@@ -398,16 +414,34 @@ function ReviewOrderScreen({
     setView("menu", viewProps);
     return <p>{t("checkout.redirecting_empty_cart")}</p>;
   }
-  const handleConfirmOrder = () => {
-    const mockOrderId = `SC-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-    setIsConfirmModalOpen(false);
-    setView("orderplaced", {
-      orderId: mockOrderId,
-      items: cart,
-      total: totalCartPrice,
-      tableId: viewProps?.tableId,
+  const handleConfirmOrder = async () => {
+    const sessionId = localStorage.getItem("sessionId");
+    if (!sessionId) {
+      alert("Session not found");
+      return;
+    }
+    const payload = {
+      sessionId,
+      items: cart.map((c) => ({ menuItemId: c.itemId, quantity: c.qty })),
+    };
+    const res = await fetch("/api/v1/orders/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
-    clearCart();
+    const data = await res.json();
+    if (data.success) {
+      setIsConfirmModalOpen(false);
+      setView("orderplaced", {
+        orderId: data.orderId,
+        items: cart,
+        total: totalCartPrice,
+        tableId: viewProps?.tableId,
+      });
+      clearCart();
+    } else {
+      alert(data.error || "Failed");
+    }
   };
   return (
     <div>
@@ -422,49 +456,19 @@ function ReviewOrderScreen({
       <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
         {t("checkout.title")}
       </h2>
-      <Card className="max-w-lg mx-auto p-4">
-        <h3 className="text-xl font-semibold mb-4">
-          {t("checkout.order_summary")}
-        </h3>
-        {cart.map((item) => (
-          <div
-            key={item.itemId}
-            className="flex items-center justify-between py-2 border-b last:border-b-0 dark:border-slate-700"
-          >
-            <div className="flex items-center">
-              <img
-                src={
-                  item.imageUrl ||
-                  "https://placehold.co/60x40/E2E8F0/334155?text=Item"
-                }
-                alt={getLocalizedText(item.name || item, getCurrentLocale())}
-                className="w-12 h-10 object-cover rounded mr-3"
-              />
-              <div>
-                <p className="font-medium">
-                  {getLocalizedText(item.name || item, getCurrentLocale())}
-                </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {item.qty} x {t("currency_format", { value: item.price })}
-                </p>
-              </div>
-            </div>
-            <p className="font-semibold">
-              {t("currency_format", { value: item.price * item.qty })}
-            </p>
-          </div>
-        ))}
-        <div className="flex justify-between text-lg font-bold mt-4 pt-2 border-t dark:border-slate-700">
-          <span>{t("common.total")}:</span>
-          <span>{t("currency_format", { value: totalCartPrice })}</span>
-        </div>
-        <p className="mt-6 text-sm text-center text-slate-600 dark:text-slate-400">
-          {viewProps?.tableId
-            ? t("checkout.payment_instruction_table", {
-                tableId: viewProps.tableId,
-              })
-            : t("checkout.payment_instruction_counter")}
-        </p>
+      <OrderSummary
+        items={cart}
+        total={totalCartPrice}
+        locale={getCurrentLocale()}
+        className="max-w-lg mx-auto p-4"
+      />
+      <p className="mt-6 text-sm text-center text-slate-600 dark:text-slate-400">
+        {viewProps?.tableId
+          ? t("checkout.payment_instruction_table", {
+              tableId: viewProps.tableId,
+            })
+          : t("checkout.payment_instruction_counter")}
+      </p>
         {!FEATURE_FLAGS.onlinePayment && (
           <Button
             onClick={() => setIsConfirmModalOpen(true)}
@@ -477,7 +481,6 @@ function ReviewOrderScreen({
             {t("currency_format", { value: totalCartPrice })})
           </Button>
         )}
-      </Card>
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -537,30 +540,18 @@ function OrderPlacedScreen({
       <p className="text-slate-600 dark:text-slate-300 mb-6">
         {t("orderplaced.message")}
       </p>
-      <Card className="max-w-md mx-auto mb-8 text-left p-4">
-        <h3 className="text-lg font-semibold mb-3">
-          {t("checkout.order_summary")}
-        </h3>
-        {items.map((item: CartItem) => (
-          <div key={item.itemId} className="flex justify-between text-sm py-1">
-            <span>
-              {item.qty}x {getLocalizedText(item.name || item, locale)}
-            </span>
-            <span>
-              {t("currency_format", { value: item.price * item.qty })}
-            </span>
-          </div>
-        ))}
-        <div className="flex justify-between font-bold mt-2 pt-2 border-t dark:border-slate-700">
-          <span>{t("common.total")}:</span>
-          <span>{t("currency_format", { value: total })}</span>
-        </div>
-        {tableId && (
-          <p className="text-sm mt-2">
-            {t("thankyou.table_number_label")}: {tableId}
-          </p>
-        )}
-      </Card>
+      <OrderSummary
+        items={items}
+        total={total}
+        locale={locale}
+        showImages={false}
+        className="max-w-md mx-auto mb-8 p-4 text-left"
+      />
+      {tableId && (
+        <p className="text-sm text-center">
+          {t("thankyou.table_number_label")}: {tableId}
+        </p>
+      )}
       <div className="flex justify-center gap-4">
         <Button
           onClick={() => setView("menu", { tableId })}
@@ -609,30 +600,18 @@ function ThankYouScreen({
       >
         {t("thankyou.order_id_label")}: {orderId}
       </p>
-      <Card className="max-w-md mx-auto mb-8 text-left p-4">
-        <h3 className="text-lg font-semibold mb-3">
-          {t("thankyou.order_summary_title")}
-        </h3>
-        {items.map((item: CartItem) => (
-          <div key={item.itemId} className="flex justify-between text-sm py-1">
-            <span>
-              {item.qty}x {getLocalizedText(item.name || item, locale)}
-            </span>
-            <span>
-              {t("currency_format", { value: item.price * item.qty })}
-            </span>
-          </div>
-        ))}
-        <div className="flex justify-between font-bold mt-2 pt-2 border-t dark:border-slate-700">
-          <span>{t("common.total")}:</span>
-          <span>{t("currency_format", { value: total })}</span>
-        </div>
-        {tableId && (
-          <p className="text-sm mt-2">
-            {t("thankyou.table_number_label")}: {tableId}
-          </p>
-        )}
-      </Card>
+      <OrderSummary
+        items={items}
+        total={total}
+        locale={locale}
+        showImages={false}
+        className="max-w-md mx-auto mb-8 p-4 text-left"
+      />
+      {tableId && (
+        <p className="text-sm text-center">
+          {t("thankyou.table_number_label")}: {tableId}
+        </p>
+      )}
       {FEATURE_FLAGS.advancedReviews && (
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-3">
@@ -1024,10 +1003,12 @@ export function CustomerClientContent({
   restaurantSettings,
   categories,
   tables,
+  tableId,
 }: {
   restaurantSettings: RestaurantSettings
   categories: Category[]
   tables: TableInfo[]
+  tableId?: string
 }) {
   const [view, setViewState] = useState<
     | "menu"
@@ -1038,7 +1019,7 @@ export function CustomerClientContent({
     | "booking"
     | "admin"
   >("menu");
-  const [viewProps, setViewProps] = useState<any>({});
+  const [viewProps, setViewProps] = useState<any>({ tableId });
   const setView = (v: string, props: any = {}) => {
     setViewState(v as any);
     setViewProps(props);
