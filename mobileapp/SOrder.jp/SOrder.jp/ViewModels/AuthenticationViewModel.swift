@@ -146,8 +146,9 @@ class AuthenticationViewModel: ObservableObject {
             return
         }
 
-        guard let restaurantIdClaim = json["restaurant_id"] as? String,
-              let roleClaim = json["role"] as? String,
+        guard let appMetadata = json["app_metadata"] as? [String: Any],
+              let restaurantIdClaim = appMetadata["restaurant_id"] as? String,
+              let roleClaim = appMetadata["role"] as? String,
               !restaurantIdClaim.isEmpty, !roleClaim.isEmpty else {
             print("AuthenticationViewModel: Essential claims (restaurant_id, role) missing or invalid in JWT.")
             if !isInitialLaunch { self.authError = "AuthenticationViewModel: Token is missing required information." }
