@@ -606,6 +606,8 @@
       "quantity": "Quantity",
       "total_price": "Total Price",
       "search_placeholder": "Search menu...",
+      "popular_now": "Popular Now",
+      "recommended": "Recommended",
       "add_to_cart_success": "{itemName} added to your cart.",
       "add_to_cart_error": "Failed to add {itemName} to cart. Please try again."
     },
