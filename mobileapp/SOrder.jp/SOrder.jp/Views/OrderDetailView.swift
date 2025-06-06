@@ -105,6 +105,8 @@ struct OrderDetailView: View {
             case .completed: // Added case for completed
                 Text(NSLocalizedString("status_completed_message", comment: "Order is completed"))
                     .foregroundColor(.green)
+            case .unknown:
+                Text("Unknown status")
             }
             Spacer()
         }
@@ -113,8 +115,7 @@ struct OrderDetailView: View {
     private func updateStatus(_ newStatus: OrderStatus) {
         Task {
             do {
-                // Pass rawValue to the service, as it still expects a String
-                try await service.updateOrderStatus(orderId: order.id, newStatus: newStatus.rawValue)
+                try await service.updateOrderStatus(orderId: order.id, newStatus: newStatus)
                 // The @State order.status might become stale.
                 // The .onReceive handler for service.$activeOrders should update it.
                 // If the change to "completed" is confirmed by the backend and reflected,
@@ -130,35 +131,6 @@ struct OrderDetailView: View {
                 print("Error updating order status: \(error.localizedDescription)")
                 self.updateError = error.localizedDescription
             }
-        }
-    }
-}
-
-struct OrderDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        // Create a mock order and service for the preview
-        let mockService = OrderService()
-        let mockOrder = Order(
-            id: "previewOrder123",
-            tableId: "T5",
-            totalAmount: 125.50,
-            status: .new, // Change to .preparing, .ready to see different buttons
-            createdAt: Date(),
-            items: [
-                OrderItem(id: "item1", menuItemId: "menuItem1", menuItemName: "Sushi Platter", quantity: 1, notes: "Extra wasabi"),
-                OrderItem(id: "item2", menuItemId: "menuItem2", menuItemName: "Miso Soup", quantity: 2)
-            ]
-        )! // Force unwrap for preview simplicity, ensure mock data is valid
-
-        // If you want to test the "completed" state or other states:
-        // mockOrder.status = .preparing
-
-        // Simulate adding it to the service's active orders so .onReceive can find it
-        // mockService.activeOrders = [mockOrder]
-
-        return NavigationView { // Embed in NavigationView for title and context
-            OrderDetailView(order: mockOrder)
-                .environmentObject(mockService) // Inject the mock service
         }
     }
 }

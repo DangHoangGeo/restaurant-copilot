@@ -37,9 +37,22 @@
 		3690605F2DF306EA009E7CB8 /* SOrder.jpUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SOrder.jpUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		369060E82DF31F29009E7CB8 /* Exceptions for "SOrder.jp" folder in "SOrder.jp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"SOrder-jp-Info.plist",
+			);
+			target = 369060472DF306E9009E7CB8 /* SOrder.jp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3690604A2DF306E9009E7CB8 /* SOrder.jp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				369060E82DF31F29009E7CB8 /* Exceptions for "SOrder.jp" folder in "SOrder.jp" target */,
+			);
 			path = SOrder.jp;
 			sourceTree = "<group>";
 		};
@@ -420,6 +433,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SOrder-jp-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = SOder;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -448,6 +462,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SOrder-jp-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = SOder;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

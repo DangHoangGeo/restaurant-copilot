@@ -1,9 +1,7 @@
 import Foundation
 
-/// Represents the state of an order. Using an enum avoids stringly‑typed
-/// comparisons throughout the app and keeps the code safer and clearer.
-
-struct Order: Identifiable {
+/// Represents the state of an order.
+struct Order: Identifiable, Equatable, Decodable {
     let id: String
     let tableId: String
     var totalAmount: Double
@@ -13,11 +11,11 @@ struct Order: Identifiable {
 
     // Custom initializer to parse from a dictionary (e.g., from Supabase)
     init?(from dict: [String: Any]) {
-        guard let id = dict["id"] as? String, // Assuming UUID is sent as String
+        guard let id = dict["id"] as? String,
               let tableId = dict["table_id"] as? String,
               let totalAmount = dict["total_amount"] as? Double,
-              let statusString = dict["status"] as? String, // Declare statusString first
-              let status = OrderStatus(rawValue: statusString), // Then initialize OrderStatus
+              let statusString = dict["status"] as? String,
+              let status = OrderStatus(rawValue: statusString),
               let createdAtString = dict["created_at"] as? String,
               let createdAt = ISO8601DateFormatter().date(from: createdAtString),
               let itemsArray = dict["items"] as? [[String: Any]] else {
@@ -27,27 +25,23 @@ struct Order: Identifiable {
         self.id = id
         self.tableId = tableId
         self.totalAmount = totalAmount
-        self.status = OrderStatus(rawValue: statusString) ?? .new // Use .new as default
+        self.status = status
         self.createdAt = createdAt
         self.items = itemsArray.compactMap { OrderItem(from: $0) }
 
-        // Ensure all items were parsed correctly if items array was not empty
         if !itemsArray.isEmpty && self.items.count != itemsArray.count {
-             // This could indicate some OrderItems failed to initialize.
-             // Depending on strictness, you might want to return nil here.
-             print("Warning: Not all order items could be parsed for order \(id).")
+            print("Warning: Not all order items could be parsed for order \(id).")
         }
     }
 }
 
-struct OrderItem: Identifiable, Codable { // Added Codable
-    let id: String // Assuming UUID is sent as String for id
-    let menuItemId: String // Assuming UUID for menu_item_id
+struct OrderItem: Identifiable, Codable, Equatable {
+    let id: String
+    let menuItemId: String
     let menuItemName: String
     var quantity: Int
     var notes: String?
 
-    // Custom initializer to parse from a dictionary
     init?(from dict: [String: Any]) {
         guard let id = dict["id"] as? String,
               let menuItemId = dict["menu_item_id"] as? String,

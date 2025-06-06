@@ -7,17 +7,15 @@ enum AuthError: Error, LocalizedError {
     case invalidCredentials
     /// Represents an unknown or unexpected error during authentication.
     case unknown
-    /// Represents an error from the Supabase service.
+    /// Wraps an underlying error that occurred during Supabase calls.
     case supabaseError(Error)
 
     /// Provides a localized description for each authentication error.
     var errorDescription: String? {
         switch self {
         case .invalidCredentials:
-            // Uses "error_invalid_credentials" from Localizable.strings
             return NSLocalizedString("error_invalid_credentials", comment: "Invalid credentials error message")
         case .unknown:
-            // Uses "error_unknown" from Localizable.strings
             return NSLocalizedString("error_unknown", comment: "Unknown error message during authentication")
         case .supabaseError(let error):
             return error.localizedDescription
@@ -49,24 +47,24 @@ class AuthService {
                 // Basic validation: email and password should not be empty.
                 guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                       !password.isEmpty else {
-                    completion(.failure(AuthError.invalidCredentials))
+                    completion(.failure(.invalidCredentials))
                     return
                 }
 
                 let session = try await supabaseClient.auth.signIn(email: email, password: password)
-                completion(.success(session))
+                    completion(.success(session))
+                
             } catch {
-                // Check if the error is specifically a GoTrueError for more detailed handling if needed
+                // If the error is a GoTrueError, handle invalid credentials specifically
                 if let goTrueError = error as? GoTrueError {
-                    // Example: Distinguish between invalid credentials and other server errors
                     switch goTrueError {
-                    case .api(let apiError) where apiError.underlyingResponse.statusCode == 400: // Access statusCode from underlyingResponse
-                        completion(.failure(AuthError.invalidCredentials))
+                    case .api(let apiError) where apiError.underlyingResponse.statusCode == 400:
+                        completion(.failure(.invalidCredentials))
                     default:
-                        completion(.failure(AuthError.supabaseError(error)))
+                        completion(.failure(.supabaseError(error)))
                     }
                 } else {
-                    completion(.failure(AuthError.supabaseError(error)))
+                    completion(.failure(.supabaseError(error)))
                 }
             }
         }
@@ -82,7 +80,7 @@ class AuthService {
                 try await supabaseClient.auth.signOut()
                 completion(.success(()))
             } catch {
-                completion(.failure(AuthError.supabaseError(error)))
+                completion(.failure(.supabaseError(error)))
             }
         }
     }

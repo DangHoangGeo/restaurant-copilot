@@ -6,6 +6,7 @@ import Supabase
 enum RealtimeStatus {
     case connecting, connected, disconnected, error
 }
+
 /// Service responsible for listening to realtime order updates and exposing an
 /// array of active orders to the UI. Annotated with `@MainActor` so that all
 /// published changes occur on the main thread.
@@ -23,7 +24,7 @@ class OrderService: ObservableObject {
     // Retry logic state variables
     private var currentRetryAttempt: Int = 0
     private let maxRetryAttempts: Int = 5
-    private let retryDelaySeconds: Double = 5.0 // Could implement exponential backoff
+    private let retryDelaySeconds: Double = 5.0
 
     // Debouncer for processing batch updates or frequent single updates
     private var updateDebouncer: AnyCancellable?
@@ -39,30 +40,30 @@ class OrderService: ObservableObject {
     }
 
     func initializeSubscription(jwt: String, restaurantId: String) {
-        // If already subscribed for the same restaurant and status is connected or connecting, don't re-initialize
-        if self.client != nil && self.orderSubscription != nil && self.restaurantId == restaurantId && (self.subscriptionStatus == .connected || self.subscriptionStatus == .connecting) {
+        // If already subscribed for the same restaurant and status is connected/connecting, skip
+        if let existingClient = self.client,
+           let existingChannel = self.orderSubscription,
+           self.restaurantId == restaurantId,
+           (self.subscriptionStatus == .connected || self.subscriptionStatus == .connecting) {
             print("OrderService: Subscription already active or connecting for restaurant \(restaurantId).")
             return
         }
 
-        // If there's an existing subscription (e.g. different restaurant or trying to re-init), unsubscribe first
-        // This also clears previous retry attempts by calling unsubscribe()
+        // If there’s an existing subscription (e.g., different restaurant), unsubscribe first
         if self.orderSubscription != nil {
-            unsubscribe() // Resets retry attempts and status
+            unsubscribe()
         }
 
         print("OrderService: Initializing subscription for restaurant \(restaurantId)...")
-        self.jwtToken = jwt // Store JWT for potential retries
+        self.jwtToken = jwt
         self.restaurantId = restaurantId
         self.subscriptionStatus = .connecting
         self.subscriptionError = nil
 
+        // 1) Initialize supabase client (no AuthOptions)
         self.client = SupabaseClient(
             supabaseURL: URL(string: Config.supabaseUrl)!,
-            supabaseKey: Config.supabaseAnonKey,
-            options: SupabaseClientOptions(
-                auth: AuthOptions(headers: ["Authorization": "Bearer \(self.jwtToken!)"])
-            )
+            supabaseKey: Config.supabaseAnonKey
         )
 
         guard let client = self.client else {
@@ -74,51 +75,57 @@ class OrderService: ObservableObject {
             return
         }
 
+        // 2) Attach JWT for Realtime via `setAuth(_:)`
+        Task {
+            await client.realtime.setAuth(jwt)
+        }
+
+        // 3) Subscribe to Postgres changes using ChannelFilter + `.on("postgres_changes")`
         orderSubscription = client.realtime
             .channel("public:orders")
             .on(
-                RealtimeEvent.postgresChanges,
-                schema: "public",
-                table: "orders",
-                filter: ChannelFilter.eq("restaurant_id", self.restaurantId!)
+                "postgres_changes",
+                filter: ChannelFilter(
+                    event: "*",
+                    schema: "public",
+                    table: "orders",
+                    filter: "restaurant_id=eq.\(restaurantId)"
+                )
             ) { [weak self] message in
                 self?.handleOrderChange(payload: message)
             }
-            .subscribe { [weak self] status, error in
-                guard let self = self else { return }
-                DispatchQueue.main.async {
-                    if let error = error {
-                        print("OrderService: Realtime subscription error: \(error.localizedDescription)")
-                        self.subscriptionStatus = .error
-                        self.subscriptionError = "Failed to connect. Retrying..."
-                        self.attemptReconnection()
-                    } else {
-                        print("OrderService: Realtime subscription status: \(status)")
-                        switch status {
-                        case .subscribed:
-                            self.subscriptionStatus = .connected
-                            self.subscriptionError = nil
-                            self.currentRetryAttempt = 0
-                            self.fetchInitialActiveOrders()
-                        case .closed, .channelError, .timedOut:
-                            // Treat these as disconnection/error and attempt to reconnect
-                            self.subscriptionStatus = (status == .timedOut) ? .error : .disconnected
-                            if self.subscriptionStatus == .error {
-                                self.subscriptionError = "Connection timed out. Retrying..."
-                            } else {
-                                self.subscriptionError = "Connection closed. Retrying..."
-                            }
-                            // Only attempt reconnection if not explicitly unsubscribed
-                            if self.orderSubscription != nil { // Check if unsubscribe was called
-                                 self.attemptReconnection()
-                            }
-                        default:
-                            // Handle other statuses if necessary, for now, we are interested in subscribed, closed, error.
-                            break
+
+        // 4) Subscribe with a callback (no await)
+        orderSubscription?.subscribe { [weak self] status, error in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("OrderService: Realtime subscription error: \(error.localizedDescription)")
+                    self.subscriptionStatus = .error
+                    self.subscriptionError = "Failed to connect. Retrying..."
+                    self.attemptReconnection()
+                } else {
+                    print("OrderService: Realtime subscription status: \(status)")
+                    switch status {
+                    case .subscribed:
+                        self.subscriptionStatus = .connected
+                        self.subscriptionError = nil
+                        self.currentRetryAttempt = 0
+                        self.fetchInitialActiveOrders()
+                    case .closed, .channelError, .timedOut:
+                        self.subscriptionStatus = (status == .timedOut) ? .error : .disconnected
+                        self.subscriptionError = (self.subscriptionStatus == .error)
+                            ? "Connection timed out. Retrying..."
+                            : "Connection closed. Retrying..."
+                        if self.orderSubscription != nil {
+                            self.attemptReconnection()
                         }
+                    default:
+                        break
                     }
                 }
             }
+        }
     }
 
     private func attemptReconnection() {
@@ -135,7 +142,6 @@ class OrderService: ObservableObject {
         print("OrderService: Attempting reconnection (\(currentRetryAttempt)/\(maxRetryAttempts)) for restaurant \(restaurantId ?? "unknown") in \(retryDelaySeconds) seconds...")
         DispatchQueue.main.async {
             self.subscriptionStatus = .connecting
-            // Update error message to reflect retry attempt
             self.subscriptionError = "Connection failed. Attempting to reconnect (\(self.currentRetryAttempt)/\(self.maxRetryAttempts))..."
         }
 
@@ -144,12 +150,11 @@ class OrderService: ObservableObject {
                 print("OrderService: Cannot retry, JWT or Restaurant ID missing.")
                 return
             }
-            // Only retry if we haven't successfully connected or explicitly unsubscribed in the meantime
             if self.subscriptionStatus == .connecting || self.subscriptionStatus == .error {
-                 print("OrderService: Retrying subscription for restaurant \(resId)...")
-                 self.initializeSubscription(jwt: jwt, restaurantId: resId)
+                print("OrderService: Retrying subscription for restaurant \(resId)...")
+                self.initializeSubscription(jwt: jwt, restaurantId: resId)
             } else {
-                 print("OrderService: Skipping retry as status is now \(self.subscriptionStatus) for restaurant \(resId).")
+                print("OrderService: Skipping retry as status is now \(self.subscriptionStatus) for restaurant \(resId).")
             }
         }
     }
@@ -161,22 +166,23 @@ class OrderService: ObservableObject {
         }
         Task {
             do {
-                let query = client.database
+                // 5) Use .execute().value to decode into [Order]
+                let orders: [Order] = try await client.database
                     .from("orders")
                     .select("""
-                    id, table_id, total_amount, status, created_at, restaurant_id,
-                    items:order_items (id, menu_item_id, menu_item_name, quantity, notes)
-                    """) // Adjust columns as per your actual schema
+                        id, table_id, total_amount, status, created_at, restaurant_id,
+                        items:order_items (id, menu_item_id, menu_item_name, quantity, notes)
+                    """)
                     .eq("restaurant_id", value: restaurantId)
-                    .neq("status", value: OrderStatus.completed.rawValue) // Fetch only active orders
+                    .neq("status", value: OrderStatus.completed.rawValue)
                     .order("created_at", ascending: false)
-
-                let response: [Order] = try await query.execute().data
+                    .execute()
+                    .value
 
                 DispatchQueue.main.async {
-                    self.activeOrders = response
+                    self.activeOrders = orders
                     self.sortOrders()
-                    print("OrderService: Fetched initial \(response.count) active orders.")
+                    print("OrderService: Fetched initial \(orders.count) active orders.")
                 }
             } catch {
                 print("OrderService: Error fetching initial active orders: \(error.localizedDescription)")
@@ -184,29 +190,26 @@ class OrderService: ObservableObject {
         }
     }
 
-
     private func handleOrderChange(payload: RealtimeMessage) {
-        // Debounce updates to avoid UI churn with rapid changes
-        // Cancels previous debouncer if a new message comes in quickly
+        // Debounce updates to avoid UI churn
         updateDebouncer?.cancel()
         updateDebouncer = Just(payload)
-            .delay(for: .milliseconds(100), scheduler: DispatchQueue.main) // Adjust delay as needed
+            .delay(for: .milliseconds(100), scheduler: DispatchQueue.main)
             .sink { [weak self] debouncedPayload in
                 self?.processOrderChange(payload: debouncedPayload)
             }
     }
 
     private func processOrderChange(payload: RealtimeMessage) {
-        guard let changes = payload.payload["data"] as? [String: Any],
-              let record = changes["record"] as? [String: Any] else {
-            // Handle delete, where record might be in `old_record`
-            if let eventTypeString = payload.payload["event_type"] as? String, eventTypeString == "DELETE",
-               let oldRecord = (payload.payload["data"] as? [String: Any])?["old_record"] as? [String: Any],
+        // 6) Look for “new” vs. “old” in payload.payload
+        guard let newRecord = payload.payload["new"] as? [String: Any] else {
+            // DELETE handling via “old”
+            if let oldRecord = payload.payload["old"] as? [String: Any],
                let orderId = oldRecord["id"] as? String {
                 DispatchQueue.main.async {
                     self.activeOrders.removeAll { $0.id == orderId }
                     self.sortOrders()
-                     print("OrderService: Deleted order \(orderId)")
+                    print("OrderService: Deleted order \(orderId)")
                 }
             } else {
                 print("OrderService: Could not parse record from payload: \(payload)")
@@ -214,27 +217,25 @@ class OrderService: ObservableObject {
             return
         }
 
-        guard let order = Order(from: record) else {
-            print("OrderService: Could not decode order from record: \(record)")
+        guard let order = Order(from: newRecord) else {
+            print("OrderService: Could not decode order from record: \(newRecord)")
             return
         }
 
         DispatchQueue.main.async {
-            let eventTypeString = payload.payload["event_type"] as? String
+            let eventTypeString = (payload.payload["eventType"] as? String) ?? (payload.payload["type"] as? String) // “INSERT”, “UPDATE”, or “DELETE”
             switch eventTypeString {
             case "INSERT":
-                // Order.status is now OrderStatus, compare with .completed case
                 if order.status != .completed {
                     if !self.activeOrders.contains(where: { $0.id == order.id }) {
                         self.activeOrders.append(order)
                         print("OrderService: Inserted order \(order.id)")
                     } else {
-                         print("OrderService: Received insert for existing order \(order.id), likely due to subscription reconnect. Ignoring.")
+                        print("OrderService: Received insert for existing order \(order.id); ignoring.")
                     }
                 }
             case "UPDATE":
                 if let index = self.activeOrders.firstIndex(where: { $0.id == order.id }) {
-                    // Order.status is now OrderStatus, compare with .completed case
                     if order.status == .completed {
                         self.activeOrders.remove(at: index)
                         print("OrderService: Order \(order.id) completed and removed.")
@@ -243,11 +244,11 @@ class OrderService: ObservableObject {
                         print("OrderService: Updated order \(order.id)")
                     }
                 } else if order.status != .completed {
-                    // If an update is for an order not in the list (e.g. status changed from completed to active)
                     self.activeOrders.append(order)
                     print("OrderService: Order \(order.id) became active and was added.")
                 }
-            case "DELETE": // Delete is handled above by checking old_record
+            case "DELETE":
+                // already handled above via “old”
                 break
             default:
                 print("OrderService: Unhandled event type: \(eventTypeString ?? "unknown")")
@@ -272,44 +273,38 @@ class OrderService: ObservableObject {
         let updateData = OrderStatusUpdate(status: newStatus.rawValue)
 
         do {
-            try await client.database
+            // 7) Use execute() directly; no .get() needed
+            _ = try await client.database
                 .from("orders")
                 .update(updateData)
                 .eq("id", value: orderId)
                 .execute()
-            print("OrderService: Successfully requested status update for order \(orderId) to \(newStatus.rawValue). Realtime should reflect change.")
+
+            print("OrderService: Successfully requested status update for order \(orderId) to \(newStatus.rawValue).")
         } catch {
             print("OrderService: Error updating order status in Supabase: \(error.localizedDescription)")
             throw error
         }
-        // The local activeOrders list will be updated by the realtime subscription callback
     }
 
     func unsubscribe() {
         print("OrderService: Unsubscribing and resetting state for restaurant \(restaurantId ?? "N/A").")
-        DispatchQueue.main.async { // Ensure UI-related properties are cleared on main thread
+        DispatchQueue.main.async {
             self.activeOrders = []
             self.subscriptionStatus = .disconnected
             self.subscriptionError = nil
         }
 
-        if let orderSubscription = orderSubscription {
+        if let channel = orderSubscription {
             Task { @MainActor in
-                await orderSubscription.unsubscribe()
+                await channel.unsubscribe()
                 print("OrderService: Realtime channel unsubscribed.")
             }
         }
 
         self.orderSubscription = nil
-        // Do not nullify client, jwtToken, restaurantId if you want manual re-initiation to work without new params.
-        // However, for a full clean slate, especially if tenant changes, nullifying them is better.
-        // For this task, let's keep them if a manual call to initializeSubscription is made later with new/same params.
-        // self.client = nil
-        // self.jwtToken = nil
-        // self.restaurantId = nil
-
-        self.currentRetryAttempt = 0 // Reset retry attempts
-        self.updateDebouncer?.cancel() // Cancel any pending debounced updates
+        self.currentRetryAttempt = 0
+        self.updateDebouncer?.cancel()
         print("OrderService: Cleared subscription details, reset retry attempts, and status.")
     }
 }
@@ -317,5 +312,4 @@ class OrderService: ObservableObject {
 enum OrderServiceError: Error {
     case clientNotInitialized
     case supabaseError(Error)
-    // Potentially add more specific errors related to subscription if needed
 }

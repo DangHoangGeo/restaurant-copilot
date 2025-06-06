@@ -17,17 +17,13 @@ struct SOrder_jpApp: App {
 
     /// View model responsible for managing authentication state and logic.
     /// Instantiated as a `@StateObject` to ensure it persists throughout the app's lifecycle.
-    @StateObject var authViewModel: AuthenticationViewModel
+    /// View model responsible for managing authentication state and logic.
+    /// Instantiated as a `@StateObject` to ensure it persists throughout the app's lifecycle.
+    @StateObject var authViewModel = AuthenticationViewModel(orderService: OrderService())
 
     /// Service responsible for managing active orders. In a real app this would
     /// connect to Supabase Realtime.
     @StateObject var orderService = OrderService()
-
-    init() {
-        let service = orderService // Create it first
-        // Then initialize authViewModel with the orderService instance
-        _authViewModel = StateObject(wrappedValue: AuthenticationViewModel(orderService: service))
-    }
 
     /// A unique identifier used to force re-rendering of the `ContentView` when critical
     /// global settings (like language) change. This is a common workaround in SwiftUI

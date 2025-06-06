@@ -22,7 +22,7 @@ class AuthenticationViewModel: ObservableObject {
     // MARK: - AppStorage Properties for JWT and Claims
     @AppStorage("jwtToken") private var jwtToken: String = ""
     @AppStorage("restaurantId") private var restaurantId: String = ""
-    @AppStorage("userRole") private var userRole: String = "" // Stores the role derived from JWT
+    @AppStorage("userRole") var userRole: String = "" // Stores the role derived from JWT
 
     // MARK: - Properties
 
@@ -43,7 +43,9 @@ class AuthenticationViewModel: ObservableObject {
         if !jwtToken.isEmpty {
             // Basic check, ideally validate token expiry etc.
             // This will also call initializeSubscription if successful
-            parseJWTAndStoreClaims(token: jwtToken, isInitialLaunch: true)
+            Task { @MainActor in
+                parseJWTAndStoreClaims(token: jwtToken, isInitialLaunch: true)
+            }
         }
     }
 

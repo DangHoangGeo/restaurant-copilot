@@ -66,34 +66,3 @@ struct OrderListView: View {
         }
     }
 }
-
-struct OrderListView_Previews: PreviewProvider {
-    static var previews: some View {
-        // Create a mock OrderService for the preview
-        let mockOrderServiceEmpty = OrderService()
-        mockOrderServiceEmpty.activeOrders = []
-        // You might want to populate mockOrderService.activeOrders with some sample data here
-        // for a more representative preview. For example:
-        // mockOrderService.activeOrders = [
-        //     Order(id: "1", tableId: "T1", totalAmount: 10.0, status: .new, createdAt: Date(), items: []),
-        //     Order(id: "2", tableId: "T2", totalAmount: 20.0, status: .preparing, createdAt: Date(), items: [])
-        // ]
-
-        let mockOrderServiceWithOrders = OrderService()
-        // Populate mockOrderService.activeOrders with sample data using OrderStatus
-        mockOrderServiceWithOrders.activeOrders = [
-            Order(id: "1", tableId: "T1", totalAmount: 10.0, status: .new, createdAt: Date(), items: []),
-            Order(id: "2", tableId: "T2", totalAmount: 20.0, status: .preparing, createdAt: Date(), items: [])
-        ].compactMap { $0 } // Assuming Order init is failable and returns optional
-
-        return Group {
-            OrderListView()
-                .environmentObject(mockOrderServiceEmpty)
-                .displayName("No Orders")
-
-            OrderListView()
-                .environmentObject(mockOrderServiceWithOrders)
-                .displayName("With Orders")
-        }
-    }
-}
