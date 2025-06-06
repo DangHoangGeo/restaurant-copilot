@@ -25,7 +25,7 @@
 
   Configure `tailwind.config.js` and add basic styles.
 * In `/shared`: `npm init -y`, install ESLint + Prettier, add shared Zod schemas (e.g., `signupSchema`, `bookingSchema`).
-* In `/mobile`: create a new SwiftUI project named `ShopCopilotStaff`. Add `swiftlint.yml`.
+* In `/mobile`: create a new SwiftUI project named `SOder.jp`. Add `swiftlint.yml`.
 * In `/infra`: create subfolders for SQL migrations (`/infra/migrations`) and Edge Functions (`/infra/edge`).
 * In `/config`: create `feature-flags.ts` (see step 1.3).
 * Verify ESLint and Prettier run without errors. Run `swiftlint` in `/mobile`—fix any warnings.

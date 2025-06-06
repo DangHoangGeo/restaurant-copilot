@@ -2,7 +2,7 @@
 
 6.1. **Xcode Project & Dependency Setup**
 
-* In Xcode, create a new SwiftUI iOS app named `ShopCopilotStaff`.
+* In Xcode, create a new SwiftUI iOS app named `SOder.jp`.
 * In Project > Swift Packages, add:
 
   * `https://github.com/supabase-community/supabase-swift.git`

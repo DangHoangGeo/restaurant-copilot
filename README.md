@@ -160,7 +160,7 @@ Shop-Copilot is a mobile-first, AI-augmented SaaS platform that empowers small r
 
 5. **iOS App Setup**
 
-   * Open `mobile/ShopCopilotStaff.xcodeproj` in Xcode.
+   * Open `mobile/SOder.jp.xcodeproj` in Xcode.
    * In `Info.plist`, add your Supabase URL and Anon Key under `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
    * Install SPM dependencies (Supabase-Swift, ESCManager).
    * Run the app on a Simulator or device (Bluetooth capabilities require a real device for printing).

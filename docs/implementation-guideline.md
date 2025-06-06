@@ -28,7 +28,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
    * **Mobile**:
 
      * SwiftLint rules file (`.swiftlint.yml`) at `/mobile`.
-     * Xcode project file (`ShopCopilotStaff.xcodeproj`) and workspace structure must match the guidelines.
+     * Xcode project file (`SOder.jp.xcodeproj`) and workspace structure must match the guidelines.
    * **Shared**:
 
      * Place any TypeScript Zod schemas (e.g. signupSchema, bookingSchema) or utilities that are reused between client and server. Do not duplicate schemas.
@@ -503,7 +503,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
 
 1. **Configuration & Dependencies**
 
-   * In `/mobile/ShopCopilotStaff/Config.swift`, include only:
+   * In `/mobile/SOder.jp/Config.swift`, include only:
 
      ```swift
      static let supabaseUrl = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as! String
@@ -747,7 +747,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
      1. Checkout code.
      2. `brew install swiftlint`.
      3. Run `swiftlint --strict`.
-     4. Run `xcodebuild -scheme ShopCopilotStaff -destination 'platform=iOS Simulator,name=iPhone 14' test | xcpretty`.
+     4. Run `xcodebuild -scheme SOder.jp -destination 'platform=iOS Simulator,name=iPhone 14' test | xcpretty`.
      5. Archive and upload to TestFlight, using GitHub secrets for App Store Connect API key.
    * Confirm that staging and production use different Supabase projects, different Stripe/PayPay keys, and different feature-flag values.
 

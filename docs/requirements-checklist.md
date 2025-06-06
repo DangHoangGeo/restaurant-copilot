@@ -437,7 +437,7 @@ Below is a comprehensive, sectioned checklist covering **every requirement** for
 
 * [ ] **Xcode & Dependency Setup**
 
-  * [ ] SwiftUI project `ShopCopilotStaff` created.
+  * [ ] SwiftUI project `SOder.jp` created.
   * [ ] Swift Package Manager includes:
 
     * `supabase-swift`
@@ -729,7 +729,7 @@ Below is a comprehensive, sectioned checklist covering **every requirement** for
     1. `actions/checkout@v3`
     2. `brew install swiftlint`
     3. `swiftlint --strict`
-    4. `xcodebuild -scheme ShopCopilotStaff -destination 'platform=iOS Simulator,name=iPhone 14' test | xcpretty`
+    4. `xcodebuild -scheme SOder.jp -destination 'platform=iOS Simulator,name=iPhone 14' test | xcpretty`
     5. Archive & upload to TestFlight (using App Store Connect API key in GitHub secrets).
 
 ---
