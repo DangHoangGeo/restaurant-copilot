@@ -607,18 +607,24 @@
     },
     "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",
-      "checkout_button": "Checkout"
+      "review_order_button": "Review Order"
     },
     "checkout": {
       "redirecting_empty_cart": "Cart is empty. Redirecting to menu...",
       "back_to_menu": "Back to Menu",
-      "title": "Checkout",
+      "title": "Review Order",
       "order_summary": "Order Summary",
       "payment_instruction_table": "Please proceed to the counter or call a staff member to complete your payment for Table {tableId}.",
       "payment_instruction_counter": "Please proceed to the counter to complete your payment.",
-      "confirm_cash_order_button": "Confirm Cash Order",
+      "place_order_button": "Place Order",
       "confirm_modal_title": "Confirm Order",
       "confirm_modal_text": "Are you sure you want to confirm your order for {total}?"
+    },
+    "orderplaced": {
+      "title": "Order Placed",
+      "message": "Your order has been sent to the kitchen. You can keep ordering or proceed to checkout when ready.",
+      "add_more_button": "Add More Items",
+      "proceed_to_checkout_button": "Proceed to Checkout"
     },
     "thankyou": {
       "title": "Thank You!",

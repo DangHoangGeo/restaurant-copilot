@@ -382,7 +382,7 @@ function CustomerMenuScreen({
   );
 }
 
-function CheckoutScreen({
+function ReviewOrderScreen({
   setView,
   restaurantSettings,
   viewProps,
@@ -401,7 +401,7 @@ function CheckoutScreen({
   const handleConfirmOrder = () => {
     const mockOrderId = `SC-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
     setIsConfirmModalOpen(false);
-    setView("thankyou", {
+    setView("orderplaced", {
       orderId: mockOrderId,
       items: cart,
       total: totalCartPrice,
@@ -473,7 +473,7 @@ function CheckoutScreen({
             style={{ backgroundColor: restaurantSettings.primaryColor }}
             disabled={cart.length === 0}
           >
-            {t("checkout.confirm_cash_order_button")} (
+            {t("checkout.place_order_button")} (
             {t("currency_format", { value: totalCartPrice })})
           </Button>
         )}
@@ -505,6 +505,78 @@ function CheckoutScreen({
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function OrderPlacedScreen({
+  setView,
+  restaurantSettings,
+  viewProps,
+}: {
+  setView: (v: string, props?: any) => void;
+  restaurantSettings: RestaurantSettings;
+  viewProps: any;
+}) {
+  const t = useTranslations("Customer");
+  const { orderId, items, total, tableId } = viewProps;
+  const locale = getCurrentLocale();
+  return (
+    <div className="text-center py-12">
+      <CheckCircle
+        className="mx-auto mb-6 text-green-500 dark:text-green-400"
+        size={64}
+      />
+      <h2 className="text-3xl font-bold mb-3">{t("orderplaced.title")}</h2>
+      <p
+        className="text-lg font-semibold mb-2"
+        style={{ color: restaurantSettings.primaryColor }}
+      >
+        {t("thankyou.order_id_label")}: {orderId}
+      </p>
+      <p className="text-slate-600 dark:text-slate-300 mb-6">
+        {t("orderplaced.message")}
+      </p>
+      <Card className="max-w-md mx-auto mb-8 text-left">
+        <h3 className="text-lg font-semibold mb-3">
+          {t("checkout.order_summary")}
+        </h3>
+        {items.map((item: CartItem) => (
+          <div key={item.itemId} className="flex justify-between text-sm py-1">
+            <span>
+              {item.qty}x {getLocalizedText(item.name || item, locale)}
+            </span>
+            <span>
+              {t("currency_format", { value: item.price * item.qty })}
+            </span>
+          </div>
+        ))}
+        <div className="flex justify-between font-bold mt-2 pt-2 border-t dark:border-slate-700">
+          <span>{t("common.total")}:</span>
+          <span>{t("currency_format", { value: total })}</span>
+        </div>
+        {tableId && (
+          <p className="text-sm mt-2">
+            {t("thankyou.table_number_label")}: {tableId}
+          </p>
+        )}
+      </Card>
+      <div className="flex justify-center gap-4">
+        <Button
+          onClick={() => setView("menu", { tableId })}
+          style={{ backgroundColor: restaurantSettings.secondaryColor }}
+          className="text-white"
+        >
+          {t("orderplaced.add_more_button")}
+        </Button>
+        <Button
+          onClick={() => setView("thankyou", viewProps)}
+          style={{ backgroundColor: restaurantSettings.primaryColor }}
+          className="text-white"
+        >
+          {t("orderplaced.proceed_to_checkout_button")}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -958,7 +1030,13 @@ export function CustomerClientContent({
   tables: TableInfo[]
 }) {
   const [view, setViewState] = useState<
-    "menu" | "checkout" | "thankyou" | "review" | "booking" | "admin"
+    | "menu"
+    | "checkout"
+    | "orderplaced"
+    | "thankyou"
+    | "review"
+    | "booking"
+    | "admin"
   >("menu");
   const [viewProps, setViewProps] = useState<any>({});
   const setView = (v: string, props: any = {}) => {
@@ -979,7 +1057,15 @@ export function CustomerClientContent({
     );
   if (view === "checkout")
     Screen = (
-      <CheckoutScreen
+      <ReviewOrderScreen
+        setView={setView}
+        restaurantSettings={restaurantSettings}
+        viewProps={viewProps}
+      />
+    );
+  if (view === "orderplaced")
+    Screen = (
+      <OrderPlacedScreen
         setView={setView}
         restaurantSettings={restaurantSettings}
         viewProps={viewProps}

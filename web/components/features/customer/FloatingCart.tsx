@@ -34,7 +34,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
             className="bg-white hover:bg-slate-100"
             style={{ color: brandColor }}
           >
-            {t("cart.checkout_button")}
+            {t("cart.review_order_button")}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
