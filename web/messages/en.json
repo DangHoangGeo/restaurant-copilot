@@ -588,7 +588,7 @@
   "CustomerHome": {
     "welcome": "Welcome to {restaurantName}",
     "menu_title": "Menu",
-    "add_to_cart": "Add to Cart",
+    "add_to_cart": "Add",
     "no_menu_items": "No menu items available"
   },
   "Customer": {
@@ -597,7 +597,7 @@
       "serving_today": "Serving Today",
       "view_menu": "View Menu",
       "item_details": "Item Details",
-      "add_to_cart": "Add to Cart",
+      "add_to_cart": "Add",
       "out_of_stock": "Out of Stock",
       "quantity": "Quantity",
       "total_price": "Total Price",
@@ -681,7 +681,7 @@
       "sat": "Saturday",
       "sun": "Sunday"
     },
-    "currency_format": "$",
+    "currency_format": "{value, number, ::currency/JPY}",
     "ordering_for_table": "Ordering for Table {tableId}",
     "serving_today": "Serving Today: {day}",
     "item_added_to_cart_msg": "{item} added to cart!",

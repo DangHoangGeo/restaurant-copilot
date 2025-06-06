@@ -422,7 +422,7 @@ function ReviewOrderScreen({
       <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
         {t("checkout.title")}
       </h2>
-      <Card className="max-w-lg mx-auto">
+      <Card className="max-w-lg mx-auto p-4">
         <h3 className="text-xl font-semibold mb-4">
           {t("checkout.order_summary")}
         </h3>
@@ -537,7 +537,7 @@ function OrderPlacedScreen({
       <p className="text-slate-600 dark:text-slate-300 mb-6">
         {t("orderplaced.message")}
       </p>
-      <Card className="max-w-md mx-auto mb-8 text-left">
+      <Card className="max-w-md mx-auto mb-8 text-left p-4">
         <h3 className="text-lg font-semibold mb-3">
           {t("checkout.order_summary")}
         </h3>
@@ -609,7 +609,7 @@ function ThankYouScreen({
       >
         {t("thankyou.order_id_label")}: {orderId}
       </p>
-      <Card className="max-w-md mx-auto mb-8 text-left">
+      <Card className="max-w-md mx-auto mb-8 text-left p-4">
         <h3 className="text-lg font-semibold mb-3">
           {t("thankyou.order_summary_title")}
         </h3>

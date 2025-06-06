@@ -43,7 +43,7 @@ export function FoodCard({
 }: FoodCardProps) {
   const t = useTranslations("Customer");
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col p-2">
       <img
         src={
           item.image_url ||

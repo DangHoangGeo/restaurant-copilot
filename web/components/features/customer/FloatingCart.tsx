@@ -17,7 +17,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
   return (
     <div className="sticky bottom-4 z-20 p-1 mt-8">
       <Card
-        className="max-w-md mx-auto shadow-xl backdrop-blur-md bg-opacity-80 dark:bg-opacity-80"
+        className="max-w-md mx-auto p-2 shadow-xl backdrop-blur-md bg-opacity-80 dark:bg-opacity-80"
         style={{ backgroundColor: brandColor }}
       >
         <div className="flex justify-between items-center text-white">
