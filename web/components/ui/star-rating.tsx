@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 interface StarRatingProps {
   value: number;
   count?: number;
+  onRate?: (value: number) => void;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
