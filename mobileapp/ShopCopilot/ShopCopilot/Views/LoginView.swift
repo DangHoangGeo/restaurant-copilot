@@ -8,13 +8,13 @@ struct LoginView: View {
     // MARK: - Environment Objects
 
     /// The authentication view model, injected from the environment.
-    /// Used to manage login state, selected role, and error messages.
+    /// Used to manage login state and error messages.
     @EnvironmentObject var authViewModel: AuthenticationViewModel
 
     // MARK: - State Variables
 
-    /// Holds the text input for the username.
-    @State private var usernameInput: String = ""
+    /// Holds the text input for the email.
+    @State private var emailInput: String = ""
     /// Holds the text input for the password.
     @State private var passwordInput: String = ""
 
@@ -27,24 +27,16 @@ struct LoginView: View {
                 .font(.largeTitle)
                 .padding(.bottom, 20)
 
-            // Username input field
-            TextField(NSLocalizedString("username_label", comment: "Username textfield placeholder"), text: $usernameInput)
+            // Email input field
+            TextField(NSLocalizedString("email_label", comment: "Email textfield placeholder"), text: $emailInput)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .autocapitalization(.none) // Common for usernames
-                .disableAutocorrection(true) // Usernames usually don't need correction
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .keyboardType(.emailAddress)
 
             // Password input field (secure)
             SecureField(NSLocalizedString("password_label", comment: "Password textfield placeholder"), text: $passwordInput)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-
-            // Role selection picker
-            Picker(NSLocalizedString("select_role_label", comment: "Role selection picker label"), selection: $authViewModel.selectedRole) {
-                ForEach(UserRole.allCases) { role in
-                    // Display the localized name of the role
-                    Text(NSLocalizedString(role.localizationKey, comment: "User role display name")).tag(role)
-                }
-            }
-            .pickerStyle(SegmentedPickerStyle()) // A common style for a few choices
 
             // Display authentication error message, if any
             if let errorMessage = authViewModel.authError {
@@ -55,7 +47,7 @@ struct LoginView: View {
 
             // Login button
             Button(NSLocalizedString("login_button", comment: "Login button text")) {
-                authViewModel.login(username: usernameInput, password: passwordInput)
+                authViewModel.login(email: emailInput, password: passwordInput)
             }
             // Basic button styling
             .padding()
@@ -63,7 +55,7 @@ struct LoginView: View {
             .background(Color.blue) // Example button color
             .cornerRadius(8)
             // Optional: Disable button if inputs are empty
-            // .disabled(usernameInput.isEmpty || passwordInput.isEmpty)
+            // .disabled(emailInput.isEmpty || passwordInput.isEmpty)
 
             Spacer() // Pushes the content to the top
         }

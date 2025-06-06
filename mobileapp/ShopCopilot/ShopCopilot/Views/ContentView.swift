@@ -118,10 +118,11 @@ struct ContentView: View {
     @ViewBuilder
     private var mainAppView: some View {
         TabView {
-            // Conditional TabView content based on the selected user role.
-            if authViewModel.selectedRole == .ownerAdmin {
+            // Conditional TabView content based on the user's role from JWT.
+            // Assuming "owner_admin" and "customer" are the role strings from JWT.
+            if authViewModel.userRole == "owner_admin" { // Updated to use userRole from JWT
                 // MARK: Owner/Admin Tabs
-                OrderListView(orderService: orderService)
+                OrderListView() // Removed orderService parameter
                     .tabItem {
                         Label(NSLocalizedString("tab_orders", comment: "Orders tab label"), systemImage: "list.bullet.rectangle")
                     }
@@ -142,7 +143,7 @@ struct ContentView: View {
                     Label(NSLocalizedString("tab_admin_settings", comment: "Admin Settings tab label"), systemImage: "gearshape.fill")
                 }
 
-            } else if authViewModel.selectedRole == .customer {
+            } else if authViewModel.userRole == "customer" { // Updated to use userRole from JWT
                 // MARK: Customer Tabs
                 CustomerMenuView()
                     .tabItem {
@@ -184,9 +185,17 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        let mockAuthModel = AuthenticationViewModel(orderService: OrderService())
+        // mockAuthModel.userRole = "owner_admin" // For admin preview
+        // mockAuthModel.isAuthenticated = true
+
+        return ContentView()
             .environmentObject(TenantViewModel())
-            .environmentObject(AuthenticationViewModel())
-            .environmentObject(OrderService())
+            .environmentObject(mockAuthModel) // Use the one with OrderService injected
+            .environmentObject(OrderService()) // Or better, use the same OrderService instance:
+                                                // .environmentObject(mockAuthModel.orderService) - if orderService is public
+                                                // For simplicity here, a new one is fine for preview if OrderService init is light.
+                                                // However, the one from authViewModel is preferred if orderService needs auth details.
+                                                // Let's assume OrderService() is fine for a generic preview.
     }
 }
