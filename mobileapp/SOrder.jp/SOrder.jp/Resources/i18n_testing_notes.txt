@@ -1,0 +1,34 @@
+Internationalization (i18n) Testing Notes for SOder App:
+
+This document outlines basic steps to test language switching in the app.
+
+Steps:
+1.  **Run the App:**
+    *   Build and run the application on a simulator or device.
+
+2.  **Access Language Selection:**
+    *   In the main `ContentView`, locate the globe icon (language selection button) in the navigation bar.
+    *   Tap this button to present the `LanguageSelectionView` as a sheet.
+
+3.  **Select a New Language:**
+    *   The `LanguageSelectionView` will display buttons for "English," "Japanese," and "Vietnamese" (or their translated equivalents if a language is already active).
+    *   Tap on one of the language buttons to select a new language.
+
+4.  **Observe UI Changes:**
+    *   **Immediate Changes:** Some text elements, particularly those in newly created views or views that fully re-render based on state changes tied to the language selection, might update immediately. For example, the text within `LanguageSelectionView` itself (like its title or the "Done" button, if they were re-rendered) might change.
+    *   **Changes on View Navigation:** Navigate back from `LanguageSelectionView` (e.g., by tapping "Done"). Observe if text in `ContentView` (like the tenant selection prompts, button labels) or `LoginView` (if it becomes visible) has changed to the selected language.
+    *   **Navigation Title:** The main navigation title ("SOder" or its translation) should update.
+    *   **Login/Tenant Specific Text:** If you proceed through the tenant loading and login process, verify that messages like "Welcome to [Tenant Name]" or "Logged in as [User] (Role)" are correctly translated.
+
+5.  **App Restart for Full Effect (Potential Requirement):**
+    *   **Context:** Dynamic, in-app language switching in SwiftUI without a full app restart can be complex. While the `SOderApp.swift` includes a mechanism (`.id(UUID())` on `ContentView` triggered by `UserDefaults.didChangeNotification`) to attempt a broad UI refresh, it might not catch all scenarios or deeply nested views perfectly. Some views might have already read localized strings at initialization and might not refresh them without being entirely recreated.
+    *   **Action:** If some text elements do not update immediately or after navigating back, try stopping and restarting the app. The newly selected language (stored in `UserDefaults` under "AppleLanguages") should then be picked up by the system at launch, ensuring all UI elements initialize with the correct translations.
+    *   **Verification after Restart:** After restarting, navigate through the app again to confirm all text is in the chosen language.
+
+Key Areas to Check for Localized Text:
+*   `ContentView`: Tenant selection prompts, button labels, "Welcome" messages, logged-in user information. Navigation title.
+*   `LoginView`: Title, username/password placeholders, role selection labels, login button text.
+*   `LanguageSelectionView`: Title, language names, "Done" button, restart notice.
+*   Error messages (e.g., invalid credentials, tenant not found).
+
+This testing process helps ensure that the localization setup is functioning as expected and that translated strings are correctly displayed across the application.

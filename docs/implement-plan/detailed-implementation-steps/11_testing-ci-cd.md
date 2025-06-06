@@ -104,11 +104,11 @@
 
 11.2. **iOS Unit & UI Tests**
 
-* **OrderService Grouping Test** (`ShopCopilotStaffTests/OrderServiceTests.swift`):
+* **OrderService Grouping Test** (`SOder.jpTests/OrderServiceTests.swift`):
 
   ```swift
   import XCTest
-  @testable import ShopCopilotStaff
+  @testable import SOder.jp
 
   final class OrderServiceTests: XCTestCase {
     func testComputeGrouping() {
@@ -133,12 +133,12 @@
 
   (Req 9.2.1)
 
-* **LoginView Snapshot Test** (`ShopCopilotStaffTests/LoginViewTests.swift`):
+* **LoginView Snapshot Test** (`SOder.jpTests/LoginViewTests.swift`):
 
   ```swift
   import XCTest
   import SwiftUI
-  @testable import ShopCopilotStaff
+  @testable import SOder.jp
 
   final class LoginViewTests: XCTestCase {
     func testLoginViewInitialRender() {
@@ -152,11 +152,11 @@
 
   (Req 9.2.2)
 
-* **PrinterManager Error Handling Test** (`ShopCopilotStaffTests/PrinterManagerTests.swift`):
+* **PrinterManager Error Handling Test** (`SOder.jpTests/PrinterManagerTests.swift`):
 
   ```swift
   import XCTest
-  @testable import ShopCopilotStaff
+  @testable import SOder.jp
 
   final class PrinterManagerTests: XCTestCase {
     func testPrintReceiptNoPrinter() {
@@ -254,20 +254,20 @@
         - name: Run SwiftLint
           run: swiftlint --strict
         - name: Build & Test iOS App
-          run: xcodebuild -scheme ShopCopilotStaff -destination 'platform=iOS Simulator,name=iPhone 14' test | xcpretty
+          run: xcodebuild -scheme SOder.jp -destination 'platform=iOS Simulator,name=iPhone 14' test | xcpretty
         - name: Archive & Upload to TestFlight
           env:
             APP_STORE_API_KEY: ${{ secrets.APP_STORE_API_KEY }}
             APP_STORE_API_ISSUER_ID: ${{ secrets.APP_STORE_API_ISSUER_ID }}
           run: |
-            xcodebuild -workspace ShopCopilotStaff.xcworkspace \
-              -scheme ShopCopilotStaff \
-              -archivePath $PWD/build/ShopCopilotStaff.xcarchive archive
+            xcodebuild -workspace SOder.jp.xcworkspace \
+              -scheme SOder.jp \
+              -archivePath $PWD/build/SOder.jp.xcarchive archive
             xcodebuild -exportArchive \
-              -archivePath $PWD/build/ShopCopilotStaff.xcarchive \
+              -archivePath $PWD/build/SOder.jp.xcarchive \
               -exportOptionsPlist ExportOptions.plist \
               -exportPath $PWD/build
-            xcrun altool --upload-app -f $PWD/build/ShopCopilotStaff.ipa -t ios --apiKey $APP_STORE_API_KEY --apiIssuer $APP_STORE_API_ISSUER_ID
+            xcrun altool --upload-app -f $PWD/build/SOder.jp.ipa -t ios --apiKey $APP_STORE_API_KEY --apiIssuer $APP_STORE_API_ISSUER_ID
   ```
 
   * On `develop` branch, Vercel automatically deploys to staging (`staging.shop-copilot.com`) with staging Supabase credentials.

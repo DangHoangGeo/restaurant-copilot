@@ -1,0 +1,83 @@
+/* Base App Title */
+"app_title" = "SOder";
+
+/* Login Screen */
+"login_title" = "Đăng nhập";
+"username_label" = "Tên người dùng";
+"password_label" = "Mật khẩu";
+"select_role_label" = "Chọn vai trò:";
+"role_owner_admin" = "Chủ sở hữu/Quản trị viên";
+"role_customer" = "Khách hàng";
+"login_button" = "Đăng nhập";
+"logout_button" = "Đăng xuất";
+
+/* Tenant Selection */
+"tenant_selection_prompt" = "Nhập tên miền phụ:";
+"tenant_id_placeholder" = "ví dụ: resto1";
+"load_tenant_button" = "Tải đối tượng thuê";
+
+/* Error Messages */
+"error_prefix" = "Lỗi: ";
+"error_invalid_credentials" = "Tên người dùng, mật khẩu hoặc vai trò không hợp lệ.";
+"error_unknown" = "Đã xảy ra lỗi không xác định. Vui lòng thử lại."; /* General unknown error */
+"tenant_not_found" = "Không tìm thấy đối tượng thuê được yêu cầu.";
+"error_subdomain_empty" = "Tên miền phụ không được để trống. Vui lòng nhập tên miền phụ.";
+"error_unknown_fetching_tenant" = "Đã xảy ra lỗi không xác định khi tìm nạp chi tiết đối tượng thuê. Vui lòng thử lại.";
+"error_unexpected_login" = "Đã xảy ra lỗi không mong muốn trong quá trình đăng nhập. Vui lòng thử lại.";
+
+/* Language Selection */
+"language_selection_title" = "Chọn ngôn ngữ";
+"language_english" = "Tiếng Anh";
+"language_japanese" = "Tiếng Nhật";
+"language_vietnamese" = "Tiếng Việt";
+"language_change_restart_notice" = "Vui lòng khởi động lại ứng dụng để thay đổi ngôn ngữ có hiệu lực hoàn toàn.";
+
+/* General UI */
+"done_button" = "Xong";
+"change_language_accessibility" = "Thay đổi ngôn ngữ";
+
+/* Logged In Messages */
+"logged_in_message" = "Đã đăng nhập với tên %1$@ (%2$@)";
+"welcome_message" = "Chào mừng đến với SOder!";
+"welcome_to_tenant_message" = "Chào mừng đến với %1$@";
+
+/* Owner/Admin Dashboard */
+"owner_admin_dashboard_title" = "Bảng điều khiển quản trị";
+"welcome_owner_admin" = "Chào mừng Quản trị viên!";
+"admin_settings_title" = "Cài đặt quản trị";
+"managing_tenant_label" = "Đang quản lý:";
+"logged_in_as_label" = "Đăng nhập với tên:";
+
+/* Customer Menu */
+"customer_menu_title" = "Thực đơn";
+"welcome_customer_menu" = "Khám phá các sản phẩm của chúng tôi!";
+"viewing_menu_for_tenant" = "Đang xem thực đơn cho %1$@";
+"no_tenant_selected_menu" = "Chưa chọn nhà hàng để hiển thị thực đơn.";
+"my_orders_title" = "Đơn hàng của tôi";
+"customer_profile_title" = "Hồ sơ của tôi";
+"menu_item_placeholder_1" = "Mục Menu Alpha";
+"menu_item_placeholder_2" = "Mục Menu Beta";
+"menu_item_placeholder_3" = "Mục Menu Gamma";
+
+/* TabView Labels */
+"tab_dashboard" = "Bảng điều khiển";
+"tab_admin_settings" = "Cài đặt";
+"tab_menu" = "Thực đơn";
+"tab_my_orders" = "Đơn hàng";
+"tab_customer_profile" = "Hồ sơ";
+
+/* Orders */
+"orders_title" = "Đơn hàng";
+"table_number_format" = "Bàn %@";
+"status_new" = "Mới";
+"status_preparing" = "Đang chuẩn bị";
+"status_ready" = "Sẵn sàng";
+"status_completed" = "Hoàn tất";
+"status_completed_message" = "Đơn hàng đã hoàn tất";
+"order_detail_title" = "Chi tiết đơn";
+"total_label" = "Tổng";
+"mark_preparing_button" = "Đánh dấu chuẩn bị";
+"mark_ready_button" = "Đánh dấu sẵn sàng";
+"complete_print_button" = "Hoàn tất & In";
+"tab_orders" = "Đơn hàng";
+"no_active_orders_message" = "Không có đơn hàng nào đang hoạt động";
