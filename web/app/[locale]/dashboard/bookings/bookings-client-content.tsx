@@ -6,12 +6,8 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Eye } from 'lucide-react'
+import { FEATURE_FLAGS } from '@/config/feature-flags'
 
-const MOCK_BOOKINGS_BASE = [
-  { id: 'book1', customerName: 'David Lee', contact: 'david@example.com', date: '2024-07-20', time: '19:00', partySize: 4, status: 'pending', preOrderItems: [] },
-  { id: 'book2', customerName: 'Sarah Chen', contact: '555-0202', date: '2024-07-21', time: '18:30', partySize: 2, status: 'confirmed', preOrderItems: [] },
-  { id: 'book3', customerName: 'Mike Brown', contact: 'mike@example.com', date: '2024-07-22', time: '20:00', partySize: 5, status: 'canceled', preOrderItems: [] }
-]
 
 interface PreOrderItem {
   itemId: string
@@ -37,16 +33,17 @@ interface BookingsClientContentProps {
     primaryColor?: string;
     defaultLocale?: string;
   };
+  initialBookings: Booking[] | null;
 }
 
-export function BookingsClientContent({ restaurantSettings }: BookingsClientContentProps) {
+export function BookingsClientContent({ restaurantSettings, initialBookings }: BookingsClientContentProps) {
   const t = useTranslations()
-  const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS_BASE)
+  const [bookings, setBookings] = useState<Booking[]>(initialBookings || [])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
 
-  if (!process.env.NEXT_PUBLIC_FEATURE_TABLEBOOKING) {
-    console.warn('Table booking feature is not enabled.',restaurantSettings.name)
+  if (!FEATURE_FLAGS.tableBooking) {
+    console.warn('Table booking feature is not enabled.', restaurantSettings.name)
     return <Card className="p-4">Coming soon</Card>
   }
 
@@ -55,10 +52,23 @@ export function BookingsClientContent({ restaurantSettings }: BookingsClientCont
     setIsDetailModalOpen(true)
   }
 
-  const handleUpdateStatus = (bookingId: string, status: string) => {
-    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b))
-    if (selectedBooking?.id === bookingId) setSelectedBooking({ ...selectedBooking, status })
-    if (status === 'confirmed' || status === 'canceled') setIsDetailModalOpen(false)
+  const handleUpdateStatus = async (bookingId: string, status: 'confirmed' | 'canceled') => {
+    try {
+      const res = await fetch(`/api/v1/bookings/${bookingId}?bookingId=${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      })
+      if (res.ok) {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b))
+        if (selectedBooking?.id === bookingId) setSelectedBooking({ ...selectedBooking, status })
+        if (status === 'confirmed' || status === 'canceled') setIsDetailModalOpen(false)
+      } else {
+        console.error('Failed to update booking status')
+      }
+    } catch (e) {
+      console.error('Error updating booking status:', e)
+    }
   }
 
   const statusBadge = (status: string) => {
