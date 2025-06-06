@@ -122,21 +122,21 @@ export function MenuList({
           </h2>
           <div className="flex space-x-3 overflow-x-auto pb-2">
             {popularItems.map((item) => (
-              <motion.div
-                key={item.id}
-                className="w-40 flex-shrink-0"
-                whileTap={{ scale: 0.95 }}
-              >
-                <FoodCard
-                  item={item}
-                  qtyInCart={getQty(item.id)}
-                  onAdd={() => addToCart(item)}
-                  onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
-                  onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
-                  brandColor={brandColor}
-                  locale={locale}
-                />
-              </motion.div>
+              <div key={item.id} className="w-40 flex-shrink-0">
+                <motion.div
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCard
+                    item={item}
+                    qtyInCart={getQty(item.id)}
+                    onAdd={() => addToCart(item)}
+                    onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
+                    onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
+                    brandColor={brandColor}
+                    locale={locale}
+                  />
+                </motion.div>
+              </div>
             ))}
           </div>
         </section>
@@ -149,21 +149,21 @@ export function MenuList({
           </h2>
           <div className="flex space-x-3 overflow-x-auto pb-2">
             {recommended.map((item) => (
-              <motion.div
-                key={item.id}
-                className="w-40 flex-shrink-0"
-                whileTap={{ scale: 0.95 }}
-              >
-                <FoodCard
-                  item={item}
-                  qtyInCart={getQty(item.id)}
-                  onAdd={() => addToCart(item)}
-                  onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
-                  onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
-                  brandColor={brandColor}
-                  locale={locale}
-                />
-              </motion.div>
+              <div key={item.id} className="w-40 flex-shrink-0">
+                <motion.div
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCard
+                    item={item}
+                    qtyInCart={getQty(item.id)}
+                    onAdd={() => addToCart(item)}
+                    onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
+                    onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
+                    brandColor={brandColor}
+                    locale={locale}
+                  />
+                </motion.div>
+              </div>
             ))}
           </div>
         </section>
@@ -182,21 +182,21 @@ export function MenuList({
           </h3>
           <div className="flex space-x-3 overflow-x-auto pb-2">
             {cat.menu_items.map((item) => (
-              <motion.div
-                key={item.id}
-                className="w-40 flex-shrink-0"
-                whileTap={{ scale: 0.95 }}
-              >
-                <FoodCard
-                  item={item}
-                  qtyInCart={getQty(item.id)}
-                  onAdd={() => addToCart(item)}
-                  onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
-                  onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
-                  brandColor={brandColor}
-                  locale={locale}
-                />
-              </motion.div>
+              <div key={item.id} className="w-40 flex-shrink-0">
+                <motion.div
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FoodCard
+                    item={item}
+                    qtyInCart={getQty(item.id)}
+                    onAdd={() => addToCart(item)}
+                    onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
+                    onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
+                    brandColor={brandColor}
+                    locale={locale}
+                  />
+                </motion.div>
+              </div>
             ))}
           </div>
         </section>
