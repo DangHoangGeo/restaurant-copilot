@@ -76,4 +76,27 @@ class TenantViewModel: ObservableObject {
             }
         }
     }
+
+    /// Loads tenant data using a restaurant ID obtained after authentication.
+    func loadTenant(byId id: String) {
+        self.currentTenant = nil
+        self.errorMessage = nil
+        tenantService.fetchTenant(byId: id) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let tenant):
+                    self.currentTenant = tenant
+                    self.errorMessage = nil
+                case .failure(let error):
+                    self.currentTenant = nil
+                    if let localizedError = error as? LocalizedError {
+                        self.errorMessage = localizedError.errorDescription
+                    } else {
+                        self.errorMessage = NSLocalizedString("error_unknown_fetching_tenant", comment: "Generic error during tenant fetch.")
+                    }
+                }
+            }
+        }
+    }
 }

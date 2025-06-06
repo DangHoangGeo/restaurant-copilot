@@ -49,4 +49,11 @@ class TenantService {
             }
         }
     }
+
+    /// Fetches tenant details for a given restaurant ID. In this mock
+    /// implementation the ID is treated the same as the subdomain to keep
+    /// the sample data simple.
+    func fetchTenant(byId id: String, completion: @escaping (Result<Tenant, Error>) -> Void) {
+        fetchTenant(subdomain: id, completion: completion)
+    }
 }
