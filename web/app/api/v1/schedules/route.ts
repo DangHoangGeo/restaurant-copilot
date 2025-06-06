@@ -79,9 +79,10 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Unexpected error in create schedule API:', error);
     // Handle potential JSON parsing errors if req.json() fails
+    /**
     if (error instanceof SyntaxError && (error as Record<string, unknown>).body === true) { // Next.js might wrap SyntaxError
         return NextResponse.json({ error: 'Invalid JSON format in request body.' }, { status: 400 });
-    }
+    } */
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: 'An unexpected error occurred.', details: errorMessage }, { status: 500 });
   }

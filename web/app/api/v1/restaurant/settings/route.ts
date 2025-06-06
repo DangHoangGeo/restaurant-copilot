@@ -48,7 +48,7 @@ export async function GET() {
         default_language,
         contact_info,
         description,
-        opening_hours, /* Changed from 'hours' to 'opening_hours' to match schema */
+        opening_hours,
         phone
       `)
       .eq("id", user.restaurantId) // Use authenticated user's restaurant ID
@@ -73,7 +73,7 @@ export async function GET() {
       defaultLocale: restaurant.default_language || "en",
       contactInfo: restaurant.contact_info,
       description: restaurant.description,
-      hours: restaurant.opening_hours, // Ensure this matches the selected column name
+      opening_hours: restaurant.opening_hours, // Ensure this matches the selected column name
       phone: restaurant.phone,
     });
   } catch (error) {

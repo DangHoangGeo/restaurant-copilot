@@ -5,11 +5,10 @@ import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; 
 
 // The local getRestaurantIdFromSession function has been removed.
 
-export async function DELETE(req: NextRequest, { params }: { params: { employeeId: string } }) {
+export async function DELETE(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
-
-  const employeeId = params.employeeId;
+  const employeeId = req.nextUrl.searchParams.get("employeeId") || "";
 
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID.' }, { status: 401 });
