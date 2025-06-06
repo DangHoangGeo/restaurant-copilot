@@ -33,22 +33,23 @@ struct OrderListView: View {
         }
     }
 
-    private func statusColor(_ status: String) -> Color {
+    private func statusColor(_ status: OrderStatus) -> Color {
         switch status {
-        case "new": return .blue
-        case "preparing": return .orange
-        case "ready": return .green
-        default: return .gray
+        case .new: return .blue
+        case .preparing: return .orange
+        case .ready: return .green
+        case .completed: return .gray
+        case .unknown: return .gray
         }
     }
 
-    private func statusText(for status: String) -> String {
+    private func statusText(for status: OrderStatus) -> String {
         switch status {
-        case "new": return NSLocalizedString("status_new", comment: "")
-        case "preparing": return NSLocalizedString("status_preparing", comment: "")
-        case "ready": return NSLocalizedString("status_ready", comment: "")
-        case "completed": return NSLocalizedString("status_completed", comment: "")
-        default: return status
+        case .new: return NSLocalizedString("status_new", comment: "")
+        case .preparing: return NSLocalizedString("status_preparing", comment: "")
+        case .ready: return NSLocalizedString("status_ready", comment: "")
+        case .completed: return NSLocalizedString("status_completed", comment: "")
+        case .unknown: return status.rawValue
         }
     }
 }
@@ -60,8 +61,8 @@ struct OrderListView_Previews: PreviewProvider {
         // You might want to populate mockOrderService.activeOrders with some sample data here
         // for a more representative preview. For example:
         // mockOrderService.activeOrders = [
-        //     Order(id: "1", tableId: "T1", totalAmount: 10.0, status: "new", createdAt: Date(), items: []),
-        //     Order(id: "2", tableId: "T2", totalAmount: 20.0, status: "preparing", createdAt: Date(), items: [])
+        //     Order(id: "1", tableId: "T1", totalAmount: 10.0, status: .new, createdAt: Date(), items: []),
+        //     Order(id: "2", tableId: "T2", totalAmount: 20.0, status: .preparing, createdAt: Date(), items: [])
         // ]
 
         return OrderListView()
