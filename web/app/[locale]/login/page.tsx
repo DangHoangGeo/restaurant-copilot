@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+//import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -45,8 +46,8 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      if (data.redirect) {
-        router.push(data.redirect);
+      if (data.redirectUrl) {
+        router.push(data.redirectUrl);
       }
       else {
         // Fallback or error if subdomain is not returned

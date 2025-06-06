@@ -1,6 +1,65 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-
+ 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function formatCurrency(
+  amount: number | null | undefined,
+  currency: string = 'JPY', // Default currency
+  locale: string = 'ja-JP' // Default locale for Japanese Yen
+): string {
+  if (amount === null || amount === undefined) {
+    return 'N/A'; // Or some other placeholder
+  }
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+      // minimumFractionDigits: 0, // Optional: for currencies like JPY that don't use decimals
+      // maximumFractionDigits: 0,
+    }).format(amount);
+  } catch (error) {
+    console.error("Currency formatting error:", error);
+    return `${currency} ${amount.toFixed(2)}`; // Fallback
+  }
+}
+
+// Helper to get subdomain, this should be robust
+export function getSubdomainFromHost(host: string): string | null {
+  if (!host) return null;
+
+  const hostname = host.split(':')[0]; // Remove port
+
+  // Handle localhost
+  if (hostname.includes('localhost')) {
+    const parts = hostname.split('.');
+    if (parts.length > 1 && parts[0] !== 'localhost') { // e.g., sub.localhost
+      return parts[0];
+    }
+    return null; // Just 'localhost' or invalid
+  }
+
+  // Handle production domain
+  const rootDomain = process.env.NEXT_PRIVATE_PRODUCTION_URL || 'baoan.jp'; // Consistent root domain
+  
+  if (hostname === rootDomain || hostname === `www.${rootDomain}`) {
+    return null;
+  }
+
+  const parts = hostname.split('.');
+  if (parts.length > 2) {
+    // Check if the end of the hostname matches the rootDomain
+    // e.g., if host is sub.example.com, parts = [sub, example, com]
+    // and rootDomain is example.com
+    const potentialSubdomain = parts.slice(0, parts.length - (rootDomain.split('.').length)).join('.');
+    const reconstructedDomain = parts.slice(parts.length - (rootDomain.split('.').length)).join('.');
+
+    if (reconstructedDomain === rootDomain && potentialSubdomain) {
+      return potentialSubdomain;
+    }
+  }
+
+  return null;
 }

@@ -32,12 +32,6 @@
       "check_failed": "Failed to check subdomain availability. Please try again."
     },
     "confirmPasswordLabel": "Confirm Password",
-    "defaultLanguageLabel": "Default Language",
-    "languageOption": {
-      "en": "English",
-      "ja": "Japanese",
-      "vi": "Vietnamese"
-    },
     "captchaRequired": "Please complete the CAPTCHA.",
     "captchaInvalid": "CAPTCHA verification failed. Please try again.",
     "captchaExpired": "CAPTCHA expired. Please re-verify.",
@@ -192,22 +186,510 @@
     "description": "Sorry, the page you are looking for doesn't exist or has been moved.",
     "back_home": "Back to Home"
   },
-  "Dashboard": {
-    "dashboard": "Dashboard",
-    "recentOrders": "Recent Orders",
-    "orderId": "Order ID",
-    "type": "Type",
-    "status": "Status",
+  "Common": {
+    "loading": "Loading...",
+    "all_rights_reserved": "All rights reserved.",
+    "powered_by": "Powered by",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "view_details": "View Details",
+    "close_modal": "Close modal",
+    "search": "Search...",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "list": "List",
+    "schedule": "Schedule",
+    "off_duty": "Off Duty",
+    "export_csv": "Export CSV",
+    "export_pdf": "Export PDF",
+    "unknown_item": "Unknown Item",
     "total": "Total",
-    "quickActions": "Quick Actions",
-    "addNewMenuItem": "Add New Menu Item",
-    "generateQRForTable": "Generate QR for Table",
-    "addNewEmployee": "Add New Employee",
-    "orderStatus": {
+    "admin_panel_button": "Admin Panel",
+    "needs_attention": "Needs Attention",
+    "all_good": "All Good",
+    "zod_form_hint": "Form validation is handled by Zod. Please ensure all required fields are filled correctly.",
+    "coming_soon": "Coming Soon!",
+    "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
+    "form_placeholder": "Form fields go here.",
+    "recharts_note": "Charts powered by Recharts.",
+    "datatable_component_note": "Data table component placeholder.",
+    "sold": "sold",
+    "cancel_booking": "Cancel Booking",
+    "confirm_booking": "Confirm Booking",
+    "order_status": {
       "new": "New",
       "preparing": "Preparing",
       "ready": "Ready",
-      "completed": "Completed"
+      "completed": "Completed",
+      "canceled": "Canceled"
+    },
+    "view_cart_label": "View Cart",
+    "weekdays": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday",
+      "mon_short": "Mon",
+      "tue_short": "Tue",
+      "wed_short": "Wed",
+      "thu_short": "Thu",
+      "fri_short": "Fri",
+      "sat_short": "Sat",
+      "sun_short": "Sun"
+    },
+    "language_switcher": {
+      "toggle_label": "Change language"
+    },
+    "defaultLanguageLabel": "Default Language",
+    "defaultLanguagePlaceholder": "Select default language",
+    "languageOption": {
+      "en": "English",
+      "ja": "Japanese",
+      "vi": "Vietnamese"
+    },
+    "rating": {
+      "set_stars": "Set {count} star rating",
+      "current_stars": "Current rating: {count} stars",
+      "no_reviews": "No reviews yet"
+    },
+    "alert": {
+      "info": { "title": "Information" },
+      "success": { "title": "Success" },
+      "warning": { "title": "Warning" },
+      "error": { "title": "Error" }
+    },
+    "mark_resolved": "Mark Resolved",
+    "mark_unresolved": "Mark Unresolved"
+  },
+  "AdminLayout": {
+    "sidebar": {
+      "toggle_aria_label": "Toggle sidebar navigation",
+      "close_aria_label": "Close sidebar"
+    },
+    "theme": {
+      "toggle_aria_label": "Toggle light/dark theme",
+      "toggle_label": "Toggle Theme"
+    },
+    "user_menu": {
+      "admin_user_placeholder": "Admin User",
+      "my_account_label": "My Account",
+      "profile_link": "Profile",
+      "settings_link": "Restaurant Settings",
+      "logout_button": "Logout"
+    },
+    "default_restaurant_name": "Shop-Copilot"
+  },
+  "AdminNav": {
+    "admin_sidebar_dashboard": "Dashboard",
+    "admin_sidebar_restaurant_settings": "Restaurant Settings",
+    "admin_sidebar_menu_management": "Menu Management",
+    "admin_sidebar_table_qr_management": "Tables & QR Codes",
+    "admin_sidebar_employees_schedules": "Employees & Schedules",
+    "admin_sidebar_bookings_preorders": "Bookings & Preorders",
+    "admin_sidebar_reports_analytics": "Reports & Analytics",
+    "admin_sidebar_design_system": "Design System Guide",
+    "admin_sidebar_view_customer_site": "View Customer Site",
+    "admin_sidebar_logout": "Logout",
+    "admin_dashboard_title": "Dashboard Overview",
+    "admin_settings_title": "Restaurant Settings",
+    "admin_menu_title": "Menu Management",
+    "admin_tables_title": "Table & QR Management",
+    "admin_employees_title": "Employee & Schedule Management",
+    "admin_bookings_title": "Booking Management",
+    "admin_reports_title": "Reports & Analytics",
+    "sidebar_close_aria_label": "Close sidebar"
+  },
+  "AdminMenu": {
+    "title": "Menu Management",
+    "add_category": "Add Category",
+    "add_item": "Add Item",
+    "edit": "Edit",
+    "delete": "Delete",
+    "low_stock": "Low Stock",
+    "no_items_in_category": "No menu items in this category yet. Click 'Add Item' to add one.",
+    "edit_category": "Edit Category",
+    "edit_item": "Edit Item",
+    "form_hint": "Fields marked with * are required.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "category": {
+      "update_success": "Category updated successfully!",
+      "create_success": "Category created successfully!",
+      "save_error": "Failed to save category. Please try again.",
+      "delete_success": "Category deleted successfully!",
+      "delete_error": "Failed to delete category. Please try again.",
+      "name_en": "Category Name (English)",
+      "name_ja": "Category Name (Japanese)",
+      "name_vi": "Category Name (Vietnamese)",
+      "order": "Display Order"
+    },
+    "weekdays": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    },
+    "weekdays_short": {
+      "1_short": "Monday",
+      "2_short": "Tuesday",
+      "3_short": "Wednesday",
+      "4_short": "Thursday",
+      "5_short": "Friday",
+      "6_short": "Saturday",
+      "7_short": "Sunday"
+    },
+    "item": {
+      "update_success": "Menu item updated successfully!",
+      "create_success": "Menu item created successfully!",
+      "save_error": "Failed to save menu item. Please try again.",
+      "delete_error": "Failed to delete menu item. Please try again.",
+      "name_en": "Item Name (English)",
+      "name_ja": "Item Name (Japanese)",
+      "name_vi": "Item Name (Vietnamese)",
+      "description_en": "Description (English)",
+      "description_ja": "Description (Japanese)",
+      "description_vi": "Description (Vietnamese)",
+      "price": "Price",
+      "image_url": "Image URL",
+      "upload_image": "Upload Image",
+      "image_upload_note": "Upload an image for the menu item (max 5MB).",
+      "stock_level": "Stock Level",
+      "is_available": "Is Available?",
+      "weekday_visibility": "Visible on Weekdays"
+    },
+    "errors": {
+      "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
+      "data_fetch_error": "Failed to load menu data. Please try again later.",
+      "no_categories_found": "No menu categories found. Please add a category to get started."
+    },
+    "currency_format": "{value, number, ::currency/JPY}"
+  },
+  "AdminDashboard": {
+    "title": "Dashboard",
+    "cards": {
+      "todays_sales": "Today's Sales",
+      "active_orders": "Active Orders",
+      "top_seller_today": "Top Seller Today",
+      "top_seller_unavailable": "N/A",
+      "low_stock_alerts": "Low Stock Alerts",
+      "needs_attention": "Needs Attention!",
+      "all_good": "All Good",
+      "sold_units": "sold"
+    },
+    "quick_actions": {
+      "title": "Quick Actions",
+      "add_menu_item": "Add New Menu Item",
+      "generate_qr": "Generate Table QR Code",
+      "add_employee": "Add New Employee"
+    },
+    "recent_orders": {
+      "title": "Recent Orders",
+      "no_recent_orders": "No recent orders to display.",
+      "table_header_order": "Order / Table",
+      "table_header_items": "Items",
+      "table_header_total": "Total",
+      "table_header_status": "Status",
+      "table_prefix": "Table"
+    },
+    "charts": {
+      "sales_over_time_placeholder": "Sales Over Time Chart - Coming Soon",
+      "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
+    },
+    "errors": {
+      "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
+      "data_fetch_error": "Failed to load dashboard data. Please try again later.",
+      "unauthorized_access": "Access Denied: You are not authorized to view this page.",
+      "mismatched_restaurant_access": "Access Denied: You are not authorized to view this restaurant's data."
+    },
+    "feature": {
+      "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard"
     }
+  },
+  "Metadata": {
+    "admin_dashboard_title": "Admin Dashboard - Shop Copilot"
+  },
+  "logout": {
+    "title": "Logging You Out...",
+    "message": "You have been successfully logged out. Redirecting you shortly.",
+    "login_again_button": "Login Again"
+  },
+  "Dashboard": {
+    "Settings": {
+      "labels": {
+        "restaurantName": "Restaurant Name",
+        "defaultLanguage": "Default Language",
+        "brandColor": "Brand Color",
+        "logo": "Logo",
+        "contactInfo": "Contact Information",
+        "address": "Address",
+        "hours": "Operating Hours",
+        "description": "Description"
+      },
+      "placeholders": {
+        "restaurantName": "Enter your restaurant's name",
+        "brandColor": "#RRGGBB",
+        "contactInfo": "e.g., phone number, email",
+        "address": "Restaurant's full address",
+        "hours": "e.g., Mon-Fri: 9am-10pm, Sat-Sun: 10am-11pm",
+        "description": "A brief description of your restaurant"
+      },
+      "buttons": {
+        "saveChanges": "Save Changes",
+        "uploadingLogo": "Uploading...",
+        "updatingSettings": "Updating..."
+      },
+      "notifications": {
+        "successTitle": "Settings Updated",
+        "successMessage": "Your restaurant settings have been updated successfully.",
+        "settingsSaved": "Settings saved successfully.",
+        "saveError": "Error saving settings. Please try again.",
+        "uploadError": "Error uploading logo. Please try again.",
+        "errorTitle": "Update Failed",
+        "errorMessage": "Could not update settings: {error}",
+        "logoUploadErrorTitle": "Logo Upload Failed",
+        "logoUploadErrorMessage": "Could not upload logo: {error}",
+        "logoRemovedMessage": "Logo removed. Save changes to confirm.",
+        "fileTooLarge": "File is too large. Max 5MB.",
+        "invalidFileType": "Invalid file type. Please upload an image."
+      },
+      "altText": {
+        "logoPreview": "Restaurant logo preview",
+        "logoIconFallback": "Logo"
+      },
+      "text": {
+        "dragDropLogo": "Drag & drop or click to select logo",
+        "currentBrandColor": "Current brand color",
+        "nameRequired": "Name is required",
+        "nameMaxLength": "Name must be 100 characters or less",
+        "languageRequired": "Default language is required",
+        "invalidHexFormat": "Invalid hex color format (e.g. #RRGGBB)",
+        "contactInfoMaxLength": "Contact info must be 500 characters or less",
+        "addressMaxLength": "Address must be 500 characters or less",
+        "hoursMaxLength": "Hours must be 200 characters or less",
+        "descriptionMaxLength": "Description must be 1000 characters or less",
+        "logoUrlInvalid": "Invalid URL format for logo."
+      },
+      "Page": {
+        "title": "Restaurant Settings",
+        "errors": {
+          "noSubdomainDetected": "No subdomain could be detected for the restaurant.",
+          "noRestaurantIdForSubdomain": "Could not find a restaurant ID for the provided subdomain.",
+          "noRestaurantIdTitle": "Restaurant Not Identified",
+          "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
+          "fetchErrorTitle": "Error Loading Settings",
+          "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
+          "noSettingsFoundTitle": "Settings Not Found",
+          "noSettingsFoundMessage": "No settings data found for this restaurant."
+        }
+      }
+    }
+  },
+  "AdminTables": {
+    "add_table": "Add Table",
+    "edit_table": "Edit Table",
+    "capacity": "Capacity",
+    "position": "Position",
+    "generate_qr": "Generate QR",
+    "qr_for_table": "QR for Table",
+    "download_png": "Download PNG",
+    "download_png_action": "Downloading PNG..."
+  },
+  "AdminEmployees": {
+    "add_employee": "Add Employee",
+    "edit_employee": "Edit Employee",
+    "employee_name": "Employee Name",
+    "schedule_calendar_note": "Weekly schedule overview.",
+    "edit_shifts": "Edit Shifts",
+    "edit_shifts_action": "Edit shifts action",
+    "form": {
+      "full_name": "Full Name",
+      "email_lookup": "Email",
+      "email_lookup_placeholder": "employee@example.com",
+      "role": "Role"
+    }
+  },
+  "Roles": {
+    "manager": "Manager",
+    "chef": "Chef",
+    "server": "Server",
+    "cashier": "Cashier"
+  },
+  "AdminBookings": {
+    "details_title": "Booking Details",
+    "preorder_items": "Pre-Order Items",
+    "no_preorder_items": "No pre-order items",
+    "table": {
+      "customer_name": "Customer Name",
+      "contact": "Contact",
+      "date_time": "Date & Time",
+      "party_size": "Party Size",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "Bookings": {
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "canceled": "Canceled"
+    }
+  },
+  "AdminReports": {
+    "tabs": {
+      "sales": "Sales",
+      "items": "Items",
+      "feedback": "Feedback"
+    },
+    "summary": {
+      "total_sales_today": "Total Sales Today",
+      "active_orders_count": "Active Orders",
+      "top_selling_item_today": "Top Selling Item Today",
+      "low_stock_alerts_count": "Low Stock Alerts"
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "description_7_days": "Based on the last 7 days",
+      "apply_button": "Apply Recommendations"
+    },
+    "sales": {
+      "title": "Sales Report",
+      "daily_revenue_chart_placeholder": "Daily revenue chart placeholder",
+      "category_breakdown_chart_placeholder": "Category breakdown placeholder"
+    },
+    "daterange": {
+      "last_7_days": "Last 7 Days",
+      "last_30_days": "Last 30 Days"
+    },
+    "items": {
+      "title": "Items Report",
+      "table": {
+        "item_name": "Item Name",
+        "total_sold": "Total Sold",
+        "total_revenue": "Total Revenue",
+        "avg_rating": "Avg Rating"
+      }
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description_last_50": "Last 50 reviews"
+    }
+  },
+  "CustomerHome": {
+    "welcome": "Welcome to {restaurantName}",
+    "menu_title": "Menu",
+    "add_to_cart": "Add",
+    "no_menu_items": "No menu items available"
+  },
+  "Customer": {
+    "menu": {
+      "title": "Menu",
+      "serving_today": "Serving Today",
+      "view_menu": "View Menu",
+      "item_details": "Item Details",
+      "add_to_cart": "Add",
+      "out_of_stock": "Out of Stock",
+      "quantity": "Quantity",
+      "total_price": "Total Price",
+      "search_placeholder": "Search menu...",
+      "add_to_cart_success": "{itemName} added to your cart.",
+      "add_to_cart_error": "Failed to add {itemName} to cart. Please try again."
+    },
+    "cart": {
+      "items_in_cart_plural": "{count} item(s) in cart",
+      "review_order_button": "Review Order"
+    },
+    "checkout": {
+      "redirecting_empty_cart": "Cart is empty. Redirecting to menu...",
+      "back_to_menu": "Back to Menu",
+      "title": "Review Order",
+      "order_summary": "Order Summary",
+      "payment_instruction_table": "Please proceed to the counter or call a staff member to complete your payment for Table {tableId}.",
+      "payment_instruction_counter": "Please proceed to the counter to complete your payment.",
+      "place_order_button": "Place Order",
+      "confirm_modal_title": "Confirm Order",
+      "confirm_modal_text": "Are you sure you want to confirm your order for {total}?"
+    },
+    "orderplaced": {
+      "title": "Order Placed",
+      "message": "Your order has been sent to the kitchen. You can keep ordering or proceed to checkout when ready.",
+      "add_more_button": "Add More Items",
+      "proceed_to_checkout_button": "Proceed to Checkout"
+    },
+    "thankyou": {
+      "title": "Thank You!",
+      "subtitle": "Your order has been placed successfully.",
+      "order_id_label": "Order ID",
+      "order_summary_title": "Order Summary",
+      "table_number_label": "Table Number",
+      "rate_dishes_title": "Rate Your Dishes",
+      "rate_this_dish_button": "Rate {dish}",
+      "back_to_menu_button": "Back to Menu"
+    },
+    "review": {
+      "rating_required_alert": "Please provide a rating.",
+      "submission_thank_you_title": "Review Submitted!",
+      "submission_thank_you_message": "Thank you for your valuable feedback!",
+      "title": "Rate Your Dish",
+      "rating_label": "Your Rating",
+      "comment_placeholder": "Add a comment (optional)",
+      "submit_button": "Submit Review"
+    },
+    "booking": {
+      "title": "Table Booking",
+      "submission_thank_you_title": "Booking Confirmed!",
+      "book_table_button": "Book a Table",
+      "submission_thank_you_message": "Your table booking has been successfully confirmed. We look forward to seeing you!",
+      "form": {
+        "validation_error_fill_fields": "Please fill in all required fields.",
+        "table_select_placeholder": "Select a Table",
+        "table_capacity": "{count} people",
+        "name_placeholder": "Your Full Name",
+        "contact_placeholder": "Your Phone or Email",
+        "preorder_optional_title": "Pre-order (Optional)",
+        "submit_button": "Confirm Booking"
+      }
+    },
+    "common": {
+      "total": "Total",
+      "cancel": "Cancel Order",
+      "confirm": "Confirm Order",
+      "restaurant_not_found": "Restaurant not found. Please check the URL or contact support.",
+      "error_loading_menu": "Error loading menu. Please try again later.",
+      "error_loading_cart": "Error loading cart. Please try again later.",
+      "error_loading_checkout": "Error loading checkout. Please try again later.",
+      "error_loading_booking": "Error loading booking form. Please try again later.",
+      "error_loading_order_summary": "Error loading order summary. Please try again later.",
+      "error_loading_review_form": "Error loading review form. Please try again later."
+    },
+    "weekdays": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    },
+    "currency_format": "{value, number, ::currency/JPY}",
+    "ordering_for_table": "Ordering for Table {tableId}",
+    "serving_today": "Serving Today: {day}",
+    "item_added_to_cart_msg": "{item} added to cart!",
+    "decrease_quantity": "Decrease quantity",
+    "increase_quantity": "Increase quantity",
+    "admin_panel_button": "Admin Panel"
+  },
+  "ai_chat": {
+    "toggle_label": "Toggle AI Chat"
   }
 }
