@@ -2,12 +2,15 @@ import SwiftUI
 
 /// Displays the list of active orders sorted by creation date.
 struct OrderListView: View {
-    @ObservedObject var orderService: OrderService
+    @EnvironmentObject var orderService: OrderService
 
     var body: some View {
         NavigationView {
-            List(orderService.activeOrders.sorted(by: { $0.createdAt > $1.createdAt })) { order in
-                NavigationLink(destination: OrderDetailView(order: order, service: orderService)) {
+            // OrderService.activeOrders is already sorted by the service itself.
+            // If not, or if additional client-side sorting is desired, it can be done here.
+            // For now, relying on the service's sort order.
+            List(orderService.activeOrders) { order in
+                NavigationLink(destination: OrderDetailView(order: order)) { // Pass only the order
                     HStack {
                         VStack(alignment: .leading) {
                             Text(String(format: NSLocalizedString("table_number_format", comment: "Table number"), order.tableId))
@@ -52,6 +55,16 @@ struct OrderListView: View {
 
 struct OrderListView_Previews: PreviewProvider {
     static var previews: some View {
-        OrderListView(orderService: OrderService())
+        // Create a mock OrderService for the preview
+        let mockOrderService = OrderService()
+        // You might want to populate mockOrderService.activeOrders with some sample data here
+        // for a more representative preview. For example:
+        // mockOrderService.activeOrders = [
+        //     Order(id: "1", tableId: "T1", totalAmount: 10.0, status: "new", createdAt: Date(), items: []),
+        //     Order(id: "2", tableId: "T2", totalAmount: 20.0, status: "preparing", createdAt: Date(), items: [])
+        // ]
+
+        return OrderListView()
+            .environmentObject(mockOrderService) // Inject the mock service into the environment
     }
 }
