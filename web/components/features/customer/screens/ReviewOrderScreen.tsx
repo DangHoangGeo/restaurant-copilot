@@ -27,6 +27,7 @@ export function ReviewOrderScreen({
   viewProps,
 }: ReviewOrderScreenProps) {
   const t = useTranslations("Customer");
+  const tCommon = useTranslations("Common");
   const { cart, clearCart, totalCartPrice, updateQuantity } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -153,7 +154,7 @@ export function ReviewOrderScreen({
             style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
             className="text-white hover:opacity-90"
           >
-            {t("checkout.back_to_menu")}
+            {tCommon("back_to_menu")}
           </Button>
         </Card>
       </div>

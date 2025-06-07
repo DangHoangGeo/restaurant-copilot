@@ -642,7 +642,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
                       <div className="mt-2">
                         <img
                           src={imagePreview}
-                          alt="Image preview"
+                          alt={t('item.image_preview_alt')}
                           className="max-h-40 w-auto rounded-md"
                         />
                       </div>

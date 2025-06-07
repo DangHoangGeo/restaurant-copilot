@@ -17,6 +17,7 @@ export default async function DashboardPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({locale, namespace: 'AdminDashboard'});
+  const tCommon = await getTranslations({locale, namespace: 'Common'});
   //const supabase = await createClient();
 
   const authUser = await getUserFromRequest();
@@ -129,7 +130,7 @@ export default async function DashboardPage({
         if (sortedItems.length > 0) {
             const topItem = sortedItems[0];
             // Get localized name
-            const name = topItem.nameObj[locale] || topItem.nameObj.en || 'Unknown Item';
+            const name = topItem.nameObj[locale] || topItem.nameObj.en || tCommon('unknown_item');
             topSellerTodayData = { name, metricValue: `${topItem.count} ${t('cards.sold_units')}` };
         }
     } else {

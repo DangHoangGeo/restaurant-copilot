@@ -11,6 +11,7 @@
       "forgotPassword": "Forgot Password"
     },
     "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
     "loginButton": "Login",
@@ -218,6 +219,8 @@
     "coming_soon": "Coming Soon!",
     "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
     "form_placeholder": "Form fields go here.",
+    "back_to_menu": "Back to Menu",
+    "add_more_items": "Add More Items",
     "recharts_note": "Charts powered by Recharts.",
     "datatable_component_note": "Data table component placeholder.",
     "sold": "sold",
@@ -376,6 +379,7 @@
       "price": "Price",
       "image_url": "Image URL",
       "upload_image": "Upload Image",
+      "image_preview_alt": "Image preview",
       "image_upload_note": "Upload an image for the menu item (max 5MB).",
       "stock_level": "Stock Level",
       "is_available": "Is Available?",
@@ -690,7 +694,6 @@
     },
     "checkout": {
       "redirecting_empty_cart": "Cart is empty. Redirecting to menu...",
-      "back_to_menu": "Back to Menu",
       "title": "Review Order",
       "order_summary": "Order Summary",
       "quantity": "Quantity",
@@ -727,7 +730,6 @@
     "orderplaced": {
       "title": "Order Placed",
       "message": "Your order has been sent to the kitchen. You can keep ordering or proceed to checkout when ready.",
-      "add_more_button": "Add More Items",
       "proceed_to_checkout_button": "Proceed to Checkout"
     },
     "thankyou": {
@@ -737,12 +739,10 @@
       "table_number": "Table {number}",
       "order_summary_title": "Order Summary",
       "preparation_message": "What would you like to do next?",
-      "add_more_items": "Add More Items",
       "view_order_history": "View Order History",
       "rate_dishes_title": "Rate Your Dishes",
       "review_prompt": "Help us improve by rating individual dishes:",
       "order_history_title": "Order History",
-      "back_to_menu_button": "Back to Menu",
       "item": "item",
       "items": "items",
       "status_ordered": "Ordered",

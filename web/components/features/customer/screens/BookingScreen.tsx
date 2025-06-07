@@ -41,6 +41,7 @@ export function BookingScreen({
   featureFlags,
 }: BookingScreenProps) {
   const t = useTranslations("Customer");
+  const tCommon = useTranslations("Common");
   const locale = useGetCurrentLocale();
   const [formData, setFormData] = useState<BookingFormData>({
     tableId: "",
@@ -135,7 +136,7 @@ export function BookingScreen({
           style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
           className="text-white hover:opacity-90"
         >
-          {t("thankyou.back_to_menu_button")}
+          {tCommon("back_to_menu")}
         </Button>
       </div>
     );
@@ -145,7 +146,7 @@ export function BookingScreen({
     <div>
       <Button onClick={() => setView("menu", {} as MenuViewProps)} variant="ghost" className="mb-4 -ml-2">
         <ChevronLeft className="h-4 w-4 mr-1" />
-        {t("checkout.back_to_menu")}
+        {tCommon("back_to_menu")}
       </Button>
       <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">{t("booking.title")}</h2>
       {error && <Alert variant="destructive" className="mb-4">{error}</Alert>}

@@ -76,7 +76,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              placeholder="email@example.com"
+              placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               required
