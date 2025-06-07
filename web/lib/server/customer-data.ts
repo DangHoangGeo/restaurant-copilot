@@ -36,7 +36,6 @@ export interface TableInfo {
 export async function fetchMenuAndTables(subdomain: string) {
   const restaurantId = await getRestaurantIdFromSubdomain(subdomain)
   if (!restaurantId) return { categories: [], tables: [] }
-
   const { data: categories } = await supabaseAdmin
     .from('categories')
     .select(

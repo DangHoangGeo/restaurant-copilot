@@ -1,10 +1,33 @@
 import { headers } from 'next/headers'
 import { setRequestLocale } from 'next-intl/server'
 import { getSubdomainFromHost } from '@/lib/utils'
-import { getRestaurantSettingsFromSubdomain } from '@/lib/server/restaurant-settings'
 import { TablesClientContent } from './tables-client-content'
-import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings'
 import { getTranslations } from 'next-intl/server'
+import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
+
+export type Table = {
+  id: string;
+  name: string;
+  capacity: number;
+  restaurant_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Restaurant = {
+  id: string;
+  name: string | null;
+  default_language: "en" | "ja" | "vi" | null;
+  brand_color: string | null;
+  contact_info: string | null;
+  address: string | null;
+  opening_hours: string | null;
+  description: string | null;
+  logo_url: string | null;
+};
 
 export default async function TablesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
@@ -13,58 +36,108 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
   const subdomain = getSubdomainFromHost(host)
   const t = await getTranslations({ locale, namespace: 'AdminTables' })
 
-  const restaurantSettings = subdomain ? await getRestaurantSettingsFromSubdomain(subdomain) : null
-  let restaurantId: string | null = null
+  let restaurantId: string | null = null;
+  let errorGettingId: string | null = null;
+  const user = await getUserFromRequest();
+  if (user && user.subdomain !== subdomain) {
+    errorGettingId = t("Settings.Page.errors.noSubdomainDetected");
+  } 
+  restaurantId = user?.restaurantId || null;
 
-  if (subdomain) {
-    restaurantId = await getRestaurantIdFromSubdomain(subdomain)
-  }
+  let initialData: Table[] | null = null;
+  let fetchError: string | null = null;
+  let restaurantSettings: { name: string; logoUrl: string | null } | null = null;
 
-  if (!restaurantId) {
-    return (
-      <TablesClientContent
-        restaurantSettings={restaurantSettings ?? { name: 'Restaurant', logoUrl: null }}
-        initialData={null}
-        error={t('errors.restaurant_not_found')}
-      />
-    )
-  }
+  if (user && user.restaurantId) {
+    try {
+      const supabase = await createSupabaseServerClient();
+      
+      // Fetch restaurant settings
+      const { data: restaurantData, error: restaurantError } = await supabase
+        .from("restaurants")
+        .select("name, logo_url")
+        .eq("id", user.restaurantId)
+        .single();
 
-  try {
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
-    const apiUrl = `${baseUrl}/api/v1/tables`
+      if (restaurantError) {
+        console.error(`Error fetching restaurant settings for ID "${user.restaurantId}":`, restaurantError);
+        throw restaurantError;
+      }
+      if (restaurantData) {
+        restaurantSettings = {
+          name: restaurantData.name || 'Restaurant',
+          logoUrl: restaurantData.logo_url
+        };
+      }
 
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    })
+      // Fetch tables data
+      const { data: tablesData, error: tablesError } = await supabase
+        .from("tables")
+        .select("*")
+        .eq("restaurant_id", user.restaurantId);
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Failed to fetch tables')
+      if (tablesError) {
+        console.error(`Error fetching tables for restaurant ID "${user.restaurantId}":`, tablesError);
+        throw tablesError;
+      }
+      console.log("Fetched tables data:", tablesData);
+      initialData = tablesData as Table[];
+      if (!initialData || initialData.length === 0) {
+        fetchError = t("errors.no_tables_found");
+      }
+    } catch (error) {
+      console.error("Error fetching tables data:", error);
+      fetchError = (error instanceof Error ? error.message : t("errors.data_fetch_error"));
     }
-
-    const { tables } = await response.json()
-
-    return (
-      <TablesClientContent
-        restaurantSettings={restaurantSettings ?? { name: 'Restaurant', logoUrl: null }}
-        initialData={tables}
-        error={null}
-      />
-    )
-  } catch (error) {
-    console.error('Error fetching tables data:', error)
-    return (
-      <TablesClientContent
-        restaurantSettings={restaurantSettings ?? { name: 'Restaurant', logoUrl: null }}
-        initialData={null}
-        error={t('errors.data_fetch_error')}
-      />
-    )
   }
+
+  return (
+    <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+          {t("Tables.Page.title")}
+        </h1>
+      </header>
+
+      {errorGettingId && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
+          <AlertDescription>{errorGettingId}</AlertDescription>
+        </Alert>
+      )}
+
+      {!errorGettingId && !restaurantId && !fetchError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
+          <AlertDescription>{t("errors.noRestaurantIdMessage")}</AlertDescription>
+        </Alert>
+      )}
+
+      {restaurantId && fetchError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{t("Settings.Page.errors.fetchErrorTitle")}</AlertTitle>
+          <AlertDescription>{fetchError}</AlertDescription>
+        </Alert>
+      )}
+
+      {restaurantId && initialData && !fetchError && restaurantSettings && (
+        <TablesClientContent 
+          initialData={initialData} 
+          error={null}
+          restaurantSettings={restaurantSettings}
+        />
+      )}
+
+      {restaurantId && !initialData && !fetchError && restaurantSettings && (
+        <Alert variant="warning" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{t("Settings.Page.errors.noSettingsFoundTitle")}</AlertTitle>
+          <AlertDescription>{t("errors.no_tables_found")}</AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
 }

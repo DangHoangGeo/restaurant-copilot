@@ -2,11 +2,11 @@ import React from "react";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server"; // Adjusted path
 import SettingsForm from "./settings-form";
 import { getTranslations } from "next-intl/server";
-import { getRestaurantIdFromSubdomain } from "@/lib/server/restaurant-settings"; // Adjusted path
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Adjusted path
 import { AlertTriangle } from "lucide-react";
 import { headers } from 'next/headers';
 import { getSubdomainFromHost } from "@/lib/utils";
+import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 
 // TODO: The restaurant logo can be stored in Supabase Storage for now.
 // Consider using api/v1/restaurant/settings/route.ts for API interactions
@@ -42,35 +42,24 @@ export default async function SettingsPage({
 
   let restaurantId: string | null = null;
   let errorGettingId: string | null = null;
-
-  if (!subdomain) {
+  const user = await getUserFromRequest();
+  if (user && user.subdomain !== subdomain) {
     errorGettingId = t("Settings.Page.errors.noSubdomainDetected");
-  } else {
-    try {
-      restaurantId = await getRestaurantIdFromSubdomain(subdomain);
-      if (!restaurantId) {
-        errorGettingId = t("Settings.Pageerrors.noRestaurantIdForSubdomain", { subdomain: subdomain });
-      }
-    } catch (error) {
-      console.error(`Error getting restaurant ID for subdomain "${subdomain}":`, error);
-      errorGettingId = t("Settings.Pageerrors.genericRestaurantIdError");
-    }
-  }
-
+  } 
+  restaurantId = user?.restaurantId || null;
   let initialSettings: Restaurant | null = null;
   let fetchError: string | null = null;
-
-  if (restaurantId) {
+  if (user && user.restaurantId) {
     try {
       const supabase = await createSupabaseServerClient(); // Use default role unless admin rights are explicitly needed for this read
       const { data, error } = await supabase
         .from("restaurants")
         .select("*") // Select all fields
-        .eq("id", restaurantId)
+        .eq("id", user.restaurantId)
         .single();
 
       if (error) {
-        console.error(`Error fetching restaurant settings for ID "${restaurantId}":`, error);
+        console.error(`Error fetching restaurant settings for ID "${user.restaurantId}":`, error);
         throw error;
       }
       initialSettings = data as Restaurant; // Type assertion

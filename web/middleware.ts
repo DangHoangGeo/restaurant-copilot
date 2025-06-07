@@ -1,140 +1,205 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import createMiddleware from 'next-intl/middleware';
-import {routing} from './i18n/routing';
-import { jwtVerify } from 'jose';
-import { parse } from 'cookie';
+import { NextResponse, type NextRequest } from "next/server";
+import createNextIntlMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing'; // Provides locales, defaultLocale, etc.
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { getSubdomainFromHost } from '@/lib/utils';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-const nextIntlMiddleware = createMiddleware(routing);
+const nextIntl = createNextIntlMiddleware(routing);
 
-const ROOT_DOMAIN = 'baoan.jp';
-const W_ROOT_DOMAIN = 'www.baoan.jp';
-const jwtSecretEnv = process.env.JWT_SECRET;
-if (!jwtSecretEnv) {
-  throw new Error("JWT_SECRET environment variable is not set.");
-}
-const JWT_SECRET = new TextEncoder().encode(jwtSecretEnv); // Must be a Uint8Array
+const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'baoan.jp';
+// const W_ROOT_DOMAIN = `www.${ROOT_DOMAIN}`; // Not used in the current logic
 
-function extractSubdomain(request: NextRequest): string | null {
-  const host = request.headers.get('host') || '';
-  const hostname = host.split(':')[0];
-  const url = request.url;
-
-  // Local development environment
-  if (url.includes('localhost') || url.includes('127.0.0.1')) {
-    // Try to extract subdomain from the full URL
-    const fullUrlMatch = url.match(/http:\/\/([^.]+)\.localhost/);
-    if (fullUrlMatch && fullUrlMatch[1]) {
-      return fullUrlMatch[1];
+// This function is adapted from the core logic of the previous web/lib/supabase/middleware.ts
+// It will handle Supabase session, RLS, and initial auth check.
+async function handleSupabaseAndRls(
+  request: NextRequest,
+  response: NextResponse // Pass the response to set cookies on
+) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          response.cookies.set({ name, value: '', ...options });
+        },
+      },
     }
+  );
 
-    // Fallback to host header approach
-    if (hostname.includes('.localhost')) {
-      return hostname.split('.')[0];
+  // IMPORTANT: supabase.auth.getUser() MUST be called to refresh the session
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // RLS context setting for anonymous users (public restaurant pages)
+  const host = request.headers.get("host") || request.nextUrl.host;
+  const subdomainForRls = getSubdomainFromHost(host); // Using your existing util
+
+  if (subdomainForRls && subdomainForRls !== 'www' && !request.nextUrl.pathname.startsWith('/api/auth')) {
+    try {
+      // Use supabaseAdmin for this lookup as it might need to bypass RLS
+      // or if the anon key doesn't have direct access to 'restaurants' table for this purpose.
+      const { data: restaurant, error: restaurantError } = await supabaseAdmin
+        .from('restaurants')
+        .select('id')
+        .eq('subdomain', subdomainForRls)
+        .single();
+
+      if (restaurantError) {
+        console.warn(`Middleware: Error fetching restaurant ID for RLS (subdomain ${subdomainForRls}): ${restaurantError.message}`);
+      } else if (restaurant && restaurant.id) {
+        // Use the regular 'supabase' client (with user's context or anon context) to call the RPC
+        const { error: rpcError } = await supabase.rpc('set_current_restaurant_id_for_session', {
+          restaurant_id_value: restaurant.id,
+        });
+        if (rpcError) {
+          console.error(`Middleware: Error setting app.current_restaurant_id for ${restaurant.id} via RPC: ${rpcError.message}`);
+        }
+      }
+    } catch (e: any) {
+      console.error('Middleware: Exception while setting RLS restaurant context:', e.message);
     }
-
-    return null;
   }
-
-  // Handle preview deployment URLs (tenant---branch-name.vercel.app)
-  if (hostname.includes('---') && hostname.endsWith('.vercel.app')) {
-    const parts = hostname.split('---');
-    return parts.length > 0 ? parts[0] : null;
-  }
-
-  // Regular subdomain detection for production
-  if (host === ROOT_DOMAIN || host === W_ROOT_DOMAIN) {
-    return null;
-  }
-
-  const parts = host.split(".");
-  const isSubdomain = parts.length > 2 && `${parts[parts.length-2]}.${parts[parts.length-1]}` === ROOT_DOMAIN;
-  return isSubdomain ? parts[0] : null;
+  return { user, response }; // response is modified with cookies
 }
+
 
 export async function middleware(req: NextRequest) {
-  const subdomain = extractSubdomain(req);
-  const pathname = req.nextUrl.pathname;
-  const isDashboardRoute = pathname.startsWith('/dashboard');
-  const isLoginPage = pathname.startsWith('/login');
-  const isSignupPage = pathname.startsWith('/signup');
-  const isForgotPasswordPage = pathname.startsWith('/forgot-password');
+  // Start with a base response. Cookies from Supabase will be added to this.
+  let response = NextResponse.next({
+    request: {
+      headers: new Headers(req.headers), // Clone headers
+    },
+  });
 
-  if (isDashboardRoute) {
-    const cookies = parse(req.headers.get('cookie') || '');
-    const authToken = cookies.auth_token;
+  // 1. Handle Supabase session, RLS, and get user.
+  // This will also set cookies on the `response` object via the `createServerClient` config.
+  const { user: supabaseUser } = await handleSupabaseAndRls(req, response);
 
-    if (!authToken) {
-      const loginUrl = new URL(`/${req.nextUrl.locale}/login`, req.url);
-      return NextResponse.redirect(loginUrl);
+  const { pathname } = req.nextUrl;
+  
+  // 2. API Route Locale Stripping:
+  // Manually detect locale from pathname since req.nextUrl.locale is not populated for API routes
+  let detectedLocale: string | null = null;
+  for (const locale of routing.locales) {
+    if (pathname.startsWith(`/${locale}/`)) {
+      detectedLocale = locale;
+      break;
     }
+  }
 
-    try {
-      // Verify the token
-      const { payload } = await jwtVerify(authToken, JWT_SECRET);
+  // If the path is /<locale>/api/..., rewrite it to /api/...
+  if (detectedLocale && pathname.startsWith(`/${detectedLocale}/api/`)) {
+    const newPathname = pathname.substring(`/${detectedLocale}`.length); // -> /api/...
+    const rewrittenUrl = new URL(newPathname, req.url);
+    
+    const apiRewriteResponse = NextResponse.rewrite(rewrittenUrl, {
+        request: { headers: req.headers } // Pass original request headers to the rewrite operation
+    });
 
-      // Optionally, attach user/restaurant info to request headers for server components
-      // req.headers.set('x-user-id', payload.userId as string);
-      // req.headers.set('x-restaurant-id', payload.restaurantId as string);
-      // req.headers.set('x-restaurant-subdomain', payload.subdomain as string);
-
-    } catch (error) {
-      console.error('JWT verification failed:', error);
-      // Invalid token, redirect to login page
-      const loginUrl = new URL(`/${req.nextUrl.locale}/login`, req.url);
-      return NextResponse.redirect(loginUrl);
-    }
-  } else if (isLoginPage || isSignupPage || isForgotPasswordPage) {
-    // If user is already logged in (has a token) and tries to access login/signup, redirect to dashboard
-    const cookies = parse(req.headers.get('cookie') || '');
-    const authToken = cookies.auth_token;
-    if (authToken) {
-      try {
-        const { payload } = await jwtVerify(authToken, JWT_SECRET);
-        const userSubdomain = payload.subdomain as string;
-        if (userSubdomain) {
-          const dashboardUrl = new URL(`https://${userSubdomain}.baoan.jp/${req.nextUrl.locale}/dashboard`);
-          return NextResponse.redirect(dashboardUrl);
+    // Transfer cookies from `response` (modified by Supabase) to `apiRewriteResponse`
+    response.cookies.getAll().forEach(cookie => {
+        apiRewriteResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    // Transfer other headers set by `handleSupabaseAndRls` or other initial logic
+    response.headers.forEach((value, key) => {
+        if (!apiRewriteResponse.headers.has(key)) { // Avoid overwriting essential rewrite headers
+            apiRewriteResponse.headers.set(key, value);
         }
-      } catch (error) {
-        // Token invalid, allow access to login/signup
-        console.warn('Invalid token on login/signup page, allowing access.');
-      }
+    });
+    return apiRewriteResponse; // Return for API routes, skipping further i18n page processing
+  }
+
+  // 3. If not an API route that was rewritten, apply next-intl middleware for pages.
+  const i18nResponse = nextIntl(req); // This may redirect or rewrite for page internationalization
+
+  // 4. Merge Supabase state (from `response`) with `i18nResponse`.
+  // If i18n redirects (e.g., for locale prefix addition for pages), its response takes precedence.
+  // Cookies from `response` (Supabase) need to be added to this redirect.
+  if (i18nResponse.headers.get('location')) {
+    response.cookies.getAll().forEach(cookie => {
+        i18nResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    response.headers.forEach((value, key) => {
+        // Avoid overwriting essential headers from i18nResponse like 'location' or 'content-type'
+        if (!i18nResponse.headers.has(key) && key.toLowerCase() !== 'location' && key.toLowerCase() !== 'content-type') {
+            i18nResponse.headers.set(key, value);
+        }
+    });
+    return i18nResponse;
+  }
+
+  // If i18n didn't redirect, it might have rewritten the URL or just passed through (NextResponse.next()).
+  // The `i18nResponse` is now the primary response. Ensure Supabase cookies/headers are on it.
+  response.cookies.getAll().forEach(cookie => {
+    if (!i18nResponse.cookies.has(cookie.name)) { // Avoid overriding i18n cookies if any
+        i18nResponse.cookies.set(cookie);
+    }
+  });
+  response.headers.forEach((value, key) => {
+    if (!i18nResponse.headers.has(key)) {
+        i18nResponse.headers.set(key, value);
+    }
+  });
+  
+  // The `i18nResponse` is now the one to continue with, assign it back to `response`.
+  response = i18nResponse;
+
+  // 5. Apply remaining logic (auth checks, redirects) using the correctly processed state.
+  // Determine current pathname and locale *after* i18n processing.
+  // `req.nextUrl.locale` should be updated by `nextIntl` if it performed locale detection/rewriting.
+  // `req.nextUrl.pathname` will also reflect changes if `nextIntl` rewrote the path (e.g. default locale prefix).
+  const currentLocaleForLogic = req.nextUrl.locale || routing.defaultLocale;
+  let currentPathnameForLogic = req.nextUrl.pathname;
+
+  // If `response` is a rewrite from `nextIntl` (not a redirect), its 'x-middleware-rewrite' header has the new URL.
+  const i18nRewriteHeader = response.headers.get('x-middleware-rewrite');
+  if (i18nRewriteHeader) {
+    currentPathnameForLogic = new URL(i18nRewriteHeader).pathname;
+  }
+  
+  // Dashboard protection
+  if (currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/dashboard(/.*)?$`))) {
+    if (!supabaseUser) {
+      const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
-  // If no subdomain, allow visit: signup, login, landing pages
-  if (!subdomain) {
-    return nextIntlMiddleware(req);
+  // Redirect logged-in users from login/signup/forgot-password pages
+  const authPagePatterns = [
+    new RegExp(`^/${currentLocaleForLogic}/login$`),
+    new RegExp(`^/${currentLocaleForLogic}/signup$`),
+    new RegExp(`^/${currentLocaleForLogic}/forgot-password$`),
+  ];
+  if (supabaseUser && authPagePatterns.some(p => p.test(currentPathnameForLogic))) {
+    const defaultDashboardPath = `/${currentLocaleForLogic}/dashboard`;
+    return NextResponse.redirect(new URL(defaultDashboardPath, req.url));
   }
 
-  // Validate subdomain
-  const apiCheckUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}/api/v1/restaurant/exists?subdomain=${subdomain}`;
-  try {
-    const res = await fetch(apiCheckUrl);
-    const { exists } = await res.json();
+  // Subdomain specific logic
+  const host = req.headers.get("host") || req.nextUrl.host;
+  const subdomain = getSubdomainFromHost(host);
 
-    if (!exists) {
-      // Redirect to the root domain's 404 page
-      return NextResponse.redirect(new URL(`https://${ROOT_DOMAIN}/404`));
+  if (subdomain && subdomain !== 'www') {
+    // Block access to /admin on subdomains
+    if (currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/admin(/.*)?$`))) {
+      return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/`, req.url)); // Redirect to subdomain's homepage
     }
-
-    // Block access to admin pages from subdomains
-    if (req.nextUrl.pathname.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
-
-    // Attach subdomain to searchParams so downstream can read it
-    req.nextUrl.searchParams.set("restaurant", subdomain);
-
-    // Continue with next-intl middleware
-    return nextIntlMiddleware(req);
-  } catch (error) {
-    console.error('Error validating subdomain:', error);
-    return NextResponse.redirect(new URL(`https://${ROOT_DOMAIN}/500`));
   }
+
+  return response; // Return the final response
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|static|favicon.ico|.*\\..*).*)"], // Exclude static assets and files with extensions
+  matcher: [
+    // Adjusted to include API routes for RLS context, but exclude _next, static, favicon, files with extensions
+    '/((?!_next/static|_next/image|favicon.ico|.*\\\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 };

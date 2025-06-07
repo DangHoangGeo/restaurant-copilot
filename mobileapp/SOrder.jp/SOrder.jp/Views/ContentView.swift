@@ -26,11 +26,13 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
-            VStack {
+            Group {
                 if !authViewModel.isAuthenticated {
                     OnboardingLoginView()
+                        .padding()
                 } else {
                     mainAppView
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 Spacer()
             }
@@ -74,7 +76,7 @@ struct ContentView: View {
         TabView {
             // Conditional TabView content based on the user's role from JWT.
             // Assuming "owner_admin" and "customer" are the role strings from JWT.
-            if authViewModel.userRole == "owner_admin" { // Updated to use userRole from JWT
+            if authViewModel.userRole == "owner" { // Updated to use userRole from JWT
                 // MARK: Owner/Admin Tabs
                 OrderListView() // Removed orderService parameter
                     .tabItem {
@@ -132,24 +134,5 @@ struct ContentView: View {
         .environmentObject(authViewModel)
         .environmentObject(tenantViewModel)
         .environmentObject(orderService)
-    }
-}
-
-// MARK: - Previews
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        let mockAuthModel = AuthenticationViewModel(orderService: OrderService())
-        // mockAuthModel.userRole = "owner_admin" // For admin preview
-        // mockAuthModel.isAuthenticated = true
-
-        return ContentView()
-            .environmentObject(TenantViewModel())
-            .environmentObject(mockAuthModel) // Use the one with OrderService injected
-            .environmentObject(OrderService()) // Or better, use the same OrderService instance:
-                                                // .environmentObject(mockAuthModel.orderService) - if orderService is public
-                                                // For simplicity here, a new one is fine for preview if OrderService init is light.
-                                                // However, the one from authViewModel is preferred if orderService needs auth details.
-                                                // Let's assume OrderService() is fine for a generic preview.
     }
 }

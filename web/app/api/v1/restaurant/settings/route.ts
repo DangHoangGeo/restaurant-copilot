@@ -89,7 +89,8 @@ export async function GET() {
 export async function PATCH(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
-
+  console.log("User from request:", user);
+  console.log("User restaurantId:", user?.restaurantId);
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: "Unauthorized: Missing user or restaurant ID" }, { status: 401 });
   }
