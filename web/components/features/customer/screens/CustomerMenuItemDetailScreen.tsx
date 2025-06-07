@@ -4,7 +4,7 @@ import { ChevronLeft, PlusCircle, MinusCircle } from "lucide-react"; // Added Mi
 import { useCart } from "../CartContext";
 import { getLocalizedText, useGetCurrentLocale } from "@/lib/customerUtils";
 import type { MenuItemDetailViewProps, ViewType, ViewProps } from "./types";
-import type { RestaurantSettings, MenuItem } from "@/shared/types/customer"; // Corrected import path
+import type { RestaurantSettings } from "@/shared/types/customer"; // Corrected import path
 import { useTranslations } from "next-intl";
 
 interface CustomerMenuItemDetailScreenProps {
