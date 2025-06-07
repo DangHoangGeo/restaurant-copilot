@@ -10,16 +10,15 @@ import { useTranslations } from "next-intl";
 interface CustomerMenuItemDetailScreenProps {
   setView: (view: ViewType, props?: ViewProps) => void;
   viewProps: MenuItemDetailViewProps;
-  restaurantSettings: RestaurantSettings; // Added this prop
+  restaurantSettings?: RestaurantSettings; // Added this prop
 }
 
 const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> = ({
   setView,
   viewProps,
-  restaurantSettings, // Added this prop
 }) => {
   const { item, canAddItems, tableId, sessionId, tableNumber } = viewProps;
-  const { addToCart, updateQuantity, getQuantityInCart, removeFromCart } = useCart(); // Added removeFromCart
+  const { addToCart, updateQuantity, getQuantityInCart, removeFromCart } = useCart();
   const t = useTranslations('Customer');
   const locale = useGetCurrentLocale();
   const [showAddedMessage, setShowAddedMessage] = useState(false); // Added state

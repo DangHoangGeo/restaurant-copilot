@@ -79,9 +79,9 @@ export function FoodCard({
       animate={isAdding ? { scale: 1.05 } : { scale: 1 }}
     >
       <div className="flex flex-col group"> {/* Added group class here */}
-        <Card className={`flex flex-col p-2 ${!canAddItems ? 'opacity-75' : ''}`}>
+        <Card className={`flex flex-col pt-0 pb-1 ${!canAddItems ? 'opacity-75' : ''} overflow-hidden`}>
           <div
-            className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors duration-150 ease-in-out overflow-hidden" // Added hover effects, rounding and overflow
+            className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150 ease-in-out" // Removed rounded-lg and overflow-hidden
             onClick={() => setView("menuitemdetail", { item, tableId, sessionId, tableNumber, canAddItems })}
           >
             {/* Image container now has overflow-hidden, image itself is rounded-t-2xl if not full card click area */}
@@ -94,10 +94,10 @@ export function FoodCard({
                 item as unknown as Record<string, unknown>,
                 locale,
               )}
-              className="w-full h-40 object-cover rounded-t-lg group-hover:scale-105 transform transition-transform duration-150 ease-in-out" // Added image hover effect and adjusted rounding
+              className="w-full h-40 object-cover group-hover:scale-105 transform transition-transform duration-150 ease-in-out" // Removed rounded-t-lg
               loading="lazy"
             />
-            <div className="flex-grow p-3"> {/* Increased padding for better spacing with hover bg */}
+            <div className="flex-grow p-2"> {/* Changed p-1 to p-2 for better spacing with hover bg */}
               <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">
                 {getLocalizedText(
                   item as unknown as Record<string, unknown>,
@@ -111,12 +111,10 @@ export function FoodCard({
               />
             </div>
           </div>
-          <div className="flex justify-between items-center mt-3 px-1"> {/* Added some padding for content within clickable area */}
+          <div className="flex justify-between items-center p-2"> {/* Changed px-1 to p-2 for content within clickable area */}
             <p className="text-lg font-bold" style={{ color: brandColor }}>
               {t("currency_format", { value: item.price })}
             </p>
-              size="sm"
-            />
             {/* Price and buttons are outside the clickable div */}
             {canAddItems ? (
               qtyInCart > 0 ? (

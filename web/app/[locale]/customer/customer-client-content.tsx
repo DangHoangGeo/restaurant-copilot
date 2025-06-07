@@ -11,7 +11,6 @@ import { CustomerLayout } from "@/components/features/customer/CustomerLayout";
 
 // Screens
 import { CustomerMenuScreen } from "@/components/features/customer/screens/CustomerMenuScreen";
-import { CustomerMenuItemDetailScreen } from "@/components/features/customer/screens/CustomerMenuItemDetailScreen"; // Added import
 import { ReviewOrderScreen } from "@/components/features/customer/screens/ReviewOrderScreen";
 import { OrderPlacedScreen } from "@/components/features/customer/screens/OrderPlacedScreen";
 import { ThankYouScreen } from "@/components/features/customer/screens/ThankYouScreen";
@@ -32,6 +31,7 @@ import {
   MenuItemDetailViewProps, // Added import
   SessionData // Import SessionData
 } from "@/components/features/customer/screens/types"; // Updated imports
+import CustomerMenuItemDetailScreen from "@/components/features/customer/screens/CustomerMenuItemDetailScreen";
 
 // Define FEATURE_FLAGS locally or import from a central config.
 // These will be passed down to relevant components.

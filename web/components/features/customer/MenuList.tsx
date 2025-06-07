@@ -142,10 +142,9 @@ export function MenuList({
             </button>
           )}
         </div>
-        <CategoryTabs {/* Added mt-3 to space it from the search bar */}
+        <CategoryTabs
           categories={categories}
           onSelect={setActive}
-          className="mt-3"
           locale={locale}
           activeId={active}
         />
