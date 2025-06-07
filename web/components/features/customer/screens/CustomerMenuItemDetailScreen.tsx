@@ -46,7 +46,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
   };
 
   // Placeholder for image if item.image_url is not available
-  const imageUrl = item.image_url || `https://via.placeholder.com/400x300.png?text=${encodeURIComponent(getLocalizedText(item.name, locale))}`;
+  const imageUrl = item.image_url || `https://via.placeholder.com/400x300.png?text=${encodeURIComponent(getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale))}`;
 
   return (
     <div className="container mx-auto p-4 max-w-lg">
@@ -63,13 +63,13 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
         <img
           src={imageUrl}
-          alt={getLocalizedText(item.name, locale)}
+          alt={getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale)}
           className="w-full h-64 object-cover"
         />
 
         <div className="p-6">
           <h1 className="text-3xl font-bold mb-3">
-            {getLocalizedText(item, locale)}
+            {getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale)}
           </h1>
 
           <p className="text-gray-600 mb-4 text-sm">
@@ -123,7 +123,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
           )}
           {showAddedMessage && ( // Message display relies solely on showAddedMessage state
             <div className="mt-4 text-center text-green-600 font-semibold text-sm py-2 px-3 bg-green-50 rounded-md border border-green-200">
-              {t('menu_item_detail_added_to_cart_msg', { itemName: getLocalizedText(item, locale) })}
+              {t('menu_item_detail_added_to_cart_msg', { itemName: getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale) })}
             </div>
           )}
         </div>

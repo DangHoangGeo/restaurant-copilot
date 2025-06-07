@@ -1,5 +1,6 @@
+import { MenuItem } from "@/shared/types/customer";
 import type { CartItem } from "../CartContext"; // Assuming CartContext.ts is in the parent directory
-import type { MenuItem } from "web/shared/types/customer";
+
 
 export interface OrderItemDetail {
   itemId: string;
