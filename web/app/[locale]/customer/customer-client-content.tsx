@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks, @next/next/no-img-element */
 
 import React, { useState, ReactNode, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 // Context
 import { CartProvider } from "@/components/features/customer/CartContext";
@@ -17,6 +18,9 @@ import { ThankYouScreen } from "@/components/features/customer/screens/ThankYouS
 import { ReviewScreen } from "@/components/features/customer/screens/ReviewScreen";
 import { BookingScreen } from "@/components/features/customer/screens/BookingScreen";
 import { OrderHistoryScreen } from "@/components/features/customer/screens/OrderHistoryScreen";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 // Types
 import type { RestaurantSettings, Category, TableInfo } from "@/shared/types/customer";
@@ -57,14 +61,18 @@ export function CustomerClientContent({
   tableId,
   sessionData,
 }: CustomerClientContentProps) {
+  const t = useTranslations("Customer");
   const [view, setViewState] = useState<ViewType>("menu"); // Use ViewType
   const [viewProps, setViewProps] = useState<ViewProps>({ // Use ViewProps union type
-    tableId, 
+    tableId,
     sessionId: sessionData.sessionId,
     tableNumber: sessionData.tableNumber,
     canAddItems: sessionData.canAddItems,
+    guestCount: sessionData.guestCount,
     orderId: sessionData.orderId, // Initialize with orderId from sessionData
-  }); 
+  });
+  const [guestCount, setGuestCount] = useState<number>(sessionData.guestCount || 1);
+  const [showGuestDialog, setShowGuestDialog] = useState<boolean>(!!tableId && sessionData.sessionStatus === 'new' && !sessionData.sessionId);
 
   // Store session data in localStorage when valid and sync with server
   useEffect(() => {
@@ -125,9 +133,32 @@ export function CustomerClientContent({
   }, [sessionData.sessionStatus]);
 
   const setView = (v: ViewType, props: ViewProps = {}) => { // Use ViewType and ViewProps
-    setViewState(v); 
+    setViewState(v);
     setViewProps(prev => ({ ...prev, ...props })); // Merge props carefully
     window.scrollTo(0, 0);
+  };
+
+  const startSession = async () => {
+    if (!tableId) return;
+    try {
+      const res = await fetch(`/api/v1/sessions/create?tableId=${tableId}&guests=${guestCount}`);
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem("sessionId", data.sessionId);
+        setViewProps(prev => ({
+          ...prev,
+          sessionId: data.sessionId,
+          tableNumber: data.tableNumber,
+          canAddItems: true,
+          guestCount: data.guestCount,
+        }));
+        setShowGuestDialog(false);
+      } else {
+        alert(data.error || "Failed to start session");
+      }
+    } catch (e) {
+      console.error("session start error", e);
+    }
   };
 
   const layoutFeatureFlags = { aiChat: FEATURE_FLAGS.aiChat };
@@ -301,14 +332,31 @@ export function CustomerClientContent({
   }
 
   return (
-    <CartProvider>
-      <CustomerLayout
-        setView={setView}
-        restaurantSettings={restaurantSettings}
-        featureFlags={layoutFeatureFlags}
-      >
-        {ScreenComponent}
-      </CustomerLayout>
-    </CartProvider>
+    <>
+      <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t("guest_dialog.title")}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <Input type="number" min={1} value={guestCount} onChange={(e) => setGuestCount(parseInt(e.target.value))} />
+          </div>
+          <DialogFooter>
+            <Button onClick={startSession} className="w-full" style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}>
+              {t("guest_dialog.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <CartProvider>
+        <CustomerLayout
+          setView={setView}
+          restaurantSettings={restaurantSettings}
+          featureFlags={layoutFeatureFlags}
+        >
+          {ScreenComponent}
+        </CustomerLayout>
+      </CartProvider>
+    </>
   );
 }

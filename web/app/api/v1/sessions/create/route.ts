@@ -7,6 +7,8 @@ import { randomUUID } from "crypto";
 export async function GET(req: NextRequest) {
   try {
     const tableId = req.nextUrl.searchParams.get("tableId");
+    const guestsParam = req.nextUrl.searchParams.get("guests");
+    const guestCount = guestsParam ? Math.max(parseInt(guestsParam, 10), 1) : 1;
     console.log('GET create session for tableId:', tableId);
     if (!tableId) {
       return NextResponse.json({ success: false, error: "Table ID is required" }, { status: 400 });
@@ -37,7 +39,7 @@ export async function GET(req: NextRequest) {
     // Check if there's already an active session for this table
     const { data: existingOrder } = await supabaseAdmin
       .from("orders")
-      .select("session_id, status, id")
+      .select("session_id, status, id, guest_count")
       .eq("table_id", tableId)
       .eq("restaurant_id", restaurantId)
       .neq("status", "completed") // Exclude completed orders
@@ -55,7 +57,8 @@ export async function GET(req: NextRequest) {
         sessionId: existingOrder.session_id, 
         tableNumber: table.name,
         isNewSession: false,
-        orderId: existingOrder.id
+        orderId: existingOrder.id,
+        guestCount: existingOrder.guest_count
       });
     }
 
@@ -70,9 +73,10 @@ export async function GET(req: NextRequest) {
         table_id: tableId,
         session_id: sessionId,
         status: "new",
-        total_amount: 0
+        total_amount: 0,
+        guest_count: guestCount
       }])
-      .select("id, session_id")
+      .select("id, session_id, guest_count")
       .single();
 
     if (orderError || !newOrder) {
@@ -86,7 +90,8 @@ export async function GET(req: NextRequest) {
       sessionId: newOrder.session_id, 
       tableNumber: table.name,
       isNewSession: true,
-      orderId: newOrder.id
+      orderId: newOrder.id,
+      guestCount: newOrder.guest_count
     });
 
   } catch (error) {

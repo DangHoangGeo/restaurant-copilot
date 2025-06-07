@@ -16,6 +16,7 @@ export interface MenuViewProps {
   sessionId?: string;
   tableNumber?: string;
   canAddItems?: boolean;
+  guestCount?: number;
   // Props that might be passed when navigating to menu, e.g., from ThankYouScreen or OrderHistoryScreen
   orderId?: string;
   items?: OrderItemDetail[];
@@ -99,4 +100,5 @@ export interface SessionData {
   canAddItems: boolean;
   orderId?: string;
   isNewSession?: boolean;
+  guestCount?: number;
 }
