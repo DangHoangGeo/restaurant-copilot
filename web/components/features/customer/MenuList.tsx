@@ -20,10 +20,11 @@ interface Props {
   searchPlaceholder: string;
   locale: string;
   addToCart: (item: FoodItem) => void;
-  updateQty: (id: string, qty: number) => void;
+  updateQty?: (id: string, qty: number) => void;
   getQty: (id: string) => number;
   brandColor: string;
   recommended?: FoodItem[];
+  canAddItems?: boolean;
 }
 
 export function MenuList({
@@ -35,6 +36,7 @@ export function MenuList({
   getQty,
   brandColor,
   recommended = [],
+  canAddItems = true,
 }: Props) {
   const [search, setSearch] = useState("");
   const t = useTranslations("Customer");
@@ -97,6 +99,18 @@ export function MenuList({
       .slice(0, 5);
   }, [categories]);
 
+  const handleAddToCart = (item: FoodItem) => {
+    if (canAddItems) {
+      addToCart(item);
+    }
+  };
+
+  const handleUpdateQuantity = (id: string, qty: number) => {
+    if (canAddItems && updateQty) {
+      updateQty(id, qty);
+    }
+  };
+
   return (
     <div>
       <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 pb-3">
@@ -124,16 +138,17 @@ export function MenuList({
             {popularItems.map((item) => (
               <div key={item.id} className="w-40 flex-shrink-0">
                 <motion.div
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={canAddItems ? { scale: 0.95 } : {}}
                 >
                   <FoodCard
                     item={item}
                     qtyInCart={getQty(item.id)}
-                    onAdd={() => addToCart(item)}
-                    onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
-                    onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
+                    onAdd={() => handleAddToCart(item)}
+                    onDecrease={() => handleUpdateQuantity(item.id, getQty(item.id) - 1)}
+                    onIncrease={() => handleUpdateQuantity(item.id, getQty(item.id) + 1)}
                     brandColor={brandColor}
                     locale={locale}
+                    canAddItems={canAddItems}
                   />
                 </motion.div>
               </div>
@@ -151,16 +166,17 @@ export function MenuList({
             {recommended.map((item) => (
               <div key={item.id} className="w-40 flex-shrink-0">
                 <motion.div
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={canAddItems ? { scale: 0.95 } : {}}
                 >
                   <FoodCard
                     item={item}
                     qtyInCart={getQty(item.id)}
-                    onAdd={() => addToCart(item)}
-                    onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
-                    onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
+                    onAdd={() => handleAddToCart(item)}
+                    onDecrease={() => handleUpdateQuantity(item.id, getQty(item.id) - 1)}
+                    onIncrease={() => handleUpdateQuantity(item.id, getQty(item.id) + 1)}
                     brandColor={brandColor}
                     locale={locale}
+                    canAddItems={canAddItems}
                   />
                 </motion.div>
               </div>
@@ -184,16 +200,17 @@ export function MenuList({
             {cat.menu_items.map((item) => (
               <div key={item.id} className="w-40 flex-shrink-0">
                 <motion.div
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={canAddItems ? { scale: 0.95 } : {}}
                 >
                   <FoodCard
                     item={item}
                     qtyInCart={getQty(item.id)}
-                    onAdd={() => addToCart(item)}
-                    onDecrease={() => updateQty(item.id, getQty(item.id) - 1)}
-                    onIncrease={() => updateQty(item.id, getQty(item.id) + 1)}
+                    onAdd={() => handleAddToCart(item)}
+                    onDecrease={() => handleUpdateQuantity(item.id, getQty(item.id) - 1)}
+                    onIncrease={() => handleUpdateQuantity(item.id, getQty(item.id) + 1)}
                     brandColor={brandColor}
                     locale={locale}
+                    canAddItems={canAddItems}
                   />
                 </motion.div>
               </div>

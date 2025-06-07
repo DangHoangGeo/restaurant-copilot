@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks, @next/next/no-img-element */
 
-import React, { useState, ReactNode } from "react";
+import React, { useState, ReactNode, useEffect } from "react";
 
 // Context
 import { CartProvider } from "@/components/features/customer/CartContext";
@@ -29,11 +29,19 @@ const FEATURE_FLAGS = {
   advancedReviews: true,
 };
 
+interface SessionData {
+  sessionId?: string;
+  tableNumber?: string;
+  sessionStatus: 'valid' | 'expired' | 'invalid' | 'new';
+  canAddItems: boolean;
+}
+
 interface CustomerClientContentProps {
   restaurantSettings: RestaurantSettings;
   categories: Category[];
   tables: TableInfo[];
   tableId?: string;
+  sessionData: SessionData;
 }
 
 export function CustomerClientContent({
@@ -41,15 +49,37 @@ export function CustomerClientContent({
   categories,
   tables,
   tableId,
+  sessionData,
 }: CustomerClientContentProps) {
   const [view, setViewState] = useState<
-    "menu" | "checkout" | "orderplaced" | "thankyou" | "review" | "booking" | "admin"
+    "menu" | "checkout" | "orderplaced" | "thankyou" | "review" | "booking" | "admin" | "expired" | "invalid"
   >("menu");
-  const [viewProps, setViewProps] = useState<any>({ tableId }); 
+  const [viewProps, setViewProps] = useState<any>({ 
+    tableId, 
+    sessionId: sessionData.sessionId,
+    tableNumber: sessionData.tableNumber,
+    canAddItems: sessionData.canAddItems
+  }); 
+
+  // Store session data in localStorage when valid
+  useEffect(() => {
+    if (sessionData.sessionId) {
+      localStorage.setItem("sessionId", sessionData.sessionId);
+      localStorage.setItem("tableId", tableId || "");
+      localStorage.setItem("tableNumber", sessionData.tableNumber || "");
+    }
+  }, [sessionData.sessionId, tableId, sessionData.tableNumber]);
+
+  // Handle session status on mount
+  useEffect(() => {
+    if (sessionData.sessionStatus === 'expired' || sessionData.sessionStatus === 'invalid') {
+      setViewState(sessionData.sessionStatus);
+    }
+  }, [sessionData.sessionStatus]);
 
   const setView = (v: string, props: any = {}) => {
     setViewState(v as any); 
-    setViewProps(props);
+    setViewProps({ ...viewProps, ...props });
     window.scrollTo(0, 0);
   };
 
@@ -62,91 +92,130 @@ export function CustomerClientContent({
 
   let ScreenComponent: ReactNode | null = null;
 
-  switch (view) {
-    case "menu":
-      ScreenComponent = (
-        <CustomerMenuScreen
-          setView={setView}
-          restaurantSettings={restaurantSettings}
-          viewProps={viewProps}
-          categories={categories}
-          featureFlags={menuScreenFeatureFlags}
-        />
-      );
-      break;
-    case "checkout":
-      ScreenComponent = (
-        <ReviewOrderScreen
-          setView={setView}
-          restaurantSettings={restaurantSettings}
-          viewProps={viewProps}
-          featureFlags={reviewOrderScreenFeatureFlags}
-        />
-      );
-      break;
-    case "orderplaced":
-      ScreenComponent = (
-        <OrderPlacedScreen
-          setView={setView}
-          restaurantSettings={restaurantSettings}
-          viewProps={viewProps}
-        />
-      );
-      break;
-    case "thankyou":
-      ScreenComponent = (
-        <ThankYouScreen
-          setView={setView}
-          restaurantSettings={restaurantSettings}
-          viewProps={viewProps}
-          featureFlags={thankYouScreenFeatureFlags}
-        />
-      );
-      break;
-    case "review":
-      ScreenComponent = (
-        <ReviewScreen
-          setView={setView}
-          restaurantSettings={restaurantSettings}
-          viewProps={viewProps}
-          featureFlags={reviewScreenFeatureFlags}
-        />
-      );
-      break;
-    case "booking":
-      ScreenComponent = (
-        <BookingScreen
-          setView={setView}
-          restaurantSettings={restaurantSettings}
-          tables={tables}
-          categories={categories}
-          featureFlags={bookingScreenFeatureFlags}
-          // viewProps could be passed if booking is initiated with specific context
-        />
-      );
-      break;
-    case "admin":
-      // This case implies that CustomerLayout's "admin" button click is handled by setView.
-      // If "admin" is a separate page/route, CustomerLayout should navigate directly.
-      // If it's a view within this component, an AdminScreen would be rendered.
-      // For now, assuming CustomerLayout handles the navigation for "admin".
-      ScreenComponent = <p>Redirecting to admin panel...</p>; // Placeholder
-      // Or, if admin is a view managed here:
-      // import AdminScreen from "...";
-      // ScreenComponent = <AdminScreen setView={setView} ... />;
-      break;
-    default:
-      // Fallback to menu for any unknown view state
-      ScreenComponent = (
-        <CustomerMenuScreen
-          setView={setView}
-          restaurantSettings={restaurantSettings}
-          viewProps={{ tableId }} // Reset to initial props
-          categories={categories}
-          featureFlags={menuScreenFeatureFlags}
-        />
-      );
-      console.warn("Unknown view state, defaulting to menu:", view);
+  // Handle session expired or invalid states
+  if (view === "expired") {
+    ScreenComponent = (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4 text-red-600">Session Expired</h1>
+          <p className="text-gray-600 mb-6">
+            Your order session has been completed or expired. Thank you for your visit!
+          </p>
+          <p className="text-sm text-gray-500">
+            To place a new order, please scan the QR code on your table again.
+          </p>
+        </div>
+      </div>
+    );
+  } else if (view === "invalid") {
+    ScreenComponent = (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4 text-red-600">Invalid Table</h1>
+          <p className="text-gray-600 mb-6">
+            The table ID is invalid or doesn't belong to this restaurant.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please scan a valid QR code from a table at this restaurant.
+          </p>
+          {/* Allow viewing menu without ordering capability */}
+          <button 
+            onClick={() => setView("menu", { canAddItems: false })}
+            className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+          >
+            View Menu Only
+          </button>
+        </div>
+      </div>
+    );
+  } else {
+    // Normal flow screens
+    switch (view) {
+      case "menu":
+        ScreenComponent = (
+          <CustomerMenuScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps}
+            categories={categories}
+            featureFlags={menuScreenFeatureFlags}
+          />
+        );
+        break;
+      case "checkout":
+        ScreenComponent = (
+          <ReviewOrderScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps}
+            featureFlags={reviewOrderScreenFeatureFlags}
+          />
+        );
+        break;
+      case "orderplaced":
+        ScreenComponent = (
+          <OrderPlacedScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps}
+          />
+        );
+        break;
+      case "thankyou":
+        ScreenComponent = (
+          <ThankYouScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps}
+            featureFlags={thankYouScreenFeatureFlags}
+          />
+        );
+        break;
+      case "review":
+        ScreenComponent = (
+          <ReviewScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps}
+            featureFlags={reviewScreenFeatureFlags}
+          />
+        );
+        break;
+      case "booking":
+        ScreenComponent = (
+          <BookingScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            tables={tables}
+            categories={categories}
+            featureFlags={bookingScreenFeatureFlags}
+            // viewProps could be passed if booking is initiated with specific context
+          />
+        );
+        break;
+      case "admin":
+        // This case implies that CustomerLayout's "admin" button click is handled by setView.
+        // If "admin" is a separate page/route, CustomerLayout should navigate directly.
+        // If it's a view within this component, an AdminScreen would be rendered.
+        // For now, assuming CustomerLayout handles the navigation for "admin".
+        ScreenComponent = <p>Redirecting to admin panel...</p>; // Placeholder
+        // Or, if admin is a view managed here:
+        // import AdminScreen from "...";
+        // ScreenComponent = <AdminScreen setView={setView} ... />;
+        break;
+      default:
+        // Fallback to menu for any unknown view state
+        ScreenComponent = (
+          <CustomerMenuScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps} 
+            categories={categories}
+            featureFlags={menuScreenFeatureFlags}
+          />
+        );
+        console.warn("Unknown view state, defaulting to menu:", view);
+    }
   }
 
   return (

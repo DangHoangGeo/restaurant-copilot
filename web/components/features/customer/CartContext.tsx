@@ -5,11 +5,11 @@ import type { MenuItem } from "@/shared/types/customer";
 
 export interface CartItem {
   itemId: string;
-  name: MenuItem; 
+  name: string; // Changed from MenuItem to string
   price: number;
   qty: number;
   imageUrl?: string;
-  description?: MenuItem; 
+  description?: string; // Changed from MenuItem to string
 }
 
 export interface CartContextType {
@@ -26,6 +26,16 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
+  // Helper function to get localized text
+  const getLocalizedName = (item: MenuItem) => {
+    // Try to get current locale from URL or context, fallback to English
+    return item.name_en || item.name_ja || item.name_vi || "Item";
+  };
+
+  const getLocalizedDescription = (item: MenuItem) => {
+    return item.description_en || item.description_ja || item.description_vi || "";
+  };
+
   const addToCart = (item: MenuItem, quantity = 1) => {
     setCart((prev) => {
       const existing = prev.find((ci) => ci.itemId === item.id);
@@ -38,11 +48,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ...prev,
         {
           itemId: item.id,
-          name: item,
+          name: getLocalizedName(item), // Extract localized name as string
           price: item.price,
           qty: quantity,
           imageUrl: item.image_url || undefined,
-          description: item,
+          description: getLocalizedDescription(item), // Extract localized description as string
         },
       ];
     });

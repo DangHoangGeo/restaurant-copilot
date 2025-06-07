@@ -141,7 +141,7 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
   }
   const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'baoan.jp';
   const qrCodeUrl = selectedTableForQr
-    ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/customer/order?tableId=${selectedTableForQr.id}`
+    ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/customer?tableId=${selectedTableForQr.id}`
     : ''
 
   // Helper for status badge color

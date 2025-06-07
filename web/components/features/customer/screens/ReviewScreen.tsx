@@ -2,21 +2,16 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ThumbsUp } from "lucide-react";
+import { Star, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { StarRating } from "@/components/ui/star-rating";
 import type { RestaurantSettings } from "@/shared/types/customer";
 
 interface ReviewScreenProps {
   setView: (v: string, props?: any) => void;
   restaurantSettings: RestaurantSettings;
-  viewProps: {
-    menuItemId: string;
-    menuItemName: string;
-    orderId?: string;
-  };
+  viewProps?: any;
   featureFlags: {
     advancedReviews: boolean;
   };
@@ -26,114 +21,188 @@ export function ReviewScreen({
   setView,
   restaurantSettings,
   viewProps,
-  featureFlags,
 }: ReviewScreenProps) {
   const t = useTranslations("Customer");
-  const { menuItemId, menuItemName, orderId } = viewProps;
   const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!featureFlags.advancedReviews) {
-    setView("menu"); 
-    return <p>Review feature is not available. Redirecting...</p>;
-  }
+  const orderId = viewProps?.orderId;
+  const items = viewProps?.items || [];
+  const currentItemIndex = viewProps?.currentItemIndex || 0;
+  const currentItem = items[currentItemIndex];
 
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitReview = async () => {
     if (rating === 0) {
-      alert(t("review.rating_required_alert"));
+      alert(t("review.rating_required"));
       return;
     }
+
     setIsSubmitting(true);
-    console.log("Submitting review:", { menuItemId, rating, comment, orderId });
-    // Mock API call
-    setTimeout(() => {
-        setSubmitted(true);
-        setIsSubmitting(false);
-    }, 1000);
-    // TODO: Replace with actual API call:
-    // try {
-    //   const response = await fetch('/api/v1/reviews/submit', { /* ... */ });
-    //   // ... handle response
-    // } catch (error) { /* ... handle error */ }
-    // finally { setIsSubmitting(false); }
+    try {
+      const response = await fetch("/api/v1/reviews/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          menuItemId: currentItem.itemId || currentItem.id,
+          orderId,
+          rating,
+          comment: comment.trim() || undefined,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Check if there are more items to review
+        const nextIndex = currentItemIndex + 1;
+        if (nextIndex < items.length) {
+          // Move to next item
+          setRating(0);
+          setComment("");
+          setView("review", {
+            orderId,
+            items,
+            currentItemIndex: nextIndex,
+          });
+        } else {
+          // All items reviewed, go to thank you
+          setView("thankyou", { orderId, items });
+        }
+      } else {
+        alert(data.error || t("review.submission_error"));
+      }
+    } catch (error) {
+      console.error("Review submission error:", error);
+      alert(t("review.submission_error"));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  if (submitted) {
+  const handleSkipReview = () => {
+    const nextIndex = currentItemIndex + 1;
+    if (nextIndex < items.length) {
+      setView("review", {
+        orderId,
+        items,
+        currentItemIndex: nextIndex,
+      });
+    } else {
+      setView("thankyou", { orderId, items });
+    }
+  };
+
+  if (!currentItem) {
     return (
-      <div className="text-center py-12">
-        <ThumbsUp
-          className="mx-auto mb-6 text-green-500 dark:text-green-400"
-          size={64}
-        />
-        <h2 className="text-3xl font-bold mb-3">
-          {t("review.submission_thank_you_title")}
-        </h2>
-        <p className="text-slate-600 dark:text-slate-300 mb-6">
-          {t("review.submission_thank_you_message")}
-        </p>
-        <Button
-          onClick={() => setView("thankyou", viewProps)} // Go back to thank you with original props
-          size="lg"
-          style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
-          className="text-white hover:opacity-90"
-        >
-          {t("thankyou.back_to_menu_button")} {/* Or a more specific "Back to Order" */}
-        </Button>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="max-w-md w-full p-6 text-center">
+          <p>{t("review.no_items")}</p>
+          <Button
+            onClick={() => setView("thankyou", { orderId })}
+            className="mt-4"
+          >
+            {t("review.back_to_thank_you")}
+          </Button>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div>
-      <Button
-        onClick={() => setView("thankyou", viewProps)} 
-        variant="ghost"
-        className="mb-4 -ml-2"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        {t("review.back_to_summary_button") || "Back to Order Summary"}
-      </Button>
-      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
-        {t("review.title")}
-      </h2>
-      <p className="text-center text-lg mb-6 text-slate-600 dark:text-slate-400">
-        {menuItemName}
-      </p>
-      <Card className="max-w-md mx-auto p-4 sm:p-6">
-        <form onSubmit={handleSubmitReview} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-center mb-2">
-              {t("review.rating_label")}
-            </label>
-            <div className="flex justify-center">
-              <StarRating
-                value={rating}
-                size="lg"
-                onRate={setRating}
-              />
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <Card className="max-w-lg w-full p-6">
+        <div className="flex items-center mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setView("thankyou", { orderId, items })}
+            className="mr-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-xl font-bold">
+            {t("review.title")}
+          </h2>
+        </div>
+
+        <div className="mb-6">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold mb-2">
+              {currentItem.name || currentItem.itemName}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {t("review.item_progress", {
+                current: currentItemIndex + 1,
+                total: items.length,
+              })}
+            </p>
+          </div>
+
+          <div className="text-center mb-4">
+            <p className="text-sm text-gray-600 mb-3">
+              {t("review.rating_prompt")}
+            </p>
+            <div className="flex justify-center space-x-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoveredRating(star)}
+                  onMouseLeave={() => setHoveredRating(0)}
+                  className="p-1 transition-colors"
+                >
+                  <Star
+                    className={`h-8 w-8 ${
+                      star <= (hoveredRating || rating)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                </button>
+              ))}
             </div>
           </div>
-          <Textarea
-            name="comment"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={4}
-            placeholder={t("review.comment_placeholder")}
-            className="dark:bg-slate-800 dark:border-slate-700"
-          />
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full text-white hover:opacity-90"
-            style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (t("review.submitting_button") || "Submitting...") : t("review.submit_button")}
-          </Button>
-        </form>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">
+              {t("review.comment_label")} ({t("review.optional")})
+            </label>
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={t("review.comment_placeholder")}
+              rows={3}
+              maxLength={500}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {comment.length}/500 {t("review.characters")}
+            </p>
+          </div>
+
+          <div className="flex space-x-3">
+            <Button
+              variant="outline"
+              onClick={handleSkipReview}
+              className="flex-1"
+              disabled={isSubmitting}
+            >
+              {t("review.skip_button")}
+            </Button>
+            <Button
+              onClick={handleSubmitReview}
+              disabled={rating === 0 || isSubmitting}
+              style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
+              className="flex-1 text-white hover:opacity-90"
+            >
+              {isSubmitting
+                ? t("review.submitting")
+                : currentItemIndex + 1 < items.length
+                ? t("review.next_item")
+                : t("review.submit_button")}
+            </Button>
+          </div>
+        </div>
       </Card>
     </div>
   );

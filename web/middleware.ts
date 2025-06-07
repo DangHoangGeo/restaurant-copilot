@@ -199,7 +199,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Adjusted to include API routes for RLS context, but exclude _next, static, favicon, files with extensions
-    '/((?!_next/static|_next/image|favicon.ico|.*\\\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Skip API routes from i18n processing completely to avoid redirect loops
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

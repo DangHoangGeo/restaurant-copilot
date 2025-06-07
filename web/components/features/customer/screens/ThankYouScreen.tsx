@@ -2,22 +2,15 @@
 "use client";
 import React from "react";
 import { useTranslations } from "next-intl";
-import { CheckCircle, ChevronRight, Menu as MenuIcon } from "lucide-react";
+import { CheckCircle, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { OrderSummary } from "@/components/features/customer/OrderSummary";
-import { getCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
+import { Card } from "@/components/ui/card";
 import type { RestaurantSettings } from "@/shared/types/customer";
-import type { CartItem } from "../CartContext";
 
 interface ThankYouScreenProps {
   setView: (v: string, props?: any) => void;
   restaurantSettings: RestaurantSettings;
-  viewProps: {
-    orderId: string;
-    items: CartItem[];
-    total: number;
-    tableId?: string;
-  };
+  viewProps?: any;
   featureFlags: {
     advancedReviews: boolean;
   };
@@ -30,75 +23,112 @@ export function ThankYouScreen({
   featureFlags,
 }: ThankYouScreenProps) {
   const t = useTranslations("Customer");
-  const { orderId, items, total, tableId } = viewProps;
-  const locale = getCurrentLocale();
+  const orderId = viewProps?.orderId;
+  const items = viewProps?.items || [];
+  const total = viewProps?.total || 0;
+  const tableNumber = viewProps?.tableNumber;
+
+  // Helper function to get item name (now items should have string names)
+  const getItemName = (item: any) => {
+    // If item.name is already a string, use it directly
+    if (typeof item.name === 'string') return item.name;
+    
+    // If item.itemName is a string, use it
+    if (typeof item.itemName === 'string') return item.itemName;
+    
+    // Fallback for old format with localized names
+    if (item.name_en) return item.name_en;
+    if (item.name_ja) return item.name_ja;
+    if (item.name_vi) return item.name_vi;
+    
+    // Final fallback
+    return "Item";
+  };
 
   return (
-    <div className="text-center py-12">
-      <CheckCircle
-        className="mx-auto mb-6 text-green-500 dark:text-green-400"
-        size={64}
-      />
-      <h2 className="text-3xl font-bold mb-3">{t("thankyou.title")}</h2>
-      <p className="text-slate-600 dark:text-slate-300 mb-2">
-        {t("thankyou.subtitle")}
-      </p>
-      <p
-        className="text-lg font-semibold mb-6"
-        style={{ color: restaurantSettings.primaryColor || "#0ea5e9" }}
-      >
-        {t("thankyou.order_id_label")}: {orderId}
-      </p>
-      <OrderSummary
-        items={items}
-        total={total}
-        locale={locale}
-        showImages={false}
-        isAdjustable={false}
-        className="max-w-md mx-auto mb-8 p-4 text-left"
-      />
-      {tableId && (
-        <p className="text-sm text-center mb-6">
-          {t("thankyou.table_number_label")}: {tableId}
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <Card className="max-w-lg w-full p-8 text-center">
+        <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
+        
+        <h1 className="text-3xl font-bold text-green-600 mb-4">
+          {t("thankyou.title")}
+        </h1>
+        
+        <p className="text-gray-600 mb-6">
+          {t("thankyou.message")}
         </p>
-      )}
-      {featureFlags.advancedReviews && (
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-3">
-            {t("thankyou.rate_dishes_title")}
+
+        {orderId && (
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <p className="text-sm text-gray-500 mb-1">
+              {t("thankyou.order_id")}
+            </p>
+            <p className="font-mono text-lg font-semibold">
+              {orderId}
+            </p>
+            {tableNumber && (
+              <p className="text-sm text-gray-500 mt-2">
+                {t("thankyou.table_number", { number: tableNumber })}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">
+            {t("thankyou.order_summary")}
           </h3>
-          <div className="space-y-3 max-w-md mx-auto">
-            {items.slice(0, 3).map((item: CartItem) => (
-              <Button
-                key={item.itemId}
-                variant="secondary"
-                className="w-full justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700"
-                onClick={() =>
-                  setView("review", {
-                    menuItemId: item.itemId,
-                    menuItemName: getLocalizedText(item.name, locale),
-                    orderId: orderId, 
-                  })
-                }
-              >
-                {t("thankyou.rate_this_dish_button", {
-                  dish: getLocalizedText(item.name, locale),
-                })}
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+          <div className="space-y-2 text-left">
+            {items.map((item: any, index: number) => (
+              <div key={index} className="flex justify-between items-center">
+                <span>{getItemName(item)} x{item.qty || item.quantity || 1}</span>
+                <span className="font-medium">
+                  {t("currency_format", { value: (item.price || 0) * (item.qty || item.quantity || 1) })}
+                </span>
+              </div>
             ))}
+            <hr className="my-2" />
+            <div className="flex justify-between items-center font-bold">
+              <span>{t("thankyou.total")}</span>
+              <span>{t("currency_format", { value: total })}</span>
+            </div>
           </div>
         </div>
-      )}
-      <Button
-        onClick={() => setView("menu", { tableId })}
-        size="lg"
-        className="mt-10 text-white hover:opacity-90"
-        style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
-      >
-        <MenuIcon className="h-4 w-4 mr-1" />
-        {t("thankyou.back_to_menu_button")}
-      </Button>
+
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            {t("thankyou.preparation_message")}
+          </p>
+
+          {featureFlags.advancedReviews && items.length > 0 && (
+            <div className="border-t pt-4">
+              <p className="text-sm text-gray-600 mb-3">
+                {t("thankyou.review_prompt")}
+              </p>
+              <Button
+                onClick={() => setView("review", { 
+                  orderId, 
+                  items: items.slice(0, 1), // Start with first item
+                  currentItemIndex: 0
+                })}
+                variant="outline"
+                className="w-full"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                {t("thankyou.leave_review_button")}
+              </Button>
+            </div>
+          )}
+
+          <Button
+            onClick={() => setView("menu")}
+            style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
+            className="w-full text-white hover:opacity-90"
+          >
+            {t("thankyou.back_to_menu")}
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }

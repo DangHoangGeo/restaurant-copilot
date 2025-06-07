@@ -1,12 +1,10 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { getLocalizedText } from "./utils";
-import { MenuItem } from "@/shared/types/customer";
 
 export interface SummaryItem {
   itemId: string;
-  name: MenuItem; // Changed from Record<string, unknown> | string
+  name: string; // Changed from MenuItem to string
   price: number;
   qty: number;
   imageUrl?: string;
@@ -54,13 +52,13 @@ export function OrderSummary({
             {showImages && (
               <img
                 src={item.imageUrl || "https://placehold.co/60x40/E2E8F0/334155?text=Item"}
-                alt={getLocalizedText(item.name as any, locale)}
+                alt={item.name} // Now item.name is already a string
                 className="w-12 h-10 object-cover rounded mr-3"
               />
             )}
             <div>
               <p className="font-medium">
-                {getLocalizedText(item.name as any, locale)}
+                {item.name} {/* Now item.name is already a string */}
               </p>
               {isAdjustable ? (
                 <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
