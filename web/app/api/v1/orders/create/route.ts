@@ -29,17 +29,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: "Invalid restaurant" }, { status: 400 });
   }
 
+  // Check if there's an existing active order for this session
   const { data: orderRow } = await supabaseAdmin
     .from("orders")
-    .select("id,status")
+    .select("id,status,total_amount")
     .eq("session_id", sessionId)
     .eq("restaurant_id", restaurantId)
+    .in("status", ["new", "preparing"]) // Allow adding items to orders that are new or preparing
     .single();
-  if (!orderRow || orderRow.status !== "new") {
+    
+  if (!orderRow) {
     return NextResponse.json({ success: false, error: "Invalid or expired session" }, { status: 400 });
   }
 
-  let totalAmount = 0;
+  let totalAmount = Number(orderRow.total_amount) || 0;
   for (const { menuItemId, quantity } of items) {
     const { data: item } = await supabaseAdmin
       .from("menu_items")
@@ -78,6 +81,18 @@ export async function POST(req: NextRequest) {
         notes,
       },
     ]);
+  }
+
+  // Update order status to 'preparing' after items are added
+  const { error: statusUpdateError } = await supabaseAdmin
+    .from("orders")
+    .update({ status: "preparing" })
+    .eq("session_id", sessionId)
+    .eq("restaurant_id", restaurantId);
+
+  if (statusUpdateError) {
+    console.error("Failed to update order status:", statusUpdateError);
+    // Don't fail the request for this, but log it
   }
 
   return NextResponse.json({ success: true, orderId });

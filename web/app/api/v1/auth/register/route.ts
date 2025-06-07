@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logEvent } from "../../../../../lib/logger";
-import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
 import { ZodError } from "zod"; // Import ZodError explicitly
+import { createClient } from "@/lib/supabase/server";
 
 const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     body = await req.json(); // Assign to the outer-scoped body
     const { name, subdomain, email, password, defaultLanguage } = signupSchema.parse(body);
-
+    const supabaseAdmin = await createClient()
     // 2. Recheck subdomain in restaurants; if taken, return 409.
     const { data: existingRestaurant, error: checkError } = await supabaseAdmin
       .from("restaurants")
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 
     // 5. Update Auth user to set custom claims
     const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(userData.user.id, {
-      app_metadata: { restaurant_id: restaurantId, role: "owner" },
+      app_metadata: { subdomain: subdomain, restaurant_id: restaurantId, role: "owner" },
     });
 
     if (updateAuthError) {

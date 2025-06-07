@@ -1,19 +1,21 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; // Adjust path if necessary
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // The local getRestaurantIdFromSession function has been removed.
 
 const tableSchema = z.object({
   name: z.string().min(1).max(50).optional(),
-  positionX: z.number().optional(),
-  positionY: z.number().optional(),
+  capacity: z.number().min(1).optional(),
+  status: z.enum(['available', 'occupied', 'reserved']).optional(),
+  isOutdoor: z.boolean().optional(),
+  isAccessible: z.boolean().optional(),
+  notes: z.string().optional(),
+  qrCode: z.string().optional(),
 });
 
 export async function DELETE(req: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
   const tableId = req.nextUrl.searchParams.get("tableId") || "";
 
@@ -35,7 +37,7 @@ export async function DELETE(req: NextRequest) {
 
   try {
     // user.restaurantId is sourced from getUserFromRequest, ensuring it's from an authenticated session.
-    const { error: deleteError, count } = await supabase
+    const { error: deleteError, count } = await supabaseAdmin
       .from("tables")
       .delete({ count: 'exact' }) // Get the count of deleted rows
       .eq("id", tableId)
@@ -64,11 +66,10 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies });
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ tableId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
-  const tableId = req.nextUrl.searchParams.get('tableId') || '';
-
+  const {tableId} = await params; //req.nextUrl.searchParams.get('tableId') || '';
+  console.log('PATCH request for tableId:', tableId);
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID.' }, { status: 401 });
   }
@@ -82,16 +83,22 @@ export async function PATCH(req: NextRequest) {
     const validated = tableSchema.safeParse(body);
 
     if (!validated.success) {
+      console.error('Validation error:', validated.error);
       return NextResponse.json({ errors: validated.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { name, positionX, positionY } = validated.data;
+    const { name,  capacity, status, isOutdoor, isAccessible, notes, qrCode } = validated.data;
     const updateData: Record<string, unknown> = {};
+    
     if (name !== undefined) updateData.name = name;
-    if (positionX !== undefined) updateData.position_x = positionX;
-    if (positionY !== undefined) updateData.position_y = positionY;
+    if (capacity !== undefined) updateData.capacity = capacity;
+    if (status !== undefined) updateData.status = status;
+    if (isOutdoor !== undefined) updateData.is_outdoor = isOutdoor;
+    if (isAccessible !== undefined) updateData.is_accessible = isAccessible;
+    if (notes !== undefined) updateData.notes = notes;
+    if (qrCode !== undefined) updateData.qr_code = qrCode;
 
-    const { error, data } = await supabase
+    const { error, data } = await supabaseAdmin
       .from('tables')
       .update(updateData)
       .eq('id', tableId)

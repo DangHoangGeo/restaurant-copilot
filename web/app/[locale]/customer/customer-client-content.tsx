@@ -1,1002 +1,51 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks, @next/next/no-img-element */
 
-import React, { useState, createContext, useContext, ReactNode, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import {
-  ShoppingCart,
-  MessageCircleMore,
-  Briefcase,
-  ChevronLeft,
-  CalendarDays,
-  CheckCircle,
-  ChevronRight,
-  ThumbsUp,
-  Menu as MenuIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Alert } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { LanguageSwitcher } from "@/components/common/language-switcher";
-import { StarRating } from "@/components/ui/star-rating";
-import { MenuList } from "@/components/features/customer/MenuList";
-import { FloatingCart } from "@/components/features/customer/FloatingCart";
-import { OrderSummary } from "@/components/features/customer/OrderSummary";
+import React, { useState, ReactNode, useEffect } from "react";
 
-interface MenuItem {
-  id: string
-  name_en: string
-  name_ja: string
-  name_vi: string
-  description_en?: string | null
-  description_ja?: string | null
-  description_vi?: string | null
-  price: number
-  image_url?: string | null
-  available: boolean
-  weekday_visibility: number[]
-  averageRating?: number
-  reviewCount?: number
-}
+// Context
+import { CartProvider } from "@/components/features/customer/CartContext";
 
-interface Category {
-  id: string
-  position: number
-  name_en: string
-  name_ja: string
-  name_vi: string
-  menu_items: MenuItem[]
-}
+// Layout
+import { CustomerLayout } from "@/components/features/customer/CustomerLayout";
 
-interface TableInfo {
-  id: string
-  name: string
-  position_x: number | null
-  position_y: number | null
-  capacity: number | null
-}
+// Screens
+import { CustomerMenuScreen } from "@/components/features/customer/screens/CustomerMenuScreen";
+import { ReviewOrderScreen } from "@/components/features/customer/screens/ReviewOrderScreen";
+import { OrderPlacedScreen } from "@/components/features/customer/screens/OrderPlacedScreen";
+import { ThankYouScreen } from "@/components/features/customer/screens/ThankYouScreen";
+import { ReviewScreen } from "@/components/features/customer/screens/ReviewScreen";
+import { BookingScreen } from "@/components/features/customer/screens/BookingScreen";
+import { OrderHistoryScreen } from "@/components/features/customer/screens/OrderHistoryScreen";
 
-interface RestaurantSettings {
-  name: string;
-  logoUrl: string | null;
-  primaryColor?: string;
-  secondaryColor?: string;
-}
+// Types
+import type { RestaurantSettings, Category, TableInfo } from "@/shared/types/customer";
+import { 
+  ViewType, 
+  ViewProps, 
+  MenuViewProps, 
+  CheckoutViewProps, 
+  OrderPlacedScreenViewProps, 
+  ThankYouScreenViewProps, 
+  ReviewViewProps,
+  SessionData // Import SessionData
+} from "@/components/features/customer/screens/types"; // Updated imports
 
+// Define FEATURE_FLAGS locally or import from a central config.
+// These will be passed down to relevant components.
 const FEATURE_FLAGS = {
   tableBooking: true,
   onlinePayment: false,
-  aiChat: false,
+  aiChat: false, 
   advancedReviews: true,
 };
 
-
-// Cart context
-
-interface CartItem {
-  itemId: string;
-  name: any;
-  price: number;
-  qty: number;
-  imageUrl?: string;
-  description?: any;
-}
-interface CartContextType {
-  cart: CartItem[];
-  addToCart: (item: any, qty?: number) => void;
-  updateQuantity: (id: string, qty: number) => void;
-  totalCartItems: number;
-  totalCartPrice: number;
-  clearCart: () => void;
-}
-const CartContext = createContext<CartContextType | undefined>(undefined);
-function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const addToCart = (item: any, quantity = 1) => {
-    setCart((prev) => {
-      const existing = prev.find((ci) => ci.itemId === item.id);
-      if (existing) {
-        return prev.map((ci) =>
-          ci.itemId === item.id ? { ...ci, qty: ci.qty + quantity } : ci,
-        );
-      }
-      return [
-        ...prev,
-        {
-          itemId: item.id,
-          name: item,
-          price: item.price,
-          qty: quantity,
-          imageUrl: item.image_url || undefined,
-          description: item,
-        },
-      ];
-    });
-  };
-  const updateQuantity = (id: string, qty: number) => {
-    if (qty <= 0) {
-      setCart((prev) => prev.filter((c) => c.itemId !== id));
-    } else {
-      setCart((prev) => prev.map((c) => (c.itemId === id ? { ...c, qty } : c)));
-    }
-  };
-  const clearCart = () => setCart([]);
-  const totalCartItems = cart.reduce((sum, i) => sum + i.qty, 0);
-  const totalCartPrice = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        updateQuantity,
-        totalCartItems,
-        totalCartPrice,
-        clearCart,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
-}
-function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("CartProvider missing");
-  return ctx;
-}
-
-function getCurrentLocale() {
-  const params = useParams();
-  return (params.locale as string) || "en";
-}
-function getLocalizedText(obj: any, locale: string) {
-  if (!obj) return ""
-  if (typeof obj === "string") return obj
-  if (obj[`name_${locale}`]) return obj[`name_${locale}`]
-  if (obj[`description_${locale}`]) return obj[`description_${locale}`]
-  return obj?.[locale] || obj?.en || obj?.name_en || ""
-}
-
-function CustomerHeader({
-  restaurantSettings,
-  onCartClick,
-  cartItemCount,
-}: {
+interface CustomerClientContentProps {
   restaurantSettings: RestaurantSettings;
-  onCartClick: () => void;
-  cartItemCount: number;
-}) {
-  const t = useTranslations("Common");
-  const params = useParams();
-  const locale = (params.locale as string) || "en";
-  const router = useRouter();
-  const handleLocaleChange = (newLocale: string) => {
-    router.push(`/${newLocale}/customer`);
-  };
-  return (
-    <header
-      className="sticky top-0 z-30 shadow-lg"
-      style={{ backgroundColor: restaurantSettings.primaryColor }}
-    >
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center">
-          {restaurantSettings.logoUrl && (
-            <img
-              src={restaurantSettings.logoUrl}
-              alt={`${restaurantSettings.name} logo`}
-              className="h-10 w-10 rounded-full mr-3 object-cover bg-white p-0.5"
-            />
-          )}
-          <h1 className="text-xl font-bold text-white">
-            {restaurantSettings.name}
-          </h1>
-        </div>
-        <div className="flex items-center space-x-2">
-          <LanguageSwitcher
-            currentLocale={locale}
-            onLocaleChange={handleLocaleChange}
-          />
-          <Button
-            variant="ghost"
-            onClick={onCartClick}
-            className="text-white hover:bg-white/20 relative"
-            aria-label={t("view_cart_label")}
-          >
-            <ShoppingCart className="h-5 w-5" />
-            {cartItemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
-                {cartItemCount}
-              </span>
-            )}
-          </Button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function CustomerFooter({
-  restaurantSettings,
-}: {
-  restaurantSettings: RestaurantSettings;
-}) {
-  const t = useTranslations("Common");
-  return (
-    <footer className="bg-slate-100 dark:bg-slate-800 py-8 text-center">
-      <p className="text-slate-600 dark:text-slate-400 text-sm">
-        &copy; {new Date().getFullYear()} {restaurantSettings.name}.{" "}
-        {t("all_rights_reserved")}
-      </p>
-      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-        {t("powered_by")} Shop-Copilot
-      </p>
-    </footer>
-  );
-}
-
-function CustomerLayout({
-  children,
-  setView,
-  restaurantSettings,
-}: {
-  children: ReactNode;
-  setView: (v: string, props?: any) => void;
-  restaurantSettings: RestaurantSettings;
-}) {
-  const t = useTranslations("Customer");
-  const { totalCartItems } = useCart();
-  return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-      <CustomerHeader
-        restaurantSettings={restaurantSettings}
-        onCartClick={() => setView("checkout")}
-        cartItemCount={totalCartItems}
-      />
-      <main className="flex-1 container mx-auto px-4 py-6 sm:py-8">
-        {children}
-      </main>
-      <CustomerFooter restaurantSettings={restaurantSettings} />
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-        {FEATURE_FLAGS.aiChat && (
-          <Button
-            variant="primary"
-            size="sm"
-            className="rounded-full p-3 shadow-xl"
-            aria-label={t("ai_chat.toggle_label")}
-          >
-            <MessageCircleMore className="h-5 w-5" />
-          </Button>
-        )}
-        <Button
-          onClick={() => setView("admin")}
-          variant="secondary"
-          size="sm"
-          className="hidden sm:flex"
-        >
-          <Briefcase className="h-5 w-5 mr-2" />
-          {t("admin_panel_button")}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function CustomerMenuScreen({
-  setView,
-  restaurantSettings,
-  viewProps,
-  categories,
-}: {
-  setView: (v: string, props?: any) => void
-  restaurantSettings: RestaurantSettings
-  viewProps?: any
-  categories: Category[]
-}) {
-  const t = useTranslations("Customer");
-  const { cart, addToCart, updateQuantity, totalCartItems, totalCartPrice } =
-    useCart();
-  const [showAddedToCartMsg, setShowAddedToCartMsg] = useState("");
-  const [menu] = useState<Category[]>(categories)
-  const locale = getCurrentLocale();
-  const tableId = viewProps?.tableId;
-  const sessionStatus = viewProps?.sessionStatus || "new";
-  useEffect(() => {
-    if (tableId) {
-      const existing = localStorage.getItem("sessionId");
-      if (!existing) {
-        fetch(`/api/v1/sessions/create?tableId=${tableId}`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.sessionId) {
-              localStorage.setItem("sessionId", data.sessionId);
-            }
-          })
-          .catch(() => {});
-      }
-    }
-  }, [tableId]);
-
-  const handleAddToCart = (item: any, quantity = 1) => {
-    addToCart(item, quantity)
-    setShowAddedToCartMsg(
-      t("menu.item_added_to_cart_msg", {
-        item: getLocalizedText(item as unknown as Record<string, unknown>, locale),
-      }),
-    )
-    setTimeout(() => setShowAddedToCartMsg(""), 2000);
-  };
-  const getQuantityInCart = (itemId: string) =>
-    cart.find((ci) => ci.itemId === itemId)?.qty || 0
-  const today = new Date().getDay() === 0 ? 7 : new Date().getDay()
-  const weekdays = ["", "mon", "tue", "wed", "thu", "fri", "sat", "sun"]
-
-  if (sessionStatus === "expired") {
-    return (
-      <Alert className="max-w-md mx-auto" variant="destructive">
-        {t("session.expired_message")}
-      </Alert>
-    );
-  }
-
-  return (
-    <div>
-      {tableId && (
-        <p className="text-center text-sm mb-4 text-slate-600 dark:text-slate-400">
-          {t("menu.ordering_for_table", { tableId })}
-        </p>
-      )}
-      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-1 text-slate-800 dark:text-slate-100">
-        {t("menu.title")}
-      </h2>
-      <p className="text-center text-sm mb-6 text-slate-500 dark:text-slate-400">
-        {t("menu.serving_today", { day: t(`weekdays.${weekdays[today]}`) })}
-      </p>
-      {showAddedToCartMsg && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100]">
-          <Alert>{showAddedToCartMsg}</Alert>
-        </div>
-      )}
-      <MenuList
-        categories={menu.sort((a, b) => a.position - b.position)}
-        locale={locale}
-        searchPlaceholder={t("menu.search_placeholder")}
-        addToCart={handleAddToCart}
-        updateQty={updateQuantity}
-        getQty={getQuantityInCart}
-        brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
-        recommended={menu[0]?.menu_items.slice(0, 2)}
-      />
-      <FloatingCart
-        count={totalCartItems}
-        total={totalCartPrice}
-        onCheckout={() => setView("checkout", { tableId })}
-        brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
-      />
-      {FEATURE_FLAGS.tableBooking && (
-        <div className="text-center mt-12">
-          <Button
-            onClick={() => setView("booking")}
-            size="lg"
-            style={{ backgroundColor: restaurantSettings.secondaryColor }}
-            className="text-white hover:opacity-90"
-          >
-            <CalendarDays className="h-4 w-4 mr-1" />
-            {t("booking.book_table_button")}
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ReviewOrderScreen({
-  setView,
-  restaurantSettings,
-  viewProps,
-}: {
-  setView: (v: string, props?: any) => void;
-  restaurantSettings: RestaurantSettings;
-  viewProps?: any;
-}) {
-  const t = useTranslations("Customer");
-  const { cart, totalCartPrice, clearCart } = useCart();
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  if (cart.length === 0 && !isConfirmModalOpen) {
-    setView("menu", viewProps);
-    return <p>{t("checkout.redirecting_empty_cart")}</p>;
-  }
-  const handleConfirmOrder = async () => {
-    const sessionId = localStorage.getItem("sessionId");
-    if (!sessionId) {
-      alert("Session not found");
-      return;
-    }
-    const payload = {
-      sessionId,
-      items: cart.map((c) => ({ menuItemId: c.itemId, quantity: c.qty })),
-    };
-    const res = await fetch("/api/v1/orders/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setIsConfirmModalOpen(false);
-      setView("orderplaced", {
-        orderId: data.orderId,
-        items: cart,
-        total: totalCartPrice,
-        tableId: viewProps?.tableId,
-      });
-      clearCart();
-    } else {
-      alert(data.error || "Failed");
-    }
-  };
-  return (
-    <div>
-      <Button
-        onClick={() => setView("menu", viewProps)}
-        variant="ghost"
-        className="mb-4 -ml-2"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        {t("checkout.back_to_menu")}
-      </Button>
-      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
-        {t("checkout.title")}
-      </h2>
-      <OrderSummary
-        items={cart}
-        total={totalCartPrice}
-        locale={getCurrentLocale()}
-        className="max-w-lg mx-auto p-4"
-      />
-      <p className="mt-6 text-sm text-center text-slate-600 dark:text-slate-400">
-        {viewProps?.tableId
-          ? t("checkout.payment_instruction_table", {
-              tableId: viewProps.tableId,
-            })
-          : t("checkout.payment_instruction_counter")}
-      </p>
-        {!FEATURE_FLAGS.onlinePayment && (
-          <Button
-            onClick={() => setIsConfirmModalOpen(true)}
-            size="lg"
-            className="w-full mt-6 text-white hover:opacity-90"
-            style={{ backgroundColor: restaurantSettings.primaryColor }}
-            disabled={cart.length === 0}
-          >
-            {t("checkout.place_order_button")} (
-            {t("currency_format", { value: totalCartPrice })})
-          </Button>
-        )}
-      <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t("checkout.confirm_modal_title")}</DialogTitle>
-          </DialogHeader>
-          <p className="mb-4">
-            {t("checkout.confirm_modal_text", {
-              total: t("currency_format", { value: totalCartPrice }),
-            })}
-          </p>
-          <div className="flex justify-end space-x-3">
-            <Button
-              variant="secondary"
-              onClick={() => setIsConfirmModalOpen(false)}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleConfirmOrder}
-              style={{ backgroundColor: restaurantSettings.primaryColor }}
-            >
-              {t("common.confirm")}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-
-function OrderPlacedScreen({
-  setView,
-  restaurantSettings,
-  viewProps,
-}: {
-  setView: (v: string, props?: any) => void;
-  restaurantSettings: RestaurantSettings;
-  viewProps: any;
-}) {
-  const t = useTranslations("Customer");
-  const { orderId, items, total, tableId } = viewProps;
-  const locale = getCurrentLocale();
-  return (
-    <div className="text-center py-12">
-      <CheckCircle
-        className="mx-auto mb-6 text-green-500 dark:text-green-400"
-        size={64}
-      />
-      <h2 className="text-3xl font-bold mb-3">{t("orderplaced.title")}</h2>
-      <p
-        className="text-lg font-semibold mb-2"
-        style={{ color: restaurantSettings.primaryColor }}
-      >
-        {t("thankyou.order_id_label")}: {orderId}
-      </p>
-      <p className="text-slate-600 dark:text-slate-300 mb-6">
-        {t("orderplaced.message")}
-      </p>
-      <OrderSummary
-        items={items}
-        total={total}
-        locale={locale}
-        showImages={false}
-        className="max-w-md mx-auto mb-8 p-4 text-left"
-      />
-      {tableId && (
-        <p className="text-sm text-center">
-          {t("thankyou.table_number_label")}: {tableId}
-        </p>
-      )}
-      <div className="flex justify-center gap-4">
-        <Button
-          onClick={() => setView("menu", { tableId })}
-          style={{ backgroundColor: restaurantSettings.secondaryColor }}
-          className="text-white"
-        >
-          {t("orderplaced.add_more_button")}
-        </Button>
-        <Button
-          onClick={() => setView("thankyou", viewProps)}
-          style={{ backgroundColor: restaurantSettings.primaryColor }}
-          className="text-white"
-        >
-          {t("orderplaced.proceed_to_checkout_button")}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function ThankYouScreen({
-  setView,
-  restaurantSettings,
-  viewProps,
-}: {
-  setView: (v: string, props?: any) => void;
-  restaurantSettings: RestaurantSettings;
-  viewProps: any;
-}) {
-  const t = useTranslations("Customer");
-  const { orderId, items, total, tableId } = viewProps;
-  const locale = getCurrentLocale();
-  return (
-    <div className="text-center py-12">
-      <CheckCircle
-        className="mx-auto mb-6 text-green-500 dark:text-green-400"
-        size={64}
-      />
-      <h2 className="text-3xl font-bold mb-3">{t("thankyou.title")}</h2>
-      <p className="text-slate-600 dark:text-slate-300 mb-2">
-        {t("thankyou.subtitle")}
-      </p>
-      <p
-        className="text-lg font-semibold mb-6"
-        style={{ color: restaurantSettings.primaryColor }}
-      >
-        {t("thankyou.order_id_label")}: {orderId}
-      </p>
-      <OrderSummary
-        items={items}
-        total={total}
-        locale={locale}
-        showImages={false}
-        className="max-w-md mx-auto mb-8 p-4 text-left"
-      />
-      {tableId && (
-        <p className="text-sm text-center">
-          {t("thankyou.table_number_label")}: {tableId}
-        </p>
-      )}
-      {FEATURE_FLAGS.advancedReviews && (
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-3">
-            {t("thankyou.rate_dishes_title")}
-          </h3>
-          <div className="space-y-3 max-w-md mx-auto">
-            {items.slice(0, 3).map((item: CartItem) => (
-              <Button
-                key={item.itemId}
-                variant="secondary"
-                className="w-full justify-between"
-                onClick={() =>
-                  setView("review", {
-                    menuItemId: item.itemId,
-                    menuItemName: getLocalizedText(item.name || item, locale),
-                  })
-                }
-              >
-                {t("thankyou.rate_this_dish_button", {
-                  dish: getLocalizedText(item.name || item, locale),
-                })}
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-      <Button
-        onClick={() => setView("menu")}
-        size="lg"
-        className="mt-10 text-white hover:opacity-90"
-        style={{ backgroundColor: restaurantSettings.primaryColor }}
-      >
-        <MenuIcon className="h-4 w-4 mr-1" />
-        {t("thankyou.back_to_menu_button")}
-      </Button>
-    </div>
-  );
-}
-
-function ReviewScreen({
-  setView,
-  restaurantSettings,
-  viewProps,
-}: {
-  setView: (v: string, props?: any) => void;
-  restaurantSettings: RestaurantSettings;
-  viewProps: any;
-}) {
-  const t = useTranslations("Customer");
-  const { menuItemId, menuItemName } = viewProps;
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  if (!FEATURE_FLAGS.advancedReviews) return <p>Coming Soon</p>;
-  const handleSubmitReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (rating === 0) {
-      alert(t("review.rating_required_alert"));
-      return;
-    }
-    console.log("Submitting review:", { menuItemId, rating, comment });
-    setSubmitted(true);
-  };
-  if (submitted) {
-    return (
-      <div className="text-center py-12">
-        <ThumbsUp
-          className="mx-auto mb-6 text-green-500 dark:text-green-400"
-          size={64}
-        />
-        <h2 className="text-3xl font-bold mb-3">
-          {t("review.submission_thank_you_title")}
-        </h2>
-        <p className="text-slate-600 dark:text-slate-300 mb-6">
-          {t("review.submission_thank_you_message")}
-        </p>
-        <Button
-          onClick={() => setView("menu")}
-          size="lg"
-          style={{ backgroundColor: restaurantSettings.primaryColor }}
-          className="text-white"
-        >
-          {t("thankyou.back_to_menu_button")}
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <Button
-        onClick={() => setView("menu")}
-        variant="ghost"
-        className="mb-4 -ml-2"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        {t("checkout.back_to_menu")}
-      </Button>
-      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
-        {t("review.title")}
-      </h2>
-      <p className="text-center text-lg mb-6 text-slate-600 dark:text-slate-400">
-        {menuItemName}
-      </p>
-      <Card className="max-w-md mx-auto">
-        <form onSubmit={handleSubmitReview}>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-center mb-2">
-              {t("review.rating_label")}
-            </label>
-            <div className="flex justify-center">
-              <StarRating
-                value={rating}
-                size="lg"
-                count={rating}
-                onRate={setRating}
-              />
-            </div>
-          </div>
-          <Textarea
-            name="comment"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={4}
-            placeholder={t("review.comment_placeholder")}
-          />
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full mt-6 text-white"
-            style={{ backgroundColor: restaurantSettings.primaryColor }}
-          >
-            {t("review.submit_button")}
-          </Button>
-        </form>
-      </Card>
-    </div>
-  );
-}
-
-function BookingScreen({
-  setView,
-  restaurantSettings,
-  tables,
-  categories,
-}: {
-  setView: (v: string, props?: any) => void
-  restaurantSettings: RestaurantSettings
-  tables: TableInfo[]
-  categories: Category[]
-}) {
-  const t = useTranslations("Customer");
-  const [formData, setFormData] = useState({
-    tableId: "",
-    customerName: "",
-    contact: "",
-    date: new Date().toISOString().split("T")[0],
-    time: "19:00",
-    partySize: 2,
-    preOrderItems: [] as { itemId: string; quantity: number }[],
-  });
-  const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState("")
-  const menuItems = categories
-    .flatMap((cat) => cat.menu_items)
-    .filter((item) => item.available)
-  const locale = getCurrentLocale();
-  if (!FEATURE_FLAGS.tableBooking) {
-    setView("menu");
-    return <p>Coming Soon</p>;
-  }
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-    const checked = (e.target as HTMLInputElement).checked; // Explicitly cast to HTMLInputElement for 'checked'
-
-    if (name === "preOrderItems") {
-      const itemId = value;
-      setFormData((prev) => ({
-        ...prev,
-        preOrderItems: checked
-          ? [...prev.preOrderItems, { itemId, quantity: 1 }]
-          : prev.preOrderItems.filter((item) => item.itemId !== itemId),
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-  const handleSelectChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, tableId: value }));
-  };
-  const handlePreOrderItemQuantityChange = (
-    itemId: string,
-    quantity: string,
-  ) => {
-    const numQuantity = parseInt(quantity);
-    if (numQuantity > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        preOrderItems: prev.preOrderItems.map((item) =>
-          item.itemId === itemId ? { ...item, quantity: numQuantity } : item,
-        ),
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        preOrderItems: prev.preOrderItems.filter(
-          (item) => item.itemId !== itemId,
-        ),
-      }));
-    }
-  };
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (
-      !formData.customerName ||
-      !formData.contact ||
-      !formData.date ||
-      !formData.time ||
-      formData.partySize < 1
-    ) {
-      setError(t("booking.form.validation_error_fill_fields"));
-      return;
-    }
-    setError("");
-    setSubmitted(true);
-  };
-  if (submitted) {
-    return (
-      <div className="text-center py-12">
-        <CalendarDays
-          className="mx-auto mb-6 text-green-500 dark:text-green-400"
-          size={64}
-        />
-        <h2 className="text-3xl font-bold mb-3">
-          {t("booking.submission_thank_you_title")}
-        </h2>
-        <p className="text-slate-600 dark:text-slate-300 mb-6">
-          {t("booking.submission_thank_you_message")}
-        </p>
-        <Button
-          onClick={() => setView("menu")}
-          size="lg"
-          style={{ backgroundColor: restaurantSettings.primaryColor }}
-          className="text-white"
-        >
-          {t("thankyou.back_to_menu_button")}
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <Button
-        onClick={() => setView("menu")}
-        variant="ghost"
-        className="mb-4 -ml-2"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        {t("checkout.back_to_menu")}
-      </Button>
-      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
-        {t("booking.title")}
-      </h2>
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          {error}
-        </Alert>
-      )}
-      <Card className="max-w-lg mx-auto">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Select
-            name="tableId"
-            value={formData.tableId}
-            onValueChange={handleSelectChange}
-            required
-          >
-            <option value="" disabled>
-              {t("booking.form.table_select_placeholder")}
-            </option>
-            {tables.map((table) => (
-              <option key={table.id} value={table.id}>
-                {table.name} (
-                {t("booking.form.table_capacity", { count: table.capacity ?? 0 })})
-              </option>
-            ))}
-          </Select>
-          <Input
-            name="customerName"
-            value={formData.customerName}
-            onChange={handleChange}
-            required
-            placeholder={t("booking.form.name_placeholder")}
-          />
-          <Input
-            name="contact"
-            value={formData.contact}
-            onChange={handleChange}
-            required
-            placeholder={t("booking.form.contact_placeholder")}
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              name="date"
-              type="date"
-              value={formData.date}
-              onChange={handleChange}
-              required
-              min={new Date().toISOString().split("T")[0]}
-            />
-            <Input
-              name="time"
-              type="time"
-              value={formData.time}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <Input
-            name="partySize"
-            type="number"
-            value={formData.partySize}
-            onChange={handleChange}
-            required
-            min="1"
-          />
-          <h4 className="text-md font-semibold pt-4 border-t dark:border-slate-700">
-            {t("booking.form.preorder_optional_title")}
-          </h4>
-          <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
-            {menuItems.map((item) => {
-              const isPreOrdered = formData.preOrderItems.find(
-                (pi) => pi.itemId === item.id,
-              );
-              return (
-                <div
-                  key={item.id}
-                  className="p-2 border rounded-lg dark:border-slate-600 flex items-center justify-between"
-                >
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="preOrderItems"
-                      value={item.id}
-                      checked={!!isPreOrdered}
-                      onChange={handleChange}
-                      className="form-checkbox h-4 w-4 text-[--brand-color] rounded"
-                    />
-                    <span>
-                      {getLocalizedText(item, locale)} (
-                      {t("currency_format", { value: item.price })})
-                    </span>
-                  </label>
-                  {isPreOrdered && (
-                    <Input
-                      type="number"
-                      name={`pre_${item.id}`}
-                      value={isPreOrdered.quantity}
-                      min="1"
-                      onChange={(e) =>
-                        handlePreOrderItemQuantityChange(
-                          item.id,
-                          e.target.value,
-                        )
-                      }
-                      className="w-20 text-sm py-1 mb-0"
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full mt-6 text-white"
-            style={{ backgroundColor: restaurantSettings.primaryColor }}
-          >
-            {t("booking.form.submit_button")}
-          </Button>
-        </form>
-      </Card>
-    </div>
-  );
+  categories: Category[];
+  tables: TableInfo[];
+  tableId?: string;
+  sessionData: SessionData;
 }
 
 export function CustomerClientContent({
@@ -1004,84 +53,250 @@ export function CustomerClientContent({
   categories,
   tables,
   tableId,
-}: {
-  restaurantSettings: RestaurantSettings
-  categories: Category[]
-  tables: TableInfo[]
-  tableId?: string
-}) {
-  const [view, setViewState] = useState<
-    | "menu"
-    | "checkout"
-    | "orderplaced"
-    | "thankyou"
-    | "review"
-    | "booking"
-    | "admin"
-  >("menu");
-  const [viewProps, setViewProps] = useState<any>({ tableId });
-  const setView = (v: string, props: any = {}) => {
-    setViewState(v as any);
-    setViewProps(props);
+  sessionData,
+}: CustomerClientContentProps) {
+  const [view, setViewState] = useState<ViewType>("menu"); // Use ViewType
+  const [viewProps, setViewProps] = useState<ViewProps>({ // Use ViewProps union type
+    tableId, 
+    sessionId: sessionData.sessionId,
+    tableNumber: sessionData.tableNumber,
+    canAddItems: sessionData.canAddItems,
+    orderId: sessionData.orderId, // Initialize with orderId from sessionData
+  }); 
+
+  // Store session data in localStorage when valid and sync with server
+  useEffect(() => {
+    const syncSessionData = async () => {
+      // Always store the session data from server
+      if (sessionData.sessionId) {
+        localStorage.setItem("sessionId", sessionData.sessionId);
+        localStorage.setItem("tableId", tableId || "");
+        localStorage.setItem("tableNumber", sessionData.tableNumber || "");
+      }
+
+      // Check if local sessionId differs from server sessionId
+      const localSessionId = localStorage.getItem("sessionId");
+      if (localSessionId && localSessionId !== sessionData.sessionId) {
+        console.log("Session ID mismatch detected, validating with server...");
+        
+        // Validate the local session ID with server
+        try {
+          const response = await fetch(`/api/v1/sessions/check?sessionId=${localSessionId}`);
+          const data = await response.json();
+          
+          if (data.success && data.sessionStatus === "active") {
+            // Local session is still valid, update viewProps to use it
+      
+            setViewProps(prev => ({
+              ...prev,
+              sessionId: localSessionId,
+              canAddItems: data.canAddItems
+            }));
+          } else {
+            // Local session is invalid, use server session
+            setViewProps(prev => ({
+              ...prev,
+              sessionId: sessionData.sessionId,
+              canAddItems: sessionData.canAddItems
+            }));
+          }
+        } catch (error) {
+          console.error("Session validation error:", error);
+          // On error, use server session
+          setViewProps(prev => ({
+            ...prev,
+            sessionId: sessionData.sessionId,
+            canAddItems: sessionData.canAddItems
+          }));
+        }
+      }
+    };
+
+    syncSessionData();
+  }, [sessionData.sessionId, tableId, sessionData.tableNumber, sessionData.canAddItems]);
+
+  // Handle session status on mount
+  useEffect(() => {
+    if (sessionData.sessionStatus === 'expired' || sessionData.sessionStatus === 'invalid') {
+      setViewState(sessionData.sessionStatus);
+    }
+  }, [sessionData.sessionStatus]);
+
+  const setView = (v: ViewType, props: ViewProps = {}) => { // Use ViewType and ViewProps
+    setViewState(v); 
+    setViewProps(prev => ({ ...prev, ...props })); // Merge props carefully
     window.scrollTo(0, 0);
   };
 
-  let Screen: ReactNode | null = null;
-  if (view === "menu")
-    Screen = (
-      <CustomerMenuScreen
-        setView={setView}
-        restaurantSettings={restaurantSettings}
-        viewProps={viewProps}
-        categories={categories}
-      />
+  const layoutFeatureFlags = { aiChat: FEATURE_FLAGS.aiChat };
+  const menuScreenFeatureFlags = { tableBooking: FEATURE_FLAGS.tableBooking };
+  const reviewOrderScreenFeatureFlags = { onlinePayment: FEATURE_FLAGS.onlinePayment };
+  //const thankYouScreenFeatureFlags = { advancedReviews: FEATURE_FLAGS.advancedReviews };
+  const reviewScreenFeatureFlags = { advancedReviews: FEATURE_FLAGS.advancedReviews };
+  const bookingScreenFeatureFlags = { tableBooking: FEATURE_FLAGS.tableBooking };
+
+  let ScreenComponent: ReactNode | null = null;
+
+  // Handle session expired or invalid states
+  if (view === "expired") {
+    ScreenComponent = (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4 text-red-600">Session Expired</h1>
+          <p className="text-gray-600 mb-6">
+            Your order session has been completed or expired. Thank you for your visit!
+          </p>
+          <p className="text-sm text-gray-500">
+            To place a new order, please scan the QR code on your table again.
+          </p>
+        </div>
+      </div>
     );
-  if (view === "checkout")
-    Screen = (
-      <ReviewOrderScreen
-        setView={setView}
-        restaurantSettings={restaurantSettings}
-        viewProps={viewProps}
-      />
+  } else if (view === "invalid") {
+    ScreenComponent = (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4 text-red-600">Invalid Table</h1>
+          <p className="text-gray-600 mb-6">
+            The table ID is invalid or doesn&apos;t belong to this restaurant.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please scan a valid QR code from a table at this restaurant.
+          </p>
+          {/* Allow viewing menu without ordering capability */}
+          <button 
+            onClick={() => setView("menu", { canAddItems: false } as MenuViewProps)}
+            className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+          >
+            View Menu Only
+          </button>
+        </div>
+      </div>
     );
-  if (view === "orderplaced")
-    Screen = (
-      <OrderPlacedScreen
-        setView={setView}
-        restaurantSettings={restaurantSettings}
-        viewProps={viewProps}
-      />
-    );
-  if (view === "thankyou")
-    Screen = (
-      <ThankYouScreen
-        setView={setView}
-        restaurantSettings={restaurantSettings}
-        viewProps={viewProps}
-      />
-    );
-  if (view === "review")
-    Screen = (
-      <ReviewScreen
-        setView={setView}
-        restaurantSettings={restaurantSettings}
-        viewProps={viewProps}
-      />
-    );
-  if (view === "booking")
-    Screen = (
-      <BookingScreen
-        setView={setView}
-        restaurantSettings={restaurantSettings}
-        tables={tables}
-        categories={categories}
-      />
-    );
+  } else {
+    // Normal flow screens
+    switch (view) {
+      case "menu":
+        ScreenComponent = (
+          <CustomerMenuScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps as MenuViewProps} // Cast to specific view prop type
+            categories={categories}
+            featureFlags={menuScreenFeatureFlags}
+            canAddItems={(viewProps as MenuViewProps).canAddItems} // Correctly access canAddItems
+          />
+        );
+        break;
+      case "checkout":
+        ScreenComponent = (
+          <ReviewOrderScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps as CheckoutViewProps} // Cast
+            featureFlags={reviewOrderScreenFeatureFlags}
+          />
+        );
+        break;
+      
+      case "orderplaced":
+          // Ensure all required props for OrderPlacedScreenViewProps are present
+          const opvp = viewProps as OrderPlacedScreenViewProps;
+        ScreenComponent = (
+          <OrderPlacedScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={{
+              orderId: opvp.orderId || "", // Ensure orderId is a string
+              items: opvp.items || [],     // Ensure items is an array
+              total: opvp.total || 0,       // Ensure total is a number
+              tableId: opvp.tableId,
+            }}
+          />
+        );
+        break;
+      case "thankyou":
+        // Ensure all required props for ThankYouScreenViewProps are present
+        const tyvp = viewProps as ThankYouScreenViewProps;
+        ScreenComponent = (
+          <ThankYouScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={{
+              orderId: tyvp.orderId || "",
+              items: tyvp.items || [],
+              total: tyvp.total || 0,
+              tableId: tyvp.tableId,
+              tableNumber: tyvp.tableNumber,
+            }}
+          />
+        );
+        break;
+      case "review":
+        ScreenComponent = (
+          <ReviewScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps as ReviewViewProps} // Cast
+            featureFlags={reviewScreenFeatureFlags}
+          />
+        );
+        break;
+      case "orderhistory":
+        ScreenComponent = (
+          <OrderHistoryScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps as MenuViewProps} // OrderHistory uses MenuViewProps
+          />
+        );
+        break;
+      case "booking":
+        ScreenComponent = (
+          <BookingScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            tables={tables}
+            categories={categories}
+            featureFlags={bookingScreenFeatureFlags}
+            viewProps={viewProps as ViewProps} // Cast
+          />
+        );
+        break;
+      case "admin":
+        // This case implies that CustomerLayout's "admin" button click is handled by setView.
+        // If "admin" is a separate page/route, CustomerLayout should navigate directly.
+        // If it's a view within this component, an AdminScreen would be rendered.
+        // For now, assuming CustomerLayout handles the navigation for "admin".
+        ScreenComponent = <p>Redirecting to admin panel...</p>; // Placeholder
+        // Or, if admin is a view managed here:
+        // import AdminScreen from "...";
+        // ScreenComponent = <AdminScreen setView={setView} ... />;
+        break;
+      default:
+        // Fallback to menu for any unknown view state
+        ScreenComponent = (
+          <CustomerMenuScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps as MenuViewProps} // Cast
+            categories={categories}
+            featureFlags={menuScreenFeatureFlags}
+            canAddItems={(viewProps as MenuViewProps).canAddItems} // Correctly access canAddItems
+          />
+        );
+        console.warn("Unknown view state, defaulting to menu:", view);
+    }
+  }
 
   return (
     <CartProvider>
-      <CustomerLayout setView={setView} restaurantSettings={restaurantSettings}>
-        {Screen}
+      <CustomerLayout
+        setView={setView}
+        restaurantSettings={restaurantSettings}
+        featureFlags={layoutFeatureFlags}
+      >
+        {ScreenComponent}
       </CustomerLayout>
     </CartProvider>
   );

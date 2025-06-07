@@ -1,28 +1,32 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 const tableSchema = z.object({
   name: z.string().min(1).max(50),
-  positionX: z.number().optional(),
-  positionY: z.number().optional(),
+  capacity: z.number().min(1).optional().default(1),
+  status: z.enum(['available', 'occupied', 'reserved']).optional().default('available'),
+  isOutdoor: z.boolean().optional().default(false),
+  isAccessible: z.boolean().optional().default(false),
+  notes: z.string().optional(),
+  qrCode: z.string().optional(),
 });
 
-export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies });
-  const user: AuthUser | null = await getUserFromRequest();
-
-  if (!user || !user.restaurantId) {
-    return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
+export async function GET(req: NextRequest) {
+  const restaurantId = req.nextUrl.searchParams.get("restaurantId") || "";
+  console.log('GET menu items for restaurantId:', restaurantId);
+  
+  // Validate restaurantId parameter
+  if (!restaurantId || restaurantId.trim() === '') {
+    return NextResponse.json({ message: 'restaurantId parameter is required' }, { status: 400 });
   }
 
   try {
-    const { data: tables, error } = await supabase
+    const { data: tables, error } = await supabaseAdmin
       .from('tables')
-      .select('id, name, position_x, position_y')
-      .eq('restaurant_id', user.restaurantId)
+      .select('id, name, position_x, position_y, status, capacity, is_outdoor, is_accessible, notes, qr_code')
+      .eq('restaurant_id', restaurantId)
       .order('name');
 
     if (error) {
@@ -38,7 +42,6 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
@@ -53,16 +56,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ errors: validated.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { name, positionX, positionY } = validated.data;
+    const { name,  capacity, status, isOutdoor, isAccessible, notes, qrCode } = validated.data;
     const insertData: Record<string, unknown> = {
       restaurant_id: user.restaurantId,
       name,
     };
 
-    if (positionX !== undefined) insertData.position_x = positionX;
-    if (positionY !== undefined) insertData.position_y = positionY;
+    if (capacity !== undefined) insertData.capacity = capacity;
+    if (status !== undefined) insertData.status = status;
+    if (isOutdoor !== undefined) insertData.is_outdoor = isOutdoor;
+    if (isAccessible !== undefined) insertData.is_accessible = isAccessible;
+    if (notes !== undefined) insertData.notes = notes;
+    if (qrCode !== undefined) insertData.qr_code = qrCode;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('tables')
       .insert([insertData])
       .select()

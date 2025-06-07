@@ -25,18 +25,11 @@ export interface MenuCategory {
   menu_items: MenuItem[]
 }
 
-export interface TableInfo {
-  id: string
-  name: string
-  position_x: number | null
-  position_y: number | null
-  capacity: number | null
-}
+
 
 export async function fetchMenuAndTables(subdomain: string) {
   const restaurantId = await getRestaurantIdFromSubdomain(subdomain)
   if (!restaurantId) return { categories: [], tables: [] }
-
   const { data: categories } = await supabaseAdmin
     .from('categories')
     .select(
@@ -49,7 +42,7 @@ export async function fetchMenuAndTables(subdomain: string) {
 
   const { data: tables } = await supabaseAdmin
     .from('tables')
-    .select('id,name,position_x,position_y,capacity')
+    .select('id,name,status,is_outdoor,is_accessible, notes,capacity')
     .eq('restaurant_id', restaurantId)
     .order('name')
 

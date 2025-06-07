@@ -74,8 +74,13 @@ CREATE TABLE IF NOT EXISTS tables (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   name text NOT NULL,
-  position_x integer,
-  position_y integer,
+  --position_x integer,
+  --position_y integer,
+  status text NOT NULL CHECK (status IN ('available','occupied','reserved')) DEFAULT 'available',
+  capacity integer NOT NULL CHECK (capacity > 0),
+  is_outdoor boolean DEFAULT false,
+  is_accessible boolean DEFAULT false,
+  notes text,
   qr_code text UNIQUE,               -- optional, or derived on the fly
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -233,12 +238,11 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users ENABLE ROW LEVEL SECURITY; -- Users table also needs RLS
 
 -- RLS Policies for categories
-/**
-CREATE POLICY "Tenant can SELECT categories"
+CREATE POLICY "Anonymous can SELECT categories"
   ON categories
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
-*/
+  TO anon
+  USING (restaurant_id = current_setting('app.current_restaurant_id', true)::uuid);
 
 CREATE POLICY "Tenant can INSERT categories"
   ON categories
@@ -257,12 +261,11 @@ CREATE POLICY "Tenant can DELETE categories"
   USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
 
 -- RLS Policies for menu_items
-/**
-CREATE POLICY "Tenant can SELECT menu_items"
+CREATE POLICY "Anonymous can SELECT menu_items"
   ON menu_items
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
-*/
+  TO anon
+  USING (restaurant_id = current_setting('app.current_restaurant_id', true)::uuid);
 
 CREATE POLICY "Tenant can INSERT menu_items"
   ON menu_items
@@ -281,10 +284,11 @@ CREATE POLICY "Tenant can DELETE menu_items"
   USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
 
 -- RLS Policies for tables
-CREATE POLICY "Tenant can SELECT tables"
+CREATE POLICY "Anonymous can SELECT tables"
   ON tables
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  TO anon
+  USING (restaurant_id = current_setting('app.current_restaurant_id', true)::uuid);
 
 CREATE POLICY "Tenant can INSERT tables"
   ON tables
@@ -550,22 +554,85 @@ CREATE POLICY "Tenant can DELETE users"
   USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
 
 -- RLS Policies for storage.objects 
--- Cannot implement RLS on storage.objects directly, but we can restrict access via policies
+-- Enable RLS for the storage bucket to ensure tenant isolation
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Restrict read to own tenant"
+-- Drop existing policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Users can view own restaurant files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload to own restaurant folder" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own restaurant files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own restaurant files" ON storage.objects;
+
+-- Allow authenticated users to read files from their own restaurant folder
+CREATE POLICY "Users can view own restaurant files"
   ON storage.objects
   FOR SELECT
   USING (
     bucket_id = 'restaurant-uploads'
-    AND substring(path from 1 for length(auth.jwt() ->> 'restaurant_id')) = auth.jwt() ->> 'restaurant_id'
+    AND (
+      -- Check if the name starts with restaurants/{restaurant_id}/ where restaurant_id matches JWT
+      name LIKE ('restaurants/' || ((auth.jwt() ->> 'app_metadata')::json ->> 'restaurant_id') || '/%')
+      OR
+      -- Fallback: check against user's restaurant_id from users table
+      EXISTS (
+        SELECT 1 FROM users 
+        WHERE users.id = auth.uid() 
+        AND name LIKE ('restaurants/' || users.restaurant_id || '/%')
+      )
+    )
   );
 
-CREATE POLICY "Restrict insert to own tenant"
+-- Allow authenticated users to upload files to their own restaurant folder
+CREATE POLICY "Users can upload to own restaurant folder"
   ON storage.objects
   FOR INSERT
   WITH CHECK (
     bucket_id = 'restaurant-uploads'
-    AND substring(path from 1 for length(auth.jwt() ->> 'restaurant_id')) = auth.jwt() ->> 'restaurant_id'
+    AND (
+      -- Check if the name starts with restaurants/{restaurant_id}/ where restaurant_id matches JWT
+      name LIKE ('restaurants/' || ((auth.jwt() ->> 'app_metadata')::json ->> 'restaurant_id') || '/%')
+      OR
+      -- Fallback: check against user's restaurant_id from users table
+      EXISTS (
+        SELECT 1 FROM users 
+        WHERE users.id = auth.uid() 
+        AND name LIKE ('restaurants/' || users.restaurant_id || '/%')
+      )
+    )
   );
+
+-- Allow authenticated users to update files in their own restaurant folder
+CREATE POLICY "Users can update own restaurant files"
+  ON storage.objects
+  FOR UPDATE
+  USING (
+    bucket_id = 'restaurant-uploads'
+    AND (
+      name LIKE ('restaurants/' || ((auth.jwt() ->> 'app_metadata')::json ->> 'restaurant_id') || '/%')
+      OR
+      EXISTS (
+        SELECT 1 FROM users 
+        WHERE users.id = auth.uid() 
+        AND name LIKE ('restaurants/' || users.restaurant_id || '/%')
+      )
+    )
+  );
+
+-- Allow authenticated users to delete files from their own restaurant folder
+CREATE POLICY "Users can delete own restaurant files"
+  ON storage.objects
+  FOR DELETE
+  USING (
+    bucket_id = 'restaurant-uploads'
+    AND (
+      name LIKE ('restaurants/' || ((auth.jwt() ->> 'app_metadata')::json ->> 'restaurant_id') || '/%')
+      OR
+      EXISTS (
+        SELECT 1 FROM users 
+        WHERE users.id = auth.uid() 
+        AND name LIKE ('restaurants/' || users.restaurant_id || '/%')
+      )
+    )
+  );
+
 REVOKE ALL ON storage.objects FROM authenticated;

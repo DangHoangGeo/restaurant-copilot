@@ -19,6 +19,7 @@ import { StarRating } from '@/components/ui/star-rating';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { getLocalizedText } from '@/lib/utils';
 
 /*
 interface LocalizedText {
@@ -39,7 +40,7 @@ interface MenuItem {
   price: number;
   image_url?: string;
   available: boolean;
-  weekday_visibility: string[];
+  weekday_visibility: number[];
   stock_level?: number;
   position: number;
   averageRating?: number;
@@ -71,13 +72,11 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   const [editingCategory, setEditingCategory] = useState<Partial<Category> | null>(null);
   const [editingItem, setEditingItem] = useState<Partial<MenuItem> | null>(null);
   const [selectedCategoryIdForItem, setSelectedCategoryIdForItem] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const router = useRouter();
   const supabase = createClient();
-
-  const getLocalizedText = (obj: { [key: string]: string | undefined }, locale: string) => {
-    return obj[`name_${locale}`] || obj[`name_en`] || '';
-  };
 
   const handleOpenCategoryModal = (category: Category | null = null) => {
     setEditingCategory(
@@ -100,6 +99,8 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
   const handleOpenItemModal = (category: Category, item: MenuItem | null = null) => {
     setSelectedCategoryIdForItem(category.id);
+    setImageFile(null); // Reset image file state
+    setImagePreview(item?.image_url || null); // Set preview to existing image if editing
     setEditingItem(
       item 
         ? { 
@@ -122,7 +123,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
             price: 0, 
             image_url: '', 
             available: true, 
-            weekday_visibility: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 
+            weekday_visibility: [1, 2, 3, 4, 5, 6, 7], 
             stock_level: 100 
           }
     );
@@ -134,37 +135,32 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
     if (!editingCategory) return;
     
     try {
-      if (editingCategory.id) {
-        // Update existing category
-        const { error } = await supabase
-          .from('categories')
-          .update({
-            name_en: editingCategory.name_en,
-            name_ja: editingCategory.name_ja,
-            name_vi: editingCategory.name_vi,
-            position: editingCategory.position
-          })
-          .eq('id', editingCategory.id);
+      const method = editingCategory.id ? 'PUT' : 'POST';
+      const url = editingCategory.id 
+        ? `/api/v1/categories/${editingCategory.id}` 
+        : '/api/v1/categories';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name_en: editingCategory.name_en,
+          name_ja: editingCategory.name_ja,
+          name_vi: editingCategory.name_vi,
+          position: editingCategory.position
+        })
+      });
 
-        if (error) throw error;
-        toast.success(t('category.update_success'));
-      } else {
-        // Create new category
-        const { error } = await supabase
-          .from('categories')
-          .insert({
-            name_en: editingCategory.name_en,
-            name_ja: editingCategory.name_ja,
-            name_vi: editingCategory.name_vi,
-            position: editingCategory.position
-          });
-
-        if (error) throw error;
-        toast.success(t('category.create_success'));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save category');
       }
 
+      toast.success(editingCategory.id ? t('category.update_success') : t('category.create_success'));
       setIsCategoryModalOpen(false);
-	  setMenuData([]);
+      setMenuData([]);
       router.refresh(); // Refresh the server component to get updated data
     } catch (error) {
       console.error('Error saving category:', error);
@@ -174,12 +170,14 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
   const handleDeleteCategory = async (categoryId: string) => {
     try {
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', categoryId);
+      const response = await fetch(`/api/v1/categories/${categoryId}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete category');
+      }
       
       toast.success(t('category.delete_success'));
       router.refresh();
@@ -193,6 +191,46 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
     if (!editingItem || !selectedCategoryIdForItem) return;
     
     try {
+      let imageUrl = editingItem.image_url;
+
+      // Handle image upload if a file was selected
+      if (imageFile) {
+        // Get the current user to access restaurant ID for proper tenant isolation
+        const response = await fetch('/api/v1/auth/session');
+        const sessionData = await response.json();
+        
+        if (!sessionData.authenticated || !sessionData.user?.restaurantId) {
+          throw new Error('User not authenticated or missing restaurant ID');
+        }
+
+        const fileName = `${Date.now()}-${imageFile.name}`;
+        const filePath = `restaurants/${sessionData.user.restaurantId}/menu_items/${fileName}`;
+
+        // Upload to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from('restaurant-uploads')
+          .upload(filePath, imageFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw new Error(`Image upload failed: ${uploadError.message}`);
+        }
+
+        // Get the public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('restaurant-uploads')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrlData.publicUrl;
+      }
+
+      const method = editingItem.id ? 'PUT' : 'POST';
+      const url = editingItem.id 
+        ? `/api/v1/menu-items/${editingItem.id}` 
+        : '/api/v1/menu-items';
+      
       const itemData = {
         category_id: selectedCategoryIdForItem,
         name_en: editingItem.name_en,
@@ -202,51 +240,49 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         description_ja: editingItem.description_ja,
         description_vi: editingItem.description_vi,
         price: editingItem.price,
-        image_url: editingItem.image_url,
+        image_url: imageUrl && imageUrl.trim() !== '' ? imageUrl : null, // Use uploaded URL or existing URL
         available: editingItem.available,
         weekday_visibility: editingItem.weekday_visibility,
         stock_level: editingItem.stock_level,
         position: editingItem.position || 0
       };
 
-      if (editingItem.id) {
-        // Update existing item
-        const { error } = await supabase
-          .from('menu_items')
-          .update(itemData)
-          .eq('id', editingItem.id);
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(itemData)
+      });
 
-        if (error) throw error;
-        toast.success(t('item.update_success'));
-      } else {
-        // Create new item
-        const { error } = await supabase
-          .from('menu_items')
-          .insert(itemData);
-
-        if (error) throw error;
-        toast.success(t('item.create_success'));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save menu item');
       }
-	  
 
+      toast.success(editingItem.id ? t('item.update_success') : t('item.create_success'));
       setIsItemModalOpen(false);
+      setImageFile(null);
+      setImagePreview(null);
       router.refresh();
     } catch (error) {
       console.error('Error saving menu item:', error);
-      toast.error(t('item.save_error'));
+      toast.error(error instanceof Error ? error.message : t('item.save_error'));
     }
   };
 
   const handleDeleteItem = async (itemId: string) => {
     try {
-      const { error } = await supabase
-        .from('menu_items')
-        .delete()
-        .eq('id', itemId);
+      const response = await fetch(`/api/v1/menu-items/${itemId}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete menu item');
+      }
       
-      toast.success(t('item.delete_error'));
+      toast.success(t('item.delete_success'));
       router.refresh();
     } catch (error) {
       console.error('Error deleting menu item:', error);
@@ -586,9 +622,31 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={() => {/* TODO: Handle image upload */}}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setImageFile(file);
+
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setImagePreview(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        } else {
+                          setImagePreview(null);
+                        }
+                      }}
                       className="w-full"
                     />
+                    {imagePreview && (
+                      <div className="mt-2">
+                        <img
+                          src={imagePreview}
+                          alt="Image preview"
+                          className="max-h-40 w-auto rounded-md"
+                        />
+                      </div>
+                    )}
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       {t('item.image_upload_note')}
                     </p>

@@ -23,7 +23,7 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
       name: restaurant.name,
       logoUrl: restaurant.logo_url,
       subdomain: restaurant.subdomain,
-      primaryColor: restaurant.brand_color || '#3B82F6', // Default to Tailwind blue
+      primaryColor: restaurant.brand_color || '#3B82F6',
       defaultLocale: restaurant.default_language || 'en',
     };
   } catch (e) {

@@ -1,8 +1,7 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // Schema for validating the request body when creating/updating a category
 const categorySchema = z.object({
@@ -13,17 +12,24 @@ const categorySchema = z.object({
   position: z.number().optional().nullable(),
 });
 
-export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies });
-  const user: AuthUser | null = await getUserFromRequest();
+export async function GET(req: NextRequest) {
+  const restaurantId = req.nextUrl.searchParams.get("restaurantId") || "";
+  console.log('GET categories for restaurantId:', restaurantId);
+  
+  // Validate restaurantId parameter
+  if (!restaurantId || restaurantId.trim() === '') {
+    return NextResponse.json({ message: 'restaurantId parameter is required' }, { status: 400 });
+  }
 
-  if (!user || !user.restaurantId) {
-    return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
+  // Validate UUID format (basic validation)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(restaurantId)) {
+    return NextResponse.json({ message: 'Invalid restaurantId format' }, { status: 400 });
   }
 
   try {
-    // Fetch categories for the user's restaurant_id
-    const { data: categories, error } = await supabase
+    // Use supabaseAdmin with explicit filtering - bypasses RLS
+    const { data: categories, error } = await supabaseAdmin
       .from('categories')
       .select(`
         id,
@@ -47,9 +53,9 @@ export async function GET() {
           position
         )
       `)
-      .eq('restaurant_id', user.restaurantId) // Use authenticated user's restaurant ID
+      .eq('restaurant_id', restaurantId)
       .order('position', { ascending: true });
-
+      
     if (error) {
       console.error('Error fetching categories:', error);
       return NextResponse.json({ message: 'Error fetching categories', details: error.message }, { status: 500 });
@@ -64,7 +70,6 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
@@ -95,7 +100,8 @@ export async function POST(req: Request) {
 
     const categoryData: Record<string, unknown> = {
         restaurant_id: user.restaurantId, // Use authenticated user's restaurant ID
-        name_en: primaryName,
+        name: primaryName, 
+        name_en: primaryName, // Use name_en as primary
     };
 
     // Add optional fields if they are provided and not empty
@@ -109,7 +115,7 @@ export async function POST(req: Request) {
         categoryData.position = position;
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('categories')
       .insert([categoryData])
       .select()
