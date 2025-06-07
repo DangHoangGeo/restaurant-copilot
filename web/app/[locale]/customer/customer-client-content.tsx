@@ -11,6 +11,7 @@ import { CustomerLayout } from "@/components/features/customer/CustomerLayout";
 
 // Screens
 import { CustomerMenuScreen } from "@/components/features/customer/screens/CustomerMenuScreen";
+import { CustomerMenuItemDetailScreen } from "@/components/features/customer/screens/CustomerMenuItemDetailScreen"; // Added import
 import { ReviewOrderScreen } from "@/components/features/customer/screens/ReviewOrderScreen";
 import { OrderPlacedScreen } from "@/components/features/customer/screens/OrderPlacedScreen";
 import { ThankYouScreen } from "@/components/features/customer/screens/ThankYouScreen";
@@ -26,8 +27,9 @@ import {
   MenuViewProps, 
   CheckoutViewProps, 
   OrderPlacedScreenViewProps, 
-  ThankYouScreenViewProps, 
+  ThankYouScreenViewProps,
   ReviewViewProps,
+  MenuItemDetailViewProps, // Added import
   SessionData // Import SessionData
 } from "@/components/features/customer/screens/types"; // Updated imports
 
@@ -260,6 +262,15 @@ export function CustomerClientContent({
             categories={categories}
             featureFlags={bookingScreenFeatureFlags}
             viewProps={viewProps as ViewProps} // Cast
+          />
+        );
+        break;
+      case "menuitemdetail":
+        ScreenComponent = (
+          <CustomerMenuItemDetailScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps as MenuItemDetailViewProps} // Cast
           />
         );
         break;

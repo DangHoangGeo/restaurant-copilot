@@ -1,4 +1,5 @@
 import type { CartItem } from "../CartContext"; // Assuming CartContext.ts is in the parent directory
+import type { MenuItem } from "web/shared/types/customer";
 
 export interface OrderItemDetail {
   itemId: string;
@@ -67,17 +68,28 @@ export type ViewType =
   | "admin"
   | "expired"
   | "invalid"
-  | "orderhistory";
+  | "orderhistory"
+  | "menuitemdetail";
 
 // ViewProps is the union of all possible props objects that can be associated with a view.
 // This type is used for the `viewProps` state in customer-client-content.tsx
 // and for the `props` parameter in the `setView` function.
+
+export interface MenuItemDetailViewProps {
+  item: MenuItem;
+  tableId?: string;
+  sessionId?: string;
+  tableNumber?: string;
+  canAddItems?: boolean;
+}
+
 export type ViewProps =
   | MenuViewProps
   | CheckoutViewProps
   | OrderPlacedScreenViewProps
   | ThankYouScreenViewProps
-  | ReviewViewProps; //| BookingViewProps;
+  | ReviewViewProps //| BookingViewProps;
+  | MenuItemDetailViewProps;
 
 export interface SessionData {
   sessionId?: string;

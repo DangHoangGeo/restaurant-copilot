@@ -194,6 +194,10 @@ export function CustomerMenuScreen({
         brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
         recommended={menu[0]?.menu_items.slice(0, 2) || []}
         canAddItems={canAddItems && sessionStatus === 'valid'}
+        setView={setView} // Added
+        tableId={tableId} // Added
+        sessionId={sessionId} // Added
+        tableNumber={tableNumber} // Added
       />
 
       {canAddItems && sessionStatus === 'valid' && (
