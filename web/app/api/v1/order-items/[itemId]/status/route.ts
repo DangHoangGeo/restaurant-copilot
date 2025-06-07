@@ -9,7 +9,7 @@ const updateStatusSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { itemId: string } }
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
     const user = await getUserFromRequest();
@@ -20,7 +20,7 @@ export async function PATCH(
       );
     }
 
-    const { itemId } = params;
+    const { itemId } = await params;
     const body = await req.json();
     const validatedData = updateStatusSchema.safeParse(body);
 

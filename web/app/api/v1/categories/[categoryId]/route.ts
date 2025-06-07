@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
@@ -11,7 +11,7 @@ const categoryUpdateSchema = z.object({
   position: z.number().optional(),
 });
 
-export async function PUT(req: NextRequest, { params }: { params: { categoryId: string } }) {
+export async function PUT(req: Request,{ params }: { params: Promise<{ categoryId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
@@ -69,14 +69,15 @@ export async function PUT(req: NextRequest, { params }: { params: { categoryId: 
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { categoryId: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ categoryId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
+	console.log("req", req);
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 
-  const { categoryId } = params;
+  const { categoryId } = await params;
 
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

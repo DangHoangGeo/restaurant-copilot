@@ -20,7 +20,7 @@ const menuItemUpdateSchema = z.object({
   position: z.number().optional(),
 });
 
-export async function PUT(req: NextRequest, { params }: { params: { itemId: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ itemId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
@@ -95,14 +95,15 @@ export async function PUT(req: NextRequest, { params }: { params: { itemId: stri
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { itemId: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ itemId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
+	console.log("req", req);
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 
-  const { itemId } = params;
+  const { itemId } = await params;
 
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

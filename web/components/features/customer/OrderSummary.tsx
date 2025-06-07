@@ -30,7 +30,7 @@ export function OrderSummary({ items, total, restaurantSettings, locale , classN
         <div key={`${item.itemId}-${index}`} className="flex justify-between items-start py-2 border-b last:border-b-0 dark:border-slate-700">
           <div className="flex-1">
             <h4 className="font-medium text-sm">
-              {getLocalizedText(item as any, locale)}
+              {getLocalizedText(item.name, locale)||item.itemName || item.name}
             </h4>
             <p className="text-sm text-slate-600 dark:text-slate-300">
               {t("checkout.quantity")}: {item.qty || item.quantity || 1}

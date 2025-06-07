@@ -2,20 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { orderId: string } }
+export async function POST(req: NextRequest,
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     const user = await getUserFromRequest();
     if (!user || !user.restaurantId) {
+	  console.error("Unauthorized access attempt",req.url);
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const { orderId } = params;
+    const { orderId } = await params;
 
     // Verify the order exists and belongs to the restaurant
     const { data: order, error: orderError } = await supabaseAdmin

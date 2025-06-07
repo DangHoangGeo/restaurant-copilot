@@ -8,10 +8,11 @@ import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";
 import { useCart } from "./CartContext";
 import type { RestaurantSettings } from "@/shared/types/customer";
+import { ViewType, ViewProps } from "./screens/types";
 
 interface CustomerLayoutProps {
   children: ReactNode;
-  setView: (v: string, props?: any) => void;
+  setView: (v: ViewType, props?: ViewProps) => void;
   restaurantSettings: RestaurantSettings;
   featureFlags: {
     aiChat: boolean;
@@ -36,9 +37,9 @@ export function CustomerLayout({
     const sessionId = localStorage.getItem("sessionId");
 
     setView("orderhistory", {
-      tableId,
-      tableNumber,
-      sessionId,
+      tableId: tableId ?? undefined,
+      tableNumber: tableNumber ?? undefined,
+      sessionId: sessionId ?? undefined,
     });
   };
 

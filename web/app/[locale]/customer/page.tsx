@@ -4,15 +4,7 @@ import { getSubdomainFromHost } from '@/lib/utils'
 import { getRestaurantSettingsFromSubdomain } from '@/lib/server/restaurant-settings'
 import { fetchMenuAndTables } from '@/lib/server/customer-data'
 import { CustomerClientContent } from './customer-client-content'
-
-interface SessionData {
-  sessionId?: string;
-  tableNumber?: string;
-  sessionStatus: 'valid' | 'expired' | 'invalid' | 'new';
-  canAddItems: boolean;
-  orderId?: string;
-  isNewSession?: boolean;
-}
+import type { SessionData } from '@/components/features/customer/screens/types'; // Import SessionData
 
 async function validateTableAndCreateSession(tableId: string, subdomain: string): Promise<SessionData> {
   try {

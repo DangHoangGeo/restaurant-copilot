@@ -31,22 +31,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Eye,
   Plus,
   ChefHat,
   Clock,
-  DollarSign,
-  Users,
   ShoppingCart,
   Check,
-  X,
-  Filter,
   Search,
-  RefreshCw,
   CreditCard,
-  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getLocalizedText } from "@/lib/customerUtils";
@@ -282,30 +275,6 @@ export function OrdersClientContent({
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: Order["status"]) => {
-    try {
-      const response = await fetch(`/api/v1/orders/${orderId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update order status");
-      
-      toast.success(t("order_status_updated"));
-      
-      // Optimistically update the local state
-      setOrders(prevOrders => 
-        prevOrders.map(order =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      toast.error(t("error_updating_status"));
-    }
-  };
-
   const createNewOrder = async () => {
     if (!selectedTable || Object.keys(currentOrderItems).length === 0) {
       toast.error(t("select_table_and_items"));
@@ -314,7 +283,7 @@ export function OrdersClientContent({
 
     try {
       const orderItems = Object.entries(currentOrderItems)
-        .filter(([_, quantity]) => quantity > 0)
+        //.filter(([unused, quantity]) => quantity > 0)
         .map(([menuItemId, quantity]) => ({
           menu_item_id: menuItemId,
           quantity,
@@ -358,7 +327,7 @@ export function OrdersClientContent({
 
     try {
       const orderItems = Object.entries(currentOrderItems)
-        .filter(([_, quantity]) => quantity > 0)
+        //.filter(([unused, quantity]) => quantity > 0)
         .map(([menuItemId, quantity]) => ({
           menu_item_id: menuItemId,
           quantity,
@@ -470,7 +439,7 @@ export function OrdersClientContent({
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="font-medium">
-                          {getLocalizedText(item.menu_items[0], locale)}
+                          {getLocalizedText({"name_en":item.menu_items[0].name_en,"name_vi":item.menu_items[0].name_vi,"name_jp":item.menu_items[0].name_ja}, locale)}
                         </span>
                         <span className="text-sm text-gray-500">
                           ¥{item.menu_items[0]?.price?.toLocaleString()}
@@ -619,14 +588,14 @@ export function OrdersClientContent({
         {menuCategories.map((category) => (
           <Card key={category.id}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{getLocalizedText(category,locale)}</CardTitle>
+              <CardTitle className="text-sm">{getLocalizedText({"name_en":category.name_en,"name_vi":category.name_vi,"name_jp":category.name_ja},locale)}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {category.menu_items.filter(item => item.available).map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-2 border rounded">
                     <div className="flex-1">
-                      <span className="font-medium text-sm">{getLocalizedText(item,locale)}</span>
+                      <span className="font-medium text-sm">{getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_jp":item.name_ja},locale)}</span>
                       <span className="text-xs text-gray-500 block">¥{item.price.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center gap-2">

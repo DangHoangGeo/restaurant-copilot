@@ -1,6 +1,5 @@
 import { DashboardClientContent, DashboardData } from './dashboard-client-content';
 import { getTranslations } from 'next-intl/server';
-import { createClient } from '@/lib/supabase/server'; // Your server Supabase client
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings'; // Assuming this exists
 import { headers } from 'next/headers';

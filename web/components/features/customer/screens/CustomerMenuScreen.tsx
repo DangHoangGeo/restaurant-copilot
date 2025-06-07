@@ -8,19 +8,20 @@ import { Alert } from "@/components/ui/alert";
 import { MenuList } from "@/components/features/customer/MenuList";
 import { FloatingCart } from "@/components/features/customer/FloatingCart";
 import { useCart } from "../CartContext";
-import { getCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
+import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import type { RestaurantSettings, Category, MenuItem } from "@/shared/types/customer";
+import { MenuViewProps, ViewProps, ViewType } from "./types";
 
 interface CustomerMenuScreenProps {
-  setView: (v: string, props?: any) => void;
+  setView: (view: ViewType, props?: ViewProps) => void;
   restaurantSettings: RestaurantSettings;
-  viewProps?: any;
+  viewProps?: MenuViewProps;
   categories: Category[];
   featureFlags: {
     tableBooking: boolean;
   };
-  canAddItems?: boolean;
-  sessionData?: {
+  canAddItems?: boolean; // This can be part of viewProps or a direct prop if sessionData is not fully integrated into viewProps yet
+  sessionData?: { // This might be better handled by passing relevant parts into viewProps
     sessionId: string | null;
     tableId: string | null;
     tableNumber: string | null;
@@ -43,13 +44,14 @@ export function CustomerMenuScreen({
   const [showAddedToCartMsg, setShowAddedToCartMsg] = useState("");
   const [sessionStatus, setSessionStatus] = useState<'checking' | 'valid' | 'expired' | 'invalid'>('checking');
   const [menu] = useState<Category[]>(categories);
-  const locale = getCurrentLocale();
+  const locale = useGetCurrentLocale();
   
-  // Use sessionData if available, otherwise fall back to viewProps
+  // Consolidate prop access
   const tableId = sessionData?.tableId || viewProps?.tableId;
   const sessionId = sessionData?.sessionId || viewProps?.sessionId;
   const tableNumber = sessionData?.tableNumber || viewProps?.tableNumber;
-  const canAddItems = propCanAddItems ?? sessionData?.canOrder ?? viewProps?.canAddItems ?? false;
+  // Prefer canAddItems from viewProps if available, then sessionData, then direct prop
+  const canAddItems = viewProps?.canAddItems ?? sessionData?.canOrder ?? propCanAddItems ?? false;
 
   // Check session status periodically for updates
   useEffect(() => {
@@ -98,7 +100,7 @@ export function CustomerMenuScreen({
     addToCart(item, quantity);
     setShowAddedToCartMsg(
       t("menu.item_added_to_cart_msg", {
-        item: getLocalizedText(item, locale),
+        item: getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_jp":item.name_ja}, locale),
       }),
     );
     setTimeout(() => setShowAddedToCartMsg(""), 2000);
@@ -124,7 +126,7 @@ export function CustomerMenuScreen({
             You can still view the menu, but ordering is no longer available for this session.
           </p>
           <Button 
-            onClick={() => setView("menu", { canAddItems: false })}
+            onClick={() => setView("menu", { ...viewProps, canAddItems: false })}
             variant="outline"
           >
             View Menu Only
@@ -198,7 +200,7 @@ export function CustomerMenuScreen({
         <FloatingCart
           count={totalCartItems}
           total={totalCartPrice}
-          onCheckout={() => setView("checkout", { tableId, sessionId })}
+          onCheckout={() => setView("checkout", { tableId, sessionId, tableNumber })}
           brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
         />
       )}

@@ -27,8 +27,11 @@ export interface Category {
 export interface TableInfo {
   id: string;
   name: string;
-  position_x: number | null;
-  position_y: number | null;
+  status?: "available" | "occupied" | "reserved";
+  is_outdoor: boolean;
+  is_accessible: boolean;
+  notes?: string | null;
+  qr_code?: string | null;
   capacity: number | null;
 }
 
