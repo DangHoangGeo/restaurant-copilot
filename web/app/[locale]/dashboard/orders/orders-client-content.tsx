@@ -82,6 +82,7 @@ export function OrdersClientContent({
       try {
         const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
         const data = await res.json();
+        console.log("Fetched orders:", data);
         if (data.success) {
           setOrders(data.orders);
         }

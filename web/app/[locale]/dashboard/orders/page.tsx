@@ -96,7 +96,7 @@ export default async function OrdersPage({
         .eq("restaurant_id", user.restaurantId)
         .gte("created_at", start)
         .order("created_at", { ascending: true });
-
+      console.log("Fetched orders:", ordersData);
       if (ordersError) throw ordersError;
 
       initialOrders = ordersData as Order[];
