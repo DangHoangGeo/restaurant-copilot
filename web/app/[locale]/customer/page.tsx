@@ -10,6 +10,8 @@ interface SessionData {
   tableNumber?: string;
   sessionStatus: 'valid' | 'expired' | 'invalid' | 'new';
   canAddItems: boolean;
+  orderId?: string;
+  isNewSession?: boolean;
 }
 
 async function validateTableAndCreateSession(tableId: string, subdomain: string): Promise<SessionData> {
@@ -18,6 +20,8 @@ async function validateTableAndCreateSession(tableId: string, subdomain: string)
     const host = process.env.VERCEL_URL || `${subdomain}.localhost:3000`
     const baseUrl = `${protocol}://${host}`
     
+    console.log(`Validating table ${tableId} for subdomain ${subdomain}`);
+    
     const response = await fetch(`${baseUrl}/api/v1/sessions/create?tableId=${tableId}`, {
       headers: {
         'host': host
@@ -25,17 +29,21 @@ async function validateTableAndCreateSession(tableId: string, subdomain: string)
     })
     
     if (!response.ok) {
+      console.error('Session creation failed:', response.status, response.statusText);
       return { sessionStatus: 'invalid', canAddItems: false }
     }
     
     const data = await response.json()
+    console.log('Session creation response:', data);
     
     if (data.success) {
       return {
         sessionId: data.sessionId,
         tableNumber: data.tableNumber,
         sessionStatus: 'valid',
-        canAddItems: true
+        canAddItems: true,
+        orderId: data.orderId,
+        isNewSession: data.isNewSession
       }
     }
     

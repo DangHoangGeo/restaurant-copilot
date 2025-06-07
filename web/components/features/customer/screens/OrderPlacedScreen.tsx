@@ -49,9 +49,8 @@ export function OrderPlacedScreen({
         items={items}
         total={total}
         locale={locale}
-        showImages={false}
-        isAdjustable={false}
         className="max-w-md mx-auto mb-8 p-4 text-left"
+        restaurantSettings={restaurantSettings}
       />
       {tableId && (
         <p className="text-sm text-center mb-6">

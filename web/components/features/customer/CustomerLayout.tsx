@@ -27,11 +27,27 @@ export function CustomerLayout({
   const t = useTranslations("Customer");
   const { totalCartItems } = useCart();
 
+  const handleOrderHistoryClick = () => {
+    // Get table info from localStorage or URL
+    const tableId =
+      localStorage.getItem("tableId") ||
+      new URLSearchParams(window.location.search).get("tableId");
+    const tableNumber = localStorage.getItem("tableNumber");
+    const sessionId = localStorage.getItem("sessionId");
+
+    setView("orderhistory", {
+      tableId,
+      tableNumber,
+      sessionId,
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
       <CustomerHeader
         restaurantSettings={restaurantSettings}
         onCartClick={() => setView("checkout")}
+        onOrderHistoryClick={handleOrderHistoryClick}
         cartItemCount={totalCartItems}
       />
       <main className="flex-1 container mx-auto px-4 py-6 sm:py-8">
@@ -45,19 +61,25 @@ export function CustomerLayout({
             size="sm"
             className="rounded-full p-3 shadow-xl"
             aria-label={t("ai_chat.toggle_label")}
-            // onClick={() => { /* TODO: Implement AI Chat toggle */ }}
+            onClick={() => {
+              // AI Chat functionality
+              console.log("AI Chat clicked");
+            }}
           >
             <MessageCircleMore className="h-5 w-5" />
           </Button>
         )}
         <Button
-          onClick={() => setView("admin")}
           variant="secondary"
           size="sm"
-          className="hidden sm:flex"
+          className="rounded-full p-3 shadow-xl"
+          aria-label={t("admin_panel.toggle_label")}
+          onClick={() => {
+            // Navigate to admin - this should probably be a proper route navigation
+            window.open("/admin", "_blank");
+          }}
         >
-          <Briefcase className="h-5 w-5 mr-2" />
-          {t("admin_panel_button")}
+          <Briefcase className="h-5 w-5" />
         </Button>
       </div>
     </div>

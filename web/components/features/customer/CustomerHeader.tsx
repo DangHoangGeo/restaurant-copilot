@@ -3,7 +3,7 @@
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import type { RestaurantSettings } from "@/shared/types/customer";
@@ -11,12 +11,14 @@ import type { RestaurantSettings } from "@/shared/types/customer";
 interface CustomerHeaderProps {
   restaurantSettings: RestaurantSettings;
   onCartClick: () => void;
+  onOrderHistoryClick: () => void;
   cartItemCount: number;
 }
 
 export function CustomerHeader({
   restaurantSettings,
   onCartClick,
+  onOrderHistoryClick,
   cartItemCount,
 }: CustomerHeaderProps) {
   const t = useTranslations("Common");
@@ -51,6 +53,16 @@ export function CustomerHeader({
             currentLocale={locale}
             onLocaleChange={handleLocaleChange}
           />
+          <Button
+            variant="ghost"
+            onClick={onOrderHistoryClick}
+            className="text-white hover:bg-white/20"
+            aria-label={t("order_history_label")}
+            size="sm"
+          >
+            <Clock className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1">History</span>
+          </Button>
           <Button
             variant="ghost"
             onClick={onCartClick}

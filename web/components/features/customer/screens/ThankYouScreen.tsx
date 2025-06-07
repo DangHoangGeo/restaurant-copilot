@@ -1,18 +1,30 @@
 // web/components/features/customer/screens/ThankYouScreen.tsx
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslations } from "next-intl";
-import { CheckCircle, Star } from "lucide-react";
+import { CheckCircle, Plus, Clock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { OrderSummary } from "@/components/features/customer/OrderSummary";
+import { getCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import type { RestaurantSettings } from "@/shared/types/customer";
 
 interface ThankYouScreenProps {
-  setView: (v: string, props?: any) => void;
+  setView: (view: string, props?: any) => void;
   restaurantSettings: RestaurantSettings;
-  viewProps?: any;
-  featureFlags: {
-    advancedReviews: boolean;
+  viewProps: {
+    orderId: string;
+    items: Array<{
+      itemId: string;
+      name: string;
+      qty: number;
+      price: number;
+      quantity?: number;
+      itemName?: string;
+    }>;
+    total: number;
+    tableId?: string;
+    tableNumber?: string;
   };
 }
 
@@ -20,115 +32,168 @@ export function ThankYouScreen({
   setView,
   restaurantSettings,
   viewProps,
-  featureFlags,
 }: ThankYouScreenProps) {
   const t = useTranslations("Customer");
-  const orderId = viewProps?.orderId;
-  const items = viewProps?.items || [];
-  const total = viewProps?.total || 0;
-  const tableNumber = viewProps?.tableNumber;
+  const { orderId, items, total, tableNumber } = viewProps;
+  const locale = getCurrentLocale();
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
 
-  // Helper function to get item name (now items should have string names)
-  const getItemName = (item: any) => {
-    // If item.name is already a string, use it directly
-    if (typeof item.name === 'string') return item.name;
-    
-    // If item.itemName is a string, use it
-    if (typeof item.itemName === 'string') return item.itemName;
-    
-    // Fallback for old format with localized names
-    if (item.name_en) return item.name_en;
-    if (item.name_ja) return item.name_ja;
-    if (item.name_vi) return item.name_vi;
-    
-    // Final fallback
-    return "Item";
+  const handleAddMoreItems = () => {
+    setView("menu", viewProps);
+  };
+
+  const handleViewOrderHistory = () => {
+    setView("orderhistory", {
+      tableId: viewProps.tableId,
+      sessionId: orderId, // Use orderId as sessionId for current session
+      tableNumber
+    });
+  };
+
+  const handleLeaveReview = (itemId: string) => {
+    setView("review", {
+      orderId,
+      items,
+      currentItemIndex: items.findIndex(item => item.itemId === itemId),
+    });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <Card className="max-w-lg w-full p-8 text-center">
-        <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
-        
-        <h1 className="text-3xl font-bold text-green-600 mb-4">
-          {t("thankyou.title")}
-        </h1>
-        
-        <p className="text-gray-600 mb-6">
-          {t("thankyou.message")}
+    <div className="max-w-2xl mx-auto p-4 space-y-6">
+      {/* Success Message */}
+      <div className="text-center py-8">
+        <CheckCircle
+          className="mx-auto mb-6 text-green-500 dark:text-green-400"
+          size={64}
+        />
+        <h2 className="text-3xl font-bold mb-3">{t("thankyou.title")}</h2>
+        <p className="text-lg text-slate-600 dark:text-slate-300 mb-2">
+          {t("thankyou.subtitle")}
         </p>
-
-        {orderId && (
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <p className="text-sm text-gray-500 mb-1">
-              {t("thankyou.order_id")}
-            </p>
-            <p className="font-mono text-lg font-semibold">
-              {orderId}
-            </p>
-            {tableNumber && (
-              <p className="text-sm text-gray-500 mt-2">
-                {t("thankyou.table_number", { number: tableNumber })}
-              </p>
-            )}
-          </div>
-        )}
-
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">
-            {t("thankyou.order_summary")}
-          </h3>
-          <div className="space-y-2 text-left">
-            {items.map((item: any, index: number) => (
-              <div key={index} className="flex justify-between items-center">
-                <span>{getItemName(item)} x{item.qty || item.quantity || 1}</span>
-                <span className="font-medium">
-                  {t("currency_format", { value: (item.price || 0) * (item.qty || item.quantity || 1) })}
-                </span>
-              </div>
-            ))}
-            <hr className="my-2" />
-            <div className="flex justify-between items-center font-bold">
-              <span>{t("thankyou.total")}</span>
-              <span>{t("currency_format", { value: total })}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            {t("thankyou.preparation_message")}
+        <p
+          className="text-lg font-semibold mb-4"
+          style={{ color: restaurantSettings.primaryColor || "#0ea5e9" }}
+        >
+          {t("thankyou.order_id_label")}: #{orderId.slice(-6)}
+        </p>
+        {tableNumber && (
+          <p className="text-md text-slate-600 dark:text-slate-300">
+            {t("thankyou.table_number", { number: tableNumber })}
           </p>
+        )}
+      </div>
 
-          {featureFlags.advancedReviews && items.length > 0 && (
-            <div className="border-t pt-4">
-              <p className="text-sm text-gray-600 mb-3">
-                {t("thankyou.review_prompt")}
-              </p>
-              <Button
-                onClick={() => setView("review", { 
-                  orderId, 
-                  items: items.slice(0, 1), // Start with first item
-                  currentItemIndex: 0
-                })}
-                variant="outline"
-                className="w-full"
-              >
-                <Star className="h-4 w-4 mr-2" />
-                {t("thankyou.leave_review_button")}
-              </Button>
-            </div>
-          )}
+      {/* Order Summary */}
+      <Card className="p-6">
+        <h3 className="text-xl font-semibold mb-4">{t("thankyou.order_summary_title")}</h3>
+        <OrderSummary
+          items={items}
+          total={total}
+          restaurantSettings={restaurantSettings}
+          locale={locale}
+        />
+      </Card>
 
+      {/* Next Steps */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">{t("thankyou.preparation_message")}</h3>
+        <div className="space-y-3">
           <Button
-            onClick={() => setView("menu")}
-            style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
-            className="w-full text-white hover:opacity-90"
+            onClick={handleAddMoreItems}
+            variant="outline"
+            className="w-full justify-center"
+            size="lg"
           >
-            {t("thankyou.back_to_menu")}
+            <Plus className="h-5 w-5 mr-2" />
+            {t("orderplaced.add_more_button")}
+          </Button>
+          
+          <Button
+            onClick={handleViewOrderHistory}
+            variant="outline"
+            className="w-full justify-center"
+            size="lg"
+          >
+            <Clock className="h-5 w-5 mr-2" />
+            {t("thankyou.view_order_history")}
           </Button>
         </div>
       </Card>
+
+      {/* Review Section */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">{t("thankyou.rate_dishes_title")}</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+          {t("thankyou.review_prompt")}
+        </p>
+        <div className="space-y-2">
+          {items.map((item) => (
+            <Button
+              key={item.itemId}
+              onClick={() => handleLeaveReview(item.itemId)}
+              variant="ghost"
+              className="w-full justify-between"
+              size="sm"
+            >
+              <span>{getLocalizedText(item as any, locale)}</span>
+              <Star className="h-4 w-4" />
+            </Button>
+          ))}
+        </div>
+      </Card>
+
+      {/* Order History Modal/Section */}
+      {showOrderHistory && (
+        <Card className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">{t("thankyou.order_history_title")}</h3>
+            <Button
+              onClick={() => setShowOrderHistory(false)}
+              variant="ghost"
+              size="sm"
+            >
+              ×
+            </Button>
+          </div>
+          <div className="space-y-4">
+            <div className="border rounded-lg p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="font-medium">#{orderId.slice(-6)}</p>
+                  <p className="text-sm text-slate-600">
+                    {new Date().toLocaleDateString(locale, { 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">{t("currency_format", { value: total })}</p>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {t("thankyou.status_preparing")}
+                  </span>
+                </div>
+              </div>
+              <div className="text-sm text-slate-600">
+                {items.length} {items.length === 1 ? t("thankyou.item") : t("thankyou.items")}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Back to Menu */}
+      <div className="text-center pt-4">
+        <Button
+          onClick={() => setView("menu", viewProps)}
+          variant="ghost"
+          className="text-slate-600 dark:text-slate-300"
+        >
+          {t("thankyou.back_to_menu_button")}
+        </Button>
+      </div>
     </div>
   );
 }

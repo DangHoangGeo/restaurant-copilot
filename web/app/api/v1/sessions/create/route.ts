@@ -37,26 +37,31 @@ export async function GET(req: NextRequest) {
     // Check if there's already an active session for this table
     const { data: existingOrder } = await supabaseAdmin
       .from("orders")
-      .select("session_id, status")
+      .select("session_id, status, id")
       .eq("table_id", tableId)
       .eq("restaurant_id", restaurantId)
-      .eq("status", "new")
+      .neq("status", "completed") // Exclude completed orders
+      .neq("status", "cancelled") // Exclude cancelled orders
+      .neq("status", "expired") // Exclude expired orders
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
     // If there's already an active session, return it
     if (existingOrder) {
+      console.log('Returning existing session:', existingOrder.session_id);
       return NextResponse.json({ 
         success: true, 
         sessionId: existingOrder.session_id, 
         tableNumber: table.name,
-        isNewSession: false
+        isNewSession: false,
+        orderId: existingOrder.id
       });
     }
 
-    // Create new session
+    // Create new session with a UUID
     const sessionId = randomUUID();
+    console.log('Creating new session with ID:', sessionId);
     
     const { data: newOrder, error: orderError } = await supabaseAdmin
       .from("orders")
@@ -71,14 +76,17 @@ export async function GET(req: NextRequest) {
       .single();
 
     if (orderError || !newOrder) {
+      console.error("Failed to create order:", orderError);
       return NextResponse.json({ success: false, error: "Failed to create session" }, { status: 500 });
     }
 
+    console.log('Created new order with session ID:', newOrder.session_id);
     return NextResponse.json({ 
       success: true, 
       sessionId: newOrder.session_id, 
       tableNumber: table.name,
-      isNewSession: true
+      isNewSession: true,
+      orderId: newOrder.id
     });
 
   } catch (error) {

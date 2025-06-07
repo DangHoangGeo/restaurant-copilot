@@ -16,6 +16,7 @@ import { OrderPlacedScreen } from "@/components/features/customer/screens/OrderP
 import { ThankYouScreen } from "@/components/features/customer/screens/ThankYouScreen";
 import { ReviewScreen } from "@/components/features/customer/screens/ReviewScreen";
 import { BookingScreen } from "@/components/features/customer/screens/BookingScreen";
+import { OrderHistoryScreen } from "@/components/features/customer/screens/OrderHistoryScreen";
 
 // Types
 import type { RestaurantSettings, Category, TableInfo } from "@/shared/types/customer";
@@ -52,23 +53,73 @@ export function CustomerClientContent({
   sessionData,
 }: CustomerClientContentProps) {
   const [view, setViewState] = useState<
-    "menu" | "checkout" | "orderplaced" | "thankyou" | "review" | "booking" | "admin" | "expired" | "invalid"
+    "menu" | "checkout" | "orderplaced" | "thankyou" | "review" | "booking" | "admin" | "expired" | "invalid" | "orderhistory"
   >("menu");
-  const [viewProps, setViewProps] = useState<any>({ 
+  const [viewProps, setViewProps] = useState<{ 
+    tableId?: string; 
+    sessionId?: string;
+    tableNumber?: string;
+    canAddItems: boolean;
+    orderId?: string;
+    items?: any[];
+    total?: number;
+  }>({ 
     tableId, 
     sessionId: sessionData.sessionId,
     tableNumber: sessionData.tableNumber,
     canAddItems: sessionData.canAddItems
   }); 
 
-  // Store session data in localStorage when valid
+  // Store session data in localStorage when valid and sync with server
   useEffect(() => {
-    if (sessionData.sessionId) {
-      localStorage.setItem("sessionId", sessionData.sessionId);
-      localStorage.setItem("tableId", tableId || "");
-      localStorage.setItem("tableNumber", sessionData.tableNumber || "");
-    }
-  }, [sessionData.sessionId, tableId, sessionData.tableNumber]);
+    const syncSessionData = async () => {
+      // Always store the session data from server
+      if (sessionData.sessionId) {
+        localStorage.setItem("sessionId", sessionData.sessionId);
+        localStorage.setItem("tableId", tableId || "");
+        localStorage.setItem("tableNumber", sessionData.tableNumber || "");
+      }
+
+      // Check if local sessionId differs from server sessionId
+      const localSessionId = localStorage.getItem("sessionId");
+      if (localSessionId && localSessionId !== sessionData.sessionId) {
+        console.log("Session ID mismatch detected, validating with server...");
+        
+        // Validate the local session ID with server
+        try {
+          const response = await fetch(`/api/v1/sessions/check?sessionId=${localSessionId}`);
+          const data = await response.json();
+          
+          if (data.success && data.sessionStatus === "active") {
+            // Local session is still valid, update viewProps to use it
+      
+            setViewProps(prev => ({
+              ...prev,
+              sessionId: localSessionId,
+              canAddItems: data.canAddItems
+            }));
+          } else {
+            // Local session is invalid, use server session
+            setViewProps(prev => ({
+              ...prev,
+              sessionId: sessionData.sessionId,
+              canAddItems: sessionData.canAddItems
+            }));
+          }
+        } catch (error) {
+          console.error("Session validation error:", error);
+          // On error, use server session
+          setViewProps(prev => ({
+            ...prev,
+            sessionId: sessionData.sessionId,
+            canAddItems: sessionData.canAddItems
+          }));
+        }
+      }
+    };
+
+    syncSessionData();
+  }, [sessionData.sessionId, tableId, sessionData.tableNumber, sessionData.canAddItems]);
 
   // Handle session status on mount
   useEffect(() => {
@@ -152,22 +203,35 @@ export function CustomerClientContent({
           />
         );
         break;
+      
       case "orderplaced":
+          const orderPlacedViewProps = {
+            ...viewProps,
+            orderId: viewProps.orderId || '',
+            items: viewProps.items || [],
+            total: viewProps.total || 0,
+          }
         ScreenComponent = (
           <OrderPlacedScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={viewProps}
+            viewProps={orderPlacedViewProps}
           />
         );
         break;
       case "thankyou":
+        const thankYouViewProps = {
+          orderId: viewProps.orderId || '',
+          items: viewProps.items || [],
+          total: viewProps.total || 0,
+          tableId: viewProps.tableId,
+          tableNumber: viewProps.tableNumber
+        };
         ScreenComponent = (
           <ThankYouScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={viewProps}
-            featureFlags={thankYouScreenFeatureFlags}
+            viewProps={thankYouViewProps}
           />
         );
         break;
@@ -178,6 +242,19 @@ export function CustomerClientContent({
             restaurantSettings={restaurantSettings}
             viewProps={viewProps}
             featureFlags={reviewScreenFeatureFlags}
+          />
+        );
+        break;
+      case "orderhistory":
+        const orderHistoryViewProps = {
+          ...viewProps,
+          tableId: viewProps.tableId || '',  // Provide default empty string
+        };
+        ScreenComponent = (
+          <OrderHistoryScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={orderHistoryViewProps}
           />
         );
         break;

@@ -231,6 +231,7 @@
       "canceled": "Canceled"
     },
     "view_cart_label": "View Cart",
+    "order_history_label": "Order History",
     "weekdays": {
       "mon": "Monday",
       "tue": "Tuesday",
@@ -614,7 +615,8 @@
       "add_to_cart_error": "Failed to add {itemName} to cart. Please try again.",
       "view_only": "View Only",
       "decrease_quantity": "Decrease quantity",
-      "increase_quantity": "Increase quantity"
+      "increase_quantity": "Increase quantity",
+      "item_added_to_cart_msg":"{item} added to cart!"
     },
     "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",
@@ -663,23 +665,24 @@
       "proceed_to_checkout_button": "Proceed to Checkout"
     },
     "thankyou": {
-      "title": "Thank You!",
-      "message": "Your order has been placed successfully and sent to the kitchen.",
-      "order_id": "Order ID",
-      "table_number": "Table {number}",
-      "order_summary": "Order Summary",
-      "total": "Total",
-      "preparation_message": "Your food is being prepared. We'll bring it to your table when ready.",
-      "review_prompt": "How was your experience? Your feedback helps us improve.",
-      "leave_review_button": "Leave a Review",
-      "back_to_menu": "Back to Menu",
-      "subtitle": "Your order has been placed successfully.",
+      "title": "Thank you for your order!",
+      "subtitle": "Your order has been received and is being prepared.",
       "order_id_label": "Order ID",
+      "table_number": "Table {number}",
       "order_summary_title": "Order Summary",
-      "table_number_label": "Table Number",
+      "preparation_message": "What would you like to do next?",
+      "add_more_items": "Add More Items",
+      "view_order_history": "View Order History",
       "rate_dishes_title": "Rate Your Dishes",
-      "rate_this_dish_button": "Rate {dish}",
-      "back_to_menu_button": "Back to Menu"
+      "review_prompt": "Help us improve by rating individual dishes:",
+      "order_history_title": "Order History",
+      "back_to_menu_button": "Back to Menu",
+      "item": "item",
+      "items": "items",
+      "status_ordered": "Ordered",
+      "status_preparing": "Preparing",
+      "status_ready": "Ready",
+      "status_completed": "Served"
     },
     "review": {
       "title": "Rate Your Experience",
