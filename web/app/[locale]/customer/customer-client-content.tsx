@@ -26,10 +26,12 @@ import {
   MenuViewProps, 
   CheckoutViewProps, 
   OrderPlacedScreenViewProps, 
-  ThankYouScreenViewProps, 
+  ThankYouScreenViewProps,
   ReviewViewProps,
+  MenuItemDetailViewProps, // Added import
   SessionData // Import SessionData
 } from "@/components/features/customer/screens/types"; // Updated imports
+import CustomerMenuItemDetailScreen from "@/components/features/customer/screens/CustomerMenuItemDetailScreen";
 
 // Define FEATURE_FLAGS locally or import from a central config.
 // These will be passed down to relevant components.
@@ -260,6 +262,15 @@ export function CustomerClientContent({
             categories={categories}
             featureFlags={bookingScreenFeatureFlags}
             viewProps={viewProps as ViewProps} // Cast
+          />
+        );
+        break;
+      case "menuitemdetail":
+        ScreenComponent = (
+          <CustomerMenuItemDetailScreen
+            setView={setView}
+            restaurantSettings={restaurantSettings}
+            viewProps={viewProps as MenuItemDetailViewProps} // Cast
           />
         );
         break;

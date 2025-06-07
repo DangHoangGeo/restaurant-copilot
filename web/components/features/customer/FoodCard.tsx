@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StarRating } from "@/components/ui/star-rating";
 import { PlusCircle } from "lucide-react";
-import { getLocalizedText } from "./utils";
+import { getLocalizedText } from "./utils"; // Assuming this is web/components/features/customer/utils.ts
+import type { ViewType, ViewProps } from "./screens/types"; // Path adjustment
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -33,6 +34,10 @@ interface FoodCardProps {
   brandColor: string;
   locale: string;
   canAddItems?: boolean;
+  setView: (view: ViewType, props?: ViewProps) => void; // Added
+  tableId?: string; // Added
+  sessionId?: string; // Added
+  tableNumber?: string; // Added
 }
 
 export function FoodCard({
@@ -44,6 +49,10 @@ export function FoodCard({
   brandColor,
   locale,
   canAddItems = true,
+  setView, // Added
+  tableId, // Added
+  sessionId, // Added
+  tableNumber, // Added
 }: FoodCardProps) {
   const t = useTranslations("Customer");
   const [isAdding, setIsAdding] = useState(false);
@@ -69,49 +78,44 @@ export function FoodCard({
     <motion.div
       animate={isAdding ? { scale: 1.05 } : { scale: 1 }}
     >
-      <div className="flex flex-col">
-        <Card className={`flex flex-col p-2 ${!canAddItems ? 'opacity-75' : ''}`}>
-          <img
-            src={
-              item.image_url ||
-              "https://placehold.co/300x200/E2E8F0/334155?text=Food"
-            }
-            alt={getLocalizedText(
-              item as unknown as Record<string, unknown>,
-              locale,
-            )}
-            className="w-full h-40 object-cover rounded-t-2xl mb-3"
-            loading="lazy"
-          />
-          <div className="flex-grow">
-            <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-              {getLocalizedText(
+      <div className="flex flex-col group"> {/* Added group class here */}
+        <Card className={`flex flex-col pt-0 pb-1 ${!canAddItems ? 'opacity-75' : ''} overflow-hidden`}>
+          <div
+            className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150 ease-in-out" // Removed rounded-lg and overflow-hidden
+            onClick={() => setView("menuitemdetail", { item, tableId, sessionId, tableNumber, canAddItems })}
+          >
+            {/* Image container now has overflow-hidden, image itself is rounded-t-2xl if not full card click area */}
+            <img
+              src={
+                item.image_url ||
+                "https://placehold.co/300x200/E2E8F0/334155?text=Food"
+              }
+              alt={getLocalizedText(
                 item as unknown as Record<string, unknown>,
                 locale,
               )}
-            </h4>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mb-1 h-10 overflow-hidden">
-              {getLocalizedText(
-                {
-                  [`description_${locale}`]:
-                    item[
-                      `description_${locale as "en" | "ja" | "vi"}` as keyof FoodItem
-                    ],
-                  description_en: item.description_en,
-                },
-                locale,
-              )}
-            </p>
-            <StarRating
-              value={item.averageRating || 0}
-              count={item.reviewCount || 0}
-              size="sm"
+              className="w-full h-40 object-cover group-hover:scale-105 transform transition-transform duration-150 ease-in-out" // Removed rounded-t-lg
+              loading="lazy"
             />
+            <div className="flex-grow p-2"> {/* Changed p-1 to p-2 for better spacing with hover bg */}
+              <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">
+                {getLocalizedText(
+                  item as unknown as Record<string, unknown>,
+                  locale,
+                )}
+              </h4>
+              {/* Description paragraph removed */}
+              <StarRating
+                value={item.averageRating || 0}
+                count={item.reviewCount || 0}
+              />
+            </div>
           </div>
-          <div className="flex justify-between items-center mt-3">
+          <div className="flex justify-between items-center p-2"> {/* Changed px-1 to p-2 for content within clickable area */}
             <p className="text-lg font-bold" style={{ color: brandColor }}>
               {t("currency_format", { value: item.price })}
             </p>
+            {/* Price and buttons are outside the clickable div */}
             {canAddItems ? (
               qtyInCart > 0 ? (
                 <div className="flex items-center space-x-2">

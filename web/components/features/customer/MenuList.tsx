@@ -3,8 +3,10 @@ import { useState, useMemo } from "react";
 import { CategoryTabs } from "./CategoryTabs";
 import { FoodCard, FoodItem } from "./FoodCard";
 import { getLocalizedText } from "./utils";
+import type { ViewType, ViewProps } from "./screens/types"; // Added import
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { XCircle } from "lucide-react"; // Added import for XCircle
 
 interface Category {
   id: string;
@@ -25,6 +27,10 @@ interface Props {
   brandColor: string;
   recommended?: FoodItem[];
   canAddItems?: boolean;
+  setView: (view: ViewType, props?: ViewProps) => void; // Added
+  tableId?: string; // Added
+  sessionId?: string; // Added
+  tableNumber?: string; // Added
 }
 
 export function MenuList({
@@ -37,6 +43,10 @@ export function MenuList({
   brandColor,
   recommended = [],
   canAddItems = true,
+  setView, // Added
+  tableId, // Added
+  sessionId, // Added
+  tableNumber, // Added
 }: Props) {
   const [search, setSearch] = useState("");
   const t = useTranslations("Customer");
@@ -113,14 +123,25 @@ export function MenuList({
 
   return (
     <div>
-      <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 pb-3">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={searchPlaceholder}
-          className="w-full mt-2 p-2 border rounded-md"
-        />
+      <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 py-3"> {/* Changed pb-3 to py-3 for consistent padding */}
+        <div className="relative w-full"> {/* mt-2 was here, moved to input for more specific control if needed, or keep on wrapper */}
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="w-full p-2 pr-10 border rounded-md focus:ring-2 focus:ring-offset-1 focus:ring-sky-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white" // Added pr-10 for button space and focus styles
+          />
+          {search.length > 0 && (
+            <button
+              onClick={() => setSearch("")}
+              aria-label={t("menu.clear_search")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          )}
+        </div>
         <CategoryTabs
           categories={categories}
           onSelect={setActive}
@@ -149,6 +170,10 @@ export function MenuList({
                     brandColor={brandColor}
                     locale={locale}
                     canAddItems={canAddItems}
+                    setView={setView} // Added
+                    tableId={tableId} // Added
+                    sessionId={sessionId} // Added
+                    tableNumber={tableNumber} // Added
                   />
                 </motion.div>
               </div>
@@ -177,6 +202,10 @@ export function MenuList({
                     brandColor={brandColor}
                     locale={locale}
                     canAddItems={canAddItems}
+                    setView={setView} // Added
+                    tableId={tableId} // Added
+                    sessionId={sessionId} // Added
+                    tableNumber={tableNumber} // Added
                   />
                 </motion.div>
               </div>
@@ -211,6 +240,10 @@ export function MenuList({
                     brandColor={brandColor}
                     locale={locale}
                     canAddItems={canAddItems}
+                    setView={setView} // Added
+                    tableId={tableId} // Added
+                    sessionId={sessionId} // Added
+                    tableNumber={tableNumber} // Added
                   />
                 </motion.div>
               </div>

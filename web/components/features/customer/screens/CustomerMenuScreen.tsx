@@ -5,12 +5,12 @@ import { useTranslations } from "next-intl";
 import { CalendarDays, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-import { MenuList } from "@/components/features/customer/MenuList";
 import { FloatingCart } from "@/components/features/customer/FloatingCart";
 import { useCart } from "../CartContext";
 import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import type { RestaurantSettings, Category, MenuItem } from "@/shared/types/customer";
 import { MenuViewProps, ViewProps, ViewType } from "./types";
+import { MenuList } from "../MenuList";
 
 interface CustomerMenuScreenProps {
   setView: (view: ViewType, props?: ViewProps) => void;
@@ -194,6 +194,10 @@ export function CustomerMenuScreen({
         brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
         recommended={menu[0]?.menu_items.slice(0, 2) || []}
         canAddItems={canAddItems && sessionStatus === 'valid'}
+        setView={setView} // Added
+        tableId={tableId} // Added
+        sessionId={sessionId} // Added
+        tableNumber={tableNumber} // Added
       />
 
       {canAddItems && sessionStatus === 'valid' && (

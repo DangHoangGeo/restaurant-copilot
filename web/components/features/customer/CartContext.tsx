@@ -16,6 +16,8 @@ export interface CartContextType {
   cart: CartItem[];
   addToCart: (item: MenuItem, qty?: number) => void;
   updateQuantity: (id: string, qty: number) => void;
+  getQuantityInCart: (id: string) => number; // Added
+  removeFromCart: (id: string) => void; // Added
   totalCartItems: number;
   totalCartPrice: number;
   clearCart: () => void;
@@ -66,6 +68,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getQuantityInCart = (id: string): number => {
+    const item = cart.find((ci) => ci.itemId === id);
+    return item ? item.qty : 0;
+  };
+
+  const removeFromCart = (id: string) => {
+    setCart((prev) => prev.filter((ci) => ci.itemId !== id));
+  };
+
   const clearCart = () => setCart([]);
 
   const totalCartItems = cart.reduce((sum, i) => sum + i.qty, 0);
@@ -77,6 +88,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         cart,
         addToCart,
         updateQuantity,
+        getQuantityInCart, // Added
+        removeFromCart, // Added
         totalCartItems,
         totalCartPrice,
         clearCart,
