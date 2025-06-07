@@ -294,6 +294,7 @@
     "admin_sidebar_dashboard": "Dashboard",
     "admin_sidebar_restaurant_settings": "Restaurant Settings",
     "admin_sidebar_menu_management": "Menu Management",
+    "admin_sidebar_orders": "Orders",
     "admin_sidebar_table_qr_management": "Tables & QR Codes",
     "admin_sidebar_employees_schedules": "Employees & Schedules",
     "admin_sidebar_bookings_preorders": "Bookings & Preorders",
@@ -552,6 +553,24 @@
       "canceled": "Canceled"
     }
   },
+  "AdminOrders": {
+    "title": "Orders",
+    "today_only": "Today Only",
+    "view_table": "Table View",
+    "view_kanban": "Kanban View",
+    "no_orders": "No orders to display.",
+    "table": {
+      "order": "Order / Table",
+      "items": "Items",
+      "total": "Total",
+      "status": "Status",
+      "created": "Created",
+      "table": "Table"
+    },
+    "errors": {
+      "noSubdomainDetected": "Invalid restaurant subdomain"
+    }
+  },
   "AdminReports": {
     "tabs": {
       "sales": "Sales",
@@ -616,7 +635,7 @@
       "view_only": "View Only",
       "decrease_quantity": "Decrease quantity",
       "increase_quantity": "Increase quantity",
-      "item_added_to_cart_msg":"{item} added to cart!"
+      "item_added_to_cart_msg": "{item} added to cart!"
     },
     "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",
