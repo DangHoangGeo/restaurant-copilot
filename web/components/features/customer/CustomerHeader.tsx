@@ -61,7 +61,7 @@ export function CustomerHeader({
             size="sm"
           >
             <Clock className="h-4 w-4" />
-            <span className="hidden sm:inline ml-1">History</span>
+            <span className="hidden sm:inline ml-1">{t("order_history_label")}</span>
           </Button>
           <Button
             variant="ghost"

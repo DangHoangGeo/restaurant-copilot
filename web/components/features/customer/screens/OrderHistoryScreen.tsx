@@ -45,7 +45,8 @@ export function OrderHistoryScreen({
 	restaurantSettings,
 	viewProps,
 }: OrderHistoryScreenProps) {
-	const t = useTranslations("Customer");
+        const t = useTranslations("Customer");
+        const tCommon = useTranslations("Common");
 	const { tableId, sessionId, tableNumber } = viewProps;
 	const locale = useGetCurrentLocale();
 	const [orders, setOrders] = useState<Order[]>([]);
@@ -280,7 +281,7 @@ export function OrderHistoryScreen({
 					style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
 					className="text-white hover:opacity-90"
 				>
-					{t("thankyou.back_to_menu_button")}
+                                        {tCommon("back_to_menu")}
 				</Button>
 			</div>
 		</div>

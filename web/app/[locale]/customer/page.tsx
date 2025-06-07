@@ -1,5 +1,5 @@
 import { headers } from 'next/headers'
-import { setRequestLocale } from 'next-intl/server'
+import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { getSubdomainFromHost } from '@/lib/utils'
 import { getRestaurantSettingsFromSubdomain } from '@/lib/server/restaurant-settings'
 import { fetchMenuAndTables } from '@/lib/server/customer-data'
@@ -50,6 +50,7 @@ export default async function CustomerHomePage({ params, searchParams }: { param
   const { locale } = await params
   const { tableId } = await searchParams
   setRequestLocale(locale)
+  const t = await getTranslations({ locale, namespace: 'Customer.common' })
   
   const host = (await headers()).get('host') || ''
   const subdomain = getSubdomainFromHost(host)
@@ -60,8 +61,8 @@ export default async function CustomerHomePage({ params, searchParams }: { param
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Restaurant Not Found</h1>
-          <p className="text-gray-600">The restaurant subdomain is invalid or not configured.</p>
+          <h1 className="text-2xl font-bold mb-4">{t('restaurant_not_found')}</h1>
+          <p className="text-gray-600">{t('restaurant_not_found')}</p>
         </div>
       </div>
     )

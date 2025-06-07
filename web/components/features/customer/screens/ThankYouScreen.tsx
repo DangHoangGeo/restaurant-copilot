@@ -21,6 +21,7 @@ export function ThankYouScreen({
   viewProps,
 }: ThankYouScreenProps) {
   const t = useTranslations("Customer");
+  const tCommon = useTranslations("Common");
   const { orderId, items, total, tableId, tableNumber } = viewProps;
   const locale = useGetCurrentLocale();
 
@@ -60,7 +61,7 @@ export function ThankYouScreen({
           style={{ backgroundColor: restaurantSettings.secondaryColor || restaurantSettings.primaryColor }}
           className="text-white hover:opacity-90"
         >
-          {t("thankyou.add_more_button")}
+          {tCommon("add_more_items")}
         </Button>
         {canShowReviewButton && (
           <Button
@@ -88,7 +89,7 @@ export function ThankYouScreen({
           variant="link"
           className="text-sm"
         >
-          {t("thankyou.back_to_menu_button")}
+          {tCommon("back_to_menu")}
         </Button>
       </div>
     </div>
