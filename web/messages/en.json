@@ -555,6 +555,16 @@
       "party_size": "Party Size",
       "status": "Status",
       "actions": "Actions"
+    },
+    "Settings": {
+      "Page": {
+        "errors": {
+          "fetchErrorTitle": "Error Fetching Bookings"
+        }
+      }
+    },
+    "errors": {
+      "no_bookings_found": "No bookings found."
     }
   },
   "Bookings": {
@@ -669,6 +679,14 @@
     "no_menu_items": "No menu items available"
   },
   "Customer": {
+    "admin_panel": {
+      "toggle_label": "Toggle Admin Panel"
+    },
+    "menu_item_detail_back_to_menu": "Back to Menu",
+    "menu_item_detail_add_to_cart": "Add to Cart",
+    "decrease_quantity": "Decrease quantity by one",
+    "increase_quantity": "Increase quantity by one",
+    "menu_item_detail_added_to_cart_msg": "{itemName} has been added to your cart.",
     "menu": {
       "title": "Menu",
       "serving_today": "Serving Today",
@@ -735,11 +753,16 @@
     "thankyou": {
       "title": "Thank you for your order!",
       "subtitle": "Your order has been received and is being prepared.",
+      "message": "Your order is confirmed and we are preparing it now!",
       "order_id_label": "Order ID",
       "table_number": "Table {number}",
+      "table_number_label": "Table Number:",
       "order_summary_title": "Order Summary",
       "preparation_message": "What would you like to do next?",
       "view_order_history": "View Order History",
+      "review_button": "Rate Your Experience",
+      "add_more_button": "Add More Items",
+      "order_history_button": "Check Order History",
       "rate_dishes_title": "Rate Your Dishes",
       "review_prompt": "Help us improve by rating individual dishes:",
       "order_history_title": "Order History",
