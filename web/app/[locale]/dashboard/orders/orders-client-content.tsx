@@ -16,6 +16,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Eye } from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -65,6 +72,8 @@ export function OrdersClientContent({
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [viewType, setViewType] = useState<"table" | "kanban">("table");
   const [filterToday, setFilterToday] = useState(true);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -111,6 +120,11 @@ export function OrdersClientContent({
       supabase.removeChannel(channel);
     };
   }, [restaurantId, filterToday]);
+
+  const handleViewDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setIsDetailModalOpen(true);
+  };
 
   const statusPriority: Record<Order["status"], number> = {
     new: 1,
@@ -168,6 +182,23 @@ export function OrdersClientContent({
     );
   };
 
+  const itemStatusBadge = (status: OrderItem["status"]) => {
+    const variants: Record<
+      OrderItem["status"],
+      "default" | "secondary" | "outline"
+    > = {
+      ordered: "default",
+      preparing: "secondary",
+      ready: "default",
+      served: "outline",
+    };
+    return (
+      <Badge variant={variants[status]} className="capitalize">
+        {tCommon(`order_item_status.${status}`)}
+      </Badge>
+    );
+  };
+
   const renderTableView = () => (
     <Card>
       <CardHeader>
@@ -183,6 +214,7 @@ export function OrdersClientContent({
                 <TableHead className="text-right">{t("table.total")}</TableHead>
                 <TableHead>{t("table.status")}</TableHead>
                 <TableHead>{t("table.created")}</TableHead>
+                <TableHead>{t("table.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -217,6 +249,12 @@ export function OrdersClientContent({
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
+                  </TableCell>
+                  <TableCell>
+                    <Button size="sm" variant="ghost" onClick={() => handleViewDetails(o)}>
+                      <Eye className="h-4 w-4 mr-1" />
+                      {tCommon("view_details")}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -266,6 +304,12 @@ export function OrdersClientContent({
                         </div>
                       ),
                     )}
+                    <div className="text-right mt-2">
+                      <Button size="sm" variant="ghost" onClick={() => handleViewDetails(o)}>
+                        <Eye className="h-4 w-4 mr-1" />
+                        {tCommon("view_details")}
+                      </Button>
+                    </div>
                   </div>
                 ))}
             </CardContent>
@@ -305,6 +349,59 @@ export function OrdersClientContent({
         </Button>
       </div>
       {viewType === "table" ? renderTableView() : renderKanbanView()}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("details_title")}</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="space-y-2">
+              <p>
+                <strong>{t("table.order")}:</strong>{" "}
+                {selectedOrder.tables?.[0]?.name
+                  ? `${t("table.table")} ${selectedOrder.tables[0].name}`
+                  : selectedOrder.id.slice(0, 6)}
+              </p>
+              <p>
+                <strong>{t("table.status")}:</strong> {statusBadge(selectedOrder.status)}
+              </p>
+              <p>
+                <strong>{t("table.created")}:</strong>{" "}
+                {new Date(selectedOrder.created_at).toLocaleString(locale)}
+              </p>
+              {selectedOrder.order_items.length === 0 && (
+                <p className="text-sm mt-2 text-slate-500">{t("no_order_items")}</p>
+              )}
+              {selectedOrder.order_items.length > 0 && (
+                <table className="w-full text-sm mt-2">
+                  <thead>
+                    <tr>
+                      <th className="text-left">{t("table.item_name")}</th>
+                      <th className="text-center">{t("table.quantity")}</th>
+                      <th className="text-left">{t("table.note")}</th>
+                      <th className="text-center">{t("table.item_status")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedOrder.order_items.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          {item.menu_items[0]?.[`name_${locale}` as "name_en"] ||
+                            item.menu_items[0]?.name_en ||
+                            tCommon("unknown_item")}
+                        </td>
+                        <td className="text-center">{item.quantity}</td>
+                        <td>{item.notes || "-"}</td>
+                        <td className="text-center">{itemStatusBadge(item.status)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

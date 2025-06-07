@@ -230,6 +230,12 @@
       "completed": "Completed",
       "canceled": "Canceled"
     },
+    "order_item_status": {
+      "ordered": "Ordered",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "served": "Served"
+    },
     "view_cart_label": "View Cart",
     "order_history_label": "Order History",
     "weekdays": {
@@ -559,13 +565,20 @@
     "view_table": "Table View",
     "view_kanban": "Kanban View",
     "no_orders": "No orders to display.",
+    "details_title": "Order Details",
+    "no_order_items": "No items in this order.",
     "table": {
       "order": "Order / Table",
       "items": "Items",
       "total": "Total",
       "status": "Status",
       "created": "Created",
-      "table": "Table"
+      "table": "Table",
+      "actions": "Actions",
+      "item_name": "Item",
+      "quantity": "Qty",
+      "note": "Notes",
+      "item_status": "Status"
     },
     "errors": {
       "noSubdomainDetected": "Invalid restaurant subdomain"
