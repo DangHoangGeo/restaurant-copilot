@@ -3,16 +3,23 @@ import { setRequestLocale } from 'next-intl/server'
 import { getSubdomainFromHost } from '@/lib/utils'
 import { TablesClientContent } from './tables-client-content'
 import { getTranslations } from 'next-intl/server'
-import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export type Table = {
   id: string;
   name: string;
   capacity: number;
   restaurant_id: string;
+  status: 'available' | 'occupied' | 'reserved';
+  position_x?: number | null;
+  position_y?: number | null;
+  is_outdoor: boolean;
+  is_accessible: boolean;
+  notes?: string | null;
+  qr_code?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -50,10 +57,9 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
 
   if (user && user.restaurantId) {
     try {
-      const supabase = await createSupabaseServerClient();
       
       // Fetch restaurant settings
-      const { data: restaurantData, error: restaurantError } = await supabase
+      const { data: restaurantData, error: restaurantError } = await supabaseAdmin
         .from("restaurants")
         .select("name, logo_url")
         .eq("id", user.restaurantId)
@@ -71,7 +77,7 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
       }
 
       // Fetch tables data
-      const { data: tablesData, error: tablesError } = await supabase
+      const { data: tablesData, error: tablesError } = await supabaseAdmin
         .from("tables")
         .select("*")
         .eq("restaurant_id", user.restaurantId);
@@ -80,7 +86,7 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
         console.error(`Error fetching tables for restaurant ID "${user.restaurantId}":`, tablesError);
         throw tablesError;
       }
-      console.log("Fetched tables data:", tablesData);
+      
       initialData = tablesData as Table[];
       if (!initialData || initialData.length === 0) {
         fetchError = t("errors.no_tables_found");
@@ -95,7 +101,7 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-          {t("Tables.Page.title")}
+          {t("title")}
         </h1>
       </header>
 

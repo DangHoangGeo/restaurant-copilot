@@ -210,7 +210,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         const filePath = `restaurants/${sessionData.user.restaurantId}/menu_items/${fileName}`;
 
         // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('restaurant-uploads')
           .upload(filePath, imageFile, {
             cacheControl: '3600',

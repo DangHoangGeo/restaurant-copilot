@@ -74,8 +74,13 @@ CREATE TABLE IF NOT EXISTS tables (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   name text NOT NULL,
-  position_x integer,
-  position_y integer,
+  --position_x integer,
+  --position_y integer,
+  status text NOT NULL CHECK (status IN ('available','occupied','reserved')) DEFAULT 'available',
+  capacity integer NOT NULL CHECK (capacity > 0),
+  is_outdoor boolean DEFAULT false,
+  is_accessible boolean DEFAULT false,
+  notes text,
   qr_code text UNIQUE,               -- optional, or derived on the fly
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()

@@ -1,7 +1,5 @@
 
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { MenuClientContent } from './menu-client-content';
 import { headers } from 'next/headers';
 import { getSubdomainFromHost } from '@/lib/utils';
@@ -20,7 +18,7 @@ export interface MenuItem {
 	price: number;
 	image_url?: string;
 	available: boolean;
-	weekday_visibility: string[];
+	weekday_visibility: number[];
 	stock_level?: number;
 	position: number;
 	averageRating?: number;
@@ -75,12 +73,13 @@ export default async function MenuPage({
 
 		if (!response.ok) {
 			const errorData = await response.json();
+			fetchError = errorData.message || 'Failed to fetch categories';
 			throw new Error(errorData.message || 'Failed to fetch categories');
 		}
 
 		const { categories } = await response.json();
 		if (categories && categories.length > 0) {
-			initialData = categories.map((category: any) => ({
+			initialData = categories.map((category: Category) => ({
 				...category,
 				menu_items: category.menu_items || [],
 			}));

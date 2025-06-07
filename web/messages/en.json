@@ -500,6 +500,8 @@
     }
   },
   "AdminTables": {
+    "title": "Table & QR Management",
+    "tables_list": "Tables List",
     "add_table": "Add Table",
     "edit_table": "Edit Table",
     "capacity": "Capacity",
