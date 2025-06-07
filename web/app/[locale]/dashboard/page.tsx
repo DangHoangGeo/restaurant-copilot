@@ -8,6 +8,7 @@ import { RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersT
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { redirect } from 'next/navigation';
 import { getSubdomainFromHost } from '@/lib/utils';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 
 export default async function DashboardPage({
@@ -17,7 +18,7 @@ export default async function DashboardPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({locale, namespace: 'AdminDashboard'});
-  const supabase = await createClient();
+  //const supabase = await createClient();
 
   const authUser = await getUserFromRequest();
 
@@ -61,7 +62,7 @@ export default async function DashboardPage({
     // 1. Today's Total Sales (from analytics_snapshots)
     // For mockup, let's use a simplified sum from orders if analytics_snapshots is not populated yet.
     // In production, analytics_snapshots would be preferred.
-    const { data: salesData, error: salesError } = await supabase
+    const { data: salesData, error: salesError } = await supabaseAdmin
       .from('orders')
       .select('total_amount')
       .eq('restaurant_id', restaurantIdFromSubdomainUrl)
@@ -74,7 +75,7 @@ export default async function DashboardPage({
 
     // 2. Active Orders Count
     console.log("Fetching Active Orders Count...");
-    const { count: activeOrdersCount, error: activeOrdersError } = await supabase
+    const { count: activeOrdersCount, error: activeOrdersError } = await supabaseAdmin
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('restaurant_id', restaurantIdFromSubdomainUrl)
@@ -86,7 +87,7 @@ export default async function DashboardPage({
     console.log("Fetching Top-Selling Item Today...");
     // This is a more complex query. For now, a placeholder.
     // You might need an RPC or a more detailed query joining order_items and menu_items.
-    const { data: topSellerRaw, error: topSellerError } = await supabase
+    const { data: topSellerRaw, error: topSellerError } = await supabaseAdmin
       .from('order_items')
       .select(`
         quantity,
@@ -139,7 +140,7 @@ export default async function DashboardPage({
     // 4. Low-Stock Alerts
     let lowStockItemsCount = 0;
     if (FEATURE_FLAGS.lowStockAlerts) {
-      const { data: lowStockData, error: lowStockError } = await supabase
+      const { data: lowStockData, error: lowStockError } = await supabaseAdmin
         .from('inventory_items') // Ensure this table name and columns are correct
         .select('id, stock_level, threshold')
         .eq('restaurant_id', restaurantIdFromSubdomainUrl)
@@ -159,7 +160,7 @@ export default async function DashboardPage({
 
     // Fetch Recent Orders
     console.log("Fetching Recent Orders...");
-    const { data: orders, error: ordersError } = await supabase
+    const { data: orders, error: ordersError } = await supabaseAdmin
       .from('orders')
       .select('id, table_id, total_amount, status, created_at, tables (name)') // Join with tables to get table name
       .eq('restaurant_id', restaurantIdFromSubdomainUrl)
@@ -178,7 +179,7 @@ export default async function DashboardPage({
     
     // Simulate fetching items count for recent orders (this should be optimized in a real app, e.g., with an RPC or view)
     for (const order of recentOrdersData) {
-        const { count, error: itemsCountError } = await supabase
+        const { count, error: itemsCountError } = await supabaseAdmin
             .from('order_items')
             .select('*', { count: 'exact', head: true })
             .eq('order_id', order.id);
