@@ -5,19 +5,14 @@ import { useTranslations } from "next-intl";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderSummary } from "@/components/features/customer/OrderSummary";
-import { getCurrentLocale } from "@/lib/customerUtils";
+import { useGetCurrentLocale } from "@/lib/customerUtils";
 import type { RestaurantSettings } from "@/shared/types/customer";
-import type { CartItem } from "../CartContext";
+import { ViewProps, ViewType, OrderPlacedScreenViewProps, MenuViewProps, ThankYouScreenViewProps } from "./types";
 
 interface OrderPlacedScreenProps {
-  setView: (v: string, props?: any) => void;
+  setView: (v: ViewType, props?: ViewProps) => void;
   restaurantSettings: RestaurantSettings;
-  viewProps: {
-    orderId: string;
-    items: CartItem[];
-    total: number;
-    tableId?: string;
-  };
+  viewProps: OrderPlacedScreenViewProps;
 }
 
 export function OrderPlacedScreen({
@@ -27,7 +22,7 @@ export function OrderPlacedScreen({
 }: OrderPlacedScreenProps) {
   const t = useTranslations("Customer");
   const { orderId, items, total, tableId } = viewProps;
-  const locale = getCurrentLocale();
+  const locale = useGetCurrentLocale();
 
   return (
     <div className="text-center py-12">
@@ -59,14 +54,14 @@ export function OrderPlacedScreen({
       )}
       <div className="flex justify-center gap-4">
         <Button
-          onClick={() => setView("menu", { tableId })}
+          onClick={() => setView("menu", { tableId, canAddItems: true } as MenuViewProps)}
           style={{ backgroundColor: restaurantSettings.secondaryColor || restaurantSettings.primaryColor }}
           className="text-white hover:opacity-90"
         >
           {t("orderplaced.add_more_button")}
         </Button>
         <Button
-          onClick={() => setView("thankyou", viewProps)}
+          onClick={() => setView("thankyou", { ...viewProps, tableNumber: undefined } as ThankYouScreenViewProps)}
           style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
           className="text-white hover:opacity-90"
         >

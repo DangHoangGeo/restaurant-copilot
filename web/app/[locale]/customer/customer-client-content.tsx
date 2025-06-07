@@ -20,6 +20,16 @@ import { OrderHistoryScreen } from "@/components/features/customer/screens/Order
 
 // Types
 import type { RestaurantSettings, Category, TableInfo } from "@/shared/types/customer";
+import { 
+  ViewType, 
+  ViewProps, 
+  MenuViewProps, 
+  CheckoutViewProps, 
+  OrderPlacedScreenViewProps, 
+  ThankYouScreenViewProps, 
+  ReviewViewProps,
+  SessionData // Import SessionData
+} from "@/components/features/customer/screens/types"; // Updated imports
 
 // Define FEATURE_FLAGS locally or import from a central config.
 // These will be passed down to relevant components.
@@ -29,13 +39,6 @@ const FEATURE_FLAGS = {
   aiChat: false, 
   advancedReviews: true,
 };
-
-interface SessionData {
-  sessionId?: string;
-  tableNumber?: string;
-  sessionStatus: 'valid' | 'expired' | 'invalid' | 'new';
-  canAddItems: boolean;
-}
 
 interface CustomerClientContentProps {
   restaurantSettings: RestaurantSettings;
@@ -52,22 +55,13 @@ export function CustomerClientContent({
   tableId,
   sessionData,
 }: CustomerClientContentProps) {
-  const [view, setViewState] = useState<
-    "menu" | "checkout" | "orderplaced" | "thankyou" | "review" | "booking" | "admin" | "expired" | "invalid" | "orderhistory"
-  >("menu");
-  const [viewProps, setViewProps] = useState<{ 
-    tableId?: string; 
-    sessionId?: string;
-    tableNumber?: string;
-    canAddItems: boolean;
-    orderId?: string;
-    items?: any[];
-    total?: number;
-  }>({ 
+  const [view, setViewState] = useState<ViewType>("menu"); // Use ViewType
+  const [viewProps, setViewProps] = useState<ViewProps>({ // Use ViewProps union type
     tableId, 
     sessionId: sessionData.sessionId,
     tableNumber: sessionData.tableNumber,
-    canAddItems: sessionData.canAddItems
+    canAddItems: sessionData.canAddItems,
+    orderId: sessionData.orderId, // Initialize with orderId from sessionData
   }); 
 
   // Store session data in localStorage when valid and sync with server
@@ -128,16 +122,16 @@ export function CustomerClientContent({
     }
   }, [sessionData.sessionStatus]);
 
-  const setView = (v: string, props: any = {}) => {
-    setViewState(v as any); 
-    setViewProps({ ...viewProps, ...props });
+  const setView = (v: ViewType, props: ViewProps = {}) => { // Use ViewType and ViewProps
+    setViewState(v); 
+    setViewProps(prev => ({ ...prev, ...props })); // Merge props carefully
     window.scrollTo(0, 0);
   };
 
   const layoutFeatureFlags = { aiChat: FEATURE_FLAGS.aiChat };
   const menuScreenFeatureFlags = { tableBooking: FEATURE_FLAGS.tableBooking };
   const reviewOrderScreenFeatureFlags = { onlinePayment: FEATURE_FLAGS.onlinePayment };
-  const thankYouScreenFeatureFlags = { advancedReviews: FEATURE_FLAGS.advancedReviews };
+  //const thankYouScreenFeatureFlags = { advancedReviews: FEATURE_FLAGS.advancedReviews };
   const reviewScreenFeatureFlags = { advancedReviews: FEATURE_FLAGS.advancedReviews };
   const bookingScreenFeatureFlags = { tableBooking: FEATURE_FLAGS.tableBooking };
 
@@ -164,14 +158,14 @@ export function CustomerClientContent({
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold mb-4 text-red-600">Invalid Table</h1>
           <p className="text-gray-600 mb-6">
-            The table ID is invalid or doesn't belong to this restaurant.
+            The table ID is invalid or doesn&apos;t belong to this restaurant.
           </p>
           <p className="text-sm text-gray-500">
             Please scan a valid QR code from a table at this restaurant.
           </p>
           {/* Allow viewing menu without ordering capability */}
           <button 
-            onClick={() => setView("menu", { canAddItems: false })}
+            onClick={() => setView("menu", { canAddItems: false } as MenuViewProps)}
             className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           >
             View Menu Only
@@ -187,9 +181,10 @@ export function CustomerClientContent({
           <CustomerMenuScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={viewProps}
+            viewProps={viewProps as MenuViewProps} // Cast to specific view prop type
             categories={categories}
             featureFlags={menuScreenFeatureFlags}
+            canAddItems={(viewProps as MenuViewProps).canAddItems} // Correctly access canAddItems
           />
         );
         break;
@@ -198,40 +193,42 @@ export function CustomerClientContent({
           <ReviewOrderScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={viewProps}
+            viewProps={viewProps as CheckoutViewProps} // Cast
             featureFlags={reviewOrderScreenFeatureFlags}
           />
         );
         break;
       
       case "orderplaced":
-          const orderPlacedViewProps = {
-            ...viewProps,
-            orderId: viewProps.orderId || '',
-            items: viewProps.items || [],
-            total: viewProps.total || 0,
-          }
+          // Ensure all required props for OrderPlacedScreenViewProps are present
+          const opvp = viewProps as OrderPlacedScreenViewProps;
         ScreenComponent = (
           <OrderPlacedScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={orderPlacedViewProps}
+            viewProps={{
+              orderId: opvp.orderId || "", // Ensure orderId is a string
+              items: opvp.items || [],     // Ensure items is an array
+              total: opvp.total || 0,       // Ensure total is a number
+              tableId: opvp.tableId,
+            }}
           />
         );
         break;
       case "thankyou":
-        const thankYouViewProps = {
-          orderId: viewProps.orderId || '',
-          items: viewProps.items || [],
-          total: viewProps.total || 0,
-          tableId: viewProps.tableId,
-          tableNumber: viewProps.tableNumber
-        };
+        // Ensure all required props for ThankYouScreenViewProps are present
+        const tyvp = viewProps as ThankYouScreenViewProps;
         ScreenComponent = (
           <ThankYouScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={thankYouViewProps}
+            viewProps={{
+              orderId: tyvp.orderId || "",
+              items: tyvp.items || [],
+              total: tyvp.total || 0,
+              tableId: tyvp.tableId,
+              tableNumber: tyvp.tableNumber,
+            }}
           />
         );
         break;
@@ -240,21 +237,17 @@ export function CustomerClientContent({
           <ReviewScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={viewProps}
+            viewProps={viewProps as ReviewViewProps} // Cast
             featureFlags={reviewScreenFeatureFlags}
           />
         );
         break;
       case "orderhistory":
-        const orderHistoryViewProps = {
-          ...viewProps,
-          tableId: viewProps.tableId || '',  // Provide default empty string
-        };
         ScreenComponent = (
           <OrderHistoryScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={orderHistoryViewProps}
+            viewProps={viewProps as MenuViewProps} // OrderHistory uses MenuViewProps
           />
         );
         break;
@@ -266,7 +259,7 @@ export function CustomerClientContent({
             tables={tables}
             categories={categories}
             featureFlags={bookingScreenFeatureFlags}
-            // viewProps could be passed if booking is initiated with specific context
+            viewProps={viewProps as ViewProps} // Cast
           />
         );
         break;
@@ -286,9 +279,10 @@ export function CustomerClientContent({
           <CustomerMenuScreen
             setView={setView}
             restaurantSettings={restaurantSettings}
-            viewProps={viewProps} 
+            viewProps={viewProps as MenuViewProps} // Cast
             categories={categories}
             featureFlags={menuScreenFeatureFlags}
+            canAddItems={(viewProps as MenuViewProps).canAddItems} // Correctly access canAddItems
           />
         );
         console.warn("Unknown view state, defaulting to menu:", view);

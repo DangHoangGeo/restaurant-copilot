@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; // Adjust path if necessary
@@ -67,7 +66,7 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { tableId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ tableId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
   const {tableId} = await params; //req.nextUrl.searchParams.get('tableId') || '';
   console.log('PATCH request for tableId:', tableId);

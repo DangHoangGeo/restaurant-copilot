@@ -1,12 +1,12 @@
 // web/lib/customerUtils.ts
 import { useParams } from "next/navigation";
 
-export function getCurrentLocale() {
+export function useGetCurrentLocale() {
   const params = useParams();
   return (params.locale as string) || "en";
 }
 
-export function getLocalizedText(obj: any, locale: string): string {
+export function getLocalizedText(obj: { [key: string]: string } | string | null, locale: string): string {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
   // Check for specific localized name properties

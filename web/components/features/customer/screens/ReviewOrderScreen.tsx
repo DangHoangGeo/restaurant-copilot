@@ -2,19 +2,20 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Minus, Plus, Trash2, Edit3 } from "lucide-react";
+import { ArrowLeft, MinusCircle, PlusCircle, Edit3, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert } from "@/components/ui/alert";
 import { useCart } from "../CartContext";
-import { getCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import type { RestaurantSettings } from "@/shared/types/customer";
+// import { getCurrentLocale } from "@/lib/customerUtils"; // Not used
+import { CheckoutViewProps, ViewProps, ViewType, MenuViewProps, ThankYouScreenViewProps } from "./types"; // Updated imports
 
 interface ReviewOrderScreenProps {
-  setView: (v: string, props?: any) => void;
+  setView: (v: ViewType, props?: ViewProps) => void;
   restaurantSettings: RestaurantSettings;
-  viewProps?: any;
+  viewProps?: CheckoutViewProps; // Use specific CheckoutViewProps
   featureFlags: {
     onlinePayment: boolean;
   };
@@ -24,7 +25,6 @@ export function ReviewOrderScreen({
   setView,
   restaurantSettings,
   viewProps,
-  featureFlags,
 }: ReviewOrderScreenProps) {
   const t = useTranslations("Customer");
   const { cart, clearCart, totalCartPrice, updateQuantity } = useCart();
@@ -42,9 +42,10 @@ export function ReviewOrderScreen({
 
   useEffect(() => {
     if (cart.length === 0 && !isConfirmModalOpen) {
-      setView("menu", viewProps);
+      // Pass necessary props for menu view
+      setView("menu", { tableId, sessionId, tableNumber, canAddItems: true } as MenuViewProps);
     }
-  }, [cart, isConfirmModalOpen, setView, viewProps]);
+  }, [cart, isConfirmModalOpen, setView, tableId, sessionId, tableNumber]);
 
   const handleIncreaseQuantity = (itemId: string) => {
     const item = cart.find(c => c.itemId === itemId);
@@ -58,10 +59,6 @@ export function ReviewOrderScreen({
     if (item) {
       updateQuantity(itemId, item.qty - 1); // updateQuantity handles qty <= 0 by removing item
     }
-  };
-
-  const handleSetQuantity = (itemId: string, quantity: number) => {
-    updateQuantity(itemId, quantity); // updateQuantity handles qty <= 0 by removing item
   };
 
   const handleEditNote = (itemId: string) => {
@@ -132,7 +129,7 @@ export function ReviewOrderScreen({
           total: totalCartPrice,
           tableId,
           tableNumber,
-        });
+        } as ThankYouScreenViewProps); // Cast to ThankYouScreenViewProps
         clearCart();
       } else {
         alert(data.error || t("checkout.order_failed_error") || "Failed to place order.");
@@ -152,7 +149,7 @@ export function ReviewOrderScreen({
           <h2 className="text-2xl font-bold mb-4">{t("checkout.empty_cart_title")}</h2>
           <p className="text-gray-600 mb-6">{t("checkout.empty_cart_message")}</p>
           <Button
-            onClick={() => setView("menu", viewProps)}
+            onClick={() => setView("menu", { tableId, sessionId, tableNumber, canAddItems: true } as MenuViewProps)}
             style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
             className="text-white hover:opacity-90"
           >
@@ -167,7 +164,7 @@ export function ReviewOrderScreen({
     <div className="max-w-2xl mx-auto p-4">
       <div className="flex items-center mb-6">
         <Button
-          onClick={() => setView("menu", viewProps)}
+          onClick={() => setView("menu", { tableId, sessionId, tableNumber, canAddItems: true } as MenuViewProps)}
           variant="ghost"
           size="sm"
           className="mr-2"
@@ -222,7 +219,7 @@ export function ReviewOrderScreen({
                         onClick={() => handleDecreaseQuantity(item.itemId)}
                         className="h-8 w-8 p-0"
                       >
-                        <Minus className="h-4 w-4" />
+                        <MinusCircle className="h-4 w-4" />
                       </Button>
                       <span className="px-3 py-1 min-w-[40px] text-center">
                         {item.qty}
@@ -233,7 +230,7 @@ export function ReviewOrderScreen({
                         onClick={() => handleIncreaseQuantity(item.itemId)}
                         className="h-8 w-8 p-0"
                       >
-                        <Plus className="h-4 w-4" />
+                        <PlusCircle className="h-4 w-4" />
                       </Button>
                     </div>
                     <Button

@@ -8,17 +8,19 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Using shadcn Select
 import { Alert } from "@/components/ui/alert";
-import { getCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
+import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import type { RestaurantSettings, TableInfo, Category, MenuItem } from "@/shared/types/customer";
+import { ViewProps, ViewType, MenuViewProps } from "./types"; // Updated imports
 
 interface BookingScreenProps {
-  setView: (v: string, props?: any) => void;
+  setView: (v: ViewType, props?: ViewProps) => void;
   restaurantSettings: RestaurantSettings;
   tables: TableInfo[];
   categories: Category[];
   featureFlags: {
     tableBooking: boolean;
   };
+  viewProps?: ViewProps; // Added viewProps for consistency, though not strictly used yet
 }
 
 interface BookingFormData {
@@ -39,7 +41,7 @@ export function BookingScreen({
   featureFlags,
 }: BookingScreenProps) {
   const t = useTranslations("Customer");
-  const locale = getCurrentLocale();
+  const locale = useGetCurrentLocale();
   const [formData, setFormData] = useState<BookingFormData>({
     tableId: "",
     customerName: "",
@@ -58,7 +60,7 @@ export function BookingScreen({
     .filter((item) => item.available);
 
   if (!featureFlags.tableBooking) {
-    setView("menu");
+    setView("menu", {} as MenuViewProps); // Ensure props are passed if needed for menu
     return <p>Table booking is not available. Redirecting...</p>;
   }
 
@@ -128,7 +130,7 @@ export function BookingScreen({
           {t("booking.submission_thank_you_message", { name: formData.customerName })}
         </p>
         <Button
-          onClick={() => setView("menu")}
+          onClick={() => setView("menu", {} as MenuViewProps)} // Ensure props are passed if needed for menu
           size="lg"
           style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
           className="text-white hover:opacity-90"
@@ -141,7 +143,7 @@ export function BookingScreen({
 
   return (
     <div>
-      <Button onClick={() => setView("menu")} variant="ghost" className="mb-4 -ml-2">
+      <Button onClick={() => setView("menu", {} as MenuViewProps)} variant="ghost" className="mb-4 -ml-2">
         <ChevronLeft className="h-4 w-4 mr-1" />
         {t("checkout.back_to_menu")}
       </Button>
@@ -176,7 +178,7 @@ export function BookingScreen({
                 <div key={item.id} className="p-3 border rounded-lg dark:border-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <label className="flex items-center space-x-3 cursor-pointer flex-grow">
                     <input type="checkbox" name="preOrderItems" value={item.id} checked={!!preOrderedItem} onChange={handleInputChange} className="form-checkbox h-4 w-4 rounded accent-[--brand-color]" style={{'--brand-color': restaurantSettings.primaryColor || "#0ea5e9"} as React.CSSProperties} />
-                    <span className="text-sm">{getLocalizedText(item, locale)} ({t("currency_format", { value: item.price })})</span>
+                    <span className="text-sm">{getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_jp":item.name_ja}, locale)} ({t("currency_format", { value: item.price })})</span>
                   </label>
                   {preOrderedItem && <Input type="number" value={preOrderedItem.quantity} min="1" onChange={(e) => handlePreOrderItemQuantityChange(item.id, e.target.value)} className="w-20 text-sm py-1 h-8" />}
                 </div>

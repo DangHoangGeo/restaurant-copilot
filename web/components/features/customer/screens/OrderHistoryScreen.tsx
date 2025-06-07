@@ -5,17 +5,15 @@ import { ArrowLeft, Clock, CheckCircle, Utensils, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
+import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import type { RestaurantSettings } from "@/shared/types/customer";
 
+import { MenuViewProps, ViewProps, ViewType, ThankYouScreenViewProps } from "./types"; // Updated imports
+
 interface OrderHistoryScreenProps {
-	setView: (view: string, props?: any) => void;
+	setView: (view: ViewType, props?: ViewProps) => void;
 	restaurantSettings: RestaurantSettings;
-	viewProps: {
-		tableId: string;
-		sessionId?: string;
-		tableNumber?: string;
-	};
+	viewProps: MenuViewProps; // OrderHistoryScreen is often navigated from a context that fits MenuViewProps
 }
 
 interface OrderItem {
@@ -49,19 +47,20 @@ export function OrderHistoryScreen({
 }: OrderHistoryScreenProps) {
 	const t = useTranslations("Customer");
 	const { tableId, sessionId, tableNumber } = viewProps;
-	const locale = getCurrentLocale();
+	const locale = useGetCurrentLocale();
 	const [orders, setOrders] = useState<Order[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
 	const fetchOrderHistory = async () => {
 		try {
-			const params = new URLSearchParams({ tableId });
+			const params = new URLSearchParams();
+      if (tableId) params.append('tableId', tableId); // Only append if tableId exists
 			if (sessionId) {
 				params.append('sessionId', sessionId);
 			}
 
-			const response = await fetch(`/api/v1/orders/history?${params}`);
+			const response = await fetch(`/api/v1/orders/history?${params.toString()}`); // Ensure params is stringified
 			const data = await response.json();
 
 			if (data.success) {
@@ -137,7 +136,7 @@ export function OrderHistoryScreen({
 			<div className="max-w-2xl mx-auto p-4">
 				<div className="flex items-center mb-6">
 					<Button
-						onClick={() => setView("thankyou", viewProps)}
+						onClick={() => setView("thankyou", { ...viewProps, orderId: viewProps.orderId || "N/A" } as ThankYouScreenViewProps)} // Ensure orderId is present for ThankYouScreenViewProps
 						variant="ghost"
 						size="sm"
 						className="mr-2"
@@ -158,7 +157,7 @@ export function OrderHistoryScreen({
 		<div className="max-w-2xl mx-auto p-4">
 			<div className="flex items-center mb-6">
 				<Button
-					onClick={() => setView("thankyou", viewProps)}
+					onClick={() => setView("thankyou", { ...viewProps, orderId: viewProps.orderId || "N/A" } as ThankYouScreenViewProps)} // Ensure orderId is present
 					variant="ghost"
 					size="sm"
 					className="mr-2"
@@ -189,7 +188,7 @@ export function OrderHistoryScreen({
 						No orders have been placed at this table yet.
 					</p>
 					<Button
-						onClick={() => setView("menu", viewProps)}
+						onClick={() => setView("menu", viewProps as MenuViewProps)} // viewProps is already MenuViewProps
 						style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
 						className="text-white hover:opacity-90"
 					>
@@ -229,7 +228,7 @@ export function OrderHistoryScreen({
 									<div key={item.id} className="flex justify-between items-start">
 										<div className="flex-1">
 											<h4 className="font-medium">
-												{getLocalizedText(item.menu_items, locale)}
+												{getLocalizedText({"name_en":item.menu_items.name_en,"name_vi":item.menu_items.name_vi,"name_jp":item.menu_items.name_ja}, locale)}
 											</h4>
 											<div className="flex items-center gap-2 mt-1">
 												<p className="text-sm text-gray-600 dark:text-gray-300">
@@ -260,7 +259,7 @@ export function OrderHistoryScreen({
 							{isCurrentSession(order) && (
 								<div className="mt-4 pt-4 border-t">
 									<Button
-										onClick={() => setView("menu", viewProps)}
+										onClick={() => setView("menu", viewProps as MenuViewProps)} // viewProps is already MenuViewProps
 										variant="outline"
 										size="sm"
 										style={{ borderColor: restaurantSettings.primaryColor || "#0ea5e9" }}
@@ -277,7 +276,7 @@ export function OrderHistoryScreen({
 
 			<div className="mt-6 text-center">
 				<Button
-					onClick={() => setView("menu", viewProps)}
+					onClick={() => setView("menu", viewProps as MenuViewProps)} // viewProps is already MenuViewProps
 					style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
 					className="text-white hover:opacity-90"
 				>

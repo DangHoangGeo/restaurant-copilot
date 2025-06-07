@@ -1,16 +1,17 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; // Adjust path if necessary
 
 // The local getRestaurantIdFromSession function has been removed.
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ employeeId: string }> }) {
   const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
-  const employeeId = req.nextUrl.searchParams.get("employeeId") || "";
+  const {employeeId} = await params;
 
   if (!user || !user.restaurantId) {
+    console.log("req", req);
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID.' }, { status: 401 });
   }
 
