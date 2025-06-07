@@ -268,6 +268,11 @@
           "noSettingsFoundMessage": "このレストランの設定データが見つかりませんでした。"
         }
       }
-    }
+    },
+  "Customer": {
+    "guest_dialog": {"title": "ご来店ありがとうございます。人数を入力してください", "confirm": "注文を開始"},
+    "orderhistory": {"checkout_button": "会計", "price_per_person": "1人あたり: {value}"}
   }
+}
+
 }

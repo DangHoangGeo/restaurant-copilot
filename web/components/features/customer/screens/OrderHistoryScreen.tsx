@@ -49,9 +49,11 @@ export function OrderHistoryScreen({
         const tCommon = useTranslations("Common");
 	const { tableId, sessionId, tableNumber } = viewProps;
 	const locale = useGetCurrentLocale();
-	const [orders, setOrders] = useState<Order[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+        const [orders, setOrders] = useState<Order[]>([]);
+        const [loading, setLoading] = useState(true);
+        const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+        const totalPrice = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+        const guestCount = viewProps.guestCount || 1;
 
 	const fetchOrderHistory = async () => {
 		try {
@@ -275,15 +277,25 @@ export function OrderHistoryScreen({
 				</div>
 			)}
 
-			<div className="mt-6 text-center">
-				<Button
-					onClick={() => setView("menu", viewProps as MenuViewProps)} // viewProps is already MenuViewProps
-					style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
-					className="text-white hover:opacity-90"
-				>
+                        <div className="mt-6 text-center">
+                                <Button
+                                        onClick={() => alert(t("currency_format", { value: totalPrice }))}
+                                        style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
+                                        className="text-white w-full mb-2"
+                                >
+                                        {t("orderhistory.checkout_button")}
+                                </Button>
+                                {guestCount > 2 && (
+                                        <p className="text-sm text-gray-600">{t("orderhistory.price_per_person", { value: (totalPrice / guestCount).toFixed(2) })}</p>
+                                )}
+                                <Button
+                                        onClick={() => setView("menu", viewProps as MenuViewProps)}
+                                        style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
+                                        className="text-white hover:opacity-90 mt-4"
+                                >
                                         {tCommon("back_to_menu")}
-				</Button>
-			</div>
+                                </Button>
+                        </div>
 		</div>
 	);
 }

@@ -268,6 +268,10 @@
           "noSettingsFoundMessage": "Không tìm thấy dữ liệu cài đặt cho nhà hàng này."
         }
       }
-    }
+    },
+  "Customer": {
+    "guest_dialog": {"title": "Xin chào! Bao nhiêu khách?", "confirm": "Bắt đầu gọi món"},
+    "orderhistory": {"checkout_button": "Thanh toán", "price_per_person": "Mỗi người: {value}"}
   }
+}
 }
