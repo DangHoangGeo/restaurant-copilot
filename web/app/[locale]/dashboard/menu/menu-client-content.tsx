@@ -19,6 +19,7 @@ import { StarRating } from '@/components/ui/star-rating';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { getLocalizedText } from '@/lib/utils';
 
 /*
 interface LocalizedText {
@@ -76,10 +77,6 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
   const router = useRouter();
   const supabase = createClient();
-
-  const getLocalizedText = (obj: { [key: string]: string | undefined }, locale: string) => {
-    return obj[`name_${locale}`] || obj[`name_en`] || '';
-  };
 
   const handleOpenCategoryModal = (category: Category | null = null) => {
     setEditingCategory(

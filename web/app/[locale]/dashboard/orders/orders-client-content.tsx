@@ -21,8 +21,35 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Eye } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Eye,
+  Plus,
+  ChefHat,
+  Clock,
+  DollarSign,
+  Users,
+  ShoppingCart,
+  Check,
+  X,
+  Filter,
+  Search,
+  RefreshCw,
+  CreditCard,
+  AlertCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+import { getLocalizedText } from "@/lib/customerUtils";
 
 interface OrderItem {
   id: string;
@@ -36,6 +63,7 @@ interface OrderItem {
     name_ja: string;
     name_vi: string;
     category_id: string;
+    price: number;
     categories?: {
       id: string;
       name_en: string;
@@ -52,16 +80,41 @@ interface Order {
   total_amount: number | null;
   created_at: string;
   order_items: OrderItem[];
-  tables: { name: string }[] | null;
+  tables: { name: string; id: string }[] | null;
+}
+
+interface Table {
+  id: string;
+  name: string;
+  status?: "available" | "occupied" | "reserved";
+}
+
+interface Category {
+  id: string;
+  name_en: string;
+  name_ja: string;
+  name_vi: string;
+  menu_items: {
+    id: string;
+    name_en: string;
+    name_ja: string;
+    name_vi: string;
+    price: number;
+    available: boolean;
+  }[];
 }
 
 interface OrdersClientContentProps {
   initialOrders: Order[];
+  availableTables: Table[];
+  menuCategories: Category[];
   restaurantId: string;
 }
 
 export function OrdersClientContent({
   initialOrders,
+  availableTables,
+  menuCategories,
   restaurantId,
 }: OrdersClientContentProps) {
   const t = useTranslations("AdminOrders");
@@ -70,10 +123,21 @@ export function OrdersClientContent({
   const locale = (params.locale as string) || "en";
 
   const [orders, setOrders] = useState<Order[]>(initialOrders);
-  const [viewType, setViewType] = useState<"table" | "kanban">("table");
+  const [viewType, setViewType] = useState<"items" | "orders">("items");
   const [filterToday, setFilterToday] = useState(true);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  // New order management
+  const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
+  const [isAddItemsModalOpen, setIsAddItemsModalOpen] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<string>("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [currentOrderItems, setCurrentOrderItems] = useState<{[key: string]: number}>({});
+  const [orderNotes, setOrderNotes] = useState<{[key: string]: string}>({});
+  
+  // Checkout modal
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -82,7 +146,6 @@ export function OrdersClientContent({
       try {
         const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
         const data = await res.json();
-        console.log("Fetched orders:", data);
         if (data.success) {
           setOrders(data.orders);
         }
@@ -122,12 +185,14 @@ export function OrdersClientContent({
     };
   }, [restaurantId, filterToday]);
 
-  const handleViewDetails = (order: Order) => {
-    setSelectedOrder(order);
-    setIsDetailModalOpen(true);
+  const statusPriority: Record<OrderItem["status"], number> = {
+    ordered: 1,
+    preparing: 2,
+    ready: 3,
+    served: 4,
   };
 
-  const statusPriority: Record<Order["status"], number> = {
+  const orderStatusPriority: Record<Order["status"], number> = {
     new: 1,
     preparing: 2,
     ready: 3,
@@ -135,184 +200,467 @@ export function OrdersClientContent({
     canceled: 5,
   };
 
-  const filteredOrders = orders.filter((o) => {
-    if (!filterToday) return true;
-    const d = new Date(o.created_at);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
-  });
-
-  const sortedOrders = [...filteredOrders].sort((a, b) => {
-    const sp = statusPriority[a.status] - statusPriority[b.status];
-    if (sp !== 0) return sp;
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-  });
-
-  const groupItems = (items: OrderItem[]) => {
-    const map: Record<string, { name: string; quantity: number }[]> = {};
-    for (const item of items) {
-      const cat = item.menu_items[0]?.categories?.[0];
-      const catName = cat
-        ? cat[`name_${locale}` as "name_en"] || cat.name_en
-        : "Misc";
-      if (!map[catName]) map[catName] = [];
-      const itemName =
-        item.menu_items[0]?.[`name_${locale}` as "name_en"] ||
-        item.menu_items[0]?.name_en ||
-        "";
-      map[catName].push({ name: itemName, quantity: item.quantity });
-    }
-    return map;
+  // Get all order items for the items view
+  const getAllOrderItems = () => {
+    const allItems: (OrderItem & { order: Order })[] = [];
+    orders.forEach(order => {
+      order.order_items.forEach(item => {
+        allItems.push({ ...item, order });
+      });
+    });
+    
+    return allItems
+      .filter(item => {
+        const matchesSearch = searchTerm === "" || 
+          item.menu_items[0]?.name_en.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.menu_items[0]?.name_ja?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.order.tables?.[0]?.name.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesStatus = filterStatus === "all" || item.status === filterStatus;
+        
+        if (!filterToday) return matchesSearch && matchesStatus;
+        
+        const itemDate = new Date(item.created_at);
+        const today = new Date();
+        const isToday = itemDate.toDateString() === today.toDateString();
+        
+        return matchesSearch && matchesStatus && isToday;
+      })
+      .sort((a, b) => {
+        const statusDiff = statusPriority[a.status] - statusPriority[b.status];
+        if (statusDiff !== 0) return statusDiff;
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
   };
 
-  const statusBadge = (status: Order["status"]) => {
-    const variants: Record<
-      Order["status"],
-      "default" | "secondary" | "destructive" | "outline"
-    > = {
+  const filteredOrders = orders
+    .filter(order => {
+      const matchesSearch = searchTerm === "" || 
+        order.tables?.[0]?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.id.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+      
+      if (!filterToday) return matchesSearch && matchesStatus;
+      
+      const orderDate = new Date(order.created_at);
+      const today = new Date();
+      const isToday = orderDate.toDateString() === today.toDateString();
+      
+      return matchesSearch && matchesStatus && isToday;
+    })
+    .sort((a, b) => {
+      const statusDiff = orderStatusPriority[a.status] - orderStatusPriority[b.status];
+      if (statusDiff !== 0) return statusDiff;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+  const updateItemStatus = async (itemId: string, newStatus: OrderItem["status"]) => {
+    try {
+      const response = await fetch(`/api/v1/order-items/${itemId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update item status");
+      
+      toast.success(t("item_status_updated"));
+      
+      // Optimistically update the local state
+      setOrders(prevOrders => 
+        prevOrders.map(order => ({
+          ...order,
+          order_items: order.order_items.map(item =>
+            item.id === itemId ? { ...item, status: newStatus } : item
+          )
+        }))
+      );
+    } catch (error) {
+      console.error("Error updating item status:", error);
+      toast.error(t("error_updating_status"));
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: Order["status"]) => {
+    try {
+      const response = await fetch(`/api/v1/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update order status");
+      
+      toast.success(t("order_status_updated"));
+      
+      // Optimistically update the local state
+      setOrders(prevOrders => 
+        prevOrders.map(order =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast.error(t("error_updating_status"));
+    }
+  };
+
+  const createNewOrder = async () => {
+    if (!selectedTable || Object.keys(currentOrderItems).length === 0) {
+      toast.error(t("select_table_and_items"));
+      return;
+    }
+
+    try {
+      const orderItems = Object.entries(currentOrderItems)
+        .filter(([_, quantity]) => quantity > 0)
+        .map(([menuItemId, quantity]) => ({
+          menu_item_id: menuItemId,
+          quantity,
+          notes: orderNotes[menuItemId] || null,
+        }));
+
+      const response = await fetch("/api/v1/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          table_id: selectedTable,
+          order_items: orderItems,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to create order");
+      
+      toast.success(t("order_created"));
+      setIsNewOrderModalOpen(false);
+      setSelectedTable("");
+      setCurrentOrderItems({});
+      setOrderNotes({});
+      
+      // Refresh orders
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const data = await res.json();
+      if (data.success) {
+        setOrders(data.orders);
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      toast.error(t("error_creating_order"));
+    }
+  };
+
+  const addItemsToOrder = async () => {
+    if (!selectedOrder || Object.keys(currentOrderItems).length === 0) {
+      toast.error(t("select_items"));
+      return;
+    }
+
+    try {
+      const orderItems = Object.entries(currentOrderItems)
+        .filter(([_, quantity]) => quantity > 0)
+        .map(([menuItemId, quantity]) => ({
+          menu_item_id: menuItemId,
+          quantity,
+          notes: orderNotes[menuItemId] || null,
+        }));
+
+      const response = await fetch(`/api/v1/orders/${selectedOrder.id}/items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_items: orderItems }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add items to order");
+      
+      toast.success(t("items_added"));
+      setIsAddItemsModalOpen(false);
+      setSelectedOrder(null);
+      setCurrentOrderItems({});
+      setOrderNotes({});
+      
+      // Refresh orders
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const data = await res.json();
+      if (data.success) {
+        setOrders(data.orders);
+      }
+    } catch (error) {
+      console.error("Error adding items to order:", error);
+      toast.error(t("error_adding_items"));
+    }
+  };
+
+  const processCheckout = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      const response = await fetch(`/api/v1/orders/${selectedOrder.id}/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Failed to process checkout");
+      
+      toast.success(t("checkout_processed"));
+      setIsCheckoutModalOpen(false);
+      setSelectedOrder(null);
+      
+      // Refresh orders
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const data = await res.json();
+      if (data.success) {
+        setOrders(data.orders);
+      }
+    } catch (error) {
+      console.error("Error processing checkout:", error);
+      toast.error(t("error_processing_checkout"));
+    }
+  };
+
+  const getStatusBadge = (status: OrderItem["status"] | Order["status"]) => {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      ordered: "default",
       new: "default",
       preparing: "secondary",
-      ready: "default",
+      ready: "outline",
+      served: "outline",
       completed: "outline",
       canceled: "destructive",
     };
+    
     return (
       <Badge variant={variants[status]} className="capitalize">
-        {tCommon(`order_status.${status}`)}
+        {tCommon(`order_status.${status}`) || tCommon(`order_item_status.${status}`)}
       </Badge>
     );
   };
 
-  const itemStatusBadge = (status: OrderItem["status"]) => {
-    const variants: Record<
-      OrderItem["status"],
-      "default" | "secondary" | "outline"
-    > = {
-      ordered: "default",
-      preparing: "secondary",
-      ready: "default",
-      served: "outline",
-    };
-    return (
-      <Badge variant={variants[status]} className="capitalize">
-        {tCommon(`order_item_status.${status}`)}
-      </Badge>
-    );
-  };
 
-  const renderTableView = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[500px] w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("table.order")}</TableHead>
-                <TableHead>{t("table.items")}</TableHead>
-                <TableHead className="text-right">{t("table.total")}</TableHead>
-                <TableHead>{t("table.status")}</TableHead>
-                <TableHead>{t("table.created")}</TableHead>
-                <TableHead>{t("table.actions")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedOrders.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell>
-                    {o.tables?.[0]?.name
-                      ? `${t("table.table")} ${o.tables[0].name}`
-                      : o.id.slice(0, 6)}
-                  </TableCell>
-                  <TableCell>
-                    {Object.entries(groupItems(o.order_items)).map(
-                      ([cat, items]) => (
-                        <div key={cat} className="mb-1">
-                          <span className="font-semibold mr-1">{cat}:</span>
-                          {items
-                            .map((it) => `${it.name} x${it.quantity}`)
-                            .join(", ")}
-                        </div>
-                      ),
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {o.total_amount?.toLocaleString(locale, {
-                      style: "currency",
-                      currency: "JPY",
-                    })}
-                  </TableCell>
-                  <TableCell>{statusBadge(o.status)}</TableCell>
-                  <TableCell>
-                    {new Date(o.created_at).toLocaleTimeString(locale, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="ghost" onClick={() => handleViewDetails(o)}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      {tCommon("view_details")}
-                    </Button>
-                  </TableCell>
+  const renderItemsView = () => {
+    const allItems = getAllOrderItems();
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ChefHat className="h-5 w-5" />
+            {t("order_items")} ({allItems.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[600px] w-full">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("table")}</TableHead>
+                  <TableHead>{t("item")}</TableHead>
+                  <TableHead className="text-center">{t("quantity")}</TableHead>
+                  <TableHead>{t("notes")}</TableHead>
+                  <TableHead>{t("status")}</TableHead>
+                  <TableHead className="text-center">{t("actions")}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  );
+              </TableHeader>
+              <TableBody>
+                {allItems.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">
+                      {item.order.tables?.[0]?.name || `Order ${item.order.id.slice(0, 6)}`}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {getLocalizedText(item.menu_items[0], locale)}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          ¥{item.menu_items[0]?.price?.toLocaleString()}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline">{item.quantity}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-gray-600">
+                        {item.notes || "-"}
+                      </span>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        {item.status === "ordered" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateItemStatus(item.id, "preparing")}
+                          >
+                            <ChefHat className="h-3 w-3" />
+                          </Button>
+                        )}
+                        {item.status === "preparing" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateItemStatus(item.id, "ready")}
+                          >
+                            <Clock className="h-3 w-3" />
+                          </Button>
+                        )}
+                        {item.status === "ready" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateItemStatus(item.id, "served")}
+                          >
+                            <Check className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    );
+  };
 
-  const renderKanbanView = () => {
-    const columns: Order["status"][] = ["new", "preparing", "ready"];
+  const renderOrdersView = () => {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {columns.map((col) => (
-          <Card key={col} className="flex flex-col h-full">
-            <CardHeader>
-              <CardTitle className="capitalize flex items-center gap-2">
-                {tCommon(`order_status.${col}`)}
-              </CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            {t("orders")} ({filteredOrders.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[600px] w-full">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("table")}</TableHead>
+                  <TableHead>{t("items_count")}</TableHead>
+                  <TableHead className="text-right">{t("total")}</TableHead>
+                  <TableHead>{t("status")}</TableHead>
+                  <TableHead>{t("created")}</TableHead>
+                  <TableHead className="text-center">{t("actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">
+                      {order.tables?.[0]?.name || `Order ${order.id.slice(0, 6)}`}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {order.order_items.length} {t("items")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      ¥{order.total_amount?.toLocaleString() || "0"}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>
+                      {new Date(order.created_at).toLocaleTimeString(locale, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setIsAddItemsModalOpen(true);
+                          }}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        {order.status !== "completed" && order.status !== "canceled" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setIsCheckoutModalOpen(true);
+                            }}
+                          >
+                            <CreditCard className="h-3 w-3" />
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setSelectedOrder(order)}
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderMenuSelection = () => {
+    return (
+      <div className="space-y-4">
+        {menuCategories.map((category) => (
+          <Card key={category.id}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{getLocalizedText(category,locale)}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 overflow-y-auto">
-              {sortedOrders
-                .filter((o) => o.status === col)
-                .map((o) => (
-                  <div key={o.id} className="border rounded p-2">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>
-                        {o.tables?.[0]?.name
-                          ? `${t("table.table")} ${o.tables[0].name}`
-                          : o.id.slice(0, 6)}
-                      </span>
-                      <span>
-                        {new Date(o.created_at).toLocaleTimeString(locale, {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {category.menu_items.filter(item => item.available).map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-2 border rounded">
+                    <div className="flex-1">
+                      <span className="font-medium text-sm">{getLocalizedText(item,locale)}</span>
+                      <span className="text-xs text-gray-500 block">¥{item.price.toLocaleString()}</span>
                     </div>
-                    {Object.entries(groupItems(o.order_items)).map(
-                      ([cat, items]) => (
-                        <div key={cat} className="text-xs mb-1">
-                          <span className="font-semibold mr-1">{cat}:</span>
-                          {items
-                            .map((it) => `${it.name} x${it.quantity}`)
-                            .join(", ")}
-                        </div>
-                      ),
-                    )}
-                    <div className="text-right mt-2">
-                      <Button size="sm" variant="ghost" onClick={() => handleViewDetails(o)}>
-                        <Eye className="h-4 w-4 mr-1" />
-                        {tCommon("view_details")}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setCurrentOrderItems(prev => ({
+                            ...prev,
+                            [item.id]: Math.max(0, (prev[item.id] || 0) - 1)
+                          }));
+                        }}
+                      >
+                        -
+                      </Button>
+                      <span className="text-sm w-8 text-center">
+                        {currentOrderItems[item.id] || 0}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setCurrentOrderItems(prev => ({
+                            ...prev,
+                            [item.id]: (prev[item.id] || 0) + 1
+                          }));
+                        }}
+                      >
+                        +
                       </Button>
                     </div>
                   </div>
                 ))}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -320,87 +668,169 @@ export function OrdersClientContent({
     );
   };
 
-  if (orders.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t("no_orders")}</p>;
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <Button
-          variant={viewType === "table" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setViewType("table")}
-        >
-          {t("view_table")}
-        </Button>
-        <Button
-          variant={viewType === "kanban" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setViewType("kanban")}
-        >
-          {t("view_kanban")}
-        </Button>
-        <Button
-          variant={filterToday ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilterToday((v) => !v)}
-        >
-          {t("today_only")}
-        </Button>
+    <div className="space-y-6">
+      {/* Header Controls */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewType === "items" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewType("items")}
+          >
+            <ChefHat className="h-4 w-4 mr-2" />
+            {t("items_view")}
+          </Button>
+          <Button
+            variant={viewType === "orders" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewType("orders")}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            {t("orders_view")}
+          </Button>
+        </div>
+        
+        <div className="flex items-center gap-2 flex-1">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder={t("search_placeholder")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder={t("filter_by_status")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("all_statuses")}</SelectItem>
+              <SelectItem value="ordered">{t("ordered")}</SelectItem>
+              <SelectItem value="preparing">{t("preparing")}</SelectItem>
+              <SelectItem value="ready">{t("ready")}</SelectItem>
+              <SelectItem value="served">{t("served")}</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Button
+            variant={filterToday ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilterToday(!filterToday)}
+          >
+            {t("today_only")}
+          </Button>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setIsNewOrderModalOpen(true)}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {t("new_order")}
+          </Button>
+        </div>
       </div>
-      {viewType === "table" ? renderTableView() : renderKanbanView()}
-      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-md">
+
+      {/* Main Content */}
+      {viewType === "items" ? renderItemsView() : renderOrdersView()}
+
+      {/* New Order Modal */}
+      <Dialog open={isNewOrderModalOpen} onOpenChange={setIsNewOrderModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t("details_title")}</DialogTitle>
+            <DialogTitle>{t("create_new_order")}</DialogTitle>
           </DialogHeader>
-          {selectedOrder && (
-            <div className="space-y-2">
-              <p>
-                <strong>{t("table.order")}:</strong>{" "}
-                {selectedOrder.tables?.[0]?.name
-                  ? `${t("table.table")} ${selectedOrder.tables[0].name}`
-                  : selectedOrder.id.slice(0, 6)}
-              </p>
-              <p>
-                <strong>{t("table.status")}:</strong> {statusBadge(selectedOrder.status)}
-              </p>
-              <p>
-                <strong>{t("table.created")}:</strong>{" "}
-                {new Date(selectedOrder.created_at).toLocaleString(locale)}
-              </p>
-              {selectedOrder.order_items.length === 0 && (
-                <p className="text-sm mt-2 text-slate-500">{t("no_order_items")}</p>
-              )}
-              {selectedOrder.order_items.length > 0 && (
-                <table className="w-full text-sm mt-2">
-                  <thead>
-                    <tr>
-                      <th className="text-left">{t("table.item_name")}</th>
-                      <th className="text-center">{t("table.quantity")}</th>
-                      <th className="text-left">{t("table.note")}</th>
-                      <th className="text-center">{t("table.item_status")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedOrder.order_items.map((item) => (
-                      <tr key={item.id}>
-                        <td>
-                          {item.menu_items[0]?.[`name_${locale}` as "name_en"] ||
-                            item.menu_items[0]?.name_en ||
-                            tCommon("unknown_item")}
-                        </td>
-                        <td className="text-center">{item.quantity}</td>
-                        <td>{item.notes || "-"}</td>
-                        <td className="text-center">{itemStatusBadge(item.status)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">{t("select_table")}</label>
+              <Select value={selectedTable} onValueChange={setSelectedTable}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("choose_table")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTables.map((table) => (
+                    <SelectItem key={table.id} value={table.id}>
+                      {table.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
+            
+            <div>
+              <label className="text-sm font-medium">{t("select_menu_items")}</label>
+              <ScrollArea className="h-[400px] mt-2">
+                {renderMenuSelection()}
+              </ScrollArea>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNewOrderModalOpen(false)}>
+              {tCommon("cancel")}
+            </Button>
+            <Button onClick={createNewOrder}>
+              {t("create_order")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Items Modal */}
+      <Dialog open={isAddItemsModalOpen} onOpenChange={setIsAddItemsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {t("add_items_to_order")} - {selectedOrder?.tables?.[0]?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <ScrollArea className="h-[400px]">
+              {renderMenuSelection()}
+            </ScrollArea>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddItemsModalOpen(false)}>
+              {tCommon("cancel")}
+            </Button>
+            <Button onClick={addItemsToOrder}>
+              {t("add_items")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Checkout Modal */}
+      <Dialog open={isCheckoutModalOpen} onOpenChange={setIsCheckoutModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("process_checkout")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedOrder && (
+              <>
+                <div>
+                  <p><strong>{t("table")}:</strong> {selectedOrder.tables?.[0]?.name}</p>
+                  <p><strong>{t("total")}:</strong> ¥{selectedOrder.total_amount?.toLocaleString()}</p>
+                  <p><strong>{t("items")}:</strong> {selectedOrder.order_items.length}</p>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {t("checkout_confirmation")}
+                </div>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCheckoutModalOpen(false)}>
+              {tCommon("cancel")}
+            </Button>
+            <Button onClick={processCheckout} className="bg-green-600 hover:bg-green-700">
+              {t("process_payment")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

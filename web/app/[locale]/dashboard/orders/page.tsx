@@ -19,6 +19,7 @@ export interface OrderItem {
     name_ja: string;
     name_vi: string;
     category_id: string;
+    price: number;
     categories?: {
       id: string;
       name_en: string;
@@ -35,7 +36,28 @@ export interface Order {
   total_amount: number | null;
   created_at: string;
   order_items: OrderItem[];
-  tables: { name: string }[] | null;
+  tables: { name: string; id: string }[] | null;
+}
+
+export interface Table {
+  id: string;
+  name: string;
+  status?: "available" | "occupied" | "reserved";
+}
+
+export interface Category {
+  id: string;
+  name_en: string;
+  name_ja: string;
+  name_vi: string;
+  menu_items: {
+    id: string;
+    name_en: string;
+    name_ja: string;
+    name_vi: string;
+    price: number;
+    available: boolean;
+  }[];
 }
 
 export default async function OrdersPage({
@@ -60,12 +82,14 @@ export default async function OrdersPage({
   restaurantId = user?.restaurantId || null;
 
   let initialOrders: Order[] | null = null;
+  let availableTables: Table[] | null = null;
+  let menuCategories: Category[] | null = null;
   let fetchError: string | null = null;
-  let restaurantSettings: { name: string; logoUrl: string | null } | null =
-    null;
+  let restaurantSettings: { name: string; logoUrl: string | null } | null = null;
 
   if (user && user.restaurantId) {
     try {
+      // Fetch restaurant settings
       const { data: restaurantData, error: restaurantError } =
         await supabaseAdmin
           .from("restaurants")
@@ -81,6 +105,7 @@ export default async function OrdersPage({
         };
       }
 
+      // Fetch orders with order items
       const today = new Date();
       const start = new Date(
         today.getFullYear(),
@@ -91,15 +116,42 @@ export default async function OrdersPage({
       const { data: ordersData, error: ordersError } = await supabaseAdmin
         .from("orders")
         .select(
-          `id, table_id, status, total_amount, created_at, order_items(id, quantity, notes, status, created_at, menu_items(id, name_en, name_ja, name_vi, category_id, categories(id, name_en, name_ja, name_vi))), tables(name)`,
+          `id, table_id, status, total_amount, created_at, 
+           order_items(id, quantity, notes, status, created_at, 
+             menu_items(id, name_en, name_ja, name_vi, category_id, price, 
+               categories(id, name_en, name_ja, name_vi))), 
+           tables(id, name)`,
         )
         .eq("restaurant_id", user.restaurantId)
         .gte("created_at", start)
-        .order("created_at", { ascending: true });
-      console.log("Fetched orders:", ordersData);
-      if (ordersError) throw ordersError;
+        .order("created_at", { ascending: false });
 
+      if (ordersError) throw ordersError;
       initialOrders = ordersData as Order[];
+
+      // Fetch available tables
+      const { data: tablesData, error: tablesError } = await supabaseAdmin
+        .from("tables")
+        .select("id, name")
+        .eq("restaurant_id", user.restaurantId)
+        .order("name");
+
+      if (tablesError) throw tablesError;
+      availableTables = tablesData as Table[];
+
+      // Fetch menu categories and items for creating new orders
+      const { data: categoriesData, error: categoriesError } = await supabaseAdmin
+        .from("categories")
+        .select(
+          `id, name_en, name_ja, name_vi,
+           menu_items(id, name_en, name_ja, name_vi, price, available)`
+        )
+        .eq("restaurant_id", user.restaurantId)
+        .order("position");
+
+      if (categoriesError) throw categoriesError;
+      menuCategories = categoriesData as Category[];
+
     } catch (error) {
       console.error("Error fetching orders:", error);
       fetchError =
@@ -113,6 +165,9 @@ export default async function OrdersPage({
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
           {t("title")}
         </h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          {t("subtitle")}
+        </p>
       </header>
 
       {errorGettingId && (
@@ -145,9 +200,11 @@ export default async function OrdersPage({
         </Alert>
       )}
 
-      {restaurantId && initialOrders && !fetchError && restaurantSettings && (
+      {restaurantId && initialOrders && availableTables && menuCategories && !fetchError && restaurantSettings && (
         <OrdersClientContent
           initialOrders={initialOrders}
+          availableTables={availableTables}
+          menuCategories={menuCategories}
           restaurantId={restaurantId}
         />
       )}

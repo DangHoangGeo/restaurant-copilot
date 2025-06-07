@@ -26,6 +26,10 @@ export function formatCurrency(
   }
 }
 
+export   const getLocalizedText = (obj: { [key: string]: string | undefined }, locale: string) => {
+  return obj[`name_${locale}`] || obj[`name_en`] || '';
+};
+
 // Helper to get subdomain, this should be robust
 export function getSubdomainFromHost(host: string): string | null {
   if (!host) return null;
