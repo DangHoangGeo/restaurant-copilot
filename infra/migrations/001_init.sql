@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS orders (
   restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   table_id uuid NOT NULL REFERENCES tables(id) ON DELETE CASCADE,
   session_id uuid UNIQUE NOT NULL,
+  guest_count integer NOT NULL DEFAULT 1 CHECK (guest_count > 0),
   status text NOT NULL CHECK (status IN ('new','preparing','ready','completed')) DEFAULT 'new',
   total_amount numeric CHECK (total_amount >= 0),
   created_at timestamptz DEFAULT now(),

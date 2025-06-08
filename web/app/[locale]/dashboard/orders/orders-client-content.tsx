@@ -56,14 +56,14 @@ interface OrderItem {
     name_ja: string;
     name_vi: string;
     category_id: string;
-    price: number;
+    price?: number;
     categories?: {
       id: string;
       name_en: string;
       name_ja: string;
       name_vi: string;
-    }[];
-  }[];
+    };
+  };
 }
 
 interface Order {
@@ -73,7 +73,7 @@ interface Order {
   total_amount: number | null;
   created_at: string;
   order_items: OrderItem[];
-  tables: { name: string; id: string }[] | null;
+  tables: { name: string; id?: string } | null;
 }
 
 interface Table {
@@ -193,21 +193,63 @@ export function OrdersClientContent({
     canceled: 5,
   };
 
-  // Get all order items for the items view
-  const getAllOrderItems = () => {
-    const allItems: (OrderItem & { order: Order })[] = [];
+  // Simplified interface for flattened order items
+  interface FlatOrderItem {
+    id: string;
+    quantity: number;
+    notes?: string | null;
+    status: "ordered" | "preparing" | "ready" | "served";
+    created_at: string;
+    // Flattened menu item data
+    menu_item_id: string;
+    menu_item_name_en: string;
+    menu_item_name_ja: string;
+    menu_item_name_vi: string;
+    menu_item_price?: number;
+    // Flattened order/table data
+    order_id: string;
+    table_name: string;
+  }
+
+  // Get all order items for the items view - simplified version
+  const getAllOrderItems = (): FlatOrderItem[] => {
+    const allItems: FlatOrderItem[] = [];
+    console.log("Orders:", orders);
     orders.forEach(order => {
+      const tableName = order.tables?.name || `Order ${order.id.slice(0, 6)}`;
+      
       order.order_items.forEach(item => {
-        allItems.push({ ...item, order });
+        const menuItem = item.menu_items;
+        console.log("Menu item:", menuItem);
+        if (menuItem) {
+          allItems.push({
+            id: item.id,
+            quantity: item.quantity,
+            notes: item.notes,
+            status: item.status,
+            created_at: item.created_at,
+            // Flatten menu item data
+            menu_item_id: menuItem.id,
+            menu_item_name_en: menuItem.name_en,
+            menu_item_name_ja: menuItem.name_ja,
+            menu_item_name_vi: menuItem.name_vi,
+            menu_item_price: menuItem.price,
+            // Flatten order/table data
+            order_id: order.id,
+            table_name: tableName,
+          });
+        }
       });
     });
+
+    console.log("All items:", allItems);
     
     return allItems
       .filter(item => {
         const matchesSearch = searchTerm === "" || 
-          item.menu_items[0]?.name_en.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.menu_items[0]?.name_ja?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.order.tables?.[0]?.name.toLowerCase().includes(searchTerm.toLowerCase());
+          item.menu_item_name_en.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.menu_item_name_ja?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.table_name.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesStatus = filterStatus === "all" || item.status === filterStatus;
         
@@ -229,7 +271,7 @@ export function OrdersClientContent({
   const filteredOrders = orders
     .filter(order => {
       const matchesSearch = searchTerm === "" || 
-        order.tables?.[0]?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.tables?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.id.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = filterStatus === "all" || order.status === filterStatus;
@@ -400,7 +442,7 @@ export function OrdersClientContent({
     
     return (
       <Badge variant={variants[status]} className="capitalize">
-        {tCommon(`order_status.${status}`) || tCommon(`order_item_status.${status}`)}
+        {tCommon(`order_item_status.${status}`) || tCommon(`order_item_status.${status}`)}
       </Badge>
     );
   };
@@ -408,7 +450,7 @@ export function OrdersClientContent({
 
   const renderItemsView = () => {
     const allItems = getAllOrderItems();
-    
+    console.log("All items:", allItems[0]);
     return (
       <Card>
         <CardHeader>
@@ -434,15 +476,19 @@ export function OrdersClientContent({
                 {allItems.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">
-                      {item.order.tables?.[0]?.name || `Order ${item.order.id.slice(0, 6)}`}
+                      {item.table_name}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="font-medium">
-                          {getLocalizedText({"name_en":item.menu_items[0].name_en,"name_vi":item.menu_items[0].name_vi,"name_jp":item.menu_items[0].name_ja}, locale)}
+                          {getLocalizedText({
+                            "name_en": item.menu_item_name_en,
+                            "name_vi": item.menu_item_name_vi,
+                            "name_ja": item.menu_item_name_ja
+                          }, locale)}
                         </span>
                         <span className="text-sm text-gray-500">
-                          ¥{item.menu_items[0]?.price?.toLocaleString()}
+                          {item.menu_item_price ? `¥${item.menu_item_price.toLocaleString()}` : '-'}
                         </span>
                       </div>
                     </TableCell>
@@ -463,7 +509,7 @@ export function OrdersClientContent({
                             variant="outline"
                             onClick={() => updateItemStatus(item.id, "preparing")}
                           >
-                            <ChefHat className="h-3 w-3" />
+                            <ChefHat className="h-3 w-3 mr-1" /> {tCommon("order_item_status.preparing")}
                           </Button>
                         )}
                         {item.status === "preparing" && (
@@ -472,7 +518,7 @@ export function OrdersClientContent({
                             variant="outline"
                             onClick={() => updateItemStatus(item.id, "ready")}
                           >
-                            <Clock className="h-3 w-3" />
+                            <Clock className="h-3 w-3 mr-1" /> {tCommon("order_item_status.ready")}
                           </Button>
                         )}
                         {item.status === "ready" && (
@@ -481,7 +527,7 @@ export function OrdersClientContent({
                             variant="outline"
                             onClick={() => updateItemStatus(item.id, "served")}
                           >
-                            <Check className="h-3 w-3" />
+                            <Check className="h-3 w-3 mr-1" /> {tCommon("order_item_status.served")}
                           </Button>
                         )}
                       </div>
@@ -522,7 +568,7 @@ export function OrdersClientContent({
                 {filteredOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">
-                      {order.tables?.[0]?.name || `Order ${order.id.slice(0, 6)}`}
+                      {order.tables?.name || `Order ${order.id.slice(0, 6)}`}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
@@ -753,7 +799,7 @@ export function OrdersClientContent({
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {t("add_items_to_order")} - {selectedOrder?.tables?.[0]?.name}
+              {t("add_items_to_order")} - {selectedOrder?.tables?.name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -782,7 +828,7 @@ export function OrdersClientContent({
             {selectedOrder && (
               <>
                 <div>
-                  <p><strong>{t("table")}:</strong> {selectedOrder.tables?.[0]?.name}</p>
+                  <p><strong>{t("table")}:</strong> {selectedOrder.tables?.name}</p>
                   <p><strong>{t("total")}:</strong> ¥{selectedOrder.total_amount?.toLocaleString()}</p>
                   <p><strong>{t("items")}:</strong> {selectedOrder.order_items.length}</p>
                 </div>

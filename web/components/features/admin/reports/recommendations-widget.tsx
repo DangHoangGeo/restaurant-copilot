@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { supabaseClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
+import { createClient } from '@/lib/supabase/client';
 // Assuming a toast notification system is in place, e.g., react-hot-toast or similar
 // import toast from 'react-hot-toast';
 
@@ -41,7 +41,7 @@ const RecommendationsWidget: React.FC<RecommendationsWidgetProps> = ({ restauran
       setApplySuccess(false);
       setApplyError(null);
       try {
-        const { data, error: rpcError } = await supabaseClient.rpc('get_top_sellers_7days', {
+        const { data, error: rpcError } = await createClient().rpc('get_top_sellers_7days', {
           p_restaurant_id: restaurantId,
           p_limit: 3,
         });

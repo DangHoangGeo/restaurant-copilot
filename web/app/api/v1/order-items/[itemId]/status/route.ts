@@ -42,7 +42,7 @@ export async function PATCH(
       .eq("id", itemId)
       .single();
 
-    if (fetchError || !orderItem || orderItem.orders[0].restaurant_id !== user.restaurantId) {
+    if (fetchError || !orderItem || (orderItem.orders as any).restaurant_id !== user.restaurantId) {
       return NextResponse.json(
         { success: false, error: "Order item not found" },
         { status: 404 }

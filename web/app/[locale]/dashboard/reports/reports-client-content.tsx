@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle, Sparkles } from 'lucide-react'
+import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react'
 import RecommendationsWidget from '@/components/features/admin/reports/recommendations-widget'
 
 const MOCK_MENU_CATEGORIES_BASE = [{ items: [{ id: 'item1', name: { en: 'Sample Item' } as Record<string, string> }] }]

@@ -1,14 +1,18 @@
 CREATE OR REPLACE FUNCTION get_top_sellers_7days(p_restaurant_id uuid, p_limit int)
 RETURNS TABLE (
     menu_item_id UUID,
-    name TEXT,
+    name_en TEXT,
+    name_ja TEXT,
+    name_vi TEXT,
     total_sold BIGINT
 )
 LANGUAGE sql
 AS $$
     SELECT
         oi.menu_item_id,
-        mi.name,
+        mi.name_en,
+        mi.name_ja,
+        mi.name_vi,
         SUM(oi.quantity) AS total_sold
     FROM
         order_items oi
@@ -21,7 +25,9 @@ AS $$
         o.created_at >= NOW() - INTERVAL '7 days'
     GROUP BY
         oi.menu_item_id,
-        mi.name
+        mi.name_en,
+        mi.name_ja,
+        mi.name_vi
     ORDER BY
         total_sold DESC
     LIMIT
