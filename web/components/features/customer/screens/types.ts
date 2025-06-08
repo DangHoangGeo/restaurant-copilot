@@ -50,6 +50,7 @@ export interface OrderPlacedScreenViewProps {
 }
 
 export interface ThankYouScreenViewProps {
+  sessionId: string;
   orderId: string;
   items: OrderItemDetail[]; // Formatted items for display
   total: number;
@@ -71,7 +72,6 @@ export type ViewType =
   | "expired"
   | "invalid"
   | "join"
-  | "orderhistory"
   | "menuitemdetail";
 
 // ViewProps is the union of all possible props objects that can be associated with a view.

@@ -119,7 +119,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
             )
           ) : (
             <p className="text-center text-gray-500 italic py-4">
-              {t('menu_item_detail_view_only')}
+              {t('menu.view_only')}
             </p>
           )}
           {showAddedMessage && ( // Message display relies solely on showAddedMessage state

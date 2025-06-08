@@ -186,7 +186,7 @@ export function CustomerMenuScreen({
           <Alert>{showAddedToCartMsg}</Alert>
         </div>
       )}
-
+      
       <MenuList
         categories={menu.sort((a, b) => a.position - b.position)}
         locale={locale}
@@ -197,10 +197,10 @@ export function CustomerMenuScreen({
         brandColor={restaurantSettings.primaryColor || "#0ea5e9"}
         recommended={menu[0]?.menu_items.slice(0, 2) || []}
         canAddItems={canAddItems && sessionStatus === 'valid'}
-        setView={setView} // Added
-        tableId={tableId} // Added
-        sessionId={sessionId} // Added
-        tableNumber={tableNumber} // Added
+        setView={setView}
+        tableId={tableId}
+        sessionId={sessionId}
+        tableNumber={tableNumber}
       />
 
       {canAddItems && sessionStatus === 'valid' && (

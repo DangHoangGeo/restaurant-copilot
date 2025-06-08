@@ -17,7 +17,6 @@ import { OrderPlacedScreen } from "@/components/features/customer/screens/OrderP
 import { ThankYouScreen } from "@/components/features/customer/screens/ThankYouScreen";
 import { ReviewScreen } from "@/components/features/customer/screens/ReviewScreen";
 import { BookingScreen } from "@/components/features/customer/screens/BookingScreen";
-import { OrderHistoryScreen } from "@/components/features/customer/screens/OrderHistoryScreen";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -257,7 +256,7 @@ export function CustomerClientContent({
           {t("session.session_expired_instruction")}
           </p>
           <Button
-          onClick={() => setView("orderhistory", viewProps as MenuViewProps)}
+          onClick={() => setView("thankyou", viewProps as MenuViewProps)}
           variant="outline"
           className="hover:opacity-90"
         >
@@ -340,6 +339,7 @@ export function CustomerClientContent({
             restaurantSettings={restaurantSettings}
             viewProps={{
               orderId: tyvp.orderId || "",
+              sessionId: tyvp.sessionId || "",
               items: tyvp.items || [],
               total: tyvp.total || 0,
               tableId: tyvp.tableId,
@@ -355,15 +355,6 @@ export function CustomerClientContent({
             restaurantSettings={restaurantSettings}
             viewProps={viewProps as ReviewViewProps} // Cast
             featureFlags={reviewScreenFeatureFlags}
-          />
-        );
-        break;
-      case "orderhistory":
-        ScreenComponent = (
-          <OrderHistoryScreen
-            setView={setView}
-            restaurantSettings={restaurantSettings}
-            viewProps={viewProps as MenuViewProps} // OrderHistory uses MenuViewProps
           />
         );
         break;
