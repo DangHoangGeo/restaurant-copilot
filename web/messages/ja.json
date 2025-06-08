@@ -236,7 +236,8 @@
         "logoUploadErrorMessage": "ロゴをアップロードできませんでした：{error}",
         "logoRemovedMessage": "ロゴが削除されました。変更を保存して確認してください。",
         "fileTooLarge": "ファイルサイズが大きすぎます。最大5MBです。",
-        "invalidFileType": "無効なファイルタイプです。画像をアップロードしてください。"
+        "invalidFileType": "無効なファイルタイプです。画像をアップロードしてください。",
+        "settingsSaveFailedGeneric": "設定の保存に失敗しました。もう一度お試しください。"
       },
       "altText": {
         "logoPreview": "レストランロゴのプレビュー",
@@ -266,8 +267,257 @@
           "fetchErrorMessage": "レストラン設定の取得中に問題が発生しました。後でもう一度お試しください。",
           "noSettingsFoundTitle": "設定が見つかりません",
           "noSettingsFoundMessage": "このレストランの設定データが見つかりませんでした。"
+        },
+        "validation": {
+          "name.required": "レストラン名は必須です。",
+          "name.maxLength": "レストラン名は{maxLength}文字以内で入力してください。",
+          "defaultLanguage.required": "デフォルト言語は必須です。",
+          "brandColor.invalidFormat": "ブランドカラーの形式が無効です。#RRGGBB を使用してください。",
+          "contactInfo.maxLength": "連絡先情報は{maxLength}文字以内で入力してください。",
+          "address.maxLength": "住所は{maxLength}文字以内で入力してください。",
+          "opening_hours.maxLength": "営業時間は{maxLength}文字以内で入力してください。",
+          "description.maxLength": "説明は{maxLength}文字以内で入力してください。",
+          "logoFile.maxSize": "ロゴ画像は{maxSize}MB以下にしてください。",
+          "logoFile.invalidType": "無効なファイルタイプです。PNG、JPG、またはWEBP画像をアップロードしてください。",
+          "logoUrl.invalidFormat": "ロゴURLの形式が無効です。"
         }
       }
+    },
+    "Layout": {
+      "errors": {
+        "fallbackRestaurantName": "代替レストラン",
+        "configurationErrorTitle": "レストラン設定エラー",
+        "configurationErrorDescription": "サブドメイン「{subdomain}」の設定を読み込めませんでした。代替設定で表示しています。",
+        "adminPanelTitle": "管理パネル",
+        "noRestaurantContextTitle": "エラー：レストランコンテキストがありません",
+        "noRestaurantContextDescription": "このダッシュボードを正しく機能させるには、有効なレストランのサブドメインが必要です。"
+      }
+    }
+  },
+  "AdminMenu": {
+    "title": "メニュー管理",
+    "add_category": "カテゴリ追加",
+    "add_item": "品目追加",
+    "edit": "編集",
+    "delete": "削除",
+    "low_stock": "在庫僅少",
+    "no_items_in_category": "このカテゴリにはまだ品目がありません。「品目追加」をクリックして追加してください。",
+    "edit_category": "カテゴリ編集",
+    "edit_item": "品目編集",
+    "form_hint": "* が付いている項目は必須です。",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "available": "提供中",
+    "unavailable": "品切れ",
+    "category": {
+      "update_success": "カテゴリを更新しました！",
+      "create_success": "カテゴリを作成しました！",
+      "save_error": "カテゴリの保存に失敗しました。もう一度お試しください。",
+      "delete_success": "カテゴリを削除しました！",
+      "delete_error": "カテゴリの削除に失敗しました。もう一度お試しください。",
+      "name_en": "カテゴリ名（英語）",
+      "name_ja": "カテゴリ名（日本語）",
+      "name_vi": "カテゴリ名（ベトナム語）",
+      "order": "表示順",
+      "reorder_success": "カテゴリの並び順を更新しました。",
+      "reorder_error": "カテゴリの並び順の更新に失敗しました。",
+      "delete_error_fallback": "カテゴリの削除に失敗しました。使用中か、サーバーエラーの可能性があります。"
+    },
+    "buttons": {
+      "saving": "保存中..."
+    },
+    "weekdays": {
+      "mon": "月曜日",
+      "tue": "火曜日",
+      "wed": "水曜日",
+      "thu": "木曜日",
+      "fri": "金曜日",
+      "sat": "土曜日",
+      "sun": "日曜日"
+    },
+    "weekdays_short": {
+      "1_short": "月",
+      "2_short": "火",
+      "3_short": "水",
+      "4_short": "木",
+      "5_short": "金",
+      "6_short": "土",
+      "7_short": "日"
+    },
+    "item": {
+      "update_success": "メニュー品目を更新しました！",
+      "create_success": "メニュー品目を作成しました！",
+      "save_error": "メニュー品目の保存に失敗しました。もう一度お試しください。",
+      "delete_success": "メニュー品目を削除しました！",
+      "delete_error": "メニュー品目の削除に失敗しました。もう一度お試しください。",
+      "name_en": "品目名（英語）",
+      "name_ja": "品目名（日本語）",
+      "name_vi": "品目名（ベトナム語）",
+      "description_en": "説明（英語）",
+      "description_ja": "説明（日本語）",
+      "description_vi": "説明（ベトナム語）",
+      "price": "価格",
+      "image_url": "画像URL",
+      "upload_image": "画像アップロード",
+      "image_preview_alt": "画像プレビュー",
+      "image_upload_note": "メニュー品目の画像をアップロードしてください（最大5MB）。",
+      "stock_level": "在庫数",
+      "is_available": "提供中ですか？",
+      "weekday_visibility": "表示する曜日",
+      "reorder_success": "メニュー項目の並び順を更新しました。",
+      "reorder_error": "メニュー項目の並び順の更新に失敗しました。"
+    },
+    "errors": {
+      "restaurant_not_found": "レストランコンテキストを特定できませんでした。有効なレストランサブドメイン経由でアクセスしていることを確認してください。",
+      "data_fetch_error": "メニューデータの読み込みに失敗しました。後でもう一度お試しください。",
+      "no_categories_found": "メニューカテゴリが見つかりません。開始するにはカテゴリを追加してください。"
+    },
+    "AdminOrders": {
+      "errors": {
+        "fetch_failed": "注文データの取得に失敗しました。もう一度お試しください。"
+      }
+    },
+    "validation": {
+      "name_en_required": "英語名は必須です。",
+      "name_en_max_length": "英語名は{maxLength}文字以内で入力してください。",
+      "name_ja_max_length": "日本語名は{maxLength}文字以内で入力してください。",
+      "name_vi_max_length": "ベトナム語名は{maxLength}文字以内で入力してください。",
+      "position_required": "位置は必須です。",
+      "category_id_required": "カテゴリは必須です。",
+      "description_en_max_length": "英語の説明は{maxLength}文字以内で入力してください。",
+      "description_ja_max_length": "日本語の説明は{maxLength}文字以内で入力してください。",
+      "description_vi_max_length": "ベトナム語の説明は{maxLength}文字以内で入力してください。",
+      "price_required": "価格は必須です。",
+      "price_min": "価格は{min}以上である必要があります。",
+      "image_url_invalid": "無効な画像URL形式です。",
+      "stock_level_min": "在庫数は{min}以上である必要があります。",
+      "weekday_visibility_array_error": "曜日の選択が無効です。",
+      "logoFile_maxSize": "画像ファイルは{maxSize}MB以下にしてください。"
+    },
+    "empty_state": {
+      "no_categories_title": "まだメニューカテゴリがありません",
+      "no_categories_description": "最初のメニューカテゴリを作成して始めましょう。料理を整理し、顧客に提供できるようにします。",
+      "no_items_title": "このカテゴリには品目がありません",
+      "no_items_description": "このカテゴリは空です。新しいメニュー品目を追加して始めましょう。"
+    },
+    "currency_format": "{value, number, ::currency/JPY}"
+  },
+  "AdminDashboard": {
+    "title": "ダッシュボード",
+    "cards": {
+      "todays_sales": "本日の売上",
+      "active_orders": "アクティブな注文",
+      "top_seller_today": "本日のトップセラー",
+      "top_seller_unavailable": "該当なし",
+      "low_stock_alerts": "在庫僅少アラート",
+      "needs_attention": "要注意！",
+      "all_good": "問題なし",
+      "sold_units": "販売数"
+    },
+    "quick_actions": {
+      "title": "クイックアクション",
+      "add_menu_item": "新しいメニュー項目を追加",
+      "generate_qr": "テーブルQRコードを生成",
+      "add_employee": "新しい従業員を追加"
+    },
+    "recent_orders": {
+      "title": "最近の注文",
+      "no_recent_orders": "表示する最近の注文はありません。",
+      "table_header_order": "注文 / テーブル",
+      "table_header_items": "品目",
+      "table_header_total": "合計",
+      "table_header_status": "ステータス",
+      "table_prefix": "テーブル"
+    },
+    "charts": {
+      "sales_over_time_placeholder": "売上推移チャート - 近日公開",
+      "popular_items_report_placeholder": "人気商品レポート - 近日公開"
+    },
+    "errors": {
+      "restaurant_not_found": "レストランコンテキストを特定できませんでした。有効なレストランサブドメイン経由でアクセスしていることを確認してください。",
+      "data_fetch_error": "ダッシュボードデータの読み込みに失敗しました。後でもう一度お試しください。",
+      "unauthorized_access": "アクセスが拒否されました：このページを表示する権限がありません。",
+      "mismatched_restaurant_access": "アクセスが拒否されました：このレストランのデータを表示する権限がありません。"
+    },
+    "feature": {
+      "low_stock_alerts_dashboard": "ダッシュボードの在庫僅少アラート",
+      "sales_over_time_chart": "売上推移チャート",
+      "popular_items_report": "人気商品レポート"
+    }
+  },
+  "AdminTables": {
+    "title": "テーブルとQR管理",
+    "tables_list": "テーブル一覧",
+    "add_table": "テーブル追加",
+    "edit_table": "テーブル編集",
+    "table_name_label": "テーブル名",
+    "table_name_placeholder": "例: テーブル1, テラス5",
+    "capacity_label": "定員（席数）",
+    "capacity_placeholder": "例: 4",
+    "status_label": "ステータス",
+    "select_status_placeholder": "ステータスを選択",
+    "status_options": {
+      "available": "空席",
+      "occupied": "使用中",
+      "reserved": "予約席"
+    },
+    "is_outdoor_label": "屋外席",
+    "is_accessible_label": "バリアフリー",
+    "notes_label": "メモ",
+    "notes_placeholder": "このテーブルに関するメモ...",
+    "outdoor": "屋外席",
+    "accessible": "バリアフリー",
+    "status": "ステータス",
+    "capacity": "定員",
+    "position": "位置",
+    "generate_qr": "QR生成",
+    "qr_for_table": "テーブルのQRコード",
+    "download_png": "PNGダウンロード",
+    "downloading_qr": "QRダウンロード中...",
+    "validation": {
+      "name_required": "テーブル名は必須です。",
+      "name_max_length": "テーブル名は{maxLength}文字以内で入力してください。",
+      "capacity_required": "定員は必須です。",
+      "capacity_min": "定員は{min}以上である必要があります。",
+      "status_required": "ステータスは必須です。",
+      "notes_max_length": "メモは{maxLength}文字以内で入力してください。",
+      "qrCode_invalid_url": "無効なQRコードURL形式です。",
+      "bulk_count_required": "テーブル数は必須です。",
+      "bulk_count_min": "少なくとも{min}テーブル追加してください。",
+      "bulk_count_max": "一度に{max}テーブル以上は追加できません。",
+      "bulk_name_prefix_required": "名前の接頭辞は必須です。",
+      "bulk_name_prefix_max_length": "名前の接頭辞は{maxLength}文字以内で入力してください。",
+      "bulk_start_index_required": "開始番号は必須です。",
+      "bulk_start_index_min": "開始番号は{min}以上である必要があります。",
+      "bulk_start_index_max": "開始番号は{max}を超えることはできません。"
+    },
+    "notifications": {
+      "update_success": "テーブルを更新しました。",
+      "create_success": "テーブルを作成しました。",
+      "qr_saved_success": "QRコードを保存し、ダウンロード準備ができました。"
+    },
+    "errors": {
+      "save_failed": "テーブルの保存に失敗しました。もう一度お試しください。",
+      "qr_save_failed": "QRコードのテーブルへの保存に失敗しました。もう一度お試しください。",
+      "qr_download_failed": "QRコード画像のダウンロードに失敗しました。"
+    },
+    "empty_state": {
+      "title": "テーブルが見つかりません",
+      "description": "最初のテーブルを追加するか、一度に複数のテーブルを追加して開始します。",
+      "add_table_button": "個別テーブル追加",
+      "bulk_add_button": "一括テーブル追加"
+    },
+    "bulk_add": {
+      "button_text": "テーブル一括追加",
+      "title": "テーブル一括追加",
+      "count_label": "追加するテーブル数",
+      "name_prefix_label": "テーブル名の接頭辞",
+      "name_prefix_placeholder": "例: テーブル, エリアA - ",
+      "start_index_label": "開始番号",
+      "default_name_prefix": "テーブル ",
+      "submit_button": "テーブル追加",
+      "notification_success": "{count}テーブル正常に追加しました。",
+      "notification_error": "{count}テーブルの追加に失敗しました。エラー: {errors}"
     }
   },
   "AdminReports": {
@@ -326,5 +576,8 @@
   "Customer": {
     "guest_dialog": {"title": "ご来店ありがとうございます。人数を入力してください", "confirm": "注文を開始"},
     "orderhistory": {"checkout_button": "会計", "price_per_person": "1人あたり: {value}"}
+  },
+  "Common": {
+    "defaultUnnamedRestaurant": "名称未設定のレストラン"
   }
 }
