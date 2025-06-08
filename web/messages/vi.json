@@ -268,7 +268,61 @@
           "noSettingsFoundMessage": "Không tìm thấy dữ liệu cài đặt cho nhà hàng này."
         }
       }
+    }
+  },
+  "AdminReports": {
+    "Recommendations": {
+      "title": "Món Ăn Bán Chạy Nhất (7 Ngày Qua)",
+      "loading": "Đang tải đề xuất...",
+      "errorFetching": "Lỗi khi tải đề xuất: {error}",
+      "noData": "Không tìm thấy món ăn bán chạy nhất trong 7 ngày qua.",
+      "soldLabel": "Đã bán:",
+      "applyButton": "Áp dụng cho tuần tới",
+      "applyingButton": "Đang áp dụng...",
+      "applySuccess": "Đề xuất đã được áp dụng thành công!",
+      "applyError": "Lỗi khi áp dụng đề xuất: {error}",
+      "missingRestaurantId": "Vui lòng chọn nhà hàng để xem đề xuất.",
+      "missingRestaurantIdApply": "Không thể áp dụng đề xuất mà không có ID nhà hàng."
     },
+    "tabs": {
+      "sales": "Doanh thu",
+      "items": "Mặt hàng",
+      "feedback": "Phản hồi"
+    },
+    "summary": {
+      "total_sales_today": "Tổng doanh thu hôm nay",
+      "active_orders_count": "Đơn hàng đang hoạt động",
+      "top_selling_item_today": "Mặt hàng bán chạy nhất hôm nay",
+      "low_stock_alerts_count": "Cảnh báo tồn kho thấp"
+    },
+    "recommendations": {
+      "title": "Đề xuất",
+      "description_7_days": "Dựa trên 7 ngày qua",
+      "apply_button": "Áp dụng đề xuất"
+    },
+    "sales": {
+      "title": "Báo cáo doanh thu",
+      "daily_revenue_chart_placeholder": "Biểu đồ doanh thu hàng ngày (placeholder)",
+      "category_breakdown_chart_placeholder": "Phân tích theo danh mục (placeholder)"
+    },
+    "daterange": {
+      "last_7_days": "7 ngày qua",
+      "last_30_days": "30 ngày qua"
+    },
+    "items": {
+      "title": "Báo cáo mặt hàng",
+      "table": {
+        "item_name": "Tên mặt hàng",
+        "total_sold": "Tổng đã bán",
+        "total_revenue": "Tổng doanh thu",
+        "avg_rating": "Đánh giá trung bình"
+      }
+    },
+    "feedback": {
+      "title": "Phản hồi",
+      "description_last_50": "50 đánh giá gần nhất"
+    }
+  },
   "Customer": {
     "guest_dialog": {"title": "Xin chào! Bao nhiêu khách?", "confirm": "Bắt đầu gọi món"},
     "orderhistory": {"checkout_button": "Thanh toán", "price_per_person": "Mỗi người: {value}"}

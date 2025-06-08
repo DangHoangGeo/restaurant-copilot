@@ -633,6 +633,19 @@
     }
   },
   "AdminReports": {
+    "Recommendations": {
+      "title": "Top Selling Menu Items (Last 7 Days)",
+      "loading": "Loading recommendations...",
+      "errorFetching": "Error fetching recommendations: {error}",
+      "noData": "No top sellers found for the last 7 days.",
+      "soldLabel": "Sold:",
+      "applyButton": "Apply to Next Week",
+      "applyingButton": "Applying...",
+      "applySuccess": "Recommendations applied successfully!",
+      "applyError": "Error applying recommendations: {error}",
+      "missingRestaurantId": "Please select a restaurant to see recommendations.",
+      "missingRestaurantIdApply": "Cannot apply recommendations without a restaurant ID."
+    },
     "tabs": {
       "sales": "Sales",
       "items": "Items",

@@ -6,12 +6,18 @@ import { useParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle, Sparkles } from 'lucide-react'
+import RecommendationsWidget from '@/components/features/admin/reports/recommendations-widget'
 
 const MOCK_MENU_CATEGORIES_BASE = [{ items: [{ id: 'item1', name: { en: 'Sample Item' } as Record<string, string> }] }]
 
 export function ReportsClientContent() {
   const t = useTranslations()
   const params = useParams()
+  // Assuming restaurantId is part of the route params, e.g., /dashboard/[restaurantId]/reports
+  // Or it might be available through a context or a different hook.
+  // For now, let's assume it's available as params.restaurantId.
+  // This might need adjustment if restaurantId is sourced differently.
+  const restaurantId = params.restaurantId as string; // Added this line
   const locale = (params.locale as string) || 'en'
   const [activeTab, setActiveTab] = useState<'sales' | 'items' | 'feedback'>('sales')
 
@@ -69,16 +75,8 @@ export function ReportsClientContent() {
         ))}
       </div>
       {renderTabContent()}
-      <Card className="mt-8 p-4">
-        <h3 className="text-lg font-semibold mb-3">{t('AdminReports.recommendations.title')}</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('AdminReports.recommendations.description_7_days')}</p>
-        <ul className="space-y-1 text-sm">
-          <li><span>{MOCK_MENU_CATEGORIES_BASE[0].items[0].name[locale] || 'Item'}</span> <span className="font-medium">10 {t('Common.sold')}</span></li>
-        </ul>
-        <Button variant="primary" className="mt-4 w-full sm:w-auto">
-          <Sparkles className="mr-2" />
-          {t('AdminReports.recommendations.apply_button')}</Button>
-      </Card>
+      {/* Render the RecommendationsWidget; it will handle missing restaurantId internally */}
+      <RecommendationsWidget restaurantId={restaurantId} />
     </div>
   )
 }
