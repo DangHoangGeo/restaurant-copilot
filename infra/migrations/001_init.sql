@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS tables (
   is_outdoor boolean DEFAULT false,
   is_accessible boolean DEFAULT false,
   notes text,
-  qr_code text UNIQUE,               -- optional, or derived on the fly
+  qr_code text UNIQUE,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
