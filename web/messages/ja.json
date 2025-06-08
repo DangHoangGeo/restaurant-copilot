@@ -328,5 +328,3 @@
     "orderhistory": {"checkout_button": "会計", "price_per_person": "1人あたり: {value}"}
   }
 }
-
-}

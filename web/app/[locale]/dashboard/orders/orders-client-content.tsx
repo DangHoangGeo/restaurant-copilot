@@ -723,9 +723,22 @@ export function OrdersClientContent({
     );
   };
 
-  const renderMenuSelection = () => {
+  const useRenderMenuSelection = () => {
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedItems, setSelectedItems] = useState<{[key: string]: {item: any, quantity: number, editingNotes?: boolean}}>({});
+    interface SelectedMenuItem {
+      item: {
+        id: string;
+        name_en: string;
+        name_ja: string;
+        name_vi: string;
+        price: number;
+        available: boolean;
+      };
+      quantity: number;
+      editingNotes?: boolean;
+    }
+
+    const [selectedItems, setSelectedItems] = useState<{[key: string]: SelectedMenuItem}>({});
 
     // Flatten all menu items for searching
     const allMenuItems = menuCategories.flatMap(category => 
@@ -1055,7 +1068,7 @@ export function OrdersClientContent({
             <div>
               <label className="text-sm font-medium">{t("select_menu_items")}</label>
               <ScrollArea className="h-[400px] mt-2">
-                {renderMenuSelection()}
+                {useRenderMenuSelection()}
               </ScrollArea>
             </div>
           </div>
@@ -1080,7 +1093,7 @@ export function OrdersClientContent({
           </DialogHeader>
           <div className="space-y-4">
             <ScrollArea className="h-[400px]">
-              {renderMenuSelection()}
+              {useRenderMenuSelection()}
             </ScrollArea>
           </div>
           <DialogFooter>
