@@ -21,8 +21,7 @@ import { OrderHistoryScreen } from "@/components/features/customer/screens/Order
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-// Types
+import { getSubdomainFromHost } from "@/lib/utils";
 import type { RestaurantSettings, Category, TableInfo } from "@/shared/types/customer";
 import { 
   ViewType, 
@@ -141,16 +140,22 @@ export function CustomerClientContent({
   const startSession = async () => {
     if (!tableId) return;
     try {
-      const res = await fetch(`/api/v1/sessions/create?tableId=${tableId}&guests=${guestCount}`);
+      const subdomain = getSubdomainFromHost(window.location.host);
+      const params = new URLSearchParams({ tableId });
+      params.append('guests', String(guestCount));
+      if (subdomain) params.append('subdomain', subdomain);
+      const res = await fetch(`/api/v1/sessions/create?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         localStorage.setItem("sessionId", data.sessionId);
+        localStorage.setItem("guestCount", String(data.guestCount || guestCount));
         setViewProps(prev => ({
           ...prev,
           sessionId: data.sessionId,
           tableNumber: data.tableNumber,
           canAddItems: true,
           guestCount: data.guestCount,
+          orderId: data.orderId,
         }));
         setShowGuestDialog(false);
       } else {
@@ -339,7 +344,15 @@ export function CustomerClientContent({
             <DialogTitle>{t("guest_dialog.title")}</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
-            <Input type="number" min={1} value={guestCount} onChange={(e) => setGuestCount(parseInt(e.target.value))} />
+            <Input
+              type="number"
+              min={1}
+              value={guestCount}
+              onChange={(e) => {
+                const v = parseInt(e.target.value, 10);
+                setGuestCount(Number.isFinite(v) && v > 0 ? v : 1);
+              }}
+            />
           </div>
           <DialogFooter>
             <Button onClick={startSession} className="w-full" style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}>

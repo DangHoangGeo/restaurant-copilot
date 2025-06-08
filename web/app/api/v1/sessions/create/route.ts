@@ -8,7 +8,8 @@ export async function GET(req: NextRequest) {
   try {
     const tableId = req.nextUrl.searchParams.get("tableId");
     const guestsParam = req.nextUrl.searchParams.get("guests");
-    const guestCount = guestsParam ? Math.max(parseInt(guestsParam, 10), 1) : 1;
+    const parsedGuests = guestsParam ? parseInt(guestsParam, 10) : NaN;
+    const guestCount = Number.isFinite(parsedGuests) && parsedGuests > 0 ? parsedGuests : 1;
     console.log('GET create session for tableId:', tableId);
     if (!tableId) {
       return NextResponse.json({ success: false, error: "Table ID is required" }, { status: 400 });
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     // Get restaurant ID from subdomain
     const host = req.headers.get("host") || "";
-    const subdomain = getSubdomainFromHost(host);
+    const subdomain = getSubdomainFromHost(host) || req.nextUrl.searchParams.get("subdomain");
     const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
 
     if (!restaurantId) {

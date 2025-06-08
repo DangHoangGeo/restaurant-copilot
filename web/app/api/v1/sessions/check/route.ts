@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     // Get restaurant ID from subdomain
     const host = req.headers.get("host") || "";
-    const subdomain = getSubdomainFromHost(host);
+    const subdomain = getSubdomainFromHost(host) || req.nextUrl.searchParams.get("subdomain");
     const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
 
     if (!restaurantId) {
