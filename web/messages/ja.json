@@ -268,7 +268,61 @@
           "noSettingsFoundMessage": "このレストランの設定データが見つかりませんでした。"
         }
       }
+    }
+  },
+  "AdminReports": {
+    "Recommendations": {
+      "title": "トップ販売メニューアイテム（過去7日間）",
+      "loading": "おすすめを読み込み中...",
+      "errorFetching": "おすすめの取得中にエラーが発生しました: {error}",
+      "noData": "過去7日間のトップ販売アイテムは見つかりませんでした。",
+      "soldLabel": "販売数:",
+      "applyButton": "来週に適用",
+      "applyingButton": "適用中...",
+      "applySuccess": "おすすめが正常に適用されました！",
+      "applyError": "おすすめの適用中にエラーが発生しました: {error}",
+      "missingRestaurantId": "おすすめを表示するにはレストランを選択してください。",
+      "missingRestaurantIdApply": "レストランIDなしでおすすめを適用することはできません。"
     },
+    "tabs": {
+      "sales": "売上",
+      "items": "品目",
+      "feedback": "フィードバック"
+    },
+    "summary": {
+      "total_sales_today": "本日の総売上",
+      "active_orders_count": "アクティブな注文数",
+      "top_selling_item_today": "本日のトップ販売アイテム",
+      "low_stock_alerts_count": "在庫僅少アラート数"
+    },
+    "recommendations": {
+      "title": "おすすめ",
+      "description_7_days": "過去7日間に基づく",
+      "apply_button": "おすすめを適用"
+    },
+    "sales": {
+      "title": "売上レポート",
+      "daily_revenue_chart_placeholder": "日次収益チャートプレースホルダー",
+      "category_breakdown_chart_placeholder": "カテゴリ別内訳プレースホルダー"
+    },
+    "daterange": {
+      "last_7_days": "過去7日間",
+      "last_30_days": "過去30日間"
+    },
+    "items": {
+      "title": "品目レポート",
+      "table": {
+        "item_name": "品目名",
+        "total_sold": "総販売数",
+        "total_revenue": "総収益",
+        "avg_rating": "平均評価"
+      }
+    },
+    "feedback": {
+      "title": "フィードバック",
+      "description_last_50": "過去50件のレビュー"
+    }
+  },
   "Customer": {
     "guest_dialog": {"title": "ご来店ありがとうございます。人数を入力してください", "confirm": "注文を開始"},
     "orderhistory": {"checkout_button": "会計", "price_per_person": "1人あたり: {value}"}
