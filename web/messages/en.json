@@ -710,6 +710,10 @@
       "items_in_cart_plural": "{count} item(s) in cart",
       "review_order_button": "Review Order"
     },
+    "guest_dialog": {
+      "title": "Welcome! How many guests?",
+      "confirm": "Start Ordering"
+    },
     "checkout": {
       "redirecting_empty_cart": "Cart is empty. Redirecting to menu...",
       "title": "Review Order",
@@ -793,6 +797,10 @@
       "submission_thank_you_title": "Review Submitted!",
       "submission_thank_you_message": "Thank you for your valuable feedback!",
       "rating_label": "Your Rating"
+    },
+    "orderhistory": {
+      "checkout_button": "Checkout",
+      "price_per_person": "Per Person: {value}"
     },
     "booking": {
       "title": "Table Booking",

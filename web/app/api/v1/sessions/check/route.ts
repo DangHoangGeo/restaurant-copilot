@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     // Get restaurant ID from subdomain
     const host = req.headers.get("host") || "";
-    const subdomain = getSubdomainFromHost(host);
+    const subdomain = getSubdomainFromHost(host) || req.nextUrl.searchParams.get("subdomain");
     const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
 
     if (!restaurantId) {
@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         status,
         table_id,
         total_amount,
+        guest_count,
         created_at,
         tables (
           table_number
@@ -65,7 +66,8 @@ export async function GET(req: NextRequest) {
       tableId: order.table_id,
       tableNumber: order.tables?.[0]?.table_number,
       totalAmount: order.total_amount,
-      canAddItems: order.status === "new"
+      canAddItems: order.status === "new",
+      guestCount: order.guest_count
     });
 
   } catch (error) {
