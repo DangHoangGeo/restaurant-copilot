@@ -42,6 +42,7 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
   const host = (await headers()).get('host') || ''
   const subdomain = getSubdomainFromHost(host)
   const t = await getTranslations({ locale, namespace: 'AdminBookings' })
+  const tCommon = await getTranslations({ locale, namespace: 'Common' }) // For default name
 
   let restaurantId: string | null = null;
   let errorGettingId: string | null = null;
@@ -67,12 +68,12 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
         .single();
 
       if (restaurantError) {
-        console.error(`Error fetching restaurant settings for ID "${user.restaurantId}":`, restaurantError);
+        // console.error(`Error fetching restaurant settings for ID "${user.restaurantId}":`, restaurantError);
         throw restaurantError;
       }
       if (restaurantData) {
         restaurantSettings = {
-          name: restaurantData.name || 'Restaurant',
+          name: restaurantData.name || tCommon('defaultUnnamedRestaurant'),
           logoUrl: restaurantData.logo_url,
           subdomain: restaurantData.subdomain || undefined,
           primaryColor: restaurantData.brand_color || undefined,
@@ -87,7 +88,7 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
         .eq("restaurant_id", user.restaurantId);
 
       if (bookingsError) {
-        console.error(`Error fetching bookings for restaurant ID "${user.restaurantId}":`, bookingsError);
+        // console.error(`Error fetching bookings for restaurant ID "${user.restaurantId}":`, bookingsError);
         throw bookingsError;
       }
       
@@ -103,11 +104,11 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
       })) as Booking[];
 
       if (!initialBookings || initialBookings.length === 0) {
-        fetchError = t("errors.no_bookings_found");
+        fetchError = t("errors.no_bookings_found"); // This will show an error alert. Client component also handles empty.
       }
     } catch (error) {
-      console.error("Error fetching bookings data:", error);
-      fetchError = (error instanceof Error ? error.message : t("errors.data_fetch_error"));
+      // console.error("Error fetching bookings data:", error);
+      fetchError = (error instanceof Error ? error.message : t("errors.data_fetch_error")); // Use a generic data fetch error from AdminBookings
     }
   }
 

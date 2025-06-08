@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -133,7 +132,7 @@ export function EmployeesClientContent() {
     }
     setIsScheduleModalOpen(false);
   };
-
+  
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">

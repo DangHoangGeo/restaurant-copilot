@@ -47,18 +47,20 @@ export default async function DashboardLayout({
 
   if (!subdomain) {
     // This scenario should be handled by middleware redirecting to a selection page
-	console.log("locale:", locale);
-    console.error("DashboardLayout: Subdomain could not be determined from host:", host);
+    // console.log("locale:", locale); // Dev log
+    // console.error("DashboardLayout: Subdomain could not be determined from host:", host); // Production: use proper logging
   }
   
   const restaurantSettings = subdomain 
     ? await getRestaurantSettingsFromSubdomain(subdomain) 
     : null;
   
+  const tErrors = await getTranslations({ locale, namespace: 'Dashboard.Layout.errors' });
+
   if (!restaurantSettings && subdomain) {
-    console.warn(`No restaurant settings found for subdomain: ${subdomain}`);
+    // console.warn(`No restaurant settings found for subdomain: ${subdomain}`); // Production: use proper logging
     const MOCK_RESTAURANT_INFO_FALLBACK = {
-      name: "Fallback Restaurant",
+      name: tErrors('fallbackRestaurantName'), // Use a translated fallback name
       logoUrl: null,
       subdomain: subdomain,
       primaryColor: '#3B82F6', // Default Tailwind blue
@@ -67,9 +69,10 @@ export default async function DashboardLayout({
       <ProtectedLayout>
         <AdminLayoutClient locale={locale} restaurantSettings={MOCK_RESTAURANT_INFO_FALLBACK}>
           <div className="p-8 text-center">
-            <h1 className="text-xl font-semibold text-destructive">Restaurant Configuration Error</h1>
-            <p className="text-muted-foreground">Could not load settings for subdomain: {subdomain}. Displaying with fallback.</p>
-            {children}
+            <h1 className="text-xl font-semibold text-destructive">{tErrors('configurationErrorTitle')}</h1>
+            <p className="text-muted-foreground">{tErrors('configurationErrorDescription', { subdomain: subdomain })}</p>
+            {/* It might be better to not render children here, or show a more specific error page */}
+            {/* {children} */}
           </div>
         </AdminLayoutClient>
       </ProtectedLayout>
@@ -77,27 +80,29 @@ export default async function DashboardLayout({
   }
   
   if (!restaurantSettings && !subdomain) {
-     // This case implies accessing dashboard on root domain
+     // This case implies accessing dashboard on root domain, which might be invalid for some setups
      const GENERIC_ADMIN_SETTINGS = {
-        name: "Admin Panel",
+        name: tErrors('adminPanelTitle'), // Use a translated title
         logoUrl: null,
-        subdomain: "admin",
+        subdomain: "admin", // or a generic placeholder
         primaryColor: '#3B82F6',
       } as const;
     return (
       <ProtectedLayout>
         <AdminLayoutClient locale={locale} restaurantSettings={GENERIC_ADMIN_SETTINGS}>
           <div className="p-8 text-center">
-            <h1 className="text-xl font-semibold text-destructive">Error: No Restaurant Context</h1>
-            <p className="text-muted-foreground">This dashboard requires a restaurant subdomain.</p>
-            {children}
+            <h1 className="text-xl font-semibold text-destructive">{tErrors('noRestaurantContextTitle')}</h1>
+            <p className="text-muted-foreground">{tErrors('noRestaurantContextDescription')}</p>
+             {/* It might be better to not render children here, or show a more specific error page */}
+            {/* {children} */}
           </div>
         </AdminLayoutClient>
       </ProtectedLayout>
     );
   }
 
-  // At this point restaurantSettings is guaranteed to be non-null if we reach here
+  // At this point restaurantSettings is guaranteed to be non-null if we reach here (or handled above)
+  // The `!` assertion is okay if the logic above correctly handles all null cases for restaurantSettings.
   return (
     <ProtectedLayout>
       <AdminLayoutClient locale={locale} restaurantSettings={restaurantSettings!}>
