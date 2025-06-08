@@ -22,8 +22,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getSubdomainFromHost } from "@/lib/utils";
-
-// Types
 import type { RestaurantSettings, Category, TableInfo } from "@/shared/types/customer";
 import { 
   ViewType, 
