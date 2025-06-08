@@ -82,9 +82,12 @@ export function OrderHistoryScreen({
 	useEffect(() => {
 		fetchOrderHistory();
 
-		// Poll for updates every 30 seconds to get real-time status
-		const interval = setInterval(fetchOrderHistory, 30000);
-		return () => clearInterval(interval);
+		// Poll for updates every 30 seconds only if order is active
+		let interval: NodeJS.Timeout;
+		if (order && order.status !== 'completed' && order.status !== 'cancelled') {
+			interval = setInterval(fetchOrderHistory, 30000);
+			return () => clearInterval(interval);
+		}
 	}, [tableId, sessionId]);
 
 	const getStatusIcon = (status: string) => {

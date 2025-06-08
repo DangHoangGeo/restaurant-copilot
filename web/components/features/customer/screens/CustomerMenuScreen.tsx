@@ -58,10 +58,14 @@ export function CustomerMenuScreen({
       setSessionStatus('invalid');
       return;
     }
-    /*
+  
     const checkSessionStatus = async () => {
       try {
-        const response = await fetch(`/api/v1/sessions/check?sessionId=${sessionId}`);
+        const params = new URLSearchParams();
+        if (sessionId) {
+          params.append('sessionId', sessionId);
+        }
+        const response = await fetch(`/api/v1/sessions/check?${params.toString()}`);
         const data = await response.json();
         
         if (data.success) {
@@ -77,18 +81,18 @@ export function CustomerMenuScreen({
         console.error('Session check failed:', error);
         setSessionStatus('invalid');
       }
-    };*/
+    };
 
     // Initial check
     if (canAddItems) {
       setSessionStatus('valid');
-    } //else {
-      //checkSessionStatus();
-    //}
+    } else {
+      checkSessionStatus();
+    }
 
-    // Check every 30 seconds for session updates
-    //const interval = setInterval(checkSessionStatus, 30000);
-    //return () => clearInterval(interval);
+    //Check every 30 seconds for session updates
+    const interval = setInterval(checkSessionStatus, 60000);
+    return () => clearInterval(interval);
   }, [sessionId, canAddItems]);
 
   const handleAddToCart = (item: MenuItem, quantity = 1) => {
