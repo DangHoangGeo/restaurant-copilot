@@ -72,6 +72,8 @@ export function CustomerClientContent({
   });
   const [guestCount, setGuestCount] = useState<number>(sessionData.guestCount || 1);
   const [showGuestDialog, setShowGuestDialog] = useState<boolean>(!!tableId && sessionData.sessionStatus === 'new' && !sessionData.sessionId);
+  const [passcode, setPasscode] = useState<string>('');
+  const [showJoinDialog, setShowJoinDialog] = useState<boolean>(sessionData.sessionStatus === 'join');
 
   // Store session data in localStorage when valid and sync with server
   useEffect(() => {
@@ -163,6 +165,31 @@ export function CustomerClientContent({
       }
     } catch (e) {
       console.error("session start error", e);
+    }
+  };
+
+  const joinSession = async () => {
+    if (!sessionData.pendingSessionId) return;
+    try {
+      const subdomain = getSubdomainFromHost(window.location.host);
+      const params = new URLSearchParams({ sessionId: sessionData.pendingSessionId, passcode });
+      if (subdomain) params.append('subdomain', subdomain);
+      const res = await fetch(`/api/v1/sessions/join?${params.toString()}`);
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('sessionId', data.sessionId);
+        setViewProps(prev => ({
+          ...prev,
+          sessionId: data.sessionId,
+          tableNumber: sessionData.tableNumber,
+          canAddItems: true,
+        }));
+        setShowJoinDialog(false);
+      } else {
+        alert(data.error || 'Failed to join session');
+      }
+    } catch (e) {
+      console.error('join session error', e);
     }
   };
 
@@ -338,6 +365,25 @@ export function CustomerClientContent({
 
   return (
     <>
+      <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Enter Passcode</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <Input
+              type="number"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={joinSession} className="w-full" style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}>
+              Join Session
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
         <DialogContent showCloseButton={false}>
           <DialogHeader>
