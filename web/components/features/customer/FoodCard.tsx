@@ -14,6 +14,7 @@ export interface FoodItem {
   name_en: string;
   name_ja: string;
   name_vi: string;
+  rating?: number;
   description_en?: string | null;
   description_ja?: string | null;
   description_vi?: string | null;

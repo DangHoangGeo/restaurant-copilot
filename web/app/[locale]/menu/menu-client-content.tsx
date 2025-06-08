@@ -295,7 +295,7 @@ export function CustomerClientContent({
         ScreenComponent = (
           <CustomerMenuScreen
             setView={setView}
-            restaurantSettings={restaurantSettings}
+            restaurantSettings={{...restaurantSettings, logoUrl: restaurantSettings?.logoUrl || undefined}}
             viewProps={viewProps as MenuViewProps} // Cast to specific view prop type
             categories={categories}
             featureFlags={menuScreenFeatureFlags}
@@ -394,7 +394,7 @@ export function CustomerClientContent({
         ScreenComponent = (
           <CustomerMenuScreen
             setView={setView}
-            restaurantSettings={restaurantSettings}
+            restaurantSettings={{...restaurantSettings, logoUrl: restaurantSettings?.logoUrl || undefined}}
             viewProps={viewProps as MenuViewProps} // Cast
             categories={categories}
             featureFlags={menuScreenFeatureFlags}
