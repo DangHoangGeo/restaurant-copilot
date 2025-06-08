@@ -214,13 +214,11 @@ export function OrdersClientContent({
   // Get all order items for the items view - simplified version
   const getAllOrderItems = (): FlatOrderItem[] => {
     const allItems: FlatOrderItem[] = [];
-    console.log("Orders:", orders);
     orders.forEach(order => {
       const tableName = order.tables?.name || `Order ${order.id.slice(0, 6)}`;
       
       order.order_items.forEach(item => {
         const menuItem = item.menu_items;
-        console.log("Menu item:", menuItem);
         if (menuItem) {
           allItems.push({
             id: item.id,
@@ -241,8 +239,6 @@ export function OrdersClientContent({
         }
       });
     });
-
-    console.log("All items:", allItems);
     
     return allItems
       .filter(item => {
@@ -450,7 +446,6 @@ export function OrdersClientContent({
 
   const renderItemsView = () => {
     const allItems = getAllOrderItems();
-    console.log("All items:", allItems[0]);
     return (
       <Card>
         <CardHeader>
