@@ -33,6 +33,7 @@ interface OrderItem {
 interface Order {
 	id: string;
 	session_id: string;
+	guest_count: number;
 	status: string;
 	table_id: string | null;
 	table_name: string | null;
@@ -54,7 +55,7 @@ export function OrderHistoryScreen({
 	const [loading, setLoading] = useState(true);
 	const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 	//const totalPrice = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-	const guestCount = viewProps.guestCount || 1;
+	const guestCount = viewProps.guestCount || order?.guest_count || 1;
 
 	const fetchOrderHistory = async () => {
 		try {
@@ -177,8 +178,22 @@ export function OrderHistoryScreen({
 						{t("thankyou.table_number", { number: tableNumber })}
 					</h2>
 					<p className="text-sm text-gray-600 dark:text-gray-300">
-						{ order&& "Current active session - you can still add more items!"}
+						{ order&& order.status !== "completed" ? t("session_active_more") : t("thankyou.inactive_session_message") }
 					</p>
+					{order && order.status !== "completed" && order.status !== "expired" && (
+						<div className="mt-2 text-center">
+						<p className="text-sm text-gray-600 mb-4">
+						{t("session.share_passcode")}
+						</p>
+						<div className="bg-gray-100 p-2 rounded-lg mb-4">
+						<span className="text-2xl font-mono font-bold tracking-widest text-blue-600">
+							{order?.id.substring(0,4).toUpperCase()}
+						</span>
+						</div>
+						<p className="text-xs text-gray-500">
+						{t("session.passcode_instruction")}
+						</p>
+					</div>)}
 				</Card>
 			)}
 
@@ -274,13 +289,15 @@ export function OrderHistoryScreen({
 			)}
 
 			<div className="mt-6 text-center">
+				{/**TODO: implement checkout view, and set view to checkout */}
+				{order && order.status !== "completed" && (
 				<Button
 					onClick={() => alert(t("currency_format", { value: order?.total_amount || 0 }))} // Show total amount of the first order
 					style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
 					className="text-white w-full mb-2"
 				>
 					{t("orderhistory.checkout_button")}
-				</Button>
+				</Button>)}
 				{guestCount > 2 && (
 					<p className="text-sm text-gray-600">{t("orderhistory.price_per_person", { value: (order?.total_amount||0 / guestCount).toFixed(2) })}</p>
 				)}

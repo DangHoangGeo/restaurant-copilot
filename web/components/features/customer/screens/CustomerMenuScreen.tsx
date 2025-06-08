@@ -1,4 +1,3 @@
-// web/components/features/customer/screens/CustomerMenuScreen.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
@@ -59,7 +58,7 @@ export function CustomerMenuScreen({
       setSessionStatus('invalid');
       return;
     }
-
+    /*
     const checkSessionStatus = async () => {
       try {
         const response = await fetch(`/api/v1/sessions/check?sessionId=${sessionId}`);
@@ -78,18 +77,18 @@ export function CustomerMenuScreen({
         console.error('Session check failed:', error);
         setSessionStatus('invalid');
       }
-    };
+    };*/
 
     // Initial check
     if (canAddItems) {
       setSessionStatus('valid');
-    } else {
-      checkSessionStatus();
-    }
+    } //else {
+      //checkSessionStatus();
+    //}
 
     // Check every 30 seconds for session updates
-    const interval = setInterval(checkSessionStatus, 30000);
-    return () => clearInterval(interval);
+    //const interval = setInterval(checkSessionStatus, 30000);
+    //return () => clearInterval(interval);
   }, [sessionId, canAddItems]);
 
   const handleAddToCart = (item: MenuItem, quantity = 1) => {

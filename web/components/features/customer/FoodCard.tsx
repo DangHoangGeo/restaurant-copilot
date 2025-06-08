@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StarRating } from "@/components/ui/star-rating";
 import { PlusCircle } from "lucide-react";
-import { getLocalizedText } from "./utils"; // Assuming this is web/components/features/customer/utils.ts
 import type { ViewType, ViewProps } from "./screens/types"; // Path adjustment
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { getLocalizedText } from "@/lib/customerUtils";
 
 export interface FoodItem {
   id: string;
@@ -91,7 +91,7 @@ export function FoodCard({
                 "https://placehold.co/300x200/E2E8F0/334155?text=Food"
               }
               alt={getLocalizedText(
-                item as unknown as Record<string, unknown>,
+                { name_en: item.name_en, name_vi: item.name_vi, name_ja: item.name_ja },
                 locale,
               )}
               className="w-full h-40 object-cover group-hover:scale-105 transform transition-transform duration-150 ease-in-out" // Removed rounded-t-lg
@@ -100,25 +100,25 @@ export function FoodCard({
             <div className="flex-grow p-2"> {/* Changed p-1 to p-2 for better spacing with hover bg */}
               <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">
                 {getLocalizedText(
-                  item as unknown as Record<string, unknown>,
+                  { name_en: item.name_en, name_vi: item.name_vi, name_ja: item.name_ja },
                   locale,
                 )}
               </h4>
-              {/* Description paragraph removed */}
+              {/* Description paragraph removed 
               <StarRating
                 value={item.averageRating || 0}
                 count={item.reviewCount || 0}
-              />
+              />*/}
             </div>
           </div>
-          <div className="flex justify-between items-center p-2"> {/* Changed px-1 to p-2 for content within clickable area */}
+          <div className="flex justify-between items-center px-2"> {/* Changed px-1 to p-2 for content within clickable area */}
             <p className="text-lg font-bold" style={{ color: brandColor }}>
               {t("currency_format", { value: item.price })}
             </p>
             {/* Price and buttons are outside the clickable div */}
             {canAddItems ? (
               qtyInCart > 0 ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
                   <Button
                     size="sm"
                     variant="secondary"
@@ -128,7 +128,7 @@ export function FoodCard({
                   >
                     -
                   </Button>
-                  <span className="font-medium w-5 text-center">{qtyInCart}</span>
+                  <span className="font-medium w-2 text-center">{qtyInCart}</span>
                   <Button
                     size="sm"
                     variant="secondary"

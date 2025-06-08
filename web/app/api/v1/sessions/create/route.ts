@@ -84,15 +84,18 @@ export async function GET(req: NextRequest) {
       console.error("Failed to create order:", orderError);
       return NextResponse.json({ success: false, error: "Failed to create session" }, { status: 500 });
     }
-
-    console.log('Created new order with session ID:', newOrder.session_id);
+    
+    // Generate 4-character passcode from orderId
+    const passcode = newOrder.id.substring(0, 4);
+    
     return NextResponse.json({ 
       success: true, 
       sessionId: newOrder.session_id, 
       tableNumber: table.name,
       isNewSession: true,
       orderId: newOrder.id,
-      guestCount: newOrder.guest_count
+      guestCount: newOrder.guest_count,
+      passcode: passcode // Add passcode to response
     });
 
   } catch (error) {

@@ -35,7 +35,7 @@ import {
   SessionData // Import SessionData
 } from "@/components/features/customer/screens/types"; // Updated imports
 import CustomerMenuItemDetailScreen from "@/components/features/customer/screens/CustomerMenuItemDetailScreen";
-
+import { History } from "lucide-react";
 // Define FEATURE_FLAGS locally or import from a central config.
 // These will be passed down to relevant components.
 const FEATURE_FLAGS = {
@@ -74,6 +74,8 @@ export function CustomerClientContent({
   const [showGuestDialog, setShowGuestDialog] = useState<boolean>(!!tableId && sessionData.sessionStatus === 'new' && !sessionData.sessionId);
   const [passcode, setPasscode] = useState<string>('');
   const [showJoinDialog, setShowJoinDialog] = useState<boolean>(sessionData.sessionStatus === 'join');
+  const [showPasscodeDisplay, setShowPasscodeDisplay] = useState<boolean>(false);
+  const [sessionPasscode, setSessionPasscode] = useState<string>('');
 
   // Store session data in localStorage when valid and sync with server
   useEffect(() => {
@@ -83,6 +85,17 @@ export function CustomerClientContent({
         localStorage.setItem("sessionId", sessionData.sessionId);
         localStorage.setItem("tableId", tableId || "");
         localStorage.setItem("tableNumber", sessionData.tableNumber || "");
+        
+        // Redirect to sessionId URL if not already there
+        const currentUrl = new URL(window.location.href);
+        const currentSessionId = currentUrl.searchParams.get('sessionId');
+        if (currentSessionId !== sessionData.sessionId) {
+          // Update URL with sessionId parameter
+          currentUrl.searchParams.delete('code');
+          currentUrl.searchParams.delete('tableId');
+          currentUrl.searchParams.set('sessionId', sessionData.sessionId);
+          window.history.replaceState({}, '', currentUrl.toString());
+        }
       }
 
       // Check if local sessionId differs from server sessionId
@@ -151,6 +164,8 @@ export function CustomerClientContent({
       if (data.success) {
         localStorage.setItem("sessionId", data.sessionId);
         localStorage.setItem("guestCount", String(data.guestCount || guestCount));
+        
+        // Update view props
         setViewProps(prev => ({
           ...prev,
           sessionId: data.sessionId,
@@ -159,6 +174,20 @@ export function CustomerClientContent({
           guestCount: data.guestCount,
           orderId: data.orderId,
         }));
+        
+        // Show passcode to the first user if this is a new session
+        if (data.isNewSession && data.passcode) {
+          setSessionPasscode(data.passcode);
+          setShowPasscodeDisplay(true);
+        }
+        
+        // Redirect to sessionId URL
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('code');
+        currentUrl.searchParams.delete('tableId');
+        currentUrl.searchParams.set('sessionId', data.sessionId);
+        window.history.replaceState({}, '', currentUrl.toString());
+        
         setShowGuestDialog(false);
       } else {
         alert(data.error || "Failed to start session");
@@ -168,8 +197,12 @@ export function CustomerClientContent({
     }
   };
 
-  const joinSession = async () => {
+  const joinSession = async (passcode: string) => {
     if (!sessionData.pendingSessionId) return;
+    if (!passcode) {
+      alert("Please enter a valid passcode");
+      return;
+    }
     try {
       const subdomain = getSubdomainFromHost(window.location.host);
       const params = new URLSearchParams({ sessionId: sessionData.pendingSessionId, passcode });
@@ -181,9 +214,18 @@ export function CustomerClientContent({
         setViewProps(prev => ({
           ...prev,
           sessionId: data.sessionId,
-          tableNumber: sessionData.tableNumber,
-          canAddItems: true,
+          tableNumber: data.tableNumber,
+          canAddItems: data.canAddItems,
+          guestCount: data.guestCount,
         }));
+        
+        // Redirect to sessionId URL
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('code');
+        currentUrl.searchParams.delete('tableId');
+        currentUrl.searchParams.set('sessionId', data.sessionId);
+        window.history.replaceState({}, '', currentUrl.toString());
+        
         setShowJoinDialog(false);
       } else {
         alert(data.error || 'Failed to join session');
@@ -207,13 +249,22 @@ export function CustomerClientContent({
     ScreenComponent = (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4 text-red-600">Session Expired</h1>
+          <h1 className="text-2xl font-bold mb-4 text-red-600">{t("session.session_expired")}</h1>
           <p className="text-gray-600 mb-6">
-            Your order session has been completed or expired. Thank you for your visit!
+            {t("session.session_expired_message")}
           </p>
           <p className="text-sm text-gray-500">
-            To place a new order, please scan the QR code on your table again.
+          {t("session.session_expired_instruction")}
           </p>
+          <Button
+          onClick={() => setView("orderhistory", viewProps as MenuViewProps)}
+          variant="outline"
+          className="hover:opacity-90"
+        >
+        <History className="h-4 w-4 mr-1" />
+
+          {t("thankyou.order_history_button")}
+        </Button>
         </div>
       </div>
     );
@@ -221,19 +272,19 @@ export function CustomerClientContent({
     ScreenComponent = (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4 text-red-600">Invalid Table</h1>
+          <h1 className="text-2xl font-bold mb-4 text-red-600">{t("session.")}</h1>
           <p className="text-gray-600 mb-6">
-            The table ID is invalid or doesn&apos;t belong to this restaurant.
+          {t("session.invalid_table_message")}
           </p>
           <p className="text-sm text-gray-500">
-            Please scan a valid QR code from a table at this restaurant.
+          {t("session.invalid_table_instruction")}
           </p>
           {/* Allow viewing menu without ordering capability */}
           <button 
             onClick={() => setView("menu", { canAddItems: false } as MenuViewProps)}
             className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           >
-            View Menu Only
+           {t("session.view_menu_only")}
           </button>
         </div>
       </div>
@@ -368,18 +419,20 @@ export function CustomerClientContent({
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
         <DialogContent showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>Enter Passcode</DialogTitle>
+            <DialogTitle>{t("session.enter_passcode_title")}</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
             <Input
-              type="number"
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
             />
+            <p className="text-xs text-gray-500">
+              {t("session.ask_for_passcode_instruction")}
+            </p>
           </div>
           <DialogFooter>
-            <Button onClick={joinSession} className="w-full" style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}>
-              Join Session
+            <Button onClick={()=>joinSession(passcode)} className="w-full" style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}>
+              {t("session.join_session")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -403,6 +456,36 @@ export function CustomerClientContent({
           <DialogFooter>
             <Button onClick={startSession} className="w-full" style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}>
               {t("guest_dialog.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Passcode Display Dialog for First User */}
+      <Dialog open={showPasscodeDisplay} onOpenChange={setShowPasscodeDisplay}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t("session.created_title")}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600 mb-4">
+              {t("session.share_passcode")}
+            </p>
+            <div className="bg-gray-100 p-4 rounded-lg mb-4">
+              <span className="text-2xl font-mono font-bold tracking-widest text-blue-600">
+                {sessionPasscode.toUpperCase()}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500">
+              {t("session.passcode_instruction")}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button 
+              onClick={() => setShowPasscodeDisplay(false)} 
+              className="w-full" 
+              style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}
+            >
+              {t("session.start_ordering")}
             </Button>
           </DialogFooter>
         </DialogContent>

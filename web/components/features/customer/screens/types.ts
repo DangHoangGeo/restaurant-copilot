@@ -99,7 +99,7 @@ export interface SessionData {
   pendingSessionId?: string;
   requirePasscode?: boolean;
   tableNumber?: string;
-  sessionStatus: 'valid' | 'expired' | 'invalid' | 'new' | 'join';
+  sessionStatus: 'valid' | 'expired' | 'invalid' | 'new' | 'join' | 'completed' | 'active';
   canAddItems: boolean;
   orderId?: string;
   isNewSession?: boolean;

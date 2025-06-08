@@ -46,6 +46,9 @@ DECLARE
   result JSONB;
 BEGIN
   SELECT jsonb_build_object(
+    'id',            o.id,
+    'restaurant_id', p_restaurant_id,
+    'session_id',    o.session_id,
     'table_id',      o.table_id,
     'table_name',    t.name,
     'session_id',    o.session_id,
