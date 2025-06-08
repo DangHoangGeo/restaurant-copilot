@@ -1,4 +1,7 @@
-CREATE OR REPLACE FUNCTION get_table_session_by_code(input_code text)
+CREATE OR REPLACE FUNCTION get_table_session_by_code(
+  input_code text,
+  input_restaurant_id uuid
+)
 RETURNS TABLE (
   table_id uuid,
   restaurant_id uuid,
@@ -6,7 +9,6 @@ RETURNS TABLE (
   require_passcode boolean
 ) AS $$
 BEGIN
-  -- Find the table with the given secure code
   RETURN QUERY
   SELECT
     t.id AS table_id,
@@ -26,6 +28,7 @@ BEGIN
     LIMIT 1
   ) o ON true
   WHERE t.qr_code = input_code
+    AND t.restaurant_id = input_restaurant_id
   LIMIT 1;
 END;
 $$ LANGUAGE plpgsql;
