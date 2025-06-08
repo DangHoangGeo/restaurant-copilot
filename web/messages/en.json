@@ -710,11 +710,16 @@
     "admin_panel": {
       "toggle_label": "Toggle Admin Panel"
     },
+    "current_session": "Current Ordering Session",
+    "active": "Active",
+    "inactive": "Inactive",
     "menu_item_detail_back_to_menu": "Back to Menu",
     "menu_item_detail_add_to_cart": "Add to Cart",
     "decrease_quantity": "Decrease quantity by one",
     "increase_quantity": "Increase quantity by one",
     "menu_item_detail_added_to_cart_msg": "{itemName} has been added to your cart.",
+    "no_order_found": "No orders found",
+    "no_order_items": "No orders have been placed at this table yet.",
     "menu": {
       "title": "Menu",
       "serving_today": "Serving Today",
@@ -723,6 +728,8 @@
       "add_to_cart": "Add",
       "out_of_stock": "Out of Stock",
       "quantity": "Quantity",
+      "item_quantity": "Qty: {quantity}",
+      "item_notes": "Notes: {notes}",
       "total_price": "Total Price",
       "search_placeholder": "Search menu...",
       "popular_now": "Popular Now",
