@@ -70,6 +70,7 @@ export type ViewType =
   | "admin"
   | "expired"
   | "invalid"
+  | "join"
   | "orderhistory"
   | "menuitemdetail";
 
@@ -95,8 +96,10 @@ export type ViewProps =
 
 export interface SessionData {
   sessionId?: string;
+  pendingSessionId?: string;
+  requirePasscode?: boolean;
   tableNumber?: string;
-  sessionStatus: 'valid' | 'expired' | 'invalid' | 'new';
+  sessionStatus: 'valid' | 'expired' | 'invalid' | 'new' | 'join';
   canAddItems: boolean;
   orderId?: string;
   isNewSession?: boolean;

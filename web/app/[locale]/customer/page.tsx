@@ -7,9 +7,9 @@ import { CustomerClientContent } from './customer-client-content'
 import type { SessionData } from '@/components/features/customer/screens/types';
 
 
-export default async function CustomerHomePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ tableId?: string }> }) {
+export default async function CustomerHomePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ tableId?: string; code?: string }> }) {
   const { locale } = await params
-  const { tableId } = await searchParams
+  const { tableId, code } = await searchParams
   setRequestLocale(locale)
   const t = await getTranslations({ locale, namespace: 'Customer.common' })
   
@@ -33,13 +33,33 @@ export default async function CustomerHomePage({ params, searchParams }: { param
     ? await fetchMenuAndTables(subdomain)
     : { categories: [], tables: [] }
 
+  let resolvedTableId = tableId
+
   const sessionData: SessionData = { sessionStatus: 'new', canAddItems: false }
 
-  if (tableId && subdomain) {
-    const table = tables.find(t => t.id === tableId)
+  if (code && subdomain) {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/public/session-by-code?code=${encodeURIComponent(code)}&subdomain=${subdomain}`, { cache: 'no-store' })
+      if (res.ok) {
+        const data = await res.json() as { tableId: string; activeSessionId?: string; requirePasscode: boolean }
+        resolvedTableId = data.tableId
+        if (data.activeSessionId) {
+          sessionData.pendingSessionId = data.activeSessionId
+          sessionData.requirePasscode = data.requirePasscode
+          sessionData.sessionStatus = 'join'
+        }
+      } else {
+        sessionData.sessionStatus = 'invalid'
+      }
+    } catch {
+      sessionData.sessionStatus = 'invalid'
+    }
+  }
+  if (resolvedTableId && subdomain && sessionData.sessionStatus !== 'invalid') {
+    const table = tables.find(t => t.id === resolvedTableId)
     if (table) {
       sessionData.tableNumber = table.name
-    } else {
+    } else if (!code) {
       sessionData.sessionStatus = 'invalid'
     }
   }
@@ -49,7 +69,7 @@ export default async function CustomerHomePage({ params, searchParams }: { param
       restaurantSettings={restaurantSettings}
       categories={categories}
       tables={tables}
-      tableId={tableId}
+      tableId={resolvedTableId}
       sessionData={sessionData}
     />
   )
