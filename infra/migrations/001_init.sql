@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
   name_ja text NOT NULL,
   name_en text NOT NULL,
   name_vi text NOT NULL,
+  code text UNIQUE,                  -- unique code for the item
   description_ja text,
   description_en text,
   description_vi text,

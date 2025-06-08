@@ -288,7 +288,7 @@ export function ReviewOrderScreen({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">
-              Add Note for {cart.find(c => c.itemId === editingNoteForItem)?.name}
+              {t("checkout.add_note_for", { itemName: cart.find(c => c.itemId === editingNoteForItem)?.name || t("checkout.item") })}
             </h3>
             <Textarea
               value={tempNote}
@@ -299,7 +299,7 @@ export function ReviewOrderScreen({
               className="mb-2"
             />
             <p className="text-xs text-gray-500 mb-4">
-              {tempNote.length}/150 characters
+              {tempNote.length}/150 {t("checkout.characters")}
             </p>
             <div className="flex space-x-3">
               <Button
@@ -307,14 +307,14 @@ export function ReviewOrderScreen({
                 onClick={handleCancelNote}
                 className="flex-1"
               >
-                Cancel
+                {t("checkout.cancel")}
               </Button>
               <Button
                 onClick={handleSaveNote}
                 style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
                 className="flex-1 text-white hover:opacity-90"
               >
-                Save Note
+                {t("checkout.save_note")}
               </Button>
             </div>
           </Card>

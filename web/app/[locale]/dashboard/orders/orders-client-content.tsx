@@ -40,6 +40,7 @@ import {
   Check,
   Search,
   CreditCard,
+  Edit3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getLocalizedText } from "@/lib/customerUtils";
@@ -129,8 +130,15 @@ export function OrdersClientContent({
   const [currentOrderItems, setCurrentOrderItems] = useState<{[key: string]: number}>({});
   const [orderNotes, setOrderNotes] = useState<{[key: string]: string}>({});
   
+  // Note editing for existing items
+  const [editingNotes, setEditingNotes] = useState<{[key: string]: boolean}>({});
+  const [tempNotes, setTempNotes] = useState<{[key: string]: string}>({});
+  
   // Checkout modal
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  
+  // Order details modal
+  const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -313,6 +321,33 @@ export function OrdersClientContent({
     }
   };
 
+  const updateItemNotes = async (itemId: string, notes: string | null) => {
+    try {
+      const response = await fetch(`/api/v1/order-items/${itemId}/notes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update item notes");
+      
+      toast.success(t("notes_updated"));
+      
+      // Optimistically update the local state
+      setOrders(prevOrders => 
+        prevOrders.map(order => ({
+          ...order,
+          order_items: order.order_items.map(item =>
+            item.id === itemId ? { ...item, notes } : item
+          )
+        }))
+      );
+    } catch (error) {
+      console.error("Error updating item notes:", error);
+      toast.error(t("error_updating_notes"));
+    }
+  };
+
   const createNewOrder = async () => {
     if (!selectedTable || Object.keys(currentOrderItems).length === 0) {
       toast.error(t("select_table_and_items"));
@@ -425,6 +460,23 @@ export function OrdersClientContent({
     }
   };
 
+  const startEditingNotes = (itemId: string, currentNotes: string | null) => {
+    setEditingNotes(prev => ({ ...prev, [itemId]: true }));
+    setTempNotes(prev => ({ ...prev, [itemId]: currentNotes || "" }));
+  };
+
+  const saveNotes = (itemId: string) => {
+    const notes = tempNotes[itemId]?.trim() || null;
+    updateItemNotes(itemId, notes);
+    setEditingNotes(prev => ({ ...prev, [itemId]: false }));
+    setTempNotes(prev => ({ ...prev, [itemId]: "" }));
+  };
+
+  const cancelEditingNotes = (itemId: string) => {
+    setEditingNotes(prev => ({ ...prev, [itemId]: false }));
+    setTempNotes(prev => ({ ...prev, [itemId]: "" }));
+  };
+
   const getStatusBadge = (status: OrderItem["status"] | Order["status"]) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       ordered: "default",
@@ -491,9 +543,54 @@ export function OrdersClientContent({
                       <Badge variant="outline">{item.quantity}</Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-gray-600">
-                        {item.notes || "-"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {editingNotes[item.id] ? (
+                          <div className="flex items-center gap-1 flex-1">
+                            <Input
+                              value={tempNotes[item.id] || ""}
+                              onChange={(e) => setTempNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              placeholder={t("add_notes")}
+                              className="flex-1"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  saveNotes(item.id);
+                                } else if (e.key === "Escape") {
+                                  cancelEditingNotes(item.id);
+                                }
+                              }}
+                              autoFocus
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => saveNotes(item.id)}
+                            >
+                              <Check className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => cancelEditingNotes(item.id)}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-sm text-gray-600 flex-1">
+                              {item.notes || "-"}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditingNotes(item.id, item.notes? item.notes : "")}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Edit3 className="h-3 w-3" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                     <TableCell>
@@ -607,7 +704,10 @@ export function OrdersClientContent({
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setIsOrderDetailsModalOpen(true);
+                          }}
                         >
                           <Eye className="h-3 w-3" />
                         </Button>
@@ -624,56 +724,237 @@ export function OrdersClientContent({
   };
 
   const renderMenuSelection = () => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedItems, setSelectedItems] = useState<{[key: string]: {item: any, quantity: number, editingNotes?: boolean}}>({});
+
+    // Flatten all menu items for searching
+    const allMenuItems = menuCategories.flatMap(category => 
+      category.menu_items
+        .filter(item => item.available)
+        .map(item => ({
+          ...item,
+          categoryName: getLocalizedText({
+            "name_en": category.name_en,
+            "name_vi": category.name_vi, 
+            "name_ja": category.name_ja
+          }, locale)
+        }))
+    );
+
+    // Filter items based on search
+    const filteredItems = allMenuItems.filter(item => {
+      const itemName = getLocalizedText({
+        "name_en": item.name_en,
+        "name_vi": item.name_vi,
+        "name_ja": item.name_ja
+      }, locale).toLowerCase();
+      
+      const search = searchTerm.toLowerCase();
+      return itemName.includes(search) || 
+             item.id.toLowerCase().includes(search) ||
+             item.categoryName.toLowerCase().includes(search);
+    });
+
     return (
       <div className="space-y-4">
-        {menuCategories.map((category) => (
-          <Card key={category.id}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{getLocalizedText({"name_en":category.name_en,"name_vi":category.name_vi,"name_jp":category.name_ja},locale)}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {category.menu_items.filter(item => item.available).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-2 border rounded">
-                    <div className="flex-1">
-                      <span className="font-medium text-sm">{getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_jp":item.name_ja},locale)}</span>
-                      <span className="text-xs text-gray-500 block">¥{item.price.toLocaleString()}</span>
-                    </div>
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-2 top-2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder={t("search_items")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+
+        {/* Selected Items Summary */}
+        {Object.keys(selectedItems).length > 0 && (
+          <Card className="p-4">
+            <h4 className="font-medium mb-3">{t("selected_items")}</h4>
+            <div className="space-y-2">
+              {Object.entries(selectedItems).map(([itemId, {item, quantity}]) => (
+                <div key={itemId} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                  <div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setCurrentOrderItems(prev => ({
-                            ...prev,
-                            [item.id]: Math.max(0, (prev[item.id] || 0) - 1)
-                          }));
-                        }}
-                      >
-                        -
-                      </Button>
-                      <span className="text-sm w-8 text-center">
-                        {currentOrderItems[item.id] || 0}
+                      <span className="font-medium">
+                        {getLocalizedText({
+                          "name_en": item.name_en,
+                          "name_vi": item.name_vi,
+                          "name_ja": item.name_ja
+                        }, locale)}
                       </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setCurrentOrderItems(prev => ({
-                            ...prev,
-                            [item.id]: (prev[item.id] || 0) + 1
-                          }));
-                        }}
-                      >
-                        +
-                      </Button>
+                      <span className="text-sm text-gray-500 ml-2">
+                        ¥{item.price.toLocaleString()} × {quantity}
+                      </span>
                     </div>
+                    {selectedItems[itemId].editingNotes && (
+                      <div className="mt-2 w-full">
+                        <Input
+                          placeholder={t("add_notes")}
+                          value={orderNotes[itemId] || ""}
+                          onChange={(e) => setOrderNotes(prev => ({...prev, [itemId]: e.target.value}))}
+                          className="w-full"
+                          onBlur={() => {
+                            // Save notes on blur
+                            const newItems = {...selectedItems};
+                            newItems[itemId] = {...newItems[itemId], editingNotes: false};
+                            setSelectedItems(newItems);
+                          }}
+                        />
+                      </div>
+                    )}
+                    {orderNotes[itemId] && !selectedItems[itemId].editingNotes&& (
+                      <div className="mt-2 w-full">
+                        <span className="text-sm text-gray-600">
+                          {orderNotes[itemId]}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            </CardContent>
+                  <div className="flex items-center gap-1 ml-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const newItems = {...selectedItems};
+                        if (quantity > 1) {
+                          newItems[itemId] = {...newItems[itemId], quantity: quantity - 1};
+                        } else {
+                          delete newItems[itemId];
+                        }
+                        setSelectedItems(newItems);
+                        
+                        // Update parent state
+                        const newOrderItems = {...currentOrderItems};
+                        if (quantity > 1) {
+                          newOrderItems[itemId] = quantity - 1;
+                        } else {
+                          delete newOrderItems[itemId];
+                        }
+                        setCurrentOrderItems(newOrderItems);
+                      }}
+                    >
+                      -
+                    </Button>
+                    <span className="w-4 text-center">{quantity}</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const newItems = {...selectedItems};
+                        newItems[itemId] = {...newItems[itemId], quantity: quantity + 1};
+                        setSelectedItems(newItems);
+                        
+                        // Update parent state
+                        setCurrentOrderItems(prev => ({
+                          ...prev,
+                          [itemId]: quantity + 1
+                        }));
+                      }}
+                    >
+                      +
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => {
+                        const newItems = {...selectedItems};
+                        delete newItems[itemId];
+                        setSelectedItems(newItems);
+                        
+                        // Update parent state
+                        const newOrderItems = {...currentOrderItems};
+                        delete newOrderItems[itemId];
+                        setCurrentOrderItems(newOrderItems);
+                      }}
+                    >
+                      ×
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        // Enable editing notes
+                        const newItems = {...selectedItems};
+                        newItems[itemId] = {...newItems[itemId], editingNotes: true};
+                        setSelectedItems(newItems);
+                      }}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                </div>
+              ))}
+            </div>
           </Card>
-        ))}
+        )}
+
+        {/* Search Results */}
+        <div className="space-y-2">
+          {searchTerm && (
+            <p className="text-sm text-gray-600">
+              {filteredItems.length} items found
+            </p>
+          )}
+          
+          {(searchTerm ? filteredItems : allMenuItems.slice(0, 10)).map((item) => (
+            <Card key={item.id} className="p-3">
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium">
+                      {getLocalizedText({
+                        "name_en": item.name_en,
+                        "name_vi": item.name_vi,
+                        "name_ja": item.name_ja
+                      }, locale)}
+                    </h4>
+                    <Badge variant="outline" className="text-xs">
+                      {item.categoryName}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-4 mt-1">
+                    <span className="text-sm font-medium text-green-600">
+                      ¥{item.price.toLocaleString()}
+                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      {tCommon("available")}
+                    </Badge>
+                  </div>
+                </div>
+               
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const newItems = {...selectedItems};
+                    if (newItems[item.id]) {
+                      newItems[item.id].quantity += 1;
+                    } else {
+                      newItems[item.id] = {item, quantity: 1};
+                    }
+                    setSelectedItems(newItems);
+                    
+                    // Update parent state
+                    setCurrentOrderItems(prev => ({
+                      ...prev,
+                      [item.id]: (prev[item.id] || 0) + 1
+                    }));
+                  }}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                </Button>
+              </div>
+            </Card>
+          ))}
+          
+          {!searchTerm && allMenuItems.length > 10 && (
+            <p className="text-sm text-gray-500 text-center">
+              Type to search through all {allMenuItems.length} items...
+            </p>
+          )}
+        </div>
       </div>
     );
   };
@@ -839,6 +1120,48 @@ export function OrdersClientContent({
             </Button>
             <Button onClick={processCheckout} className="bg-green-600 hover:bg-green-700">
               {t("process_payment")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Details Modal */}
+      <Dialog open={isOrderDetailsModalOpen} onOpenChange={setIsOrderDetailsModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t("order_details")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedOrder && (
+              <>
+                <div>
+                  <p><strong>{t("table")}:</strong> {selectedOrder.tables?.name}</p>
+                  <p><strong>{t("total")}:</strong> ¥{selectedOrder.total_amount?.toLocaleString()}</p>
+                  <p><strong>{t("status")}:</strong> {tCommon(`order_status.${selectedOrder.status}`)}</p>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {t("order_items")}:
+                </div>
+                <ul className="list-disc list-inside space-y-1">
+                  {selectedOrder.order_items.map(item => (
+                    <li key={item.id} className="flex justify-between">
+                      <span>
+                        {getLocalizedText({
+                          "name_en": item.menu_items.name_en,
+                          "name_vi": item.menu_items.name_vi,
+                          "name_ja": item.menu_items.name_ja
+                        }, locale)} ({item.quantity})
+                      </span>
+                      <span>¥{(item.menu_items.price! * item.quantity).toLocaleString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOrderDetailsModalOpen(false)}>
+              {tCommon("close")}
             </Button>
           </DialogFooter>
         </DialogContent>
