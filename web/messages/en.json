@@ -280,7 +280,10 @@
       "error": { "title": "Error" }
     },
     "mark_resolved": "Mark Resolved",
-    "mark_unresolved": "Mark Unresolved"
+    "mark_unresolved": "Mark Unresolved",
+    "defaultUnnamedRestaurant": "Unnamed Restaurant",
+    "saving": "Saving...",
+    "processing": "Processing..."
   },
   "AdminLayout": {
     "sidebar": {
@@ -345,7 +348,13 @@
       "name_en": "Category Name (English)",
       "name_ja": "Category Name (Japanese)",
       "name_vi": "Category Name (Vietnamese)",
-      "order": "Display Order"
+      "order": "Display Order",
+      "reorder_success": "Categories reordered successfully.",
+      "reorder_error": "Failed to reorder categories.",
+      "delete_error_fallback": "Failed to delete category. It might be in use or a server error occurred."
+    },
+    "buttons": {
+      "saving": "Saving..."
     },
     "weekdays": {
       "mon": "Monday",
@@ -383,12 +392,37 @@
       "image_upload_note": "Upload an image for the menu item (max 5MB).",
       "stock_level": "Stock Level",
       "is_available": "Is Available?",
-      "weekday_visibility": "Visible on Weekdays"
+      "weekday_visibility": "Visible on Weekdays",
+      "reorder_success": "Menu items reordered successfully.",
+      "reorder_error": "Failed to reorder menu items."
     },
     "errors": {
       "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
       "data_fetch_error": "Failed to load menu data. Please try again later.",
       "no_categories_found": "No menu categories found. Please add a category to get started."
+    },
+    "validation": {
+      "name_en_required": "English name is required.",
+      "name_en_max_length": "English name must be {maxLength} characters or less.",
+      "name_ja_max_length": "Japanese name must be {maxLength} characters or less.",
+      "name_vi_max_length": "Vietnamese name must be {maxLength} characters or less.",
+      "position_required": "Position is required.",
+      "category_id_required": "Category is required.",
+      "description_en_max_length": "English description must be {maxLength} characters or less.",
+      "description_ja_max_length": "Japanese description must be {maxLength} characters or less.",
+      "description_vi_max_length": "Vietnamese description must be {maxLength} characters or less.",
+      "price_required": "Price is required.",
+      "price_min": "Price must be at least {min}.",
+      "image_url_invalid": "Invalid image URL format.",
+      "stock_level_min": "Stock level must be at least {min}.",
+      "weekday_visibility_array_error": "Invalid day selection.",
+      "logoFile_maxSize": "Image file must be {maxSize}MB or less."
+    },
+    "empty_state": {
+      "no_categories_title": "No Menu Categories Yet",
+      "no_categories_description": "Get started by creating your first menu category. Organize your dishes and make them available to your customers.",
+      "no_items_title": "No Items in This Category",
+      "no_items_description": "This category is empty. Add a new menu item to get started."
     },
     "currency_format": "{value, number, ::currency/JPY}"
   },
@@ -430,7 +464,9 @@
       "mismatched_restaurant_access": "Access Denied: You are not authorized to view this restaurant's data."
     },
     "feature": {
-      "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard"
+      "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard",
+      "sales_over_time_chart": "Sales Over Time Chart",
+      "popular_items_report": "Popular Items Report"
     }
   },
   "Metadata": {
@@ -478,7 +514,8 @@
         "logoUploadErrorMessage": "Could not upload logo: {error}",
         "logoRemovedMessage": "Logo removed. Save changes to confirm.",
         "fileTooLarge": "File is too large. Max 5MB.",
-        "invalidFileType": "Invalid file type. Please upload an image."
+        "invalidFileType": "Invalid file type. Please upload an image.",
+        "settingsSaveFailedGeneric": "Failed to save settings. Please try again."
       },
       "altText": {
         "logoPreview": "Restaurant logo preview",
@@ -508,7 +545,30 @@
           "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
           "noSettingsFoundTitle": "Settings Not Found",
           "noSettingsFoundMessage": "No settings data found for this restaurant."
+        },
+        "validation": {
+          "name.required": "Restaurant name is required.",
+          "name.maxLength": "Restaurant name must be {maxLength} characters or less.",
+          "defaultLanguage.required": "Default language is required.",
+          "brandColor.invalidFormat": "Invalid brand color format. Use #RRGGBB.",
+          "contactInfo.maxLength": "Contact information must be {maxLength} characters or less.",
+          "address.maxLength": "Address must be {maxLength} characters or less.",
+          "opening_hours.maxLength": "Operating hours must be {maxLength} characters or less.",
+          "description.maxLength": "Description must be {maxLength} characters or less.",
+          "logoFile.maxSize": "Logo image must be {maxSize}MB or less.",
+          "logoFile.invalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
+          "logoUrl.invalidFormat": "Invalid logo URL format."
         }
+      }
+    },
+    "Layout": {
+      "errors": {
+        "fallbackRestaurantName": "Fallback Restaurant",
+        "configurationErrorTitle": "Restaurant Configuration Error",
+        "configurationErrorDescription": "Could not load settings for subdomain: {subdomain}. Displaying with fallback settings.",
+        "adminPanelTitle": "Admin Panel",
+        "noRestaurantContextTitle": "Error: No Restaurant Context",
+        "noRestaurantContextDescription": "This dashboard requires a valid restaurant subdomain to function correctly."
       }
     }
   },
@@ -517,12 +577,75 @@
     "tables_list": "Tables List",
     "add_table": "Add Table",
     "edit_table": "Edit Table",
+    "table_name_label": "Table Name",
+    "table_name_placeholder": "e.g., Table 1, Patio 5",
+    "capacity_label": "Capacity (Seats)",
+    "capacity_placeholder": "e.g., 4",
+    "status_label": "Status",
+    "select_status_placeholder": "Select status",
+    "status_options": {
+      "available": "Available",
+      "occupied": "Occupied",
+      "reserved": "Reserved"
+    },
+    "is_outdoor_label": "Outdoor",
+    "is_accessible_label": "Accessible",
+    "notes_label": "Notes",
+    "notes_placeholder": "Any notes about this table...",
+    "outdoor": "Outdoor",
+    "accessible": "Accessible",
+    "status": "Status",
     "capacity": "Capacity",
     "position": "Position",
     "generate_qr": "Generate QR",
-    "qr_for_table": "QR for Table",
+    "qr_for_table": "QR Code for Table",
     "download_png": "Download PNG",
-    "download_png_action": "Downloading PNG..."
+    "downloading_qr": "Downloading QR...",
+    "validation": {
+      "name_required": "Table name is required.",
+      "name_max_length": "Table name must be {maxLength} characters or less.",
+      "capacity_required": "Capacity is required.",
+      "capacity_min": "Capacity must be at least {min}.",
+      "status_required": "Status is required.",
+      "notes_max_length": "Notes must be {maxLength} characters or less.",
+      "qrCode_invalid_url": "Invalid QR code URL format.",
+      "bulk_count_required": "Number of tables is required.",
+      "bulk_count_min": "Must add at least {min} table.",
+      "bulk_count_max": "Cannot add more than {max} tables at once.",
+      "bulk_name_prefix_required": "Name prefix is required.",
+      "bulk_name_prefix_max_length": "Name prefix must be {maxLength} characters or less.",
+      "bulk_start_index_required": "Starting number is required.",
+      "bulk_start_index_min": "Starting number must be at least {min}.",
+      "bulk_start_index_max": "Starting number cannot exceed {max}."
+    },
+    "notifications": {
+      "update_success": "Table updated successfully.",
+      "create_success": "Table created successfully.",
+      "qr_saved_success": "QR code saved and ready for download."
+    },
+    "errors": {
+      "save_failed": "Failed to save table. Please try again.",
+      "qr_save_failed": "Failed to save QR code to table. Please try again.",
+      "qr_download_failed": "Failed to download QR code image."
+    },
+    "empty_state": {
+      "title": "No Tables Found",
+      "description": "Get started by adding your first table, or add multiple tables at once.",
+      "add_table_button": "Add Single Table",
+      "bulk_add_button": "Bulk Add Tables"
+    },
+    "bulk_add": {
+      "button_text": "Bulk Add Tables",
+      "title": "Bulk Add Tables",
+      "count_label": "Number of Tables to Add",
+      "name_prefix_label": "Table Name Prefix",
+      "name_prefix_placeholder": "e.g., Table, Area A - ",
+      "start_index_label": "Starting Number",
+      "default_name_prefix": "Table ",
+      "submit_button": "Add Tables",
+      "notification_success": "{count} tables added successfully.",
+      "notification_error": "Failed to add {count} tables. Errors: {errors}"
+    }
   },
   "AdminEmployees": {
     "add_employee": "Add Employee",
@@ -644,8 +767,14 @@
     "close": "Close",
     "errors": {
       "noSubdomainDetected": "Invalid restaurant subdomain",
-      "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly."
-    }
+      "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
+      "fetch_failed": "Failed to fetch orders data. Please try again."
+    },
+    "empty_state": {
+      "no_matching_items": "No items match your current filters.",
+      "no_matching_orders": "No orders match your current filters."
+    },
+    "order_id_prefix": "Order"
   },
   "AdminReports": {
     "Recommendations": {

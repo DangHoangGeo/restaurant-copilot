@@ -41,6 +41,8 @@ import {
   Search,
   CreditCard,
   Edit3,
+  Loader2, // Added for loading states
+  Inbox, // For empty states
 } from "lucide-react";
 import { toast } from "sonner";
 import { getLocalizedText } from "@/lib/customerUtils";
@@ -136,9 +138,16 @@ export function OrdersClientContent({
   
   // Checkout modal
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   
   // Order details modal
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
+
+  // Loading states for various actions
+  const [isUpdating, setIsUpdating] = useState<{[key: string]: boolean}>({}); // For item status/notes
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isAddingItems, setIsAddingItems] = useState(false);
+
 
   useEffect(() => {
     const supabase = createClient();
@@ -295,6 +304,7 @@ export function OrdersClientContent({
     });
 
   const updateItemStatus = async (itemId: string, newStatus: OrderItem["status"]) => {
+    setIsUpdating(prev => ({ ...prev, [itemId]: true }));
     try {
       const response = await fetch(`/api/v1/order-items/${itemId}/status`, {
         method: "PATCH",
@@ -302,26 +312,27 @@ export function OrdersClientContent({
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!response.ok) throw new Error("Failed to update item status");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update item status");
+      }
       
       toast.success(t("item_status_updated"));
-      
-      // Optimistically update the local state
-      setOrders(prevOrders => 
-        prevOrders.map(order => ({
-          ...order,
-          order_items: order.order_items.map(item =>
-            item.id === itemId ? { ...item, status: newStatus } : item
-          )
-        }))
-      );
+      // Refresh data to ensure consistency, especially if Supabase channels have latency
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const data = await res.json();
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error updating item status:", error);
-      toast.error(t("error_updating_status"));
+      // console.error("Error updating item status:", error); // Replaced by toast
+      toast.error(error instanceof Error ? error.message : t("error_updating_status"));
+    } finally {
+      setIsUpdating(prev => ({ ...prev, [itemId]: false }));
     }
   };
 
   const updateItemNotes = async (itemId: string, notes: string | null) => {
+    setIsUpdating(prev => ({ ...prev, [`notes-${itemId}`]: true }));
     try {
       const response = await fetch(`/api/v1/order-items/${itemId}/notes`, {
         method: "PATCH",
@@ -329,22 +340,21 @@ export function OrdersClientContent({
         body: JSON.stringify({ notes }),
       });
 
-      if (!response.ok) throw new Error("Failed to update item notes");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update item notes");
+      }
       
       toast.success(t("notes_updated"));
-      
-      // Optimistically update the local state
-      setOrders(prevOrders => 
-        prevOrders.map(order => ({
-          ...order,
-          order_items: order.order_items.map(item =>
-            item.id === itemId ? { ...item, notes } : item
-          )
-        }))
-      );
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`); // Refresh data
+      const data = await res.json();
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error updating item notes:", error);
-      toast.error(t("error_updating_notes"));
+      // console.error("Error updating item notes:", error); // Replaced by toast
+      toast.error(error instanceof Error ? error.message : t("error_updating_notes"));
+    } finally {
+      setIsUpdating(prev => ({ ...prev, [`notes-${itemId}`]: false }));
     }
   };
 
@@ -353,10 +363,9 @@ export function OrdersClientContent({
       toast.error(t("select_table_and_items"));
       return;
     }
-
+    setIsCreatingOrder(true);
     try {
       const orderItems = Object.entries(currentOrderItems)
-        //.filter(([unused, quantity]) => quantity > 0)
         .map(([menuItemId, quantity]) => ({
           menu_item_id: menuItemId,
           quantity,
@@ -366,13 +375,13 @@ export function OrdersClientContent({
       const response = await fetch("/api/v1/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          table_id: selectedTable,
-          order_items: orderItems,
-        }),
+        body: JSON.stringify({ table_id: selectedTable, order_items: orderItems }),
       });
 
-      if (!response.ok) throw new Error("Failed to create order");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create order");
+      }
       
       toast.success(t("order_created"));
       setIsNewOrderModalOpen(false);
@@ -380,15 +389,15 @@ export function OrdersClientContent({
       setCurrentOrderItems({});
       setOrderNotes({});
       
-      // Refresh orders
-      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`); // Refresh
       const data = await res.json();
-      if (data.success) {
-        setOrders(data.orders);
-      }
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error(t("error_creating_order"));
+      // console.error("Error creating order:", error);
+      toast.error(error instanceof Error ? error.message : t("error_creating_order"));
+    } finally {
+      setIsCreatingOrder(false);
     }
   };
 
@@ -397,10 +406,9 @@ export function OrdersClientContent({
       toast.error(t("select_items"));
       return;
     }
-
+    setIsAddingItems(true);
     try {
       const orderItems = Object.entries(currentOrderItems)
-        //.filter(([unused, quantity]) => quantity > 0)
         .map(([menuItemId, quantity]) => ({
           menu_item_id: menuItemId,
           quantity,
@@ -413,50 +421,56 @@ export function OrdersClientContent({
         body: JSON.stringify({ order_items: orderItems }),
       });
 
-      if (!response.ok) throw new Error("Failed to add items to order");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to add items to order");
+      }
       
       toast.success(t("items_added"));
       setIsAddItemsModalOpen(false);
       setSelectedOrder(null);
       setCurrentOrderItems({});
       setOrderNotes({});
-      
-      // Refresh orders
-      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`); // Refresh
       const data = await res.json();
-      if (data.success) {
-        setOrders(data.orders);
-      }
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error adding items to order:", error);
-      toast.error(t("error_adding_items"));
+      // console.error("Error adding items to order:", error);
+      toast.error(error instanceof Error ? error.message : t("error_adding_items"));
+    } finally {
+      setIsAddingItems(false);
     }
   };
 
   const processCheckout = async () => {
     if (!selectedOrder) return;
-
+    setIsProcessingCheckout(true);
     try {
       const response = await fetch(`/api/v1/orders/${selectedOrder.id}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Failed to process checkout");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to process checkout");
+      }
       
       toast.success(t("checkout_processed"));
       setIsCheckoutModalOpen(false);
       setSelectedOrder(null);
       
-      // Refresh orders
-      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`); // Refresh
       const data = await res.json();
-      if (data.success) {
-        setOrders(data.orders);
-      }
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error processing checkout:", error);
-      toast.error(t("error_processing_checkout"));
+      // console.error("Error processing checkout:", error);
+      toast.error(error instanceof Error ? error.message : t("error_processing_checkout"));
+    } finally {
+      setIsProcessingCheckout(false);
     }
   };
 
@@ -560,17 +574,22 @@ export function OrdersClientContent({
                               }}
                               autoFocus
                             />
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => saveNotes(item.id)}
-                            >
-                              <Check className="h-3 w-3" />
+                              <Input
+                                value={tempNotes[item.id] || ""}
+                                onChange={(e) => setTempNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                placeholder={t("add_notes")}
+                                className="flex-1"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !isUpdating[`notes-${item.id}`]) saveNotes(item.id);
+                                  else if (e.key === "Escape") cancelEditingNotes(item.id);
+                                }}
+                                autoFocus
+                                disabled={isUpdating[`notes-${item.id}`]}
+                              />
+                              <Button size="sm" variant="outline" onClick={() => saveNotes(item.id)} disabled={isUpdating[`notes-${item.id}`]}>
+                                {isUpdating[`notes-${item.id}`] ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => cancelEditingNotes(item.id)}
+                              <Button size="sm" variant="outline" onClick={() => cancelEditingNotes(item.id)} disabled={isUpdating[`notes-${item.id}`]}
                             >
                               ×
                             </Button>
@@ -596,36 +615,27 @@ export function OrdersClientContent({
                     <TableCell>
                       <div className="flex gap-1">
                         {item.status === "ordered" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateItemStatus(item.id, "preparing")}
-                          >
-                            <ChefHat className="h-3 w-3 mr-1" /> {tCommon("order_item_status.preparing")}
+                          <Button size="sm" variant="outline" onClick={() => updateItemStatus(item.id, "preparing")} disabled={isUpdating[item.id]}>
+                            {isUpdating[item.id] ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <ChefHat className="h-3 w-3 mr-1" />}
+                            {tCommon("order_item_status.preparing")}
                           </Button>
                         )}
                         {item.status === "preparing" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateItemStatus(item.id, "ready")}
-                          >
-                            <Clock className="h-3 w-3 mr-1" /> {tCommon("order_item_status.ready")}
+                          <Button size="sm" variant="outline" onClick={() => updateItemStatus(item.id, "ready")} disabled={isUpdating[item.id]}>
+                             {isUpdating[item.id] ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
+                            {tCommon("order_item_status.ready")}
                           </Button>
                         )}
                         {item.status === "ready" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateItemStatus(item.id, "served")}
-                          >
-                            <Check className="h-3 w-3 mr-1" /> {tCommon("order_item_status.served")}
+                          <Button size="sm" variant="outline" onClick={() => updateItemStatus(item.id, "served")} disabled={isUpdating[item.id]}>
+                            {isUpdating[item.id] ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Check className="h-3 w-3 mr-1" />}
+                            {tCommon("order_item_status.served")}
                           </Button>
                         )}
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  )))}
               </TableBody>
             </Table>
           </ScrollArea>
@@ -657,10 +667,18 @@ export function OrdersClientContent({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => (
+                {filteredOrders.length === 0 ? (
+                   <TableRow>
+                      <TableCell colSpan={6} className="text-center py-10">
+                        <Inbox className="mx-auto h-10 w-10 text-slate-400" />
+                        <p className="mt-2 text-sm text-slate-500">{t('empty_state.no_matching_orders')}</p>
+                      </TableCell>
+                    </TableRow>
+                ) : (
+                filteredOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">
-                      {order.tables?.name || `Order ${order.id.slice(0, 6)}`}
+                      {order.tables?.name || `${t('AdminOrders.order_id_prefix') || 'Order'} ${order.id.slice(0, 6)}`}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
@@ -1073,11 +1091,12 @@ export function OrdersClientContent({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNewOrderModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsNewOrderModalOpen(false)} disabled={isCreatingOrder}>
               {tCommon("cancel")}
             </Button>
-            <Button onClick={createNewOrder}>
-              {t("create_order")}
+            <Button onClick={createNewOrder} disabled={isCreatingOrder || !selectedTable || Object.keys(currentOrderItems).length === 0}>
+              {isCreatingOrder && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isCreatingOrder ? tCommon('saving') : t("create_order")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1097,11 +1116,12 @@ export function OrdersClientContent({
             </ScrollArea>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddItemsModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsAddItemsModalOpen(false)} disabled={isAddingItems}>
               {tCommon("cancel")}
             </Button>
-            <Button onClick={addItemsToOrder}>
-              {t("add_items")}
+            <Button onClick={addItemsToOrder} disabled={isAddingItems || Object.keys(currentOrderItems).length === 0}>
+              {isAddingItems && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isAddingItems ? tCommon('saving') : t("add_items")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1128,11 +1148,12 @@ export function OrdersClientContent({
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCheckoutModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsCheckoutModalOpen(false)} disabled={isProcessingCheckout}>
               {tCommon("cancel")}
             </Button>
-            <Button onClick={processCheckout} className="bg-green-600 hover:bg-green-700">
-              {t("process_payment")}
+            <Button onClick={processCheckout} className="bg-green-600 hover:bg-green-700" disabled={isProcessingCheckout}>
+              {isProcessingCheckout && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isProcessingCheckout ? tCommon('processing') : t("process_payment")}
             </Button>
           </DialogFooter>
         </DialogContent>

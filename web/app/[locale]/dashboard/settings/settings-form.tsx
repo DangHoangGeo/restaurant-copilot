@@ -34,23 +34,30 @@ interface SettingsFormProps {
   locale: string;
 }
 
-const settingsSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name must be 100 characters or less"),
-  defaultLanguage: z.enum(["ja", "en", "vi"], { required_error: "Default language is required" }),
-  brandColor: z.string().regex(/^#([0-9A-Fa-f]{6})$/, "Invalid hex color format (e.g. #RRGGBB)").nullable().optional(),
-  contactInfo: z.string().max(500, "Contact info must be 500 characters or less").optional().nullable(),
-  address: z.string().max(500, "Address must be 500 characters or less").optional().nullable(),
-  opening_hours: z.string().max(200, "Hours must be 200 characters or less").optional().nullable(),
-  description: z.string().max(1000, "Description must be 1000 characters or less").optional().nullable(),
-  logoFile: z.instanceof(File).refine(file => file.size <= 5 * 1024 * 1024, `Logo must be 5MB or less.`).optional().nullable(),
-  logoUrl: z.string().url("Invalid URL format for logo.").optional().nullable(),
+// Function to create schema, so it can receive the translator function
+const getSettingsSchema = (t: ReturnType<typeof useTranslations<'Dashboard.Settings.validation'>>) => z.object({
+  name: z.string().min(1, t("name.required")).max(100, t("name.maxLength", { maxLength: 100 })),
+  defaultLanguage: z.enum(["ja", "en", "vi"], { required_error: t("defaultLanguage.required") }),
+  brandColor: z.string().regex(/^#([0-9A-Fa-f]{6})$/, t("brandColor.invalidFormat")).nullable().optional(),
+  contactInfo: z.string().max(500, t("contactInfo.maxLength", { maxLength: 500 })).optional().nullable(),
+  address: z.string().max(500, t("address.maxLength", { maxLength: 500 })).optional().nullable(),
+  opening_hours: z.string().max(200, t("opening_hours.maxLength", { maxLength: 200 })).optional().nullable(),
+  description: z.string().max(1000, t("description.maxLength", { maxLength: 1000 })).optional().nullable(),
+  logoFile: z.instanceof(File)
+    .refine(file => file.size <= 5 * 1024 * 1024, t("logoFile.maxSize", { maxSize: 5 }))
+    .refine(file => ["image/png", "image/jpeg", "image/webp"].includes(file.type), t("logoFile.invalidType"))
+    .optional().nullable(),
+  logoUrl: z.string().url(t("logoUrl.invalidFormat")).optional().nullable(),
 });
 
-type SettingsFormData = z.infer<typeof settingsSchema>;
 
 export default function SettingsForm({ initialSettings, locale }: SettingsFormProps) {
   const t = useTranslations("Dashboard.Settings");
   const tCommon = useTranslations("Common");
+  const tValidation = useTranslations("Dashboard.Settings.validation");
+
+  const settingsSchema = getSettingsSchema(tValidation);
+  type SettingsFormData = z.infer<typeof settingsSchema>;
   const supabase = createClientComponentClient(); // Untyped client
   const [logoPreview, setLogoPreview] = useState<string | null>(initialSettings.logo_url || null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -65,7 +72,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
     watch,
     reset,
   } = useForm<SettingsFormData>({
-    resolver: zodResolver(settingsSchema),
+    resolver: zodResolver(settingsSchema), // Use the schema instance
     defaultValues: {
       name: initialSettings.name || "",
       defaultLanguage: initialSettings.default_language || (["en", "ja", "vi"].includes(locale) ? locale as "en" | "ja" | "vi" : "en"),
@@ -155,7 +162,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save settings');
+        throw new Error(errorData.error || t("notifications.settingsSaveFailedGeneric"));
       }
 
       const updatedSettings = await response.json();
@@ -224,7 +231,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
               id="brandColorText"
               type="text"
               {...register("brandColor")}
-              placeholder="#RRGGBB"
+              placeholder={t("placeholders.brandColor")}
               className="w-1/2"
               maxLength={7}
             />

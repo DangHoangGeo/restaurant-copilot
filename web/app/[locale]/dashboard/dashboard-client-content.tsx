@@ -99,15 +99,13 @@ export function DashboardClientContent({ initialData, recentOrders, isLoading, e
       {/* Placeholder for more charts/reports */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            <BarChart2 className="mx-auto h-12 w-12 mb-2" />
-            {t('charts.sales_over_time_placeholder')}
+          <CardContent className="p-6">
+            <ComingSoon featureName="feature.sales_over_time_chart" />
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            <FileText className="mx-auto h-12 w-12 mb-2" />
-             {t('charts.popular_items_report_placeholder')}
+          <CardContent className="p-6">
+            <ComingSoon featureName="feature.popular_items_report" />
           </CardContent>
         </Card>
       </div>

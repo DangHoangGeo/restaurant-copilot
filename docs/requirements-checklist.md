@@ -307,437 +307,136 @@ Below is a comprehensive, sectioned checklist covering **every requirement** for
 
 ## 5. Customer-Facing Ordering Site Requirements
 
-* [ ] **Locale-Aware Routing & Layout**
+### ✅ Completed Items
 
-  * [ ] Routes under `/{locale}/customer/...`, where `locale ∈ {"ja","en","vi"}`.
-  * [ ] Customer layout includes:
+* [x] **Locale-Aware Routing & Layout**
+  * [x] Routes under `/{locale}/customer/...`, where `locale ∈ {"ja","en","vi"}`.
+  * [x] Customer layout includes header with Restaurant Name and `<LanguageSwitcher />`.
+  * [x] Footer with © year implemented.
 
-    * Header with Restaurant Name, business hours (if set), and a `<LanguageSwitcher />`.
-    * Footer with © year.
+* [x] **Basic Session Management**
+  * [x] Session creation flow with guest count dialog
+  * [x] Session joining with passcode functionality
+  * [x] localStorage persistence for session data
+  * [x] URL parameter handling for sessionId
+
+* [x] **Menu Rendering & Interaction**
+  * [x] Display categories and menu items
+  * [x] Show localized names and descriptions
+  * [x] Price formatting via locale
+  * [x] Cart state management in React
+  * [x] Quantity adjustment buttons
+
+### 🚧 Partially Implemented
 
 * [ ] **Session Creation via QR Scan API**
-
-  * [ ] Edge Function `GET /api/v1/sessions/create?tableId={UUID}`:
-
-    * Validates `tableId` belongs to that restaurant.
-    * Inserts new `orders` row with:
-
-      * `session_id = uuid_generate_v4()`
-      * `status = "new"`
-      * `restaurant_id` and `table_id`
-    * Returns `{ sessionId }`.
-    * 404 if `tableId` invalid.
+  * [x] Basic session creation endpoint structure
+  * [ ] ⚠️ **TODO**: Implement complete `/api/v1/sessions/check` endpoint for validation
+  * [ ] ⚠️ **TODO**: Implement `/api/v1/sessions/join` endpoint
+  * [ ] ⚠️ **TODO**: Proper error handling instead of alert() calls
 
 * [ ] **Order Page** (`/order?sessionId={UUID}`)
+  * [x] Server-side session validation structure
+  * [x] Client-side session expired/invalid handling
+  * [ ] ⚠️ **TODO**: Fix incomplete translation key `t("session.")` on line 234
+  * [x] Fetch and display menu data with availability filtering
 
-  * [ ] Server-side validation:
+* [ ] **Feature Flag Integration**
+  * [x] Basic feature flag structure in place
+  * [ ] ⚠️ **TODO**: Move FEATURE_FLAGS from local definition to `/config/feature-flags.ts`
+  * [ ] ⚠️ **TODO**: Implement AI chat functionality (currently flagged false)
+  * [x] Table booking integration
+  * [x] Advanced reviews integration
 
-    * `sessionId` exists in `orders` with `status = "new"` and correct `restaurant_id`.
-    * If invalid/expired, render “Session expired” message.
-  * [ ] Fetch `categories` and `menu_items` where:
+### ❌ Not Implemented Yet
 
-    * `restaurant_id = currentRestaurantId`
-    * `available = true`
-    * `weekday_visibility` contains today’s weekday
-  * [ ] Pass data to client.
-
-* [ ] **Menu Rendering & Interaction**
-
-  * [ ] Display categories as tabs or collapsible sections.
-  * [ ] For each `menu_item`:
-
-    * Show `image_url` (fallback if missing).
-    * Show `name_{locale}`, `description_{locale}`.
-    * Show `price` formatted via `Intl.NumberFormat(locale)`.
-    * Show inline `StarRating` (average from `reviews`) or “No reviews yet.”
-    * “＋”/“–” buttons to adjust quantity.
-  * [ ] Maintain cart state in React state (e.g., Zustand or useState).
-
-* [ ] **Filters & Sorting**
-
-  * [ ] Buttons/dropdown to sort by:
-
-    * Top Seller
-    * Price (asc/desc)
-    * Rating (high→low)
-  * [ ] Top Seller data precomputed daily in `analytics_snapshots` or via a dedicated API.
-
-* [ ] **Booking & Preordering**
-
-  * [ ] “Book a Table” option integrated on menu or separate page (`/customer/book`).
-  * [ ] Booking form fields (Zod validation):
-
-    * `tableId` (UUID from URL or dropdown)
-    * `customerName` (non-empty)
-    * `customerContact` (email or phone)
-    * `bookingDate` (today or future)
-    * `bookingTime` (valid time string, within operating hours)
-    * `partySize` (int ≥ 1)
-    * Optional `preorderItems`: array of objects `{ menuItemId, quantity ≥1, notes? }`
-  * [ ] POST `/api/v1/bookings/create`:
-
-    * Validate inputs server-side.
-    * Verify `tableId` belongs to this restaurant.
-    * Check for conflicts: same `table_id`, same `booking_date`, same `booking_time`, and `status != "canceled"`. If conflict, return 409.
-    * Insert into `bookings` with `status = "pending"`.
-    * Return `{ success: true, bookingId }`.
-  * [ ] Client shows “Booking Pending Approval” on success.
-  * [ ] If `FEATURE_FLAGS.tableBooking = false`, hide “Book a Table” site-wide.
+* [ ] **Missing API Endpoints**
+  * [ ] 🔴 **CRITICAL**: `GET /api/v1/sessions/check` - session validation
+  * [ ] 🔴 **CRITICAL**: `POST /api/v1/sessions/join` - join existing session
+  * [ ] 🔴 **CRITICAL**: `POST /api/v1/orders/create` - complete order creation
+  * [ ] 🔴 **CRITICAL**: `POST /api/v1/reviews/create` - review submission
 
 * [ ] **Cart & Checkout (Cash Only)**
+  * [ ] 🔴 **CRITICAL**: Complete order creation API integration
+  * [ ] 🔴 **CRITICAL**: Server-side order validation
+  * [ ] 🔴 **CRITICAL**: Proper error handling and user feedback
+  * [ ] Redirect to thank-you page after successful order
 
-  * [ ] Floating Cart button shows total items and total price.
-  * [ ] “Checkout” button calls `POST /api/v1/orders/create` with:
+* [ ] **Enhanced User Experience**
+  * [ ] 🟡 **HIGH**: Toast notification system (replace alert() calls)
+  * [ ] 🟡 **HIGH**: Loading states for all async operations
+  * [ ] 🟡 **HIGH**: Error boundary components
+  * [ ] 🟡 **HIGH**: Offline support and network error handling
 
-    ```jsonc
-    {
-      "sessionId": "uuid",
-      "items": [
-        { "menuItemId": "uuid", "quantity": number, "notes": "string?" },
-        …
-      ]
-    }
-    ```
-  * [ ] Server-side validation:
+* [ ] **Admin Panel Integration**
+  * [ ] 🔴 **CRITICAL**: Remove placeholder "Redirecting to admin panel..." on line 325
+  * [ ] Implement proper admin view or remove the case entirely
 
-    * `sessionId` belongs to this restaurant and `status = "new"`.
-    * Each `menuItemId` exists, belongs to this restaurant, and `available = true`.
-    * `quantity ≥ 1`.
-    * Calculate `total_amount` by fetching current prices.
-    * Insert into `order_items` and update `orders.total_amount`.
-    * Return `{ success: true, orderId }`.
-  * [ ] Client redirects to `/thank-you?orderId={UUID}`.
-  * [ ] After checkout, leave `orders.status = "new"` (staff marks “completed” in iOS) so session stays open until staff finish.
+* [ ] **Progressive Web App Features**
+  * [ ] 🟢 **MEDIUM**: PWA manifest and service worker
+  * [ ] 🟢 **MEDIUM**: Offline menu browsing
+  * [ ] 🟢 **MEDIUM**: Push notifications for order updates
 
-* [ ] **Session Expiry**
+* [ ] **Accessibility & Performance**
+  * [ ] 🟡 **HIGH**: ARIA labels and keyboard navigation
+  * [ ] 🟡 **HIGH**: Image optimization for menu items
+  * [ ] 🟢 **MEDIUM**: Code splitting and lazy loading
+  * [ ] 🟢 **MEDIUM**: Bundle size optimization
 
-  * [ ] Once staff updates `orders.status = "completed"`, any reload of `/order?sessionId=…` shows “Session closed/expired.”
-  * [ ] Invalid `sessionId` (malicious or another restaurant’s) returns 404/400.
+### 🧪 Testing Requirements
 
-* [ ] **Thank You & Reviews**
+* [ ] **Unit Tests**
+  * [ ] Session management logic
+  * [ ] Cart functionality  
+  * [ ] Component rendering with different locales
+  * [ ] Feature flag conditional rendering
 
-  * [ ] “Thank You” page displays order summary: Order ID, Table number, Items, Quantities, Total.
-  * [ ] Each item shows a “Rate this Dish” link → `/review/{menuItemId}`.
+* [ ] **Integration Tests**
+  * [ ] Complete ordering flow
+  * [ ] Session joining flow
+  * [ ] Error handling scenarios
+  * [ ] API endpoint integration
 
-* [ ] **Review Submission** (`/review/{menuItemId}`)
-
-  * [ ] Form fields:
-
-    * `rating` (int 1–5)
-    * `comment` (optional text)
-  * [ ] POST `/api/v1/reviews/create` with `{ menuItemId, rating, comment }`.
-  * [ ] Validate: `menuItemId` belongs to this restaurant; `rating` ∈ 1–5.
-  * [ ] Insert into `reviews` with `restaurant_id` and `user_id = null`.
-  * [ ] Redirect back to menu or show “Thank you for your feedback.”
-  * [ ] If `FEATURE_FLAGS.onlineReviews = false`, hide review links.
-
----
-
-## 6. Staff iOS App Requirements
-
-* [ ] **Xcode & Dependency Setup**
-
-  * [ ] SwiftUI project `SOder.jp` created.
-  * [ ] Swift Package Manager includes:
-
-    * `supabase-swift`
-    * `ESCManager` (or equivalent ESC/POS library)
-    * (Optional v2) `stripe-ios` for PaymentSheet.
-  * [ ] `Config.swift` contains:
-
-    * `supabaseUrl`
-    * `supabaseAnonKey`
-    * `defaultLocale`
-    * `maxRetryAttempts` for printing.
-  * [ ] In `Info.plist`, add usage descriptions:
-
-    * `NSBluetoothAlwaysUsageDescription`
-    * `NSPhotoLibraryAddUsageDescription` (if saving any images).
-
-* [ ] **Localization**
-
-  * [ ] `Localizable.strings` for `ja`, `en`, `vi`.
-  * [ ] All UI text uses `NSLocalizedString("KEY", comment: "")`.
-
-* [ ] **Authentication Flow**
-
-  * [ ] **LoginView**:
-
-    * Fields: Email, Password, Subdomain.
-    * On “Sign In”:
-
-      * Call `supabase.auth.signIn(email: password:)`.
-      * Extract JWT from `SupabaseAuthSession`, decode to get `restaurant_id` and `role`.
-      * Store `jwtToken`, `restaurantId`, `userRole` in `@AppStorage`.
-      * On success, navigate to `OrderListView`.
-    * If login fails, show localized error.
-  * [ ] **Persistence**:
-
-    * If valid JWT exists on launch, skip login.
-    * Handle JWT refresh automatically via Supabase SDK.
-  * [ ] **Logout** clears stored credentials and returns to `LoginView`.
-
-* [ ] **Realtime Order Subscription**
-
-  * [ ] `OrderService` (ObservableObject) initializes `SupabaseClient(supabaseURL, supabaseKey: jwtToken)`.
-  * [ ] Subscribe to Realtime channel `public:orders` filtered by `restaurant_id`.
-  * [ ] Maintain `@Published var activeOrders: [Order]` containing orders where `status != "completed"`.
-  * [ ] `updateOrderStatus(orderId, newStatus)` uses Supabase client to update `orders.status`.
-
-* [ ] **Order List & Detail**
-
-  * [ ] **OrderListView**:
-
-    * Displays `activeOrders` sorted by `created_at DESC`.
-    * Each row: Table number, Item count (e.g. “3 items”), Timestamp, Status badge (color-coded: New=blue, Preparing=orange, Ready=green, Completed=gray).
-    * Tap navigates to `OrderDetailView(order: Order)`.
-  * [ ] **OrderDetailView**:
-
-    * Shows line items: item name (localized), quantity, notes.
-    * Shows `totalAmount` formatted as currency for locale.
-    * Status transition buttons:
-
-      * If `status == "new"`: “Mark Preparing” → calls `OrderService.updateOrderStatus(..., "preparing")`.
-      * If `status == "preparing"`: “Mark Ready” → `updateOrderStatus(..., "ready")`.
-      * If `status == "ready"`: “Complete & Print” → `updateOrderStatus(..., "completed")` then call `PrinterManager.printReceipt(order)`.
-
-* [ ] **Kitchen Grouping Board (iPad)**
-
-  * [ ] **KitchenBoardView**:
-
-    * Filters `order_items` from `activeOrders` with `status ∈ {"new","preparing"}` and `created_at ≥ now() - 600s`.
-    * Groups by `menuItemId`, accumulating total `quantity` and set of `tableIds`.
-    * Displays grid of cards with: dish name (localized), quantity, tables (e.g. “T3 ×2, T5 ×1”).
-    * “Mark Done” button on each card: marks all underlying orders as `completed` (or updates related `order_items` and triggers a server-side process).
-    * Optionally calls `PrinterManager.printGroupedSummary(group)`.
-
-* [ ] **Printer Setup & Bluetooth ESC/POS**
-
-  * [ ] **PrinterSetupView**:
-
-    * Scans for BLE peripherals advertising ESC/POS service UUID.
-    * Lists discovered devices with “Connect” button.
-    * Displays connection status (Connected/Disconnected/Scanning/Error).
-    * “Test Print” button sends a simple sample string.
-  * [ ] **PrinterManager** (Singleton):
-
-    * Manages CBCentralManager, scan, connect to ESC/POS printers.
-    * Holds `writeCharacteristic: CBCharacteristic?`.
-    * Methods:
-
-      * `connect(to:)`
-      * `printOrder(order: Order)`
-      * `printReceipt(order: Order)`
-      * `printGroupedSummary(group: GroupedItem)`
-    * Converts text/receipt to ESC/POS commands and writes via BLE.
-    * Retries on failure up to `maxRetryAttempts`.
-
-* [ ] **Booking Management**
-
-  * [ ] **BookingService** (ObservableObject):
-
-    * Subscribes to Realtime channel `public:bookings` filtered by `restaurant_id`.
-    * Publishes `@Published var bookings: [Booking]`.
-    * Methods:
-
-      * `updateBookingStatus(bookingId, newStatus)` calls Supabase to update `bookings.status`.
-      * (Optional) `createBooking(...)` to insert directly or call the API.
-  * [ ] **BookingListView**:
-
-    * Lists `bookings` sorted by `booking_date` then `booking_time`, showing: Customer Name, Contact, Date & Time, Party Size, Status badge.
-    * Tap navigates to `BookingDetailView(booking)`.
-  * [ ] **BookingDetailView**:
-
-    * Displays all booking fields plus any `preorder_items` (list each with localized item name, quantity, notes).
-    * Buttons:
-
-      * If `status == "pending"`: show “Confirm” → `BookingService.updateBookingStatus(..., "confirmed")`.
-      * If `status ∈ {"pending","confirmed"}`: show “Cancel” → `updateBookingStatus(..., "canceled")`.
-    * After update, refresh list.
-
-* [ ] **Checkout & Receipt Printing (Cash Only)**
-
-  * [ ] **CheckoutView** (for `status == "ready"`) displays:
-
-    * Itemized list, table number, total amount.
-    * “Confirm Payment (Cash) & Print Receipt” button:
-
-      1. Calls `updateOrderStatus(order.id, "completed")`.
-      2. Calls `PrinterManager.printReceipt(order)`.
-    * On success, navigate back to `OrderListView`.
-
-* [ ] **In-App Alerts & Feature Flag Checks**
-
-  * [ ] If `FEATURE_FLAGS.lowStockAlerts = true`: subscribe to `inventory_items` Realtime events; when `stock_level ≤ threshold`, show local notification/banner.
-  * [ ] If `FEATURE_FLAGS.enablePayments = false`: hide payment UI.
-  * [ ] If `FEATURE_FLAGS.enableAI = false`: hide Chatbot UI.
-  * [ ] If `FEATURE_FLAGS.tableBooking = false`: hide booking screens and menus.
+* [ ] **End-to-End Tests**
+  * [ ] QR code scan to order completion
+  * [ ] Multi-user session joining
+  * [ ] Review submission flow
+  * [ ] Booking creation flow
 
 ---
 
-## 7. Smart Reports, Feedback & Planner Requirements
+### 🚨 Critical Issues Requiring Immediate Attention
 
-* [ ] **Daily Snapshot Function & Scheduling**
+1. **Type Safety**: Multiple unsafe type casting with `as MenuViewProps`, `as CheckoutViewProps` - needs proper type guards
+2. **Error Handling**: Replace all `alert()` calls with proper UI feedback
+3. **Missing APIs**: Several critical endpoints not implemented
+4. **Translation**: Incomplete translation key causing runtime error
+5. **Feature Flags**: Hardcoded flags need to be moved to central configuration
 
-  * [ ] SQL function `public.generate_daily_snapshot()` exists to:
+### 📋 Development Priority Order
 
-    * For each `restaurant_id`, calculate `total_sales` for current date from `orders`.
-    * Determine `top_seller_item` by summing `quantity` in `order_items` for today.
-    * Count `orders_count` for today.
-    * Insert into `analytics_snapshots(restaurant_id, date, total_sales, top_seller_item, orders_count)`.
-  * [ ] `pg_cron` job scheduled to run daily at `00:00` calling `public.generate_daily_snapshot()`.
+**Week 1 (Critical Fixes)**
+1. Fix translation key error
+2. Implement session check API
+3. Replace alert() with toast notifications
+4. Add proper error boundaries
 
-* [ ] **Low-Stock Trigger & Inventory Update**
+**Week 2 (Core Functionality)**  
+1. Complete order creation API
+2. Implement review submission API
+3. Add loading states throughout
+4. Fix type safety issues
 
-  * [ ] Trigger function `adjust_inventory_on_order()` on `AFTER INSERT` of `order_items` that decrements `inventory_items.stock_level` by `NEW.quantity` for matching `restaurant_id` and `menu_item_id`.
-  * [ ] RLS ensures only correct tenant’s inventory is adjusted.
+**Week 3 (User Experience)**
+1. Add PWA capabilities
+2. Implement offline support
+3. Enhance accessibility
+4. Add comprehensive error handling
 
-* [ ] **Recommendations & Next-Week Planner**
-
-  * [ ] RPC `public.get_top_sellers_7days(p_restaurant uuid, p_limit int)` returns top `p_limit` `(menu_item_id, total_sold)` over last 7 days.
-  * [ ] RPC `public.apply_recommendations(p_restaurant uuid)` that:
-
-    * Creates/fetches “Featured” category for that restaurant.
-    * Deletes existing items in “Featured.”
-    * Copies top sellers into “Featured” with `weekday_visibility = [1,2,3,4,5,6,7]`.
-  * [ ] Edge Function `POST /api/v1/recommendations/apply` calls `public.apply_recommendations(restaurant_id)` and returns `{ success: true }`.
-  * [ ] Recommendations widget in dashboard displays top 3 sellers and has “Apply to Next Week” button invoking the Edge Function.
-
-* [ ] **Feedback Moderation UI**
-
-  * [ ] Feedback Report page lists latest 50 `reviews` where `restaurant_id` matches:
-
-    * Columns: Item Name (localized), Rating, Comment, Date formatted for locale, Resolved status.
-    * “Resolve” button for each row calls `POST /api/v1/reviews/resolve` with `{ reviewId }`.
-  * [ ] Edge Function `/api/v1/reviews/resolve` updates `reviews.resolved = true` for that `id`.
-  * [ ] RLS on `reviews` ensures only that restaurant’s reviews are accessed.
+**Week 4 (Polish & Testing)**
+1. Add comprehensive test suite
+2. Performance optimization
+3. Bundle analysis and optimization
+4. Documentation updates
 
 ---
-
-## 8. Advanced Modules (Feature-Flagged)
-
-* [ ] **Payments Integration (Stripe & PayPay)**
-
-  * **Edge Functions & APIs**
-
-    * [ ] Edge Function `/api/v2/payments/create-intent`:
-
-      * Accepts `{ orderId, amount, currency }`.
-      * Creates Stripe PaymentIntent with `amount * 100`, `currency`, `metadata={orderId}`.
-      * Returns `{ clientSecret }`.
-    * [ ] Next.js API `/api/v2/payments/create-intent` proxies to the Edge Function.
-    * [ ] (Future) `/api/v2/payments/confirm` to confirm payment and update `orders.status = "completed"`.
-  * **Web Checkout (if `FEATURE_FLAGS.payments = true`)**
-
-    * [ ] Load `@stripe/stripe-js` in root layout.
-    * [ ] Checkout page uses `<Elements>` and `<CardElement>`; on submit, calls `confirmCardPayment(clientSecret)`.
-    * [ ] On success, call `/api/v1/orders/update` or `/api/v1/orders/complete` to set `status = "completed"`, then redirect to “Thank You.”
-  * **iOS Checkout (if `FeatureFlags.enablePayments = true`)**
-
-    * [ ] Fetch client secret from `/api/v2/payments/create-intent`.
-    * [ ] Present Stripe `PaymentSheet` with client secret.
-    * [ ] On success, update order status to `completed` and print receipt via `PrinterManager`.
-
-* [ ] **AI Assistant (Chatbot)**
-
-  * [ ] Edge Function `/api/v2/chatbot`:
-
-    * Accepts `{ restaurantId, language, userQuery }`.
-    * Fetches `menu_items` for that restaurant (localized name/description, price).
-    * Constructs a prompt: list menu items, append user question.
-    * Calls OpenAI’s `chat.completions` (model `gpt-4o`).
-    * Logs prompt and token usage to `chat_logs` (columns: `restaurant_id`, `user_language`, `prompt_text`, `prompt_token_count`, `response_token_count`).
-    * Returns `{ response: text }`.
-  * [ ] RLS on `chat_logs` restricts access to that `restaurant_id`.
-  * [ ] Web chat widget (if `FEATURE_FLAGS.aiAssistant = true`):
-
-    * Floating button opens chat modal.
-    * Text input for user question; on submit, call `/api/v2/chatbot`.
-    * Display AI responses in chat UI.
-
-* [ ] **Messaging Integrations (Future)**
-
-  * [ ] Prepare placeholders/hooks for linking with Facebook Messenger, LINE, WhatsApp.
-  * [ ] (Future) Edge Functions or webhook endpoints to receive messages and forward to in-dashboard UI.
-
-* [ ] **Audit Logging & Advanced Monitoring**
-
-  * [ ] SQL function `public.log_changes()` logs INSERT/UPDATE/DELETE on critical tables to `audit_logs`.
-  * [ ] Triggers:
-
-    * `trg_orders_audit` on `orders`
-    * `trg_menu_items_audit` on `menu_items`
-    * `trg_inventory_audit` on `inventory_items`
-    * `trg_bookings_audit` on `bookings`
-  * [ ] RLS on `audit_logs`: only allow `SELECT` when `restaurant_id = auth.jwt()->>'restaurant_id'`.
-  * [ ] Alerts (external):
-
-    * > 100 failed logins/hour → notify Slack/email.
-    * > 10,000 orders/hour (possible DoS) → alert.
-    * > 5% 500s in 10 minutes (across web requests) → alert.
-
-* [ ] **API Versioning & Deprecation**
-
-  * [ ] All new or breaking APIs placed under `/api/v2`.
-  * [ ] v1 endpoints remain functional for at least 3 months after v2 launch.
-  * [ ] Deprecation notices (in docs or response headers) for v1 endpoints.
-
----
-
-## 9. Testing & CI/CD Verification
-
-* [ ] **Web Unit & Integration Tests**
-
-  * [ ] Jest + React Testing Library covers:
-
-    1. **RLS Protection**: querying one restaurant’s data with another restaurant’s JWT returns empty.
-    2. **Signup Flow**: invalid subdomain yields 409, invalid CAPTCHA yields 400.
-    3. **Order Creation**: invalid `sessionId` returns 400; invalid `menuItemId` returns 400.
-    4. **i18n Rendering**: with `locale="en"`, UI shows English strings; with `locale="vi"`, shows Vietnamese.
-    5. **Feature Flags**: when `FEATURE_FLAGS.payments=false`, visiting checkout page hides payment UI and shows “Coming Soon.”
-
-* [ ] **iOS Unit & UI Tests**
-
-  * [ ] XCTest for:
-
-    1. `OrderService.computeGrouping()`: grouping identical items correctly over last 10 minutes.
-    2. `LoginView` snapshot in `ja` and `en`.
-    3. `PrinterManager.printReceipt()` handles “no printer connected” gracefully (no crash).
-    4. Feature flag checks: if `FeatureFlags.enablePayments=false`, `CheckoutView` does not display Stripe UI.
-
-* [ ] **Security Scans & Dependency Checks**
-
-  * [ ] In CI: `npm audit --prefix web --audit-level=high` fails on any high/critical.
-  * [ ] In CI: `swiftlint --strict` fails on violations.
-
-* [ ] **CI/CD Pipeline**
-
-  * [ ] **Web** (Ubuntu runner):
-
-    1. `actions/checkout@v3`
-    2. Setup Node (v18)
-    3. `npm install` in `/web`
-    4. `npm run lint` and `npm run format:check` in `/web`
-    5. `npm test` in `/web`
-    6. `npm audit` in `/web`
-    7. Deploy to Vercel:
-
-       * On `develop`: staging (`staging.shop-copilot.com`) with staging Supabase keys.
-       * On `main`: production (`shop-copilot.com`) with production Supabase keys.
-  * [ ] **iOS** (macOS runner):
-
-    1. `actions/checkout@v3`
-    2. `brew install swiftlint`
-    3. `swiftlint --strict`
-    4. `xcodebuild -scheme SOder.jp -destination 'platform=iOS Simulator,name=iPhone 14' test | xcpretty`
-    5. Archive & upload to TestFlight (using App Store Connect API key in GitHub secrets).
-
----
-
-## How to Use This Checklist
-
-1. **During Development**: Mark each box as soon as that requirement is fully implemented and tested.
-2. **Before Release**: Review every unchecked item in a staging environment—deploy the web, run through flows, and use a physical iOS device for printing.
-3. **AI-Assisted Verification**: Supply this list to your automated test agent so it can script API calls and UI flows to confirm each box.
-
-By systematically ticking off every item, you guarantee that Shop-Copilot is secure, robust, and feature-complete from day one.

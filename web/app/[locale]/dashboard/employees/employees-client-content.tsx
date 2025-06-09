@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,6 @@ interface Employee {
   role: string;
   email: string;
   shifts: Record<string, string | null>;
-}
 
 interface EmployeesClientContentProps {
   initialData: Employee[];
@@ -74,7 +72,6 @@ export function EmployeesClientContent({
     setScheduleEmployee(employee);
     setIsScheduleModalOpen(true);
   };
-
   const handleSaveSchedule = () => {
     if (scheduleEmployee) {
       setEmployees((prev) =>
@@ -86,6 +83,17 @@ export function EmployeesClientContent({
     setIsScheduleModalOpen(false);
   };
 
+  const handleSaveSchedule = () => {
+    if (scheduleEmployee) {
+      setEmployees((prev) =>
+        prev.map((emp) =>
+          emp.id === scheduleEmployee.id ? scheduleEmployee : emp,
+        ),
+      );
+    }
+    setIsScheduleModalOpen(false);
+  };
+  
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
