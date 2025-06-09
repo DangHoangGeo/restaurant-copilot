@@ -106,6 +106,19 @@ struct LoginView: View {
                 subdomain = UserDefaults.standard.string(forKey: "lastSubdomain") ?? ""
                 email = UserDefaults.standard.string(forKey: "lastEmail") ?? ""
             }
+                loadCredentials()
+            }
+        }
+    }
+
+    private func loadCredentials() {
+        let defaults = UserDefaults.standard
+        if let savedSubdomain = defaults.string(forKey: "lastUsedSubdomain") {
+            self.subdomain = savedSubdomain
+        }
+        if let savedEmail = defaults.string(forKey: "lastUsedEmail") {
+            self.email = savedEmail
+
         }
     }
     
@@ -121,9 +134,12 @@ struct LoginView: View {
         errorMessage = ""
         
         do {
+            let trimmedSubdomain = subdomain.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+
             try await supabaseManager.signIn(
-                subdomain: subdomain.trimmingCharacters(in: .whitespacesAndNewlines),
-                email: email.trimmingCharacters(in: .whitespacesAndNewlines),
+                subdomain: trimmedSubdomain,
+                email: trimmedEmail,
                 password: password
             )
             if supabaseManager.isAuthenticated {
