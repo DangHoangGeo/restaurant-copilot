@@ -18,61 +18,7 @@ import {
   SelectValue,
   SelectContent,
 } from "@/components/ui/select";
-import {
-  List,
-  Calendar,
-  UserPlus,
-  SquarePen,
-  CalendarCheck2,
-} from "lucide-react";
-
-const MOCK_EMPLOYEES_BASE = [
-  {
-    id: "emp1",
-    name: "Alice Smith",
-    role: "manager",
-    email: "alice@example.com",
-    shifts: {
-      Mon: "09:00-17:00",
-      Tue: "09:00-17:00",
-      Wed: null,
-      Thu: "09:00-17:00",
-      Fri: "09:00-17:00",
-      Sat: null,
-      Sun: null,
-    },
-  },
-  {
-    id: "emp2",
-    name: "Bob Johnson",
-    role: "chef",
-    email: "bob@example.com",
-    shifts: {
-      Mon: "10:00-18:00",
-      Tue: "10:00-18:00",
-      Wed: "10:00-18:00",
-      Thu: null,
-      Fri: "10:00-22:00",
-      Sat: "12:00-22:00",
-      Sun: null,
-    },
-  },
-  {
-    id: "emp3",
-    name: "Carol Williams",
-    role: "server",
-    email: "carol@example.com",
-    shifts: {
-      Mon: null,
-      Tue: "17:00-22:00",
-      Wed: "17:00-22:00",
-      Thu: "17:00-22:00",
-      Fri: "17:00-23:00",
-      Sat: "17:00-23:00",
-      Sun: "12:00-20:00",
-    },
-  },
-];
+import { List, Calendar, UserPlus, SquarePen } from "lucide-react";
 
 interface Employee {
   id: string;
@@ -80,11 +26,16 @@ interface Employee {
   role: string;
   email: string;
   shifts: Record<string, string | null>;
+
+interface EmployeesClientContentProps {
+  initialData: Employee[];
 }
 
-export function EmployeesClientContent() {
+export function EmployeesClientContent({
+  initialData,
+}: EmployeesClientContentProps) {
   const t = useTranslations();
-  const [employees, setEmployees] = useState<Employee[]>(MOCK_EMPLOYEES_BASE);
+  const [employees, setEmployees] = useState<Employee[]>(initialData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "schedule">("list");
@@ -120,6 +71,16 @@ export function EmployeesClientContent() {
   const handleOpenScheduleModal = (employee: Employee) => {
     setScheduleEmployee(employee);
     setIsScheduleModalOpen(true);
+  };
+  const handleSaveSchedule = () => {
+    if (scheduleEmployee) {
+      setEmployees((prev) =>
+        prev.map((emp) =>
+          emp.id === scheduleEmployee.id ? scheduleEmployee : emp,
+        ),
+      );
+    }
+    setIsScheduleModalOpen(false);
   };
 
   const handleSaveSchedule = () => {
