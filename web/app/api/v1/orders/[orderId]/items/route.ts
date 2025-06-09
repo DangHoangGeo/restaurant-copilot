@@ -76,6 +76,7 @@ export async function POST(
 
     // Create order items
     const orderItemsToInsert = order_items.map(item => ({
+      restaurant_id: user.restaurantId, // Add the missing restaurant_id
       order_id: orderId,
       menu_item_id: item.menu_item_id,
       quantity: item.quantity,

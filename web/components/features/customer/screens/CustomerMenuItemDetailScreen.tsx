@@ -20,6 +20,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
   const { item, canAddItems, tableId, sessionId, tableNumber } = viewProps;
   const { addToCart, updateQuantity, getQuantityInCart, removeFromCart } = useCart();
   const t = useTranslations('Customer');
+  const tCommon = useTranslations('Common');
   const locale = useGetCurrentLocale();
   const [showAddedMessage, setShowAddedMessage] = useState(false); // Added state
 
@@ -57,7 +58,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
         onClick={() => setView('menu', { tableId, sessionId, tableNumber, canAddItems })}
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
-        {t('menu_item_detail_back_to_menu')}
+        {tCommon('back_to_menu')}
       </Button>
 
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -118,7 +119,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
             )
           ) : (
             <p className="text-center text-gray-500 italic py-4">
-              {t('menu_item_detail_view_only')}
+              {t('menu.view_only')}
             </p>
           )}
           {showAddedMessage && ( // Message display relies solely on showAddedMessage state

@@ -7,6 +7,7 @@ import { OrdersClientContent } from "./orders-client-content";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 
+
 export interface OrderItem {
   id: string;
   quantity: number;
@@ -36,7 +37,7 @@ export interface Order {
   total_amount: number | null;
   created_at: string;
   order_items: OrderItem[];
-  tables: { name: string; id: string }[] | null;
+  tables: { name: string; id?: string }[];
 }
 
 export interface Table {
@@ -68,6 +69,7 @@ export default async function OrdersPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "AdminOrders" });
+  const tCommon = await getTranslations({ locale, namespace: "Common" });
 
   const host = (await headers()).get("host") || "";
   const subdomain = getSubdomainFromHost(host);
@@ -100,7 +102,7 @@ export default async function OrdersPage({
       if (restaurantError) throw restaurantError;
       if (restaurantData) {
         restaurantSettings = {
-          name: restaurantData.name || "Restaurant",
+          name: restaurantData.name || tCommon('defaultUnnamedRestaurant'),
           logoUrl: restaurantData.logo_url,
         };
       }
@@ -153,9 +155,9 @@ export default async function OrdersPage({
       menuCategories = categoriesData as Category[];
 
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      // console.error("Error fetching orders:", error);
       fetchError =
-        error instanceof Error ? error.message : "Failed to fetch orders";
+        error instanceof Error ? error.message : t("errors.fetch_failed");
     }
   }
 

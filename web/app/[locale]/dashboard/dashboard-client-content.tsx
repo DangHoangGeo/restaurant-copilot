@@ -3,7 +3,7 @@
 import { StatCard } from '@/components/features/admin/dashboard/StatCard';
 import { QuickActions } from '@/components/features/admin/dashboard/QuickActions';
 import { RecentOrdersTable, RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable';
-import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle, FileText, BarChart2 } from 'lucide-react';
+import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { Card, CardContent } from '@/components/ui/card';
 import { ComingSoon } from '@/components/common/coming-soon';
@@ -99,15 +99,13 @@ export function DashboardClientContent({ initialData, recentOrders, isLoading, e
       {/* Placeholder for more charts/reports */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            <BarChart2 className="mx-auto h-12 w-12 mb-2" />
-            {t('charts.sales_over_time_placeholder')}
+          <CardContent className="p-6">
+            <ComingSoon featureName="feature.sales_over_time_chart" />
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            <FileText className="mx-auto h-12 w-12 mb-2" />
-             {t('charts.popular_items_report_placeholder')}
+          <CardContent className="p-6">
+            <ComingSoon featureName="feature.popular_items_report" />
           </CardContent>
         </Card>
       </div>

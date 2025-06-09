@@ -17,7 +17,7 @@ export default async function DashboardPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({locale, namespace: 'AdminDashboard'});
-  //const supabase = await createClient();
+  const tCommon = await getTranslations({locale, namespace: 'Common'});
 
   const authUser = await getUserFromRequest();
 
@@ -31,22 +31,18 @@ export default async function DashboardPage({
 
   // Security Check
   if (!authUser) {
-    console.error("Security Alert: No authenticated user found. Cannot display dashboard.");
-    // Option: redirect to login
+    // console.error("Security Alert: No authenticated user found. Cannot display dashboard."); // Production: use a proper logger
     return redirect(`/${locale}/login`);
-    //return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.unauthorized_access')} />;
   }
 
   if (!restaurantIdFromSubdomainUrl) {
-    // This case is already handled: restaurantId not found, shows error.
-    console.log("Restaurant ID not found for subdomain, rendering error state.");
+    // console.log("Restaurant ID not found for subdomain, rendering error state."); // Production: use a proper logger
     return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.restaurant_not_found')} />;
   }
 
   if (authUser.restaurantId !== restaurantIdFromSubdomainUrl) {
-    console.error(`Security Alert: User ${authUser.userId} (Restaurant ID: ${authUser.restaurantId}) attempted to access dashboard for restaurant ${restaurantIdFromSubdomainUrl} via subdomain ${subdomain}.`);
+    // console.error(`Security Alert: User ${authUser.userId} (Restaurant ID: ${authUser.restaurantId}) attempted to access dashboard for restaurant ${restaurantIdFromSubdomainUrl} via subdomain ${subdomain}.`); // Production: use a proper logger
     return <DashboardClientContent initialData={null} recentOrders={[]} isLoading={false} error={t('errors.mismatched_restaurant_access')} />;
-    // Ensure 'errors.mismatched_restaurant_access' is a valid translation key or add it.
   }
   
   let dashboardData: DashboardData | null = null;
@@ -58,34 +54,29 @@ export default async function DashboardPage({
     // --- Data Fetching (as per 04_admin-dashboard.md, using restaurantId) ---
     const today = new Date().toISOString().split("T")[0];
 
-    // 1. Today's Total Sales (from analytics_snapshots)
-    // For mockup, let's use a simplified sum from orders if analytics_snapshots is not populated yet.
-    // In production, analytics_snapshots would be preferred.
+    // 1. Today's Total Sales
     const { data: salesData, error: salesError } = await supabaseAdmin
       .from('orders')
       .select('total_amount')
       .eq('restaurant_id', restaurantIdFromSubdomainUrl)
       .gte('created_at', `${today}T00:00:00.000Z`)
       .lte('created_at', `${today}T23:59:59.999Z`)
-      .eq('status', 'completed'); // Only completed orders for sales
+      .eq('status', 'completed');
 
     if (salesError) throw salesError;
     const todaySales = salesData?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
 
     // 2. Active Orders Count
-    console.log("Fetching Active Orders Count...");
     const { count: activeOrdersCount, error: activeOrdersError } = await supabaseAdmin
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('restaurant_id', restaurantIdFromSubdomainUrl)
-      .not('status', 'in', '("completed", "canceled")'); // Active = not completed or canceled
+      .not('status', 'in', '("completed", "canceled")');
     
     if (activeOrdersError) throw activeOrdersError;
 
     // 3. Top-Selling Item Today
-    console.log("Fetching Top-Selling Item Today...");
-    // This is a more complex query. For now, a placeholder.
-    // You might need an RPC or a more detailed query joining order_items and menu_items.
+    // This is a simplified query. A more performant approach might use an RPC or a view.
     const { data: topSellerRaw, error: topSellerError } = await supabaseAdmin
       .from('order_items')
       .select(`
@@ -95,13 +86,12 @@ export default async function DashboardPage({
       .eq('restaurant_id', restaurantIdFromSubdomainUrl)
       // .filter('orders.created_at', 'gte', `${today}T00:00:00.000Z`) // Requires join with orders table
       // .filter('orders.created_at', 'lte', `${today}T23:59:59.999Z`)
-      .limit(50); // Fetch recent items to aggregate
+      .limit(50);
 
     let topSellerTodayData: DashboardData['topSellerToday'] = null;
     if (topSellerError){
-      console.log("Error fetching top seller data:", topSellerError);
-    }
-    if (topSellerRaw && topSellerRaw.length > 0) {
+      // console.error("Error fetching top seller data:", topSellerError.message); // Production: use a proper logger
+    } else if (topSellerRaw && topSellerRaw.length > 0) {
         // Simplified aggregation: count occurrences of menu items
         interface NameObj {
           en?: string;
@@ -129,7 +119,7 @@ export default async function DashboardPage({
         if (sortedItems.length > 0) {
             const topItem = sortedItems[0];
             // Get localized name
-            const name = topItem.nameObj[locale] || topItem.nameObj.en || 'Unknown Item';
+            const name = topItem.nameObj[locale] || topItem.nameObj.en || tCommon('unknown_item');
             topSellerTodayData = { name, metricValue: `${topItem.count} ${t('cards.sold_units')}` };
         }
     } else {
@@ -158,10 +148,9 @@ export default async function DashboardPage({
     };
 
     // Fetch Recent Orders
-    console.log("Fetching Recent Orders...");
     const { data: orders, error: ordersError } = await supabaseAdmin
       .from('orders')
-      .select('id, table_id, total_amount, status, created_at, tables (name)') // Join with tables to get table name
+      .select('id, table_id, total_amount, status, created_at, tables (name)')
       .eq('restaurant_id', restaurantIdFromSubdomainUrl)
       .order('created_at', { ascending: false })
       .limit(5); // Get last 5 orders
@@ -188,24 +177,21 @@ export default async function DashboardPage({
     }
 
   } catch (error) {
-    console.error("Error fetching dashboard data:", error);
+    // console.error("Error fetching dashboard data:", error); // Production: use a proper logger
     if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
       fetchError = (error as { message: string }).message;
     } else {
       fetchError = t('errors.data_fetch_error');
     }
-    // Set dashboardData to some defaults or empty state if partial data is not useful
-    dashboardData = {
+    dashboardData = { // Provide default structure on error
         todaySales: 0,
         activeOrdersCount: 0,
         topSellerToday: { name: t('cards.top_seller_unavailable'), metricValue: ''},
         lowStockItemsCount: 0,
     };
     recentOrdersData = [];
-    console.log("Dashboard data fetching failed. Error:", fetchError);
   } finally {
     isLoading = false;
-    console.log("Dashboard data fetching complete. isLoading set to false.");
   }
       
   return (

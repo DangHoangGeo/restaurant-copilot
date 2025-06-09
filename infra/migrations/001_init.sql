@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
   name_ja text NOT NULL,
   name_en text NOT NULL,
   name_vi text NOT NULL,
+  code text UNIQUE,                  -- unique code for the item
   description_ja text,
   description_en text,
   description_vi text,
@@ -81,7 +82,7 @@ CREATE TABLE IF NOT EXISTS tables (
   is_outdoor boolean DEFAULT false,
   is_accessible boolean DEFAULT false,
   notes text,
-  qr_code text UNIQUE,               -- optional, or derived on the fly
+  qr_code text UNIQUE,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
@@ -114,6 +115,7 @@ CREATE TABLE IF NOT EXISTS orders (
   restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   table_id uuid NOT NULL REFERENCES tables(id) ON DELETE CASCADE,
   session_id uuid UNIQUE NOT NULL,
+  guest_count integer NOT NULL DEFAULT 1 CHECK (guest_count > 0),
   status text NOT NULL CHECK (status IN ('new','preparing','ready','completed')) DEFAULT 'new',
   total_amount numeric CHECK (total_amount >= 0),
   created_at timestamptz DEFAULT now(),

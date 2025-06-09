@@ -21,6 +21,7 @@ export function OrderPlacedScreen({
   viewProps,
 }: OrderPlacedScreenProps) {
   const t = useTranslations("Customer");
+  const tCommon = useTranslations("Common");
   const { orderId, items, total, tableId } = viewProps;
   const locale = useGetCurrentLocale();
 
@@ -58,7 +59,7 @@ export function OrderPlacedScreen({
           style={{ backgroundColor: restaurantSettings.secondaryColor || restaurantSettings.primaryColor }}
           className="text-white hover:opacity-90"
         >
-          {t("orderplaced.add_more_button")}
+          {tCommon("add_more_items")}
         </Button>
         <Button
           onClick={() => setView("thankyou", { ...viewProps, tableNumber: undefined } as ThankYouScreenViewProps)}

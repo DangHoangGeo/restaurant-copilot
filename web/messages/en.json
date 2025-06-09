@@ -11,6 +11,7 @@
       "forgotPassword": "Forgot Password"
     },
     "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
     "loginButton": "Login",
@@ -218,6 +219,8 @@
     "coming_soon": "Coming Soon!",
     "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
     "form_placeholder": "Form fields go here.",
+    "back_to_menu": "Back to Menu",
+    "add_more_items": "Add More Items",
     "recharts_note": "Charts powered by Recharts.",
     "datatable_component_note": "Data table component placeholder.",
     "sold": "sold",
@@ -277,7 +280,10 @@
       "error": { "title": "Error" }
     },
     "mark_resolved": "Mark Resolved",
-    "mark_unresolved": "Mark Unresolved"
+    "mark_unresolved": "Mark Unresolved",
+    "defaultUnnamedRestaurant": "Unnamed Restaurant",
+    "saving": "Saving...",
+    "processing": "Processing..."
   },
   "AdminLayout": {
     "sidebar": {
@@ -342,7 +348,13 @@
       "name_en": "Category Name (English)",
       "name_ja": "Category Name (Japanese)",
       "name_vi": "Category Name (Vietnamese)",
-      "order": "Display Order"
+      "order": "Display Order",
+      "reorder_success": "Categories reordered successfully.",
+      "reorder_error": "Failed to reorder categories.",
+      "delete_error_fallback": "Failed to delete category. It might be in use or a server error occurred."
+    },
+    "buttons": {
+      "saving": "Saving..."
     },
     "weekdays": {
       "mon": "Monday",
@@ -376,15 +388,41 @@
       "price": "Price",
       "image_url": "Image URL",
       "upload_image": "Upload Image",
+      "image_preview_alt": "Image preview",
       "image_upload_note": "Upload an image for the menu item (max 5MB).",
       "stock_level": "Stock Level",
       "is_available": "Is Available?",
-      "weekday_visibility": "Visible on Weekdays"
+      "weekday_visibility": "Visible on Weekdays",
+      "reorder_success": "Menu items reordered successfully.",
+      "reorder_error": "Failed to reorder menu items."
     },
     "errors": {
       "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
       "data_fetch_error": "Failed to load menu data. Please try again later.",
       "no_categories_found": "No menu categories found. Please add a category to get started."
+    },
+    "validation": {
+      "name_en_required": "English name is required.",
+      "name_en_max_length": "English name must be {maxLength} characters or less.",
+      "name_ja_max_length": "Japanese name must be {maxLength} characters or less.",
+      "name_vi_max_length": "Vietnamese name must be {maxLength} characters or less.",
+      "position_required": "Position is required.",
+      "category_id_required": "Category is required.",
+      "description_en_max_length": "English description must be {maxLength} characters or less.",
+      "description_ja_max_length": "Japanese description must be {maxLength} characters or less.",
+      "description_vi_max_length": "Vietnamese description must be {maxLength} characters or less.",
+      "price_required": "Price is required.",
+      "price_min": "Price must be at least {min}.",
+      "image_url_invalid": "Invalid image URL format.",
+      "stock_level_min": "Stock level must be at least {min}.",
+      "weekday_visibility_array_error": "Invalid day selection.",
+      "logoFile_maxSize": "Image file must be {maxSize}MB or less."
+    },
+    "empty_state": {
+      "no_categories_title": "No Menu Categories Yet",
+      "no_categories_description": "Get started by creating your first menu category. Organize your dishes and make them available to your customers.",
+      "no_items_title": "No Items in This Category",
+      "no_items_description": "This category is empty. Add a new menu item to get started."
     },
     "currency_format": "{value, number, ::currency/JPY}"
   },
@@ -426,7 +464,9 @@
       "mismatched_restaurant_access": "Access Denied: You are not authorized to view this restaurant's data."
     },
     "feature": {
-      "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard"
+      "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard",
+      "sales_over_time_chart": "Sales Over Time Chart",
+      "popular_items_report": "Popular Items Report"
     }
   },
   "Metadata": {
@@ -474,7 +514,8 @@
         "logoUploadErrorMessage": "Could not upload logo: {error}",
         "logoRemovedMessage": "Logo removed. Save changes to confirm.",
         "fileTooLarge": "File is too large. Max 5MB.",
-        "invalidFileType": "Invalid file type. Please upload an image."
+        "invalidFileType": "Invalid file type. Please upload an image.",
+        "settingsSaveFailedGeneric": "Failed to save settings. Please try again."
       },
       "altText": {
         "logoPreview": "Restaurant logo preview",
@@ -504,7 +545,30 @@
           "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
           "noSettingsFoundTitle": "Settings Not Found",
           "noSettingsFoundMessage": "No settings data found for this restaurant."
+        },
+        "validation": {
+          "nameRequired": "Restaurant name is required.",
+          "nameMaxLength": "Restaurant name must be {maxLength} characters or less.",
+          "defaultLanguageRequired": "Default language is required.",
+          "brandColorInvalidFormat": "Invalid brand color format. Use #RRGGBB.",
+          "contactInfoMaxLength": "Contact information must be {maxLength} characters or less.",
+          "addressMaxLength": "Address must be {maxLength} characters or less.",
+          "openingHoursMaxLength": "Operating hours must be {maxLength} characters or less.",
+          "descriptionMaxLength": "Description must be {maxLength} characters or less.",
+          "logoFileMaxSize": "Logo image must be {maxSize}MB or less.",
+          "logoFileInvalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
+          "logoUrlinvalidFormat": "Invalid logo URL format."
         }
+      }
+    },
+    "Layout": {
+      "errors": {
+        "fallbackRestaurantName": "Fallback Restaurant",
+        "configurationErrorTitle": "Restaurant Configuration Error",
+        "configurationErrorDescription": "Could not load settings for subdomain: {subdomain}. Displaying with fallback settings.",
+        "adminPanelTitle": "Admin Panel",
+        "noRestaurantContextTitle": "Error: No Restaurant Context",
+        "noRestaurantContextDescription": "This dashboard requires a valid restaurant subdomain to function correctly."
       }
     }
   },
@@ -513,12 +577,75 @@
     "tables_list": "Tables List",
     "add_table": "Add Table",
     "edit_table": "Edit Table",
+    "table_name_label": "Table Name",
+    "table_name_placeholder": "e.g., Table 1, Patio 5",
+    "capacity_label": "Capacity (Seats)",
+    "capacity_placeholder": "e.g., 4",
+    "status_label": "Status",
+    "select_status_placeholder": "Select status",
+    "status_options": {
+      "available": "Available",
+      "occupied": "Occupied",
+      "reserved": "Reserved"
+    },
+    "is_outdoor_label": "Outdoor",
+    "is_accessible_label": "Accessible",
+    "notes_label": "Notes",
+    "notes_placeholder": "Any notes about this table...",
+    "outdoor": "Outdoor",
+    "accessible": "Accessible",
+    "status": "Status",
     "capacity": "Capacity",
     "position": "Position",
     "generate_qr": "Generate QR",
-    "qr_for_table": "QR for Table",
+    "qr_for_table": "QR Code for Table",
     "download_png": "Download PNG",
-    "download_png_action": "Downloading PNG..."
+    "downloading_qr": "Downloading QR...",
+    "validation": {
+      "name_required": "Table name is required.",
+      "name_max_length": "Table name must be {maxLength} characters or less.",
+      "capacity_required": "Capacity is required.",
+      "capacity_min": "Capacity must be at least {min}.",
+      "status_required": "Status is required.",
+      "notes_max_length": "Notes must be {maxLength} characters or less.",
+      "qrCode_invalid_url": "Invalid QR code URL format.",
+      "bulk_count_required": "Number of tables is required.",
+      "bulk_count_min": "Must add at least {min} table.",
+      "bulk_count_max": "Cannot add more than {max} tables at once.",
+      "bulk_name_prefix_required": "Name prefix is required.",
+      "bulk_name_prefix_max_length": "Name prefix must be {maxLength} characters or less.",
+      "bulk_start_index_required": "Starting number is required.",
+      "bulk_start_index_min": "Starting number must be at least {min}.",
+      "bulk_start_index_max": "Starting number cannot exceed {max}."
+    },
+    "notifications": {
+      "update_success": "Table updated successfully.",
+      "create_success": "Table created successfully.",
+      "qr_saved_success": "QR code saved and ready for download."
+    },
+    "errors": {
+      "save_failed": "Failed to save table. Please try again.",
+      "qr_save_failed": "Failed to save QR code to table. Please try again.",
+      "qr_download_failed": "Failed to download QR code image."
+    },
+    "empty_state": {
+      "title": "No Tables Found",
+      "description": "Get started by adding your first table, or add multiple tables at once.",
+      "add_table_button": "Add Single Table",
+      "bulk_add_button": "Bulk Add Tables"
+    },
+    "bulk_add": {
+      "button_text": "Bulk Add Tables",
+      "title": "Bulk Add Tables",
+      "count_label": "Number of Tables to Add",
+      "name_prefix_label": "Table Name Prefix",
+      "name_prefix_placeholder": "e.g., Table, Area A - ",
+      "start_index_label": "Starting Number",
+      "default_name_prefix": "Table ",
+      "submit_button": "Add Tables",
+      "notification_success": "{count} tables added successfully.",
+      "notification_error": "Failed to add {count} tables. Errors: {errors}"
+    }
   },
   "AdminEmployees": {
     "add_employee": "Add Employee",
@@ -551,6 +678,16 @@
       "party_size": "Party Size",
       "status": "Status",
       "actions": "Actions"
+    },
+    "Settings": {
+      "Page": {
+        "errors": {
+          "fetchErrorTitle": "Error Fetching Bookings"
+        }
+      }
+    },
+    "errors": {
+      "no_bookings_found": "No bookings found."
     }
   },
   "Bookings": {
@@ -602,6 +739,9 @@
     "item_status_updated": "Item status updated successfully",
     "order_status_updated": "Order status updated successfully",
     "error_updating_status": "Failed to update status",
+    "notes_updated": "Notes updated successfully",
+    "error_updating_notes": "Failed to update notes",
+    "add_notes": "Add notes...",
     "select_table_and_items": "Please select a table and add items",
     "select_items": "Please select items to add",
     "order_created": "Order created successfully",
@@ -612,13 +752,44 @@
     "error_processing_checkout": "Failed to process checkout",
     
     "details_title": "Order Details",
+    "selected_items": "Selected Items",
     "no_order_items": "No items in this order.",
+    "order_details": "Order Details",
+    "search_items": "Search items by name or code...",
+    "item_code": "Item Code",
+    "item_availability": "Availability",
+    "select_item": "Select Item",
+    "add_custom_item": "Add Custom Item",
+    "custom_item_name": "Item Name",
+    "custom_item_price": "Price",
+    "custom_item_quantity": "Quantity",
+    "add_to_order": "Add to Order",
+    "close": "Close",
     "errors": {
       "noSubdomainDetected": "Invalid restaurant subdomain",
-      "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly."
-    }
+      "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
+      "fetch_failed": "Failed to fetch orders data. Please try again."
+    },
+    "empty_state": {
+      "no_matching_items": "No items match your current filters.",
+      "no_matching_orders": "No orders match your current filters."
+    },
+    "order_id_prefix": "Order"
   },
   "AdminReports": {
+    "Recommendations": {
+      "title": "Top Selling Menu Items (Last 7 Days)",
+      "loading": "Loading recommendations...",
+      "errorFetching": "Error fetching recommendations: {error}",
+      "noData": "No top sellers found for the last 7 days.",
+      "soldLabel": "Sold:",
+      "applyButton": "Apply to Next Week",
+      "applyingButton": "Applying...",
+      "applySuccess": "Recommendations applied successfully!",
+      "applyError": "Error applying recommendations: {error}",
+      "missingRestaurantId": "Please select a restaurant to see recommendations.",
+      "missingRestaurantIdApply": "Cannot apply recommendations without a restaurant ID."
+    },
     "tabs": {
       "sales": "Sales",
       "items": "Items",
@@ -665,6 +836,38 @@
     "no_menu_items": "No menu items available"
   },
   "Customer": {
+    "admin_panel": {
+      "toggle_label": "Toggle Admin Panel"
+    },
+    "current_session": "Current Ordering Session",
+    "active": "Active",
+    "inactive": "Inactive",
+    "session_active_more":"You can still add more items!",
+    "menu_item_detail_back_to_menu": "Back to Menu",
+    "menu_item_detail_add_to_cart": "Add to Cart",
+    "decrease_quantity": "Decrease quantity by one",
+    "increase_quantity": "Increase quantity by one",
+    "menu_item_detail_added_to_cart_msg": "{itemName} has been added to your cart.",
+    "no_order_found": "No orders found",
+    "no_order_items": "No orders have been placed at this table yet.",
+    "session": {
+      "created_title": "Session Created!",
+      "share_passcode": "Share this 4-digit code with others at your table so they can join your order:",
+      "passcode_instruction": "Others can scan the table QR code and enter this passcode to join your session.",
+      "ask_for_passcode": "Ask for Passcode",
+      "ask_for_passcode_instruction": "If you don't have the passcode, please ask the person who started the order.",
+      "start_ordering": "Start Ordering",
+      "enter_passcode_title": "Enter Passcode",
+      "enter_passcode_placeholder": "Enter 4-digit code",
+      "join_session": "Join Session",
+      "session_expired": "Session Expired",
+      "session_expired_message": "Your order session has been completed or expired. Thank you for your visit!",
+      "session_expired_instruction": "To place a new order, please scan the QR code on your table again.",
+      "invalid_table": "Invalid Table",
+      "invalid_table_message": "The table ID is invalid or doesn't belong to this restaurant.",
+      "invalid_table_instruction": "Please scan a valid QR code from a table at this restaurant.",
+      "view_menu_only": "View Menu Only"
+    },
     "menu": {
       "title": "Menu",
       "serving_today": "Serving Today",
@@ -673,6 +876,8 @@
       "add_to_cart": "Add",
       "out_of_stock": "Out of Stock",
       "quantity": "Quantity",
+      "item_quantity": "Qty: {quantity}",
+      "item_notes": "Notes: {notes}",
       "total_price": "Total Price",
       "search_placeholder": "Search menu...",
       "popular_now": "Popular Now",
@@ -688,9 +893,12 @@
       "items_in_cart_plural": "{count} item(s) in cart",
       "review_order_button": "Review Order"
     },
+    "guest_dialog": {
+      "title": "Welcome! How many guests?",
+      "confirm": "Start Ordering"
+    },
     "checkout": {
       "redirecting_empty_cart": "Cart is empty. Redirecting to menu...",
-      "back_to_menu": "Back to Menu",
       "title": "Review Order",
       "order_summary": "Order Summary",
       "quantity": "Quantity",
@@ -709,6 +917,9 @@
       "confirm_message": "Are you sure you want to place this order with {items} items for {total}?",
       "cancel": "Cancel",
       "confirm": "Confirm",
+      "add_note_for":"Add a note for {itemName}",
+      "save_note":"Save Note",
+      "note_saved":"Note saved successfully!",
       "confirming": "Confirming...",
       "empty_cart_title": "Your cart is empty",
       "empty_cart_message": "Add some delicious items to your cart to continue.",
@@ -727,22 +938,26 @@
     "orderplaced": {
       "title": "Order Placed",
       "message": "Your order has been sent to the kitchen. You can keep ordering or proceed to checkout when ready.",
-      "add_more_button": "Add More Items",
       "proceed_to_checkout_button": "Proceed to Checkout"
     },
     "thankyou": {
       "title": "Thank you for your order!",
       "subtitle": "Your order has been received and is being prepared.",
+      "message": "Your order is confirmed and we are preparing it now!",
       "order_id_label": "Order ID",
       "table_number": "Table {number}",
+      "table_number_label": "Table Number:",
       "order_summary_title": "Order Summary",
       "preparation_message": "What would you like to do next?",
-      "add_more_items": "Add More Items",
       "view_order_history": "View Order History",
+      "review_button": "Rate Your Experience",
+      "add_more_button": "Add More Items",
+      "order_history_button": "Check Order History",
       "rate_dishes_title": "Rate Your Dishes",
       "review_prompt": "Help us improve by rating individual dishes:",
       "order_history_title": "Order History",
-      "back_to_menu_button": "Back to Menu",
+      "inactive_session_message": "Your ordering session has ended. Please scan the QR code on your table to start a new session.",
+      "thankyou_message": "Thank you for dining with us! We hope to see you again soon.",
       "item": "item",
       "items": "items",
       "status_ordered": "Ordered",
@@ -770,6 +985,10 @@
       "submission_thank_you_title": "Review Submitted!",
       "submission_thank_you_message": "Thank you for your valuable feedback!",
       "rating_label": "Your Rating"
+    },
+    "orderhistory": {
+      "checkout_button": "Checkout",
+      "price_per_person": "Per Person: {value}"
     },
     "booking": {
       "title": "Table Booking",

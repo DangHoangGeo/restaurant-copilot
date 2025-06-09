@@ -186,23 +186,489 @@
     "description": "Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển.",
     "back_home": "Về Trang Chủ"
   },
-  "Dashboard": {
-    "dashboard": "Dashboard",
-    "recentOrders": "Recent Orders",
-    "orderId": "Order ID",
-    "type": "Type",
-    "status": "Status",
-    "total": "Total",
-    "quickActions": "Quick Actions",
-    "addNewMenuItem": "Add New Menu Item",
-    "generateQRForTable": "Generate QR for Table",
-    "addNewEmployee": "Add New Employee",
-    "orderStatus": {
-      "new": "New",
-      "preparing": "Preparing",
-      "ready": "Ready",
-      "completed": "Completed"
+  "Common": {
+    "loading": "Đang tải...",
+    "all_rights_reserved": "Đã đăng ký bản quyền.",
+    "powered_by": "Được cung cấp bởi",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "confirm": "Xác nhận",
+    "view_details": "Xem chi tiết",
+    "close_modal": "Đóng cửa sổ",
+    "search": "Tìm kiếm...",
+    "available": "Có sẵn",
+    "unavailable": "Không có sẵn",
+    "list": "Danh sách",
+    "schedule": "Lịch trình",
+    "off_duty": "Nghỉ",
+    "export_csv": "Xuất CSV",
+    "export_pdf": "Xuất PDF",
+    "unknown_item": "Mặt hàng không xác định",
+    "total": "Tổng cộng",
+    "admin_panel_button": "Bảng quản trị",
+    "needs_attention": "Cần chú ý",
+    "all_good": "Tất cả đều tốt",
+    "zod_form_hint": "Xác thực biểu mẫu được xử lý bởi Zod. Vui lòng đảm bảo tất cả các trường bắt buộc được điền chính xác.",
+    "coming_soon": "Sắp ra mắt!",
+    "feature_in_development": "Tính năng '{feature}' hiện đang được phát triển và sẽ sớm ra mắt.",
+    "form_placeholder": "Các trường biểu mẫu ở đây.",
+    "back_to_menu": "Quay lại Thực đơn",
+    "add_more_items": "Thêm món khác",
+    "recharts_note": "Biểu đồ được cung cấp bởi Recharts.",
+    "datatable_component_note": "Placeholder thành phần bảng dữ liệu.",
+    "sold": "đã bán",
+    "cancel_booking": "Hủy đặt chỗ",
+    "confirm_booking": "Xác nhận đặt chỗ",
+    "order_status": {
+      "new": "Mới",
+      "ordered": "Đã đặt hàng",
+      "preparing": "Đang chuẩn bị",
+      "ready": "Sẵn sàng",
+      "completed": "Đã hoàn thành",
+      "canceled": "Đã hủy"
     },
+    "order_item_status": {
+      "ordered": "Đã đặt",
+      "preparing": "Đang chuẩn bị",
+      "ready": "Sẵn sàng",
+      "served": "Đã phục vụ"
+    },
+    "view_cart_label": "Xem giỏ hàng",
+    "order_history_label": "Lịch sử đơn hàng",
+    "weekdays": {
+      "mon": "Thứ Hai",
+      "tue": "Thứ Ba",
+      "wed": "Thứ Tư",
+      "thu": "Thứ Năm",
+      "fri": "Thứ Sáu",
+      "sat": "Thứ Bảy",
+      "sun": "Chủ Nhật",
+      "mon_short": "T2",
+      "tue_short": "T3",
+      "wed_short": "T4",
+      "thu_short": "T5",
+      "fri_short": "T6",
+      "sat_short": "T7",
+      "sun_short": "CN"
+    },
+    "language_switcher": {
+      "toggle_label": "Thay đổi ngôn ngữ"
+    },
+    "defaultLanguageLabel": "Ngôn ngữ mặc định",
+    "defaultLanguagePlaceholder": "Chọn ngôn ngữ mặc định",
+    "languageOption": {
+      "en": "Tiếng Anh",
+      "ja": "Tiếng Nhật",
+      "vi": "Tiếng Việt"
+    },
+    "rating": {
+      "set_stars": "Đặt {count} sao đánh giá",
+      "current_stars": "Đánh giá hiện tại: {count} sao",
+      "no_reviews": "Chưa có đánh giá nào"
+    },
+    "alert": {
+      "info": { "title": "Thông tin" },
+      "success": { "title": "Thành công" },
+      "warning": { "title": "Cảnh báo" },
+      "error": { "title": "Lỗi" }
+    },
+    "mark_resolved": "Đánh dấu đã giải quyết",
+    "mark_unresolved": "Đánh dấu chưa giải quyết",
+    "defaultUnnamedRestaurant": "Nhà hàng Chưa đặt tên",
+    "saving": "Đang lưu...",
+    "processing": "Đang xử lý..."
+  },
+  "AdminLayout": {
+    "sidebar": {
+      "toggle_aria_label": "Chuyển đổi thanh bên điều hướng",
+      "close_aria_label": "Đóng thanh bên"
+    },
+    "theme": {
+      "toggle_aria_label": "Chuyển đổi chủ đề sáng/tối",
+      "toggle_label": "Chuyển đổi chủ đề"
+    },
+    "user_menu": {
+      "admin_user_placeholder": "Người dùng quản trị",
+      "my_account_label": "Tài khoản của tôi",
+      "profile_link": "Hồ sơ",
+      "settings_link": "Cài đặt nhà hàng",
+      "logout_button": "Đăng xuất"
+    },
+    "default_restaurant_name": "Shop-Copilot"
+  },
+  "AdminNav": {
+    "admin_sidebar_dashboard": "Bảng điều khiển",
+    "admin_sidebar_restaurant_settings": "Cài đặt nhà hàng",
+    "admin_sidebar_menu_management": "Quản lý thực đơn",
+    "admin_sidebar_orders": "Đơn hàng",
+    "admin_sidebar_table_qr_management": "Bàn & Mã QR",
+    "admin_sidebar_employees_schedules": "Nhân viên & Lịch làm việc",
+    "admin_sidebar_bookings_preorders": "Đặt chỗ & Đặt trước",
+    "admin_sidebar_reports_analytics": "Báo cáo & Phân tích",
+    "admin_sidebar_design_system": "Hướng dẫn Hệ thống Thiết kế",
+    "admin_sidebar_view_customer_site": "Xem trang khách hàng",
+    "admin_sidebar_logout": "Đăng xuất",
+    "admin_dashboard_title": "Tổng quan Bảng điều khiển",
+    "admin_settings_title": "Cài đặt Nhà hàng",
+    "admin_menu_title": "Quản lý Thực đơn",
+    "admin_tables_title": "Quản lý Bàn & QR",
+    "admin_employees_title": "Quản lý Nhân viên & Lịch làm việc",
+    "admin_bookings_title": "Quản lý Đặt chỗ",
+    "admin_reports_title": "Báo cáo & Phân tích",
+    "sidebar_close_aria_label": "Đóng thanh bên"
+  },
+  "AdminMenu": {
+    "title": "Quản lý Thực đơn",
+    "add_category": "Thêm Danh mục",
+    "add_item": "Thêm Món",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "low_stock": "Sắp hết hàng",
+    "no_items_in_category": "Chưa có món nào trong danh mục này. Nhấp 'Thêm Món' để tạo mới.",
+    "edit_category": "Sửa Danh mục",
+    "edit_item": "Sửa Món",
+    "form_hint": "Các trường có dấu * là bắt buộc.",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "available": "Còn hàng",
+    "unavailable": "Hết hàng",
+    "category": {
+      "update_success": "Cập nhật danh mục thành công!",
+      "create_success": "Tạo danh mục thành công!",
+      "save_error": "Lưu danh mục thất bại. Vui lòng thử lại.",
+      "delete_success": "Xóa danh mục thành công!",
+      "delete_error": "Xóa danh mục thất bại. Vui lòng thử lại.",
+      "name_en": "Tên danh mục (Tiếng Anh)",
+      "name_ja": "Tên danh mục (Tiếng Nhật)",
+      "name_vi": "Tên danh mục (Tiếng Việt)",
+      "order": "Thứ tự hiển thị",
+      "reorder_success": "Sắp xếp lại danh mục thành công.",
+      "reorder_error": "Sắp xếp lại danh mục thất bại.",
+      "delete_error_fallback": "Xóa danh mục thất bại. Danh mục có thể đang được sử dụng hoặc có lỗi máy chủ."
+    },
+    "buttons": {
+      "saving": "Đang lưu..."
+    },
+    "weekdays": {
+      "mon": "Thứ Hai",
+      "tue": "Thứ Ba",
+      "wed": "Thứ Tư",
+      "thu": "Thứ Năm",
+      "fri": "Thứ Sáu",
+      "sat": "Thứ Bảy",
+      "sun": "Chủ Nhật"
+    },
+    "weekdays_short": {
+      "1_short": "T2",
+      "2_short": "T3",
+      "3_short": "T4",
+      "4_short": "T5",
+      "5_short": "T6",
+      "6_short": "T7",
+      "7_short": "CN"
+    },
+    "item": {
+      "update_success": "Cập nhật món thành công!",
+      "create_success": "Tạo món thành công!",
+      "save_error": "Lưu món thất bại. Vui lòng thử lại.",
+      "delete_success": "Xóa món thành công!",
+      "delete_error": "Xóa món thất bại. Vui lòng thử lại.",
+      "name_en": "Tên món (Tiếng Anh)",
+      "name_ja": "Tên món (Tiếng Nhật)",
+      "name_vi": "Tên món (Tiếng Việt)",
+      "description_en": "Mô tả (Tiếng Anh)",
+      "description_ja": "Mô tả (Tiếng Nhật)",
+      "description_vi": "Mô tả (Tiếng Việt)",
+      "price": "Giá",
+      "image_url": "URL Hình ảnh",
+      "upload_image": "Tải ảnh lên",
+      "image_preview_alt": "Xem trước hình ảnh",
+      "image_upload_note": "Tải ảnh cho món ăn (tối đa 5MB).",
+      "stock_level": "Số lượng tồn kho",
+      "is_available": "Còn hàng?",
+      "weekday_visibility": "Hiển thị vào các ngày trong tuần",
+      "reorder_success": "Sắp xếp lại các món ăn thành công.",
+      "reorder_error": "Sắp xếp lại các món ăn thất bại."
+    },
+    "errors": {
+      "restaurant_not_found": "Không thể xác định ngữ cảnh nhà hàng. Vui lòng đảm bảo bạn đang truy cập thông qua một tên miền phụ nhà hàng hợp lệ.",
+      "data_fetch_error": "Tải dữ liệu thực đơn thất bại. Vui lòng thử lại sau.",
+      "no_categories_found": "Không tìm thấy danh mục thực đơn nào. Vui lòng thêm một danh mục để bắt đầu."
+    },
+    "validation": {
+      "name_en_required": "Tên tiếng Anh là bắt buộc.",
+      "name_en_max_length": "Tên tiếng Anh phải có {maxLength} ký tự trở xuống.",
+      "name_ja_max_length": "Tên tiếng Nhật phải có {maxLength} ký tự trở xuống.",
+      "name_vi_max_length": "Tên tiếng Việt phải có {maxLength} ký tự trở xuống.",
+      "position_required": "Vị trí là bắt buộc.",
+      "category_id_required": "Danh mục là bắt buộc.",
+      "description_en_max_length": "Mô tả tiếng Anh phải có {maxLength} ký tự trở xuống.",
+      "description_ja_max_length": "Mô tả tiếng Nhật phải có {maxLength} ký tự trở xuống.",
+      "description_vi_max_length": "Mô tả tiếng Việt phải có {maxLength} ký tự trở xuống.",
+      "price_required": "Giá là bắt buộc.",
+      "price_min": "Giá phải ít nhất là {min}.",
+      "image_url_invalid": "Định dạng URL hình ảnh không hợp lệ.",
+      "stock_level_min": "Số lượng tồn kho phải ít nhất là {min}.",
+      "weekday_visibility_array_error": "Lựa chọn ngày không hợp lệ.",
+      "logoFile_maxSize": "Tệp hình ảnh phải từ {maxSize}MB trở xuống."
+    },
+    "empty_state": {
+      "no_categories_title": "Chưa có Danh mục Thực đơn nào",
+      "no_categories_description": "Hãy bắt đầu bằng cách tạo danh mục thực đơn đầu tiên của bạn. Sắp xếp các món ăn và sẵn sàng phục vụ khách hàng.",
+      "no_items_title": "Không có Món ăn nào trong Danh mục này",
+      "no_items_description": "Danh mục này hiện đang trống. Thêm một món ăn mới để bắt đầu."
+    },
+    "currency_format": "{value, number, ::currency/VND}"
+  },
+  "AdminDashboard": {
+    "title": "Bảng điều khiển",
+    "cards": {
+      "todays_sales": "Doanh số hôm nay",
+      "active_orders": "Đơn hàng đang hoạt động",
+      "top_seller_today": "Mặt hàng bán chạy nhất hôm nay",
+      "top_seller_unavailable": "Không có",
+      "low_stock_alerts": "Cảnh báo tồn kho thấp",
+      "needs_attention": "Cần chú ý!",
+      "all_good": "Tất cả đều tốt",
+      "sold_units": "đã bán"
+    },
+    "quick_actions": {
+      "title": "Tác vụ nhanh",
+      "add_menu_item": "Thêm món mới",
+      "generate_qr": "Tạo mã QR cho bàn",
+      "add_employee": "Thêm nhân viên mới"
+    },
+    "recent_orders": {
+      "title": "Đơn hàng gần đây",
+      "no_recent_orders": "Không có đơn hàng gần đây để hiển thị.",
+      "table_header_order": "Đơn hàng / Bàn",
+      "table_header_items": "Các món",
+      "table_header_total": "Tổng cộng",
+      "table_header_status": "Trạng thái",
+      "table_prefix": "Bàn"
+    },
+    "charts": {
+      "sales_over_time_placeholder": "Biểu đồ doanh số theo thời gian - Sắp ra mắt",
+      "popular_items_report_placeholder": "Báo cáo mặt hàng phổ biến - Sắp ra mắt"
+    },
+    "errors": {
+      "restaurant_not_found": "Không thể xác định bối cảnh nhà hàng. Vui lòng đảm bảo bạn đang truy cập thông qua một tên miền phụ nhà hàng hợp lệ.",
+      "data_fetch_error": "Tải dữ liệu bảng điều khiển thất bại. Vui lòng thử lại sau.",
+      "unauthorized_access": "Truy cập bị từ chối: Bạn không được phép xem trang này.",
+      "mismatched_restaurant_access": "Truy cập bị từ chối: Bạn không được phép xem dữ liệu của nhà hàng này."
+    },
+    "feature": {
+      "low_stock_alerts_dashboard": "Cảnh báo tồn kho thấp trên Bảng điều khiển",
+      "sales_over_time_chart": "Biểu đồ Doanh số theo Thời gian",
+      "popular_items_report": "Báo cáo Mặt hàng Phổ biến"
+    }
+  },
+  "AdminTables": {
+    "title": "Quản lý Bàn & QR",
+    "tables_list": "Danh sách bàn",
+    "add_table": "Thêm bàn",
+    "edit_table": "Sửa bàn",
+    "table_name_label": "Tên bàn",
+    "table_name_placeholder": "Ví dụ: Bàn 1, Ngoài trời 5",
+    "capacity_label": "Sức chứa (số ghế)",
+    "capacity_placeholder": "Ví dụ: 4",
+    "status_label": "Trạng thái",
+    "select_status_placeholder": "Chọn trạng thái",
+    "status_options": {
+      "available": "Còn trống",
+      "occupied": "Đang có khách",
+      "reserved": "Đã đặt"
+    },
+    "is_outdoor_label": "Ngoài trời",
+    "is_accessible_label": "Lối đi riêng",
+    "notes_label": "Ghi chú",
+    "notes_placeholder": "Ghi chú về bàn này...",
+    "outdoor": "Ngoài trời",
+    "accessible": "Lối đi riêng",
+    "status": "Trạng thái",
+    "capacity": "Sức chứa",
+    "position": "Vị trí",
+    "generate_qr": "Tạo QR",
+    "qr_for_table": "Mã QR cho Bàn",
+    "download_png": "Tải PNG",
+    "downloading_qr": "Đang tải QR...",
+    "validation": {
+      "name_required": "Tên bàn là bắt buộc.",
+      "name_max_length": "Tên bàn phải có {maxLength} ký tự trở xuống.",
+      "capacity_required": "Sức chứa là bắt buộc.",
+      "capacity_min": "Sức chứa phải ít nhất là {min}.",
+      "status_required": "Trạng thái là bắt buộc.",
+      "notes_max_length": "Ghi chú phải có {maxLength} ký tự trở xuống.",
+      "qrCode_invalid_url": "Định dạng URL mã QR không hợp lệ.",
+      "bulk_count_required": "Số lượng bàn là bắt buộc.",
+      "bulk_count_min": "Phải thêm ít nhất {min} bàn.",
+      "bulk_count_max": "Không thể thêm quá {max} bàn cùng một lúc.",
+      "bulk_name_prefix_required": "Tiền tố tên là bắt buộc.",
+      "bulk_name_prefix_max_length": "Tiền tố tên phải có {maxLength} ký tự trở xuống.",
+      "bulk_start_index_required": "Số bắt đầu là bắt buộc.",
+      "bulk_start_index_min": "Số bắt đầu phải ít nhất là {min}.",
+      "bulk_start_index_max": "Số bắt đầu không được vượt quá {max}."
+    },
+    "notifications": {
+      "update_success": "Cập nhật bàn thành công.",
+      "create_success": "Tạo bàn thành công.",
+      "qr_saved_success": "Đã lưu mã QR và sẵn sàng để tải xuống."
+    },
+    "errors": {
+      "save_failed": "Lưu bàn thất bại. Vui lòng thử lại.",
+      "qr_save_failed": "Lưu mã QR vào bàn thất bại. Vui lòng thử lại.",
+      "qr_download_failed": "Tải xuống hình ảnh mã QR thất bại."
+    },
+    "empty_state": {
+      "title": "Không tìm thấy bàn nào",
+      "description": "Bắt đầu bằng cách thêm bàn đầu tiên của bạn hoặc thêm nhiều bàn cùng một lúc.",
+      "add_table_button": "Thêm một bàn",
+      "bulk_add_button": "Thêm nhiều bàn"
+    },
+    "bulk_add": {
+      "button_text": "Thêm nhiều bàn",
+      "title": "Thêm nhiều bàn",
+      "count_label": "Số lượng bàn cần thêm",
+      "name_prefix_label": "Tiền tố tên bàn",
+      "name_prefix_placeholder": "Ví dụ: Bàn, Khu A - ",
+      "start_index_label": "Số bắt đầu",
+      "default_name_prefix": "Bàn ",
+      "submit_button": "Thêm bàn",
+      "notification_success": "Đã thêm thành công {count} bàn.",
+      "notification_error": "Thêm thất bại {count} bàn. Lỗi: {errors}"
+    }
+  },
+  "AdminBookings": {
+    "details_title": "Chi tiết Đặt chỗ",
+    "preorder_items": "Món đặt trước",
+    "no_preorder_items": "Không có món đặt trước",
+    "table": {
+      "customer_name": "Tên khách hàng",
+      "contact": "Liên hệ",
+      "date_time": "Ngày & Giờ",
+      "party_size": "Số lượng khách",
+      "status": "Trạng thái",
+      "actions": "Hành động"
+    },
+    "Settings": {
+      "Page": {
+        "errors": {
+          "fetchErrorTitle": "Lỗi Tải Đặt chỗ"
+        }
+      }
+    },
+    "errors": {
+      "no_bookings_found": "Không tìm thấy đặt chỗ nào.",
+      "data_fetch_error": "Tải dữ liệu đặt chỗ thất bại. Vui lòng thử lại."
+    },
+    "notifications": {
+      "update_success": "Cập nhật trạng thái đặt chỗ thành công.",
+      "update_failed": "Cập nhật trạng thái đặt chỗ thất bại: {error}"
+    },
+    "empty_state": {
+      "title": "Không tìm thấy Đặt chỗ nào",
+      "description": "Hiện tại không có đặt chỗ nào để hiển thị."
+    },
+    "Page": {
+      "title": "Quản lý Đặt chỗ"
+    }
+  },
+  "Bookings": {
+    "status": {
+      "pending": "Đang chờ xử lý",
+      "confirmed": "Đã xác nhận",
+      "canceled": "Đã hủy"
+    }
+  },
+  "AdminOrders": {
+    "title": "Quản lý Đơn hàng",
+    "subtitle": "Quản lý đơn hàng, theo dõi món và xử lý thanh toán",
+    "today_only": "Chỉ hôm nay",
+    "items_view": "Xem theo Món",
+    "orders_view": "Xem theo Đơn",
+    "no_orders": "Không có đơn hàng nào để hiển thị.",
+    "new_order": "Đơn hàng mới",
+    "search_placeholder": "Tìm bàn, món, hoặc đơn hàng...",
+    "filter_by_status": "Lọc theo trạng thái",
+    "all_statuses": "Tất cả trạng thái",
+    "ordered": "Đã đặt",
+    "preparing": "Đang chuẩn bị",
+    "ready": "Sẵn sàng",
+    "served": "Đã phục vụ",
+    "completed": "Đã hoàn thành",
+    "canceled": "Đã hủy",
+    "order_items": "Các món trong đơn",
+    "table": "Bàn",
+    "item": "Món",
+    "quantity": "Số lượng",
+    "notes": "Ghi chú",
+    "status": "Trạng thái",
+    "actions": "Hành động",
+    "orders": "Đơn hàng",
+    "items_count": "Số món",
+    "total": "Tổng cộng",
+    "created": "Tạo lúc",
+    "items": "món",
+    "create_new_order": "Tạo đơn hàng mới",
+    "select_table": "Chọn bàn",
+    "choose_table": "Chọn một bàn",
+    "select_menu_items": "Chọn các món từ thực đơn",
+    "create_order": "Tạo đơn",
+    "add_items_to_order": "Thêm món vào đơn",
+    "add_items": "Thêm món",
+    "process_checkout": "Xử lý thanh toán",
+    "checkout_confirmation": "Thao tác này sẽ đánh dấu tất cả các món đã được phục vụ và hoàn tất đơn hàng.",
+    "process_payment": "Xử lý thanh toán",
+    "item_status_updated": "Cập nhật trạng thái món thành công",
+    "order_status_updated": "Cập nhật trạng thái đơn hàng thành công",
+    "error_updating_status": "Cập nhật trạng thái thất bại",
+    "notes_updated": "Cập nhật ghi chú thành công",
+    "error_updating_notes": "Cập nhật ghi chú thất bại",
+    "add_notes": "Thêm ghi chú...",
+    "select_table_and_items": "Vui lòng chọn bàn và thêm món",
+    "select_items": "Vui lòng chọn món để thêm",
+    "order_created": "Tạo đơn hàng thành công",
+    "error_creating_order": "Tạo đơn hàng thất bại",
+    "items_added": "Thêm món vào đơn hàng thành công",
+    "error_adding_items": "Thêm món vào đơn hàng thất bại",
+    "checkout_processed": "Xử lý thanh toán thành công",
+    "error_processing_checkout": "Xử lý thanh toán thất bại",
+    "details_title": "Chi tiết đơn hàng",
+    "selected_items": "Các món đã chọn",
+    "no_order_items": "Không có món nào trong đơn hàng này.",
+    "order_details": "Thông tin đơn hàng",
+    "search_items": "Tìm món theo tên hoặc mã...",
+    "item_code": "Mã món",
+    "item_availability": "Tình trạng",
+    "select_item": "Chọn món",
+    "add_custom_item": "Thêm món tùy chỉnh",
+    "custom_item_name": "Tên món",
+    "custom_item_price": "Giá",
+    "custom_item_quantity": "Số lượng",
+    "add_to_order": "Thêm vào đơn",
+    "close": "Đóng",
+    "errors": {
+      "noSubdomainDetected": "Tên miền phụ nhà hàng không hợp lệ",
+      "noRestaurantIdMessage": "Không thể xác định ID nhà hàng. Vui lòng đảm bảo bạn đang truy cập trang này một cách chính xác.",
+      "fetch_failed": "Tải dữ liệu đơn hàng thất bại. Vui lòng thử lại."
+    },
+    "empty_state": {
+      "no_matching_items": "Không có món nào khớp với bộ lọc hiện tại của bạn.",
+      "no_matching_orders": "Không có đơn hàng nào khớp với bộ lọc hiện tại của bạn."
+    },
+    "order_id_prefix": "Đơn hàng"
+  },
+  "Metadata": {
+    "admin_dashboard_title": "Admin Dashboard - Shop Copilot"
+  },
+  "logout": {
+    "title": "Logging You Out...",
+    "message": "You have been successfully logged out. Redirecting you shortly.",
+    "login_again_button": "Login Again"
+  },
+  "Dashboard": {
     "Settings": {
       "labels": {
         "restaurantName": "Tên Nhà Hàng",
@@ -236,7 +702,8 @@
         "logoUploadErrorMessage": "Không thể tải lên logo: {error}",
         "logoRemovedMessage": "Logo đã được xóa. Lưu thay đổi để xác nhận.",
         "fileTooLarge": "Tệp quá lớn. Tối đa 5MB.",
-        "invalidFileType": "Loại tệp không hợp lệ. Vui lòng tải lên một hình ảnh."
+        "invalidFileType": "Loại tệp không hợp lệ. Vui lòng tải lên một hình ảnh.",
+        "settingsSaveFailedGeneric": "Lưu cài đặt thất bại. Vui lòng thử lại."
       },
       "altText": {
         "logoPreview": "Xem trước logo nhà hàng",
@@ -266,8 +733,88 @@
           "fetchErrorMessage": "Đã có sự cố khi truy xuất cài đặt nhà hàng. Vui lòng thử lại sau.",
           "noSettingsFoundTitle": "Không Tìm Thấy Cài Đặt",
           "noSettingsFoundMessage": "Không tìm thấy dữ liệu cài đặt cho nhà hàng này."
+        },
+        "validation": {
+          "nameRequired": "Tên nhà hàng là bắt buộc.",
+          "nameMaxLength": "Tên nhà hàng phải có {maxLength} ký tự trở xuống.",
+          "defaultLanguageRequired": "Ngôn ngữ mặc định là bắt buộc.",
+          "brandColorInvalidFormat": "Định dạng màu thương hiệu không hợp lệ. Sử dụng #RRGGBB.",
+          "contactInfoMaxLength": "Thông tin liên hệ phải có {maxLength} ký tự trở xuống.",
+          "addressMaxLength": "Địa chỉ phải có {maxLength} ký tự trở xuống.",
+          "opening_hoursMaxLength": "Giờ hoạt động phải có {maxLength} ký tự trở xuống.",
+          "descriptionMaxLength": "Mô tả phải có {maxLength} ký tự trở xuống.",
+          "logoFileMaxSize": "Ảnh logo phải từ {maxSize}MB trở xuống.",
+          "logoFileInvalidType": "Loại tệp không hợp lệ. Vui lòng tải lên hình ảnh PNG, JPG hoặc WEBP.",
+          "logoUrlInvalidFormat": "Định dạng URL logo không hợp lệ."
         }
       }
+    },
+    "Layout": {
+      "errors": {
+        "fallbackRestaurantName": "Nhà hàng Dự phòng",
+        "configurationErrorTitle": "Lỗi Cấu hình Nhà hàng",
+        "configurationErrorDescription": "Không thể tải cài đặt cho tên miền phụ: {subdomain}. Đang hiển thị với cài đặt dự phòng.",
+        "adminPanelTitle": "Bảng Quản trị",
+        "noRestaurantContextTitle": "Lỗi: Thiếu Ngữ cảnh Nhà hàng",
+        "noRestaurantContextDescription": "Bảng điều khiển này yêu cầu một tên miền phụ nhà hàng hợp lệ để hoạt động chính xác."
+      }
     }
+  },
+  "AdminReports": {
+    "Recommendations": {
+      "title": "Món Ăn Bán Chạy Nhất (7 Ngày Qua)",
+      "loading": "Đang tải đề xuất...",
+      "errorFetching": "Lỗi khi tải đề xuất: {error}",
+      "noData": "Không tìm thấy món ăn bán chạy nhất trong 7 ngày qua.",
+      "soldLabel": "Đã bán:",
+      "applyButton": "Áp dụng cho tuần tới",
+      "applyingButton": "Đang áp dụng...",
+      "applySuccess": "Đề xuất đã được áp dụng thành công!",
+      "applyError": "Lỗi khi áp dụng đề xuất: {error}",
+      "missingRestaurantId": "Vui lòng chọn nhà hàng để xem đề xuất.",
+      "missingRestaurantIdApply": "Không thể áp dụng đề xuất mà không có ID nhà hàng."
+    },
+    "tabs": {
+      "sales": "Doanh thu",
+      "items": "Mặt hàng",
+      "feedback": "Phản hồi"
+    },
+    "summary": {
+      "total_sales_today": "Tổng doanh thu hôm nay",
+      "active_orders_count": "Đơn hàng đang hoạt động",
+      "top_selling_item_today": "Mặt hàng bán chạy nhất hôm nay",
+      "low_stock_alerts_count": "Cảnh báo tồn kho thấp"
+    },
+    "recommendations": {
+      "title": "Đề xuất",
+      "description_7_days": "Dựa trên 7 ngày qua",
+      "apply_button": "Áp dụng đề xuất"
+    },
+    "sales": {
+      "title": "Báo cáo doanh thu",
+      "daily_revenue_chart_placeholder": "Biểu đồ doanh thu hàng ngày (placeholder)",
+      "category_breakdown_chart_placeholder": "Phân tích theo danh mục (placeholder)"
+    },
+    "daterange": {
+      "last_7_days": "7 ngày qua",
+      "last_30_days": "30 ngày qua"
+    },
+    "items": {
+      "title": "Báo cáo mặt hàng",
+      "table": {
+        "item_name": "Tên mặt hàng",
+        "total_sold": "Tổng đã bán",
+        "total_revenue": "Tổng doanh thu",
+        "avg_rating": "Đánh giá trung bình"
+      }
+    },
+    "feedback": {
+      "title": "Phản hồi",
+      "description_last_50": "50 đánh giá gần nhất"
+    }
+  },
+  "Customer": {
+    "guest_dialog": {"title": "Xin chào! Bao nhiêu khách?", "confirm": "Bắt đầu gọi món"},
+    "orderhistory": {"checkout_button": "Thanh toán", "price_per_person": "Mỗi người: {value}"}
   }
 }

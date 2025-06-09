@@ -22,22 +22,24 @@ interface OrderItem {
 	notes?: string;
 	status: 'ordered' | 'preparing' | 'ready' | 'served';
 	created_at: string;
-	menu_items: {
-		id: string;
-		name_en: string;
-		name_ja: string;
-		name_vi: string;
-		price: number;
-	};
+	name_en: string;
+	name_ja: string;
+	name_vi: string;
+	unit_price: number;
+	total: number;
+	menu_item_id: string;
 }
 
 interface Order {
 	id: string;
 	session_id: string;
+	guest_count: number;
 	status: string;
+	table_id: string | null;
+	table_name: string | null;
 	total_amount: number;
 	created_at: string;
-	order_items: OrderItem[];
+	items: OrderItem[];
 }
 
 export function OrderHistoryScreen({
@@ -46,25 +48,28 @@ export function OrderHistoryScreen({
 	viewProps,
 }: OrderHistoryScreenProps) {
 	const t = useTranslations("Customer");
+	const tCommon = useTranslations("Common");
 	const { tableId, sessionId, tableNumber } = viewProps;
 	const locale = useGetCurrentLocale();
-	const [orders, setOrders] = useState<Order[]>([]);
+	const [order, setOrder] = useState<Order|null>(null);
 	const [loading, setLoading] = useState(true);
 	const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+	//const totalPrice = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+	const guestCount = viewProps.guestCount || order?.guest_count || 1;
 
 	const fetchOrderHistory = async () => {
 		try {
 			const params = new URLSearchParams();
-      if (tableId) params.append('tableId', tableId); // Only append if tableId exists
+			if (tableId) params.append('tableId', tableId); // Only append if tableId exists
 			if (sessionId) {
 				params.append('sessionId', sessionId);
 			}
 
-			const response = await fetch(`/api/v1/orders/history?${params.toString()}`); // Ensure params is stringified
+			const response = await fetch(`/api/v1/orders/session-info?${params.toString()}`); // Ensure params is stringified
 			const data = await response.json();
 
 			if (data.success) {
-				setOrders(data.orders || []);
+				setOrder(data.orders || null);
 				setCurrentSessionId(data.currentSessionId || null);
 			}
 		} catch (error) {
@@ -77,9 +82,12 @@ export function OrderHistoryScreen({
 	useEffect(() => {
 		fetchOrderHistory();
 
-		// Poll for updates every 30 seconds to get real-time status
-		const interval = setInterval(fetchOrderHistory, 30000);
-		return () => clearInterval(interval);
+		// Poll for updates every 30 seconds only if order is active
+		let interval: NodeJS.Timeout;
+		if (order && order.status !== 'completed' && order.status !== 'cancelled') {
+			interval = setInterval(fetchOrderHistory, 30000);
+			return () => clearInterval(interval);
+		}
 	}, [tableId, sessionId]);
 
 	const getStatusIcon = (status: string) => {
@@ -173,40 +181,50 @@ export function OrderHistoryScreen({
 						{t("thankyou.table_number", { number: tableNumber })}
 					</h2>
 					<p className="text-sm text-gray-600 dark:text-gray-300">
-						{orders.length > 0 && isCurrentSession(orders[0])
-							? "Current active session - you can still add more items!"
-							: "View all orders placed at this table"
-						}
+						{ order&& order.status !== "completed" ? t("session_active_more") : t("thankyou.inactive_session_message") }
 					</p>
+					{order && order.status !== "completed" && order.status !== "expired" && (
+						<div className="mt-2 text-center">
+						<p className="text-sm text-gray-600 mb-4">
+						{t("session.share_passcode")}
+						</p>
+						<div className="bg-gray-100 p-2 rounded-lg mb-4">
+						<span className="text-2xl font-mono font-bold tracking-widest text-blue-600">
+							{order?.id.substring(0,4).toUpperCase()}
+						</span>
+						</div>
+						<p className="text-xs text-gray-500">
+						{t("session.passcode_instruction")}
+						</p>
+					</div>)}
 				</Card>
 			)}
 
-			{orders.length === 0 ? (
+			{order === null ? (
 				<Card className="p-8 text-center">
-					<h3 className="text-lg font-semibold mb-2">No orders found</h3>
+					<h3 className="text-lg font-semibold mb-2">{t("no_order_found")}</h3>
 					<p className="text-gray-600 dark:text-gray-300 mb-4">
-						No orders have been placed at this table yet.
+						{t("no_order_items")}
 					</p>
 					<Button
 						onClick={() => setView("menu", viewProps as MenuViewProps)} // viewProps is already MenuViewProps
 						style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
 						className="text-white hover:opacity-90"
 					>
-						Start Ordering
+					{t("guest_dialog.confirm")}
 					</Button>
 				</Card>
 			) : (
 				<div className="space-y-4">
-					{orders.map((order, orderIndex) => (
 						<Card key={order.id} className="p-4">
 							<div className="flex justify-between items-start mb-4">
 								<div>
 									<div className="flex items-center gap-2 mb-1">
 										<h3 className="font-semibold">
-											{isCurrentSession(order) ? "Current Session" : `Order #${orderIndex + 1}`}
+											 {t("current_session")}
 										</h3>
-										{isCurrentSession(order) && (
-											<Badge className="bg-green-100 text-green-800">Active</Badge>
+										{order && (
+											<Badge className="bg-green-100 text-green-800">{t("active")}</Badge>
 										)}
 									</div>
 									<p className="text-sm text-gray-600 dark:text-gray-300">
@@ -218,21 +236,21 @@ export function OrderHistoryScreen({
 										{t("currency_format", { value: order.total_amount })}
 									</p>
 									<p className="text-sm text-gray-600 dark:text-gray-300">
-										{order.order_items.length} {order.order_items.length === 1 ? t("thankyou.item") : t("thankyou.items")}
+										{order.items.length} {order.items.length === 1 ? t("thankyou.item") : t("thankyou.items")}
 									</p>
 								</div>
 							</div>
 
 							<div className="space-y-3">
-								{order.order_items.map((item) => (
+								{order.items.map((item) => (
 									<div key={item.id} className="flex justify-between items-start">
 										<div className="flex-1">
 											<h4 className="font-medium">
-												{getLocalizedText({"name_en":item.menu_items.name_en,"name_vi":item.menu_items.name_vi,"name_jp":item.menu_items.name_ja}, locale)}
+												{getLocalizedText({ "name_en": item.name_en, "name_vi": item.name_vi, "name_jp": item.name_ja }, locale)}
 											</h4>
 											<div className="flex items-center gap-2 mt-1">
 												<p className="text-sm text-gray-600 dark:text-gray-300">
-													Qty: {item.quantity}
+													{t("menu.item_quantity", {quantity: item.quantity})}
 												</p>
 												<Badge className={`text-xs ${getStatusColor(item.status)}`}>
 													<span className="flex items-center gap-1">
@@ -243,13 +261,13 @@ export function OrderHistoryScreen({
 											</div>
 											{item.notes && (
 												<p className="text-sm text-gray-500 mt-1">
-													Note: {item.notes}
+													{t("menu.item_notes",{notes: item.notes})}
 												</p>
 											)}
 										</div>
 										<div className="text-right ml-4">
 											<p className="font-medium">
-												{t("currency_format", { value: item.menu_items.price * item.quantity })}
+												{t("currency_format", { value: item.total })}
 											</p>
 										</div>
 									</div>
@@ -265,22 +283,33 @@ export function OrderHistoryScreen({
 										style={{ borderColor: restaurantSettings.primaryColor || "#0ea5e9" }}
 										className="w-full"
 									>
-										Add More Items
+										{tCommon("add_more_items")}
 									</Button>
 								</div>
 							)}
 						</Card>
-					))}
 				</div>
 			)}
 
 			<div className="mt-6 text-center">
+				{/**TODO: implement checkout view, and set view to checkout */}
+				{order && order.status !== "completed" && (
 				<Button
-					onClick={() => setView("menu", viewProps as MenuViewProps)} // viewProps is already MenuViewProps
+					onClick={() => alert(t("currency_format", { value: order?.total_amount || 0 }))} // Show total amount of the first order
 					style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
-					className="text-white hover:opacity-90"
+					className="text-white w-full mb-2"
 				>
-					{t("thankyou.back_to_menu_button")}
+					{t("orderhistory.checkout_button")}
+				</Button>)}
+				{guestCount > 2 && (
+					<p className="text-sm text-gray-600">{t("orderhistory.price_per_person", { value: (order?.total_amount||0 / guestCount).toFixed(2) })}</p>
+				)}
+				<Button
+					onClick={() => setView("menu", viewProps as MenuViewProps)}
+					style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
+					className="text-white hover:opacity-90 mt-4"
+				>
+					{tCommon("back_to_menu")}
 				</Button>
 			</div>
 		</div>

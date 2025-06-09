@@ -40,41 +40,15 @@ import {
   Check,
   Search,
   CreditCard,
+  Edit3,
+  Loader2, // Added for loading states
+  Inbox, // For empty states
 } from "lucide-react";
 import { toast } from "sonner";
 import { getLocalizedText } from "@/lib/customerUtils";
+import { Order, OrderItem } from "./page";
 
-interface OrderItem {
-  id: string;
-  quantity: number;
-  notes?: string | null;
-  status: "ordered" | "preparing" | "ready" | "served";
-  created_at: string;
-  menu_items: {
-    id: string;
-    name_en: string;
-    name_ja: string;
-    name_vi: string;
-    category_id: string;
-    price: number;
-    categories?: {
-      id: string;
-      name_en: string;
-      name_ja: string;
-      name_vi: string;
-    }[];
-  }[];
-}
 
-interface Order {
-  id: string;
-  table_id: string;
-  status: "new" | "preparing" | "ready" | "completed" | "canceled";
-  total_amount: number | null;
-  created_at: string;
-  order_items: OrderItem[];
-  tables: { name: string; id: string }[] | null;
-}
 
 interface Table {
   id: string;
@@ -129,8 +103,22 @@ export function OrdersClientContent({
   const [currentOrderItems, setCurrentOrderItems] = useState<{[key: string]: number}>({});
   const [orderNotes, setOrderNotes] = useState<{[key: string]: string}>({});
   
+  // Note editing for existing items
+  const [editingNotes, setEditingNotes] = useState<{[key: string]: boolean}>({});
+  const [tempNotes, setTempNotes] = useState<{[key: string]: string}>({});
+  
   // Checkout modal
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
+  
+  // Order details modal
+  const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
+
+  // Loading states for various actions
+  const [isUpdating, setIsUpdating] = useState<{[key: string]: boolean}>({}); // For item status/notes
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isAddingItems, setIsAddingItems] = useState(false);
+
 
   useEffect(() => {
     const supabase = createClient();
@@ -193,21 +181,59 @@ export function OrdersClientContent({
     canceled: 5,
   };
 
-  // Get all order items for the items view
-  const getAllOrderItems = () => {
-    const allItems: (OrderItem & { order: Order })[] = [];
+  // Simplified interface for flattened order items
+  interface FlatOrderItem {
+    id: string;
+    quantity: number;
+    notes?: string | null;
+    status: "ordered" | "preparing" | "ready" | "served";
+    created_at: string;
+    // Flattened menu item data
+    menu_item_id: string;
+    menu_item_name_en: string;
+    menu_item_name_ja: string;
+    menu_item_name_vi: string;
+    menu_item_price?: number;
+    // Flattened order/table data
+    order_id: string;
+    table_name: string;
+  }
+
+  // Get all order items for the items view - simplified version
+  const getAllOrderItems = (): FlatOrderItem[] => {
+    const allItems: FlatOrderItem[] = [];
     orders.forEach(order => {
+      const tableName = order.tables[0].name || `Order ${order.id.slice(0, 6)}`;
+      
       order.order_items.forEach(item => {
-        allItems.push({ ...item, order });
+        const menuItem = item.menu_items;
+        if (menuItem) {
+          allItems.push({
+            id: item.id,
+            quantity: item.quantity,
+            notes: item.notes,
+            status: item.status,
+            created_at: item.created_at,
+            // Flatten menu item data
+            menu_item_id: menuItem[0].id,
+            menu_item_name_en: menuItem[0].name_en,
+            menu_item_name_ja: menuItem[0].name_ja,
+            menu_item_name_vi: menuItem[0].name_vi,
+            menu_item_price: menuItem[0].price,
+            // Flatten order/table data
+            order_id: order.id,
+            table_name: tableName,
+          });
+        }
       });
     });
     
     return allItems
       .filter(item => {
         const matchesSearch = searchTerm === "" || 
-          item.menu_items[0]?.name_en.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.menu_items[0]?.name_ja?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.order.tables?.[0]?.name.toLowerCase().includes(searchTerm.toLowerCase());
+          item.menu_item_name_en.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.menu_item_name_ja?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.table_name.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesStatus = filterStatus === "all" || item.status === filterStatus;
         
@@ -229,7 +255,7 @@ export function OrdersClientContent({
   const filteredOrders = orders
     .filter(order => {
       const matchesSearch = searchTerm === "" || 
-        order.tables?.[0]?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.tables[0].name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.id.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = filterStatus === "all" || order.status === filterStatus;
@@ -249,6 +275,7 @@ export function OrdersClientContent({
     });
 
   const updateItemStatus = async (itemId: string, newStatus: OrderItem["status"]) => {
+    setIsUpdating(prev => ({ ...prev, [itemId]: true }));
     try {
       const response = await fetch(`/api/v1/order-items/${itemId}/status`, {
         method: "PATCH",
@@ -256,22 +283,49 @@ export function OrdersClientContent({
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!response.ok) throw new Error("Failed to update item status");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update item status");
+      }
       
       toast.success(t("item_status_updated"));
-      
-      // Optimistically update the local state
-      setOrders(prevOrders => 
-        prevOrders.map(order => ({
-          ...order,
-          order_items: order.order_items.map(item =>
-            item.id === itemId ? { ...item, status: newStatus } : item
-          )
-        }))
-      );
+      // Refresh data to ensure consistency, especially if Supabase channels have latency
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const data = await res.json();
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error updating item status:", error);
-      toast.error(t("error_updating_status"));
+      // console.error("Error updating item status:", error); // Replaced by toast
+      toast.error(error instanceof Error ? error.message : t("error_updating_status"));
+    } finally {
+      setIsUpdating(prev => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  const updateItemNotes = async (itemId: string, notes: string | null) => {
+    setIsUpdating(prev => ({ ...prev, [`notes-${itemId}`]: true }));
+    try {
+      const response = await fetch(`/api/v1/order-items/${itemId}/notes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update item notes");
+      }
+      
+      toast.success(t("notes_updated"));
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`); // Refresh data
+      const data = await res.json();
+      if (data.success) setOrders(data.orders);
+
+    } catch (error) {
+      // console.error("Error updating item notes:", error); // Replaced by toast
+      toast.error(error instanceof Error ? error.message : t("error_updating_notes"));
+    } finally {
+      setIsUpdating(prev => ({ ...prev, [`notes-${itemId}`]: false }));
     }
   };
 
@@ -280,10 +334,9 @@ export function OrdersClientContent({
       toast.error(t("select_table_and_items"));
       return;
     }
-
+    setIsCreatingOrder(true);
     try {
       const orderItems = Object.entries(currentOrderItems)
-        //.filter(([unused, quantity]) => quantity > 0)
         .map(([menuItemId, quantity]) => ({
           menu_item_id: menuItemId,
           quantity,
@@ -293,13 +346,13 @@ export function OrdersClientContent({
       const response = await fetch("/api/v1/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          table_id: selectedTable,
-          order_items: orderItems,
-        }),
+        body: JSON.stringify({ table_id: selectedTable, order_items: orderItems }),
       });
 
-      if (!response.ok) throw new Error("Failed to create order");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create order");
+      }
       
       toast.success(t("order_created"));
       setIsNewOrderModalOpen(false);
@@ -307,15 +360,15 @@ export function OrdersClientContent({
       setCurrentOrderItems({});
       setOrderNotes({});
       
-      // Refresh orders
-      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`); // Refresh
       const data = await res.json();
-      if (data.success) {
-        setOrders(data.orders);
-      }
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error(t("error_creating_order"));
+      // console.error("Error creating order:", error);
+      toast.error(error instanceof Error ? error.message : t("error_creating_order"));
+    } finally {
+      setIsCreatingOrder(false);
     }
   };
 
@@ -324,10 +377,9 @@ export function OrdersClientContent({
       toast.error(t("select_items"));
       return;
     }
-
+    setIsAddingItems(true);
     try {
       const orderItems = Object.entries(currentOrderItems)
-        //.filter(([unused, quantity]) => quantity > 0)
         .map(([menuItemId, quantity]) => ({
           menu_item_id: menuItemId,
           quantity,
@@ -340,51 +392,74 @@ export function OrdersClientContent({
         body: JSON.stringify({ order_items: orderItems }),
       });
 
-      if (!response.ok) throw new Error("Failed to add items to order");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to add items to order");
+      }
       
       toast.success(t("items_added"));
       setIsAddItemsModalOpen(false);
       setSelectedOrder(null);
       setCurrentOrderItems({});
       setOrderNotes({});
-      
-      // Refresh orders
-      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`); // Refresh
       const data = await res.json();
-      if (data.success) {
-        setOrders(data.orders);
-      }
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error adding items to order:", error);
-      toast.error(t("error_adding_items"));
+      // console.error("Error adding items to order:", error);
+      toast.error(error instanceof Error ? error.message : t("error_adding_items"));
+    } finally {
+      setIsAddingItems(false);
     }
   };
 
   const processCheckout = async () => {
     if (!selectedOrder) return;
-
+    setIsProcessingCheckout(true);
     try {
       const response = await fetch(`/api/v1/orders/${selectedOrder.id}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Failed to process checkout");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to process checkout");
+      }
       
       toast.success(t("checkout_processed"));
       setIsCheckoutModalOpen(false);
       setSelectedOrder(null);
       
-      // Refresh orders
-      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`);
+      const res = await fetch(`/api/v1/orders/list?today=${filterToday}`); // Refresh
       const data = await res.json();
-      if (data.success) {
-        setOrders(data.orders);
-      }
+      if (data.success) setOrders(data.orders);
+
     } catch (error) {
-      console.error("Error processing checkout:", error);
-      toast.error(t("error_processing_checkout"));
+      // console.error("Error processing checkout:", error);
+      toast.error(error instanceof Error ? error.message : t("error_processing_checkout"));
+    } finally {
+      setIsProcessingCheckout(false);
     }
+  };
+
+  const startEditingNotes = (itemId: string, currentNotes: string | null) => {
+    setEditingNotes(prev => ({ ...prev, [itemId]: true }));
+    setTempNotes(prev => ({ ...prev, [itemId]: currentNotes || "" }));
+  };
+
+  const saveNotes = (itemId: string) => {
+    const notes = tempNotes[itemId]?.trim() || null;
+    updateItemNotes(itemId, notes);
+    setEditingNotes(prev => ({ ...prev, [itemId]: false }));
+    setTempNotes(prev => ({ ...prev, [itemId]: "" }));
+  };
+
+  const cancelEditingNotes = (itemId: string) => {
+    setEditingNotes(prev => ({ ...prev, [itemId]: false }));
+    setTempNotes(prev => ({ ...prev, [itemId]: "" }));
   };
 
   const getStatusBadge = (status: OrderItem["status"] | Order["status"]) => {
@@ -400,7 +475,7 @@ export function OrdersClientContent({
     
     return (
       <Badge variant={variants[status]} className="capitalize">
-        {tCommon(`order_status.${status}`) || tCommon(`order_item_status.${status}`)}
+        {tCommon(`order_item_status.${status}`) || tCommon(`order_item_status.${status}`)}
       </Badge>
     );
   };
@@ -408,7 +483,6 @@ export function OrdersClientContent({
 
   const renderItemsView = () => {
     const allItems = getAllOrderItems();
-    
     return (
       <Card>
         <CardHeader>
@@ -434,15 +508,19 @@ export function OrdersClientContent({
                 {allItems.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">
-                      {item.order.tables?.[0]?.name || `Order ${item.order.id.slice(0, 6)}`}
+                      {item.table_name}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="font-medium">
-                          {getLocalizedText({"name_en":item.menu_items[0].name_en,"name_vi":item.menu_items[0].name_vi,"name_jp":item.menu_items[0].name_ja}, locale)}
+                          {getLocalizedText({
+                            "name_en": item.menu_item_name_en,
+                            "name_vi": item.menu_item_name_vi,
+                            "name_ja": item.menu_item_name_ja
+                          }, locale)}
                         </span>
                         <span className="text-sm text-gray-500">
-                          ¥{item.menu_items[0]?.price?.toLocaleString()}
+                          {item.menu_item_price ? `¥${item.menu_item_price.toLocaleString()}` : '-'}
                         </span>
                       </div>
                     </TableCell>
@@ -450,44 +528,85 @@ export function OrdersClientContent({
                       <Badge variant="outline">{item.quantity}</Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-gray-600">
-                        {item.notes || "-"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {editingNotes[item.id] ? (
+                          <div className="flex items-center gap-1 flex-1">
+                            <Input
+                              value={tempNotes[item.id] || ""}
+                              onChange={(e) => setTempNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              placeholder={t("add_notes")}
+                              className="flex-1"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  saveNotes(item.id);
+                                } else if (e.key === "Escape") {
+                                  cancelEditingNotes(item.id);
+                                }
+                              }}
+                              autoFocus
+                            />
+                              <Input
+                                value={tempNotes[item.id] || ""}
+                                onChange={(e) => setTempNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                placeholder={t("add_notes")}
+                                className="flex-1"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !isUpdating[`notes-${item.id}`]) saveNotes(item.id);
+                                  else if (e.key === "Escape") cancelEditingNotes(item.id);
+                                }}
+                                autoFocus
+                                disabled={isUpdating[`notes-${item.id}`]}
+                              />
+                              <Button size="sm" variant="outline" onClick={() => saveNotes(item.id)} disabled={isUpdating[`notes-${item.id}`]}>
+                                {isUpdating[`notes-${item.id}`] ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                            </Button>
+                              <Button size="sm" variant="outline" onClick={() => cancelEditingNotes(item.id)} disabled={isUpdating[`notes-${item.id}`]}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-sm text-gray-600 flex-1">
+                              {item.notes || "-"}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditingNotes(item.id, item.notes? item.notes : "")}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Edit3 className="h-3 w-3" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
                         {item.status === "ordered" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateItemStatus(item.id, "preparing")}
-                          >
-                            <ChefHat className="h-3 w-3" />
+                          <Button size="sm" variant="outline" onClick={() => updateItemStatus(item.id, "preparing")} disabled={isUpdating[item.id]}>
+                            {isUpdating[item.id] ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <ChefHat className="h-3 w-3 mr-1" />}
+                            {tCommon("order_item_status.preparing")}
                           </Button>
                         )}
                         {item.status === "preparing" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateItemStatus(item.id, "ready")}
-                          >
-                            <Clock className="h-3 w-3" />
+                          <Button size="sm" variant="outline" onClick={() => updateItemStatus(item.id, "ready")} disabled={isUpdating[item.id]}>
+                             {isUpdating[item.id] ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
+                            {tCommon("order_item_status.ready")}
                           </Button>
                         )}
                         {item.status === "ready" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateItemStatus(item.id, "served")}
-                          >
-                            <Check className="h-3 w-3" />
+                          <Button size="sm" variant="outline" onClick={() => updateItemStatus(item.id, "served")} disabled={isUpdating[item.id]}>
+                            {isUpdating[item.id] ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Check className="h-3 w-3 mr-1" />}
+                            {tCommon("order_item_status.served")}
                           </Button>
                         )}
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))}
               </TableBody>
             </Table>
           </ScrollArea>
@@ -519,10 +638,18 @@ export function OrdersClientContent({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => (
+                {filteredOrders.length === 0 ? (
+                   <TableRow>
+                      <TableCell colSpan={6} className="text-center py-10">
+                        <Inbox className="mx-auto h-10 w-10 text-slate-400" />
+                        <p className="mt-2 text-sm text-slate-500">{t('empty_state.no_matching_orders')}</p>
+                      </TableCell>
+                    </TableRow>
+                ) : (
+                filteredOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">
-                      {order.tables?.[0]?.name || `Order ${order.id.slice(0, 6)}`}
+                      {order.tables[0].name || `${t('AdminOrders.order_id_prefix') || 'Order'} ${order.id.slice(0, 6)}`}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
@@ -566,14 +693,18 @@ export function OrdersClientContent({
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setIsOrderDetailsModalOpen(true);
+                          }}
                         >
                           <Eye className="h-3 w-3" />
                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )))
+              }
               </TableBody>
             </Table>
           </ScrollArea>
@@ -582,57 +713,251 @@ export function OrdersClientContent({
     );
   };
 
-  const renderMenuSelection = () => {
+  const useRenderMenuSelection = () => {
+    const [searchTerm, setSearchTerm] = useState("");
+    interface SelectedMenuItem {
+      item: {
+        id: string;
+        name_en: string;
+        name_ja: string;
+        name_vi: string;
+        price: number;
+        available: boolean;
+      };
+      quantity: number;
+      editingNotes?: boolean;
+    }
+
+    const [selectedItems, setSelectedItems] = useState<{[key: string]: SelectedMenuItem}>({});
+
+    // Flatten all menu items for searching
+    const allMenuItems = menuCategories.flatMap(category => 
+      category.menu_items
+        .filter(item => item.available)
+        .map(item => ({
+          ...item,
+          categoryName: getLocalizedText({
+            "name_en": category.name_en,
+            "name_vi": category.name_vi, 
+            "name_ja": category.name_ja
+          }, locale)
+        }))
+    );
+
+    // Filter items based on search
+    const filteredItems = allMenuItems.filter(item => {
+      const itemName = getLocalizedText({
+        "name_en": item.name_en,
+        "name_vi": item.name_vi,
+        "name_ja": item.name_ja
+      }, locale).toLowerCase();
+      
+      const search = searchTerm.toLowerCase();
+      return itemName.includes(search) || 
+             item.id.toLowerCase().includes(search) ||
+             item.categoryName.toLowerCase().includes(search);
+    });
+
     return (
       <div className="space-y-4">
-        {menuCategories.map((category) => (
-          <Card key={category.id}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{getLocalizedText({"name_en":category.name_en,"name_vi":category.name_vi,"name_jp":category.name_ja},locale)}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {category.menu_items.filter(item => item.available).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-2 border rounded">
-                    <div className="flex-1">
-                      <span className="font-medium text-sm">{getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_jp":item.name_ja},locale)}</span>
-                      <span className="text-xs text-gray-500 block">¥{item.price.toLocaleString()}</span>
-                    </div>
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-2 top-2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder={t("search_items")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+
+        {/* Selected Items Summary */}
+        {Object.keys(selectedItems).length > 0 && (
+          <Card className="p-4">
+            <h4 className="font-medium mb-3">{t("selected_items")}</h4>
+            <div className="space-y-2">
+              {Object.entries(selectedItems).map(([itemId, {item, quantity}]) => (
+                <div key={itemId} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                  <div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setCurrentOrderItems(prev => ({
-                            ...prev,
-                            [item.id]: Math.max(0, (prev[item.id] || 0) - 1)
-                          }));
-                        }}
-                      >
-                        -
-                      </Button>
-                      <span className="text-sm w-8 text-center">
-                        {currentOrderItems[item.id] || 0}
+                      <span className="font-medium">
+                        {getLocalizedText({
+                          "name_en": item.name_en,
+                          "name_vi": item.name_vi,
+                          "name_ja": item.name_ja
+                        }, locale)}
                       </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setCurrentOrderItems(prev => ({
-                            ...prev,
-                            [item.id]: (prev[item.id] || 0) + 1
-                          }));
-                        }}
-                      >
-                        +
-                      </Button>
+                      <span className="text-sm text-gray-500 ml-2">
+                        ¥{item.price.toLocaleString()} × {quantity}
+                      </span>
                     </div>
+                    {selectedItems[itemId].editingNotes && (
+                      <div className="mt-2 w-full">
+                        <Input
+                          placeholder={t("add_notes")}
+                          value={orderNotes[itemId] || ""}
+                          onChange={(e) => setOrderNotes(prev => ({...prev, [itemId]: e.target.value}))}
+                          className="w-full"
+                          onBlur={() => {
+                            // Save notes on blur
+                            const newItems = {...selectedItems};
+                            newItems[itemId] = {...newItems[itemId], editingNotes: false};
+                            setSelectedItems(newItems);
+                          }}
+                        />
+                      </div>
+                    )}
+                    {orderNotes[itemId] && !selectedItems[itemId].editingNotes&& (
+                      <div className="mt-2 w-full">
+                        <span className="text-sm text-gray-600">
+                          {orderNotes[itemId]}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            </CardContent>
+                  <div className="flex items-center gap-1 ml-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const newItems = {...selectedItems};
+                        if (quantity > 1) {
+                          newItems[itemId] = {...newItems[itemId], quantity: quantity - 1};
+                        } else {
+                          delete newItems[itemId];
+                        }
+                        setSelectedItems(newItems);
+                        
+                        // Update parent state
+                        const newOrderItems = {...currentOrderItems};
+                        if (quantity > 1) {
+                          newOrderItems[itemId] = quantity - 1;
+                        } else {
+                          delete newOrderItems[itemId];
+                        }
+                        setCurrentOrderItems(newOrderItems);
+                      }}
+                    >
+                      -
+                    </Button>
+                    <span className="w-4 text-center">{quantity}</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const newItems = {...selectedItems};
+                        newItems[itemId] = {...newItems[itemId], quantity: quantity + 1};
+                        setSelectedItems(newItems);
+                        
+                        // Update parent state
+                        setCurrentOrderItems(prev => ({
+                          ...prev,
+                          [itemId]: quantity + 1
+                        }));
+                      }}
+                    >
+                      +
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => {
+                        const newItems = {...selectedItems};
+                        delete newItems[itemId];
+                        setSelectedItems(newItems);
+                        
+                        // Update parent state
+                        const newOrderItems = {...currentOrderItems};
+                        delete newOrderItems[itemId];
+                        setCurrentOrderItems(newOrderItems);
+                      }}
+                    >
+                      ×
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        // Enable editing notes
+                        const newItems = {...selectedItems};
+                        newItems[itemId] = {...newItems[itemId], editingNotes: true};
+                        setSelectedItems(newItems);
+                      }}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                </div>
+              ))}
+            </div>
           </Card>
-        ))}
+        )}
+
+        {/* Search Results */}
+        <div className="space-y-2">
+          {searchTerm && (
+            <p className="text-sm text-gray-600">
+              {filteredItems.length} items found
+            </p>
+          )}
+          
+          {(searchTerm ? filteredItems : allMenuItems.slice(0, 10)).map((item) => (
+            <Card key={item.id} className="p-3">
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium">
+                      {getLocalizedText({
+                        "name_en": item.name_en,
+                        "name_vi": item.name_vi,
+                        "name_ja": item.name_ja
+                      }, locale)}
+                    </h4>
+                    <Badge variant="outline" className="text-xs">
+                      {item.categoryName}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-4 mt-1">
+                    <span className="text-sm font-medium text-green-600">
+                      ¥{item.price.toLocaleString()}
+                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      {tCommon("available")}
+                    </Badge>
+                  </div>
+                </div>
+               
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const newItems = {...selectedItems};
+                    if (newItems[item.id]) {
+                      newItems[item.id].quantity += 1;
+                    } else {
+                      newItems[item.id] = {item, quantity: 1};
+                    }
+                    setSelectedItems(newItems);
+                    
+                    // Update parent state
+                    setCurrentOrderItems(prev => ({
+                      ...prev,
+                      [item.id]: (prev[item.id] || 0) + 1
+                    }));
+                  }}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                </Button>
+              </div>
+            </Card>
+          ))}
+          
+          {!searchTerm && allMenuItems.length > 10 && (
+            <p className="text-sm text-gray-500 text-center">
+              Type to search through all {allMenuItems.length} items...
+            </p>
+          )}
+        </div>
       </div>
     );
   };
@@ -733,16 +1058,17 @@ export function OrdersClientContent({
             <div>
               <label className="text-sm font-medium">{t("select_menu_items")}</label>
               <ScrollArea className="h-[400px] mt-2">
-                {renderMenuSelection()}
+                {useRenderMenuSelection()}
               </ScrollArea>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNewOrderModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsNewOrderModalOpen(false)} disabled={isCreatingOrder}>
               {tCommon("cancel")}
             </Button>
-            <Button onClick={createNewOrder}>
-              {t("create_order")}
+            <Button onClick={createNewOrder} disabled={isCreatingOrder || !selectedTable || Object.keys(currentOrderItems).length === 0}>
+              {isCreatingOrder && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isCreatingOrder ? tCommon('saving') : t("create_order")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -753,20 +1079,21 @@ export function OrdersClientContent({
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {t("add_items_to_order")} - {selectedOrder?.tables?.[0]?.name}
+              {t("add_items_to_order")} - {selectedOrder?.tables[0].name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <ScrollArea className="h-[400px]">
-              {renderMenuSelection()}
+              {useRenderMenuSelection()}
             </ScrollArea>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddItemsModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsAddItemsModalOpen(false)} disabled={isAddingItems}>
               {tCommon("cancel")}
             </Button>
-            <Button onClick={addItemsToOrder}>
-              {t("add_items")}
+            <Button onClick={addItemsToOrder} disabled={isAddingItems || Object.keys(currentOrderItems).length === 0}>
+              {isAddingItems && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isAddingItems ? tCommon('saving') : t("add_items")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -782,7 +1109,7 @@ export function OrdersClientContent({
             {selectedOrder && (
               <>
                 <div>
-                  <p><strong>{t("table")}:</strong> {selectedOrder.tables?.[0]?.name}</p>
+                  <p><strong>{t("table")}:</strong> {selectedOrder.tables[0].name}</p>
                   <p><strong>{t("total")}:</strong> ¥{selectedOrder.total_amount?.toLocaleString()}</p>
                   <p><strong>{t("items")}:</strong> {selectedOrder.order_items.length}</p>
                 </div>
@@ -793,11 +1120,54 @@ export function OrdersClientContent({
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCheckoutModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsCheckoutModalOpen(false)} disabled={isProcessingCheckout}>
               {tCommon("cancel")}
             </Button>
-            <Button onClick={processCheckout} className="bg-green-600 hover:bg-green-700">
-              {t("process_payment")}
+            <Button onClick={processCheckout} className="bg-green-600 hover:bg-green-700" disabled={isProcessingCheckout}>
+              {isProcessingCheckout && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isProcessingCheckout ? tCommon('processing') : t("process_payment")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Details Modal */}
+      <Dialog open={isOrderDetailsModalOpen} onOpenChange={setIsOrderDetailsModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t("order_details")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedOrder && (
+              <>
+                <div>
+                  <p><strong>{t("table")}:</strong> {selectedOrder.tables[0].name}</p>
+                  <p><strong>{t("total")}:</strong> ¥{selectedOrder.total_amount?.toLocaleString()}</p>
+                  <p><strong>{t("status")}:</strong> {tCommon(`order_status.${selectedOrder.status}`)}</p>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {t("order_items")}:
+                </div>
+                <ul className="list-disc list-inside space-y-1">
+                  {selectedOrder.order_items.map(item => (
+                    <li key={item.id} className="flex justify-between">
+                      <span>
+                        {getLocalizedText({
+                          "name_en": item.menu_items[0].name_en,
+                          "name_vi": item.menu_items[0].name_vi,
+                          "name_ja": item.menu_items[0].name_ja
+                        }, locale)} ({item.quantity})
+                      </span>
+                      <span>¥{(item.menu_items[0].price! * item.quantity).toLocaleString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOrderDetailsModalOpen(false)}>
+              {tCommon("close")}
             </Button>
           </DialogFooter>
         </DialogContent>

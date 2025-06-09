@@ -1,7 +1,9 @@
 "use client";
+
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks, @next/next/no-img-element */
 
 import React, { useState, ReactNode, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 // Context
 import { CartProvider } from "@/components/features/customer/CartContext";
@@ -16,9 +18,10 @@ import { OrderPlacedScreen } from "@/components/features/customer/screens/OrderP
 import { ThankYouScreen } from "@/components/features/customer/screens/ThankYouScreen";
 import { ReviewScreen } from "@/components/features/customer/screens/ReviewScreen";
 import { BookingScreen } from "@/components/features/customer/screens/BookingScreen";
-import { OrderHistoryScreen } from "@/components/features/customer/screens/OrderHistoryScreen";
-
-// Types
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { getSubdomainFromHost } from "@/lib/utils";
 import type { RestaurantSettings, Category, TableInfo } from "@/shared/types/customer";
 import { 
   ViewType, 
@@ -32,7 +35,7 @@ import {
   SessionData // Import SessionData
 } from "@/components/features/customer/screens/types"; // Updated imports
 import CustomerMenuItemDetailScreen from "@/components/features/customer/screens/CustomerMenuItemDetailScreen";
-
+import { History } from "lucide-react";
 // Define FEATURE_FLAGS locally or import from a central config.
 // These will be passed down to relevant components.
 const FEATURE_FLAGS = {
@@ -57,14 +60,22 @@ export function CustomerClientContent({
   tableId,
   sessionData,
 }: CustomerClientContentProps) {
+  const t = useTranslations("Customer");
   const [view, setViewState] = useState<ViewType>("menu"); // Use ViewType
   const [viewProps, setViewProps] = useState<ViewProps>({ // Use ViewProps union type
-    tableId, 
+    tableId,
     sessionId: sessionData.sessionId,
     tableNumber: sessionData.tableNumber,
     canAddItems: sessionData.canAddItems,
+    guestCount: sessionData.guestCount,
     orderId: sessionData.orderId, // Initialize with orderId from sessionData
-  }); 
+  });
+  const [guestCount, setGuestCount] = useState<number>(sessionData.guestCount || 1);
+  const [showGuestDialog, setShowGuestDialog] = useState<boolean>(!!tableId && sessionData.sessionStatus === 'new' && !sessionData.sessionId);
+  const [passcode, setPasscode] = useState<string>('');
+  const [showJoinDialog, setShowJoinDialog] = useState<boolean>(sessionData.sessionStatus === 'join');
+  const [showPasscodeDisplay, setShowPasscodeDisplay] = useState<boolean>(false);
+  const [sessionPasscode, setSessionPasscode] = useState<string>('');
 
   // Store session data in localStorage when valid and sync with server
   useEffect(() => {
@@ -74,6 +85,17 @@ export function CustomerClientContent({
         localStorage.setItem("sessionId", sessionData.sessionId);
         localStorage.setItem("tableId", tableId || "");
         localStorage.setItem("tableNumber", sessionData.tableNumber || "");
+        
+        // Redirect to sessionId URL if not already there
+        const currentUrl = new URL(window.location.href);
+        const currentSessionId = currentUrl.searchParams.get('sessionId');
+        if (currentSessionId !== sessionData.sessionId) {
+          // Update URL with sessionId parameter
+          currentUrl.searchParams.delete('code');
+          currentUrl.searchParams.delete('tableId');
+          currentUrl.searchParams.set('sessionId', sessionData.sessionId);
+          window.history.replaceState({}, '', currentUrl.toString());
+        }
       }
 
       // Check if local sessionId differs from server sessionId
@@ -125,9 +147,92 @@ export function CustomerClientContent({
   }, [sessionData.sessionStatus]);
 
   const setView = (v: ViewType, props: ViewProps = {}) => { // Use ViewType and ViewProps
-    setViewState(v); 
+    setViewState(v);
     setViewProps(prev => ({ ...prev, ...props })); // Merge props carefully
     window.scrollTo(0, 0);
+  };
+
+  const startSession = async () => {
+    if (!tableId) return;
+    try {
+      const subdomain = getSubdomainFromHost(window.location.host);
+      const params = new URLSearchParams({ tableId });
+      params.append('guests', String(guestCount));
+      if (subdomain) params.append('subdomain', subdomain);
+      const res = await fetch(`/api/v1/sessions/create?${params.toString()}`);
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem("sessionId", data.sessionId);
+        localStorage.setItem("guestCount", String(data.guestCount || guestCount));
+        
+        // Update view props
+        setViewProps(prev => ({
+          ...prev,
+          sessionId: data.sessionId,
+          tableNumber: data.tableNumber,
+          canAddItems: true,
+          guestCount: data.guestCount,
+          orderId: data.orderId,
+        }));
+        
+        // Show passcode to the first user if this is a new session
+        if (data.isNewSession && data.passcode) {
+          setSessionPasscode(data.passcode);
+          setShowPasscodeDisplay(true);
+        }
+        
+        // Redirect to sessionId URL
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('code');
+        currentUrl.searchParams.delete('tableId');
+        currentUrl.searchParams.set('sessionId', data.sessionId);
+        window.history.replaceState({}, '', currentUrl.toString());
+        
+        setShowGuestDialog(false);
+      } else {
+        alert(data.error || "Failed to start session");
+      }
+    } catch (e) {
+      console.error("session start error", e);
+    }
+  };
+
+  const joinSession = async (passcode: string) => {
+    if (!sessionData.pendingSessionId) return;
+    if (!passcode) {
+      alert("Please enter a valid passcode");
+      return;
+    }
+    try {
+      const subdomain = getSubdomainFromHost(window.location.host);
+      const params = new URLSearchParams({ sessionId: sessionData.pendingSessionId, passcode });
+      if (subdomain) params.append('subdomain', subdomain);
+      const res = await fetch(`/api/v1/sessions/join?${params.toString()}`);
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('sessionId', data.sessionId);
+        setViewProps(prev => ({
+          ...prev,
+          sessionId: data.sessionId,
+          tableNumber: data.tableNumber,
+          canAddItems: data.canAddItems,
+          guestCount: data.guestCount,
+        }));
+        
+        // Redirect to sessionId URL
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('code');
+        currentUrl.searchParams.delete('tableId');
+        currentUrl.searchParams.set('sessionId', data.sessionId);
+        window.history.replaceState({}, '', currentUrl.toString());
+        
+        setShowJoinDialog(false);
+      } else {
+        alert(data.error || 'Failed to join session');
+      }
+    } catch (e) {
+      console.error('join session error', e);
+    }
   };
 
   const layoutFeatureFlags = { aiChat: FEATURE_FLAGS.aiChat };
@@ -144,13 +249,22 @@ export function CustomerClientContent({
     ScreenComponent = (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4 text-red-600">Session Expired</h1>
+          <h1 className="text-2xl font-bold mb-4 text-red-600">{t("session.session_expired")}</h1>
           <p className="text-gray-600 mb-6">
-            Your order session has been completed or expired. Thank you for your visit!
+            {t("session.session_expired_message")}
           </p>
           <p className="text-sm text-gray-500">
-            To place a new order, please scan the QR code on your table again.
+          {t("session.session_expired_instruction")}
           </p>
+          <Button
+          onClick={() => setView("thankyou", viewProps as MenuViewProps)}
+          variant="outline"
+          className="hover:opacity-90"
+        >
+        <History className="h-4 w-4 mr-1" />
+
+          {t("thankyou.order_history_button")}
+        </Button>
         </div>
       </div>
     );
@@ -158,19 +272,19 @@ export function CustomerClientContent({
     ScreenComponent = (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4 text-red-600">Invalid Table</h1>
+          <h1 className="text-2xl font-bold mb-4 text-red-600">{t("session.")}</h1>
           <p className="text-gray-600 mb-6">
-            The table ID is invalid or doesn&apos;t belong to this restaurant.
+          {t("session.invalid_table_message")}
           </p>
           <p className="text-sm text-gray-500">
-            Please scan a valid QR code from a table at this restaurant.
+          {t("session.invalid_table_instruction")}
           </p>
           {/* Allow viewing menu without ordering capability */}
           <button 
             onClick={() => setView("menu", { canAddItems: false } as MenuViewProps)}
             className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           >
-            View Menu Only
+           {t("session.view_menu_only")}
           </button>
         </div>
       </div>
@@ -182,7 +296,7 @@ export function CustomerClientContent({
         ScreenComponent = (
           <CustomerMenuScreen
             setView={setView}
-            restaurantSettings={restaurantSettings}
+            restaurantSettings={{...restaurantSettings, logoUrl: restaurantSettings?.logoUrl || undefined}}
             viewProps={viewProps as MenuViewProps} // Cast to specific view prop type
             categories={categories}
             featureFlags={menuScreenFeatureFlags}
@@ -226,6 +340,7 @@ export function CustomerClientContent({
             restaurantSettings={restaurantSettings}
             viewProps={{
               orderId: tyvp.orderId || "",
+              sessionId: tyvp.sessionId || "",
               items: tyvp.items || [],
               total: tyvp.total || 0,
               tableId: tyvp.tableId,
@@ -241,15 +356,6 @@ export function CustomerClientContent({
             restaurantSettings={restaurantSettings}
             viewProps={viewProps as ReviewViewProps} // Cast
             featureFlags={reviewScreenFeatureFlags}
-          />
-        );
-        break;
-      case "orderhistory":
-        ScreenComponent = (
-          <OrderHistoryScreen
-            setView={setView}
-            restaurantSettings={restaurantSettings}
-            viewProps={viewProps as MenuViewProps} // OrderHistory uses MenuViewProps
           />
         );
         break;
@@ -289,7 +395,7 @@ export function CustomerClientContent({
         ScreenComponent = (
           <CustomerMenuScreen
             setView={setView}
-            restaurantSettings={restaurantSettings}
+            restaurantSettings={{...restaurantSettings, logoUrl: restaurantSettings?.logoUrl || undefined}}
             viewProps={viewProps as MenuViewProps} // Cast
             categories={categories}
             featureFlags={menuScreenFeatureFlags}
@@ -301,14 +407,90 @@ export function CustomerClientContent({
   }
 
   return (
-    <CartProvider>
-      <CustomerLayout
-        setView={setView}
-        restaurantSettings={restaurantSettings}
-        featureFlags={layoutFeatureFlags}
-      >
-        {ScreenComponent}
-      </CustomerLayout>
-    </CartProvider>
+    <>
+      <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t("session.enter_passcode_title")}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <Input
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+            />
+            <p className="text-xs text-gray-500">
+              {t("session.ask_for_passcode_instruction")}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={()=>joinSession(passcode)} className="w-full" style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}>
+              {t("session.join_session")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t("guest_dialog.title")}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <Input
+              type="number"
+              min={1}
+              value={guestCount}
+              onChange={(e) => {
+                const v = parseInt(e.target.value, 10);
+                setGuestCount(Number.isFinite(v) && v > 0 ? v : 1);
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={startSession} className="w-full" style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}>
+              {t("guest_dialog.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Passcode Display Dialog for First User */}
+      <Dialog open={showPasscodeDisplay} onOpenChange={setShowPasscodeDisplay}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t("session.created_title")}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600 mb-4">
+              {t("session.share_passcode")}
+            </p>
+            <div className="bg-gray-100 p-4 rounded-lg mb-4">
+              <span className="text-2xl font-mono font-bold tracking-widest text-blue-600">
+                {sessionPasscode.toUpperCase()}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500">
+              {t("session.passcode_instruction")}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button 
+              onClick={() => setShowPasscodeDisplay(false)} 
+              className="w-full" 
+              style={{ backgroundColor: restaurantSettings.primaryColor || '#0ea5e9' }}
+            >
+              {t("session.start_ordering")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <CartProvider>
+        <CustomerLayout
+          setView={setView}
+          restaurantSettings={restaurantSettings}
+          featureFlags={layoutFeatureFlags}
+        >
+          {ScreenComponent}
+        </CustomerLayout>
+      </CartProvider>
+    </>
   );
 }

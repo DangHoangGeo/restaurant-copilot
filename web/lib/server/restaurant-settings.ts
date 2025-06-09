@@ -8,7 +8,7 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
   try {
     const { data: restaurant, error } = await supabaseAdmin
       .from('restaurants')
-      .select('name, logo_url, subdomain, brand_color, default_language')
+      .select('id, name, logo_url, subdomain, brand_color, default_language')
       .eq('subdomain', subdomain)
       .single();
 
@@ -20,6 +20,7 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
       return null;
     }
     return {
+      id: restaurant.id,
       name: restaurant.name,
       logoUrl: restaurant.logo_url,
       subdomain: restaurant.subdomain,

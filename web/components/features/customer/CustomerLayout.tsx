@@ -2,7 +2,7 @@
 "use client";
 import React, { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { MessageCircleMore, Briefcase } from "lucide-react";
+import { MessageCircleMore } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";
@@ -36,7 +36,7 @@ export function CustomerLayout({
     const tableNumber = localStorage.getItem("tableNumber");
     const sessionId = localStorage.getItem("sessionId");
 
-    setView("orderhistory", {
+    setView("thankyou", {
       tableId: tableId ?? undefined,
       tableNumber: tableNumber ?? undefined,
       sessionId: sessionId ?? undefined,
@@ -70,18 +70,6 @@ export function CustomerLayout({
             <MessageCircleMore className="h-5 w-5" />
           </Button>
         )}
-        <Button
-          variant="secondary"
-          size="sm"
-          className="rounded-full p-3 shadow-xl"
-          aria-label={t("admin_panel.toggle_label")}
-          onClick={() => {
-            // Navigate to admin - this should probably be a proper route navigation
-            window.open("/admin", "_blank");
-          }}
-        >
-          <Briefcase className="h-5 w-5" />
-        </Button>
       </div>
     </div>
   );

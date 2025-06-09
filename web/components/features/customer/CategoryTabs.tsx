@@ -36,7 +36,7 @@ export function CategoryTabs({
     return map[locale] || cat.name_en
   }
   return (
-    <div className="flex overflow-x-auto space-x-3 pb-2 scrollbar-hide">
+    <div className="flex overflow-x-auto space-x-1 pb-2 scrollbar-hide">
       {categories.map((cat) => (
         <button
           key={cat.id}
