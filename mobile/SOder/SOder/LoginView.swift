@@ -105,7 +105,6 @@ struct LoginView: View {
                 // Load previously used credentials for convenience
                 subdomain = UserDefaults.standard.string(forKey: "lastSubdomain") ?? ""
                 email = UserDefaults.standard.string(forKey: "lastEmail") ?? ""
-            }
                 loadCredentials()
             }
         }

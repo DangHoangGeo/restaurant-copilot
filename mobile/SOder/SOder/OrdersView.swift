@@ -100,13 +100,15 @@ struct OrdersView: View {
                                             showingPrintAlert = true
                                         }
                                     )
-                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                                     .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
                                 }
                             }
                         }
                     }
                     .listStyle(PlainListStyle())
+                    .scrollContentBackground(.hidden)
                     .refreshable {
                         await orderManager.fetchActiveOrders()
                     }
@@ -316,7 +318,7 @@ struct OrderRowView: View {
                     }
                     
                     Button(action: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
                             isExpanded.toggle()
                             if !isExpanded {
                                 orderManager.newOrderIds.remove(order.id)
@@ -359,19 +361,21 @@ struct OrderRowView: View {
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 2)
             
-            // Expanded Details
+            // Expanded Details - Fixed layout
             if isExpanded {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 0) {
                     Divider()
                         .padding(.horizontal)
+                        .padding(.top, 8)
                     
                     if let orderItems = order.order_items, !orderItems.isEmpty {
-                        LazyVStack(spacing: 8) {
-                            ForEach(orderItems) { item in
+                        VStack(spacing: 8) {
+                            ForEach(orderItems, id: \.id) { item in
                                 EnhancedOrderItemView(orderItem: item, orderManager: orderManager)
+                                    .padding(.horizontal)
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.vertical, 12)
                     } else {
                         Text("No items in this order")
                             .font(.subheadline)
@@ -384,6 +388,8 @@ struct OrderRowView: View {
                 .padding(.top, 4)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .fixedSize(horizontal: false, vertical: true)
         .padding(.vertical, 4)
         .onAppear {
             orderManager.newOrderIds.remove(order.id)
