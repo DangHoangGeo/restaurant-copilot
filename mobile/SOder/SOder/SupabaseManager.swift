@@ -301,17 +301,29 @@ enum AuthError: LocalizedError {
     case subdomainMismatch
     case tokenError // Added for JWT issues
     case missingRestaurantClaim // Added for missing restaurant_id in JWT
+    case invalidCredentials
+    case networkError
+    // case subdomainNotFound // Removed as it's more of an authorization/data validation issue post-auth
+    case unknownError
     
     var errorDescription: String? {
         switch self {
         case .noRestaurantAssociated:
-            return "No restaurant associated with this user"
+            return "No restaurant associated with this user."
         case .subdomainMismatch:
-            return "User does not belong to the specified restaurant"
+            return "User does not belong to the specified restaurant."
         case .tokenError:
-            return "Invalid or missing authentication token"
+            return "Invalid or missing authentication token."
         case .missingRestaurantClaim:
-            return "Token is missing required restaurant information"
+            return "Token is missing required restaurant information."
+        case .invalidCredentials:
+            return "Invalid email or password."
+        case .networkError:
+            return "A network error occurred. Please check your connection and try again."
+        // case .subdomainNotFound:
+        //     return "The specified subdomain was not found."
+        case .unknownError:
+            return "An unknown authentication error occurred."
         }
     }
 }
