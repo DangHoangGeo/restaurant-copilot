@@ -4,12 +4,13 @@ struct KitchenBoardView: View {
     @EnvironmentObject var printerManager: PrinterManager
     @StateObject private var orderManager = OrderManager()
     @State private var groupedItems: [GroupedItem] = []
-    @State private var selectedTimeFilter: TimeFilter = .last10Minutes
+    @State private var selectedTimeFilter: TimeFilter = .all // Changed from .last10Minutes
     
     enum TimeFilter: String, CaseIterable {
         case last10Minutes = "10m"
         case last30Minutes = "30m"
         case last1Hour = "1h"
+        case last24Hours = "24h" // Add 24 hours option
         case all = "All"
         
         var displayName: String {
@@ -17,6 +18,7 @@ struct KitchenBoardView: View {
             case .last10Minutes: return "Last 10 min"
             case .last30Minutes: return "Last 30 min"
             case .last1Hour: return "Last 1 hour"
+            case .last24Hours: return "Last 24 hours"
             case .all: return "All active"
             }
         }
@@ -26,7 +28,8 @@ struct KitchenBoardView: View {
             case .last10Minutes: return -600
             case .last30Minutes: return -1800
             case .last1Hour: return -3600
-            case .all: return -86400 // 24 hours
+            case .last24Hours: return -86400 // 24 hours
+            case .all: return -604800 // 7 days to catch older orders
             }
         }
     }
