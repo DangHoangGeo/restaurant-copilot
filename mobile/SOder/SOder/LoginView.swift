@@ -101,6 +101,11 @@ struct LoginView: View {
             } message: {
                 Text(errorMessage)
             }
+            .onAppear {
+                // Load previously used credentials for convenience
+                subdomain = UserDefaults.standard.string(forKey: "lastSubdomain") ?? ""
+                email = UserDefaults.standard.string(forKey: "lastEmail") ?? ""
+            }
         }
     }
     
@@ -121,8 +126,16 @@ struct LoginView: View {
                 email: email.trimmingCharacters(in: .whitespacesAndNewlines),
                 password: password
             )
+            if supabaseManager.isAuthenticated {
+                UserDefaults.standard.set(subdomain, forKey: "lastSubdomain")
+                UserDefaults.standard.set(email, forKey: "lastEmail")
+            }
         } catch {
-            errorMessage = error.localizedDescription
+            if let authError = error as? AuthError {
+                errorMessage = authError.errorDescription ?? "Unknown error"
+            } else {
+                errorMessage = error.localizedDescription
+            }
             showError = true
         }
         

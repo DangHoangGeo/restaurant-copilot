@@ -1,6 +1,9 @@
 import Foundation
 import Supabase
 import Combine
+#if os(iOS)
+import UIKit
+#endif
 
 class OrderManager: ObservableObject {
     private let supabaseManager = SupabaseManager.shared
@@ -9,6 +12,7 @@ class OrderManager: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var isRealtimeConnected = false
+    @Published var newOrderIds: Set<String> = []
     
     private var realtimeChannel: RealtimeChannelV2?
     private var cancellables = Set<AnyCancellable>()
@@ -85,7 +89,13 @@ class OrderManager: ObservableObject {
                 .value
             
             // Convert response to Order models
-            self.orders = response.map { $0.toOrder() }
+            let fetchedOrders = response.map { $0.toOrder() }
+            // Determine which orders are new
+            let existingIds = Set(self.orders.map { $0.id })
+            for order in fetchedOrders where !existingIds.contains(order.id) {
+                newOrderIds.insert(order.id)
+            }
+            self.orders = fetchedOrders
             
             print("Active orders fetched efficiently: \(self.orders.count)")
             
@@ -273,8 +283,11 @@ class OrderManager: ObservableObject {
     
     @MainActor
     private func handleOrderChange() async {
-        // Refresh orders when changes occur
+        let previousOrders = orders
         await fetchActiveOrders()
+        if orders.count > previousOrders.count {
+            triggerFeedback()
+        }
     }
     
     @MainActor
@@ -292,6 +305,13 @@ class OrderManager: ObservableObject {
     @MainActor
     func reconnectRealtime() async {
         await setupRealtimeSubscription()
+    }
+
+    private func triggerFeedback() {
+        #if os(iOS)
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+        #endif
     }
     
     // MARK: - Helper Functions
