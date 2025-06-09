@@ -393,3 +393,58 @@ enum PrinterType: String, Codable, CaseIterable {
         }
     }
 }
+
+// MARK: - PrinterManager Extension for Checkout
+extension PrinterManager {
+    // MARK: - Checkout Receipt Printing
+    func printCheckoutReceipt(_ receiptData: CheckoutReceiptData) async throws {
+        let formatter = PrintFormatter()
+        let printData = formatter.formatCheckoutReceipt(receiptData)
+        
+        // Use the appropriate printer based on current mode
+        let settingsManager = PrinterSettingsManager.shared
+        
+        switch settingsManager.printerMode {
+        case .single:
+            // Use the active printer for both kitchen and checkout
+            try await printerService.connectAndSendData(data: printData)
+            
+        case .dual:
+            // Use the checkout printer specifically
+            if let checkoutConfig = settingsManager.getCheckoutPrinterConfig() {
+                try await printerService.connectAndSendData(data: printData, to: checkoutConfig)
+            } else {
+                // Fallback to any available printer
+                try await printerService.connectAndSendData(data: printData)
+            }
+        }
+        
+        addLog("Checkout receipt printed - Total: ¥\(String(format: "%.0f", receiptData.totalAmount))")
+    }
+    
+    func printKitchenSlip(for order: Order) async throws {
+        let formatter = PrintFormatter()
+        guard let printData = formatter.formatOrderForKitchen(order: order) else {
+            throw PrinterError.dataEncodingError("Failed to format kitchen slip")
+        }
+        
+        let settingsManager = PrinterSettingsManager.shared
+        
+        switch settingsManager.printerMode {
+        case .single:
+            // Use the active printer
+            try await printerService.connectAndSendData(data: printData)
+            
+        case .dual:
+            // Use the kitchen printer specifically
+            if let kitchenConfig = settingsManager.getKitchenPrinterConfig() {
+                try await printerService.connectAndSendData(data: printData, to: kitchenConfig)
+            } else {
+                // Fallback to any available printer
+                try await printerService.connectAndSendData(data: printData)
+            }
+        }
+        
+        addLog("Kitchen slip printed for order \(order.id.prefix(8))")
+    }
+}

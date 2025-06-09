@@ -82,7 +82,31 @@ class PrintFormatter {
         return formatForThermalPrinter(content)
     }
     
+    // MARK: - Checkout Receipt Formatting
+    func formatCheckoutReceipt(_ receiptData: CheckoutReceiptData) -> Data {
+        let content = generateCheckoutReceiptPrintContent(receiptData)
+        return formatForThermalPrinter(content)
+    }
+    
     // MARK: - Unified Thermal Printer Formatter
+    
+    private func formatForThermalPrinter(_ content: String) -> Data {
+        var command = Data()
+        
+        // Initialize printer
+        command.append(Data(commands.initialize))
+        
+        // Set alignment to left by default
+        command.append(Data(commands.alignLeft))
+        
+        // Add the formatted content
+        append(content, to: &command)
+        
+        // Cut paper (partial cut)
+        command.append(Data(commands.cutPaperPartial))
+        
+        return command
+    }
     
     internal func formatForThermalPrinter(_ printContent: PrintContent) -> Data {
         var command = Data()
@@ -598,7 +622,114 @@ class PrintFormatter {
         )
     }
     
-    // MARK: - Helper Methods
+    // MARK: - Private Content Generators
+    
+    private func generateCheckoutReceiptPrintContent(_ receiptData: CheckoutReceiptData) -> String {
+        let settings = PrinterSettingsManager.shared.restaurantSettings
+        var content = ""
+        
+        // Restaurant header
+        content += centerText(settings.name.uppercased(), width: 48) + "\n"
+        content += centerText(settings.address, width: 48) + "\n"
+        if !settings.phone.isEmpty {
+            content += centerText("Tel: \(settings.phone)", width: 48) + "\n"
+        }
+        content += "\n"
+        
+        // Receipt title
+        content += centerText("RECEIPT", width: 48) + "\n"
+        content += String(repeating: "=", count: 48) + "\n"
+        
+        // Order information
+        let formatter = DateFormatter()
+        formatter.dateFormat = settings.dateTimeFormat
+        
+        content += "Order ID: \(receiptData.order.id.prefix(8).uppercased())\n"
+        content += "Table: \(receiptData.order.table?.name ?? "Table \(receiptData.order.table_id)")\n"
+        content += "Guests: \(receiptData.order.guest_count)\n"
+        content += "Date: \(formatter.string(from: receiptData.timestamp))\n"
+        content += String(repeating: "-", count: 48) + "\n"
+        
+        // Order items
+        if let items = receiptData.order.order_items {
+            for item in items {
+                let itemName = item.menu_item?.displayName ?? "Unknown Item"
+                let quantity = item.quantity
+                let unitPrice = item.menu_item?.price ?? 0
+                let totalPrice = unitPrice * Double(quantity)
+                
+                // Item name and quantity
+                content += "\(itemName)\n"
+                content += String(format: "  %dx @ ¥%.0f%@¥%.0f\n", 
+                                quantity, 
+                                unitPrice, 
+                                String(repeating: " ", count: max(1, 30 - String(format: "  %dx @ ¥%.0f", quantity, unitPrice).count)),
+                                totalPrice)
+                
+                // Notes if any
+                if let notes = item.notes, !notes.isEmpty {
+                    content += "  Note: \(notes)\n"
+                }
+                content += "\n"
+            }
+        }
+        
+        content += String(repeating: "-", count: 48) + "\n"
+        
+        // Price breakdown
+        content += String(format: "Subtotal:%@¥%.0f\n", 
+                         String(repeating: " ", count: max(1, 38 - "Subtotal:".count)), 
+                         receiptData.subtotal)
+        
+        if receiptData.discountAmount > 0 {
+            content += String(format: "Discount:%@-¥%.0f\n", 
+                             String(repeating: " ", count: max(1, 38 - "Discount:".count)), 
+                             receiptData.discountAmount)
+            
+            if let discountCode = receiptData.discountCode {
+                content += String(format: "  Code: %s\n", discountCode)
+            }
+        }
+        
+        content += String(format: "Tax (10%%):%@¥%.0f\n", 
+                         String(repeating: " ", count: max(1, 37 - "Tax (10%):".count)), 
+                         receiptData.taxAmount)
+        
+        content += String(repeating: "=", count: 48) + "\n"
+        content += String(format: "TOTAL:%@¥%.0f\n", 
+                         String(repeating: " ", count: max(1, 40 - "TOTAL:".count)), 
+                         receiptData.totalAmount)
+        content += String(repeating: "=", count: 48) + "\n"
+        
+        // Payment method
+        content += "\nPayment Method: CASH\n"
+        content += "Status: PAID\n"
+        
+        // Footer
+        content += "\n"
+        content += centerText("Thank you for dining with us!", width: 48) + "\n"
+        if !settings.website.isEmpty {
+            content += centerText(settings.website, width: 48) + "\n"
+        }
+        content += "\n"
+        content += centerText("Powered by SOder POS", width: 48) + "\n"
+        content += "\n\n\n"
+        
+        return content
+    }
+    
+    private func centerText(_ text: String, width: Int) -> String {
+        let textLength = text.count
+        if textLength >= width {
+            return text
+        }
+        
+        let padding = (width - textLength) / 2
+        let leftPadding = String(repeating: " ", count: padding)
+        let rightPadding = String(repeating: " ", count: width - textLength - padding)
+        
+        return leftPadding + text + rightPadding
+    }
     
     private func append(_ data: Data?, to commandData: inout Data) {
         if let data = data {

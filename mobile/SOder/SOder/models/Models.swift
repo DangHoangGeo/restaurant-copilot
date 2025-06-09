@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - Order Models
-struct Order: Decodable, Identifiable, Equatable {
+struct Order: Decodable, Identifiable, Equatable, Hashable {
     let id: String
     let restaurant_id: String
     let table_id: String
@@ -23,17 +23,27 @@ struct Order: Decodable, Identifiable, Equatable {
                lhs.updated_at == rhs.updated_at &&
                lhs.order_items?.count == rhs.order_items?.count
     }
+    
+    // Hashable conformance
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(status)
+        hasher.combine(updated_at)
+    }
 }
 
 enum OrderStatus: String, Decodable, CaseIterable {
     case new = "new"
+    case ordered = "ordered"  // Add missing ordered case
     case preparing = "preparing"
     case ready = "ready"
     case completed = "completed"
     
+    
     var displayName: String {
         switch self {
         case .new: return "New"
+        case .ordered: return "Ordered"  // Add display name for ordered
         case .preparing: return "Preparing"
         case .ready: return "Ready"
         case .completed: return "Completed"
@@ -43,6 +53,7 @@ enum OrderStatus: String, Decodable, CaseIterable {
     var color: String {
         switch self {
         case .new: return "blue"
+        case .ordered: return "blue"  // Add color for ordered
         case .preparing: return "orange"
         case .ready: return "green"
         case .completed: return "gray"

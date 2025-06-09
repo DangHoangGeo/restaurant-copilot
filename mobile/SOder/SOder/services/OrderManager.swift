@@ -9,6 +9,7 @@ class OrderManager: ObservableObject {
     private let supabaseManager = SupabaseManager.shared
     
     @Published var orders: [Order] = []
+    @Published var allOrders: [Order] = []  // Add missing allOrders property
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var isRealtimeConnected = false
@@ -111,6 +112,50 @@ class OrderManager: ObservableObject {
         isLoading = false
     }
     
+    // Add missing fetchAllOrders method
+    @MainActor
+    func fetchAllOrders() async {
+        guard supabaseManager.isAuthenticated else {
+            errorMessage = "User not authenticated"
+            print("Cannot fetch all orders - user not authenticated")
+            return
+        }
+        
+        guard let restaurantId = supabaseManager.currentRestaurantId else {
+            errorMessage = "No restaurant ID available"
+            print("Cannot fetch all orders - no restaurant ID")
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let response: [OrderWithTableResponse] = try await supabaseManager.client
+                .from("orders")
+                .select("""
+                    *,
+                    table:tables(*),
+                    order_items(
+                        *,
+                        menu_item:menu_items(*)
+                    )
+                """)
+                .eq("restaurant_id", value: restaurantId)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            
+            self.allOrders = response.map { $0.toOrder() }
+            print("Fetched \(allOrders.count) total orders")
+            
+        } catch {
+            errorMessage = "Failed to fetch all orders: \(error.localizedDescription)"
+            print("Error fetching all orders: \(error)")
+        }
+        
+        isLoading = false
+    }
     
     // MARK: - Update Order Status
     @MainActor

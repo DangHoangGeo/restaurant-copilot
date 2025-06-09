@@ -7,72 +7,274 @@ struct OrdersView: View {
     
     @State private var showingPrintAlert = false
     @State private var printMessage = ""
-    @State private var selectedFilter: OrderFilter = .all
+    @State private var selectedFilter: OrderFilter = .active
+    @State private var selectedOrder: Order? = nil
+    @State private var showingCheckout = false
+    @State private var showAllOrders = false
+    
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     enum OrderFilter: String, CaseIterable {
+        case active = "active"
         case all = "all"
         case new = "new"
         case preparing = "preparing"
         case ready = "ready"
+        case completed = "completed"
         
         var displayName: String {
             switch self {
-            case .all: return "All"
+            case .active: return "Active Orders"
+            case .all: return "All Orders"
             case .new: return "New"
             case .preparing: return "Preparing"
             case .ready: return "Ready"
+            case .completed: return "Completed"
             }
         }
         
         var color: Color {
             switch self {
-            case .all: return .blue
+            case .active: return .blue
+            case .all: return .gray
             case .new: return .blue
             case .preparing: return .orange
             case .ready: return .green
+            case .completed: return .gray
             }
         }
     }
     
     private var filteredOrders: [Order] {
+        let baseOrders = showAllOrders ? orderManager.allOrders : orderManager.orders
+        
         switch selectedFilter {
+        case .active:
+            return baseOrders.filter { $0.status != .completed }
         case .all:
-            return orderManager.orders
+            return baseOrders
         case .new:
-            return orderManager.orders.filter { $0.status == .new }
+            return baseOrders.filter { $0.status == .new }
         case .preparing:
-            return orderManager.orders.filter { $0.status == .preparing }
+            return baseOrders.filter { $0.status == .preparing }
         case .ready:
-            return orderManager.orders.filter { $0.status == .ready }
+            return baseOrders.filter { $0.status == .ready }
+        case .completed:
+            return baseOrders.filter { $0.status == .completed }
         }
-    }
-
-    private var groupedOrders: [String: [Order]] {
-        Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? "Table \($0.table_id)" })
     }
 
     var body: some View {
-        // Use NavigationStack for iOS 16+ or NavigationView with proper iPad handling
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                mainContent
-            }
-        } else {
-            NavigationView {
-                // Empty sidebar for iPad to force content to main area
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    Text("Orders")
-                        .navigationBarHidden(true)
+        Group {
+            if horizontalSizeClass == .regular {
+                // iPad Layout - Navigation Split View
+                NavigationSplitView {
+                    orderSidebar
+                } detail: {
+                    orderDetailView
                 }
-                
-                mainContent
-                    .navigationViewStyle(StackNavigationViewStyle()) // Force stack style
+            } else {
+                // iPhone Layout - Traditional Navigation
+                NavigationStack {
+                    iphoneMainContent
+                }
             }
-            .navigationViewStyle(StackNavigationViewStyle()) // Ensure stack style on iPad
+        }
+        .task {
+            await orderManager.fetchActiveOrders()
+            if showAllOrders {
+                await orderManager.fetchAllOrders()
+            }
+        }
+        .alert("Print Status", isPresented: $showingPrintAlert) {
+            Button("OK") { }
+        } message: {
+            Text(printMessage)
+        }
+        .sheet(isPresented: $showingCheckout) {
+            if let order = selectedOrder {
+                CheckoutView(
+                    order: order,
+                    orderManager: orderManager,
+                    printerManager: printerManager,
+                    onComplete: {
+                        showingCheckout = false
+                        selectedOrder = nil
+                    }
+                )
+            }
         }
     }
     
-    private var mainContent: some View {
+    // MARK: - iPad Sidebar
+    private var orderSidebar: some View {
+        VStack(spacing: 0) {
+            // Header with toggle
+            VStack(spacing: 16) {
+                HStack {
+                    Text("Orders")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    Spacer()
+                    
+                    Menu {
+                        Button("Refresh Orders") {
+                            Task {
+                                await orderManager.fetchActiveOrders()
+                                if showAllOrders {
+                                    await orderManager.fetchAllOrders()
+                                }
+                            }
+                        }
+                        
+                        Divider()
+                        
+                        Button("Sign Out") {
+                            Task {
+                                try? await supabaseManager.signOut()
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.title2)
+                    }
+                }
+                
+                // Order Type Toggle
+                Picker("Order Type", selection: $showAllOrders) {
+                    Text("Active Orders").tag(false)
+                    Text("All Orders").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: showAllOrders) { newValue in
+                    Task {
+                        if newValue {
+                            await orderManager.fetchAllOrders()
+                        }
+                    }
+                }
+                
+                // Filter Pills
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(OrderFilter.allCases, id: \.self) { filter in
+                            FilterChip(
+                                title: filter.displayName,
+                                count: countForFilter(filter),
+                                isSelected: selectedFilter == filter,
+                                color: filter.color
+                            ) {
+                                selectedFilter = filter
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
+            .padding()
+            .background(Color(.systemGray6))
+            
+            // Orders List
+            if orderManager.isLoading {
+                Spacer()
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("Loading orders...")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            } else if filteredOrders.isEmpty {
+                Spacer()
+                EmptyOrdersView(filter: selectedFilter)
+                Spacer()
+            } else {
+                List(filteredOrders, selection: $selectedOrder) { order in
+                    SidebarOrderRowView(
+                        order: order,
+                        isNew: orderManager.newOrderIds.contains(order.id),
+                        isSelected: selectedOrder?.id == order.id
+                    )
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                }
+                .listStyle(PlainListStyle())
+                .scrollContentBackground(.hidden)
+                .refreshable {
+                    await orderManager.fetchActiveOrders()
+                    if showAllOrders {
+                        await orderManager.fetchAllOrders()
+                    }
+                }
+            }
+            
+            // Error Message
+            if let errorMessage = orderManager.errorMessage {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button("Retry") {
+                        Task {
+                            await orderManager.fetchActiveOrders()
+                        }
+                    }
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                }
+                .padding()
+                .background(Color(.systemGray6))
+            }
+        }
+        .navigationTitle("Orders")
+        .navigationBarHidden(true)
+    }
+    
+    // MARK: - iPad Detail View
+    private var orderDetailView: some View {
+        Group {
+            if let order = selectedOrder {
+                OrderDetailView(
+                    order: order,
+                    orderManager: orderManager,
+                    printerManager: printerManager,
+                    onCheckout: {
+                        showingCheckout = true
+                    },
+                    onPrintResult: { message in
+                        printMessage = message
+                        showingPrintAlert = true
+                    }
+                )
+            } else {
+                VStack(spacing: 20) {
+                    Image(systemName: "list.bullet.rectangle")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray.opacity(0.6))
+                    
+                    Text("Select an Order")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    
+                    Text("Choose an order from the sidebar to view details")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(.systemGroupedBackground))
+            }
+        }
+    }
+    
+    // MARK: - iPhone Content
+    private var iphoneMainContent: some View {
         VStack(spacing: 0) {
             // Filter Bar
             ScrollView(.horizontal, showsIndicators: false) {
@@ -110,16 +312,30 @@ struct OrdersView: View {
                     ForEach(groupedOrders.keys.sorted(), id: \.self) { key in
                         Section(header: Text(key)) {
                             ForEach(groupedOrders[key] ?? []) { order in
-                                OrderRowView(
+                                NavigationLink(destination: OrderDetailView(
                                     order: order,
-                                    isNew: orderManager.newOrderIds.contains(order.id),
                                     orderManager: orderManager,
                                     printerManager: printerManager,
+                                    onCheckout: {
+                                        selectedOrder = order
+                                        showingCheckout = true
+                                    },
                                     onPrintResult: { message in
                                         printMessage = message
                                         showingPrintAlert = true
                                     }
-                                )
+                                )) {
+                                    OrderRowView(
+                                        order: order,
+                                        isNew: orderManager.newOrderIds.contains(order.id),
+                                        orderManager: orderManager,
+                                        printerManager: printerManager,
+                                        onPrintResult: { message in
+                                            printMessage = message
+                                            showingPrintAlert = true
+                                        }
+                                    )
+                                }
                                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(Color.clear)
@@ -178,241 +394,119 @@ struct OrdersView: View {
                 }
             }
         }
-        .alert("Print Status", isPresented: $showingPrintAlert) {
-            Button("OK") { }
-        } message: {
-            Text(printMessage)
-        }
-        .task {
-            await orderManager.fetchActiveOrders()
-        }
+    }
+    
+    private var groupedOrders: [String: [Order]] {
+        Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? "Table \($0.table_id)" })
     }
     
     private func countForFilter(_ filter: OrderFilter) -> Int {
+        let baseOrders = showAllOrders ? orderManager.allOrders : orderManager.orders
+        
         switch filter {
+        case .active:
+            return baseOrders.filter { $0.status != .completed }.count
         case .all:
-            return orderManager.orders.count
+            return baseOrders.count
         case .new:
-            return orderManager.orders.filter { $0.status == .new }.count
+            return baseOrders.filter { $0.status == .new }.count
         case .preparing:
-            return orderManager.orders.filter { $0.status == .preparing }.count
+            return baseOrders.filter { $0.status == .preparing }.count
         case .ready:
-            return orderManager.orders.filter { $0.status == .ready }.count
+            return baseOrders.filter { $0.status == .ready }.count
+        case .completed:
+            return baseOrders.filter { $0.status == .completed }.count
         }
     }
 }
 
-struct FilterChip: View {
-    let title: String
-    let count: Int
-    let isSelected: Bool
-    let color: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(isSelected ? .semibold : .medium)
-                
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(isSelected ? Color.white.opacity(0.3) : color.opacity(0.2))
-                        .cornerRadius(8)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(isSelected ? color : Color(.systemGray5))
-            .foregroundColor(isSelected ? .white : color)
-            .cornerRadius(20)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
+// MARK: - Supporting Views
 
-struct EmptyOrdersView: View {
-    let filter: OrdersView.OrderFilter
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: emptyStateIcon)
-                .font(.system(size: 60))
-                .foregroundColor(.gray.opacity(0.6))
-            
-            Text(emptyStateTitle)
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
-            
-            Text(emptyStateMessage)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    private var emptyStateIcon: String {
-        switch filter {
-        case .all: return "tray"
-        case .new: return "plus.circle"
-        case .preparing: return "clock"
-        case .ready: return "checkmark.circle"
-        }
-    }
-    
-    private var emptyStateTitle: String {
-        switch filter {
-        case .all: return "No Active Orders"
-        case .new: return "No New Orders"
-        case .preparing: return "Nothing Preparing"
-        case .ready: return "Nothing Ready"
-        }
-    }
-    
-    private var emptyStateMessage: String {
-        switch filter {
-        case .all: return "New orders will appear here automatically"
-        case .new: return "New orders from customers will show up here"
-        case .preparing: return "Orders being prepared will appear here"
-        case .ready: return "Completed orders ready for serving will appear here"
-        }
-    }
-}
-
-// Enhanced OrderRowView with better design
-struct OrderRowView: View {
+struct SidebarOrderRowView: View {
     let order: Order
     let isNew: Bool
-    let orderManager: OrderManager
-    let printerManager: PrinterManager
-    let onPrintResult: (String) -> Void
-    
-    @State private var isExpanded = false
-    @State private var isPrinting = false
+    let isSelected: Bool
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Main Order Card
-            VStack(alignment: .leading, spacing: 12) {
-                // Order Header
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(order.table?.name ?? "Table \(order.table_id)")
-                                .font(.headline)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(order.table?.name ?? "Table \(order.table_id)")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                        
+                        if isNew {
+                            Text("NEW")
+                                .font(.caption2)
                                 .fontWeight(.bold)
-
-                            if isNew {
-                                Text("NEW")
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.red)
-                                    .padding(4)
-                                    .background(Color.red.opacity(0.2))
-                                    .cornerRadius(6)
-                            }
-
-                            Spacer()
-
-                            EnhancedStatusBadge(status: order.status)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.red)
+                                .cornerRadius(4)
                         }
                         
-                        HStack(spacing: 16) {
-                            Label("\(order.guest_count)", systemImage: "person.2")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Label(formatTime(order.created_at), systemImage: "clock")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                        if order.order_items?.contains(where: { $0.status.rawValue == "new" }) == true {
+                            Image(systemName: "circle.fill")
+                                .font(.caption2)
+                                .foregroundColor(.red)
                         }
+                        
+                        Spacer()
                     }
                     
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            isExpanded.toggle()
-                            if !isExpanded {
-                                orderManager.newOrderIds.remove(order.id)
-                            }
-                        }
-                    }) {
-                        Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle")
-                            .font(.title2)
-                            .foregroundColor(.blue)
+                    HStack(spacing: 12) {
+                        Label("\(order.guest_count)", systemImage: "person.2")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Label(formatTime(order.created_at), systemImage: "clock")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
                 
-                // Quick Actions (always visible)
-                HStack(spacing: 12) {
-                    StatusActionButton(
-                        currentStatus: order.status,
-                        orderManager: orderManager,
-                        orderId: order.id
-                    )
-                    
-                    PrintButton(
-                        isPrinting: $isPrinting,
-                        printerManager: printerManager,
-                        order: order,
-                        onResult: onPrintResult
-                    )
-                    
-                    Spacer()
+                VStack(alignment: .trailing, spacing: 4) {
+                    EnhancedStatusBadge(status: order.status)
                     
                     if let total = order.total_amount {
                         Text("¥\(String(format: "%.0f", total))")
-                            .font(.headline)
-                            .fontWeight(.bold)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
                             .foregroundColor(.primary)
                     }
                 }
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 2)
             
-            // Expanded Details - Fixed layout
-            if isExpanded {
-                VStack(alignment: .leading, spacing: 0) {
-                    Divider()
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    
-                    if let orderItems = order.order_items, !orderItems.isEmpty {
-                        VStack(spacing: 8) {
-                            ForEach(orderItems, id: \.id) { item in
-                                EnhancedOrderItemView(orderItem: item, orderManager: orderManager)
-                                    .padding(.horizontal)
-                            }
-                        }
-                        .padding(.vertical, 12)
-                    } else {
-                        Text("No items in this order")
-                            .font(.subheadline)
+            // Order items preview
+            if let items = order.order_items?.prefix(3) {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Array(items), id: \.id) { item in
+                        Text("\(item.quantity)× \(item.menu_item?.displayName ?? "Unknown")")
+                            .font(.caption)
                             .foregroundColor(.secondary)
-                            .padding()
+                            .lineLimit(1)
+                    }
+                    
+                    if let totalItems = order.order_items?.count, totalItems > 3 {
+                        Text("and \(totalItems - 3) more...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .italic()
                     }
                 }
-                .background(Color(.systemGray6).opacity(0.5))
-                .cornerRadius(12)
-                .padding(.top, 4)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.vertical, 4)
-        .onAppear {
-            orderManager.newOrderIds.remove(order.id)
-        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(isSelected ? Color.blue.opacity(0.1) : Color(.systemBackground))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
     
     private func formatTime(_ dateString: String) -> String {
@@ -425,188 +519,4 @@ struct OrderRowView: View {
     }
 }
 
-struct EnhancedStatusBadge: View {
-    let status: OrderStatus
-    
-    var body: some View {
-        Text(status.displayName)
-            .font(.caption)
-            .fontWeight(.semibold)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(badgeColor.opacity(0.2))
-            .foregroundColor(badgeColor)
-            .cornerRadius(12)
-    }
-    
-    private var badgeColor: Color {
-        switch status {
-        case .new:
-            return .blue
-        case .preparing:
-            return .orange
-        case .ready:
-            return .green
-        case .completed:
-            return .gray
-        }
-    }
-}
-
-struct StatusActionButton: View {
-    let currentStatus: OrderStatus
-    let orderManager: OrderManager
-    let orderId: String
-    
-    var body: some View {
-        Menu {
-            ForEach(OrderStatus.allCases, id: \.self) { status in
-                if status != currentStatus {
-                    Button(status.displayName) {
-                        Task {
-                            await orderManager.updateOrderStatus(
-                                orderId: orderId,
-                                newStatus: status
-                            )
-                        }
-                    }
-                }
-            }
-        } label: {
-            Label("Change Status", systemImage: "arrow.up.arrow.down")
-                .font(.subheadline)
-                .foregroundColor(.blue)
-                .padding(8)
-                .background(Color(.systemGray5))
-                .cornerRadius(12)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct PrintButton: View {
-    @Binding var isPrinting: Bool
-    let printerManager: PrinterManager
-    let order: Order
-    let onResult: (String) -> Void
-    
-    var body: some View {
-        Button(action: {
-            Task {
-                await printOrderReceipt()
-            }
-        }) {
-            HStack {
-                if isPrinting {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                } else {
-                    Image(systemName: "printer")
-                }
-                Text(isPrinting ? "Printing..." : "Print")
-            }
-            .padding(8)
-            .background(Color.green.opacity(0.2))
-            .foregroundColor(.green)
-            .cornerRadius(12)
-        }
-        .buttonStyle(PlainButtonStyle())
-        .disabled(isPrinting || !printerManager.isConnected)
-    }
-    
-    private func printOrderReceipt() async {
-        isPrinting = true
-        
-        let success = await printerManager.printOrderReceipt(order)
-        
-        await MainActor.run {
-            isPrinting = false
-            onResult(success 
-                ? "Receipt printed successfully!" 
-                : "Failed to print receipt. Check printer connection.")
-        }
-    }
-}
-
-struct EnhancedOrderItemView: View {
-    let orderItem: OrderItem
-    let orderManager: OrderManager
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(orderItem.quantity)x \(orderItem.menu_item?.displayName ?? "Unknown Item")")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                if let notes = orderItem.notes, !notes.isEmpty {
-                    Text("Note: \(notes)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .italic()
-                }
-                
-                if let price = orderItem.menu_item?.price {
-                    Text("¥\(String(format: "%.0f", price)) each")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing) {
-                StatusBadge(status: orderItem.status.displayName, color: orderItem.status.color)
-                
-                Menu("Update") {
-                    ForEach(OrderItemStatus.allCases, id: \.self) { status in
-                        if status != orderItem.status {
-                            Button(status.displayName) {
-                                Task {
-                                    await orderManager.updateOrderItemStatus(
-                                        orderItemId: orderItem.id,
-                                        newStatus: status
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-                .font(.caption)
-                .foregroundColor(.blue)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-}
-
-struct StatusBadge: View {
-    let status: String
-    let color: String
-    
-    var body: some View {
-        Text(status)
-            .font(.caption)
-            .fontWeight(.semibold)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(badgeColor.opacity(0.2))
-            .foregroundColor(badgeColor)
-            .cornerRadius(12)
-    }
-    
-    private var badgeColor: Color {
-        switch color {
-        case "blue": return .blue
-        case "orange": return .orange
-        case "green": return .green
-        case "gray": return .gray
-        default: return .blue
-        }
-    }
-}
-
-#Preview {
-    OrdersView()
-}
+// Keep existing FilterChip, EmptyOrdersView, OrderRowView, EnhancedStatusBadge, StatusActionButton, PrintButton, EnhancedOrderItemView, and StatusBadge views
