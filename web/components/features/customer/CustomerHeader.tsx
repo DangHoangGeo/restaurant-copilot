@@ -3,7 +3,7 @@
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ShoppingCart, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import type { RestaurantSettings } from "@/shared/types/customer";
@@ -13,13 +13,13 @@ interface CustomerHeaderProps {
   onCartClick: () => void;
   onOrderHistoryClick: () => void;
   cartItemCount: number;
+  showOrderHistory?: boolean;
 }
 
 export function CustomerHeader({
   restaurantSettings,
-  onCartClick,
+  showOrderHistory = false,
   onOrderHistoryClick,
-  cartItemCount,
 }: CustomerHeaderProps) {
   const t = useTranslations("Common");
   const params = useParams();
@@ -53,29 +53,18 @@ export function CustomerHeader({
             currentLocale={locale}
             onLocaleChange={handleLocaleChange}
           />
-          <Button
-            variant="ghost"
-            onClick={onOrderHistoryClick}
-            className="text-white hover:bg-white/20"
-            aria-label={t("order_history_label")}
-            size="sm"
-          >
-            <Clock className="h-4 w-4" />
-            <span className="hidden sm:inline ml-1">{t("order_history_label")}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={onCartClick}
-            className="text-white hover:bg-white/20 relative"
-            aria-label={t("view_cart_label")}
-          >
-            <ShoppingCart className="h-5 w-5" />
-            {cartItemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
-                {cartItemCount}
-              </span>
-            )}
-          </Button>
+          {showOrderHistory && (
+            <Button
+              variant="ghost"
+              onClick={onOrderHistoryClick}
+              className="text-white hover:bg-white/20"
+              aria-label={t("order_history_label")}
+              size="sm"
+            >
+              <Clock className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">{t("order_history_label")}</span>
+            </Button>
+          )}
         </div>
       </div>
     </header>

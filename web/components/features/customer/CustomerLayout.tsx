@@ -14,6 +14,7 @@ interface CustomerLayoutProps {
   children: ReactNode;
   setView: (v: ViewType, props?: ViewProps) => void;
   restaurantSettings: RestaurantSettings;
+  showOrderHistory?: boolean;
   featureFlags: {
     aiChat: boolean;
   };
@@ -22,6 +23,7 @@ interface CustomerLayoutProps {
 export function CustomerLayout({
   children,
   setView,
+  showOrderHistory = false,
   restaurantSettings,
   featureFlags,
 }: CustomerLayoutProps) {
@@ -49,6 +51,7 @@ export function CustomerLayout({
         restaurantSettings={restaurantSettings}
         onCartClick={() => setView("checkout")}
         onOrderHistoryClick={handleOrderHistoryClick}
+        showOrderHistory={showOrderHistory}
         cartItemCount={totalCartItems}
       />
       <main className="flex-1 container mx-auto px-4 py-6 sm:py-8">
