@@ -72,35 +72,34 @@ class OrderManager: ObservableObject {
         
         guard let restaurantId = supabaseManager.currentRestaurantId else {
             errorMessage = "No restaurant ID available"
-            print("No restaurant ID available - restaurant not loaded")
+            print("Cannot fetch orders - no restaurant ID")
             return
         }
-        
-        print("Fetching orders for restaurant ID: \(restaurantId)")
         
         isLoading = true
         errorMessage = nil
         
         do {
-            // Use the efficient PostgreSQL function - single call!
-            let response: [OrderWithDetailsResponse] = try await supabaseManager.client
-                .rpc("get_active_orders_with_details", params: ["restaurant_uuid": restaurantId])
+            let response: [OrderWithTableResponse] = try await supabaseManager.client
+                .from("orders")
+                .select("""
+                    *,
+                    table:tables(*),
+                    order_items(
+                        *,
+                        menu_item:menu_items(*)
+                    )
+                """)
+                .eq("restaurant_id", value: restaurantId)
+                .in("status", values: ["new", "preparing", "ready"])
+                .order("created_at", ascending: false)
                 .execute()
                 .value
             
-            // Convert response to Order models
-            let fetchedOrders = response.map { $0.toOrder() }
-            // Determine which orders are new
-            let existingIds = Set(self.orders.map { $0.id })
-            for order in fetchedOrders where !existingIds.contains(order.id) {
-                newOrderIds.insert(order.id)
-            }
-            self.orders = fetchedOrders
+            self.orders = response.map { $0.toOrder() }
+            print("Fetched \(orders.count) active orders")
             
-            print("Active orders fetched efficiently: \(self.orders.count)")
-            
-            // Debug: Print order details
-            for order in self.orders {
+            for order in orders {
                 print("Order ID: \(order.id), Table: \(order.table?.name ?? order.table_id), Status: \(order.status), Items: \(order.order_items?.count ?? 0)")
             }
             
@@ -111,6 +110,7 @@ class OrderManager: ObservableObject {
         
         isLoading = false
     }
+    
     
     // MARK: - Update Order Status
     @MainActor

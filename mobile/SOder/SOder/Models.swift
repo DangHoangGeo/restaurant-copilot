@@ -148,6 +148,76 @@ enum TableStatus: String, Decodable, CaseIterable {
 }
 
 // MARK: - Function Response Models
+
+// Response type for orders with joined table and order items data
+struct OrderWithTableResponse: Decodable {
+    let id: String
+    let restaurant_id: String
+    let table_id: String
+    let session_id: String
+    let guest_count: Int
+    let status: String
+    let total_amount: Double?
+    let created_at: String
+    let updated_at: String
+    
+    // Nested table data
+    let table: TableResponse?
+    
+    // Nested order items data
+    let order_items: [OrderItemWithMenuResponse]
+    
+    // Convert to Order model
+    func toOrder() -> Order {
+        let tableModel = table?.toTable()
+        let orderItems = order_items.map { $0.toOrderItem() }
+        
+        return Order(
+            id: id,
+            restaurant_id: restaurant_id,
+            table_id: table_id,
+            session_id: session_id,
+            guest_count: guest_count,
+            status: OrderStatus(rawValue: status) ?? .new,
+            total_amount: total_amount,
+            created_at: created_at,
+            updated_at: updated_at,
+            table: tableModel,
+            order_items: orderItems
+        )
+    }
+}
+
+struct TableResponse: Decodable {
+    let id: String
+    let restaurant_id: String
+    let name: String
+    let status: String
+    let capacity: Int
+    let is_outdoor: Bool
+    let is_accessible: Bool
+    let notes: String?
+    let qr_code: String?
+    let created_at: String
+    let updated_at: String
+    
+    func toTable() -> Table {
+        return Table(
+            id: id,
+            restaurant_id: restaurant_id,
+            name: name,
+            status: TableStatus(rawValue: status) ?? .available,
+            capacity: capacity,
+            is_outdoor: is_outdoor,
+            is_accessible: is_accessible,
+            notes: notes,
+            qr_code: qr_code,
+            created_at: created_at,
+            updated_at: updated_at
+        )
+    }
+}
+
 struct OrderWithDetailsResponse: Decodable {
     let order_id: String
     let order_restaurant_id: String

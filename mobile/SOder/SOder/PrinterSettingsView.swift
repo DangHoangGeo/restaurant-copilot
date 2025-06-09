@@ -7,92 +7,120 @@ struct PrinterSettingsView: View {
     @State private var isConnecting = false
     
     var body: some View {
-        NavigationView {
-            List {
-                // Current Printer Status Section
-                Section("Current Status") {
-                    HStack {
-                        Image(systemName: printerManager.isConnected ? "printer.fill" : "printer")
-                            .foregroundColor(printerManager.isConnected ? .green : .gray)
-                        
-                        VStack(alignment: .leading) {
-                            Text("Printer Status")
-                                .font(.headline)
-                            Text(printerManager.printerStatus)
-                                .font(.subheadline)
-                                .foregroundColor(printerManager.isConnected ? .green : .secondary)
+        // Use NavigationStack for iOS 16+ or NavigationView with proper iPad handling
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                mainContent
+            }
+        } else {
+            NavigationView {
+                // Empty sidebar for iPad to force content to main area
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    Text("Printer Settings")
+                        .navigationBarHidden(true)
+                }
+                
+                mainContent
+                    .navigationViewStyle(StackNavigationViewStyle()) // Force stack style
+            }
+            .navigationViewStyle(StackNavigationViewStyle()) // Ensure stack style on iPad
+        }
+    }
+    
+    private var mainContent: some View {
+        List {
+            // Current Printer Status Section
+            Section("Current Status") {
+                HStack {
+                    Image(systemName: printerManager.isConnected ? "printer.fill" : "printer")
+                        .foregroundColor(printerManager.isConnected ? .green : .gray)
+                    
+                    VStack(alignment: .leading) {
+                        Text("Printer Status")
+                            .font(.headline)
+                        Text(printerManager.printerStatus)
+                            .font(.subheadline)
+                            .foregroundColor(printerManager.isConnected ? .green : .secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    if printerManager.isConnected {
+                        Button("Disconnect") {
+                            printerManager.disconnectPrinter()
                         }
+                        .buttonStyle(.bordered)
+                        .foregroundColor(.red)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            
+            // Available Printers Section
+            Section("Available Printers") {
+                if printerManager.availablePrinters.isEmpty {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                        Text("No printers found")
+                            .foregroundColor(.secondary)
                         
                         Spacer()
                         
-                        if printerManager.isConnected {
-                            Button("Disconnect") {
-                                printerManager.disconnectPrinter()
-                            }
-                            .buttonStyle(.bordered)
-                            .foregroundColor(.red)
+                        Button("Scan") {
+                            printerManager.checkAvailablePrinters()
                         }
+                        .buttonStyle(.bordered)
                     }
                     .padding(.vertical, 4)
+                } else {
+                    ForEach(printerManager.availablePrinters) { printer in
+                        PrinterRowView(
+                            printer: printer,
+                            isSelected: printerManager.selectedPrinter?.id == printer.id,
+                            isConnecting: isConnecting
+                        ) {
+                            connectToPrinter(printer)
+                        }
+                    }
                 }
                 
-                // Available Printers Section
-                Section("Available Printers") {
-                    if printerManager.availablePrinters.isEmpty {
+                Button("Refresh Printers") {
+                    printerManager.checkAvailablePrinters()
+                }
+                .foregroundColor(.blue)
+            }
+            
+            // Test Printing Section
+            if printerManager.isConnected {
+                Section("Test Printing") {
+                    Button(action: {
+                        Task {
+                            await testPrint()
+                        }
+                    }) {
                         HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                            Text("No printers found")
-                                .foregroundColor(.secondary)
-                            
+                            Image(systemName: "doc.text")
+                            Text("Print Test Receipt")
                             Spacer()
-                            
-                            Button("Scan") {
-                                printerManager.checkAvailablePrinters()
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                        .padding(.vertical, 4)
-                    } else {
-                        ForEach(printerManager.availablePrinters) { printer in
-                            PrinterRowView(
-                                printer: printer,
-                                isSelected: printerManager.selectedPrinter?.id == printer.id,
-                                isConnecting: isConnecting
-                            ) {
-                                connectToPrinter(printer)
-                            }
-                        }
-                    }
-                    
-                    Button("Refresh Printers") {
-                        printerManager.checkAvailablePrinters()
-                    }
-                    .foregroundColor(.blue)
-                }
-                
-                // Test Printing Section
-                if printerManager.isConnected {
-                    Section("Test Printing") {
-                        Button(action: {
-                            Task {
-                                await testPrint()
-                            }
-                        }) {
-                            HStack {
-                                Image(systemName: "doc.text")
-                                Text("Print Test Receipt")
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
                     }
                 }
-                
-                // Manual Printer Setup Section
-                Section("Manual Setup") {
+            }
+            
+            // Manual Printer Setup Section
+            Section("Manual Setup") {
+                if #available(iOS 16.0, *) {
+                    NavigationLink(value: "manual-setup") {
+                        HStack {
+                            Image(systemName: "plus")
+                            Text("Add Network Printer")
+                        }
+                    }
+                } else {
                     NavigationLink(destination: ManualPrinterSetupView(printerManager: printerManager)) {
                         HStack {
                             Image(systemName: "plus")
@@ -100,33 +128,38 @@ struct PrinterSettingsView: View {
                         }
                     }
                 }
-                
-                // Error Message
-                if let errorMessage = printerManager.errorMessage {
-                    Section("Error") {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
-                            .font(.caption)
-                    }
+            }
+            
+            // Error Message
+            if let errorMessage = printerManager.errorMessage {
+                Section("Error") {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .font(.caption)
                 }
             }
-            .navigationTitle("Printer Settings")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        // This would dismiss the view in a navigation context
-                    }
+        }
+        .navigationTitle("Printer Settings")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") {
+                    // This would dismiss the view in a navigation context
                 }
             }
-            .alert("Printer Connection", isPresented: $showingConnectionAlert) {
-                Button("OK") { }
-            } message: {
-                Text(connectionMessage)
-            }
+        }
+        .alert("Printer Connection", isPresented: $showingConnectionAlert) {
+            Button("OK") { }
+        } message: {
+            Text(connectionMessage)
         }
         .onAppear {
             printerManager.checkAvailablePrinters()
+        }
+        .navigationDestination(for: String.self) { destination in
+            if destination == "manual-setup" {
+                ManualPrinterSetupView(printerManager: printerManager)
+            }
         }
     }
     

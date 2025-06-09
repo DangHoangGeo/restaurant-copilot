@@ -52,117 +52,136 @@ struct OrdersView: View {
     }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Filter Bar
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(OrderFilter.allCases, id: \.self) { filter in
-                            FilterChip(
-                                title: filter.displayName,
-                                count: countForFilter(filter),
-                                isSelected: selectedFilter == filter,
-                                color: filter.color
-                            ) {
-                                selectedFilter = filter
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .padding(.vertical, 8)
-                .background(Color(.systemGray6))
-                
-                // Content
-                if orderManager.isLoading {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.2)
-                        Text("Loading orders...")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if filteredOrders.isEmpty {
-                    EmptyOrdersView(filter: selectedFilter)
-                } else {
-                    List {
-                        ForEach(groupedOrders.keys.sorted(), id: \.self) { key in
-                            Section(header: Text(key)) {
-                                ForEach(groupedOrders[key] ?? []) { order in
-                                    OrderRowView(
-                                        order: order,
-                                        isNew: orderManager.newOrderIds.contains(order.id),
-                                        orderManager: orderManager,
-                                        printerManager: printerManager,
-                                        onPrintResult: { message in
-                                            printMessage = message
-                                            showingPrintAlert = true
-                                        }
-                                    )
-                                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                                    .listRowSeparator(.hidden)
-                                    .listRowBackground(Color.clear)
-                                }
-                            }
-                        }
-                    }
-                    .listStyle(PlainListStyle())
-                    .scrollContentBackground(.hidden)
-                    .refreshable {
-                        await orderManager.fetchActiveOrders()
-                    }
+        // Use NavigationStack for iOS 16+ or NavigationView with proper iPad handling
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                mainContent
+            }
+        } else {
+            NavigationView {
+                // Empty sidebar for iPad to force content to main area
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    Text("Orders")
+                        .navigationBarHidden(true)
                 }
                 
-                // Error Message
-                if let errorMessage = orderManager.errorMessage {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                        Text(errorMessage)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Button("Retry") {
-                            Task {
-                                await orderManager.fetchActiveOrders()
+                mainContent
+                    .navigationViewStyle(StackNavigationViewStyle()) // Force stack style
+            }
+            .navigationViewStyle(StackNavigationViewStyle()) // Ensure stack style on iPad
+        }
+    }
+    
+    private var mainContent: some View {
+        VStack(spacing: 0) {
+            // Filter Bar
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(OrderFilter.allCases, id: \.self) { filter in
+                        FilterChip(
+                            title: filter.displayName,
+                            count: countForFilter(filter),
+                            isSelected: selectedFilter == filter,
+                            color: filter.color
+                        ) {
+                            selectedFilter = filter
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .padding(.vertical, 8)
+            .background(Color(.systemGray6))
+            
+            // Content
+            if orderManager.isLoading {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("Loading orders...")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if filteredOrders.isEmpty {
+                EmptyOrdersView(filter: selectedFilter)
+            } else {
+                List {
+                    ForEach(groupedOrders.keys.sorted(), id: \.self) { key in
+                        Section(header: Text(key)) {
+                            ForEach(groupedOrders[key] ?? []) { order in
+                                OrderRowView(
+                                    order: order,
+                                    isNew: orderManager.newOrderIds.contains(order.id),
+                                    orderManager: orderManager,
+                                    printerManager: printerManager,
+                                    onPrintResult: { message in
+                                        printMessage = message
+                                        showingPrintAlert = true
+                                    }
+                                )
+                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
                             }
                         }
+                    }
+                }
+                .listStyle(PlainListStyle())
+                .scrollContentBackground(.hidden)
+                .refreshable {
+                    await orderManager.fetchActiveOrders()
+                }
+            }
+            
+            // Error Message
+            if let errorMessage = orderManager.errorMessage {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                    Text(errorMessage)
                         .font(.caption)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button("Retry") {
+                        Task {
+                            await orderManager.fetchActiveOrders()
+                        }
                     }
-                    .padding()
-                    .background(Color(.systemGray6))
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                }
+                .padding()
+                .background(Color(.systemGray6))
+            }
+        }
+        .navigationTitle("Orders")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button("Refresh Orders") {
+                        Task {
+                            await orderManager.fetchActiveOrders()
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    Button("Sign Out") {
+                        Task {
+                            try? await supabaseManager.signOut()
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
             }
-            .navigationTitle("Orders")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button("Refresh Orders") {
-                            Task {
-                                await orderManager.fetchActiveOrders()
-                            }
-                        }
-                        
-                        Divider()
-                        
-                        Button("Sign Out") {
-                            Task {
-                                try? await supabaseManager.signOut()
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                }
-            }
-            .alert("Print Status", isPresented: $showingPrintAlert) {
-                Button("OK") { }
-            } message: {
-                Text(printMessage)
-            }
+        }
+        .alert("Print Status", isPresented: $showingPrintAlert) {
+            Button("OK") { }
+        } message: {
+            Text(printMessage)
         }
         .task {
             await orderManager.fetchActiveOrders()
