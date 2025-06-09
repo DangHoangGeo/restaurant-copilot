@@ -54,9 +54,26 @@ CREATE TRIGGER trg_bookings_audit
   FOR EACH ROW EXECUTE FUNCTION public.log_changes();
 
 -- Enable RLS on audit_logs and create a policy
+DROP POLICY IF EXISTS "Restrict audit logs" ON audit_logs; -- Drop existing first
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Restrict audit logs"
   ON audit_logs
   FOR SELECT
-  USING (restaurant_id = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
+DROP POLICY IF EXISTS "Tenant can INSERT audit logs" ON audit_logs; -- Drop existing first
+CREATE POLICY "Tenant can INSERT audit logs"
+  ON audit_logs
+  FOR INSERT
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
+DROP POLICY IF EXISTS "Tenant can UPDATE audit logs" ON audit_logs;
+CREATE POLICY "Tenant can UPDATE audit logs"
+  ON audit_logs
+  FOR UPDATE
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
 REVOKE ALL ON audit_logs FROM authenticated;
+GRANT INSERT, SELECT, UPDATE ON audit_logs TO authenticated; -- Grant specific necessary privileges
