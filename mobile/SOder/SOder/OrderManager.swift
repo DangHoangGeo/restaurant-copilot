@@ -207,7 +207,9 @@ class OrderManager: ObservableObject {
                 for await _ in ordersInsertion {
                     print("New order inserted via realtime")
                     await MainActor.run {
-                        Task { await self?.handleOrderChange() }
+                        Task { @MainActor in
+                            await self?.handleOrderChange()
+                        }
                     }
                 }
             }
@@ -223,7 +225,9 @@ class OrderManager: ObservableObject {
                 for await _ in ordersUpdate {
                     print("Order updated via realtime")
                     await MainActor.run {
-                        Task { await self?.handleOrderChange() }
+                        Task { @MainActor in
+                            await self?.handleOrderChange()
+                        }
                     }
                 }
             }
@@ -238,7 +242,9 @@ class OrderManager: ObservableObject {
                 for await _ in orderItemsUpdate {
                     print("Order item updated via realtime")
                     await MainActor.run {
-                        Task { await self?.handleOrderItemChange() }
+                        Task { @MainActor in
+                            await self?.handleOrderItemChange()
+                        }
                     }
                 }
             }
@@ -246,8 +252,10 @@ class OrderManager: ObservableObject {
         // Listen for subscription status
         if let channel = realtimeChannel {
             Task { [weak self] in
-                // channel.subscribe() returns Void, not AsyncSequence, so just call it
                 await channel.subscribe()
+                await MainActor.run {
+                    self?.isRealtimeConnected = true
+                }
             }
         }
     }
@@ -258,23 +266,21 @@ class OrderManager: ObservableObject {
             realtimeChannel = nil
             print("Cleaned up realtime subscription")
         }
-        isRealtimeConnected = false
+        await MainActor.run {
+            isRealtimeConnected = false
+        }
     }
     
     @MainActor
-    private func handleOrderChange() {
+    private func handleOrderChange() async {
         // Refresh orders when changes occur
-        Task { [weak self] in
-            await self?.fetchActiveOrders()
-        }
+        await fetchActiveOrders()
     }
     
     @MainActor
-    private func handleOrderItemChange() {
+    private func handleOrderItemChange() async {
         // Refresh orders when order items change
-        Task { [weak self] in
-            await self?.fetchActiveOrders()
-        }
+        await fetchActiveOrders()
     }
     
     // MARK: - Public Methods for Manual Control

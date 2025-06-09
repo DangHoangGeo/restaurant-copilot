@@ -7,37 +7,83 @@ struct OrdersView: View {
     
     @State private var showingPrintAlert = false
     @State private var printMessage = ""
+    @State private var selectedFilter: OrderFilter = .all
+
+    enum OrderFilter: String, CaseIterable {
+        case all = "all"
+        case new = "new"
+        case preparing = "preparing"
+        case ready = "ready"
+        
+        var displayName: String {
+            switch self {
+            case .all: return "All"
+            case .new: return "New"
+            case .preparing: return "Preparing"
+            case .ready: return "Ready"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .all: return .blue
+            case .new: return .blue
+            case .preparing: return .orange
+            case .ready: return .green
+            }
+        }
+    }
+    
+    private var filteredOrders: [Order] {
+        switch selectedFilter {
+        case .all:
+            return orderManager.orders
+        case .new:
+            return orderManager.orders.filter { $0.status == .new }
+        case .preparing:
+            return orderManager.orders.filter { $0.status == .preparing }
+        case .ready:
+            return orderManager.orders.filter { $0.status == .ready }
+        }
+    }
 
     var body: some View {
         NavigationView {
-            VStack {
-                if orderManager.isLoading {
-                    VStack {
-                        ProgressView()
-                        Text("Loading orders...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                // Filter Bar
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(OrderFilter.allCases, id: \.self) { filter in
+                            FilterChip(
+                                title: filter.displayName,
+                                count: countForFilter(filter),
+                                isSelected: selectedFilter == filter,
+                                color: filter.color
+                            ) {
+                                selectedFilter = filter
+                            }
+                        }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if orderManager.orders.isEmpty {
-                    VStack(spacing: 20) {
-                        Image(systemName: "tray")
-                            .font(.system(size: 60))
-                            .foregroundColor(.gray)
-                        
-                        Text("No Active Orders")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text("New orders will appear here automatically")
+                    .padding(.horizontal)
+                }
+                .padding(.vertical, 8)
+                .background(Color(.systemGray6))
+                
+                // Content
+                if orderManager.isLoading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.2)
+                        Text("Loading orders...")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if filteredOrders.isEmpty {
+                    EmptyOrdersView(filter: selectedFilter)
                 } else {
                     List {
-                        ForEach(orderManager.orders) { order in
+                        ForEach(filteredOrders) { order in
                             OrderRowView(
                                 order: order, 
                                 orderManager: orderManager,
@@ -47,7 +93,8 @@ struct OrdersView: View {
                                     showingPrintAlert = true
                                 }
                             )
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            .listRowSeparator(.hidden)
                         }
                     }
                     .listStyle(PlainListStyle())
@@ -56,30 +103,47 @@ struct OrdersView: View {
                     }
                 }
                 
+                // Error Message
                 if let errorMessage = orderManager.errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Button("Retry") {
+                            Task {
+                                await orderManager.fetchActiveOrders()
+                            }
+                        }
                         .font(.caption)
-                        .padding()
+                        .foregroundColor(.blue)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
                 }
-
             }
-            .navigationTitle("Active Orders")
+            .navigationTitle("Orders")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Refresh") {
-                        Task {
-                            await orderManager.fetchActiveOrders()
+                    Menu {
+                        Button("Refresh Orders") {
+                            Task {
+                                await orderManager.fetchActiveOrders()
+                            }
                         }
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Sign Out") {
-                        Task {
-                            try? await supabaseManager.signOut()
+                        
+                        Divider()
+                        
+                        Button("Sign Out") {
+                            Task {
+                                try? await supabaseManager.signOut()
+                            }
                         }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
                     }
                 }
             }
@@ -93,8 +157,107 @@ struct OrdersView: View {
             await orderManager.fetchActiveOrders()
         }
     }
+    
+    private func countForFilter(_ filter: OrderFilter) -> Int {
+        switch filter {
+        case .all:
+            return orderManager.orders.count
+        case .new:
+            return orderManager.orders.filter { $0.status == .new }.count
+        case .preparing:
+            return orderManager.orders.filter { $0.status == .preparing }.count
+        case .ready:
+            return orderManager.orders.filter { $0.status == .ready }.count
+        }
+    }
 }
 
+struct FilterChip: View {
+    let title: String
+    let count: Int
+    let isSelected: Bool
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(isSelected ? .semibold : .medium)
+                
+                if count > 0 {
+                    Text("\(count)")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(isSelected ? Color.white.opacity(0.3) : color.opacity(0.2))
+                        .cornerRadius(8)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(isSelected ? color : Color(.systemGray5))
+            .foregroundColor(isSelected ? .white : color)
+            .cornerRadius(20)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct EmptyOrdersView: View {
+    let filter: OrdersView.OrderFilter
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: emptyStateIcon)
+                .font(.system(size: 60))
+                .foregroundColor(.gray.opacity(0.6))
+            
+            Text(emptyStateTitle)
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text(emptyStateMessage)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private var emptyStateIcon: String {
+        switch filter {
+        case .all: return "tray"
+        case .new: return "plus.circle"
+        case .preparing: return "clock"
+        case .ready: return "checkmark.circle"
+        }
+    }
+    
+    private var emptyStateTitle: String {
+        switch filter {
+        case .all: return "No Active Orders"
+        case .new: return "No New Orders"
+        case .preparing: return "Nothing Preparing"
+        case .ready: return "Nothing Ready"
+        }
+    }
+    
+    private var emptyStateMessage: String {
+        switch filter {
+        case .all: return "New orders will appear here automatically"
+        case .new: return "New orders from customers will show up here"
+        case .preparing: return "Orders being prepared will appear here"
+        case .ready: return "Completed orders ready for serving will appear here"
+        }
+    }
+}
+
+// Enhanced OrderRowView with better design
 struct OrderRowView: View {
     let order: Order
     let orderManager: OrderManager
@@ -105,125 +268,199 @@ struct OrderRowView: View {
     @State private var isPrinting = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Order Header
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Table \(order.table?.name ?? "Unknown")")
-                            .font(.headline)
-                            .fontWeight(.semibold)
+        VStack(spacing: 0) {
+            // Main Order Card
+            VStack(alignment: .leading, spacing: 12) {
+                // Order Header
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(order.table?.name ?? "Table \(order.table_id)")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            EnhancedStatusBadge(status: order.status)
+                        }
                         
-                        Spacer()
-                        
-                        StatusBadge(status: order.status.displayName, color: order.status.color)
+                        HStack(spacing: 16) {
+                            Label("\(order.guest_count)", systemImage: "person.2")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Label(formatTime(order.created_at), systemImage: "clock")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                     }
                     
-                    HStack {
-                        Text("\(order.guest_count) guest\(order.guest_count == 1 ? "" : "s")")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Text(formatTime(order.created_at))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isExpanded.toggle()
+                        }
+                    }) {
+                        Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle")
+                            .font(.title2)
+                            .foregroundColor(.blue)
                     }
                 }
                 
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        isExpanded.toggle()
+                // Quick Actions (always visible)
+                HStack(spacing: 12) {
+                    StatusActionButton(
+                        currentStatus: order.status,
+                        orderManager: orderManager,
+                        orderId: order.id
+                    )
+                    
+                    PrintButton(
+                        isPrinting: $isPrinting,
+                        printerManager: printerManager,
+                        order: order,
+                        onResult: onPrintResult
+                    )
+                    
+                    Spacer()
+                    
+                    if let total = order.total_amount {
+                        Text("¥\(String(format: "%.0f", total))")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
                     }
-                }) {
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
                 }
             }
+            .padding()
+            .background(Color(.systemBackground))
+            .cornerRadius(12)
+            .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 2)
             
-            // Order Items (when expanded)
+            // Expanded Details
             if isExpanded {
                 VStack(alignment: .leading, spacing: 8) {
                     Divider()
+                        .padding(.horizontal)
                     
                     if let orderItems = order.order_items, !orderItems.isEmpty {
-                        ForEach(orderItems) { item in
-                            OrderItemRowView(orderItem: item, orderManager: orderManager)
+                        LazyVStack(spacing: 8) {
+                            ForEach(orderItems) { item in
+                                EnhancedOrderItemView(orderItem: item, orderManager: orderManager)
+                            }
                         }
+                        .padding(.horizontal)
                     } else {
-                        Text("No items")
-                            .font(.caption)
+                        Text("No items in this order")
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .padding()
                     }
-                    
-                    // Order Actions
-                    HStack(spacing: 12) {
-                        if order.status != .completed {
-                            Menu("Change Status") {
-                                ForEach(OrderStatus.allCases, id: \.self) { status in
-                                    if status != order.status {
-                                        Button(status.displayName) {
-                                            Task {
-                                                await orderManager.updateOrderStatus(
-                                                    orderId: order.id,
-                                                    newStatus: status
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .buttonStyle(.bordered)
-                            .foregroundColor(.blue)
-                        }
-                        
-                        // Print Button
-                        Button(action: {
-                            Task {
-                                await printOrderReceipt()
-                            }
-                        }) {
-                            HStack {
-                                if isPrinting {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                } else {
-                                    Image(systemName: "printer")
-                                }
-                                Text(isPrinting ? "Printing..." : "Print")
-                            }
-                        }
-                        .buttonStyle(.bordered)
-                        .foregroundColor(.green)
-                        .disabled(isPrinting || !printerManager.isConnected)
-                        
-                        Spacer()
-                        
-                        if let total = order.total_amount {
-                            Text("Total: ¥\(String(format: "%.0f", total))")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                        }
-                    }
-                    
-                    // Printer status hint
-                    if !printerManager.isConnected {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle")
-                                .foregroundColor(.orange)
-                            Text("Connect a printer to enable printing")
-                                .font(.caption)
-                                .foregroundColor(.orange)
+                }
+                .background(Color(.systemGray6).opacity(0.5))
+                .cornerRadius(12)
+                .padding(.top, 4)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+    
+    private func formatTime(_ dateString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        guard let date = formatter.date(from: dateString) else { return "Unknown" }
+        
+        let displayFormatter = DateFormatter()
+        displayFormatter.timeStyle = .short
+        return displayFormatter.string(from: date)
+    }
+}
+
+struct EnhancedStatusBadge: View {
+    let status: OrderStatus
+    
+    var body: some View {
+        Text(status.displayName)
+            .font(.caption)
+            .fontWeight(.semibold)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(badgeColor.opacity(0.2))
+            .foregroundColor(badgeColor)
+            .cornerRadius(12)
+    }
+    
+    private var badgeColor: Color {
+        switch status {
+        case .new:
+            return .blue
+        case .preparing:
+            return .orange
+        case .ready:
+            return .green
+        case .completed:
+            return .gray
+        }
+    }
+}
+
+struct StatusActionButton: View {
+    let currentStatus: OrderStatus
+    let orderManager: OrderManager
+    let orderId: String
+    
+    var body: some View {
+        Menu {
+            ForEach(OrderStatus.allCases, id: \.self) { status in
+                if status != currentStatus {
+                    Button(status.displayName) {
+                        Task {
+                            await orderManager.updateOrderStatus(
+                                orderId: orderId,
+                                newStatus: status
+                            )
                         }
                     }
                 }
             }
+        } label: {
+            Label("Change Status", systemImage: "arrow.up.arrow.down")
+                .font(.subheadline)
+                .foregroundColor(.blue)
+                .padding(8)
+                .background(Color(.systemGray5))
+                .cornerRadius(12)
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct PrintButton: View {
+    @Binding var isPrinting: Bool
+    let printerManager: PrinterManager
+    let order: Order
+    let onResult: (String) -> Void
+    
+    var body: some View {
+        Button(action: {
+            Task {
+                await printOrderReceipt()
+            }
+        }) {
+            HStack {
+                if isPrinting {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                } else {
+                    Image(systemName: "printer")
+                }
+                Text(isPrinting ? "Printing..." : "Print")
+            }
+            .padding(8)
+            .background(Color.green.opacity(0.2))
+            .foregroundColor(.green)
+            .cornerRadius(12)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(isPrinting || !printerManager.isConnected)
     }
     
     private func printOrderReceipt() async {
@@ -233,23 +470,14 @@ struct OrderRowView: View {
         
         await MainActor.run {
             isPrinting = false
-            onPrintResult(success 
+            onResult(success 
                 ? "Receipt printed successfully!" 
                 : "Failed to print receipt. Check printer connection.")
         }
     }
-    
-    private func formatTime(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else { return dateString }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
-    }
 }
 
-struct OrderItemRowView: View {
+struct EnhancedOrderItemView: View {
     let orderItem: OrderItem
     let orderManager: OrderManager
     

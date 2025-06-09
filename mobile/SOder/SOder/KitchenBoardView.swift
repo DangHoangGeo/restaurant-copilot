@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct KitchenBoardView: View {
-    @StateObject private var orderManager = OrderManager()
     @EnvironmentObject var printerManager: PrinterManager
+    @StateObject private var orderManager = OrderManager()
     @State private var groupedItems: [GroupedItem] = []
     @State private var selectedTimeFilter: TimeFilter = .last10Minutes
     
@@ -40,25 +40,43 @@ struct KitchenBoardView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Filter Controls
-                HStack {
-                    Text("Show orders from:")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Picker("Time Filter", selection: $selectedTimeFilter) {
-                        ForEach(TimeFilter.allCases, id: \.self) { filter in
-                            Text(filter.displayName).tag(filter)
+                // Filter Controls with Debug Info
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("Show orders from:")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Picker("Time Filter", selection: $selectedTimeFilter) {
+                            ForEach(TimeFilter.allCases, id: \.self) { filter in
+                                Text(filter.displayName).tag(filter)
+                            }
                         }
+                        .pickerStyle(SegmentedPickerStyle())
+                        
+                        Spacer()
+                        
+                        Button("Refresh") {
+                            Task {
+                                await orderManager.refreshOrders()
+                                computeGrouping()
+                            }
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                     
-                    Spacer()
-                    
-                    Button("Refresh") {
-                        computeGrouping()
+                    // Debug info
+                    HStack {
+                        Text("Orders: \(orderManager.orders.count)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Text("Groups: \(groupedItems.count)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
-                    .buttonStyle(.bordered)
                 }
                 .padding()
                 .background(Color(.systemGray6))
@@ -82,10 +100,25 @@ struct KitchenBoardView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         
-                        Text("Completed orders and individual items will appear here")
+                        Text("New and preparing items will appear here")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
+                        
+                        // Debug: Show raw order data
+                        if !orderManager.orders.isEmpty {
+                            VStack(spacing: 4) {
+                                Text("Debug: \(orderManager.orders.count) orders found")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                
+                                ForEach(orderManager.orders.prefix(3), id: \.id) { order in
+                                    Text("Order: \(order.status.rawValue), Items: \(order.order_items?.count ?? 0)")
+                                        .font(.caption2)
+                                        .foregroundColor(.orange)
+                                }
+                            }
+                        }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -106,7 +139,8 @@ struct KitchenBoardView: View {
             }
             .navigationTitle("Kitchen Board")
             .navigationBarTitleDisplayMode(.large)
-            .onAppear {
+            .task {
+                await orderManager.refreshOrders()
                 computeGrouping()
             }
             .onChange(of: selectedTimeFilter) { _ in
@@ -119,47 +153,109 @@ struct KitchenBoardView: View {
     }
     
     private func computeGrouping() {
+        print("Computing grouping with \(orderManager.orders.count) orders")
+        
         let cutoffDate = Date().addingTimeInterval(selectedTimeFilter.timeInterval)
-        let formatter = ISO8601DateFormatter()
+        
+        // Use a more flexible date formatter that handles microseconds
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         
         var tempGrouping: [String: GroupedItem] = [:]
         
         for order in orderManager.orders {
-            guard let orderDate = formatter.date(from: order.created_at),
-                  orderDate >= cutoffDate,
-                  order.status == .new || order.status == .preparing else {
+            print("Processing order \(order.id): status=\(order.status), items=\(order.order_items?.count ?? 0)")
+            
+            // Parse the created_at date with better error handling
+            guard let orderDate = formatter.date(from: order.created_at) else {
+                print("Failed to parse date: \(order.created_at) - trying fallback parser")
+                
+                // Fallback to ISO8601DateFormatter
+                let iso8601Formatter = ISO8601DateFormatter()
+                iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                
+                guard let fallbackDate = iso8601Formatter.date(from: order.created_at) else {
+                    print("Failed to parse date with fallback: \(order.created_at)")
+                    continue
+                }
+                
+                // Use fallback date
+                guard fallbackDate >= cutoffDate else {
+                    print("Order \(order.id) is outside time filter (fallback)")
+                    continue
+                }
+                
+                // Continue processing with fallback date
+                processOrderItems(order: order, tempGrouping: &tempGrouping)
                 continue
             }
             
-            guard let orderItems = order.order_items else { continue }
-            
-            for item in orderItems {
-                guard item.status == .ordered || item.status == .preparing else { continue }
-                
-                let key = item.menu_item_id
-                if let existingGroup = tempGrouping[key] {
-                    var updatedGroup = existingGroup
-                    updatedGroup.quantity += item.quantity
-                    updatedGroup.tables.insert(order.table?.name ?? "Table \(order.table_id)")
-                    tempGrouping[key] = updatedGroup
-                } else {
-                    let newGroup = GroupedItem(
-                        itemId: item.menu_item_id,
-                        itemName: item.menu_item?.displayName ?? "Unknown Item",
-                        quantity: item.quantity,
-                        tables: Set([order.table?.name ?? "Table \(order.table_id)"]),
-                        orderItems: [item]
-                    )
-                    tempGrouping[key] = newGroup
-                }
+            // Check if order is within time filter
+            guard orderDate >= cutoffDate else {
+                print("Order \(order.id) is outside time filter")
+                continue
             }
+            
+            processOrderItems(order: order, tempGrouping: &tempGrouping)
         }
         
         groupedItems = Array(tempGrouping.values).sorted { $0.itemName < $1.itemName }
+        print("Final grouping: \(groupedItems.count) groups")
+        
+        for group in groupedItems {
+            print("Group: \(group.itemName), qty: \(group.quantity), tables: \(group.tables)")
+        }
+    }
+    
+    private func processOrderItems(order: Order, tempGrouping: inout [String: GroupedItem]) {
+        // Include orders that need kitchen attention - expand to include 'ready' status
+        // since kitchen staff might need to see what's ready for pickup
+        guard order.status == .new || order.status == .preparing || order.status == .ready else {
+            print("Order \(order.id) status \(order.status) not relevant for kitchen")
+            return
+        }
+        
+        guard let orderItems = order.order_items else {
+            print("Order \(order.id) has no items")
+            return
+        }
+        
+        for item in orderItems {
+            print("Processing item \(item.id): status=\(item.status), menu_item=\(item.menu_item?.displayName ?? "nil")")
+            
+            // Include items that need preparation OR are ready (for kitchen visibility)
+            guard item.status == .ordered || item.status == .preparing || item.status == .ready else {
+                print("Item \(item.id) status \(item.status) not relevant for kitchen")
+                continue
+            }
+            
+            let key = item.menu_item_id
+            let tableName = order.table?.name ?? "Table \(order.table_id)"
+            
+            if var existingGroup = tempGrouping[key] {
+                existingGroup.quantity += item.quantity
+                existingGroup.tables.insert(tableName)
+                existingGroup.orderItems.append(item)
+                tempGrouping[key] = existingGroup
+                print("Updated existing group for \(item.menu_item?.displayName ?? "Unknown"): qty=\(existingGroup.quantity)")
+            } else {
+                let newGroup = GroupedItem(
+                    itemId: item.menu_item_id,
+                    itemName: item.menu_item?.displayName ?? "Unknown Item",
+                    quantity: item.quantity,
+                    tables: Set([tableName]),
+                    orderItems: [item]
+                )
+                tempGrouping[key] = newGroup
+                print("Created new group for \(newGroup.itemName): qty=\(newGroup.quantity)")
+            }
+        }
     }
     
     private func markGroupDone(_ group: GroupedItem) {
-        Task {
+        Task { @MainActor in
             // Update all order items in this group to "ready"
             for item in group.orderItems {
                 await orderManager.updateOrderItemStatus(
@@ -171,10 +267,8 @@ struct KitchenBoardView: View {
             // Print a summary for the kitchen
             await printerManager.printKitchenSummary(group)
             
-            // Refresh grouping
-            await MainActor.run {
-                computeGrouping()
-            }
+            // Refresh grouping on main thread
+            computeGrouping()
         }
     }
 }
