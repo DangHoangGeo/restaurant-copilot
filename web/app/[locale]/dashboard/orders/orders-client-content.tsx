@@ -635,7 +635,7 @@ export function OrdersClientContent({
                       </div>
                     </TableCell>
                   </TableRow>
-                  )))}
+                  ))}
               </TableBody>
             </Table>
           </ScrollArea>
@@ -732,7 +732,8 @@ export function OrdersClientContent({
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )))
+              }
               </TableBody>
             </Table>
           </ScrollArea>

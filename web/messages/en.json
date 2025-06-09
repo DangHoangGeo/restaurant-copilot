@@ -547,17 +547,17 @@
           "noSettingsFoundMessage": "No settings data found for this restaurant."
         },
         "validation": {
-          "name.required": "Restaurant name is required.",
-          "name.maxLength": "Restaurant name must be {maxLength} characters or less.",
-          "defaultLanguage.required": "Default language is required.",
-          "brandColor.invalidFormat": "Invalid brand color format. Use #RRGGBB.",
-          "contactInfo.maxLength": "Contact information must be {maxLength} characters or less.",
-          "address.maxLength": "Address must be {maxLength} characters or less.",
-          "opening_hours.maxLength": "Operating hours must be {maxLength} characters or less.",
-          "description.maxLength": "Description must be {maxLength} characters or less.",
-          "logoFile.maxSize": "Logo image must be {maxSize}MB or less.",
-          "logoFile.invalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
-          "logoUrl.invalidFormat": "Invalid logo URL format."
+          "nameRequired": "Restaurant name is required.",
+          "nameMaxLength": "Restaurant name must be {maxLength} characters or less.",
+          "defaultLanguageRequired": "Default language is required.",
+          "brandColorInvalidFormat": "Invalid brand color format. Use #RRGGBB.",
+          "contactInfoMaxLength": "Contact information must be {maxLength} characters or less.",
+          "addressMaxLength": "Address must be {maxLength} characters or less.",
+          "openingHoursMaxLength": "Operating hours must be {maxLength} characters or less.",
+          "descriptionMaxLength": "Description must be {maxLength} characters or less.",
+          "logoFileMaxSize": "Logo image must be {maxSize}MB or less.",
+          "logoFileInvalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
+          "logoUrlinvalidFormat": "Invalid logo URL format."
         }
       }
     },

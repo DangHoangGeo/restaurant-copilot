@@ -735,17 +735,17 @@
           "noSettingsFoundMessage": "Không tìm thấy dữ liệu cài đặt cho nhà hàng này."
         },
         "validation": {
-          "name.required": "Tên nhà hàng là bắt buộc.",
-          "name.maxLength": "Tên nhà hàng phải có {maxLength} ký tự trở xuống.",
-          "defaultLanguage.required": "Ngôn ngữ mặc định là bắt buộc.",
-          "brandColor.invalidFormat": "Định dạng màu thương hiệu không hợp lệ. Sử dụng #RRGGBB.",
-          "contactInfo.maxLength": "Thông tin liên hệ phải có {maxLength} ký tự trở xuống.",
-          "address.maxLength": "Địa chỉ phải có {maxLength} ký tự trở xuống.",
-          "opening_hours.maxLength": "Giờ hoạt động phải có {maxLength} ký tự trở xuống.",
-          "description.maxLength": "Mô tả phải có {maxLength} ký tự trở xuống.",
-          "logoFile.maxSize": "Ảnh logo phải từ {maxSize}MB trở xuống.",
-          "logoFile.invalidType": "Loại tệp không hợp lệ. Vui lòng tải lên hình ảnh PNG, JPG hoặc WEBP.",
-          "logoUrl.invalidFormat": "Định dạng URL logo không hợp lệ."
+          "nameRequired": "Tên nhà hàng là bắt buộc.",
+          "nameMaxLength": "Tên nhà hàng phải có {maxLength} ký tự trở xuống.",
+          "defaultLanguageRequired": "Ngôn ngữ mặc định là bắt buộc.",
+          "brandColorInvalidFormat": "Định dạng màu thương hiệu không hợp lệ. Sử dụng #RRGGBB.",
+          "contactInfoMaxLength": "Thông tin liên hệ phải có {maxLength} ký tự trở xuống.",
+          "addressMaxLength": "Địa chỉ phải có {maxLength} ký tự trở xuống.",
+          "opening_hoursMaxLength": "Giờ hoạt động phải có {maxLength} ký tự trở xuống.",
+          "descriptionMaxLength": "Mô tả phải có {maxLength} ký tự trở xuống.",
+          "logoFileMaxSize": "Ảnh logo phải từ {maxSize}MB trở xuống.",
+          "logoFileInvalidType": "Loại tệp không hợp lệ. Vui lòng tải lên hình ảnh PNG, JPG hoặc WEBP.",
+          "logoUrlInvalidFormat": "Định dạng URL logo không hợp lệ."
         }
       }
     },
@@ -818,4 +818,3 @@
     "orderhistory": {"checkout_button": "Thanh toán", "price_per_person": "Mỗi người: {value}"}
   }
 }
-[end of web/messages/vi.json]

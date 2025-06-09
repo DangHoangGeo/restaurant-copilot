@@ -30,6 +30,7 @@
     "cookie": "^1.0.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.16.0",
+    "html-to-image": "^1.11.13",
     "jose": "^6.0.11",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.512.0",

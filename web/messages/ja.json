@@ -269,17 +269,17 @@
           "noSettingsFoundMessage": "このレストランの設定データが見つかりませんでした。"
         },
         "validation": {
-          "name.required": "レストラン名は必須です。",
-          "name.maxLength": "レストラン名は{maxLength}文字以内で入力してください。",
-          "defaultLanguage.required": "デフォルト言語は必須です。",
-          "brandColor.invalidFormat": "ブランドカラーの形式が無効です。#RRGGBB を使用してください。",
-          "contactInfo.maxLength": "連絡先情報は{maxLength}文字以内で入力してください。",
-          "address.maxLength": "住所は{maxLength}文字以内で入力してください。",
-          "opening_hours.maxLength": "営業時間は{maxLength}文字以内で入力してください。",
-          "description.maxLength": "説明は{maxLength}文字以内で入力してください。",
-          "logoFile.maxSize": "ロゴ画像は{maxSize}MB以下にしてください。",
-          "logoFile.invalidType": "無効なファイルタイプです。PNG、JPG、またはWEBP画像をアップロードしてください。",
-          "logoUrl.invalidFormat": "ロゴURLの形式が無効です。"
+          "nameRequired": "レストラン名は必須です。",
+          "nameMaxLength": "レストラン名は{maxLength}文字以内で入力してください。",
+          "defaultLanguageRequired": "デフォルト言語は必須です。",
+          "brandColorInvalidFormat": "ブランドカラーの形式が無効です。#RRGGBB を使用してください。",
+          "contactInfoMaxLength": "連絡先情報は{maxLength}文字以内で入力してください。",
+          "addressMaxLength": "住所は{maxLength}文字以内で入力してください。",
+          "opening_hoursMaxLength": "営業時間は{maxLength}文字以内で入力してください。",
+          "descriptionMaxLength": "説明は{maxLength}文字以内で入力してください。",
+          "logoFileMaxSize": "ロゴ画像は{maxSize}MB以下にしてください。",
+          "logoFileInvalidType": "無効なファイルタイプです。PNG、JPG、またはWEBP画像をアップロードしてください。",
+          "logoUrlInvalidFormat": "ロゴURLの形式が無効です。"
         }
       }
     },

@@ -385,7 +385,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
 
       let destItems = sourceCategoryIndex === destCategoryIndex ? sourceItems : Array.from(destCategory.menu_items);
-      destItems.splice(destination.index, 0, { ...movedItem, category_id: destCategory.id });
+      destItems.splice(destination.index, 0, { ...movedItem, id: destCategory.id });
 
       destCategory.menu_items = destItems.map((item, index) => ({ ...item, position: index }));
       newMenuData[destCategoryIndex] = destCategory;
