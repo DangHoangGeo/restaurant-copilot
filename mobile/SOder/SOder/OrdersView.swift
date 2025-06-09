@@ -47,6 +47,10 @@ struct OrdersView: View {
         }
     }
 
+    private var groupedOrders: [String: [Order]] {
+        Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? "Table \($0.table_id)" })
+    }
+
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -83,18 +87,23 @@ struct OrdersView: View {
                     EmptyOrdersView(filter: selectedFilter)
                 } else {
                     List {
-                        ForEach(filteredOrders) { order in
-                            OrderRowView(
-                                order: order, 
-                                orderManager: orderManager,
-                                printerManager: printerManager,
-                                onPrintResult: { message in
-                                    printMessage = message
-                                    showingPrintAlert = true
+                        ForEach(groupedOrders.keys.sorted(), id: \.self) { key in
+                            Section(header: Text(key)) {
+                                ForEach(groupedOrders[key] ?? []) { order in
+                                    OrderRowView(
+                                        order: order,
+                                        isNew: orderManager.newOrderIds.contains(order.id),
+                                        orderManager: orderManager,
+                                        printerManager: printerManager,
+                                        onPrintResult: { message in
+                                            printMessage = message
+                                            showingPrintAlert = true
+                                        }
+                                    )
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                    .listRowSeparator(.hidden)
                                 }
-                            )
-                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                            .listRowSeparator(.hidden)
+                            }
                         }
                     }
                     .listStyle(PlainListStyle())
@@ -260,6 +269,7 @@ struct EmptyOrdersView: View {
 // Enhanced OrderRowView with better design
 struct OrderRowView: View {
     let order: Order
+    let isNew: Bool
     let orderManager: OrderManager
     let printerManager: PrinterManager
     let onPrintResult: (String) -> Void
@@ -278,9 +288,19 @@ struct OrderRowView: View {
                             Text(order.table?.name ?? "Table \(order.table_id)")
                                 .font(.headline)
                                 .fontWeight(.bold)
-                            
+
+                            if isNew {
+                                Text("NEW")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.red)
+                                    .padding(4)
+                                    .background(Color.red.opacity(0.2))
+                                    .cornerRadius(6)
+                            }
+
                             Spacer()
-                            
+
                             EnhancedStatusBadge(status: order.status)
                         }
                         
@@ -298,6 +318,9 @@ struct OrderRowView: View {
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isExpanded.toggle()
+                            if !isExpanded {
+                                orderManager.newOrderIds.remove(order.id)
+                            }
                         }
                     }) {
                         Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle")
@@ -362,6 +385,9 @@ struct OrderRowView: View {
             }
         }
         .padding(.vertical, 4)
+        .onAppear {
+            orderManager.newOrderIds.remove(order.id)
+        }
     }
     
     private func formatTime(_ dateString: String) -> String {

@@ -8,6 +8,8 @@ class PrinterManager: ObservableObject {
     @Published var availablePrinters: [PrinterInfo] = []
     @Published var selectedPrinter: PrinterInfo?
     @Published var errorMessage: String?
+    @Published var printLogs: [String] = []
+    @Published var printedOrders: [Order] = []
     
     private var networkMonitor: NWPathMonitor?
     private var bluetoothAccessory: EAAccessory?
@@ -15,6 +17,12 @@ class PrinterManager: ObservableObject {
     init() {
         checkAvailablePrinters()
         startNetworkMonitoring()
+        if let data = UserDefaults.standard.data(forKey: "selectedPrinter"),
+           let printer = try? JSONDecoder().decode(PrinterInfo.self, from: data) {
+            selectedPrinter = printer
+            isConnected = true
+            printerStatus = "Connected to \(printer.name)"
+        }
     }
     
     // MARK: - Printer Discovery
@@ -80,10 +88,13 @@ class PrinterManager: ObservableObject {
             case .network:
                 try await connectNetworkPrinter(printer)
             }
-            
+
             await MainActor.run {
                 isConnected = true
                 printerStatus = "Connected to \(printer.name)"
+                if let data = try? JSONEncoder().encode(printer) {
+                    UserDefaults.standard.set(data, forKey: "selectedPrinter")
+                }
             }
         } catch {
             await MainActor.run {
@@ -135,6 +146,7 @@ class PrinterManager: ObservableObject {
         printerStatus = "Disconnected"
         selectedPrinter = nil
         bluetoothAccessory = nil
+        UserDefaults.standard.removeObject(forKey: "selectedPrinter")
     }
     
     // MARK: - Printing Functions
@@ -157,9 +169,13 @@ class PrinterManager: ObservableObject {
             }
             return false
         }
-        
+
         let receiptData = generateOrderReceipt(order)
-        return await printData(receiptData, to: printer)
+        let success = await printData(receiptData, to: printer)
+        if success {
+            printedOrders.append(order)
+        }
+        return success
     }
     
     func printKitchenSummary(_ group: GroupedItem) async -> Bool {
@@ -169,25 +185,43 @@ class PrinterManager: ObservableObject {
             }
             return false
         }
-        
+
         let summaryData = generateKitchenSummary(group)
         return await printData(summaryData, to: printer)
     }
+
+    func reprintOrder(_ order: Order) async -> Bool {
+        guard isConnected, let printer = selectedPrinter else { return false }
+        let receiptData = generateOrderReceipt(order)
+        return await printData(receiptData, to: printer)
+    }
     
     private func printData(_ data: Data, to printer: PrinterInfo) async -> Bool {
-        do {
-            switch printer.type {
-            case .bluetooth:
-                return try await printViaBluetooth(data)
-            case .network:
-                return try await printViaNetwork(data, to: printer.address)
+        var attempts = 0
+        while attempts < 3 {
+            do {
+                let success: Bool
+                switch printer.type {
+                case .bluetooth:
+                    success = try await printViaBluetooth(data)
+                case .network:
+                    success = try await printViaNetwork(data, to: printer.address)
+                }
+                if success {
+                    printLogs.append("Printed successfully at \(Date())")
+                    return true
+                }
+            } catch {
+                attempts += 1
+                printLogs.append("Print attempt \(attempts) failed: \(error.localizedDescription)")
+                continue
             }
-        } catch {
-            await MainActor.run {
-                errorMessage = "Print failed: \(error.localizedDescription)"
-            }
-            return false
+            attempts += 1
         }
+        await MainActor.run {
+            errorMessage = "Print failed after retries"
+        }
+        return false
     }
     
     private func printViaBluetooth(_ data: Data) async throws -> Bool {
