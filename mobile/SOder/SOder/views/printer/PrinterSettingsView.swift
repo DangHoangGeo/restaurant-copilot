@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PrinterSettingsView: View {
     @StateObject private var printerManager = PrinterManager()
+    @StateObject private var settingsManager = PrinterSettingsManager.shared
     @State private var showingConnectionAlert = false
     @State private var connectionMessage = ""
     @State private var isConnecting = false
@@ -29,6 +30,44 @@ struct PrinterSettingsView: View {
     
     private var mainContent: some View {
         List {
+            // Printer Mode Selection Section - NEW
+            Section("Printer Configuration") {
+                NavigationLink(destination: PrinterModeSelectionView()) {
+                    HStack {
+                        Image(systemName: "gear")
+                            .foregroundColor(.blue)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Printer Mode")
+                                .font(.headline)
+                            Text(settingsManager.printerMode.displayName)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        if settingsManager.printerMode == .dual {
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("Dual Mode")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                                Text("K: \(settingsManager.kitchenPrinter?.name.prefix(8) ?? "None")")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text("C: \(settingsManager.checkoutPrinter?.name.prefix(8) ?? "None")")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else {
+                            Text("Single Mode")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
+                    }
+                }
+            }
+            
             // Current Printer Status Section
             Section("Current Status") {
                 HStack {
@@ -108,6 +147,40 @@ struct PrinterSettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+                    
+                    Button(action: {
+                        Task {
+                            await printKitchenTest()
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "list.clipboard")
+                            Text("Print Kitchen Test")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+            
+            // Print Logs Section
+            if !printerManager.printLogs.isEmpty {
+                Section("Print Logs") {
+                    ForEach(printerManager.printLogs.suffix(5), id: \.self) { log in
+                        Text(log)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    if printerManager.printLogs.count > 5 {
+                        Button("View All Logs") {
+                            // Show all logs in a separate view
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                    }
                 }
             }
             
@@ -185,6 +258,17 @@ struct PrinterSettingsView: View {
             connectionMessage = success
                 ? "Test receipt printed successfully!"
                 : "Failed to print test receipt"
+            showingConnectionAlert = true
+        }
+    }
+    
+    private func printKitchenTest() async {
+        let success = await printerManager.printKitchenTestReceipt()
+        
+        await MainActor.run {
+            connectionMessage = success
+                ? "Kitchen test receipt printed successfully!"
+                : "Failed to print kitchen test receipt"
             showingConnectionAlert = true
         }
     }

@@ -33,7 +33,6 @@ class SupabaseManager: ObservableObject {
             supabaseURL: supabaseURL,
             supabaseKey: supabaseKey
         )
-        print("SupabaseClient initialized with URL: \(supabaseURL) and Key: \(supabaseKey)")
         
         // Check for existing session
         Task {
@@ -142,13 +141,11 @@ class SupabaseManager: ObservableObject {
         self.restaurantIdFromToken = restaurantIdClaim
         self.userRole = roleClaim // Store the role
         self.isAuthenticated = true // Set authenticated only after successful parsing
-        print("JWT parsed successfully. Restaurant ID: \(restaurantIdClaim), Role: \(roleClaim)")
     }
     
     @MainActor
     private func loadRestaurantData() async { // Removed subdomain parameter
         guard let user = currentUser, isAuthenticated, let restaurantIdToLoad = self.restaurantIdFromToken else {
-            print("User not authenticated or restaurant ID from token is missing. Cannot load restaurant data.")
             if self.restaurantIdFromToken == nil {
                  print("Debug: restaurantIdFromToken is nil during loadRestaurantData call.")
             }
@@ -156,8 +153,6 @@ class SupabaseManager: ObservableObject {
             // self.currentRestaurant = nil
             return
         }
-        
-        print("Attempting to load restaurant data for ID: \(restaurantIdToLoad)")
         
         do {
             let restaurant: Restaurant = try await client
