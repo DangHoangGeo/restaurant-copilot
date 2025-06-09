@@ -485,6 +485,7 @@ export function CustomerClientContent({
       <CartProvider>
         <CustomerLayout
           setView={setView}
+          showOrderHistory={sessionData.sessionId !== undefined}
           restaurantSettings={restaurantSettings}
           featureFlags={layoutFeatureFlags}
         >
