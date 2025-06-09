@@ -199,6 +199,9 @@ struct OrdersView: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
+                    .onTapGesture {
+                        selectedOrder = order
+                    }
                 }
                 .listStyle(PlainListStyle())
                 .scrollContentBackground(.hidden)
@@ -207,6 +210,9 @@ struct OrdersView: View {
                     if showAllOrders {
                         await orderManager.fetchAllOrders()
                     }
+                }
+                .onChange(of: selectedOrder) { newOrder in
+                    print("Selected order changed to: \(newOrder?.id ?? "nil")")
                 }
             }
             
