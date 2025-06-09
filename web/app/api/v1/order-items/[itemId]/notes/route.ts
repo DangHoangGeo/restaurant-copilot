@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { z } from "zod";
-import { Order } from "@/app/[locale]/dashboard/orders/page";
 
 const updateNotesSchema = z.object({
   notes: z.string().nullable(),

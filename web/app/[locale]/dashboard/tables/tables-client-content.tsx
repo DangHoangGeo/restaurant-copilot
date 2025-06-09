@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 // Shadcn Form components for Bulk Add
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { QRCodeDisplay } from '@/components/ui/qr-code-display' // Ensure this component renders an element that can be captured
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -19,8 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import * as htmlToImage from 'html-to-image';
-import { useRouter } from 'next/navigation';
+import * as htmlToImage from 'html-to-image'
 
 // Define Zod schema for table form validation
 const getTableSchema = (t: ReturnType<typeof useTranslations<'AdminTables.validation'>>) => z.object({
@@ -76,7 +75,6 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
   const tCommon = useTranslations('Common');
   const params = useParams();
   const locale = (params.locale as string) || 'en';
-  const router = useRouter();
 
   // Moved hook declarations to the top
   const tableSchema = getTableSchema(tVal);
@@ -210,7 +208,8 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
       isOutdoor: false,
       isAccessible: false,
     });
-    setIsBulkAddModalOpen(isBulkAddModalOpen => !isBulkAddModalOpen);
+    console.log('Opening bulk add modal',isBulkAddModalOpen);
+    setIsBulkAddModalOpen(true);
   };
   /**
    * handleBulkAddSubmit is kept for now, but you can remove it if you don't need bulk add functionality.

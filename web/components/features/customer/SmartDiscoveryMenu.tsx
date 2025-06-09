@@ -1,13 +1,15 @@
 "use client";
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed unused import
+import Image from "next/image"; // Added for Next.js Image component
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, Clock, ThermometerSun, Snowflake, Heart, 
   Zap,Camera, Search,
   TrendingUp, Star, Shuffle, ChevronRight,
-  Bot, Send, Mic, MicOff, MessageCircle, X, Loader2,
-   Flame, Leaf
+  Bot, Send, MessageCircle, X, Loader2,
+   Flame, Leaf,
+   LucideProps
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +19,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { FoodCard, FoodItem } from "./FoodCard";
 import { getLocalizedText } from "./utils";
 import type { ViewType, ViewProps } from "./screens/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added for sort
+import { Checkbox } from "@/components/ui/checkbox"; // Added for dietary filters
+import { Label } from "@/components/ui/label"; // Added for checkbox labels
+
 
 interface Category {
   id: string;
@@ -60,6 +66,14 @@ interface DietaryFilter {
   lowCalorie: boolean;
 }
 
+interface moodConfig {
+  icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>
+  color: string;
+  keywords: string[];
+  tags: string[];
+  description: string;
+}
+
 const MOOD_CONFIG = {
   quick: {
     icon: Zap,
@@ -93,8 +107,8 @@ const MOOD_CONFIG = {
     icon: Sparkles,
     color: "from-blue-400 to-cyan-500",
     keywords: ["special", "unique", "fusion", "new", "signature", "exotic", "chef"],
-    tags: ["Signature", "Unique", "Chef's Special"],
-    description: "Unique creations and chef's special recommendations"
+    tags: ["Signature", "Unique", "Chef&apos;s Special"],
+    description: "Unique creations and chef&apos;s special recommendations"
   },
   classic: {
     icon: Star,
@@ -118,7 +132,7 @@ export function SmartDiscoveryMenu({
   sessionId,
   tableNumber,
 }: SmartDiscoveryMenuProps) {
-  const t = useTranslations("Customer");
+  // const t = useTranslations("Customer"); // Removed unused t
   const [discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>("smart");
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -129,7 +143,6 @@ export function SmartDiscoveryMenu({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [isAITyping, setIsAITyping] = useState(false);
-  const [isListening, setIsListening] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
   // Enhanced filtering
@@ -203,7 +216,12 @@ export function SmartDiscoveryMenu({
     };
   }, [currentTime]);
 
-  const { timeContext, isHot, isCold, isWeekend, greeting, timeGreeting, weatherSuggestion } = contextualInfo;
+  // const { timeContext, isHot, isCold, isWeekend, greeting, timeGreeting, weatherSuggestion } = contextualInfo; 
+  // Use contextualInfo directly or ensure all destructured vars are used. The linter error suggests these specific two were not.
+  // Using them directly from contextualInfo where needed, or ensuring the destructured ones are used.
+  // For now, let's use the destructured ones as intended:
+  const { timeContext, isHot, isCold, isWeekend, greeting, timeGreeting: contextualTimeGreeting, weatherSuggestion: contextualWeatherSuggestion } = contextualInfo;
+
 
   // All available items with enhanced filtering
   const allItems = useMemo(() => {
@@ -214,8 +232,8 @@ export function SmartDiscoveryMenu({
         .map((item) => ({ 
           ...item, 
           categoryId: cat.id, 
-          categoryName: getLocalizedText(cat as any, locale),
-          searchText: `${getLocalizedText(item as any, locale)} ${item.description_en || ''} ${item.description_ja || ''} ${item.description_vi || ''}`.toLowerCase()
+          categoryName: getLocalizedText(cat as unknown as Record<string, unknown>, locale),
+          searchText: `${getLocalizedText(item as unknown as Record<string, unknown>, locale)} ${item.description_en || ''} ${item.description_ja || ''} ${item.description_vi || ''}`.toLowerCase()
         }))
     );
 
@@ -248,7 +266,7 @@ export function SmartDiscoveryMenu({
         items.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case "name":
-        items.sort((a, b) => getLocalizedText(a as any, locale).localeCompare(getLocalizedText(b as any, locale)));
+        items.sort((a, b) => getLocalizedText(a as unknown as Record<string, unknown>, locale).localeCompare(getLocalizedText(b as unknown as Record<string, unknown>, locale)));
         break;
       default:
         items.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
@@ -260,7 +278,10 @@ export function SmartDiscoveryMenu({
   // Enhanced smart mood-based filtering
   const getMoodItems = useCallback((mood: MoodType) => {
     const config = MOOD_CONFIG[mood];
-    const filteredItems = allItems.filter(item => {
+    const itemCountLimit = 8;
+
+    // Get primary items based on keywords
+    const primaryKeywordItems = allItems.filter(item => {
       const score = config.keywords.reduce((acc, keyword) => {
         if (item.searchText.includes(keyword)) acc += 1;
         return acc;
@@ -268,21 +289,38 @@ export function SmartDiscoveryMenu({
       return score > 0;
     });
 
-    // If no specific matches, fall back to category-based suggestions
-    if (filteredItems.length < 4) {
-      const fallbackItems = allItems.filter(item => {
+    let combinedItems: FoodItem[];
+
+    if (primaryKeywordItems.length < 4) { // Condition to add fallback items
+      const primaryItemIds = new Set(primaryKeywordItems.map(item => item.id)); // Get IDs of primary items
+
+      const fallbackCategoryItems = allItems.filter(item => {
+        // Ensure fallback items are not ALREADY in primaryKeywordItems
+        if (primaryItemIds.has(item.id)) {
+          return false; 
+        }
+        // Category-based filtering for fallback
         switch (mood) {
           case "quick": return item.categoryName.toLowerCase().includes("snack") || item.categoryName.toLowerCase().includes("appetizer");
           case "comfort": return item.categoryName.toLowerCase().includes("main") || item.categoryName.toLowerCase().includes("soup");
           case "healthy": return item.categoryName.toLowerCase().includes("salad") || item.categoryName.toLowerCase().includes("vegetable");
           case "indulgent": return item.categoryName.toLowerCase().includes("dessert") || item.categoryName.toLowerCase().includes("beverage");
-          default: return true;
+          default: return true; // This default might be broad, but matches original logic pattern
         }
       });
-      return [...filteredItems, ...fallbackItems.slice(0, 8 - filteredItems.length)];
+      
+      const numFallbackToAdd = Math.max(0, itemCountLimit - primaryKeywordItems.length);
+      combinedItems = [...primaryKeywordItems, ...fallbackCategoryItems.slice(0, numFallbackToAdd)];
+    } else {
+      // Enough primary items, or more than enough; no fallbacks needed initially.
+      combinedItems = primaryKeywordItems;
     }
 
-    return filteredItems.slice(0, 8);
+    // Deduplicate the combined list to ensure unique keys
+    const uniqueItems = Array.from(new Map(combinedItems.map(item => [item.id, item])).values());
+    
+    // Slice to the final limit after deduplication
+    return uniqueItems.slice(0, itemCountLimit);
   }, [allItems]);
 
   // Enhanced trending items with better logic
@@ -299,8 +337,8 @@ export function SmartDiscoveryMenu({
 
   // Enhanced contextual recommendations
   const smartRecommendations = useMemo(() => {
-    let items = [...allItems];
-    let contextScore = new Map<string, number>();
+    const items = [...allItems]; // Changed to const
+    const contextScore = new Map<string, number>(); // Changed to const
 
     // Initialize all items with base score
     items.forEach(item => contextScore.set(item.id, 0));
@@ -374,17 +412,17 @@ export function SmartDiscoveryMenu({
       suggestions = allItems.filter(item => 
         item.categoryName.toLowerCase().includes("dessert") || item.searchText.includes("sweet") || item.searchText.includes("chocolate")
       ).slice(0, 4);
-      response = "Time for something sweet! These desserts are absolutely divine. Life\\'s too short to skip dessert! 🍰";
+      response = "Time for something sweet! These desserts are absolutely divine. Life&apos;s too short to skip dessert! 🍰";
     } else if (message.includes("healthy") || message.includes("light")) {
       suggestions = getMoodItems("healthy").slice(0, 4);
       response = "Great choice! These healthy options are both nutritious and delicious. Perfect for keeping you energized and satisfied.";
     } else if (message.includes("popular") || message.includes("recommend")) {
       suggestions = trendingItems.slice(0, 4);
-      response = "Here are our most popular dishes! These are customer favorites and highly rated. You really can\\'t go wrong with any of these.";
+      response = "Here are our most popular dishes! These are customer favorites and highly rated. You really can&apos;t go wrong with any of these.";
     } else {
       // Contextual fallback
       suggestions = smartRecommendations.slice(0, 4);
-      response = `Based on what you\\'re looking for and the time of day, I\\'d recommend these dishes. They\\'re perfect for ${greeting.toLowerCase()}. What do you think?`;
+      response = `Based on what you&apos;re looking for and the time of day, I&apos;d recommend these dishes. They&apos;re perfect for ${greeting.toLowerCase()}. What do you think?`;
     }
 
     return { response, suggestions };
@@ -417,10 +455,11 @@ export function SmartDiscoveryMenu({
 
       setChatMessages(prev => [...prev, aiMessage]);
     } catch (error) {
+	  console.error("AI response error:", error);
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I\\'m sorry, I\\'m having trouble understanding right now. Could you try asking again?",
+        content: "I&apos;m sorry, I&apos;m having trouble understanding right now. Could you try asking again?",
         timestamp: new Date(),
       };
       setChatMessages(prev => [...prev, errorMessage]);
@@ -429,28 +468,9 @@ export function SmartDiscoveryMenu({
     }
   }, [chatInput, simulateAIResponse, setChatMessages, setIsAITyping, setChatInput]); // Added setChatInput
 
-  const startVoiceInput = useCallback(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      const recognition = new SpeechRecognition();
-      
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = locale === 'ja' ? 'ja-JP' : locale === 'vi' ? 'vi-VN' : 'en-US';
-
-      recognition.onstart = () => setIsListening(true);
-      recognition.onend = () => setIsListening(false);
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setChatInput(transcript);
-      };
-
-      recognition.start();
-    } else {
-      alert('Speech recognition is not supported in your browser');
-    }
-  }, [locale, setIsListening, setChatInput]); // Added setIsListening and setChatInput
-
+  // Voice Input Functionality not implemented for now,
+  // but can be added later if needed.
+  
   const initializeAIChat = useCallback(() => {
     if (chatMessages.length === 0) {
       const welcomeMessage: ChatMessage = {
@@ -489,10 +509,10 @@ export function SmartDiscoveryMenu({
             className="space-y-3"
           >
             <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-              {contextualInfo.timeGreeting}
+              {contextualTimeGreeting}
             </h1>
             <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-              {contextualInfo.weatherSuggestion}
+              {contextualWeatherSuggestion}
               {contextualInfo.isWeekend && " • Perfect weekend vibes"}
             </p>
             <div className="flex items-center justify-center space-x-4 text-sm text-slate-500">
@@ -584,14 +604,16 @@ export function SmartDiscoveryMenu({
                               {message.suggestions.map((item) => (
                                 <div key={item.id} className="bg-white dark:bg-slate-700 rounded-lg p-2 border">
                                   <div className="flex items-center space-x-3">
-                                    <img
+                                    <Image
                                       src={item.image_url || 'https://placehold.co/40x40/E2E8F0/334155?text=Food'}
-                                      alt={getLocalizedText(item as any, locale)}
+                                      alt={getLocalizedText(item as unknown as Record<string, unknown>, locale)}
+                                      width={40}
+                                      height={40}
                                       className="w-10 h-10 rounded object-cover"
                                     />
                                     <div className="flex-1 min-w-0">
                                       <h4 className="font-medium text-sm truncate text-slate-900 dark:text-slate-100">
-                                        {getLocalizedText(item as any, locale)}
+                                        {getLocalizedText(item as unknown as Record<string, unknown>, locale)}
                                       </h4>
                                       <p className="text-xs text-slate-600 dark:text-slate-400">¥{item.price}</p>
                                     </div>
@@ -631,17 +653,9 @@ export function SmartDiscoveryMenu({
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       placeholder="Ask me about food preferences, dietary needs, or recommendations..."
-                      onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                      onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                       className="flex-1"
                     />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={startVoiceInput}
-                      disabled={isListening}
-                    >
-                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                    </Button>
                     <Button 
                       onClick={handleSendMessage} 
                       disabled={!chatInput.trim() || isAITyping}
@@ -683,6 +697,69 @@ export function SmartDiscoveryMenu({
                 AI-curated based on time, weather, and trending favorites
               </p>
             </div>
+
+            {/* Filters Section */}
+            <Card className="p-4">
+              <h3 className="text-lg font-semibold mb-3">Refine Your Search</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="block mb-1 text-sm font-medium">Dietary Options</Label>
+                  <div className="space-y-2">
+                    {Object.keys(dietaryFilters).map((key) => (
+                      <div key={key} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`diet-${key}`}
+                          checked={dietaryFilters[key as keyof DietaryFilter]}
+                          onCheckedChange={(checked) =>
+                            setDietaryFilters((prev) => ({ ...prev, [key]: !!checked }))
+                          }
+                        />
+                        <Label htmlFor={`diet-${key}`} className="capitalize text-sm">
+                          {key.replace(/([A-Z])/g, ' $1')} {/* e.g. glutenFree -> gluten Free */}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="price-min" className="block mb-1 text-sm font-medium">Price Range (¥)</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      id="price-min"
+                      value={priceRange[0]}
+                      onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                      placeholder="Min"
+                      className="w-full"
+                    />
+                    <span className="text-slate-500">-</span>
+                    <Input
+                      type="number"
+                      id="price-max"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                      placeholder="Max"
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <Label htmlFor="sort-by" className="block mb-1 text-sm font-medium">Sort By</Label>
+					
+                    <Select value={sortBy} onValueChange={(value) => setSortBy(value as "popular" | "price" | "rating" | "name")}>
+                      <SelectTrigger id="sort-by">
+                        <SelectValue placeholder="Sort by..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="popular">Popularity</SelectItem>
+                        <SelectItem value="price">Price</SelectItem>
+                        <SelectItem value="rating">Rating</SelectItem>
+                        <SelectItem value="name">Name</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </Card>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {smartRecommendations.map((item) => (
@@ -718,10 +795,11 @@ export function SmartDiscoveryMenu({
               /* Enhanced Mood Selection */
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-center mb-6">
-                  What's your mood today?
+                  What&apos;s your mood today?
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {(Object.entries(MOOD_CONFIG) as [MoodType, any][]).map(([mood, config]) => (
+					
+                  {(Object.entries(MOOD_CONFIG) as [MoodType, moodConfig][]).map(([mood, config]) => (
                     <motion.button
                       key={mood}
                       whileHover={{ scale: 1.02 }}
@@ -813,7 +891,7 @@ export function SmartDiscoveryMenu({
             <div className="text-center space-y-2">
               <h2 className="text-xl font-semibold flex items-center justify-center space-x-2">
                 <TrendingUp className="h-5 w-5" />
-                <span>What's Hot</span>
+                <span>What&apos;s Hot</span>
               </h2>
               <p className="text-slate-600 dark:text-slate-400">
                 Customer favorites and highest-rated dishes
@@ -877,15 +955,18 @@ export function SmartDiscoveryMenu({
                     onClick={() => setView("menuitemdetail", { item, tableId, sessionId, tableNumber })}
                   >
                     <div className="relative h-full">
-                      <img
+                      <Image
                         src={item.image_url || 'https://placehold.co/200x200/E2E8F0/334155?text=Food'}
-                        alt={getLocalizedText(item as any, locale)}
+                        alt={getLocalizedText(item as unknown as Record<string, unknown>, locale)}
+                        width={200}
+                        height={200}
                         className="w-full h-full object-cover"
+                        objectFit="cover" // Added for next/image
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       <div className="absolute bottom-2 left-2 right-2">
                         <h3 className="text-white font-medium text-sm line-clamp-2">
-                          {getLocalizedText(item as any, locale)}
+                          {getLocalizedText(item as unknown as Record<string, unknown>, locale)}
                         </h3>
                         <div className="flex items-center justify-between">
                           <p className="text-white/80 text-xs">¥{item.price}</p>
@@ -921,7 +1002,7 @@ export function SmartDiscoveryMenu({
       <div className="px-4 py-8 border-t border-slate-200 dark:border-slate-700 mt-8">
         <div className="text-center space-y-4">
           <p className="text-slate-600 dark:text-slate-400">
-            Can't find what you're looking for?
+            Can&apos;t find what you&apos;re looking for?
           </p>
           <div className="flex justify-center flex-wrap gap-3">
             <Button 

@@ -46,38 +46,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getLocalizedText } from "@/lib/customerUtils";
+import { Order, OrderItem } from "./page";
 
-interface OrderItem {
-  id: string;
-  quantity: number;
-  notes?: string | null;
-  status: "ordered" | "preparing" | "ready" | "served";
-  created_at: string;
-  menu_items: {
-    id: string;
-    name_en: string;
-    name_ja: string;
-    name_vi: string;
-    category_id: string;
-    price?: number;
-    categories?: {
-      id: string;
-      name_en: string;
-      name_ja: string;
-      name_vi: string;
-    };
-  };
-}
 
-interface Order {
-  id: string;
-  table_id: string;
-  status: "new" | "preparing" | "ready" | "completed" | "canceled";
-  total_amount: number | null;
-  created_at: string;
-  order_items: OrderItem[];
-  tables: { name: string; id?: string } | null;
-}
 
 interface Table {
   id: string;
@@ -232,7 +203,7 @@ export function OrdersClientContent({
   const getAllOrderItems = (): FlatOrderItem[] => {
     const allItems: FlatOrderItem[] = [];
     orders.forEach(order => {
-      const tableName = order.tables?.name || `Order ${order.id.slice(0, 6)}`;
+      const tableName = order.tables[0].name || `Order ${order.id.slice(0, 6)}`;
       
       order.order_items.forEach(item => {
         const menuItem = item.menu_items;
@@ -244,11 +215,11 @@ export function OrdersClientContent({
             status: item.status,
             created_at: item.created_at,
             // Flatten menu item data
-            menu_item_id: menuItem.id,
-            menu_item_name_en: menuItem.name_en,
-            menu_item_name_ja: menuItem.name_ja,
-            menu_item_name_vi: menuItem.name_vi,
-            menu_item_price: menuItem.price,
+            menu_item_id: menuItem[0].id,
+            menu_item_name_en: menuItem[0].name_en,
+            menu_item_name_ja: menuItem[0].name_ja,
+            menu_item_name_vi: menuItem[0].name_vi,
+            menu_item_price: menuItem[0].price,
             // Flatten order/table data
             order_id: order.id,
             table_name: tableName,
@@ -284,7 +255,7 @@ export function OrdersClientContent({
   const filteredOrders = orders
     .filter(order => {
       const matchesSearch = searchTerm === "" || 
-        order.tables?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.tables[0].name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.id.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = filterStatus === "all" || order.status === filterStatus;
@@ -678,7 +649,7 @@ export function OrdersClientContent({
                 filteredOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">
-                      {order.tables?.name || `${t('AdminOrders.order_id_prefix') || 'Order'} ${order.id.slice(0, 6)}`}
+                      {order.tables[0].name || `${t('AdminOrders.order_id_prefix') || 'Order'} ${order.id.slice(0, 6)}`}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
@@ -1108,7 +1079,7 @@ export function OrdersClientContent({
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {t("add_items_to_order")} - {selectedOrder?.tables?.name}
+              {t("add_items_to_order")} - {selectedOrder?.tables[0].name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -1138,7 +1109,7 @@ export function OrdersClientContent({
             {selectedOrder && (
               <>
                 <div>
-                  <p><strong>{t("table")}:</strong> {selectedOrder.tables?.name}</p>
+                  <p><strong>{t("table")}:</strong> {selectedOrder.tables[0].name}</p>
                   <p><strong>{t("total")}:</strong> ¥{selectedOrder.total_amount?.toLocaleString()}</p>
                   <p><strong>{t("items")}:</strong> {selectedOrder.order_items.length}</p>
                 </div>
@@ -1170,7 +1141,7 @@ export function OrdersClientContent({
             {selectedOrder && (
               <>
                 <div>
-                  <p><strong>{t("table")}:</strong> {selectedOrder.tables?.name}</p>
+                  <p><strong>{t("table")}:</strong> {selectedOrder.tables[0].name}</p>
                   <p><strong>{t("total")}:</strong> ¥{selectedOrder.total_amount?.toLocaleString()}</p>
                   <p><strong>{t("status")}:</strong> {tCommon(`order_status.${selectedOrder.status}`)}</p>
                 </div>
@@ -1182,12 +1153,12 @@ export function OrdersClientContent({
                     <li key={item.id} className="flex justify-between">
                       <span>
                         {getLocalizedText({
-                          "name_en": item.menu_items.name_en,
-                          "name_vi": item.menu_items.name_vi,
-                          "name_ja": item.menu_items.name_ja
+                          "name_en": item.menu_items[0].name_en,
+                          "name_vi": item.menu_items[0].name_vi,
+                          "name_ja": item.menu_items[0].name_ja
                         }, locale)} ({item.quantity})
                       </span>
-                      <span>¥{(item.menu_items.price! * item.quantity).toLocaleString()}</span>
+                      <span>¥{(item.menu_items[0].price! * item.quantity).toLocaleString()}</span>
                     </li>
                   ))}
                 </ul>

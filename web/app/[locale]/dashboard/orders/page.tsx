@@ -7,6 +7,7 @@ import { OrdersClientContent } from "./orders-client-content";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 
+
 export interface OrderItem {
   id: string;
   quantity: number;
@@ -36,7 +37,7 @@ export interface Order {
   total_amount: number | null;
   created_at: string;
   order_items: OrderItem[];
-  tables: { name: string; id: string }[] | null;
+  tables: { name: string; id?: string }[];
 }
 
 export interface Table {

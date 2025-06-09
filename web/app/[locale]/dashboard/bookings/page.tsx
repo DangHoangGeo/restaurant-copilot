@@ -42,7 +42,6 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
   const host = (await headers()).get('host') || ''
   const subdomain = getSubdomainFromHost(host)
   const t = await getTranslations({ locale, namespace: 'AdminBookings' })
-  const tCommon = await getTranslations({ locale, namespace: 'Common' }) // For default name
 
   let restaurantId: string | null = null;
   let errorGettingId: string | null = null;
@@ -54,32 +53,10 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
 
   let initialBookings: Booking[] | null = null;
   let fetchError: string | null = null;
-  let restaurantSettings: { name: string; logoUrl: string | null; subdomain?: string; primaryColor?: string; defaultLocale?: string; } | null = null;
-
+  
   if (user && user.restaurantId) {
     try {
       const supabase = await createSupabaseServerClient();
-      
-      // Fetch restaurant settings
-      const { data: restaurantData, error: restaurantError } = await supabase
-        .from("restaurants")
-        .select("name, logo_url, subdomain, brand_color, default_language")
-        .eq("id", user.restaurantId)
-        .single();
-
-      if (restaurantError) {
-        // console.error(`Error fetching restaurant settings for ID "${user.restaurantId}":`, restaurantError);
-        throw restaurantError;
-      }
-      if (restaurantData) {
-        restaurantSettings = {
-          name: restaurantData.name || tCommon('defaultUnnamedRestaurant'),
-          logoUrl: restaurantData.logo_url,
-          subdomain: restaurantData.subdomain || undefined,
-          primaryColor: restaurantData.brand_color || undefined,
-          defaultLocale: restaurantData.default_language || undefined,
-        };
-      }
 
       // Fetch bookings data
       const { data: bookingsData, error: bookingsError } = await supabase
@@ -144,14 +121,13 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
         </Alert>
       )}
 
-      {restaurantId && initialBookings && !fetchError && restaurantSettings && (
+      {restaurantId && initialBookings && !fetchError && (
         <BookingsClientContent 
-          initialBookings={initialBookings} 
-          restaurantSettings={restaurantSettings}
+          initialBookings={initialBookings}
         />
       )}
 
-      {restaurantId && !initialBookings && !fetchError && restaurantSettings && (
+      {restaurantId && !initialBookings && !fetchError && (
         <Alert variant="warning" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>{t("Settings.Page.errors.noSettingsFoundTitle")}</AlertTitle>

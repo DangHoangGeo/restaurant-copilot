@@ -1,14 +1,14 @@
 "use client";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { FoodCard, FoodItem } from "./FoodCard";
+import { useTranslations } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, X as XIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getLocalizedText } from "./utils";
 import type { ViewType, ViewProps } from "./screens/types";
-import { motion, AnimatePresence } from "framer-motion";
-import { useTranslations } from "next-intl";
-import { Search, Grid, List, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FoodCard, FoodItem } from "./FoodCard";
 
 interface Category {
   id: string;
@@ -57,7 +57,7 @@ export function MenuList({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  //const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const t = useTranslations("Customer");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
@@ -192,18 +192,19 @@ export function MenuList({
   const clearSearch = () => {
     setSearchTerm("");
     setSelectedCategory("all");
-    setIsSearchExpanded(false);
+    //setIsSearchExpanded(false);
   };
 
   const handleSearchFocus = () => {
-    setIsSearchExpanded(true);
+    //setIsSearchExpanded(true);
+    console.log("Search input focused");
   };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchInputRef.current && !searchInputRef.current.contains(event.target as Node)) {
         if (!searchTerm.trim()) {
-          setIsSearchExpanded(false);
+          //setIsSearchExpanded(false);
         }
       }
     };
@@ -229,72 +230,57 @@ export function MenuList({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
             <Input
+              ref={searchInputRef}
               type="text"
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={handleSearchFocus}
               className="pl-12 pr-8 py-2 w-full rounded-lg border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             {searchTerm.length > 0 && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <Button variant="ghost" size="icon" onClick={clearSearch} className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7">
+                <XIcon className="h-4 w-4 text-slate-400" />
+              </Button>
             )}
           </div>
 
           {/* Category Filter and View Toggle Row */}
           <div className="flex items-center justify-between gap-3">
-            {/* Category Filter - Mobile Optimized */}
+            {/* Category Select */}
+            <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.map(cat => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {getLocalizedText(cat as unknown as Record<string, unknown>, locale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
             <div className="flex-1 min-w-0">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full h-9 text-sm">
-                  <SelectValue placeholder="All Categories" />
+              {/* Sort Select */}
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {getLocalizedText(
-                        {
-                          name_en: category.name_en,
-                          name_vi: category.name_vi,
-                          name_ja: category.name_ja,
-                        },
-                        locale
-                      )}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="default">Default</SelectItem>
+                  <SelectItem value="popular">Popularity</SelectItem>
+                  <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                  <SelectItem value="name_asc">Name (A-Z)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* View Toggle - Compact for Mobile */}
+            {/* View Mode Toggle */}
             <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded transition-colors ${
-                  viewMode === "grid"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
-                aria-label="Grid view"
-              >
-                <Grid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-1.5 rounded transition-colors ${
-                  viewMode === "list"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
-                aria-label="List view"
-              >
-                <List className="h-4 w-4" />
-              </button>
+              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')}>Grid</Button>
+              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')}>List</Button>
             </div>
           </div>
 
@@ -308,7 +294,7 @@ export function MenuList({
                     onClick={() => setSearchTerm("")}
                     className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5"
                   >
-                    <X className="h-3 w-3" />
+                    <XIcon className="h-3 w-3" />
                   </button>
                 </span>
               )}
@@ -319,7 +305,7 @@ export function MenuList({
                     onClick={() => setSelectedCategory("all")}
                     className="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5"
                   >
-                    <X className="h-3 w-3" />
+                    <XIcon className="h-3 w-3" />
                   </button>
                 </span>
               )}

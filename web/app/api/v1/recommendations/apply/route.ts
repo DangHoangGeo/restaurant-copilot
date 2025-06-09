@@ -6,6 +6,7 @@ export async function POST(request: Request) {
   try {
     requestBody = await request.json();
   } catch (error) {
+    console.error('Error parsing request body:', error);
     return NextResponse.json({ error: 'Invalid request body: Malformed JSON' }, { status: 400 });
   }
 
