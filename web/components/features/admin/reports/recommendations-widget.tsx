@@ -50,8 +50,8 @@ const RecommendationsWidget: React.FC<RecommendationsWidgetProps> = ({ restauran
           throw rpcError;
         }
         setTopSellers(data || []);
-      } catch (e: any) {
-        setError(t('errorFetching', { error: e.message }));
+      } catch (error) {
+        setError(t('errorFetching', { error: (error as Error).message }));
         setTopSellers([]);
       } finally {
         setIsLoading(false);
@@ -93,8 +93,8 @@ const RecommendationsWidget: React.FC<RecommendationsWidgetProps> = ({ restauran
       } else {
         throw new Error(result.error || "Failed to apply recommendations (no success flag).");
       }
-    } catch (e: any) {
-      setApplyError(t('applyError', { error: e.message }));
+    } catch (error) {
+      setApplyError(t('applyError', { error: (error as Error).message }));
       // toast.error(t('applyError', { error: e.message }));
     } finally {
       setIsApplying(false);

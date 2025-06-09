@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { StarRating } from "@/components/ui/star-rating";
 import { PlusCircle, Star } from "lucide-react";
 import type { ViewType, ViewProps } from "./screens/types";
 import { useTranslations } from "next-intl";

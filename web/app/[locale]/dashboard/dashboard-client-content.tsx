@@ -3,7 +3,7 @@
 import { StatCard } from '@/components/features/admin/dashboard/StatCard';
 import { QuickActions } from '@/components/features/admin/dashboard/QuickActions';
 import { RecentOrdersTable, RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable';
-import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle, FileText, BarChart2 } from 'lucide-react';
+import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { Card, CardContent } from '@/components/ui/card';
 import { ComingSoon } from '@/components/common/coming-soon';

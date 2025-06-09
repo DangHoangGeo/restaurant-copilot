@@ -1,13 +1,13 @@
 "use client";
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, Clock, ThermometerSun, Snowflake, Heart, 
-  Zap, Coffee, Soup, Salad, Pizza, Camera, Search,
-  TrendingUp, Star, Users, MapPin, Shuffle, ChevronRight,
+  Zap,Camera, Search,
+  TrendingUp, Star, Shuffle, ChevronRight,
   Bot, Send, Mic, MicOff, MessageCircle, X, Loader2,
-  Filter, SortAsc, Eye, Utensils, Flame, Leaf
+   Flame, Leaf
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,8 +122,8 @@ export function SmartDiscoveryMenu({
   const [discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>("smart");
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
-  
+  // const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 }); // Unused state variable
+
   // AI Chat States
   const [showAIChat, setShowAIChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -152,7 +152,7 @@ export function SmartDiscoveryMenu({
   // Viewport size for responsive discovery
   useEffect(() => {
     const updateSize = () => {
-      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+      // setViewportSize({ width: window.innerWidth, height: window.innerHeight }); // Unused state variable
     };
     updateSize();
     window.addEventListener('resize', updateSize);
@@ -202,6 +202,8 @@ export function SmartDiscoveryMenu({
       weatherSuggestion: temp > 25 ? "Something cool and refreshing" : temp < 15 ? "Something warm and comforting" : "Whatever matches your mood",
     };
   }, [currentTime]);
+
+  const { timeContext, isHot, isCold, isWeekend, greeting, timeGreeting, weatherSuggestion } = contextualInfo;
 
   // All available items with enhanced filtering
   const allItems = useMemo(() => {
@@ -256,7 +258,7 @@ export function SmartDiscoveryMenu({
   }, [categories, locale, dietaryFilters, priceRange, sortBy]);
 
   // Enhanced smart mood-based filtering
-  const getMoodItems = (mood: MoodType) => {
+  const getMoodItems = useCallback((mood: MoodType) => {
     const config = MOOD_CONFIG[mood];
     const filteredItems = allItems.filter(item => {
       const score = config.keywords.reduce((acc, keyword) => {
@@ -281,7 +283,7 @@ export function SmartDiscoveryMenu({
     }
 
     return filteredItems.slice(0, 8);
-  };
+  }, [allItems]);
 
   // Enhanced trending items with better logic
   const trendingItems = useMemo(() => {
@@ -307,29 +309,29 @@ export function SmartDiscoveryMenu({
     items.forEach(item => {
       let score = contextScore.get(item.id) || 0;
       
-      if (contextualInfo.timeContext === "breakfast" && 
+      if (timeContext === "breakfast" &&
           /breakfast|coffee|morning|pastry|egg|toast|cereal|pancake/.test(item.searchText)) {
         score += 3;
-      } else if (contextualInfo.timeContext === "lunch" && 
+      } else if (timeContext === "lunch" &&
                  /lunch|sandwich|salad|quick|bowl|wrap|burger/.test(item.searchText)) {
         score += 3;
-      } else if (contextualInfo.timeContext === "dinner" && 
+      } else if (timeContext === "dinner" &&
                  /dinner|main|meal|pasta|rice|meat|fish|steak/.test(item.searchText)) {
         score += 3;
-      } else if (contextualInfo.timeContext === "late" && 
+      } else if (timeContext === "late" &&
                  /snack|light|quick|dessert|drink/.test(item.searchText)) {
         score += 2;
       }
 
       // Weather-based scoring
-      if (contextualInfo.isHot && /cold|ice|salad|fresh|cool|drink|smoothie/.test(item.searchText)) {
+      if (isHot && /cold|ice|salad|fresh|cool|drink|smoothie/.test(item.searchText)) {
         score += 2;
-      } else if (contextualInfo.isCold && /hot|warm|soup|tea|coffee|stew|curry/.test(item.searchText)) {
+      } else if (isCold && /hot|warm|soup|tea|coffee|stew|curry/.test(item.searchText)) {
         score += 2;
       }
 
       // Weekend boost for indulgent items
-      if (contextualInfo.isWeekend && /dessert|special|premium|signature/.test(item.searchText)) {
+      if (isWeekend && /dessert|special|premium|signature/.test(item.searchText)) {
         score += 1;
       }
 
@@ -343,10 +345,10 @@ export function SmartDiscoveryMenu({
     return items
       .sort((a, b) => (contextScore.get(b.id) || 0) - (contextScore.get(a.id) || 0))
       .slice(0, 8);
-  }, [allItems, contextualInfo]);
+  }, [allItems, timeContext, isHot, isCold, isWeekend]);
 
   // AI Chat Functions
-  const simulateAIResponse = async (userMessage: string): Promise<{ response: string; suggestions: FoodItem[] }> => {
+  const simulateAIResponse = useCallback(async (userMessage: string): Promise<{ response: string; suggestions: FoodItem[] }> => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
 
@@ -372,23 +374,23 @@ export function SmartDiscoveryMenu({
       suggestions = allItems.filter(item => 
         item.categoryName.toLowerCase().includes("dessert") || item.searchText.includes("sweet") || item.searchText.includes("chocolate")
       ).slice(0, 4);
-      response = "Time for something sweet! These desserts are absolutely divine. Life's too short to skip dessert! 🍰";
+      response = "Time for something sweet! These desserts are absolutely divine. Life\\'s too short to skip dessert! 🍰";
     } else if (message.includes("healthy") || message.includes("light")) {
       suggestions = getMoodItems("healthy").slice(0, 4);
       response = "Great choice! These healthy options are both nutritious and delicious. Perfect for keeping you energized and satisfied.";
     } else if (message.includes("popular") || message.includes("recommend")) {
       suggestions = trendingItems.slice(0, 4);
-      response = "Here are our most popular dishes! These are customer favorites and highly rated. You really can't go wrong with any of these.";
+      response = "Here are our most popular dishes! These are customer favorites and highly rated. You really can\\'t go wrong with any of these.";
     } else {
       // Contextual fallback
       suggestions = smartRecommendations.slice(0, 4);
-      response = `Based on what you're looking for and the time of day, I'd recommend these dishes. They're perfect for ${contextualInfo.timeGreeting.toLowerCase()}. What do you think?`;
+      response = `Based on what you\\'re looking for and the time of day, I\\'d recommend these dishes. They\\'re perfect for ${greeting.toLowerCase()}. What do you think?`;
     }
 
     return { response, suggestions };
-  };
+  }, [allItems, getMoodItems, trendingItems, smartRecommendations, greeting]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!chatInput.trim()) return;
 
     const userMessage: ChatMessage = {
@@ -418,16 +420,16 @@ export function SmartDiscoveryMenu({
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I'm sorry, I'm having trouble understanding right now. Could you try asking again?",
+        content: "I\\'m sorry, I\\'m having trouble understanding right now. Could you try asking again?",
         timestamp: new Date(),
       };
       setChatMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsAITyping(false);
     }
-  };
+  }, [chatInput, simulateAIResponse, setChatMessages, setIsAITyping, setChatInput]); // Added setChatInput
 
-  const startVoiceInput = () => {
+  const startVoiceInput = useCallback(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       const recognition = new SpeechRecognition();
@@ -447,9 +449,9 @@ export function SmartDiscoveryMenu({
     } else {
       alert('Speech recognition is not supported in your browser');
     }
-  };
+  }, [locale, setIsListening, setChatInput]); // Added setIsListening and setChatInput
 
-  const initializeAIChat = () => {
+  const initializeAIChat = useCallback(() => {
     if (chatMessages.length === 0) {
       const welcomeMessage: ChatMessage = {
         id: "welcome",
@@ -461,7 +463,7 @@ export function SmartDiscoveryMenu({
       setChatMessages([welcomeMessage]);
     }
     setShowAIChat(true);
-  };
+  }, [chatMessages.length, smartRecommendations, setShowAIChat, setChatMessages]); // Added dependencies
 
   const handleAddToCart = (item: FoodItem) => {
     if (canAddItems) {

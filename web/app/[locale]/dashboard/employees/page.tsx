@@ -15,6 +15,12 @@ export interface Employee {
   shifts: Record<string, string | null>;
 }
 
+interface ScheduleItem {
+  weekday: number | null;
+  start_time: string | null;
+  end_time: string | null;
+}
+
 export default async function EmployeesPage({
   params,
 }: {
@@ -61,7 +67,7 @@ export default async function EmployeesPage({
             Sat: null,
             Sun: null,
           };
-          (emp.schedules as any[] | null)?.forEach((s) => {
+          (emp.schedules as ScheduleItem[] | null)?.forEach((s: ScheduleItem) => {
             const day = dayMap[(s.weekday ?? 1) - 1] as keyof typeof shifts;
             if (day) {
               shifts[day] =
@@ -70,8 +76,8 @@ export default async function EmployeesPage({
           });
           return {
             id: emp.id,
-            name: emp.users?.name ?? "",
-            email: emp.users?.email ?? "",
+            name: emp.users[0]?.name ?? "",
+            email: emp.users[0]?.email ?? "",
             role: emp.role,
             shifts,
           } as Employee;

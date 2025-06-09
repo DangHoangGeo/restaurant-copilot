@@ -26,6 +26,7 @@ interface Employee {
   role: string;
   email: string;
   shifts: Record<string, string | null>;
+}
 
 interface EmployeesClientContentProps {
   initialData: Employee[];
@@ -71,16 +72,6 @@ export function EmployeesClientContent({
   const handleOpenScheduleModal = (employee: Employee) => {
     setScheduleEmployee(employee);
     setIsScheduleModalOpen(true);
-  };
-  const handleSaveSchedule = () => {
-    if (scheduleEmployee) {
-      setEmployees((prev) =>
-        prev.map((emp) =>
-          emp.id === scheduleEmployee.id ? scheduleEmployee : emp,
-        ),
-      );
-    }
-    setIsScheduleModalOpen(false);
   };
 
   const handleSaveSchedule = () => {

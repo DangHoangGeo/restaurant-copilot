@@ -71,22 +71,14 @@ interface TablesClientContentProps {
 }
 
 export function TablesClientContent({ restaurantSettings, initialData, error }: TablesClientContentProps) {
-  const t = useTranslations(); // General translations
-  const tVal = useTranslations('AdminTables.validation'); // Validation messages
-  const tCommon = useTranslations('Common'); // Common terms like Save, Cancel
-
-  const params = useParams()
-  const locale = (params.locale as string) || 'en'
-  const [tablesData, setTablesData] = useState<Table[]>(initialData || [])
-  const [isTableModalOpen, setIsTableModalOpen] = useState(false)
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false)
-  const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false);
-  const [editingTable, setEditingTable] = useState<Table | null>(null)
-  const [selectedTableForQr, setSelectedTableForQr] = useState<Table | null>(null)
-  const [isSaving, setIsSaving] = useState(false); // Used for both single and bulk save
-  const [isDownloadingQr, setIsDownloadingQr] = useState(false);
-  const qrCodeRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations();
+  const tVal = useTranslations('AdminTables.validation');
+  const tCommon = useTranslations('Common');
+  const params = useParams();
+  const locale = (params.locale as string) || 'en';
   const router = useRouter();
+
+  // Moved hook declarations to the top
   const tableSchema = getTableSchema(tVal);
   const bulkAddTableSchema = getBulkAddTableSchema(tVal);
 
@@ -101,33 +93,36 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
       notes: '',
       qrCode: undefined
     },
-  })
+  });
 
   const {
-    register: registerSingle, // Renamed to avoid conflict
     handleSubmit: handleSubmitSingle,
     reset: resetSingle,
-    formState: { errors: errorsSingle },
-    setValue: setValueSingle,
-    watch: watchSingle,
     control: controlSingle
   } = formMethodsSingle;
 
-  //const watchStatus = watch('status')
-  // Early return for error state
-  if (error) {
-    return (
-      <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md text-center">
-        <h3 className="font-semibold text-lg mb-2">{t('Common.alert.error.title')}</h3>
-        <p>{error}</p>
-      </div>
-    );
-  }
+  const bulkAddForm = useForm<BulkAddTableFormData>({
+    resolver: zodResolver(bulkAddTableSchema),
+    defaultValues: {
+      count: 5,
+      namePrefix: t('AdminTables.bulk_add.default_name_prefix') || "Table ",
+      startIndex: 1,
+      capacity: 4,
+      status: 'available',
+      isOutdoor: false,
+      isAccessible: false,
+    }
+  });
 
-  // Loading state for initial data
-  // Assuming initialData might be null during SSR/fetch, and tablesData is populated after client-side hydration
-  // A more robust loading state might be needed if initialData itself is fetched client-side and can be undefined/loading
-  const isInitialLoading = initialData === null && !error; // Or some other indicator if you fetch client-side
+  const [tablesData, setTablesData] = useState<Table[]>(initialData || [])
+  const [isTableModalOpen, setIsTableModalOpen] = useState(false)
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false)
+  const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false); // Kept for now
+  const [editingTable, setEditingTable] = useState<Table | null>(null)
+  const [selectedTableForQr, setSelectedTableForQr] = useState<Table | null>(null)
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDownloadingQr, setIsDownloadingQr] = useState(false);
+  const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const handleOpenTableModal = (table: Table | null = null) => {
     setEditingTable(table)
@@ -205,19 +200,6 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/menu?code=${selectedTableForQr.qr_code}`
     : ''
 
-  const bulkAddForm = useForm<BulkAddTableFormData>({
-    resolver: zodResolver(bulkAddTableSchema),
-    defaultValues: {
-      count: 5,
-      namePrefix: t('AdminTables.bulk_add.default_name_prefix') || "Table ",
-      startIndex: 1,
-      capacity: 4,
-      status: 'available',
-      isOutdoor: false,
-      isAccessible: false,
-    }
-  });
-
   const handleOpenBulkAddModal = () => {
     bulkAddForm.reset({
       count: 5,
@@ -228,10 +210,12 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
       isOutdoor: false,
       isAccessible: false,
     });
-    setIsBulkAddModalOpen(true);
+    setIsBulkAddModalOpen(isBulkAddModalOpen => !isBulkAddModalOpen);
   };
-
-  const handleBulkAddSubmit = async (data: BulkAddTableFormData) => {
+  /**
+   * handleBulkAddSubmit is kept for now, but you can remove it if you don't need bulk add functionality.
+   * It currently loops through the count and creates tables with the specified prefix and index.
+  const handleBulkAddSubmit = async (data: BulkAddTableFormData) => { // Kept for now
     setIsSaving(true);
     let successCount = 0;
     const errorMessages: string[] = [];
@@ -275,7 +259,7 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     if (successCount > 0 && errorMessages.length === 0) {
       setIsBulkAddModalOpen(false);
     }
-  };
+  }; */
 
   // Helper for status badge color
   const getStatusBadgeColor = (status: string) => {
@@ -286,6 +270,21 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
       default: return 'bg-slate-500';
     }
   }
+
+  // Early return for error state
+  if (error) {
+    return (
+      <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md text-center">
+        <h3 className="font-semibold text-lg mb-2">{t('Common.alert.error.title')}</h3>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  // Loading state for initial data
+  // Assuming initialData might be null during SSR/fetch, and tablesData is populated after client-side hydration
+  // A more robust loading state might be needed if initialData itself is fetched client-side and can be undefined/loading
+  const isInitialLoading = initialData === null && !error; // Or some other indicator if you fetch client-side
 
   return (
     <div>

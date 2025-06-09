@@ -1,7 +1,6 @@
 // File: app/api/public/session-info/route.ts
 
 import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings';
-import { createClient } from '@/lib/supabase/client'
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getSubdomainFromHost } from '@/lib/utils';
 import { NextRequest, NextResponse } from 'next/server'

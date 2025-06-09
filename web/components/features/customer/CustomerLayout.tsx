@@ -2,7 +2,7 @@
 "use client";
 import React, { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { MessageCircleMore, Briefcase } from "lucide-react";
+import { MessageCircleMore } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";

@@ -1,20 +1,13 @@
 "use client";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { CategoryTabs } from "./CategoryTabs";
 import { FoodCard, FoodItem } from "./FoodCard";
 import { getLocalizedText } from "./utils";
 import type { ViewType, ViewProps } from "./screens/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { XCircle, Search, Filter, SortAsc, Grid, List, X } from "lucide-react";
+import { Search, Grid, List, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Category {
@@ -310,7 +303,7 @@ export function MenuList({
             <div className="flex flex-wrap gap-2">
               {searchTerm.length > 0 && (
                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                  Search: "{searchTerm}"
+                  Search: &quot;{searchTerm}&quot;
                   <button
                     onClick={() => setSearchTerm("")}
                     className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5"

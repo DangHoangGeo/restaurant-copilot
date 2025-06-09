@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { z } from "zod";
+import { Order } from "@/app/[locale]/dashboard/orders/page";
 
 const updateNotesSchema = z.object({
   notes: z.string().nullable(),
@@ -42,7 +43,7 @@ export async function PATCH(
       .eq("id", itemId)
       .single();
 
-    if (fetchError || !orderItem || (orderItem.orders as any).restaurant_id !== user.restaurantId) {
+    if (fetchError || !orderItem || (orderItem.orders as {restaurant_id: string}[])[0].restaurant_id !== user.restaurantId) {
       return NextResponse.json(
         { success: false, error: "Order item not found" },
         { status: 404 }

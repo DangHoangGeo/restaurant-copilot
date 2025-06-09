@@ -105,7 +105,7 @@ type MenuItemFormData = z.infer<ReturnType<typeof getMenuItemSchema>>;
 
 export function MenuClientContent({ initialData, error }: MenuClientContentProps) {
   const t = useTranslations('AdminMenu');
-  const tCommon = useTranslations('Common');
+  // const tCommon = useTranslations('Common'); // Removed
   const tValidation = useTranslations('AdminMenu.validation');
   const params = useParams();
   const locale = (params.locale as string) || 'en';
@@ -116,10 +116,10 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   const [menuData, setMenuData] = useState<Category[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CategoryFormData | null>(null);
-  const [editingItem, setEditingItem] = useState<Partial<MenuItemFormData> | null>(null); // Partial for item as well initially
-  const [selectedCategoryIdForItem, setSelectedCategoryIdForItem] = useState<string | null>(null); // Keep this for item's category context
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  // const [editingCategory, setEditingCategory] = useState<CategoryFormData | null>(null); // Removed
+  // const [editingItem, setEditingItem] = useState<Partial<MenuItemFormData> | null>(null); // Removed
+  // const [selectedCategoryIdForItem, setSelectedCategoryIdForItem] = useState<string | null>(null); // Removed
+  // const [imageFile, setImageFile] = useState<File | null>(null); // Removed
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -155,8 +155,8 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   };
 
   const handleOpenItemModal = (category: Category, itemData: Partial<MenuItemFormData> | null = null) => {
-    setSelectedCategoryIdForItem(category.id); // Essential for creating new items
-    setImageFile(null);
+    // setSelectedCategoryIdForItem(category.id); // Removed
+    // setImageFile(null); // Removed, handled by form reset
 
     if (itemData) {
       setImagePreview(itemData.image_url || null);
@@ -239,15 +239,15 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   };
 
   const onItemSubmit = async (data: MenuItemFormData) => {
-    if (!data.category_id) { // selectedCategoryIdForItem should be part of form data now
-      toast.error(tValidation('category_id_required')); // Or a more generic error
+    if (!data.category_id) { 
+      toast.error(tValidation('category_id_required')); 
       return;
     }
     setIsLoading(true);
     try {
-      let imageUrl = data.image_url; // Use image_url from form data
+      let imageUrl = data.image_url; 
 
-      const fileToUpload = data.imageFile; // Get file from form data
+      const fileToUpload = data.imageFile; 
 
       if (fileToUpload) {
         const sessionResponse = await fetch('/api/v1/auth/session');
@@ -270,7 +270,8 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       const method = data.id ? 'PUT' : 'POST';
       const url = data.id ? `/api/v1/menu-items/${data.id}` : '/api/v1/menu-items';
 
-      const { imageFile, ...itemPayloadDb } = data; // Exclude imageFile from DB payload
+      //const { imageFile, ...itemPayloadDb } = data; // Exclude imageFile from DB payload
+      const {...itemPayloadDb } = data;
       const finalPayload = {
         ...itemPayloadDb,
         image_url: imageUrl && imageUrl.trim() !== '' ? imageUrl : null,
@@ -303,9 +304,9 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
       toast.success(data.id ? t('item.update_success') : t('item.create_success'));
       setIsItemModalOpen(false);
-      itemForm.reset(); // Reset form after successful submission
-      setImageFile(null); // Clear local image file state
-      setImagePreview(null); // Clear local image preview state
+      itemForm.reset(); 
+      // setImageFile(null); // Removed
+      setImagePreview(null); 
       router.refresh();
     } catch (error) {
       console.error('Error saving menu item:', error);
@@ -384,8 +385,8 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       newMenuData[sourceCategoryIndex] = sourceCategory;
 
 
-      let destItems = sourceCategoryIndex === destCategoryIndex ? sourceItems : Array.from(destCategory.menu_items);
-      destItems.splice(destination.index, 0, { ...movedItem, id: destCategory.id });
+      const destItems = sourceCategoryIndex === destCategoryIndex ? sourceItems : Array.from(destCategory.menu_items); // Changed to const
+      destItems.splice(destination.index, 0, { ...movedItem, id: destCategory.id }); // Ensure category_id is updated
 
       destCategory.menu_items = destItems.map((item, index) => ({ ...item, position: index }));
       newMenuData[destCategoryIndex] = destCategory;
@@ -654,7 +655,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       </Dialog>
 
       {/* Item Modal */}
-      <Dialog open={isItemModalOpen} onOpenChange={(isOpen) => { if (!isOpen) { itemForm.reset(); setImagePreview(null); setImageFile(null); } setIsItemModalOpen(isOpen); }}>
+      <Dialog open={isItemModalOpen} onOpenChange={(isOpen) => { if (!isOpen) { itemForm.reset(); setImagePreview(null); /* setImageFile(null); */ } setIsItemModalOpen(isOpen); }}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>{itemForm.getValues("id") ? t('edit_item') : t('add_item')}</DialogTitle>
@@ -697,7 +698,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
                         <Input type="file" accept="image/*" onChange={(e) => {
                           const file = e.target.files?.[0] || null;
                           field.onChange(file); // Update RHF state
-                          setImageFile(file); // Keep local state for preview if needed by other logic
+                          // setImageFile(file); // Removed
                           if (file) {
                             const reader = new FileReader();
                             reader.onloadend = () => setImagePreview(reader.result as string);
@@ -737,7 +738,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-4">{t('form_hint')}</p>
               <DialogFooter className="mt-6 pt-4 border-t dark:border-slate-700">
-                <Button type="button" variant="secondary" onClick={() => { itemForm.reset(); setImagePreview(null); setImageFile(null); setIsItemModalOpen(false); }}>{t('cancel')}</Button>
+                <Button type="button" variant="secondary" onClick={() => { itemForm.reset(); setImagePreview(null); /* setImageFile(null); */ setIsItemModalOpen(false); }}>{t('cancel')}</Button>
                 <Button type="submit" variant="default" disabled={isLoading}>{isLoading ? t('buttons.saving') : t('save')}</Button>
               </DialogFooter>
             </form>

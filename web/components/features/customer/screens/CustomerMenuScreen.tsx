@@ -7,6 +7,7 @@ import { MenuList } from "../MenuList";
 import { SmartDiscoveryMenu } from "../SmartDiscoveryMenu";
 import { useCart } from "../CartContext";
 import type { ViewType, ViewProps, MenuViewProps } from "./types";
+import { MenuItem } from "@/shared/types/customer";
 
 interface Category {
   id: string;
@@ -14,7 +15,7 @@ interface Category {
   name_en: string;
   name_ja: string;
   name_vi: string;
-  menu_items: any[];
+  menu_items: MenuItem[];
 }
 
 interface RestaurantSettings {
@@ -39,7 +40,6 @@ export function CustomerMenuScreen({
   setView,
   restaurantSettings,
   viewProps,
-  featureFlags,
   canAddItems = true,
 }: CustomerMenuScreenProps) {
   const t = useTranslations("Customer");

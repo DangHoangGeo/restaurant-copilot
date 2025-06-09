@@ -28,17 +28,10 @@ interface Booking {
 }
 
 interface BookingsClientContentProps {
-  restaurantSettings: {
-    name: string;
-    logoUrl: string | null;
-    subdomain?: string;
-    primaryColor?: string;
-    defaultLocale?: string;
-  };
   initialBookings: Booking[] | null;
 }
 
-export function BookingsClientContent({ restaurantSettings, initialBookings }: BookingsClientContentProps) {
+export function BookingsClientContent({ initialBookings }: BookingsClientContentProps) {
   const t = useTranslations()
   const [bookings, setBookings] = useState<Booking[]>(initialBookings || [])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)

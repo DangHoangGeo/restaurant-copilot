@@ -1,12 +1,11 @@
 import { headers } from 'next/headers'
 import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { getSubdomainFromHost } from '@/lib/utils'
-import { getRestaurantIdFromSubdomain, getRestaurantSettingsFromSubdomain } from '@/lib/server/restaurant-settings'
+import { getRestaurantSettingsFromSubdomain } from '@/lib/server/restaurant-settings'
 import { fetchMenuAndTables } from '@/lib/server/customer-data'
 import { CustomerClientContent } from './menu-client-content'
-import type { SessionData } from '@/components/features/customer/screens/types';
+import type { SessionData } from '@/components/features/customer/screens/types'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { redirect } from 'next/navigation'
 
 
 export default async function CustomerHomePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ tableId?: string; code?: string; sessionId?: string }> }) {
@@ -96,6 +95,7 @@ export default async function CustomerHomePage({ params, searchParams }: { param
         }
       } 
     } catch (error) {
+      console.error('Error fetching session data by code:', error)
       sessionData.sessionStatus = 'invalid'
     }
   }

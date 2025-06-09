@@ -15,7 +15,7 @@ interface Props {
   locale?: string;
 }
 
-export function FloatingCart({ count, total, onCheckout, brandColor, locale = "en" }: Props) {
+export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
   const t = useTranslations("Customer");
   const [isExpanded, setIsExpanded] = useState(false);
   const { cart, updateQuantity, removeFromCart } = useCart();
