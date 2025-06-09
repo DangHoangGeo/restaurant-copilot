@@ -101,6 +101,19 @@ struct LoginView: View {
             } message: {
                 Text(errorMessage)
             }
+            .onAppear {
+                loadCredentials()
+            }
+        }
+    }
+
+    private func loadCredentials() {
+        let defaults = UserDefaults.standard
+        if let savedSubdomain = defaults.string(forKey: "lastUsedSubdomain") {
+            self.subdomain = savedSubdomain
+        }
+        if let savedEmail = defaults.string(forKey: "lastUsedEmail") {
+            self.email = savedEmail
         }
     }
     
@@ -116,13 +129,26 @@ struct LoginView: View {
         errorMessage = ""
         
         do {
+            let trimmedSubdomain = subdomain.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+
             try await supabaseManager.signIn(
-                subdomain: subdomain.trimmingCharacters(in: .whitespacesAndNewlines),
-                email: email.trimmingCharacters(in: .whitespacesAndNewlines),
+                subdomain: trimmedSubdomain,
+                email: trimmedEmail,
                 password: password
             )
+
+            // If signIn is successful, save credentials
+            let defaults = UserDefaults.standard
+            defaults.set(trimmedSubdomain, forKey: "lastUsedSubdomain")
+            defaults.set(trimmedEmail, forKey: "lastUsedEmail")
+
+        } catch let authError as AuthError {
+            errorMessage = authError.localizedDescription
+            showError = true
         } catch {
-            errorMessage = error.localizedDescription
+            // For any other type of error that is not an AuthError
+            errorMessage = "An unexpected error occurred. Please try again."
             showError = true
         }
         
