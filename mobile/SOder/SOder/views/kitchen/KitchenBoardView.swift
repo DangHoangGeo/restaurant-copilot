@@ -25,7 +25,6 @@ struct KitchenBoardView: View {
             VStack(spacing: 0) {
                 // Header with stats and filters
                 KitchenHeaderView(
-                    orderCount: orderManager.orders.count,
                     totalItemsCount: totalItemsCount,
                     urgentItemsCount: urgentItemsCount,
                     selectedCategoryFilter: selectedCategoryFilter,
@@ -267,16 +266,16 @@ struct KitchenBoardView: View {
                 let newStatus: OrderItemStatus
                 
                 switch groupedItem.status {
-                case .ordered:
-                    newStatus = .preparing
-                case .preparing:
-                    newStatus = .ready
-                case .ready:
-                    newStatus = .served
-                case .served:
-                    newStatus = .cancelled
-                case .cancelled:
-                    return // Already completed
+                    case .ordered:
+                        newStatus = .preparing
+                    case .preparing:
+                        newStatus = .ready
+                    case .ready:
+                        newStatus = .served
+                    case .served:
+                        newStatus = .cancelled
+                    case .cancelled:
+                        return // Already completed
                 }
                 
                 // Update all order items in this group

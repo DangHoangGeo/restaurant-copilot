@@ -89,7 +89,6 @@ struct KitchenItemsListView: View {
 // MARK: - Kitchen Header View
 
 struct KitchenHeaderView: View {
-    let orderCount: Int
     let totalItemsCount: Int
     let urgentItemsCount: Int
     let selectedCategoryFilter: String
@@ -102,15 +101,34 @@ struct KitchenHeaderView: View {
     let onSignOut: () -> Void
     
     var body: some View {
-        VStack(spacing: 12) {
-            // Title and menu
+        VStack(spacing: 8) {
+            // Compact header with essential info only
             HStack {
-                Text("Kitchen Board")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                // Simplified title with urgent indicator
+                HStack(spacing: 8) {
+                    Text("Kitchen")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                    
+                    if urgentItemsCount > 0 {
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.red)
+                            Text("\(urgentItemsCount)")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(.red)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                }
+                
                 Spacer()
                 
-                // View Mode Toggle
+                // Compact menu with essential actions
                 Menu {
                     ForEach(KitchenViewMode.allCases, id: \.self) { mode in
                         Button {
@@ -144,24 +162,15 @@ struct KitchenHeaderView: View {
                         onSignOut()
                     }
                 } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: viewMode.icon)
-                        Image(systemName: "ellipsis.circle")
-                    }
-                    .font(.title2)
+                    Image(systemName: "ellipsis.circle")
+                        .font(.title2)
+                        .foregroundColor(.primary)
                 }
             }
             
-            // Kitchen Stats
-            HStack(spacing: 16) {
-                KitchenStatCard(value: "\(orderCount)", label: "Orders", color: .blue)
-                KitchenStatCard(value: "\(totalItemsCount)", label: "Items", color: .orange)
-                KitchenStatCard(value: "\(urgentItemsCount)", label: "Urgent", color: .red)
-            }
-            
-            // Category Filter Pills
+            // Category Filter Pills - the most important for chefs
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     CategoryFilterChip(
                         title: "All",
                         count: totalItemsCount,
@@ -185,7 +194,8 @@ struct KitchenHeaderView: View {
                 .padding(.horizontal)
             }
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, 8)
         .background(Color(.systemGray6))
     }
     
