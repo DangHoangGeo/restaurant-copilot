@@ -207,6 +207,92 @@ class OrderManager: ObservableObject {
         }
     }
     
+    // MARK: - Update Order Item Notes
+    @MainActor
+    func updateOrderItemNotes(orderItemId: String, notes: String?) async {
+        do {
+            let _: OrderItem = try await supabaseManager.client
+                .from("order_items")
+                .update([
+                    "notes": notes
+                ])
+                .eq("id", value: orderItemId)
+                .single()
+                .execute()
+                .value
+            
+            // Update local state
+            for (orderIndex, order) in orders.enumerated() {
+                if let orderItems = order.order_items,
+                   let itemIndex = orderItems.firstIndex(where: { $0.id == orderItemId }) {
+                    orders[orderIndex].order_items?[itemIndex] = OrderItem(
+                        id: orderItems[itemIndex].id,
+                        restaurant_id: orderItems[itemIndex].restaurant_id,
+                        order_id: orderItems[itemIndex].order_id,
+                        menu_item_id: orderItems[itemIndex].menu_item_id,
+                        quantity: orderItems[itemIndex].quantity,
+                        notes: notes,
+                        status: orderItems[itemIndex].status,
+                        created_at: orderItems[itemIndex].created_at,
+                        updated_at: orderItems[itemIndex].updated_at,
+                        menu_item: orderItems[itemIndex].menu_item
+                    )
+                    break
+                }
+            }
+            
+            print("Updated order item notes")
+            
+        } catch {
+            errorMessage = "Failed to update order item notes: \(error.localizedDescription)"
+            print("Error updating order item notes: \(error)")
+        }
+    }
+    
+    // MARK: - Cancel Order Item
+    @MainActor
+    func cancelOrderItem(orderItemId: String) async {
+        do {
+            // Set status to cancelled
+            let _: OrderItem = try await supabaseManager.client
+                .from("order_items")
+                .update([
+                    "status": OrderItemStatus.cancelled.rawValue,
+                    "updated_at": ISO8601DateFormatter().string(from: Date())
+                ])
+                .eq("id", value: orderItemId)
+                .single()
+                .execute()
+                .value
+            
+            // Update local state
+            for (orderIndex, order) in orders.enumerated() {
+                if let orderItems = order.order_items,
+                   let itemIndex = orderItems.firstIndex(where: { $0.id == orderItemId }) {
+                    orders[orderIndex].order_items?[itemIndex] = OrderItem(
+                        id: orderItems[itemIndex].id,
+                        restaurant_id: orderItems[itemIndex].restaurant_id,
+                        order_id: orderItems[itemIndex].order_id,
+                        menu_item_id: orderItems[itemIndex].menu_item_id,
+                        quantity: orderItems[itemIndex].quantity,
+                        notes: orderItems[itemIndex].notes,
+                        status: .cancelled,
+                        created_at: orderItems[itemIndex].created_at,
+                        updated_at: ISO8601DateFormatter().string(from: Date()),
+                        menu_item: orderItems[itemIndex].menu_item
+                    )
+                    break
+                }
+            }
+            
+            print("Cancelled order item: \(orderItemId)")
+            
+        } catch {
+            errorMessage = "Failed to cancel order item: \(error.localizedDescription)"
+            print("Error cancelling order item: \(error)")
+        }
+    }
+
     // MARK: - Update Order Item Status
     @MainActor
     func updateOrderItemStatus(orderItemId: String, newStatus: OrderItemStatus) async {

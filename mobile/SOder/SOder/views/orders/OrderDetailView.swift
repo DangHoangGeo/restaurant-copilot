@@ -10,6 +10,8 @@ struct OrderDetailView: View {
     @State private var isUpdatingStatus = false
     @State private var selectedItems: Set<String> = []
     @State private var showingItemActions = false
+    @State private var showingItemDetail = false
+    @State private var selectedItem: OrderItem? = nil
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
@@ -63,6 +65,20 @@ struct OrderDetailView: View {
         }
         .navigationTitle(order.table?.name ?? "Table \(order.table_id)")
         .navigationBarTitleDisplayMode(horizontalSizeClass == .regular ? .inline : .large)
+        .sheet(isPresented: $showingItemDetail) {
+            if let item = selectedItem {
+                OrderItemDetailView(
+                    item: item,
+                    orderManager: orderManager,
+                    printerManager: printerManager,
+                    onComplete: {
+                        showingItemDetail = false
+                        selectedItem = nil
+                    },
+                    onPrintResult: onPrintResult
+                )
+            }
+        }
         .toolbar {
             if horizontalSizeClass != .regular {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -182,6 +198,10 @@ struct OrderDetailView: View {
                         onPrintResult: onPrintResult,
                         showDetailedActions: horizontalSizeClass == .regular
                     )
+                    .onTapGesture {
+                        selectedItem = item
+                        showingItemDetail = true
+                    }
                 }
             }
         }

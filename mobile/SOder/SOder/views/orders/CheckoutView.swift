@@ -378,7 +378,7 @@ struct CheckoutItemRow: View {
                 }
                 
                 HStack {
-                    EnhancedStatusBadge(status: OrderStatus(rawValue: item.status.rawValue) ?? .new)
+                    OrderItemStatusBadge(status: item.status)
                     Spacer()
                 }
             }

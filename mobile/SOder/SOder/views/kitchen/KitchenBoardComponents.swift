@@ -244,10 +244,11 @@ struct KitchenItemCard: View {
     
     private var nextActionText: String {
         switch item.status {
-        case .ordered: return "start preparing"
-        case .preparing: return "mark ready"
-        case .ready: return "mark served"
-        case .served: return "completed"
+			case .ordered: return "start preparing"
+			case .preparing: return "mark ready"
+			case .ready: return "mark served"
+			case .served: return "completed"
+			case .cancelled: return "cancel order"
         }
     }
     
@@ -257,6 +258,7 @@ struct KitchenItemCard: View {
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
+		case .cancelled: return .red
         }
     }
     
@@ -269,6 +271,7 @@ struct KitchenItemCard: View {
             case .preparing: return Color.orange.opacity(0.03)
             case .ready: return Color.green.opacity(0.03)
             case .served: return Color.gray.opacity(0.03)
+			case .cancelled: return Color.red.opacity(0.03)
             }
         }
     }
@@ -279,6 +282,7 @@ struct KitchenItemCard: View {
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
+		case .cancelled: return .red
         }
     }
 }
@@ -530,6 +534,7 @@ struct CompactKitchenItemCard: View {
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
+		case .cancelled: return .red
         }
     }
     
@@ -539,6 +544,7 @@ struct CompactKitchenItemCard: View {
         case .preparing: return "Mark Ready"
         case .ready: return "Mark Served"
         case .served: return "Complete"
+        case .cancelled: return "Reorder"
         }
     }
     
@@ -881,6 +887,7 @@ struct HorizontalKitchenItemCard: View {
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
+		case .cancelled: return .red
         }
     }
     
@@ -890,6 +897,7 @@ struct HorizontalKitchenItemCard: View {
         case .preparing: return "Ready"
         case .ready: return "Serve"
         case .served: return "Done"
+		case .cancelled: return "Reorder"
         }
     }
     
@@ -899,6 +907,7 @@ struct HorizontalKitchenItemCard: View {
         case .preparing: return "checkmark.circle.fill"
         case .ready: return "hand.raised.fill"
         case .served: return "checkmark.circle.fill"
+		case .cancelled: return "arrow.clockwise"
         }
     }
     

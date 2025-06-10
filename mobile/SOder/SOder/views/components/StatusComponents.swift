@@ -81,6 +81,42 @@ struct EnhancedStatusBadge: View {
     }
 }
 
+struct OrderItemStatusBadge: View {
+    let status: OrderItemStatus
+    
+    private var display: (text: String, color: Color, icon: String) {
+        switch status {
+        case .ordered:
+            return ("Ordered", .blue, "doc.text")
+        case .preparing:
+            return ("Preparing", .orange, "flame.fill")
+        case .ready:
+            return ("Ready", .green, "checkmark.circle.fill")
+        case .served:
+            return ("Served", .gray, "checkmark.seal.fill")
+        case .cancelled:
+            return ("Cancelled", .red, "xmark.circle.fill")
+        }
+    }
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: display.icon)
+                .font(.caption2)
+            Text(display.text)
+                .fontWeight(.medium)
+        }
+        .font(.caption)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(display.color.opacity(0.15))
+        .foregroundColor(display.color)
+        .cornerRadius(20)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Status: \(display.text)")
+    }
+}
+
 // MARK: - Filter Chip Component
 
 struct FilterChip: View {
@@ -263,7 +299,7 @@ struct OrderRowView: View {
                             
                             Spacer()
                             
-                            EnhancedStatusBadge(status: OrderStatus(rawValue: item.status.rawValue) ?? .ordered)
+                            OrderItemStatusBadge(status: item.status)
                         }
                     }
                     
@@ -324,11 +360,11 @@ struct EnhancedOrderItemView: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                     
-                    EnhancedStatusBadge(status: OrderStatus(rawValue: item.status.rawValue) ?? .ordered)
+                    OrderItemStatusBadge(status: item.status)
                 }
             }
             
-            if showDetailedActions && item.status.rawValue != "served" {
+            if showDetailedActions && item.status.rawValue != "served" && item.status.rawValue != "cancelled" {
                 HStack {
                     Spacer()
                     
@@ -362,7 +398,9 @@ struct EnhancedOrderItemView: View {
         case .ready:
             return .served
         case .served:
-            return .served
+            return .served  // No further progression
+        case .cancelled:
+            return .cancelled  // Cancelled items don't progress
         }
     }
 }
