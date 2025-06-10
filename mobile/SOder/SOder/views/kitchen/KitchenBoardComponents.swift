@@ -754,6 +754,7 @@ struct HorizontalKitchenItemCard: View {
     let item: GroupedItem
     let onStatusTap: () -> Void
     let onDetailTap: () -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         HStack(spacing: 16) {
@@ -797,7 +798,7 @@ struct HorizontalKitchenItemCard: View {
                 // Tables with enhanced visibility
                 if !item.tables.isEmpty {
                     HStack {
-                        Text("Tables:")
+                        Text("kitchen_tables".localized)
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(.primary)
@@ -831,7 +832,7 @@ struct HorizontalKitchenItemCard: View {
                 VStack(spacing: 6) {
                     Image(systemName: actionIcon)
                         .font(.title2)
-                    Text("Tap to")
+                    Text("kitchen_tap_to".localized)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     Text(actionText)
@@ -865,7 +866,7 @@ struct HorizontalKitchenItemCard: View {
         let minutes = Int(interval / 60)
         
         if minutes < 1 {
-            return "Now"
+            return "kitchen_now".localized
         } else if minutes < 60 {
             return "\(minutes)m"
         } else {
@@ -899,11 +900,11 @@ struct HorizontalKitchenItemCard: View {
     
     private var actionText: String {
         switch item.status {
-        case .ordered: return "Start"
-        case .preparing: return "Ready"
-        case .ready: return "Serve"
-        case .served: return "Done"
-		case .cancelled: return "Reorder"
+        case .ordered: return "kitchen_action_start".localized
+        case .preparing: return "kitchen_action_ready".localized
+        case .ready: return "kitchen_action_serve".localized
+        case .served: return "kitchen_action_done".localized
+		case .cancelled: return "kitchen_action_reorder".localized
         }
     }
     

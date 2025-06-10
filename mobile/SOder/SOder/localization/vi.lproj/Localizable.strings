@@ -317,7 +317,25 @@
 "kitchen_size" = "Kích cỡ:";
 "kitchen_just_now" = "Vừa xong";
 "kitchen_now" = "Bây giờ";
-"kitchen_items_count" = "%d món";
+
+// MARK: - Kitchen Empty States
+"kitchen_empty_all_caught_up" = "Đã xong hết!";
+"kitchen_empty_no_items" = "Không có món nào cần chuẩn bị";
+"kitchen_empty_total_orders" = "Có {count} đơn hàng tổng cộng";
+"kitchen_empty_no_orders" = "Có vẻ như chưa có đơn hàng nào.";
+
+// MARK: - Kitchen Status
+"kitchen_status_new_orders" = "Đơn hàng mới";
+
+// MARK: - Kitchen Items Count
+"kitchen_items_count" = "{count} món";
+
+// MARK: - Kitchen Action Labels (Short)
+"kitchen_action_start" = "Bắt đầu";
+"kitchen_action_ready" = "Hoàn thành";
+"kitchen_action_serve" = "Phục vụ";
+"kitchen_action_done" = "Xong";
+"kitchen_action_reorder" = "Đặt lại";
 
 // Kitchen Action Labels
 "kitchen_action_start_preparing" = "bắt đầu chuẩn bị";
@@ -346,4 +364,113 @@
 "kitchen_empty_title" = "Đã hoàn thành tất cả!";
 "kitchen_empty_subtitle" = "Không có món nào cần chuẩn bị";
 "kitchen_empty_orders_count" = "Đơn hàng đang hoạt động: %d";
+
+// MARK: - Debug
+"debug_item_name" = "DEBUG";
+"debug_quantity" = "DEBUG Số lượng";
+"debug_tables" = "DEBUG Bàn";
+"debug_tap_change_status" = "CHẠM ĐỂ THAY ĐỔI TRẠNG THÁI";
+
+// MARK: - Orders Filter
+"orders_filter_active" = "Hoạt động";
+"orders_filter_new" = "Mới";
+"orders_filter_serving" = "Đang phục vụ";
+"orders_filter_completed" = "Hoàn thành";
+"orders_filter_canceled" = "Đã hủy";
+
+// MARK: - Orders UI
+"orders_system_message" = "Thông báo Hệ thống";
+"orders_ok" = "OK";
+"orders_loading" = "Đang tải đơn hàng...";
+"orders_retry" = "Thử lại";
+"orders_refresh" = "Làm mới Đơn hàng";
+"orders_auto_printing" = "Tự động In";
+"orders_auto_print_new_orders" = "Tự động In Đơn hàng Mới";
+"orders_clear_print_history" = "Xóa Lịch sử In";
+"orders_sign_out" = "Đăng xuất";
+"orders_active_orders" = "Đơn hàng Hoạt động";
+"orders_all_orders" = "Tất cả Đơn hàng";
+"orders_select_order" = "Chọn Đơn hàng";
+"orders_select_order_desc" = "Chọn đơn hàng từ thanh bên để xem chi tiết";
+"orders_table_prefix" = "Bàn";
+"orders_id_prefix" = "ID";
+"orders_new_badge" = "MỚI";
+"orders_unknown_time" = "Không xác định";
+"orders_more_items" = "và {count} món khác...";
+"orders_unknown_item" = "Không xác định";
+
+// MARK: - Order Detail
+"orders_not_found" = "Không tìm thấy đơn hàng";
+"orders_print_receipt" = "In Biên lai";
+"orders_total_amount" = "Tổng Số tiền";
+"orders_mark_as_serving" = "Đánh dấu Đang phục vụ";
+"orders_checkout" = "Thanh toán";
+
+// MARK: - Printer Settings View Localization
+"printer_settings_title" = "Cài đặt Máy in";
+"printer_configuration_title" = "Cấu hình Máy in";
+"printer_mode_title" = "Chế độ Máy in";
+"printer_mode_dual_kitchen_prefix" = "K: %@";
+"printer_mode_dual_checkout_prefix" = "C: %@";
+"printer_mode_dual_none" = "Không có";
+"printer_mode_single_display" = "Chế độ Đơn";
+"printer_current_status_title" = "Trạng thái Hiện tại";
+"printer_status_label" = "Trạng thái Máy in";
+"printer_disconnect_button" = "Ngắt kết nối";
+"printer_available_printers_title" = "Máy in Khả dụng";
+"printer_no_printers_found" = "Không tìm thấy máy in";
+"printer_scan_button" = "Quét";
+"printer_refresh_printers_button" = "Làm mới Máy in";
+"printer_test_printing_title" = "In Thử nghiệm";
+"printer_print_test_receipt_button" = "In Biên lai Thử nghiệm";
+"printer_print_kitchen_test_button" = "In Thử nghiệm Bếp";
+"printer_print_logs_title" = "Nhật ký In";
+"printer_view_all_logs_button" = "Xem Tất cả Nhật ký";
+"printer_manual_setup_title" = "Thiết lập Thủ công";
+"printer_add_network_printer_button" = "Thêm Máy in Mạng";
+"printer_error_title" = "Lỗi";
+"printer_connection_alert_title" = "Kết nối Máy in";
+"printer_alert_ok_button" = "OK";
+"printer_done_button" = "Xong";
+"printer_connect_button" = "Kết nối";
+"printer_cancel_button" = "Hủy";
+
+// MARK: - Receipt Header Configuration
+"receipt_header_title" = "Tiêu đề Biên lai";
+"receipt_header_restaurant_name_label" = "Tên Nhà hàng";
+"receipt_header_address_label" = "Địa chỉ";
+"receipt_header_phone_label" = "Số điện thoại";
+"receipt_header_auto_fetch_button" = "Tự động Lấy từ Cài đặt";
+"receipt_header_preview_title" = "Xem trước";
+"receipt_header_help_text" = "Cấu hình thông tin tiêu đề xuất hiện trên biên lai được in.";
+
+// MARK: - Print Language Configuration
+"print_language_title" = "Ngôn ngữ In";
+"print_language_config_title" = "Cấu hình Ngôn ngữ In";
+"print_language_selection_title" = "Lựa chọn Ngôn ngữ";
+"print_language_selection_label" = "Ngôn ngữ cho Biên lai";
+"print_language_english" = "Tiếng Anh";
+"print_language_japanese" = "Tiếng Nhật";
+"print_language_vietnamese" = "Tiếng Việt";
+"print_language_fallback_title" = "Thông tin Dự phòng";
+"print_language_fallback_description" = "Khi máy in không hỗ trợ ngôn ngữ đã chọn, hệ thống sẽ tự động sử dụng mã món hàng thay vì tên món hàng đã dịch.";
+"print_language_current_fallback_message" = "Ngôn ngữ hiện tại không được hỗ trợ đầy đủ bởi hầu hết các máy in. Mã món hàng sẽ được sử dụng để in.";
+"print_language_current_status" = "Cấu hình Hiện tại";
+"print_language_selected_language" = "Ngôn ngữ Đã chọn";
+"print_language_printer_support" = "Hỗ trợ Máy in";
+"print_language_supported" = "Hỗ trợ Đầy đủ";
+"print_language_not_supported" = "Hỗ trợ Hạn chế";
+"print_language_fallback_mode" = "Chế độ Dự phòng";
+"print_language_changed_success" = "Ngôn ngữ in đã được cập nhật thành công!";
+"print_language_fallback_note" = "Nếu máy in không hỗ trợ ngôn ngữ đã chọn, mã món hàng sẽ được sử dụng thay vì tên.";
+
+// MARK: - Manual Printer Setup Localization
+"manual_printer_setup_title" = "Thêm Máy in Mạng";
+"manual_printer_setup_printer_info_title" = "Thông tin Máy in";
+"manual_printer_setup_printer_name_label" = "Tên Máy in";
+"manual_printer_setup_ip_address_label" = "Địa chỉ IP";
+"manual_printer_setup_port_label" = "Cổng";
+"manual_printer_setup_connection_title" = "Kết nối";
+"manual_printer_setup_add_button" = "Thêm Máy in";
+"manual_printer_setup_help_text" = "Nhập địa chỉ IP và cổng của máy in mạng. Hầu hết máy in biên lai sử dụng cổng 9100.";
 

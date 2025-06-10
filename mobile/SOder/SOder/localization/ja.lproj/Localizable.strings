@@ -318,7 +318,25 @@
 "kitchen_size" = "サイズ:";
 "kitchen_just_now" = "たった今";
 "kitchen_now" = "今";
-"kitchen_items_count" = "%d 品目";
+
+// MARK: - Kitchen Empty States
+"kitchen_empty_all_caught_up" = "すべて完了！";
+"kitchen_empty_no_items" = "準備が必要なアイテムはありません";
+"kitchen_empty_total_orders" = "合計{count}件の注文があります";
+"kitchen_empty_no_orders" = "まだ注文がないようです。";
+
+// MARK: - Kitchen Status
+"kitchen_status_new_orders" = "新しい注文";
+
+// MARK: - Kitchen Items Count
+"kitchen_items_count" = "{count}アイテム";
+
+// MARK: - Kitchen Action Labels (Short)
+"kitchen_action_start" = "開始";
+"kitchen_action_ready" = "完成";
+"kitchen_action_serve" = "提供";
+"kitchen_action_done" = "完了";
+"kitchen_action_reorder" = "再注文";
 
 // Kitchen Action Labels
 "kitchen_action_start_preparing" = "調理開始";
@@ -333,11 +351,6 @@
 "kitchen_action_complete_title" = "完了";
 "kitchen_action_reorder_title" = "再注文";
 
-"kitchen_action_start" = "開始";
-"kitchen_action_ready" = "完了";
-"kitchen_action_serve" = "提供";
-"kitchen_action_done" = "完了";
-
 // Kitchen Status Columns
 "kitchen_status_new" = "新規";
 "kitchen_status_preparing" = "調理中";
@@ -347,4 +360,113 @@
 "kitchen_empty_title" = "すべて完了！";
 "kitchen_empty_subtitle" = "調理が必要な品目はありません";
 "kitchen_empty_orders_count" = "アクティブな注文: %d";
+
+// MARK: - Debug
+"debug_item_name" = "デバッグ";
+"debug_quantity" = "デバッグ数量";
+"debug_tables" = "デバッグテーブル";
+"debug_tap_change_status" = "タップしてステータス変更";
+
+// MARK: - Orders Filter
+"orders_filter_active" = "アクティブ";
+"orders_filter_new" = "新規";
+"orders_filter_serving" = "配膳中";
+"orders_filter_completed" = "完了";
+"orders_filter_canceled" = "キャンセル";
+
+// MARK: - Orders UI
+"orders_system_message" = "システムメッセージ";
+"orders_ok" = "OK";
+"orders_loading" = "注文を読み込み中...";
+"orders_retry" = "再試行";
+"orders_refresh" = "注文を更新";
+"orders_auto_printing" = "自動印刷";
+"orders_auto_print_new_orders" = "新規注文を自動印刷";
+"orders_clear_print_history" = "印刷履歴をクリア";
+"orders_sign_out" = "サインアウト";
+"orders_active_orders" = "アクティブな注文";
+"orders_all_orders" = "すべての注文";
+"orders_select_order" = "注文を選択";
+"orders_select_order_desc" = "サイドバーから注文を選択して詳細を表示";
+"orders_table_prefix" = "テーブル";
+"orders_id_prefix" = "ID";
+"orders_new_badge" = "新規";
+"orders_unknown_time" = "不明";
+"orders_more_items" = "他{count}件...";
+"orders_unknown_item" = "不明";
+
+// MARK: - Order Detail
+"orders_not_found" = "注文が見つかりません";
+"orders_print_receipt" = "レシートを印刷";
+"orders_total_amount" = "合計金額";
+"orders_mark_as_serving" = "配膳中にマーク";
+"orders_checkout" = "会計";
+
+// MARK: - Printer Settings View Localization
+"printer_settings_title" = "プリンター設定";
+"printer_configuration_title" = "プリンター構成";
+"printer_mode_title" = "プリンターモード";
+"printer_mode_dual_kitchen_prefix" = "K: %@";
+"printer_mode_dual_checkout_prefix" = "C: %@";
+"printer_mode_dual_none" = "なし";
+"printer_mode_single_display" = "シングルモード";
+"printer_current_status_title" = "現在のステータス";
+"printer_status_label" = "プリンターステータス";
+"printer_disconnect_button" = "切断";
+"printer_available_printers_title" = "利用可能なプリンター";
+"printer_no_printers_found" = "プリンターが見つかりません";
+"printer_scan_button" = "スキャン";
+"printer_refresh_printers_button" = "プリンターを更新";
+"printer_test_printing_title" = "テスト印刷";
+"printer_print_test_receipt_button" = "テストレシートを印刷";
+"printer_print_kitchen_test_button" = "キッチンテストを印刷";
+"printer_print_logs_title" = "印刷ログ";
+"printer_view_all_logs_button" = "すべてのログを表示";
+"printer_manual_setup_title" = "手動セットアップ";
+"printer_add_network_printer_button" = "ネットワークプリンターを追加";
+"printer_error_title" = "エラー";
+"printer_connection_alert_title" = "プリンター接続";
+"printer_alert_ok_button" = "OK";
+"printer_done_button" = "完了";
+"printer_connect_button" = "接続";
+"printer_cancel_button" = "キャンセル";
+
+// MARK: - Receipt Header Configuration
+"receipt_header_title" = "レシートヘッダー";
+"receipt_header_restaurant_name_label" = "レストラン名";
+"receipt_header_address_label" = "住所";
+"receipt_header_phone_label" = "電話番号";
+"receipt_header_auto_fetch_button" = "設定から自動取得";
+"receipt_header_preview_title" = "プレビュー";
+"receipt_header_help_text" = "印刷されるレシートに表示されるヘッダー情報を設定します。";
+
+// MARK: - Print Language Configuration
+"print_language_title" = "印刷言語";
+"print_language_config_title" = "印刷言語設定";
+"print_language_selection_title" = "言語選択";
+"print_language_selection_label" = "レシートの言語";
+"print_language_english" = "英語";
+"print_language_japanese" = "日本語";
+"print_language_vietnamese" = "ベトナム語";
+"print_language_fallback_title" = "フォールバック情報";
+"print_language_fallback_description" = "プリンターが選択された言語をサポートしていない場合、システムは翻訳された商品名の代わりに商品コードを自動的に使用します。";
+"print_language_current_fallback_message" = "現在の言語はほとんどのプリンターで完全にサポートされていません。印刷には商品コードが使用されます。";
+"print_language_current_status" = "現在の設定";
+"print_language_selected_language" = "選択された言語";
+"print_language_printer_support" = "プリンターサポート";
+"print_language_supported" = "完全サポート";
+"print_language_not_supported" = "限定サポート";
+"print_language_fallback_mode" = "フォールバックモード";
+"print_language_changed_success" = "印刷言語が正常に更新されました！";
+"print_language_fallback_note" = "プリンターが選択された言語をサポートしていない場合、商品名の代わりに商品コードが使用されます。";
+
+// MARK: - Manual Printer Setup Localization
+"manual_printer_setup_title" = "ネットワークプリンターを追加";
+"manual_printer_setup_printer_info_title" = "プリンター情報";
+"manual_printer_setup_printer_name_label" = "プリンター名";
+"manual_printer_setup_ip_address_label" = "IPアドレス";
+"manual_printer_setup_port_label" = "ポート";
+"manual_printer_setup_connection_title" = "接続";
+"manual_printer_setup_add_button" = "プリンターを追加";
+"manual_printer_setup_help_text" = "ネットワークプリンターのIPアドレスとポートを入力してください。ほとんどのレシートプリンターはポート9100を使用します。";
 

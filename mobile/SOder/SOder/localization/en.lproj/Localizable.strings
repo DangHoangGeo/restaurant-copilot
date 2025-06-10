@@ -284,7 +284,25 @@
 "kitchen_size" = "Size:";
 "kitchen_just_now" = "Just now";
 "kitchen_now" = "Now";
-"kitchen_items_count" = "%d items";
+
+// MARK: - Kitchen Empty States
+"kitchen_empty_all_caught_up" = "All Caught Up!";
+"kitchen_empty_no_items" = "No items need preparation";
+"kitchen_empty_total_orders" = "There are {count} total orders";
+"kitchen_empty_no_orders" = "Looks like there are no orders yet.";
+
+// MARK: - Kitchen Status
+"kitchen_status_new_orders" = "New Orders";
+
+// MARK: - Kitchen Items Count
+"kitchen_items_count" = "{count} items";
+
+// MARK: - Kitchen Action Labels (Short)
+"kitchen_action_start" = "Start";
+"kitchen_action_ready" = "Ready";
+"kitchen_action_serve" = "Serve";
+"kitchen_action_done" = "Done";
+"kitchen_action_reorder" = "Reorder";
 
 // Kitchen Action Labels
 "kitchen_action_start_preparing" = "start preparing";
@@ -299,11 +317,6 @@
 "kitchen_action_complete_title" = "Complete";
 "kitchen_action_reorder_title" = "Reorder";
 
-"kitchen_action_start" = "Start";
-"kitchen_action_ready" = "Ready";
-"kitchen_action_serve" = "Serve";
-"kitchen_action_done" = "Done";
-
 // Kitchen Status Columns
 "kitchen_status_new" = "New";
 "kitchen_status_preparing" = "Preparing";
@@ -313,4 +326,113 @@
 "kitchen_empty_title" = "All caught up!";
 "kitchen_empty_subtitle" = "No items need preparation";
 "kitchen_empty_orders_count" = "Active orders: %d";
+
+// MARK: - Debug
+"debug_item_name" = "DEBUG";
+"debug_quantity" = "DEBUG Qty";
+"debug_tables" = "DEBUG Tables";
+"debug_tap_change_status" = "TAP TO CHANGE STATUS";
+
+// MARK: - Orders Filter
+"orders_filter_active" = "Active";
+"orders_filter_new" = "New";
+"orders_filter_serving" = "Serving";
+"orders_filter_completed" = "Completed";
+"orders_filter_canceled" = "Canceled";
+
+// MARK: - Orders UI
+"orders_system_message" = "System Message";
+"orders_ok" = "OK";
+"orders_loading" = "Loading orders...";
+"orders_retry" = "Retry";
+"orders_refresh" = "Refresh Orders";
+"orders_auto_printing" = "Auto-Printing";
+"orders_auto_print_new_orders" = "Auto-Print New Orders";
+"orders_clear_print_history" = "Clear Print History";
+"orders_sign_out" = "Sign Out";
+"orders_active_orders" = "Active Orders";
+"orders_all_orders" = "All Orders";
+"orders_select_order" = "Select an Order";
+"orders_select_order_desc" = "Choose an order from the sidebar to view details";
+"orders_table_prefix" = "Table";
+"orders_id_prefix" = "ID";
+"orders_new_badge" = "NEW";
+"orders_unknown_time" = "Unknown";
+"orders_more_items" = "and {count} more...";
+"orders_unknown_item" = "Unknown";
+
+// MARK: - Printer Settings View Localization
+"printer_settings_title" = "Printer Settings";
+"printer_configuration_title" = "Printer Configuration";
+"printer_mode_title" = "Printer Mode";
+"printer_mode_dual_kitchen_prefix" = "K: %@";
+"printer_mode_dual_checkout_prefix" = "C: %@";
+"printer_mode_dual_none" = "None";
+"printer_mode_single_display" = "Single Mode";
+"printer_current_status_title" = "Current Status";
+"printer_status_label" = "Printer Status";
+"printer_disconnect_button" = "Disconnect";
+"printer_available_printers_title" = "Available Printers";
+"printer_no_printers_found" = "No printers found";
+"printer_scan_button" = "Scan";
+"printer_refresh_printers_button" = "Refresh Printers";
+"printer_test_printing_title" = "Test Printing";
+"printer_print_test_receipt_button" = "Print Test Receipt";
+"printer_print_kitchen_test_button" = "Print Kitchen Test";
+"printer_print_logs_title" = "Print Logs";
+"printer_view_all_logs_button" = "View All Logs";
+"printer_manual_setup_title" = "Manual Setup";
+"printer_add_network_printer_button" = "Add Network Printer";
+"printer_error_title" = "Error";
+"printer_connection_alert_title" = "Printer Connection";
+"printer_alert_ok_button" = "OK";
+"printer_done_button" = "Done";
+"printer_connect_button" = "Connect";
+"printer_cancel_button" = "Cancel";
+
+// MARK: - Receipt Header Configuration
+"receipt_header_title" = "Receipt Header";
+"receipt_header_restaurant_name_label" = "Restaurant Name";
+"receipt_header_address_label" = "Address";
+"receipt_header_phone_label" = "Phone";
+"receipt_header_auto_fetch_button" = "Auto-Fetch from Settings";
+"receipt_header_preview_title" = "Preview";
+"receipt_header_help_text" = "Configure the header information that appears on printed receipts.";
+
+// MARK: - Print Language Configuration
+"print_language_title" = "Print Language";
+"print_language_config_title" = "Print Language Configuration";
+"print_language_selection_title" = "Language Selection";
+"print_language_selection_label" = "Language for Receipts";
+"print_language_english" = "English";
+"print_language_japanese" = "Japanese";
+"print_language_vietnamese" = "Vietnamese";
+"print_language_fallback_title" = "Fallback Information";
+"print_language_fallback_description" = "When your printer doesn't support the selected language, the system will automatically use item codes instead of translated item names.";
+"print_language_current_fallback_message" = "The current language is not fully supported by most printers. Item codes will be used for printing.";
+"print_language_current_status" = "Current Configuration";
+"print_language_selected_language" = "Selected Language";
+"print_language_printer_support" = "Printer Support";
+"print_language_supported" = "Fully Supported";
+"print_language_not_supported" = "Limited Support";
+"print_language_fallback_mode" = "Fallback Mode";
+"print_language_changed_success" = "Print language has been updated successfully!";
+"print_language_fallback_note" = "If printer doesn't support the selected language, item codes will be used instead of names.";
+
+// MARK: - Manual Printer Setup Localization
+"manual_printer_setup_title" = "Add Network Printer";
+"manual_printer_setup_printer_info_title" = "Printer Information";
+"manual_printer_setup_printer_name_label" = "Printer Name";
+"manual_printer_setup_ip_address_label" = "IP Address";
+"manual_printer_setup_port_label" = "Port";
+"manual_printer_setup_connection_title" = "Connection";
+"manual_printer_setup_add_button" = "Add Printer";
+"manual_printer_setup_help_text" = "Enter the IP address and port of your network printer. Most receipt printers use port 9100.";
+
+// MARK: - Order Detail
+"orders_not_found" = "Order not found";
+"orders_print_receipt" = "Print Receipt";
+"orders_total_amount" = "Total Amount";
+"orders_mark_as_serving" = "Mark as Serving";
+"orders_checkout" = "Checkout";
 

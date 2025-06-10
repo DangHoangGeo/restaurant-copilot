@@ -77,7 +77,7 @@ struct OrderDetailView: View {
                 .toolbar {
                     if horizontalSizeClass != .regular && order.status == .completed {
                         ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("Print Receipt") {
+                            Button("orders_print_receipt".localized) {
                                 Task {
                                     await printReceipt(for: order)
                                 }
@@ -87,11 +87,11 @@ struct OrderDetailView: View {
                 }
             } else {
                 VStack {
-                    Text("Order not found")
+                    Text("orders_not_found".localized)
                         .font(.title2)
                         .foregroundColor(.secondary)
                     
-                    Button("Refresh") {
+                    Button("orders_refresh".localized) {
                         Task {
                             await orderManager.fetchActiveOrders()
                         }
@@ -140,7 +140,7 @@ struct OrderDetailView: View {
             
             if let total = order.total_amount {
                 HStack {
-                    Text("Total Amount")
+                    Text("orders_total_amount".localized)
                         .font(.headline)
                         .fontWeight(.semibold)
                     
@@ -171,7 +171,7 @@ struct OrderDetailView: View {
                 }) {
                     HStack {
                         Image(systemName: "printer")
-                        Text("Print Receipt")
+                        Text("orders_print_receipt".localized)
                             .fontWeight(.semibold)
                     }
                     .frame(maxWidth: 120)
