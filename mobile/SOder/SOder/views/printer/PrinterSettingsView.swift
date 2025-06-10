@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PrinterSettingsView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var printerManager = PrinterManager()
     @StateObject private var settingsManager = PrinterSettingsManager.shared
     @State private var showingConnectionAlert = false
@@ -17,7 +18,7 @@ struct PrinterSettingsView: View {
             NavigationView {
                 // Empty sidebar for iPad to force content to main area
                 if UIDevice.current.userInterfaceIdiom == .pad {
-                    Text("Printer Settings")
+                    Text("printer_settings".localized)
                         .navigationBarHidden(true)
                 }
                 
@@ -31,14 +32,14 @@ struct PrinterSettingsView: View {
     private var mainContent: some View {
         List {
             // Printer Mode Selection Section - NEW
-            Section("Printer Configuration") {
+            Section("printer_config_title".localized) {
                 NavigationLink(destination: PrinterModeSelectionView()) {
                     HStack {
                         Image(systemName: "gear")
                             .foregroundColor(.blue)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Printer Mode")
+                            Text("printer_mode_title".localized)
                                 .font(.headline)
                             Text(settingsManager.printerMode.displayName)
                                 .font(.caption)
@@ -49,18 +50,18 @@ struct PrinterSettingsView: View {
                         
                         if settingsManager.printerMode == .dual {
                             VStack(alignment: .trailing, spacing: 2) {
-                                Text("Dual Mode")
+                                Text("printer_mode_dual".localized)
                                     .font(.caption)
                                     .foregroundColor(.green)
-                                Text("K: \(settingsManager.kitchenPrinter?.name.prefix(8) ?? "None")")
+                                Text(String(format: "printer_mode_dual_kitchen_prefix".localized, settingsManager.kitchenPrinter?.name.prefix(8) ?? "printer_mode_dual_none".localized))
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
-                                Text("C: \(settingsManager.checkoutPrinter?.name.prefix(8) ?? "None")")
+                                Text(String(format: "printer_mode_dual_checkout_prefix".localized, settingsManager.checkoutPrinter?.name.prefix(8) ?? "printer_mode_dual_none".localized))
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                             }
                         } else {
-                            Text("Single Mode")
+                            Text("printer_mode_single".localized)
                                 .font(.caption)
                                 .foregroundColor(.orange)
                         }
@@ -69,13 +70,13 @@ struct PrinterSettingsView: View {
             }
             
             // Current Printer Status Section
-            Section("Current Status") {
+            Section("printer_current_status_title".localized) {
                 HStack {
                     Image(systemName: printerManager.isConnected ? "printer.fill" : "printer")
                         .foregroundColor(printerManager.isConnected ? .green : .gray)
                     
                     VStack(alignment: .leading) {
-                        Text("Printer Status")
+                        Text("printer_status_title".localized)
                             .font(.headline)
                         Text(printerManager.printerStatus)
                             .font(.subheadline)
@@ -85,7 +86,7 @@ struct PrinterSettingsView: View {
                     Spacer()
                     
                     if printerManager.isConnected {
-                        Button("Disconnect") {
+                        Button("printer_disconnect_button".localized) {
                             printerManager.disconnectPrinter()
                         }
                         .buttonStyle(.bordered)
@@ -96,17 +97,17 @@ struct PrinterSettingsView: View {
             }
             
             // Available Printers Section
-            Section("Available Printers") {
+            Section("printer_available_printers_title".localized) {
                 if printerManager.availablePrinters.isEmpty {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.gray)
-                        Text("No printers found")
+                        Text("printer_no_printers_found".localized)
                             .foregroundColor(.secondary)
                         
                         Spacer()
                         
-                        Button("Scan") {
+                        Button("printer_scan_button".localized) {
                             printerManager.checkAvailablePrinters()
                         }
                         .buttonStyle(.bordered)
@@ -124,7 +125,7 @@ struct PrinterSettingsView: View {
                     }
                 }
                 
-                Button("Refresh Printers") {
+                Button("printer_refresh_printers_button".localized) {
                     printerManager.checkAvailablePrinters()
                 }
                 .foregroundColor(.blue)
@@ -132,7 +133,7 @@ struct PrinterSettingsView: View {
             
             // Test Printing Section
             if printerManager.isConnected {
-                Section("Test Printing") {
+                Section("printer_test_printing_title".localized) {
                     Button(action: {
                         Task {
                             await testPrint()
@@ -140,7 +141,7 @@ struct PrinterSettingsView: View {
                     }) {
                         HStack {
                             Image(systemName: "doc.text")
-                            Text("Print Test Receipt")
+                            Text("printer_print_test_receipt_button".localized)
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.caption)
@@ -155,7 +156,7 @@ struct PrinterSettingsView: View {
                     }) {
                         HStack {
                             Image(systemName: "list.clipboard")
-                            Text("Print Kitchen Test")
+                            Text("printer_print_kitchen_test_button".localized)
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.caption)
@@ -167,7 +168,7 @@ struct PrinterSettingsView: View {
             
             // Print Logs Section
             if !printerManager.printLogs.isEmpty {
-                Section("Print Logs") {
+                Section("printer_print_logs_title".localized) {
                     ForEach(printerManager.printLogs.suffix(5), id: \.self) { log in
                         Text(log)
                             .font(.caption)
@@ -175,7 +176,7 @@ struct PrinterSettingsView: View {
                     }
                     
                     if printerManager.printLogs.count > 5 {
-                        Button("View All Logs") {
+                        Button("printer_view_all_logs_button".localized) {
                             // Show all logs in a separate view
                         }
                         .font(.caption)
@@ -185,19 +186,19 @@ struct PrinterSettingsView: View {
             }
             
             // Manual Printer Setup Section
-            Section("Manual Setup") {
+            Section("printer_manual_setup_title".localized) {
                 if #available(iOS 16.0, *) {
                     NavigationLink(value: "manual-setup") {
                         HStack {
                             Image(systemName: "plus")
-                            Text("Add Network Printer")
+                            Text("printer_add_network_printer_button".localized)
                         }
                     }
                 } else {
                     NavigationLink(destination: ManualPrinterSetupView(printerManager: printerManager)) {
                         HStack {
                             Image(systemName: "plus")
-                            Text("Add Network Printer")
+                            Text("printer_add_network_printer_button".localized)
                         }
                     }
                 }
@@ -205,24 +206,24 @@ struct PrinterSettingsView: View {
             
             // Error Message
             if let errorMessage = printerManager.errorMessage {
-                Section("Error") {
+                Section("printer_error_title".localized) {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .font(.caption)
                 }
             }
         }
-        .navigationTitle("Printer Settings")
+        .navigationTitle("printer_settings".localized)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Done") {
+                Button("done".localized) {
                     // This would dismiss the view in a navigation context
                 }
             }
         }
-        .alert("Printer Connection", isPresented: $showingConnectionAlert) {
-            Button("OK") { }
+        .alert("printer_connection_alert_title".localized, isPresented: $showingConnectionAlert) {
+            Button("ok".localized) { }
         } message: {
             Text(connectionMessage)
         }
@@ -244,8 +245,8 @@ struct PrinterSettingsView: View {
             await MainActor.run {
                 isConnecting = false
                 connectionMessage = printerManager.isConnected
-                    ? "Successfully connected to \(printer.name)"
-                    : "Failed to connect to \(printer.name)"
+                    ? String(format: "printer_connection_success_message".localized, printer.name)
+                    : String(format: "printer_connection_failed_message".localized, printer.name)
                 showingConnectionAlert = true
             }
         }
@@ -256,8 +257,8 @@ struct PrinterSettingsView: View {
         
         await MainActor.run {
             connectionMessage = success
-                ? "Test receipt printed successfully!"
-                : "Failed to print test receipt"
+                ? "printer_test_receipt_success_alert".localized
+                : "printer_test_receipt_failed_alert".localized
             showingConnectionAlert = true
         }
     }
@@ -267,14 +268,15 @@ struct PrinterSettingsView: View {
         
         await MainActor.run {
             connectionMessage = success
-                ? "Kitchen test receipt printed successfully!"
-                : "Failed to print kitchen test receipt"
+                ? "printer_kitchen_test_success_alert".localized
+                : "printer_kitchen_test_failed_alert".localized
             showingConnectionAlert = true
         }
     }
 }
 
 struct PrinterRowView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let printer: PrinterInfo
     let isSelected: Bool
     let isConnecting: Bool
@@ -310,7 +312,7 @@ struct PrinterRowView: View {
                 ProgressView()
                     .scaleEffect(0.8)
             } else {
-                Button("Connect") {
+                Button("printer_connect_button".localized) {
                     onConnect()
                 }
                 .buttonStyle(.bordered)
@@ -322,6 +324,7 @@ struct PrinterRowView: View {
 }
 
 struct ManualPrinterSetupView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let printerManager: PrinterManager
     
     @State private var printerName = ""
@@ -332,32 +335,32 @@ struct ManualPrinterSetupView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Printer Information") {
-                    TextField("Printer Name", text: $printerName)
-                    TextField("IP Address", text: $ipAddress)
+                Section("printer_manual_setup_printer_info_title".localized) {
+                    TextField("printer_manual_setup_printer_name_label".localized, text: $printerName)
+                    TextField("printer_manual_setup_ip_address_label".localized, text: $ipAddress)
                         .keyboardType(.numbersAndPunctuation)
-                    TextField("Port", text: $port)
+                    TextField("printer_manual_setup_port_label".localized, text: $port)
                         .keyboardType(.numberPad)
                 }
                 
-                Section("Connection") {
-                    Button("Add Printer") {
+                Section("printer_connecting_status".localized) { // Assuming this key is appropriate for the section title
+                    Button("printer_manual_setup_add_button".localized) {
                         addNetworkPrinter()
                     }
                     .disabled(printerName.isEmpty || ipAddress.isEmpty)
                 }
                 
                 Section {
-                    Text("Enter the IP address and port of your network printer. Most receipt printers use port 9100.")
+                    Text("printer_manual_setup_help_text".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Add Network Printer")
+            .navigationTitle("printer_add_network_printer_button".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("cancel".localized) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }

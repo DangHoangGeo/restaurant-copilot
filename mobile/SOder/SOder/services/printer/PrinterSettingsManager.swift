@@ -366,9 +366,9 @@ enum ConfiguredPrinterType: String, Codable, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .receipt: return "Receipt Printer"
-        case .kitchen: return "Kitchen Printer"
-        case .label: return "Label Printer"
+        case .receipt: return "printer_type_receipt_display_name".localized
+        case .kitchen: return "printer_type_kitchen_display_name".localized
+        case .label: return "printer_type_label_display_name".localized
         }
     }
     
@@ -409,15 +409,15 @@ enum PrinterMode: String, Codable, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .single: return "Single Printer Mode"
-        case .dual: return "Dual Printer Mode"
+        case .single: return "printer_mode_single_display_name".localized
+        case .dual: return "printer_mode_dual_display_name".localized
         }
     }
     
     var description: String {
         switch self {
-        case .single: return "Use one printer for both kitchen orders and customer receipts"
-        case .dual: return "Use separate printers: one for kitchen orders, one for customer receipts"
+        case .single: return "printer_mode_single_description".localized
+        case .dual: return "printer_mode_dual_description".localized
         }
     }
     

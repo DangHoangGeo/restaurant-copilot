@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PrinterModeSelectionView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @State private var showingDualModeAlert = false
     @State private var validationErrors: [String] = []
@@ -13,11 +14,11 @@ struct PrinterModeSelectionView: View {
                     .font(.system(size: 50))
                     .foregroundColor(.blue)
                 
-                Text("Printer Setup Mode")
+                Text("printer_mode_selection_header_title".localized)
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
-                Text("Choose how you want to configure your printers")
+                Text("printer_mode_selection_header_subtitle".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -46,7 +47,7 @@ struct PrinterModeSelectionView: View {
             // Validation Errors
             if !validationErrors.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Setup Issues:")
+                    Text("printer_mode_selection_issues_title".localized)
                         .font(.headline)
                         .foregroundColor(.red)
                     
@@ -67,23 +68,23 @@ struct PrinterModeSelectionView: View {
             
             Spacer()
         }
-        .navigationTitle("Printer Mode")
+        .navigationTitle("printer_mode_title".localized)
         .onAppear {
             validateCurrentSetup()
         }
-        .alert("Enable Dual Printer Mode?", isPresented: $showingDualModeAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Auto-Assign") {
+        .alert("printer_mode_selection_alert_enable_dual_title".localized, isPresented: $showingDualModeAlert) {
+            Button("cancel".localized, role: .cancel) { }
+            Button("printer_mode_selection_alert_auto_assign_button".localized) {
                 settingsManager.autoAssignDualPrinters()
                 settingsManager.setPrinterMode(.dual)
                 validateCurrentSetup()
             }
-            Button("Manual Setup") {
+            Button("printer_mode_selection_alert_manual_setup_button".localized) {
                 settingsManager.setPrinterMode(.dual)
                 validateCurrentSetup()
             }
         } message: {
-            Text("You can auto-assign printers based on their types or set them up manually.")
+            Text("printer_mode_selection_alert_message".localized)
         }
     }
     
@@ -107,6 +108,7 @@ struct PrinterModeSelectionView: View {
 }
 
 struct PrinterModeCard: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let mode: PrinterMode
     let isSelected: Bool
     let canSelect: Bool
@@ -166,11 +168,12 @@ struct PrinterModeCard: View {
 }
 
 struct DualPrinterStatusView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     
     var body: some View {
         VStack(spacing: 12) {
-            Text("Dual Printer Assignment")
+            Text("printer_mode_selection_dual_assignment_title".localized)
                 .font(.headline)
             
             HStack(spacing: 20) {
@@ -180,11 +183,11 @@ struct DualPrinterStatusView: View {
                         .font(.system(size: 24))
                         .foregroundColor(settingsManager.hasKitchenPrinter() ? .green : .orange)
                     
-                    Text("Kitchen")
+                    Text("printer_mode_selection_kitchen_printer_title".localized)
                         .font(.caption)
                         .fontWeight(.medium)
                     
-                    Text(settingsManager.kitchenPrinter?.name ?? "Not Assigned")
+                    Text(settingsManager.kitchenPrinter?.name ?? "printer_mode_selection_not_assigned".localized)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -200,11 +203,11 @@ struct DualPrinterStatusView: View {
                         .font(.system(size: 24))
                         .foregroundColor(settingsManager.hasCheckoutPrinter() ? .green : .orange)
                     
-                    Text("Checkout")
+                    Text("printer_mode_selection_checkout_printer_title".localized)
                         .font(.caption)
                         .fontWeight(.medium)
                     
-                    Text(settingsManager.checkoutPrinter?.name ?? "Not Assigned")
+                    Text(settingsManager.checkoutPrinter?.name ?? "printer_mode_selection_not_assigned".localized)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -217,13 +220,13 @@ struct DualPrinterStatusView: View {
             
             // Quick actions
             HStack(spacing: 12) {
-                Button("Auto-Assign") {
+                Button("printer_mode_selection_alert_auto_assign_button".localized) {
                     settingsManager.autoAssignDualPrinters()
                 }
                 .buttonStyle(.bordered)
                 .disabled(settingsManager.configuredPrinters.count < 2)
                 
-                NavigationLink("Manual Setup") {
+                NavigationLink("printer_mode_selection_alert_manual_setup_button".localized) {
                     DualPrinterAssignmentView()
                 }
                 .buttonStyle(.bordered)
@@ -236,26 +239,27 @@ struct DualPrinterStatusView: View {
 }
 
 struct DualPrinterAssignmentView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         Form {
             Section {
-                Text("Assign specific printers for kitchen orders and customer receipts.")
+                Text("printer_mode_selection_dual_assign_description".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
-            Section("Kitchen Printer") {
-                Picker("Kitchen Printer", selection: Binding(
+            Section("printer_mode_selection_kitchen_printer_title".localized) {
+                Picker("printer_mode_selection_kitchen_picker_label".localized, selection: Binding(
                     get: { settingsManager.kitchenPrinter?.id ?? "" },
                     set: { newValue in
                         let printer = settingsManager.configuredPrinters.first { $0.id == newValue }
                         settingsManager.setKitchenPrinter(printer)
                     }
                 )) {
-                    Text("None").tag("")
+                    Text("printer_mode_selection_picker_none".localized).tag("")
                     ForEach(settingsManager.configuredPrinters) { printer in
                         Text(printer.name).tag(printer.id)
                     }
@@ -263,15 +267,15 @@ struct DualPrinterAssignmentView: View {
                 .pickerStyle(.menu)
             }
             
-            Section("Checkout Printer") {
-                Picker("Checkout Printer", selection: Binding(
+            Section("printer_mode_selection_checkout_printer_title".localized) {
+                Picker("printer_mode_selection_checkout_picker_label".localized, selection: Binding(
                     get: { settingsManager.checkoutPrinter?.id ?? "" },
                     set: { newValue in
                         let printer = settingsManager.configuredPrinters.first { $0.id == newValue }
                         settingsManager.setCheckoutPrinter(printer)
                     }
                 )) {
-                    Text("None").tag("")
+                    Text("printer_mode_selection_picker_none".localized).tag("")
                     ForEach(settingsManager.configuredPrinters) { printer in
                         Text(printer.name).tag(printer.id)
                     }
@@ -280,7 +284,7 @@ struct DualPrinterAssignmentView: View {
             }
             
             Section {
-                Button("Test Kitchen Printer") {
+                Button("printer_mode_selection_test_kitchen_button".localized) {
                     Task {
                         do {
                             try await PrinterService.shared.testKitchenPrinter()
@@ -291,7 +295,7 @@ struct DualPrinterAssignmentView: View {
                 }
                 .disabled(!settingsManager.hasKitchenPrinter())
                 
-                Button("Test Checkout Printer") {
+                Button("printer_mode_selection_test_checkout_button".localized) {
                     Task {
                         do {
                             try await PrinterService.shared.testCheckoutPrinter()
@@ -303,11 +307,11 @@ struct DualPrinterAssignmentView: View {
                 .disabled(!settingsManager.hasCheckoutPrinter())
             }
         }
-        .navigationTitle("Dual Printer Setup")
+        .navigationTitle("printer_mode_selection_dual_setup_title".localized)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Done") {
+                Button("done".localized) {
                     dismiss()
                 }
             }
