@@ -3,6 +3,29 @@ import Foundation
 
 // MARK: - Data Models
 
+// MARK: - Kitchen View Layout Modes
+enum KitchenViewMode: String, CaseIterable {
+    case statusColumns = "status_columns"
+    case categoryGrid = "category_grid"
+    case list = "list"
+    
+    var displayName: String {
+        switch self {
+        case .statusColumns: return "Status Columns"
+        case .categoryGrid: return "Category Grid"
+        case .list: return "List View"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .statusColumns: return "rectangle.split.2x1"
+        case .categoryGrid: return "square.grid.2x2"
+        case .list: return "list.bullet"
+        }
+    }
+}
+
 struct CategoryGroup: Identifiable {
     let id = UUID()
     let categoryName: String

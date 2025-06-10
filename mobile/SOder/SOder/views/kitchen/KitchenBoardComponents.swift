@@ -67,7 +67,7 @@ struct KitchenItemCard: View {
     let onDetailTap: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             // Header with priority and time
             HStack {
                 if item.priority >= KitchenBoardConfig.urgentThreshold {
@@ -78,8 +78,8 @@ struct KitchenItemCard: View {
                             .fontWeight(.bold)
                     }
                     .foregroundColor(.red)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(Color.red.opacity(0.2))
                     .cornerRadius(8)
                 }
@@ -88,21 +88,23 @@ struct KitchenItemCard: View {
                 
                 Text(timeAgoText)
                     .font(.caption)
+                    .fontWeight(.medium)
                     .foregroundColor(.secondary)
             }
             
-            // Item name and quantity
+            // Item name and prominent quantity
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(item.itemName)
-                        .font(.headline)
+                        .font(.title2)
                         .fontWeight(.bold)
                         .lineLimit(2)
                     
                     // Size if available
                     if let size = item.size {
                         Text("Size: \(size)")
-                            .font(.caption)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
                             .foregroundColor(.secondary)
                     }
                 }
@@ -110,73 +112,73 @@ struct KitchenItemCard: View {
                 Spacer()
                 
                 Text("×\(item.quantity)")
-                    .font(.title2)
+                    .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.orange)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
                     .background(Color.orange.opacity(0.2))
-                    .cornerRadius(12)
+                    .cornerRadius(16)
             }
             
             // Toppings/modifications
             if !item.toppings.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("Modifications:")
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
                         .foregroundColor(.secondary)
                     
                     ForEach(item.toppings.prefix(3), id: \.self) { topping in
                         Text("• \(topping)")
-                            .font(.caption)
+                            .font(.subheadline)
                             .foregroundColor(.blue)
                     }
                     
                     if item.toppings.count > 3 {
                         Text("+ \(item.toppings.count - 3) more...")
-                            .font(.caption)
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
                             .italic()
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
                 .background(Color.blue.opacity(0.1))
-                .cornerRadius(8)
+                .cornerRadius(12)
             }
             
             // Notes
             if !item.displayNotes.isEmpty {
-                HStack(spacing: 4) {
+                HStack(spacing: 8) {
                     Image(systemName: "note.text")
                         .foregroundColor(.blue)
                     Text(item.displayNotes)
                         .font(.subheadline)
-                        .foregroundColor(.blue)
                         .fontWeight(.medium)
+                        .foregroundColor(.blue)
                         .lineLimit(2)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
                 .background(Color.blue.opacity(0.1))
-                .cornerRadius(8)
+                .cornerRadius(12)
             }
             
-            // Tables
-            HStack {
+            // Tables with enhanced display
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Tables:")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.headline)
+                    .fontWeight(.semibold)
                 
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 8) {
                         ForEach(Array(item.tables.sorted()), id: \.self) { table in
                             Text(table)
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
                                 .background(Color.blue.opacity(0.2))
                                 .foregroundColor(.blue)
                                 .cornerRadius(12)
@@ -185,17 +187,17 @@ struct KitchenItemCard: View {
                 }
             }
             
-            // Status and action button
+            // Status and action button with clear instruction
             Button(action: onStatusTap) {
-                HStack(spacing: 8) {
+                HStack(spacing: 12) {
                     Circle()
                         .fill(statusColor)
-                        .frame(width: 12, height: 12)
+                        .frame(width: 16, height: 16)
                     
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Status: \(currentStatusText)")
                             .font(.subheadline)
-                            .fontWeight(.medium)
+                            .fontWeight(.semibold)
                         
                         Text("Tap to \(nextActionText)")
                             .font(.caption)
@@ -205,16 +207,16 @@ struct KitchenItemCard: View {
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-                .padding()
+                .padding(16)
                 .background(Color(.systemGray6))
                 .cornerRadius(12)
             }
             .buttonStyle(PlainButtonStyle())
         }
-        .padding()
+        .padding(20)
         .background(priorityBackgroundColor)
         .cornerRadius(16)
         .overlay(
@@ -277,6 +279,274 @@ struct KitchenItemCard: View {
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
+        }
+    }
+}
+
+// MARK: - Status Columns View (New vs Preparing)
+
+struct StatusColumnsView: View {
+    let items: [GroupedItem]
+    let onItemStatusTap: (GroupedItem) -> Void
+    let onItemDetailTap: (GroupedItem) -> Void
+    
+    private var newItems: [GroupedItem] {
+        items.filter { $0.status == .ordered }
+    }
+    
+    private var preparingItems: [GroupedItem] {
+        items.filter { $0.status == .preparing }
+    }
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // New Orders Column
+            VStack(alignment: .leading, spacing: 12) {
+                StatusColumnHeader(title: "New Orders", count: newItems.count, color: .blue)
+                
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(newItems) { item in
+                            CompactKitchenItemCard(
+                                item: item,
+                                onStatusTap: { onItemStatusTap(item) },
+                                onDetailTap: { onItemDetailTap(item) }
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .background(Color.blue.opacity(0.05))
+            .cornerRadius(12)
+            
+            // Preparing Orders Column
+            VStack(alignment: .leading, spacing: 12) {
+                StatusColumnHeader(title: "Preparing", count: preparingItems.count, color: .orange)
+                
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(preparingItems) { item in
+                            CompactKitchenItemCard(
+                                item: item,
+                                onStatusTap: { onItemStatusTap(item) },
+                                onDetailTap: { onItemDetailTap(item) }
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .background(Color.orange.opacity(0.05))
+            .cornerRadius(12)
+        }
+        .padding()
+    }
+}
+
+// MARK: - Status Column Header
+
+struct StatusColumnHeader: View {
+    let title: String
+    let count: Int
+    let color: Color
+    
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(color)
+            
+            Spacer()
+            
+            Text("\(count)")
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(color)
+                .cornerRadius(12)
+        }
+        .padding(.horizontal)
+        .padding(.top)
+    }
+}
+
+// MARK: - Compact Kitchen Item Card (Fixed Size)
+
+struct CompactKitchenItemCard: View {
+    let item: GroupedItem
+    let onStatusTap: () -> Void
+    let onDetailTap: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            // Item name - always visible
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+					HStack {
+						Text(timeAgoText)
+							.font(.caption)
+							.fontWeight(.medium)
+							.foregroundColor(timeColor)
+							.padding(.vertical, 2)
+							.padding(.horizontal, 2)
+							.background(timeColor.opacity(0.15))
+							.cornerRadius(6)
+
+						Text(item.itemName)
+							.font(.headline)
+							.fontWeight(.bold)
+							.lineLimit(2)
+							.multilineTextAlignment(.leading)
+							.fixedSize(horizontal: false, vertical: true)
+					}
+                    // Size if available
+                    if let size = item.size {
+                        Text("Size: \(size)")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+                Text("×\(item.quantity)")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.orange)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.orange.opacity(0.2))
+                    .cornerRadius(16)
+            }
+            
+            // Tables - compact display
+            if !item.tables.isEmpty {
+                HStack {
+                    Text("Tables:")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                    
+                    Text(Array(item.tables.sorted()).joined(separator: ", "))
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                        .lineLimit(1)
+                }
+            }
+            
+            // Notes - if any
+            if !item.displayNotes.isEmpty {
+                Text(item.displayNotes)
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                    .lineLimit(1)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(6)
+            }
+            
+            Spacer(minLength: 0)
+            
+            // Status action button - always visible
+            Button(action: onStatusTap) {
+                HStack {
+                    Circle()
+                        .fill(statusColor)
+                        .frame(width: 8, height: 8)
+                    
+                    Text(nextActionText)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                }
+                .foregroundColor(statusColor)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 12)
+                .background(statusColor.opacity(0.1))
+                .cornerRadius(8)
+            }
+        }
+        .padding(12)
+        .frame(minHeight: 160)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(priorityBorderColor, lineWidth: item.priority >= KitchenBoardConfig.urgentThreshold ? 2 : 0.5)
+        )
+        .onTapGesture {
+            onDetailTap()
+        }
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var timeAgoText: String {
+        let interval = Date().timeIntervalSince(item.orderTime)
+        let minutes = Int(interval / 60)
+        
+        if minutes < 1 {
+            return "Just now"
+        } else if minutes < 60 {
+            return "\(minutes)m"
+        } else {
+            let hours = minutes / 60
+            return "\(hours)h"
+        }
+    }
+    
+    private var timeColor: Color {
+        let interval = Date().timeIntervalSince(item.orderTime)
+        let minutes = Int(interval / 60)
+        
+        if minutes < 10 {
+            return .green
+        } else if minutes < 20 {
+            return .orange
+        } else {
+            return .red
+        }
+    }
+    
+    private var statusColor: Color {
+        switch item.status {
+        case .ordered: return .blue
+        case .preparing: return .orange
+        case .ready: return .green
+        case .served: return .gray
+        }
+    }
+    
+    private var nextActionText: String {
+        switch item.status {
+        case .ordered: return "Start Preparing"
+        case .preparing: return "Mark Ready"
+        case .ready: return "Mark Served"
+        case .served: return "Complete"
+        }
+    }
+    
+    private var priorityBorderColor: Color {
+        if item.priority >= KitchenBoardConfig.urgentThreshold {
+            return .red
+        } else {
+            return statusColor.opacity(0.3)
         }
     }
 }
@@ -365,5 +635,278 @@ struct KitchenEmptyStateView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
+    }
+}
+
+// MARK: - Category Grid View (Improved)
+
+struct CategoryGridView: View {
+    let categoryGroups: [CategoryGroup]
+    let onItemStatusTap: (GroupedItem) -> Void
+    let onItemDetailTap: (GroupedItem) -> Void
+    
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 20) {
+                ForEach(categoryGroups) { categoryGroup in
+                    ImprovedCategoryGroupView(
+                        categoryGroup: categoryGroup,
+                        onItemStatusTap: onItemStatusTap,
+                        onItemDetailTap: onItemDetailTap
+                    )
+                }
+            }
+            .padding()
+        }
+    }
+}
+
+// MARK: - Improved Category Group View
+
+struct ImprovedCategoryGroupView: View {
+    let categoryGroup: CategoryGroup
+    let onItemStatusTap: (GroupedItem) -> Void
+    let onItemDetailTap: (GroupedItem) -> Void
+    
+    private var columns: [GridItem] {
+        [
+            GridItem(.adaptive(minimum: 300, maximum: 400), spacing: 16)
+        ]
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Category Header
+            HStack {
+                Text(categoryGroup.categoryName)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                Text("\(categoryGroup.items.count) items")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(.systemGray5))
+                    .cornerRadius(12)
+            }
+            
+            // Items Grid with proper spacing and padding
+            LazyVGrid(columns: columns, spacing: 16) {
+                ForEach(categoryGroup.items) { item in
+                    CompactKitchenItemCard(
+                        item: item,
+                        onStatusTap: { onItemStatusTap(item) },
+                        onDetailTap: { onItemDetailTap(item) }
+                    )
+                }
+            }
+            .padding(.horizontal, 4) // Additional padding for grid items
+        }
+        .padding(20)
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+    }
+}
+
+// MARK: - Kitchen List View (Mobile Horizontal Cards)
+
+struct KitchenListView: View {
+    let items: [GroupedItem]
+    let onItemStatusTap: (GroupedItem) -> Void
+    let onItemDetailTap: (GroupedItem) -> Void
+    
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 8) {
+                ForEach(items) { item in
+                    HorizontalKitchenItemCard(
+                        item: item,
+                        onStatusTap: { onItemStatusTap(item) },
+                        onDetailTap: { onItemDetailTap(item) }
+                    )
+                }
+            }
+            .padding()
+        }
+    }
+}
+
+// MARK: - Horizontal Kitchen Item Card
+
+struct HorizontalKitchenItemCard: View {
+    let item: GroupedItem
+    let onStatusTap: () -> Void
+    let onDetailTap: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Status indicator
+            VStack(spacing: 4) {
+                Circle()
+                    .fill(statusColor)
+                    .frame(width: 16, height: 16)
+                
+                Text(timeAgoText)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(timeColor)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(timeColor.opacity(0.15))
+                    .cornerRadius(6)
+            }
+            
+            // Main content
+            VStack(alignment: .leading, spacing: 8) {
+                // Title with quantity next to it
+                HStack {
+                    Text(item.itemName)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .lineLimit(1)
+                    
+                    Text("x\(item.quantity)")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.2))
+                        .cornerRadius(8)
+                    
+                    Spacer()
+                }
+                
+                // Tables with enhanced visibility
+                if !item.tables.isEmpty {
+                    HStack {
+                        Text("Tables:")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                        
+                        Text(Array(item.tables.sorted()).joined(separator: ", "))
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.blue)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(8)
+                    }
+                }
+                
+                // Notes if any
+                if !item.displayNotes.isEmpty {
+                    Text(item.displayNotes)
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                        .lineLimit(2)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(8)
+                }
+            }
+            
+            // Action button with clear instruction
+            Button(action: onStatusTap) {
+                VStack(spacing: 6) {
+                    Image(systemName: actionIcon)
+                        .font(.title2)
+                    Text("Tap to")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(actionText)
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(statusColor)
+                .cornerRadius(12)
+            }
+        }
+        .padding(16)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(priorityBorderColor, lineWidth: item.priority >= KitchenBoardConfig.urgentThreshold ? 2 : 0.5)
+        )
+        .onTapGesture {
+            onDetailTap()
+        }
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var timeAgoText: String {
+        let interval = Date().timeIntervalSince(item.orderTime)
+        let minutes = Int(interval / 60)
+        
+        if minutes < 1 {
+            return "Now"
+        } else if minutes < 60 {
+            return "\(minutes)m"
+        } else {
+            let hours = minutes / 60
+            return "\(hours)h"
+        }
+    }
+    
+    private var timeColor: Color {
+        let interval = Date().timeIntervalSince(item.orderTime)
+        let minutes = Int(interval / 60)
+        
+        if minutes < 10 {
+            return .green
+        } else if minutes < 20 {
+            return .orange
+        } else {
+            return .red
+        }
+    }
+    
+    private var statusColor: Color {
+        switch item.status {
+        case .ordered: return .blue
+        case .preparing: return .orange
+        case .ready: return .green
+        case .served: return .gray
+        }
+    }
+    
+    private var actionText: String {
+        switch item.status {
+        case .ordered: return "Start"
+        case .preparing: return "Ready"
+        case .ready: return "Serve"
+        case .served: return "Done"
+        }
+    }
+    
+    private var actionIcon: String {
+        switch item.status {
+        case .ordered: return "play.fill"
+        case .preparing: return "checkmark.circle.fill"
+        case .ready: return "hand.raised.fill"
+        case .served: return "checkmark.circle.fill"
+        }
+    }
+    
+    private var priorityBorderColor: Color {
+        if item.priority >= KitchenBoardConfig.urgentThreshold {
+            return .red
+        } else {
+            return statusColor.opacity(0.3)
+        }
     }
 }

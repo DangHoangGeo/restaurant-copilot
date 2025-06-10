@@ -15,6 +15,7 @@ struct KitchenBoardView: View {
     @State private var showingPrintAlert = false
     @State private var printMessage = ""
     @State private var refreshTimer: Timer?
+    @State private var viewMode: KitchenViewMode = .statusColumns
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
@@ -29,8 +30,12 @@ struct KitchenBoardView: View {
                     urgentItemsCount: urgentItemsCount,
                     selectedCategoryFilter: selectedCategoryFilter,
                     categories: Array(Set(groupedByCategory.map { $0.categoryName })),
+                    viewMode: viewMode,
                     onCategoryFilterChange: { category in
                         selectedCategoryFilter = category
+                    },
+                    onViewModeChange: { mode in
+                        viewMode = mode
                     },
                     onRefresh: {
                         Task {
@@ -65,6 +70,7 @@ struct KitchenBoardView: View {
                         groupedByCategory: groupedByCategory,
                         selectedCategoryFilter: selectedCategoryFilter,
                         orderCount: orderManager.orders.count,
+                        viewMode: viewMode,
                         onItemStatusTap: { item in
                             advanceItemStatus(item)
                         },
@@ -100,7 +106,7 @@ struct KitchenBoardView: View {
             
             // Detail overlay - shown as dialog
             if showingItemDetails, let selectedItem = selectedGroupedItem {
-                KitchenItemDetailView(
+                ItemDetailView(
                     item: selectedItem,
                     orderManager: orderManager,
                     printerManager: printerManager,
@@ -179,6 +185,9 @@ struct KitchenBoardView: View {
             for orderItem in order.order_items ?? [] {
                 guard let menuItem = orderItem.menu_item else { continue }
                 
+                // Only show active items (new, preparing)
+                guard orderItem.status == .ordered || orderItem.status == .preparing else { continue }
+                
                 // Safely unwrap optionals and provide default values
                 let itemName = menuItem.displayName
                 let quantity = orderItem.quantity ?? 0
@@ -187,13 +196,26 @@ struct KitchenBoardView: View {
                 // This needs to be addressed in the data model or by providing a default mechanism.
                 let priority = 0 // Default priority
 
-                // FIXME: This should be the category name, not ID. Need to fetch category details based on this ID.
-                let categoryName = menuItem.category_id
+                // Get category name from the fetched category data, with fallback to category_id
+                let categoryName = menuItem.categoryDisplayName
                 
-                if let existingItemIndex = newGroupedItems.firstIndex(where: { $0.categoryName == categoryName && $0.itemName == itemName && $0.notes == orderItem.notes }) {
+                // Get table name instead of ID
+                let tableName = order.table?.name ?? "Table \(order.table_id)"
+                
+                // Items with notes or different statuses should not be grouped
+                // Create unique identifier including notes and status for grouping
+                let groupingKey = "\(menuItem.id)_\(orderItem.notes ?? "")_\(orderItem.status.rawValue)"
+                
+                if let existingItemIndex = newGroupedItems.firstIndex(where: { 
+                    $0.itemId == groupingKey && 
+                    $0.categoryName == categoryName && 
+                    $0.itemName == itemName && 
+                    $0.notes == orderItem.notes &&
+                    $0.status == orderItem.status 
+                }) {
                     // Update existing item in the new list
                     newGroupedItems[existingItemIndex].quantity += quantity
-                    newGroupedItems[existingItemIndex].tables.insert(order.table_id)
+                    newGroupedItems[existingItemIndex].tables.insert(tableName)
                     newGroupedItems[existingItemIndex].orderItems.append(orderItem)
                     // Ensure orderTime is the earliest for the group
                     if orderTime < newGroupedItems[existingItemIndex].orderTime {
@@ -204,10 +226,10 @@ struct KitchenBoardView: View {
                 } else {
                     // Create new group
                     let newGroupedItem = GroupedItem(
-                        itemId: "\(menuItem.id)_\(orderItem.notes ?? "")",
+                        itemId: groupingKey,
                         itemName: itemName,
                         quantity: quantity,
-                        tables: [order.table_id],
+                        tables: [tableName],
                         orderItems: [orderItem],
                         categoryName: categoryName,
                         notes: orderItem.notes,

@@ -4,34 +4,67 @@ struct KitchenItemsListView: View {
     let groupedByCategory: [CategoryGroup]
     let selectedCategoryFilter: String
     let orderCount: Int
+    let viewMode: KitchenViewMode
     let onItemStatusTap: (GroupedItem) -> Void
     let onItemDetailTap: (GroupedItem) -> Void
     
     var body: some View {
         Group {
-            if filteredCategoryGroups.isEmpty {
+            if allItems.isEmpty {
                 KitchenEmptyStateView(
                     orderCount: orderCount,
                     selectedCategory: selectedCategoryFilter
                 )
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 20) {
-                        ForEach(filteredCategoryGroups) { categoryGroup in
-                            CategoryGroupView(
-                                categoryGroup: categoryGroup,
-                                onItemStatusTap: onItemStatusTap,
-                                onItemDetailTap: onItemDetailTap
-                            )
-                        }
-                    }
-                    .padding()
+                switch viewMode {
+                case .statusColumns:
+                    StatusColumnsView(
+                        items: allItems,
+                        onItemStatusTap: onItemStatusTap,
+                        onItemDetailTap: onItemDetailTap
+                    )
+                case .categoryGrid:
+                    CategoryGridView(
+                        categoryGroups: filteredCategoryGroups,
+                        onItemStatusTap: onItemStatusTap,
+                        onItemDetailTap: onItemDetailTap
+                    )
+                case .list:
+                    KitchenListView(
+                        items: allItems,
+                        onItemStatusTap: onItemStatusTap,
+                        onItemDetailTap: onItemDetailTap
+                    )
                 }
             }
         }
     }
     
     // MARK: - Computed Properties
+    
+    private var allItems: [GroupedItem] {
+        let filtered = selectedCategoryFilter == "All" 
+            ? groupedByCategory.flatMap { $0.items }
+            : groupedByCategory.filter { $0.categoryName == selectedCategoryFilter }.flatMap { $0.items }
+        
+        return filtered.sorted { lhs, rhs in
+            // Sort by priority first (urgent items at top)
+            if lhs.priority != rhs.priority {
+                return lhs.priority > rhs.priority
+            }
+            
+            // Then by status
+            let statusOrder: [OrderItemStatus] = [.ordered, .preparing, .ready, .served]
+            let lhsIndex = statusOrder.firstIndex(of: lhs.status) ?? 0
+            let rhsIndex = statusOrder.firstIndex(of: rhs.status) ?? 0
+            if lhsIndex != rhsIndex {
+                return lhsIndex < rhsIndex
+            }
+            
+            // Finally by order time
+            return lhs.orderTime < rhs.orderTime
+        }
+    }
     
     private var filteredCategoryGroups: [CategoryGroup] {
         let filtered = selectedCategoryFilter == "All" 
@@ -61,7 +94,9 @@ struct KitchenHeaderView: View {
     let urgentItemsCount: Int
     let selectedCategoryFilter: String
     let categories: [String]
+    let viewMode: KitchenViewMode
     let onCategoryFilterChange: (String) -> Void
+    let onViewModeChange: (KitchenViewMode) -> Void
     let onRefresh: () -> Void
     let onPrintSummary: () -> Void
     let onSignOut: () -> Void
@@ -75,7 +110,26 @@ struct KitchenHeaderView: View {
                     .fontWeight(.bold)
                 Spacer()
                 
+                // View Mode Toggle
                 Menu {
+                    ForEach(KitchenViewMode.allCases, id: \.self) { mode in
+                        Button {
+                            onViewModeChange(mode)
+                        } label: {
+                            HStack {
+                                Image(systemName: mode.icon)
+                                Text(mode.displayName)
+                                if viewMode == mode {
+                                    Spacer()
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                        }
+                    }
+                    
+                    Divider()
+                    
                     Button("Refresh Kitchen") {
                         onRefresh()
                     }
@@ -90,8 +144,11 @@ struct KitchenHeaderView: View {
                         onSignOut()
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.title2)
+                    HStack(spacing: 4) {
+                        Image(systemName: viewMode.icon)
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .font(.title2)
                 }
             }
             

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct KitchenItemDetailView: View {
+struct ItemDetailView: View {
     let item: GroupedItem
     let orderManager: OrderManager
     let printerManager: PrinterManager
@@ -29,9 +29,6 @@ struct KitchenItemDetailView: View {
                     VStack(spacing: 20) {
                         // Item summary
                         itemSummarySection
-                        
-                        // Order details
-                        orderDetailsSection
                         
                         // Status management
                         statusManagementSection
@@ -208,24 +205,6 @@ struct KitchenItemDetailView: View {
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
-    private var orderDetailsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Order Items")
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            VStack(spacing: 12) {
-                ForEach(item.orderItems, id: \.id) { orderItem in
-                    OrderItemDetailRow(orderItem: orderItem)
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
-    }
-    
     private var statusManagementSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Status Management")
@@ -289,23 +268,7 @@ struct KitchenItemDetailView: View {
     
     private var actionButtonsSection: some View {
         VStack(spacing: 12) {
-            Button(action: {
-                Task {
-                    await printItemSummary()
-                }
-            }) {
-                HStack {
-                    Image(systemName: "printer")
-                    Text("Print Item Summary")
-                        .fontWeight(.medium)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-            }
-            
+        
             Button(action: {
                 Task {
                     await printKitchenSlip()

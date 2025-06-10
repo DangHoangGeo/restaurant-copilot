@@ -111,6 +111,19 @@ enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
     }
 }
 
+// MARK: - Category Model
+struct Category: Decodable, Identifiable {
+    let id: String
+    let name_en: String
+    let name_ja: String
+    let name_vi: String
+    
+    // Helper to get localized name (defaulting to English)
+    var displayName: String {
+        return name_en // You can implement locale-based selection later
+    }
+}
+
 struct MenuItem:  Decodable, Identifiable {
     let id: String
     let restaurant_id: String
@@ -131,6 +144,9 @@ struct MenuItem:  Decodable, Identifiable {
     let created_at: String
     let updated_at: String
     
+    // Category information (when fetched with joins)
+    var category: Category?
+    
     // Helper to get localized name (defaulting to English)
     var displayName: String {
         return name_en // You can implement locale-based selection later
@@ -138,6 +154,11 @@ struct MenuItem:  Decodable, Identifiable {
     
     var displayDescription: String? {
         return description_en // You can implement locale-based selection later
+    }
+    
+    // Helper to get category name with fallback
+    var categoryDisplayName: String {
+        return category?.displayName ?? category_id
     }
 }
 
@@ -342,6 +363,9 @@ struct MenuItemResponse: Decodable {
     let created_at: String
     let updated_at: String
     
+    // Category information when fetched with joins
+    let category: Category?
+    
     func toMenuItem() -> MenuItem {
         return MenuItem(
             id: id,
@@ -361,7 +385,8 @@ struct MenuItemResponse: Decodable {
             available: available,
             position: position,
             created_at: created_at,
-            updated_at: updated_at
+            updated_at: updated_at,
+            category: category
         )
     }
 }

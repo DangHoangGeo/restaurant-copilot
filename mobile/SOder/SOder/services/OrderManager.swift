@@ -88,7 +88,15 @@ class OrderManager: ObservableObject {
                     table:tables(*),
                     order_items(
                         *,
-                        menu_item:menu_items(*)
+                        menu_item:menu_items(
+                            *,
+                            category:categories(
+                                id,
+                                name_en,
+                                name_ja,
+                                name_vi
+                            )
+                        )
                     )
                 """)
                 .eq("restaurant_id", value: restaurantId)
@@ -138,7 +146,15 @@ class OrderManager: ObservableObject {
                     table:tables(*),
                     order_items(
                         *,
-                        menu_item:menu_items(*)
+                        menu_item:menu_items(
+                            *,
+                            category:categories(
+                                id,
+                                name_en,
+                                name_ja,
+                                name_vi
+                            )
+                        )
                     )
                 """)
                 .eq("restaurant_id", value: restaurantId)
