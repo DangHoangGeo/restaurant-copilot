@@ -51,7 +51,7 @@ struct PrinterSettingsView: View {
             // Receipt Header Configuration Section
             Section("receipt_header_title".localized) {
                 if #available(iOS 16.0, *) {
-                    NavigationLink(value: "receipt-header".localized) {
+                    NavigationLink(value: "receipt-header") {
                         HStack {
                             Image(systemName: "doc.text")
                                 .foregroundColor(.blue)
@@ -98,7 +98,7 @@ struct PrinterSettingsView: View {
             // Print Language Configuration Section
             Section("print_language_title".localized) {
                 if #available(iOS 16.0, *) {
-                    NavigationLink(value: "print_language".localized) {
+                    NavigationLink(value: "print-language") {
                         HStack {
                             Image(systemName: "textformat")
                                 .foregroundColor(.blue)
@@ -273,7 +273,7 @@ struct PrinterSettingsView: View {
             // Manual Printer Setup Section
             Section("printer_manual_setup_title".localized) {
                 if #available(iOS 16.0, *) {
-                    NavigationLink(value: "manual_setup".localized) {
+                    NavigationLink(value: "manual-setup") {
                         HStack {
                             Image(systemName: "plus")
                             Text("printer_add_network_printer_button".localized)

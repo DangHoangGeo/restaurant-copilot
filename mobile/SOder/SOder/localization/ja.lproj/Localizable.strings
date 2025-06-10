@@ -442,10 +442,22 @@
 
 // MARK: - Print Language Configuration
 "print_language_title" = "印刷言語";
+"print_language_config_title" = "印刷言語設定";
+"print_language_selection_title" = "言語選択";
 "print_language_selection_label" = "レシートの言語";
 "print_language_english" = "英語";
 "print_language_japanese" = "日本語";
 "print_language_vietnamese" = "ベトナム語";
+"print_language_fallback_title" = "フォールバック情報";
+"print_language_fallback_description" = "プリンターが選択された言語をサポートしていない場合、システムは翻訳された商品名の代わりに商品コードを自動的に使用します。";
+"print_language_current_fallback_message" = "現在の言語はほとんどのプリンターで完全にサポートされていません。印刷には商品コードが使用されます。";
+"print_language_current_status" = "現在の設定";
+"print_language_selected_language" = "選択された言語";
+"print_language_printer_support" = "プリンターサポート";
+"print_language_supported" = "完全サポート";
+"print_language_not_supported" = "限定サポート";
+"print_language_fallback_mode" = "フォールバックモード";
+"print_language_changed_success" = "印刷言語が正常に更新されました！";
 "print_language_fallback_note" = "プリンターが選択された言語をサポートしていない場合、商品名の代わりに商品コードが使用されます。";
 
 // MARK: - Manual Printer Setup Localization

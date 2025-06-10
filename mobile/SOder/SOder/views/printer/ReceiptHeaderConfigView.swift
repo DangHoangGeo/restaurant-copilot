@@ -7,41 +7,117 @@ struct ReceiptHeaderConfigView: View {
     @State private var restaurantName: String = ""
     @State private var address: String = ""
     @State private var phone: String = ""
+    @State private var hasChanges: Bool = false
     
     var body: some View {
         NavigationView {
             Form {
-                Section("receipt_header_settings_title") {
+                Section {
                     VStack(alignment: .leading, spacing: 16) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("receipt_header_restaurant_name_label")
-                                .font(.headline)
+                        // Restaurant Name
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "building.2")
+                                    .foregroundColor(.blue)
+                                    .frame(width: 20)
+                                Text("receipt_header_restaurant_name_label")
+                                    .font(.headline)
+                            }
                             TextField("receipt_header_restaurant_name_placeholder", text: $restaurantName)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .onChange(of: restaurantName) { _ in hasChanges = true }
                         }
                         
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("receipt_header_address_label")
-                                .font(.headline)
+                        // Address
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "location")
+                                    .foregroundColor(.blue)
+                                    .frame(width: 20)
+                                Text("receipt_header_address_label")
+                                    .font(.headline)
+                            }
                             TextField("receipt_header_address_placeholder", text: $address)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .onChange(of: address) { _ in hasChanges = true }
                         }
                         
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("receipt_header_phone_label")
-                                .font(.headline)
+                        // Phone
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "phone")
+                                    .foregroundColor(.blue)
+                                    .frame(width: 20)
+                                Text("receipt_header_phone_label")
+                                    .font(.headline)
+                            }
                             TextField("receipt_header_phone_placeholder", text: $phone)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .keyboardType(.phonePad)
+                                .onChange(of: phone) { _ in hasChanges = true }
                         }
                     }
+                    .padding(.vertical, 8)
+                } header: {
+                    Text("receipt_header_settings_title")
+                } footer: {
+                    Text("receipt_header_settings_description")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 
                 Section {
-                    Button("receipt_header_auto_fetch_button") {
-                        autoFetchSettings()
+                    Button(action: autoFetchSettings) {
+                        HStack {
+                            Image(systemName: "arrow.clockwise")
+                                .foregroundColor(.blue)
+                            Text("receipt_header_auto_fetch_button")
+                                .foregroundColor(.blue)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
-                    .foregroundColor(.blue)
+                } header: {
+                    Text("receipt_header_auto_fetch_title")
+                } footer: {
+                    Text("receipt_header_auto_fetch_description")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                // Preview Section
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "doc.text")
+                                .foregroundColor(.green)
+                            Text("receipt_header_preview_title")
+                                .font(.headline)
+                                .foregroundColor(.green)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(restaurantName.isEmpty ? "Your Restaurant Name" : restaurantName)
+                                .font(.headline)
+                                .fontWeight(.bold)
+                            if !address.isEmpty {
+                                Text(address)
+                                    .font(.subheadline)
+                            }
+                            if !phone.isEmpty {
+                                Text("Tel: \(phone)")
+                                    .font(.subheadline)
+                            }
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                    }
+                } header: {
+                    Text("receipt_header_preview_section")
                 }
             }
             .navigationTitle("receipt_header_config_title")
@@ -59,6 +135,7 @@ struct ReceiptHeaderConfigView: View {
                         dismiss()
                     }
                     .fontWeight(.semibold)
+                    .disabled(!hasChanges)
                 }
             }
             .onAppear {

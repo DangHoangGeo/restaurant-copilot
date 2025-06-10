@@ -446,10 +446,22 @@
 
 // MARK: - Print Language Configuration
 "print_language_title" = "Ngôn ngữ In";
+"print_language_config_title" = "Cấu hình Ngôn ngữ In";
+"print_language_selection_title" = "Lựa chọn Ngôn ngữ";
 "print_language_selection_label" = "Ngôn ngữ cho Biên lai";
 "print_language_english" = "Tiếng Anh";
 "print_language_japanese" = "Tiếng Nhật";
 "print_language_vietnamese" = "Tiếng Việt";
+"print_language_fallback_title" = "Thông tin Dự phòng";
+"print_language_fallback_description" = "Khi máy in không hỗ trợ ngôn ngữ đã chọn, hệ thống sẽ tự động sử dụng mã món hàng thay vì tên món hàng đã dịch.";
+"print_language_current_fallback_message" = "Ngôn ngữ hiện tại không được hỗ trợ đầy đủ bởi hầu hết các máy in. Mã món hàng sẽ được sử dụng để in.";
+"print_language_current_status" = "Cấu hình Hiện tại";
+"print_language_selected_language" = "Ngôn ngữ Đã chọn";
+"print_language_printer_support" = "Hỗ trợ Máy in";
+"print_language_supported" = "Hỗ trợ Đầy đủ";
+"print_language_not_supported" = "Hỗ trợ Hạn chế";
+"print_language_fallback_mode" = "Chế độ Dự phòng";
+"print_language_changed_success" = "Ngôn ngữ in đã được cập nhật thành công!";
 "print_language_fallback_note" = "Nếu máy in không hỗ trợ ngôn ngữ đã chọn, mã món hàng sẽ được sử dụng thay vì tên.";
 
 // MARK: - Manual Printer Setup Localization

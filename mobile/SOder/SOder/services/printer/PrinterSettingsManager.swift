@@ -503,6 +503,22 @@ enum PrintLanguage: String, Codable, CaseIterable {
         }
     }
     
+    var nativeName: String {
+        switch self {
+        case .english: return "English"
+        case .japanese: return "日本語"
+        case .vietnamese: return "Tiếng Việt"
+        }
+    }
+    
+    var flagEmoji: String {
+        switch self {
+        case .english: return "🇺🇸"
+        case .japanese: return "🇯🇵"
+        case .vietnamese: return "🇻🇳"
+        }
+    }
+    
     var isPrinterSupported: Bool {
         // For simplicity, we'll assume only English is fully supported by all printers
         // Vietnamese and Japanese may have encoding issues on some receipt printers

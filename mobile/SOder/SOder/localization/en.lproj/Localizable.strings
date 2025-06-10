@@ -401,10 +401,22 @@
 
 // MARK: - Print Language Configuration
 "print_language_title" = "Print Language";
+"print_language_config_title" = "Print Language Configuration";
+"print_language_selection_title" = "Language Selection";
 "print_language_selection_label" = "Language for Receipts";
 "print_language_english" = "English";
 "print_language_japanese" = "Japanese";
 "print_language_vietnamese" = "Vietnamese";
+"print_language_fallback_title" = "Fallback Information";
+"print_language_fallback_description" = "When your printer doesn't support the selected language, the system will automatically use item codes instead of translated item names.";
+"print_language_current_fallback_message" = "The current language is not fully supported by most printers. Item codes will be used for printing.";
+"print_language_current_status" = "Current Configuration";
+"print_language_selected_language" = "Selected Language";
+"print_language_printer_support" = "Printer Support";
+"print_language_supported" = "Fully Supported";
+"print_language_not_supported" = "Limited Support";
+"print_language_fallback_mode" = "Fallback Mode";
+"print_language_changed_success" = "Print language has been updated successfully!";
 "print_language_fallback_note" = "If printer doesn't support the selected language, item codes will be used instead of names.";
 
 // MARK: - Manual Printer Setup Localization
