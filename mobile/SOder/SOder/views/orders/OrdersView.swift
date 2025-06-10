@@ -4,6 +4,7 @@ struct OrdersView: View {
     @StateObject private var orderManager = OrderManager()
     @StateObject private var supabaseManager = SupabaseManager.shared
     @EnvironmentObject var printerManager: PrinterManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var showingPrintAlert = false
     @State private var printMessage = ""
@@ -23,11 +24,11 @@ struct OrdersView: View {
         
         var displayName: String {
             switch self {
-            case .active: return "Active"
-            case .new: return "New"
-            case .serving: return "Serving"
-            case .completed: return "Completed"
-            case .canceled: return "Canceled"
+            case .active: return "orders_filter_active".localized
+            case .new: return "orders_filter_new".localized
+            case .serving: return "orders_filter_serving".localized
+            case .completed: return "orders_filter_completed".localized
+            case .canceled: return "orders_filter_canceled".localized
             }
         }
         
@@ -81,8 +82,8 @@ struct OrdersView: View {
                 await orderManager.fetchAllOrders()
             }
         }
-        .alert("System Message", isPresented: $showingPrintAlert) {
-            Button("OK") { }
+        .alert("orders_system_message".localized, isPresented: $showingPrintAlert) {
+            Button("orders_ok".localized) { }
         } message: {
             Text(printMessage)
         }
@@ -107,7 +108,7 @@ struct OrdersView: View {
             // Header with toggle
             VStack(spacing: 16) {
                 HStack {
-                    Text("Orders")
+                    Text("orders".localized)
                         .font(.largeTitle)
                         .fontWeight(.bold)
                     Spacer()
@@ -123,7 +124,7 @@ struct OrdersView: View {
                     }
                     
                     Menu {
-                        Button("Refresh Orders") {
+                        Button("orders_refresh".localized) {
                             Task {
                                 await orderManager.fetchActiveOrders()
                                 if showAllOrders {
@@ -135,12 +136,12 @@ struct OrdersView: View {
                         Divider()
                         
                         // Auto-printing controls
-                        Section("Auto-Printing") {
+                        Section("orders_auto_printing".localized) {
                             Button(action: {
                                 orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
                             }) {
                                 HStack {
-                                    Text("Auto-Print New Orders")
+                                    Text("orders_auto_print_new_orders".localized)
                                     Spacer()
                                     if orderManager.autoPrintingEnabled {
                                         Image(systemName: "checkmark")
@@ -149,7 +150,7 @@ struct OrdersView: View {
                                 }
                             }
                             
-                            Button("Clear Print History") {
+                            Button("orders_clear_print_history".localized) {
                                 orderManager.clearPrintHistory()
                             }
                             .disabled(!orderManager.autoPrintingEnabled)
@@ -164,7 +165,7 @@ struct OrdersView: View {
                         
                         Divider()
                         
-                        Button("Sign Out") {
+                        Button("orders_sign_out".localized) {
                             Task {
                                 try? await supabaseManager.signOut()
                             }
@@ -179,8 +180,8 @@ struct OrdersView: View {
                 
                 // Order Type Toggle
                 Picker("Order Type", selection: $showAllOrders) {
-                    Text("Active Orders").tag(false)
-                    Text("All Orders").tag(true)
+                    Text("orders_active_orders".localized).tag(false)
+                    Text("orders_all_orders".localized).tag(true)
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: showAllOrders) { newValue in

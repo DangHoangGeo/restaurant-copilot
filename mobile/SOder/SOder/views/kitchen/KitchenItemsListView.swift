@@ -44,7 +44,7 @@ struct KitchenItemsListView: View {
     // MARK: - Computed Properties
     
     private var allItems: [GroupedItem] {
-        let filtered = selectedCategoryFilter == "All" 
+        let filtered = selectedCategoryFilter == "kitchen_all".localized 
             ? groupedByCategory.flatMap { $0.items }
             : groupedByCategory.filter { $0.categoryName == selectedCategoryFilter }.flatMap { $0.items }
         
@@ -68,7 +68,7 @@ struct KitchenItemsListView: View {
     }
     
     private var filteredCategoryGroups: [CategoryGroup] {
-        let filtered = selectedCategoryFilter == "All" 
+        let filtered = selectedCategoryFilter == "kitchen_all".localized 
             ? groupedByCategory 
             : groupedByCategory.filter { $0.categoryName == selectedCategoryFilter }
         

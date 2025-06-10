@@ -284,7 +284,25 @@
 "kitchen_size" = "Size:";
 "kitchen_just_now" = "Just now";
 "kitchen_now" = "Now";
-"kitchen_items_count" = "%d items";
+
+// MARK: - Kitchen Empty States
+"kitchen_empty_all_caught_up" = "All Caught Up!";
+"kitchen_empty_no_items" = "No items need preparation";
+"kitchen_empty_total_orders" = "There are {count} total orders";
+"kitchen_empty_no_orders" = "Looks like there are no orders yet.";
+
+// MARK: - Kitchen Status
+"kitchen_status_new_orders" = "New Orders";
+
+// MARK: - Kitchen Items Count
+"kitchen_items_count" = "{count} items";
+
+// MARK: - Kitchen Action Labels (Short)
+"kitchen_action_start" = "Start";
+"kitchen_action_ready" = "Ready";
+"kitchen_action_serve" = "Serve";
+"kitchen_action_done" = "Done";
+"kitchen_action_reorder" = "Reorder";
 
 // Kitchen Action Labels
 "kitchen_action_start_preparing" = "start preparing";
@@ -299,11 +317,6 @@
 "kitchen_action_complete_title" = "Complete";
 "kitchen_action_reorder_title" = "Reorder";
 
-"kitchen_action_start" = "Start";
-"kitchen_action_ready" = "Ready";
-"kitchen_action_serve" = "Serve";
-"kitchen_action_done" = "Done";
-
 // Kitchen Status Columns
 "kitchen_status_new" = "New";
 "kitchen_status_preparing" = "Preparing";
@@ -313,4 +326,45 @@
 "kitchen_empty_title" = "All caught up!";
 "kitchen_empty_subtitle" = "No items need preparation";
 "kitchen_empty_orders_count" = "Active orders: %d";
+
+// MARK: - Debug
+"debug_item_name" = "DEBUG";
+"debug_quantity" = "DEBUG Qty";
+"debug_tables" = "DEBUG Tables";
+"debug_tap_change_status" = "TAP TO CHANGE STATUS";
+
+// MARK: - Orders Filter
+"orders_filter_active" = "Active";
+"orders_filter_new" = "New";
+"orders_filter_serving" = "Serving";
+"orders_filter_completed" = "Completed";
+"orders_filter_canceled" = "Canceled";
+
+// MARK: - Orders UI
+"orders_system_message" = "System Message";
+"orders_ok" = "OK";
+"orders_loading" = "Loading orders...";
+"orders_retry" = "Retry";
+"orders_refresh" = "Refresh Orders";
+"orders_auto_printing" = "Auto-Printing";
+"orders_auto_print_new_orders" = "Auto-Print New Orders";
+"orders_clear_print_history" = "Clear Print History";
+"orders_sign_out" = "Sign Out";
+"orders_active_orders" = "Active Orders";
+"orders_all_orders" = "All Orders";
+"orders_select_order" = "Select an Order";
+"orders_select_order_desc" = "Choose an order from the sidebar to view details";
+"orders_table_prefix" = "Table";
+"orders_id_prefix" = "ID";
+"orders_new_badge" = "NEW";
+"orders_unknown_time" = "Unknown";
+"orders_more_items" = "and {count} more...";
+"orders_unknown_item" = "Unknown";
+
+// MARK: - Order Detail
+"orders_not_found" = "Order not found";
+"orders_print_receipt" = "Print Receipt";
+"orders_total_amount" = "Total Amount";
+"orders_mark_as_serving" = "Mark as Serving";
+"orders_checkout" = "Checkout";
 

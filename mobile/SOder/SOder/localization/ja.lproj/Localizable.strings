@@ -318,7 +318,25 @@
 "kitchen_size" = "サイズ:";
 "kitchen_just_now" = "たった今";
 "kitchen_now" = "今";
-"kitchen_items_count" = "%d 品目";
+
+// MARK: - Kitchen Empty States
+"kitchen_empty_all_caught_up" = "すべて完了！";
+"kitchen_empty_no_items" = "準備が必要なアイテムはありません";
+"kitchen_empty_total_orders" = "合計{count}件の注文があります";
+"kitchen_empty_no_orders" = "まだ注文がないようです。";
+
+// MARK: - Kitchen Status
+"kitchen_status_new_orders" = "新しい注文";
+
+// MARK: - Kitchen Items Count
+"kitchen_items_count" = "{count}アイテム";
+
+// MARK: - Kitchen Action Labels (Short)
+"kitchen_action_start" = "開始";
+"kitchen_action_ready" = "完成";
+"kitchen_action_serve" = "提供";
+"kitchen_action_done" = "完了";
+"kitchen_action_reorder" = "再注文";
 
 // Kitchen Action Labels
 "kitchen_action_start_preparing" = "調理開始";
@@ -333,11 +351,6 @@
 "kitchen_action_complete_title" = "完了";
 "kitchen_action_reorder_title" = "再注文";
 
-"kitchen_action_start" = "開始";
-"kitchen_action_ready" = "完了";
-"kitchen_action_serve" = "提供";
-"kitchen_action_done" = "完了";
-
 // Kitchen Status Columns
 "kitchen_status_new" = "新規";
 "kitchen_status_preparing" = "調理中";
@@ -347,4 +360,45 @@
 "kitchen_empty_title" = "すべて完了！";
 "kitchen_empty_subtitle" = "調理が必要な品目はありません";
 "kitchen_empty_orders_count" = "アクティブな注文: %d";
+
+// MARK: - Debug
+"debug_item_name" = "デバッグ";
+"debug_quantity" = "デバッグ数量";
+"debug_tables" = "デバッグテーブル";
+"debug_tap_change_status" = "タップしてステータス変更";
+
+// MARK: - Orders Filter
+"orders_filter_active" = "アクティブ";
+"orders_filter_new" = "新規";
+"orders_filter_serving" = "配膳中";
+"orders_filter_completed" = "完了";
+"orders_filter_canceled" = "キャンセル";
+
+// MARK: - Orders UI
+"orders_system_message" = "システムメッセージ";
+"orders_ok" = "OK";
+"orders_loading" = "注文を読み込み中...";
+"orders_retry" = "再試行";
+"orders_refresh" = "注文を更新";
+"orders_auto_printing" = "自動印刷";
+"orders_auto_print_new_orders" = "新規注文を自動印刷";
+"orders_clear_print_history" = "印刷履歴をクリア";
+"orders_sign_out" = "サインアウト";
+"orders_active_orders" = "アクティブな注文";
+"orders_all_orders" = "すべての注文";
+"orders_select_order" = "注文を選択";
+"orders_select_order_desc" = "サイドバーから注文を選択して詳細を表示";
+"orders_table_prefix" = "テーブル";
+"orders_id_prefix" = "ID";
+"orders_new_badge" = "新規";
+"orders_unknown_time" = "不明";
+"orders_more_items" = "他{count}件...";
+"orders_unknown_item" = "不明";
+
+// MARK: - Order Detail
+"orders_not_found" = "注文が見つかりません";
+"orders_print_receipt" = "レシートを印刷";
+"orders_total_amount" = "合計金額";
+"orders_mark_as_serving" = "配膳中にマーク";
+"orders_checkout" = "会計";
 
