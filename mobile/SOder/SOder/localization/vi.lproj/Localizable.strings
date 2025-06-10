@@ -1,5 +1,3 @@
-# Vietnamese Localization Strings (vi.lproj/Localizable.strings)
-
 /* 
   Localizable.strings (Vietnamese)
   SOder
@@ -74,6 +72,17 @@
 "checkout_success_message" = "Đơn hàng đã hoàn tất và hóa đơn đã được in thành công.";
 "insufficient_amount" = "Số tiền không đủ";
 "processing" = "Đang xử lý...";
+
+// MARK: - Checkout Additional Keys
+"checkout_discount_section_title" = "Giảm giá";
+"checkout_remove_discount_button" = "Xóa bỏ";
+"checkout_discount_code_placeholder" = "Nhập mã giảm giá";
+"checkout_discount_type_picker_label" = "Loại giảm giá";
+"checkout_discount_type_percentage" = "Phần trăm";
+"checkout_discount_type_fixed" = "Số tiền cố định";
+"checkout_price_after_discount_label" = "Sau khi giảm giá";
+"checkout_price_tax_label" = "Thuế (%d%%)";
+"checkout_total_label" = "Tổng cộng";
 
 // MARK: - Printer
 "printer" = "Máy in";
@@ -253,6 +262,11 @@
 "connection_status_database" = "Cơ sở dữ liệu";
 "connection_status_live_updates" = "Cập nhật Trực tiếp";
 "connection_status_printer" = "Máy in";
+
+// MARK: - Tab Navigation
+"tab_orders" = "Đơn hàng";
+"tab_kitchen" = "Bếp";
+"tab_printer_settings" = "Cài đặt máy in";
 
 // MARK: - Settings
 "settings" = "Cài đặt";

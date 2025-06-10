@@ -73,6 +73,17 @@
 "insufficient_amount" = "Insufficient amount";
 "processing" = "Processing...";
 
+// MARK: - Checkout Additional Keys
+"checkout_discount_section_title" = "Discount";
+"checkout_remove_discount_button" = "Remove";
+"checkout_discount_code_placeholder" = "Enter discount code";
+"checkout_discount_type_picker_label" = "Discount Type";
+"checkout_discount_type_percentage" = "Percentage";
+"checkout_discount_type_fixed" = "Fixed Amount";
+"checkout_price_after_discount_label" = "After Discount";
+"checkout_price_tax_label" = "Tax (%d%%)";
+"checkout_total_label" = "Total";
+
 // MARK: - Printer
 "printer" = "Printer";
 "printers" = "Printers";
@@ -218,6 +229,11 @@
 "connection_status_database" = "Database";
 "connection_status_live_updates" = "Live Updates";
 "connection_status_printer" = "Printer";
+
+// MARK: - Tab Navigation
+"tab_orders" = "Orders";
+"tab_kitchen" = "Kitchen";
+"tab_printer_settings" = "Printer Settings";
 
 // MARK: - Settings
 "settings" = "Settings";

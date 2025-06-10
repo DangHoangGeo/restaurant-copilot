@@ -73,6 +73,17 @@
 "insufficient_amount" = "金額が不足しています";
 "processing" = "処理中...";
 
+// MARK: - Checkout Additional Keys
+"checkout_discount_section_title" = "割引";
+"checkout_remove_discount_button" = "削除";
+"checkout_discount_code_placeholder" = "割引コードを入力";
+"checkout_discount_type_picker_label" = "割引タイプ";
+"checkout_discount_type_percentage" = "パーセンテージ";
+"checkout_discount_type_fixed" = "固定金額";
+"checkout_price_after_discount_label" = "割引後";
+"checkout_price_tax_label" = "税金 (%d%%)";
+"checkout_total_label" = "合計";
+
 // MARK: - Printer
 "printer" = "プリンター";
 "printers" = "プリンター";
@@ -252,6 +263,11 @@
 "connection_status_live_updates" = "ライブアップデート";
 "connection_status_printer" = "プリンター";
 "settings_printer_tab" = "プリンター";
+
+// MARK: - Tab Navigation
+"tab_orders" = "オーダー";
+"tab_kitchen" = "キッチン";
+"tab_printer_settings" = "プリンター設定";
 
 // MARK: - Settings
 "settings" = "設定";

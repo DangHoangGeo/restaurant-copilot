@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUICore
 import Network
 import ExternalAccessory
 
@@ -192,7 +193,7 @@ class PrinterManager: ObservableObject {
         do {
             try await printerService.printCustomerReceipt(order)
             printedOrders.append(order)
-            addLog(String(format: "printer_order_receipt_success_log".localized, order.id.prefix(8)))
+            addLog(String(format: "printer_order_receipt_success_log".localized, order.id.prefix(8) as CVarArg))
             return true
         } catch {
             errorMessage = String(format: "printer_receipt_print_failed_log".localized, error.localizedDescription)
@@ -448,7 +449,7 @@ extension PrinterManager {
             }
         }
         
-        addLog(String(format: "printer_kitchen_slip_success_log".localized, order.id.prefix(8)))
+        addLog(String(format: "printer_kitchen_slip_success_log".localized, order.id.prefix(8) as CVarArg))
     }
 }
 
