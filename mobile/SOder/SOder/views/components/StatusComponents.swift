@@ -10,19 +10,17 @@ struct StatusBadge: View {
         // Order Statuses
         case "new":
             return ("New", .blue, "sparkles")
-        case "preparing":
-            return ("Preparing", .orange, "flame.fill")
-        case "ready":
-            return ("Ready", .green, "checkmark.circle.fill")
+        case "serving":
+            return ("Serving", .orange, "fork.knife")
         case "completed":
             return ("Completed", .gray, "checkmark.seal.fill")
+        case "canceled":
+            return ("Canceled", .red, "xmark.circle.fill")
         // Booking Statuses
         case "pending":
             return ("Pending", .gray, "hourglass")
         case "confirmed":
             return ("Confirmed", .green, "checkmark.seal.fill")
-        case "canceled":
-            return ("Canceled", .red, "xmark.circle.fill")
         default:
             return (status.capitalized, .gray, "questionmark.circle")
         }
@@ -52,14 +50,12 @@ struct EnhancedStatusBadge: View {
         switch status {
         case .new:
             return ("New", .blue, "sparkles")
-        case .ordered:
-            return ("Ordered", .blue, "doc.text")
-        case .preparing:
-            return ("Preparing", .orange, "flame.fill")
-        case .ready:
-            return ("Ready", .green, "checkmark.circle.fill")
+        case .serving:
+            return ("Serving", .orange, "fork.knife")
         case .completed:
             return ("Completed", .gray, "checkmark.seal.fill")
+        case .canceled:
+            return ("Canceled", .red, "xmark.circle.fill")
         }
     }
     
@@ -181,14 +177,14 @@ struct EmptyOrdersView: View {
     
     private var emptyStateIcon: String {
         switch filter {
-        case .active, .all, .new:
+        case .active, .new:
             return "tray"
-        case .preparing:
-            return "flame"
-        case .ready:
-            return "checkmark.circle"
+        case .serving:
+            return "fork.knife"
         case .completed:
             return "checkmark.seal"
+        case .canceled:
+            return "xmark.circle"
         }
     }
     
@@ -196,16 +192,14 @@ struct EmptyOrdersView: View {
         switch filter {
         case .active:
             return "No Active Orders"
-        case .all:
-            return "No Orders"
         case .new:
             return "No New Orders"
-        case .preparing:
-            return "Nothing Preparing"
-        case .ready:
-            return "Nothing Ready"
+        case .serving:
+            return "Nothing Being Served"
         case .completed:
             return "No Completed Orders"
+        case .canceled:
+            return "No Canceled Orders"
         }
     }
     
@@ -213,16 +207,14 @@ struct EmptyOrdersView: View {
         switch filter {
         case .active:
             return "When new orders come in, they'll appear here."
-        case .all:
-            return "No orders have been placed yet."
         case .new:
             return "All orders are being processed."
-        case .preparing:
-            return "No orders are currently being prepared."
-        case .ready:
-            return "No orders are ready for pickup."
+        case .serving:
+            return "No orders are currently being served."
         case .completed:
             return "No completed orders to show."
+        case .canceled:
+            return "No canceled orders to show."
         }
     }
 }

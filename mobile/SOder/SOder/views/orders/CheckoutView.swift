@@ -14,8 +14,32 @@ struct CheckoutView: View {
     @State private var showingError = false
     @State private var errorMessage = ""
     @State private var showingSuccess = false
+    @State private var receivedAmount: Double = 0
+    @State private var paymentMethod: PaymentMethod = .cash
     
     @Environment(\.dismiss) private var dismiss
+    
+    enum PaymentMethod: String, CaseIterable {
+        case cash = "cash"
+        case card = "card"
+        case paypay = "paypay"
+        
+        var displayName: String {
+            switch self {
+            case .cash: return "Cash"
+            case .card: return "Card"
+            case .paypay: return "PayPay"
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .cash: return "yensign.circle"
+            case .card: return "creditcard"
+            case .paypay: return "smartphone"
+            }
+        }
+    }
     
     // Tax rate - this could be configurable per restaurant
     private let taxRate: Double = 0.10 // 10% tax
@@ -44,15 +68,27 @@ struct CheckoutView: View {
         afterDiscountAmount + taxAmount
     }
     
+    private var changeAmount: Double {
+        if paymentMethod == .cash && receivedAmount > totalAmount {
+            return receivedAmount - totalAmount
+        }
+        return 0
+    }
+    
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 20) {
                     // Order Summary Header
                     orderSummaryHeader
                     
-                    // Order Items
-                    orderItemsList
+                    // Payment Method Selection
+                    paymentMethodSection
+                    
+                    // Payment Details (for cash)
+                    if paymentMethod == .cash {
+                        paymentDetailsSection
+                    }
                     
                     // Discount Section
                     discountSection
@@ -73,6 +109,9 @@ struct CheckoutView: View {
                         dismiss()
                     }
                 }
+            }
+            .task {
+                receivedAmount = totalAmount
             }
         }
         .alert("Error", isPresented: $showingError) {
@@ -120,24 +159,102 @@ struct CheckoutView: View {
         .cornerRadius(12)
     }
     
-    private var orderItemsList: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Order Items")
+    private var paymentMethodSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Payment Method")
                 .font(.headline)
                 .fontWeight(.semibold)
             
-            LazyVStack(spacing: 8) {
-                if let items = order.order_items {
-                    ForEach(items, id: \.id) { item in
-                        CheckoutItemRow(item: item)
+            HStack(spacing: 12) {
+                ForEach(PaymentMethod.allCases, id: \.self) { method in
+                    Button(action: {
+                        paymentMethod = method
+                        if method != .cash {
+                            receivedAmount = totalAmount
+                        }
+                    }) {
+                        VStack(spacing: 8) {
+                            Image(systemName: method.icon)
+                                .font(.title2)
+                            Text(method.displayName)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(paymentMethod == method ? Color.blue : Color(.systemGray5))
+                        .foregroundColor(paymentMethod == method ? .white : .primary)
+                        .cornerRadius(12)
                     }
                 }
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+    }
+    
+    private var paymentDetailsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Cash Payment")
+                .font(.headline)
+                .fontWeight(.semibold)
+            
+            VStack(spacing: 12) {
+                HStack {
+                    Text("Total Amount:")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Spacer()
+                    Text("¥\(String(format: "%.0f", totalAmount))")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.blue)
+                }
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Received Amount")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    
+                    TextField("0", value: $receivedAmount, format: .currency(code: "JPY"))
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                }
+                
+                if changeAmount > 0 {
+                    HStack {
+                        Text("Change:")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text("¥\(String(format: "%.0f", changeAmount))")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.green)
+                    }
+                    .padding()
+                    .background(Color.green.opacity(0.1))
+                    .cornerRadius(8)
+                } else if paymentMethod == .cash && receivedAmount > 0 && receivedAmount < totalAmount {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text("Insufficient amount")
+                            .font(.subheadline)
+                            .foregroundColor(.orange)
+                    }
+                    .padding()
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(8)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
     
     private var discountSection: some View {
@@ -171,7 +288,6 @@ struct CheckoutView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Discount Percentage")
                             .font(.subheadline)
-                            .fontWeight(.medium)
                         
                         HStack {
                             Slider(value: $discountPercentage, in: 0...50, step: 1)
@@ -185,7 +301,6 @@ struct CheckoutView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Discount Amount")
                             .font(.subheadline)
-                            .fontWeight(.medium)
                         
                         TextField("¥0", value: $customDiscountAmount, format: .currency(code: "JPY"))
                             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -265,23 +380,23 @@ struct CheckoutView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .scaleEffect(0.8)
                     } else {
-                        Image(systemName: "creditcard")
+                        Image(systemName: paymentMethod.icon)
                     }
                     Text(isProcessing ? "Processing..." : "Complete Checkout")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .background(Color.blue)
+                .background(canCompleteCheckout ? Color.blue : Color.gray)
                 .foregroundColor(.white)
                 .cornerRadius(12)
             }
-            .disabled(isProcessing)
+            .disabled(isProcessing || !canCompleteCheckout)
             
             Button(action: printReceiptOnly) {
                 HStack {
                     Image(systemName: "printer")
-                    Text("Print Receipt")
+                    Text("Print Receipt Only")
                         .fontWeight(.medium)
                 }
                 .frame(maxWidth: .infinity)
@@ -292,6 +407,13 @@ struct CheckoutView: View {
             }
             .disabled(isProcessing)
         }
+    }
+    
+    private var canCompleteCheckout: Bool {
+        if paymentMethod == .cash {
+            return receivedAmount >= totalAmount
+        }
+        return true
     }
     
     private func processCheckout() {
@@ -349,12 +471,35 @@ struct CheckoutView: View {
     }
     
     private func formatTime(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else { return "Unknown" }
+        // Try ISO8601 formatter first (with fractional seconds)
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        var date: Date?
+        
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            date = parsedDate
+        } else {
+            // Fallback to standard ISO8601 without fractional seconds
+            iso8601Formatter.formatOptions = [.withInternetDateTime]
+            date = iso8601Formatter.date(from: dateString)
+        }
+        
+        // If ISO8601 fails, try standard date formatter as fallback
+        if date == nil {
+            let fallbackFormatter = DateFormatter()
+            fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+            date = fallbackFormatter.date(from: dateString)
+        }
+        
+        guard let finalDate = date else { 
+            print("Failed to parse date string: \(dateString)")
+            return "Unknown" 
+        }
         
         let displayFormatter = DateFormatter()
         displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        return displayFormatter.string(from: finalDate)
     }
 }
 

@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
   name_ja text NOT NULL,
   name_en text NOT NULL,
   name_vi text NOT NULL,
-  code text UNIQUE,                  -- unique code for the item
+  code text UNIQUE,
   description_ja text,
   description_en text,
   description_vi text,
@@ -70,13 +70,12 @@ CREATE TABLE IF NOT EXISTS menu_items (
 );
 CREATE INDEX ON menu_items (restaurant_id, category_id);
 CREATE INDEX ON menu_items (restaurant_id, available);
+CREATE INDEX ON menu_items (category_id, code);
 
 CREATE TABLE IF NOT EXISTS tables (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   name text NOT NULL,
-  --position_x integer,
-  --position_y integer,
   status text NOT NULL CHECK (status IN ('available','occupied','reserved')) DEFAULT 'available',
   capacity integer NOT NULL CHECK (capacity > 0),
   is_outdoor boolean DEFAULT false,
@@ -116,7 +115,7 @@ CREATE TABLE IF NOT EXISTS orders (
   table_id uuid NOT NULL REFERENCES tables(id) ON DELETE CASCADE,
   session_id uuid UNIQUE NOT NULL,
   guest_count integer NOT NULL DEFAULT 1 CHECK (guest_count > 0),
-  status text NOT NULL CHECK (status IN ('new','preparing','ready','completed')) DEFAULT 'new',
+  status text NOT NULL CHECK (status IN ('new','serving','completed', 'canceled')) DEFAULT 'new',
   total_amount numeric CHECK (total_amount >= 0),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -130,9 +129,12 @@ CREATE TABLE IF NOT EXISTS order_items (
   menu_item_id uuid NOT NULL REFERENCES menu_items(id) ON DELETE RESTRICT,
   quantity integer NOT NULL CHECK (quantity > 0),
   notes text,
-  created_at timestamptz DEFAULT now()
+  status text NOT NULL CHECK (status IN ('new','preparing','ready','completed', 'canceled')) DEFAULT 'new',
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
 );
 CREATE INDEX ON order_items (order_id);
+CREATE INDEX ON order_items (restaurant_id, status);
 
 CREATE TABLE IF NOT EXISTS reviews (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),

@@ -1,48 +1,68 @@
-You are an expert iOS developer tasked to build a streamlined, practical iOS app for managing orders in restaurants, integrated with Supabase for realtime updates and printer functionality. Follow these precise steps sequentially, ensuring each phase is fully functional before proceeding:
+## OrdersView and KitchenBoardView fetch data separately at app launch
 
-## 1. Authentication
+### Separate OrderManager Instances
+Both views create their own separate instances of OrderManager:
+OrdersView.swift:
+```
+struct OrdersView: View {
+    @StateObject private var orderManager = OrderManager()
+    // ...
+}
+```
 
-* Implement a login screen that captures:
+KitchenBoardView.swift:
+```
+struct KitchenBoardView: View {
+    @StateObject private var orderManager = OrderManager()
+    // ...
+}
+```
 
-  * Subdomain
-  * Email
-  * Password
-* Authenticate using Supabase Auth SDK.
-* Ensure the user session persists after login.
-* Validate authentication thoroughly.
+#### Each OrderManager Fetches Data Independently
+When the app launches, both views have their own lifecycle:
+1. OrdersView → Creates OrderManager instance #1 → Fetches data in .task{}
+2. KitchenBoardView → Creates OrderManager instance #2 → Fetches data in .task{}
 
-## 2. Fetch and Display Active Orders
+#### Each OrderManager instance:
+- Establishes its own realtime subscription
+- Fetches data independently via fetchActiveOrders()
+- Maintains its own @Published properties (orders, allOrders, etc.)
 
-* After successful login, use the stored session to:
+#### Data Synchronization
+- While they don't share the same data instance, they stay synchronized because:
+1. Same Database Source: Both fetch from the same Supabase tables
+2. Realtime Subscriptions: Both listen to the same database changes
+3. Identical Filters: Both use restaurant_id filtering and status filtering
 
-  * Fetch active orders associated with the authenticated user's restaurant (identified by subdomain).
-  * Display a clear, simple list of active orders and their details (items, quantity, status).
+```
+// Both OrderManager instances set up identical subscriptions
+realtimeChannel = supabaseManager.client.realtimeV2.channel("orders-\(restaurantId)")
+```
 
-## 3. Implement Realtime Updates
+Why This Architecture?
+This design has both advantages and potential inefficiencies:
 
-* Use Supabase Realtime feature to:
+✅ Advantages:
+Independence: Each view manages its own data state
+Reliability: If one subscription fails, the other continues working
+Simplicity: No complex shared state management needed
 
-  * Listen for new or updated orders.
-  * Automatically update the orders list without manual refresh.
-  * Ensure smooth and reliable updates.
+⚠️ Potential Issues:
+Duplicate Network Calls: Two identical API calls at startup
+Double Subscription: Two realtime channels for the same data
+Memory Usage: Two copies of the same order data in memory
 
-## 4. Printer Integration
+#### Alternative Architecture
+A more efficient approach would be to share a single OrderManager instance:
+```
+// In ContentView or App level
+@StateObject private var sharedOrderManager = OrderManager()
 
-* Integrate basic print functionality to handle printing order details.
-* Implement support for standard receipt printers (initially assume a common protocol such as Bluetooth or network printers).
-* Confirm printer connection and print a simple test receipt.
+// Pass to both views
+OrdersView()
+    .environmentObject(sharedOrderManager)
+KitchenBoardView()  
+    .environmentObject(sharedOrderManager)
+```
 
-## 5. Basic Printer Settings
-
-* Provide a basic settings screen to manage printer connection:
-
-  * Test printer connection
-  * Select or switch printers if multiple options are available
-* Ensure user can clearly see printer status (connected/disconnected).
-
-## Notes:
-
-* Initially, prioritize clear functionality over advanced UI design. The interface should be clean, simple, and straightforward.
-* Thoroughly test each step, ensuring there are no type errors or compilation issues.
-* Proceed incrementally, checking functionality and stability before advancing to the next step.
-* You can check current database schema, tables, policies, functions under this folder: infra/migrations
+But the current approach works reliably for the restaurant's needs, and the data volume is typically manageable for a single restaurant's orders.

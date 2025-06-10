@@ -100,6 +100,9 @@ struct KitchenHeaderView: View {
     let onPrintSummary: () -> Void
     let onSignOut: () -> Void
     
+    // Add orderManager to access auto-printing controls
+    @ObservedObject var orderManager: OrderManager
+    
     var body: some View {
         VStack(spacing: 8) {
             // Compact header with essential info only
@@ -158,13 +161,45 @@ struct KitchenHeaderView: View {
                     
                     Divider()
                     
+                    // Auto-printing controls
+                    Section("Auto-Printing") {
+                        Button(action: {
+                            orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
+                        }) {
+                            HStack {
+                                Text("Auto-Print New Orders")
+                                Spacer()
+                                if orderManager.autoPrintingEnabled {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.green)
+                                }
+                            }
+                        }
+                        
+                        Button("Clear Print History") {
+                            orderManager.clearPrintHistory()
+                        }
+                        .disabled(!orderManager.autoPrintingEnabled)
+                    }
+                    
+                    Divider()
+                    
                     Button("Sign Out") {
                         onSignOut()
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.title2)
-                        .foregroundColor(.primary)
+                    HStack {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.title2)
+                            .foregroundColor(.primary)
+                        
+                        // Show auto-print indicator
+                        if orderManager.autoPrintingEnabled {
+                            Image(systemName: "printer.fill")
+                                .foregroundColor(.green)
+                                .font(.caption)
+                        }
+                    }
                 }
             }
             

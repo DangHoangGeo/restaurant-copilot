@@ -16,31 +16,28 @@ struct OrdersView: View {
 
     enum OrderFilter: String, CaseIterable {
         case active = "active"
-        case all = "all"
         case new = "new"
-        case preparing = "preparing"
-        case ready = "ready"
+        case serving = "serving"
         case completed = "completed"
+        case canceled = "canceled"
         
         var displayName: String {
             switch self {
-            case .active: return "Active Orders"
-            case .all: return "All Orders"
+            case .active: return "Active"
             case .new: return "New"
-            case .preparing: return "Preparing"
-            case .ready: return "Ready"
+            case .serving: return "Serving"
             case .completed: return "Completed"
+            case .canceled: return "Canceled"
             }
         }
         
         var color: Color {
             switch self {
             case .active: return .blue
-            case .all: return .gray
             case .new: return .blue
-            case .preparing: return .orange
-            case .ready: return .green
+            case .serving: return .orange
             case .completed: return .gray
+            case .canceled: return .red
             }
         }
     }
@@ -50,17 +47,15 @@ struct OrdersView: View {
         
         switch selectedFilter {
         case .active:
-            return baseOrders.filter { $0.status != .completed }
-        case .all:
-            return baseOrders
+            return baseOrders.filter { $0.status != .completed && $0.status != .canceled }
         case .new:
             return baseOrders.filter { $0.status == .new }
-        case .preparing:
-            return baseOrders.filter { $0.status == .preparing }
-        case .ready:
-            return baseOrders.filter { $0.status == .ready }
+        case .serving:
+            return baseOrders.filter { $0.status == .serving }
         case .completed:
             return baseOrders.filter { $0.status == .completed }
+        case .canceled:
+            return baseOrders.filter { $0.status == .canceled }
         }
     }
 
@@ -86,7 +81,7 @@ struct OrdersView: View {
                 await orderManager.fetchAllOrders()
             }
         }
-        .alert("Print Status", isPresented: $showingPrintAlert) {
+        .alert("System Message", isPresented: $showingPrintAlert) {
             Button("OK") { }
         } message: {
             Text(printMessage)
@@ -117,6 +112,16 @@ struct OrdersView: View {
                         .fontWeight(.bold)
                     Spacer()
                     
+                    // Auto-print status indicator
+                    if orderManager.autoPrintingEnabled {
+                        AutoPrintStatusView(
+                            isEnabled: orderManager.autoPrintingEnabled,
+                            isActivePrinting: orderManager.autoPrintingInProgress,
+                            autoPrintStats: orderManager.autoPrintStats,
+                            lastResult: orderManager.lastAutoPrintResult
+                        )
+                    }
+                    
                     Menu {
                         Button("Refresh Orders") {
                             Task {
@@ -129,14 +134,46 @@ struct OrdersView: View {
                         
                         Divider()
                         
+                        // Auto-printing controls
+                        Section("Auto-Printing") {
+                            Button(action: {
+                                orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
+                            }) {
+                                HStack {
+                                    Text("Auto-Print New Orders")
+                                    Spacer()
+                                    if orderManager.autoPrintingEnabled {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                            }
+                            
+                            Button("Clear Print History") {
+                                orderManager.clearPrintHistory()
+                            }
+                            .disabled(!orderManager.autoPrintingEnabled)
+                            
+                            if orderManager.autoPrintStats.totalNewOrdersPrinted > 0 || orderManager.autoPrintStats.totalReadyItemsPrinted > 0 {
+                                Button("View Statistics") {
+                                    // Show detailed statistics
+                                }
+                                .disabled(true) // TODO: Implement detailed stats view
+                            }
+                        }
+                        
+                        Divider()
+                        
                         Button("Sign Out") {
                             Task {
                                 try? await supabaseManager.signOut()
                             }
                         }
                     } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.title2)
+                        HStack {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.title2)
+                        }
                     }
                 }
                 
@@ -246,7 +283,7 @@ struct OrdersView: View {
         Group {
             if let order = selectedOrder {
                 OrderDetailView(
-                    order: order,
+                    orderId: order.id,
                     orderManager: orderManager,
                     printerManager: printerManager,
                     onCheckout: {
@@ -319,7 +356,7 @@ struct OrdersView: View {
                         Section(header: Text(key)) {
                             ForEach(groupedOrders[key] ?? []) { order in
                                 NavigationLink(destination: OrderDetailView(
-                                    order: order,
+                                    orderId: order.id,
                                     orderManager: orderManager,
                                     printerManager: printerManager,
                                     onCheckout: {
@@ -390,13 +427,38 @@ struct OrdersView: View {
                     
                     Divider()
                     
+                    // Auto-printing controls
+                    Section("Auto-Printing") {
+                        Button(action: {
+                            orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
+                        }) {
+                            HStack {
+                                Text("Auto-Print New Orders")
+                                Spacer()
+                                if orderManager.autoPrintingEnabled {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.green)
+                                }
+                            }
+                        }
+                        
+                        Button("Clear Print History") {
+                            orderManager.clearPrintHistory()
+                        }
+                        .disabled(!orderManager.autoPrintingEnabled)
+                    }
+                    
+                    Divider()
+                    
                     Button("Sign Out") {
                         Task {
                             try? await supabaseManager.signOut()
                         }
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    HStack {
+                        Image(systemName: "ellipsis.circle")
+                    }
                 }
             }
         }
@@ -411,17 +473,15 @@ struct OrdersView: View {
         
         switch filter {
         case .active:
-            return baseOrders.filter { $0.status != .completed }.count
-        case .all:
-            return baseOrders.count
+            return baseOrders.filter { $0.status != .completed && $0.status != .canceled }.count
         case .new:
             return baseOrders.filter { $0.status == .new }.count
-        case .preparing:
-            return baseOrders.filter { $0.status == .preparing }.count
-        case .ready:
-            return baseOrders.filter { $0.status == .ready }.count
+        case .serving:
+            return baseOrders.filter { $0.status == .serving }.count
         case .completed:
             return baseOrders.filter { $0.status == .completed }.count
+        case .canceled:
+            return baseOrders.filter { $0.status == .canceled }.count
         }
     }
 }
@@ -438,10 +498,15 @@ struct SidebarOrderRowView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(order.table?.name ?? "Table \(order.table_id)")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                        
+                        HStack(spacing: 6){
+                            Text(order.table?.name ?? "Table \(order.table_id)")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                            
+                            Text("ID: \(order.id.prefix(6).uppercased())")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                         if isNew {
                             Text("NEW")
                                 .font(.caption2)
@@ -453,7 +518,7 @@ struct SidebarOrderRowView: View {
                                 .cornerRadius(4)
                         }
                         
-                        if order.order_items?.contains(where: { $0.status.rawValue == "new" }) == true {
+                        if order.order_items?.contains(where: { $0.status.rawValue == "ordered" }) == true {
                             Image(systemName: "circle.fill")
                                 .font(.caption2)
                                 .foregroundColor(.red)
@@ -516,12 +581,35 @@ struct SidebarOrderRowView: View {
     }
     
     private func formatTime(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else { return "Unknown" }
+        // Try ISO8601 formatter first (with fractional seconds)
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        var date: Date?
+        
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            date = parsedDate
+        } else {
+            // Fallback to standard ISO8601 without fractional seconds
+            iso8601Formatter.formatOptions = [.withInternetDateTime]
+            date = iso8601Formatter.date(from: dateString)
+        }
+        
+        // If ISO8601 fails, try standard date formatter as fallback
+        if date == nil {
+            let fallbackFormatter = DateFormatter()
+            fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+            date = fallbackFormatter.date(from: dateString)
+        }
+        
+        guard let finalDate = date else { 
+            print("Failed to parse date string: \(dateString)")
+            return "Unknown" 
+        }
         
         let displayFormatter = DateFormatter()
         displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        return displayFormatter.string(from: finalDate)
     }
 }
 

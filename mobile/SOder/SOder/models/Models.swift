@@ -34,29 +34,25 @@ struct Order: Decodable, Identifiable, Equatable, Hashable {
 
 enum OrderStatus: String, Decodable, CaseIterable {
     case new = "new"
-    case ordered = "ordered"  // Add missing ordered case
-    case preparing = "preparing"
-    case ready = "ready"
+    case serving = "serving"
     case completed = "completed"
-    
+    case canceled = "canceled"
     
     var displayName: String {
         switch self {
         case .new: return "New"
-        case .ordered: return "Ordered"  // Add display name for ordered
-        case .preparing: return "Preparing"
-        case .ready: return "Ready"
+        case .serving: return "Serving"
         case .completed: return "Completed"
+        case .canceled: return "Canceled"
         }
     }
     
     var color: String {
         switch self {
         case .new: return "blue"
-        case .ordered: return "blue"  // Add color for ordered
-        case .preparing: return "orange"
-        case .ready: return "green"
+        case .serving: return "orange"
         case .completed: return "gray"
+        case .canceled: return "red"
         }
     }
 }

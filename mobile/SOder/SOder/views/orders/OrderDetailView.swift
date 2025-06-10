@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OrderDetailView: View {
-    let order: Order
+    let orderId: String
     let orderManager: OrderManager
     let printerManager: PrinterManager
     let onCheckout: () -> Void
@@ -15,9 +15,15 @@ struct OrderDetailView: View {
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
+    // Get current order from OrderManager to ensure we have the latest state
+    private var currentOrder: Order? {
+        return orderManager.orders.first(where: { $0.id == orderId }) ??
+               orderManager.allOrders.first(where: { $0.id == orderId })
+    }
+    
     // Sort items by time added (ascending) and status priority
     private var sortedItems: [OrderItem] {
-        guard let items = order.order_items else { return [] }
+        guard let items = currentOrder?.order_items else { return [] }
         
         return items.sorted { item1, item2 in
             // First sort by status priority
@@ -35,7 +41,7 @@ struct OrderDetailView: View {
     
     private func statusPriority(_ status: String) -> Int {
         switch status {
-        case "new": return 1
+        case "ordered": return 1
         case "preparing": return 2
         case "ready": return 3
         case "served": return 4
@@ -44,75 +50,64 @@ struct OrderDetailView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Order Header
-                orderHeader
-                
-                // Order Items
-                orderItemsSection
-                
-                // Order Actions
-                if horizontalSizeClass == .regular {
-                    // iPad layout - inline actions
-                    ipadActionsSection
-                } else {
-                    // iPhone layout - prominent checkout button
-                    iphoneActionsSection
+        Group {
+            if let order = currentOrder {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Order Header (includes actions now)
+                        orderHeader(for: order)
+                        
+                        // Order Items
+                        orderItemsSection(for: order)
+                    }
+                    .padding()
                 }
-            }
-            .padding()
-        }
-        .navigationTitle(order.table?.name ?? "Table \(order.table_id)")
-        .navigationBarTitleDisplayMode(horizontalSizeClass == .regular ? .inline : .large)
-        .sheet(isPresented: $showingItemDetail) {
-            if let item = selectedItem {
-                OrderItemDetailView(
-                    item: item,
-                    orderManager: orderManager,
-                    printerManager: printerManager,
-                    onComplete: {
-                        showingItemDetail = false
-                        selectedItem = nil
-                    },
-                    onPrintResult: onPrintResult
-                )
-            }
-        }
-        .toolbar {
-            if horizontalSizeClass != .regular {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button("Print Kitchen Slip") {
-                            Task {
-                                await printKitchenSlip()
-                            }
-                        }
-                        
-                        Button("Print Receipt") {
-                            Task {
-                                await printReceipt()
-                            }
-                        }
-                        
-                        if order.status != .completed {
-                            Divider()
-                            
-                            Button("Mark as Completed") {
+                .navigationTitle(order.table?.name ?? "Table \(order.table_id)")
+                .navigationBarTitleDisplayMode(horizontalSizeClass == .regular ? .inline : .large)
+                .sheet(isPresented: $showingItemDetail) {
+                    if let item = selectedItem {
+                        OrderItemDetailView(
+                            item: item,
+                            orderManager: orderManager,
+                            printerManager: printerManager,
+                            onComplete: {
+                                showingItemDetail = false
+                                selectedItem = nil
+                            },
+                            onPrintResult: onPrintResult
+                        )
+                    }
+                }
+                .toolbar {
+                    if horizontalSizeClass != .regular && order.status == .completed {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Print Receipt") {
                                 Task {
-                                    await updateOrderStatus(.completed)
+                                    await printReceipt(for: order)
                                 }
                             }
                         }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
                     }
                 }
+            } else {
+                VStack {
+                    Text("Order not found")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                    
+                    Button("Refresh") {
+                        Task {
+                            await orderManager.fetchActiveOrders()
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
     
-    private var orderHeader: some View {
+    private func orderHeader(for order: Order) -> some View {
         VStack(spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 8) {
@@ -136,13 +131,16 @@ struct OrderDetailView: View {
                             .foregroundColor(.secondary)
                         
                         if !order.session_id.isEmpty {
-                            Label("ID: \(order.session_id.prefix(6).uppercased())", systemImage: "number")
+                            Label("ID: \(order.id.prefix(6).uppercased())", systemImage: "number")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
                     }
                 }
             }
+            
+            // Order Actions Section
+            orderActionsSection(for: order)
             
             if let total = order.total_amount {
                 HStack {
@@ -168,7 +166,64 @@ struct OrderDetailView: View {
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
-    private var orderItemsSection: some View {
+    private func orderActionsSection(for order: Order) -> some View {
+        VStack(spacing: 12) {
+            if order.status == .completed {
+                // Show only print receipt for completed orders
+                Button(action: {
+                    Task { await printReceipt(for: order) }
+                }) {
+                    HStack {
+                        Image(systemName: "printer")
+                        Text("Print Receipt")
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: 120)
+                    .frame(height: 44)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                }
+            } else {
+                // Show checkout for non-completed orders
+                HStack(spacing: 16){
+                    // Status progression buttons
+                    if order.status == .new {
+                        Button(action: {
+                            Task { await updateOrderStatus(.serving) }
+                        }) {
+                            HStack {
+                                Image(systemName: "fork.knife")
+                                Text("Mark as Serving")
+                                    .fontWeight(.medium)
+                            }
+                            .frame(maxWidth: 256)
+                            .frame(height: 44)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        }
+                        .disabled(isUpdatingStatus)
+                    }
+                    
+                    Button(action: onCheckout) {
+                        HStack {
+                            Image(systemName: "creditcard")
+                            Text("Checkout")
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: 256)
+                        .frame(height: 44)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func orderItemsSection(for order: Order) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Order Items (\(sortedItems.count))")
@@ -177,7 +232,7 @@ struct OrderDetailView: View {
                 
                 Spacer()
                 
-                if sortedItems.contains(where: { $0.status.rawValue == "new" }) {
+                if sortedItems.contains(where: { $0.status.rawValue == "ordered" }) {
                     HStack {
                         Image(systemName: "circle.fill")
                             .font(.caption)
@@ -189,8 +244,8 @@ struct OrderDetailView: View {
                 }
             }
             
-            LazyVStack(spacing: 12) {
-                ForEach(sortedItems, id: \.id) { item in
+            VStack(spacing: 0) {
+                ForEach(Array(sortedItems.enumerated()), id: \.element.id) { index, item in
                     EnhancedOrderItemView(
                         item: item,
                         orderManager: orderManager,
@@ -198,9 +253,18 @@ struct OrderDetailView: View {
                         onPrintResult: onPrintResult,
                         showDetailedActions: horizontalSizeClass == .regular
                     )
+                    .contentShape(Rectangle())
                     .onTapGesture {
                         selectedItem = item
                         showingItemDetail = true
+                    }
+                    
+                    // Add separator between items (except for the last item)
+                    if index < sortedItems.count - 1 {
+                        Divider()
+                            .padding(.leading, 16)
+                            .padding(.trailing, 16)
+                            .padding(.vertical, 8)
                     }
                 }
             }
@@ -211,168 +275,13 @@ struct OrderDetailView: View {
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
-    private var ipadActionsSection: some View {
-        VStack(spacing: 16) {
-            // Checkout Section
-            if order.status != .completed {
-                VStack(spacing: 12) {
-                    HStack {
-                        Image(systemName: "creditcard")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                        
-                        VStack(alignment: .leading) {
-                            Text("Ready for Checkout")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                            Text("Process payment and complete order")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Button("Checkout") {
-                            onCheckout()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .buttonBorderShape(.roundedRectangle(radius: 8))
-                    }
-                }
-                .padding()
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(12)
-            }
-            
-            // Quick Actions
-            HStack(spacing: 12) {
-                Button(action: {
-                    Task { await printKitchenSlip() }
-                }) {
-                    Label("Kitchen Slip", systemImage: "doc.text")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.roundedRectangle(radius: 8))
-                
-                Button(action: {
-                    Task { await printReceipt() }
-                }) {
-                    Label("Receipt", systemImage: "printer")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.roundedRectangle(radius: 8))
-                
-                if order.status != .completed {
-                    Button(action: {
-                        Task { await updateOrderStatus(.completed) }
-                    }) {
-                        Label("Complete", systemImage: "checkmark.circle")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.roundedRectangle(radius: 8))
-                    .tint(.green)
-                    .disabled(isUpdatingStatus)
-                }
-            }
-        }
-    }
-    
-    private var iphoneActionsSection: some View {
-        VStack(spacing: 16) {
-            if order.status != .completed {
-                Button(action: onCheckout) {
-                    HStack {
-                        Image(systemName: "creditcard")
-                        Text("Checkout")
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                }
-            }
-            
-            // Status progression buttons for iPhone
-            if order.status != .completed {
-                statusProgressionButtons
-            }
-        }
-    }
-    
-    private var statusProgressionButtons: some View {
-        VStack(spacing: 12) {
-            switch order.status {
-            case .new:
-                Button(action: {
-                    Task { await updateOrderStatus(.preparing) }
-                }) {
-                    HStack {
-                        Image(systemName: "flame")
-                        Text("Mark as Preparing")
-                            .fontWeight(.medium)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                }
-                .disabled(isUpdatingStatus)
-                
-            case .preparing:
-                Button(action: {
-                    Task { await updateOrderStatus(.ready) }
-                }) {
-                    HStack {
-                        Image(systemName: "checkmark.circle")
-                        Text("Mark as Ready")
-                            .fontWeight(.medium)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                }
-                .disabled(isUpdatingStatus)
-                
-            case .ready:
-                Button(action: {
-                    Task {
-                        await updateOrderStatus(.completed)
-                        await printReceipt()
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: "printer")
-                        Text("Complete & Print")
-                            .fontWeight(.medium)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                }
-                .disabled(isUpdatingStatus)
-                
-            default:
-                EmptyView()
-            }
-        }
-    }
     
     @MainActor
     private func updateOrderStatus(_ newStatus: OrderStatus) async {
         isUpdatingStatus = true
         
         do {
-            try await orderManager.updateOrderStatus(orderId: order.id, newStatus: newStatus)
+            try await orderManager.updateOrderStatus(orderId: orderId, newStatus: newStatus)
             onPrintResult("Order status updated to \(newStatus.displayName)")
         } catch {
             onPrintResult("Failed to update order status: \(error.localizedDescription)")
@@ -382,17 +291,7 @@ struct OrderDetailView: View {
     }
     
     @MainActor
-    private func printKitchenSlip() async {
-        do {
-            try await printerManager.printKitchenSlip(for: order)
-            onPrintResult("Kitchen slip printed successfully")
-        } catch {
-            onPrintResult("Failed to print kitchen slip: \(error.localizedDescription)")
-        }
-    }
-    
-    @MainActor
-    private func printReceipt() async {
+    private func printReceipt(for order: Order) async {
         let receiptData = CheckoutReceiptData(
             order: order,
             subtotal: order.total_amount ?? 0,
@@ -412,11 +311,34 @@ struct OrderDetailView: View {
     }
     
     private func formatTime(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else { return "Unknown" }
+        // Try ISO8601 formatter first (with fractional seconds)
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        var date: Date?
+        
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            date = parsedDate
+        } else {
+            // Fallback to standard ISO8601 without fractional seconds
+            iso8601Formatter.formatOptions = [.withInternetDateTime]
+            date = iso8601Formatter.date(from: dateString)
+        }
+        
+        // If ISO8601 fails, try standard date formatter as fallback
+        if date == nil {
+            let fallbackFormatter = DateFormatter()
+            fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+            date = fallbackFormatter.date(from: dateString)
+        }
+        
+        guard let finalDate = date else { 
+            print("Failed to parse date string: \(dateString)")
+            return "Unknown" 
+        }
         
         let displayFormatter = DateFormatter()
         displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        return displayFormatter.string(from: finalDate)
     }
 }

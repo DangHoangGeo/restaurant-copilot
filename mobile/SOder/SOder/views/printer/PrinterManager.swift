@@ -309,7 +309,7 @@ class PrinterManager: ObservableObject {
             table_id: mockTable.id,
             session_id: "test-session",
             guest_count: 3,
-            status: .preparing,
+            status: .serving,
             total_amount: 2900,
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),

@@ -51,7 +51,8 @@ struct KitchenBoardView: View {
                         Task {
                             try? await supabaseManager.signOut()
                         }
-                    }
+                    },
+                    orderManager: orderManager
                 )
                 
                 // Main kitchen items list - always visible
