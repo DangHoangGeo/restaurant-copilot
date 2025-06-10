@@ -294,13 +294,13 @@ struct CheckoutView: View {
     private var discountSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Discount")
+                Text("checkout_discount_section_title".localized)
                     .font(.headline)
                     .fontWeight(.semibold)
                 
                 Spacer()
                 
-                Button("Remove") {
+                Button("checkout_remove_discount_button".localized) {
                     showingDiscount = false
                     discountCode = ""
                     discountPercentage = 0
@@ -313,27 +313,27 @@ struct CheckoutView: View {
             VStack(spacing: 16) {
                 // Discount Code
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Discount Code")
+                    Text("discount_code".localized)
                         .font(.subheadline)
                         .fontWeight(.medium)
                     
-                    TextField("Enter discount code", text: $discountCode)
+                    TextField("checkout_discount_code_placeholder".localized, text: $discountCode)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                 }
                 
                 // Discount Type Toggle
-                Picker("Discount Type", selection: $usePercentageDiscount) {
-                    Text("Percentage").tag(true)
-                    Text("Fixed Amount").tag(false)
+                Picker("checkout_discount_type_picker_label".localized, selection: $usePercentageDiscount) {
+                    Text("checkout_discount_type_percentage".localized).tag(true)
+                    Text("checkout_discount_type_fixed".localized).tag(false)
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 
                 // Discount Input
                 if usePercentageDiscount {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Discount Percentage")
+                        Text("discount_percentage".localized)
                             .font(.subheadline)
                         
                         HStack {
@@ -346,7 +346,7 @@ struct CheckoutView: View {
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Discount Amount")
+                        Text("discount_amount".localized)
                             .font(.subheadline)
                         
                         TextField("¥0", value: $customDiscountAmount, format: .currency(code: "JPY"))
@@ -365,7 +365,7 @@ struct CheckoutView: View {
     private var priceBreakdown: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Subtotal")
+                Text("subtotal".localized)
                     .font(.subheadline)
                 Spacer()
                 Text("¥\(String(format: "%.0f", subtotal))")
@@ -374,7 +374,7 @@ struct CheckoutView: View {
             
             if discountAmount > 0 {
                 HStack {
-                    Text("Discount")
+                    Text("discount".localized)
                         .font(.subheadline)
                         .foregroundColor(.green)
                     Spacer()
@@ -384,7 +384,7 @@ struct CheckoutView: View {
                 }
                 
                 HStack {
-                    Text("After Discount")
+                    Text("checkout_price_after_discount_label".localized)
                         .font(.subheadline)
                     Spacer()
                     Text("¥\(String(format: "%.0f", afterDiscountAmount))")
@@ -393,7 +393,7 @@ struct CheckoutView: View {
             }
             
             HStack {
-                Text("Tax (\(Int(taxRate * 100))%)")
+                Text(String(format: "checkout_price_tax_label".localized, Int(taxRate * 100)))
                     .font(.subheadline)
                 Spacer()
                 Text("¥\(String(format: "%.0f", taxAmount))")
@@ -403,7 +403,7 @@ struct CheckoutView: View {
             Divider()
             
             HStack {
-                Text("Total")
+                Text("checkout_total_label".localized)
                     .font(.title2)
                     .fontWeight(.bold)
                 Spacer()
@@ -429,7 +429,7 @@ struct CheckoutView: View {
                     } else {
                         Image(systemName: paymentMethod.icon)
                     }
-                    Text(isProcessing ? "Processing..." : "Complete Checkout")
+                    Text(isProcessing ? "processing".localized : "complete_checkout".localized)
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
@@ -443,7 +443,7 @@ struct CheckoutView: View {
             Button(action: printReceiptOnly) {
                 HStack {
                     Image(systemName: "printer")
-                    Text("Print Receipt Only")
+                    Text("print_receipt_only".localized)
                         .fontWeight(.medium)
                 }
                 .frame(maxWidth: .infinity)

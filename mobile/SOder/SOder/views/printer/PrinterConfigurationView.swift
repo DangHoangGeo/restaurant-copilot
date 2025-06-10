@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PrinterConfigurationView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var settingsManager = PrinterSettingsManager.shared
     @State private var showingAddPrinter = false
     @State private var showingEditPrinter: ConfiguredPrinter?
@@ -12,15 +13,15 @@ struct PrinterConfigurationView: View {
         NavigationView {
             List {
                 // Current Status Section
-                Section("Configuration Status") {
+                Section("printer_config_status_title".localized) {
                     HStack {
                         Image(systemName: settingsManager.hasUserConfiguredPrinters() ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                             .foregroundColor(settingsManager.hasUserConfiguredPrinters() ? .green : .orange)
                         
                         VStack(alignment: .leading) {
-                            Text(settingsManager.hasUserConfiguredPrinters() ? "Printers Configured" : "Using Default Settings")
+                            Text(settingsManager.hasUserConfiguredPrinters() ? "printer_config_status_configured_title".localized : "printer_config_status_default_title".localized)
                                 .font(.headline)
-                            Text(settingsManager.isUsingDefaultPrinter() ? "Configure your own printer for better control" : "Custom printer configuration active")
+                            Text(settingsManager.isUsingDefaultPrinter() ? "printer_config_status_default_subtitle".localized : "printer_config_status_custom_subtitle".localized)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -28,7 +29,7 @@ struct PrinterConfigurationView: View {
                         Spacer()
                         
                         if settingsManager.isUsingDefaultPrinter() {
-                            Button("Setup") {
+                            Button("printer_config_setup_button".localized) {
                                 showingAddPrinter = true
                             }
                             .buttonStyle(.bordered)
@@ -39,7 +40,7 @@ struct PrinterConfigurationView: View {
                 
                 // Active Printer Section
                 if let activePrinter = settingsManager.activePrinter {
-                    Section("Active Printer") {
+                    Section("printer_config_active_printer_title".localized) {
                         PrinterConfigRowView(printer: activePrinter, isActive: true) {
                             showingEditPrinter = activePrinter
                         } onDeactivate: {
@@ -50,7 +51,7 @@ struct PrinterConfigurationView: View {
                 
                 // Configured Printers Section
                 if !settingsManager.configuredPrinters.isEmpty {
-                    Section("Configured Printers") {
+                    Section("printer_config_configured_printers_title".localized) {
                         ForEach(settingsManager.configuredPrinters) { printer in
                             if printer.id != settingsManager.activePrinter?.id {
                                 PrinterConfigRowView(printer: printer, isActive: false) {
@@ -69,19 +70,19 @@ struct PrinterConfigurationView: View {
                         }) {
                             HStack {
                                 Image(systemName: "plus.circle")
-                                Text("Add Another Printer")
+                                Text("printer_config_add_another_button".localized)
                             }
                         }
                         .foregroundColor(.blue)
                     }
                 } else {
-                    Section("Get Started") {
+                    Section("printer_config_get_started_title".localized) {
                         Button(action: {
                             showingAddPrinter = true
                         }) {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
-                                Text("Add Your First Printer")
+                                Text("printer_config_add_first_button".localized)
                                 Spacer()
                                 Image(systemName: "chevron.right")
                                     .font(.caption)
@@ -91,12 +92,12 @@ struct PrinterConfigurationView: View {
                         .foregroundColor(.blue)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Why configure your printer?")
+                            Text("printer_config_why_configure_title".localized)
                                 .font(.headline)
-                            Text("• Better connection reliability")
-                            Text("• Custom timeout and retry settings")
-                            Text("• Multiple printer support")
-                            Text("• Personalized restaurant details on receipts")
+                            Text("printer_config_why_configure_item1".localized)
+                            Text("printer_config_why_configure_item2".localized)
+                            Text("printer_config_why_configure_item3".localized)
+                            Text("printer_config_why_configure_item4".localized)
                         }
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -105,7 +106,7 @@ struct PrinterConfigurationView: View {
                 }
                 
                 // Restaurant Settings Section
-                Section("Restaurant Information") {
+                Section("printer_config_restaurant_info_title".localized) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(settingsManager.restaurantSettings.name)
                             .font(.headline)
@@ -122,7 +123,7 @@ struct PrinterConfigurationView: View {
                     }
                     .padding(.vertical, 4)
                     
-                    Button("Edit Restaurant Details") {
+                    Button("printer_config_edit_restaurant_button".localized) {
                         showingRestaurantSettings = true
                     }
                     .foregroundColor(.blue)
@@ -130,22 +131,22 @@ struct PrinterConfigurationView: View {
                 
                 // Default Printer Info (only show if using default)
                 if settingsManager.isUsingDefaultPrinter() {
-                    Section("Default Printer Settings") {
+                    Section("printer_config_default_settings_title".localized) {
                         let defaultConfig = PrinterConfig.shared.defaultPrinter
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Image(systemName: "exclamationmark.triangle")
                                     .foregroundColor(.orange)
-                                Text("Fallback Configuration")
+                                Text("printer_config_fallback_title".localized)
                                     .font(.headline)
                             }
-                            Text("IP: \(defaultConfig.ipAddress)")
+                            Text(String(format: "printer_config_default_ip_label".localized, defaultConfig.ipAddress))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Text("Port: \(defaultConfig.port)")
+                            Text(String(format: "printer_config_default_port_label".localized, defaultConfig.port))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Text("This is used when no custom printer is configured")
+                            Text("printer_config_default_usage_info".localized)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .italic()
@@ -154,10 +155,10 @@ struct PrinterConfigurationView: View {
                     }
                 }
             }
-            .navigationTitle("Printer Configuration")
+            .navigationTitle("printer_config_title".localized)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add Printer") {
+                    Button("add_printer".localized) {
                         showingAddPrinter = true
                     }
                 }
@@ -172,21 +173,22 @@ struct PrinterConfigurationView: View {
         .sheet(isPresented: $showingRestaurantSettings) {
             RestaurantSettingsView()
         }
-        .alert("Delete Printer", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .alert("printer_config_delete_alert_title".localized, isPresented: $showingDeleteAlert) {
+            Button("cancel".localized, role: .cancel) { }
+            Button("delete".localized, role: .destructive) {
                 if let printer = printerToDelete {
                     settingsManager.removePrinter(id: printer.id)
                     printerToDelete = nil
                 }
             }
         } message: {
-            Text("Are you sure you want to delete this printer configuration?")
+            Text("printer_config_delete_alert_message".localized)
         }
     }
 }
 
 struct PrinterConfigRowView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let printer: ConfiguredPrinter
     let isActive: Bool
     let onEdit: () -> Void
@@ -203,7 +205,7 @@ struct PrinterConfigRowView: View {
                     Text(printer.name)
                         .font(.headline)
                     if isActive {
-                        Text("Active")
+                        Text("printer_config_row_active_badge".localized)
                             .font(.caption)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -232,21 +234,21 @@ struct PrinterConfigRowView: View {
             Spacer()
             
             VStack(spacing: 8) {
-                Button("Edit") {
+                Button("edit".localized) {
                     onEdit()
                 }
                 .buttonStyle(.bordered)
                 .font(.caption)
                 
                 if isActive {
-                    Button("Deactivate") {
+                    Button("printer_config_row_deactivate_button".localized) {
                         onDeactivate?()
                     }
                     .buttonStyle(.bordered)
                     .font(.caption)
                     .foregroundColor(.orange)
                 } else {
-                    Button("Activate") {
+                    Button("printer_config_row_activate_button".localized) {
                         onActivate?()
                     }
                     .buttonStyle(.borderedProminent)
@@ -254,7 +256,7 @@ struct PrinterConfigRowView: View {
                 }
                 
                 if !isActive, let onDelete = onDelete {
-                    Button("Delete") {
+                    Button("delete".localized) {
                         onDelete()
                     }
                     .buttonStyle(.bordered)

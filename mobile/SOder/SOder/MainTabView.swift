@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var printerManager = PrinterManager()
     @State private var selectedTab = 0
     
@@ -26,7 +27,7 @@ struct MainTabView: View {
             PrinterSettingsView()
                 .environmentObject(printerManager)
                 .tabItem {
-                    Label("Printer", systemImage: "printer")
+                    Label("settings_printer_tab".localized, systemImage: "printer")
                 }
                 .tag(2)
         }

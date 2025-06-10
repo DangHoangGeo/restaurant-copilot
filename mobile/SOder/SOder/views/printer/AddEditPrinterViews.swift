@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AddPrinterView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var settingsManager = PrinterSettingsManager.shared
     @Environment(\.presentationMode) var presentationMode
     
@@ -18,11 +19,11 @@ struct AddPrinterView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Printer Information") {
-                    TextField("Printer Name", text: $printerName)
+                Section("printer_add_edit_info_title".localized) {
+                    TextField("printer_add_edit_name_label".localized, text: $printerName)
                         .autocorrectionDisabled()
                     
-                    Picker("Printer Type", selection: $printerType) {
+                    Picker("printer_add_edit_type_label".localized, selection: $printerType) {
                         ForEach(ConfiguredPrinterType.allCases, id: \.self) { type in
                             HStack {
                                 Image(systemName: type.icon)
@@ -34,24 +35,24 @@ struct AddPrinterView: View {
                     .pickerStyle(SegmentedPickerStyle())
                 }
                 
-                Section("Network Settings") {
-                    TextField("IP Address", text: $ipAddress)
+                Section("printer_add_edit_network_settings_title".localized) {
+                    TextField("printer_add_edit_ip_address_label".localized, text: $ipAddress)
                         .keyboardType(.decimalPad)
                         .autocorrectionDisabled()
                     
-                    TextField("Port", text: $port)
+                    TextField("printer_add_edit_port_label".localized, text: $port)
                         .keyboardType(.numberPad)
                 }
                 
-                Section("Advanced Settings") {
+                Section("printer_add_edit_advanced_settings_title".localized) {
                     VStack(alignment: .leading) {
-                        Text("Connection Timeout: \(Int(connectionTimeout)) seconds")
+                        Text(String(format: "printer_add_edit_connection_timeout_label".localized, Int(connectionTimeout)))
                             .font(.caption)
                         Slider(value: $connectionTimeout, in: 1...30, step: 1)
                     }
                     
                     VStack(alignment: .leading) {
-                        Text("Max Retries: \(maxRetries)")
+                        Text(String(format: "printer_add_edit_max_retries_label".localized, maxRetries))
                             .font(.caption)
                         Slider(value: .init(
                             get: { Double(maxRetries) },
@@ -60,14 +61,14 @@ struct AddPrinterView: View {
                     }
                 }
                 
-                Section("Notes (Optional)") {
-                    TextField("Add notes about this printer...", text: $notes, axis: .vertical)
+                Section("printer_add_edit_notes_title".localized) {
+                    TextField("printer_add_edit_notes_placeholder".localized, text: $notes, axis: .vertical)
                         .lineLimit(2...4)
                 }
                 
                 // Validation Errors
                 if !validationErrors.isEmpty {
-                    Section("Issues") {
+                    Section("printer_add_edit_issues_title".localized) {
                         ForEach(validationErrors, id: \.self) { error in
                             Text(error)
                                 .foregroundColor(.red)
@@ -77,16 +78,16 @@ struct AddPrinterView: View {
                 }
                 
                 // Test Connection
-                Section("Test Connection") {
+                Section("printer_add_edit_test_connection_title".localized) {
                     Button(action: testConnection) {
                         HStack {
                             if isTestingConnection {
                                 ProgressView()
                                     .scaleEffect(0.8)
-                                Text("Testing...")
+                                Text("printer_add_edit_testing_button".localized)
                             } else {
                                 Image(systemName: "network")
-                                Text("Test Connection")
+                                Text("printer_add_edit_test_connection_button".localized)
                             }
                         }
                     }
@@ -95,27 +96,27 @@ struct AddPrinterView: View {
                     if let testResult = testResult {
                         Text(testResult)
                             .font(.caption)
-                            .foregroundColor(testResult.contains("Success") ? .green : .red)
+                            .foregroundColor(testResult.contains("✅") ? .green : .red)
                     }
                 }
                 
                 Section {
-                    Text("Make sure your printer is connected to the same network and supports ESC/POS commands. Most thermal receipt printers use port 9100.")
+                    Text("printer_add_edit_help_text".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Add Printer")
+            .navigationTitle("printer_add_title".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("cancel".localized) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("save".localized) {
                         savePrinter()
                     }
                     .disabled(!isValidInput())
@@ -164,7 +165,7 @@ struct AddPrinterView: View {
             
             await MainActor.run {
                 isTestingConnection = false
-                testResult = success ? "✅ Connection successful!" : "❌ Connection failed"
+                testResult = success ? "printer_add_edit_connection_success_alert".localized : "printer_add_edit_connection_failed_alert".localized
             }
         }
     }
@@ -195,6 +196,7 @@ struct AddPrinterView: View {
 }
 
 struct EditPrinterView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var settingsManager = PrinterSettingsManager.shared
     @Environment(\.presentationMode) var presentationMode
     
@@ -225,11 +227,11 @@ struct EditPrinterView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Printer Information") {
-                    TextField("Printer Name", text: $printerName)
+                Section("printer_add_edit_info_title".localized) {
+                    TextField("printer_add_edit_name_label".localized, text: $printerName)
                         .autocorrectionDisabled()
                     
-                    Picker("Printer Type", selection: $printerType) {
+                    Picker("printer_add_edit_type_label".localized, selection: $printerType) {
                         ForEach(ConfiguredPrinterType.allCases, id: \.self) { type in
                             HStack {
                                 Image(systemName: type.icon)
@@ -241,24 +243,24 @@ struct EditPrinterView: View {
                     .pickerStyle(SegmentedPickerStyle())
                 }
                 
-                Section("Network Settings") {
-                    TextField("IP Address", text: $ipAddress)
+                Section("printer_add_edit_network_settings_title".localized) {
+                    TextField("printer_add_edit_ip_address_label".localized, text: $ipAddress)
                         .keyboardType(.decimalPad)
                         .autocorrectionDisabled()
                     
-                    TextField("Port", text: $port)
+                    TextField("printer_add_edit_port_label".localized, text: $port)
                         .keyboardType(.numberPad)
                 }
                 
-                Section("Advanced Settings") {
+                Section("printer_add_edit_advanced_settings_title".localized) {
                     VStack(alignment: .leading) {
-                        Text("Connection Timeout: \(Int(connectionTimeout)) seconds")
+                        Text(String(format: "printer_add_edit_connection_timeout_label".localized, Int(connectionTimeout)))
                             .font(.caption)
                         Slider(value: $connectionTimeout, in: 1...30, step: 1)
                     }
                     
                     VStack(alignment: .leading) {
-                        Text("Max Retries: \(maxRetries)")
+                        Text(String(format: "printer_add_edit_max_retries_label".localized, maxRetries))
                             .font(.caption)
                         Slider(value: .init(
                             get: { Double(maxRetries) },
@@ -267,14 +269,14 @@ struct EditPrinterView: View {
                     }
                 }
                 
-                Section("Notes (Optional)") {
-                    TextField("Add notes about this printer...", text: $notes, axis: .vertical)
+                Section("printer_add_edit_notes_title".localized) {
+                    TextField("printer_add_edit_notes_placeholder".localized, text: $notes, axis: .vertical)
                         .lineLimit(2...4)
                 }
                 
                 // Validation Errors
                 if !validationErrors.isEmpty {
-                    Section("Issues") {
+                    Section("printer_add_edit_issues_title".localized) {
                         ForEach(validationErrors, id: \.self) { error in
                             Text(error)
                                 .foregroundColor(.red)
@@ -284,16 +286,16 @@ struct EditPrinterView: View {
                 }
                 
                 // Test Connection
-                Section("Test Connection") {
+                Section("printer_add_edit_test_connection_title".localized) {
                     Button(action: testConnection) {
                         HStack {
                             if isTestingConnection {
                                 ProgressView()
                                     .scaleEffect(0.8)
-                                Text("Testing...")
+                                Text("printer_add_edit_testing_button".localized)
                             } else {
                                 Image(systemName: "network")
-                                Text("Test Connection")
+                                Text("printer_add_edit_test_connection_button".localized)
                             }
                         }
                     }
@@ -302,21 +304,21 @@ struct EditPrinterView: View {
                     if let testResult = testResult {
                         Text(testResult)
                             .font(.caption)
-                            .foregroundColor(testResult.contains("Success") ? .green : .red)
+                            .foregroundColor(testResult.contains("✅") ? .green : .red)
                     }
                 }
             }
-            .navigationTitle("Edit Printer")
+            .navigationTitle("printer_edit_title".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("cancel".localized) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("save".localized) {
                         savePrinter()
                     }
                     .disabled(!isValidInput())
@@ -366,7 +368,7 @@ struct EditPrinterView: View {
             
             await MainActor.run {
                 isTestingConnection = false
-                testResult = success ? "✅ Connection successful!" : "❌ Connection failed"
+                testResult = success ? "printer_add_edit_connection_success_alert".localized : "printer_add_edit_connection_failed_alert".localized
             }
         }
     }
@@ -392,6 +394,7 @@ struct EditPrinterView: View {
 }
 
 struct RestaurantSettingsView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var settingsManager = PrinterSettingsManager.shared
     @Environment(\.presentationMode) var presentationMode
     
@@ -413,43 +416,43 @@ struct RestaurantSettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Restaurant Information") {
-                    TextField("Restaurant Name", text: $restaurantName)
+                Section("restaurant_settings_info_title".localized) {
+                    TextField("restaurant_settings_name_label".localized, text: $restaurantName)
                         .autocorrectionDisabled()
                     
-                    TextField("Address", text: $address, axis: .vertical)
+                    TextField("restaurant_settings_address_label".localized, text: $address, axis: .vertical)
                         .lineLimit(2...3)
                         .autocorrectionDisabled()
                     
-                    TextField("Phone Number", text: $phone)
+                    TextField("restaurant_settings_phone_label".localized, text: $phone)
                         .keyboardType(.phonePad)
                         .autocorrectionDisabled()
                     
-                    TextField("Website", text: $website)
+                    TextField("restaurant_settings_website_label".localized, text: $website)
                         .keyboardType(.URL)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                 }
                 
-                Section("Receipt Settings") {
-                    TextField("Date/Time Format", text: $dateTimeFormat)
+                Section("restaurant_settings_receipt_title".localized) {
+                    TextField("restaurant_settings_datetime_format_label".localized, text: $dateTimeFormat)
                         .autocorrectionDisabled()
                     
-                    Text("Current format: \(formatExample)")
+                    Text(String(format: "restaurant_settings_datetime_format_current".localized, formatExample))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 
-                Section("Preview") {
+                Section("restaurant_settings_preview_title".localized) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(restaurantName.isEmpty ? "Restaurant Name" : restaurantName)
+                        Text(restaurantName.isEmpty ? "restaurant_settings_preview_name_placeholder".localized : restaurantName)
                             .font(.headline)
                         if !address.isEmpty {
                             Text(address)
                                 .font(.caption)
                         }
                         if !phone.isEmpty {
-                            Text("Tel: \(phone)")
+                            Text(String(format: "restaurant_settings_preview_phone_prefix".localized, phone))
                                 .font(.caption)
                         }
                         if !website.isEmpty {
@@ -462,22 +465,22 @@ struct RestaurantSettingsView: View {
                 }
                 
                 Section {
-                    Text("This information will appear on printed receipts and kitchen orders.")
+                    Text("restaurant_settings_help_text".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Restaurant Settings")
+            .navigationTitle("restaurant_settings_title".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("cancel".localized) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("save".localized) {
                         saveSettings()
                     }
                 }
