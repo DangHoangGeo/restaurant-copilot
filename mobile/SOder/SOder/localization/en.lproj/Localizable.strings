@@ -73,6 +73,17 @@
 "insufficient_amount" = "Insufficient amount";
 "processing" = "Processing...";
 
+// MARK: - Checkout Additional Keys
+"checkout_discount_section_title" = "Discount";
+"checkout_remove_discount_button" = "Remove";
+"checkout_discount_code_placeholder" = "Enter discount code";
+"checkout_discount_type_picker_label" = "Discount Type";
+"checkout_discount_type_percentage" = "Percentage";
+"checkout_discount_type_fixed" = "Fixed Amount";
+"checkout_price_after_discount_label" = "After Discount";
+"checkout_price_tax_label" = "Tax (%d%%)";
+"checkout_total_label" = "Total";
+
 // MARK: - Printer
 "printer" = "Printer";
 "printers" = "Printers";
@@ -82,6 +93,147 @@
 "printing" = "Printing...";
 "print_error" = "Print Error";
 "printer_not_found" = "Printer not found";
+"printer_disconnected_status" = "Disconnected";
+"printer_default_suffix" = " (Default)";
+"printer_default_config_log" = "Using default printer configuration - configure your own printer in settings";
+"printer_connecting_status" = "Connecting...";
+"printer_connected_to_printer_status" = "Connected to %@";
+"printer_failed_to_connect_status" = "Failed to connect";
+"printer_invalid_address_format_error" = "Invalid printer address format";
+"printer_unable_to_reach_error" = "Unable to reach printer";
+"printer_bluetooth_connection_failed_error" = "Bluetooth connection failed";
+"printer_disconnected_log" = "Disconnected from printer";
+"printer_no_printer_connected_error" = "No printer connected";
+"printer_test_receipt_success_log" = "Test receipt printed successfully";
+"printer_test_print_failed_log" = "Test print failed: %@";
+"printer_order_receipt_success_log" = "Order receipt printed for order %@";
+"printer_receipt_print_failed_log" = "Receipt print failed: %@";
+"printer_kitchen_summary_success_log" = "Kitchen summary printed for %@";
+"printer_kitchen_summary_failed_log" = "Kitchen summary print failed: %@";
+"printer_kitchen_test_receipt_success_log" = "Kitchen test receipt printed successfully";
+"printer_kitchen_test_print_failed_log" = "Kitchen test print failed: %@";
+"printer_saved_printer_status" = "Saved: %@";
+"printer_type_bluetooth" = "Bluetooth";
+"printer_type_network" = "Network";
+"printer_checkout_receipt_success_log" = "Checkout receipt printed - Total: ¥%@";
+"printer_failed_to_format_kitchen_slip_error" = "Failed to format kitchen slip";
+"printer_kitchen_slip_success_log" = "Kitchen slip printed for order %@";
+"printer_kitchen_board_summary_title" = "KITCHEN BOARD SUMMARY";
+"printer_kitchen_board_items" = "Items: %@";
+"printer_kitchen_board_time" = "Time: %@";
+"printer_kitchen_board_tables" = "Tables: %@";
+"printer_kitchen_board_status" = "Status: %@";
+"printer_kitchen_board_notes" = "Notes: %@";
+"printer_kitchen_board_end_of_summary" = "END OF SUMMARY";
+"printer_kitchen_board_summary_success_log" = "Kitchen board summary printed with %@ items";
+"printer_kitchen_board_summary_failed_log" = "Kitchen board summary print failed: %@";
+"printer_kitchen_item_summary_success_log" = "Kitchen item summary printed for %@";
+"printer_kitchen_item_summary_failed_log" = "Kitchen item summary print failed: %@";
+"printer_kitchen_slip_title" = "KITCHEN SLIP";
+"printer_kitchen_slip_item" = "Item: %@";
+"printer_kitchen_slip_quantity" = "Quantity: %@";
+"printer_kitchen_slip_category" = "Category: %@";
+"printer_kitchen_slip_special_notes" = "SPECIAL NOTES:\n%@";
+"printer_kitchen_slip_priority" = "Priority: %@";
+"printer_priority_urgent" = "URGENT";
+"printer_priority_normal" = "Normal";
+"printer_config_title" = "Printer Configuration";
+"printer_mode_title" = "Printer Mode";
+"printer_mode_dual" = "Dual Mode";
+"printer_mode_dual_kitchen_prefix" = "K: %@";
+"printer_mode_dual_checkout_prefix" = "C: %@";
+"printer_mode_dual_none" = "None";
+"printer_mode_single" = "Single Mode";
+"printer_current_status_title" = "Current Status";
+"printer_status_title" = "Printer Status";
+"printer_disconnect_button" = "Disconnect";
+"printer_available_printers_title" = "Available Printers";
+"printer_no_printers_found" = "No printers found";
+"printer_scan_button" = "Scan";
+"printer_refresh_printers_button" = "Refresh Printers";
+"printer_test_printing_title" = "Test Printing";
+"printer_print_test_receipt_button" = "Print Test Receipt";
+"printer_print_kitchen_test_button" = "Print Kitchen Test";
+"printer_print_logs_title" = "Print Logs";
+"printer_view_all_logs_button" = "View All Logs";
+"printer_manual_setup_title" = "Manual Setup";
+"printer_add_network_printer_button" = "Add Network Printer";
+"printer_error_title" = "Error";
+"printer_connection_alert_title" = "Printer Connection";
+"printer_connection_success_message" = "Successfully connected to %@";
+"printer_connection_failed_message" = "Failed to connect to %@";
+"printer_test_receipt_success_alert" = "Test receipt printed successfully!";
+"printer_test_receipt_failed_alert" = "Failed to print test receipt";
+"printer_kitchen_test_success_alert" = "Kitchen test receipt printed successfully!";
+"printer_kitchen_test_failed_alert" = "Failed to print kitchen test receipt";
+"printer_connect_button" = "Connect";
+"printer_manual_setup_printer_info_title" = "Printer Information";
+"printer_manual_setup_printer_name_label" = "Printer Name";
+"printer_manual_setup_ip_address_label" = "IP Address";
+"printer_manual_setup_port_label" = "Port";
+"printer_manual_setup_add_button" = "Add Printer";
+"printer_manual_setup_help_text" = "Enter the IP address and port of your network printer. Most receipt printers use port 9100.";
+"printer_mode_single_display_name" = "Single Printer Mode";
+"printer_mode_dual_display_name" = "Dual Printer Mode";
+"printer_mode_single_description" = "Use one printer for both kitchen orders and customer receipts";
+"printer_mode_dual_description" = "Use separate printers: one for kitchen orders, one for customer receipts";
+"printer_type_receipt_display_name" = "Receipt Printer";
+"printer_type_kitchen_display_name" = "Kitchen Printer";
+"printer_type_label_display_name" = "Label Printer";
+"printer_mode_selection_header_title" = "Printer Setup Mode";
+"printer_mode_selection_header_subtitle" = "Choose how you want to configure your printers";
+"printer_mode_selection_issues_title" = "Setup Issues:";
+"printer_mode_selection_alert_enable_dual_title" = "Enable Dual Printer Mode?";
+"printer_mode_selection_alert_auto_assign_button" = "Auto-Assign";
+"printer_mode_selection_alert_manual_setup_button" = "Manual Setup";
+"printer_mode_selection_alert_message" = "You can auto-assign printers based on their types or set them up manually.";
+"printer_mode_selection_dual_assignment_title" = "Dual Printer Assignment";
+"printer_mode_selection_kitchen_printer_title" = "Kitchen";
+"printer_mode_selection_checkout_printer_title" = "Checkout";
+"printer_mode_selection_not_assigned" = "Not Assigned";
+"printer_mode_selection_dual_assign_description" = "Assign specific printers for kitchen orders and customer receipts.";
+"printer_mode_selection_kitchen_picker_label" = "Kitchen Printer";
+"printer_mode_selection_checkout_picker_label" = "Checkout Printer";
+"printer_mode_selection_picker_none" = "None";
+"printer_mode_selection_test_kitchen_button" = "Test Kitchen Printer";
+"printer_mode_selection_test_checkout_button" = "Test Checkout Printer";
+"printer_mode_selection_dual_setup_title" = "Dual Printer Setup";
+"printer_config_status_title" = "Configuration Status";
+"printer_config_status_configured_title" = "Printers Configured";
+"printer_config_status_default_title" = "Using Default Settings";
+"printer_config_status_default_subtitle" = "Configure your own printer for better control";
+"printer_config_status_custom_subtitle" = "Custom printer configuration active";
+"printer_config_setup_button" = "Setup";
+"printer_config_active_printer_title" = "Active Printer";
+"printer_config_configured_printers_title" = "Configured Printers";
+"printer_config_add_another_button" = "Add Another Printer";
+"printer_config_get_started_title" = "Get Started";
+"printer_config_add_first_button" = "Add Your First Printer";
+"printer_config_why_configure_title" = "Why configure your printer?";
+"printer_config_why_configure_item1" = "• Better connection reliability";
+"printer_config_why_configure_item2" = "• Custom timeout and retry settings";
+"printer_config_why_configure_item3" = "• Multiple printer support";
+"printer_config_why_configure_item4" = "• Personalized restaurant details on receipts";
+"printer_config_restaurant_info_title" = "Restaurant Information";
+"printer_config_edit_restaurant_button" = "Edit Restaurant Details";
+"printer_config_default_settings_title" = "Default Printer Settings";
+"printer_config_fallback_title" = "Fallback Configuration";
+"printer_config_default_ip_label" = "IP: %@";
+"printer_config_default_port_label" = "Port: %@";
+"printer_config_default_usage_info" = "This is used when no custom printer is configured";
+"printer_config_delete_alert_title" = "Delete Printer";
+"printer_config_delete_alert_message" = "Are you sure you want to delete this printer configuration?";
+"printer_config_row_active_badge" = "Active";
+"printer_config_row_deactivate_button" = "Deactivate";
+"printer_config_row_activate_button" = "Activate";
+"connection_status_database" = "Database";
+"connection_status_live_updates" = "Live Updates";
+"connection_status_printer" = "Printer";
+
+// MARK: - Tab Navigation
+"tab_orders" = "Orders";
+"tab_kitchen" = "Kitchen";
+"tab_printer_settings" = "Printer Settings";
 
 // MARK: - Settings
 "settings" = "Settings";
@@ -96,3 +248,69 @@
 "invalid_credentials" = "Invalid credentials";
 "server_error" = "Server error occurred";
 "unknown_error" = "Unknown error occurred";
+
+// MARK: - Kitchen Board Additional
+"kitchen_all" = "All";
+"kitchen_loading_data" = "Loading kitchen data...";
+"kitchen_retry" = "Retry";
+"kitchen_print_status" = "Print Status";
+"kitchen_print_success" = "Kitchen summary printed successfully";
+"kitchen_print_failure" = "Failed to print kitchen summary: %@";
+"kitchen_item_print_success" = "Item details printed successfully";
+"kitchen_item_print_failure" = "Failed to print item: %@";
+"order_table_number" = "Table %d";
+
+"kitchen_refresh" = "Refresh Kitchen";
+"kitchen_print_summary" = "Print Summary";
+"kitchen_auto_printing" = "Auto-Printing";
+"kitchen_auto_print_new_orders" = "Auto-Print New Orders";
+"kitchen_clear_print_history" = "Clear Print History";
+"kitchen_sign_out" = "Sign Out";
+
+// MARK: - Auto Print Status
+"status_auto_printing" = "Auto-printing...";
+"status_auto_print" = "Auto-print";
+"status_auto_print_stats" = "Orders: %d | Ready: %d";
+
+// MARK: - Debug Views
+"debug_tap_change_status" = "DEBUG TAP TO CHANGE STATUS";
+
+// MARK: - Kitchen Board Components
+"kitchen_urgent" = "URGENT";
+"kitchen_modifications" = "Modifications:";
+"kitchen_tables" = "Tables:";
+"kitchen_status" = "Status:";
+"kitchen_tap_to" = "Tap to";
+"kitchen_size" = "Size:";
+"kitchen_just_now" = "Just now";
+"kitchen_now" = "Now";
+"kitchen_items_count" = "%d items";
+
+// Kitchen Action Labels
+"kitchen_action_start_preparing" = "start preparing";
+"kitchen_action_mark_ready" = "mark ready";
+"kitchen_action_mark_served" = "mark served";
+"kitchen_action_completed" = "completed";
+"kitchen_action_cancel_order" = "cancel order";
+
+"kitchen_action_start_preparing_title" = "Start Preparing";
+"kitchen_action_mark_ready_title" = "Mark Ready";
+"kitchen_action_mark_served_title" = "Mark Served";
+"kitchen_action_complete_title" = "Complete";
+"kitchen_action_reorder_title" = "Reorder";
+
+"kitchen_action_start" = "Start";
+"kitchen_action_ready" = "Ready";
+"kitchen_action_serve" = "Serve";
+"kitchen_action_done" = "Done";
+
+// Kitchen Status Columns
+"kitchen_status_new" = "New";
+"kitchen_status_preparing" = "Preparing";
+"kitchen_status_ready" = "Ready";
+
+// Empty State
+"kitchen_empty_title" = "All caught up!";
+"kitchen_empty_subtitle" = "No items need preparation";
+"kitchen_empty_orders_count" = "Active orders: %d";
+

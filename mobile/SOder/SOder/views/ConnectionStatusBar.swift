@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ConnectionStatusBar: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject var supabaseManager: SupabaseManager
     @ObservedObject var orderManager: OrderManager
     @EnvironmentObject var printerManager: PrinterManager
@@ -12,7 +13,7 @@ struct ConnectionStatusBar: View {
                 Circle()
                     .fill(supabaseManager.isAuthenticated ? Color.green : Color.red)
                     .frame(width: 8, height: 8)
-                Text("Database")
+                Text("connection_status_database".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -22,7 +23,7 @@ struct ConnectionStatusBar: View {
                 Circle()
                     .fill(orderManager.isRealtimeConnected ? Color.green : Color.orange)
                     .frame(width: 8, height: 8)
-                Text("Live Updates")
+                Text("connection_status_live_updates".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -32,7 +33,7 @@ struct ConnectionStatusBar: View {
                 Circle()
                     .fill(printerManager.isConnected ? Color.green : Color.gray)
                     .frame(width: 8, height: 8)
-                Text("Printer")
+                Text("connection_status_printer".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

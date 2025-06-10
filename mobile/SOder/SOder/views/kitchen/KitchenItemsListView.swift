@@ -7,6 +7,7 @@ struct KitchenItemsListView: View {
     let viewMode: KitchenViewMode
     let onItemStatusTap: (GroupedItem) -> Void
     let onItemDetailTap: (GroupedItem) -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         Group {
@@ -109,7 +110,7 @@ struct KitchenHeaderView: View {
             HStack {
                 // Simplified title with urgent indicator
                 HStack(spacing: 8) {
-                    Text("Kitchen")
+                    Text("kitchen".localized)
                         .font(.title2)
                         .fontWeight(.semibold)
                     
@@ -151,23 +152,23 @@ struct KitchenHeaderView: View {
                     
                     Divider()
                     
-                    Button("Refresh Kitchen") {
+                    Button("kitchen_refresh".localized) {
                         onRefresh()
                     }
                     
-                    Button("Print Summary") {
+                    Button("kitchen_print_summary".localized) {
                         onPrintSummary()
                     }
                     
                     Divider()
                     
                     // Auto-printing controls
-                    Section("Auto-Printing") {
+                    Section("kitchen_auto_printing".localized) {
                         Button(action: {
                             orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
                         }) {
                             HStack {
-                                Text("Auto-Print New Orders")
+                                Text("kitchen_auto_print_new_orders".localized)
                                 Spacer()
                                 if orderManager.autoPrintingEnabled {
                                     Image(systemName: "checkmark")
@@ -176,7 +177,7 @@ struct KitchenHeaderView: View {
                             }
                         }
                         
-                        Button("Clear Print History") {
+                        Button("kitchen_clear_print_history".localized) {
                             orderManager.clearPrintHistory()
                         }
                         .disabled(!orderManager.autoPrintingEnabled)
@@ -184,7 +185,7 @@ struct KitchenHeaderView: View {
                     
                     Divider()
                     
-                    Button("Sign Out") {
+                    Button("kitchen_sign_out".localized) {
                         onSignOut()
                     }
                 } label: {
@@ -207,7 +208,7 @@ struct KitchenHeaderView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     CategoryFilterChip(
-                        title: "All",
+                        title: "kitchen_all".localized,
                         count: totalItemsCount,
                         isSelected: selectedCategoryFilter == "All",
                         color: .blue
