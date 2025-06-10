@@ -248,3 +248,30 @@
 "invalid_credentials" = "Invalid credentials";
 "server_error" = "Server error occurred";
 "unknown_error" = "Unknown error occurred";
+
+// MARK: - Kitchen Board Additional
+"kitchen_all" = "All";
+"kitchen_loading_data" = "Loading kitchen data...";
+"kitchen_retry" = "Retry";
+"kitchen_print_status" = "Print Status";
+"kitchen_print_success" = "Kitchen summary printed successfully";
+"kitchen_print_failure" = "Failed to print kitchen summary: %@";
+"kitchen_item_print_success" = "Item details printed successfully";
+"kitchen_item_print_failure" = "Failed to print item: %@";
+"order_table_number" = "Table %d";
+
+"kitchen_refresh" = "Refresh Kitchen";
+"kitchen_print_summary" = "Print Summary";
+"kitchen_auto_printing" = "Auto-Printing";
+"kitchen_auto_print_new_orders" = "Auto-Print New Orders";
+"kitchen_clear_print_history" = "Clear Print History";
+"kitchen_sign_out" = "Sign Out";
+
+// MARK: - Auto Print Status
+"status_auto_printing" = "Auto-printing...";
+"status_auto_print" = "Auto-print";
+"status_auto_print_stats" = "Orders: %d | Ready: %d";
+
+// MARK: - Debug Views
+"debug_tap_change_status" = "DEBUG TAP TO CHANGE STATUS";
+

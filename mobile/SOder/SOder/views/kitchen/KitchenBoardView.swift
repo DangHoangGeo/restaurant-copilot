@@ -4,6 +4,7 @@ import SwiftUI
 /// and overlay dialog design for better chef workflow
 struct KitchenBoardView: View {
     @EnvironmentObject var printerManager: PrinterManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var orderManager = OrderManager()
     @StateObject private var supabaseManager = SupabaseManager.shared
     
@@ -60,7 +61,7 @@ struct KitchenBoardView: View {
                     VStack(spacing: 16) {
                         ProgressView()
                             .scaleEffect(1.2)
-                        Text("Loading kitchen data...")
+                        Text("kitchen_loading_data".localized)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -90,7 +91,7 @@ struct KitchenBoardView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
-                        Button("Retry") {
+                        Button("kitchen_retry".localized) {
                             Task {
                                 await orderManager.fetchActiveOrders()
                                 computeCategoryGrouping()
@@ -137,8 +138,8 @@ struct KitchenBoardView: View {
         .onDisappear {
             stopRefreshTimer()
         }
-        .alert("Print Status", isPresented: $showingPrintAlert) {
-            Button("OK") { }
+        .alert("kitchen_print_status".localized, isPresented: $showingPrintAlert) {
+            Button("ok".localized) { }
         } message: {
             Text(printMessage)
         }
@@ -200,7 +201,7 @@ struct KitchenBoardView: View {
                 let categoryName = menuItem.categoryDisplayName
                 
                 // Get table name instead of ID
-                let tableName = order.table?.name ?? "Table \(order.table_id)"
+                let tableName = order.table?.name ?? String(format: "order_table_number".localized, order.table_id)
                 
                 // Items with notes or different statuses should not be grouped
                 // Create unique identifier including notes and status for grouping
@@ -318,12 +319,12 @@ struct KitchenBoardView: View {
             try await printerManager.printKitchenBoardSummary(groupedByCategory.flatMap { $0.items })
             
             await MainActor.run {
-                printMessage = "Kitchen summary printed successfully"
+                printMessage = "kitchen_print_success".localized
                 showingPrintAlert = true
             }
         } catch {
             await MainActor.run {
-                printMessage = "Failed to print kitchen summary: \(error.localizedDescription)"
+                printMessage = String(format: "kitchen_print_failure".localized, error.localizedDescription)
                 showingPrintAlert = true
             }
         }
@@ -334,12 +335,12 @@ struct KitchenBoardView: View {
             try await printerManager.printKitchenItemSummary(groupedItem)
             
             await MainActor.run {
-                printMessage = "Item details printed successfully"
+                printMessage = "kitchen_item_print_success".localized
                 showingPrintAlert = true
             }
         } catch {
             await MainActor.run {
-                printMessage = "Failed to print item: \(error.localizedDescription)"
+                printMessage = String(format: "kitchen_item_print_failure".localized, error.localizedDescription)
                 showingPrintAlert = true
             }
         }

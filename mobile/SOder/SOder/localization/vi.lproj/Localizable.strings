@@ -281,3 +281,30 @@
 "invalid_credentials" = "Thông tin đăng nhập không hợp lệ";
 "server_error" = "Đã xảy ra lỗi máy chủ";
 "unknown_error" = "Đã xảy ra lỗi không xác định";
+
+// MARK: - Kitchen Board Additional
+"kitchen_all" = "Tất cả";
+"kitchen_loading_data" = "Đang tải dữ liệu bếp...";
+"kitchen_retry" = "Thử lại";
+"kitchen_print_status" = "Trạng thái in";
+"kitchen_print_success" = "Đã in tóm tắt bếp thành công";
+"kitchen_print_failure" = "In tóm tắt bếp thất bại: %@";
+"kitchen_item_print_success" = "Đã in chi tiết món thành công";
+"kitchen_item_print_failure" = "In món thất bại: %@";
+"order_table_number" = "Bàn %d";
+
+"kitchen_refresh" = "Làm mới bếp";
+"kitchen_print_summary" = "In tóm tắt";
+"kitchen_auto_printing" = "Tự động in";
+"kitchen_auto_print_new_orders" = "Tự động in đơn mới";
+"kitchen_clear_print_history" = "Xóa lịch sử in";
+"kitchen_sign_out" = "Đăng xuất";
+
+// MARK: - Auto Print Status
+"status_auto_printing" = "Đang tự động in...";
+"status_auto_print" = "Tự động in";
+"status_auto_print_stats" = "Đơn: %d | Món sẵn: %d";
+
+// MARK: - Debug Views
+"debug_tap_change_status" = "DEBUG: đổi trạng thái";
+
