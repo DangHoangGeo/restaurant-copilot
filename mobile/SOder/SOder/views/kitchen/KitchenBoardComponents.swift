@@ -8,6 +8,7 @@ struct CategoryFilterChip: View {
     let isSelected: Bool
     let color: Color
     let action: () -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         Button(action: action) {
@@ -41,6 +42,7 @@ struct KitchenStatCard: View {
     let value: String
     let label: String
     let color: Color
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         VStack(spacing: 4) {
@@ -65,6 +67,7 @@ struct KitchenItemCard: View {
     let item: GroupedItem
     let onStatusTap: () -> Void
     let onDetailTap: () -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -73,7 +76,7 @@ struct KitchenItemCard: View {
                 if item.priority >= KitchenBoardConfig.urgentThreshold {
                     HStack(spacing: 4) {
                         Image(systemName: "exclamationmark.triangle.fill")
-                        Text("URGENT")
+                        Text("kitchen_urgent".localized)
                             .font(.caption)
                             .fontWeight(.bold)
                     }
@@ -102,7 +105,7 @@ struct KitchenItemCard: View {
                     
                     // Size if available
                     if let size = item.size {
-                        Text("Size: \(size)")
+                        Text("kitchen_size".localized + " \(size)")
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.secondary)
@@ -124,7 +127,7 @@ struct KitchenItemCard: View {
             // Toppings/modifications
             if !item.toppings.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Modifications:")
+                    Text("kitchen_modifications".localized)
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
@@ -167,7 +170,7 @@ struct KitchenItemCard: View {
             
             // Tables with enhanced display
             VStack(alignment: .leading, spacing: 8) {
-                Text("Tables:")
+                Text("kitchen_tables".localized)
                     .font(.headline)
                     .fontWeight(.semibold)
                 
@@ -195,11 +198,11 @@ struct KitchenItemCard: View {
                         .frame(width: 16, height: 16)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Status: \(currentStatusText)")
+                        Text("kitchen_status".localized + " \(currentStatusText)")
                             .font(.subheadline)
                             .fontWeight(.semibold)
                         
-                        Text("Tap to \(nextActionText)")
+                        Text("kitchen_tap_to".localized + " \(nextActionText)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -244,11 +247,11 @@ struct KitchenItemCard: View {
     
     private var nextActionText: String {
         switch item.status {
-			case .ordered: return "start preparing"
-			case .preparing: return "mark ready"
-			case .ready: return "mark served"
-			case .served: return "completed"
-			case .cancelled: return "cancel order"
+			case .ordered: return "kitchen_action_start_preparing".localized
+			case .preparing: return "kitchen_action_mark_ready".localized
+			case .ready: return "kitchen_action_mark_served".localized
+			case .served: return "kitchen_action_completed".localized
+			case .cancelled: return "kitchen_action_cancel_order".localized
         }
     }
     
@@ -306,7 +309,7 @@ struct StatusColumnsView: View {
         HStack(spacing: 16) {
             // New Orders Column
             VStack(alignment: .leading, spacing: 12) {
-                StatusColumnHeader(title: "New Orders", count: newItems.count, color: .blue)
+                StatusColumnHeader(title: "kitchen_status_new_orders".localized, count: newItems.count, color: .blue)
                 
                 ScrollView {
                     LazyVStack(spacing: 12) {
@@ -327,7 +330,7 @@ struct StatusColumnsView: View {
             
             // Preparing Orders Column
             VStack(alignment: .leading, spacing: 12) {
-                StatusColumnHeader(title: "Preparing", count: preparingItems.count, color: .orange)
+                StatusColumnHeader(title: "kitchen_status_preparing".localized, count: preparingItems.count, color: .orange)
                 
                 ScrollView {
                     LazyVStack(spacing: 12) {
@@ -386,6 +389,7 @@ struct CompactKitchenItemCard: View {
     let item: GroupedItem
     let onStatusTap: () -> Void
     let onDetailTap: () -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -404,15 +408,14 @@ struct CompactKitchenItemCard: View {
 							.cornerRadius(6)
 
 						Text(item.itemName)
-							.font(.headline)
-							.fontWeight(.bold)
+							.font(.headline)                            .fontWeight(.bold)
 							.lineLimit(2)
 							.multilineTextAlignment(.leading)
 							.fixedSize(horizontal: false, vertical: true)
 					}
                     // Size if available
                     if let size = item.size {
-                        Text("Size: \(size)")
+                        Text("kitchen_size".localized + " \(size)")
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.secondary)
@@ -434,7 +437,7 @@ struct CompactKitchenItemCard: View {
             // Tables - compact display
             if !item.tables.isEmpty {
                 HStack {
-                    Text("Tables:")
+                    Text("kitchen_tables".localized)
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
@@ -506,7 +509,7 @@ struct CompactKitchenItemCard: View {
         let minutes = Int(interval / 60)
         
         if minutes < 1 {
-            return "Just now"
+            return "kitchen_just_now".localized
         } else if minutes < 60 {
             return "\(minutes)m"
         } else {
@@ -540,11 +543,11 @@ struct CompactKitchenItemCard: View {
     
     private var nextActionText: String {
         switch item.status {
-        case .ordered: return "Start Preparing"
-        case .preparing: return "Mark Ready"
-        case .ready: return "Mark Served"
-        case .served: return "Complete"
-        case .cancelled: return "Reorder"
+        case .ordered: return "kitchen_action_start_preparing".localized
+        case .preparing: return "kitchen_action_mark_ready".localized
+        case .ready: return "kitchen_action_mark_served".localized
+        case .served: return "kitchen_action_completed".localized
+        case .cancelled: return "kitchen_action_cancel_order".localized
         }
     }
     
@@ -563,6 +566,7 @@ struct CategoryGroupView: View {
     let categoryGroup: CategoryGroup
     let onItemStatusTap: (GroupedItem) -> Void
     let onItemDetailTap: (GroupedItem) -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     private var columns: [GridItem] {
         [
@@ -580,7 +584,7 @@ struct CategoryGroupView: View {
                 
                 Spacer()
                 
-                Text("\(categoryGroup.items.count) items")
+                Text("kitchen_items_count".localized.replacingOccurrences(of: "{count}", with: "\(categoryGroup.items.count)"))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 8)
@@ -612,6 +616,7 @@ struct CategoryGroupView: View {
 struct KitchenEmptyStateView: View {
     let orderCount: Int
     let selectedCategory: String
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         VStack(spacing: 24) {
@@ -620,21 +625,21 @@ struct KitchenEmptyStateView: View {
                 .foregroundColor(.green)
             
             VStack(spacing: 8) {
-                Text("All Caught Up!")
+                Text("kitchen_empty_all_caught_up".localized)
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text("No items need preparation")
+                Text("kitchen_empty_no_items".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
             
             if orderCount > 0 {
-                Text("There are \(orderCount) total orders")
+                Text("kitchen_empty_total_orders".localized.replacingOccurrences(of: "{count}", with: "\(orderCount)"))
                     .font(.caption)
                     .foregroundColor(.secondary)
             } else {
-                Text("Looks like there are no orders yet.")
+                Text("kitchen_empty_no_orders".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -673,6 +678,7 @@ struct ImprovedCategoryGroupView: View {
     let categoryGroup: CategoryGroup
     let onItemStatusTap: (GroupedItem) -> Void
     let onItemDetailTap: (GroupedItem) -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     private var columns: [GridItem] {
         [
@@ -690,7 +696,7 @@ struct ImprovedCategoryGroupView: View {
                 
                 Spacer()
                 
-                Text("\(categoryGroup.items.count) items")
+                Text("kitchen_items_count".localized.replacingOccurrences(of: "{count}", with: "\(categoryGroup.items.count)"))
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)

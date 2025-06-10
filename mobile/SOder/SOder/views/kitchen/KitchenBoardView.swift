@@ -10,7 +10,7 @@ struct KitchenBoardView: View {
     
     // State management
     @State private var groupedByCategory: [CategoryGroup] = []
-    @State private var selectedCategoryFilter: String = "All"
+    @State private var selectedCategoryFilter: String = "kitchen_all".localized
     @State private var selectedGroupedItem: GroupedItem? = nil
     @State private var showingItemDetails = false
     @State private var showingPrintAlert = false

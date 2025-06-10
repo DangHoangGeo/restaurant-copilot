@@ -275,3 +275,42 @@
 // MARK: - Debug Views
 "debug_tap_change_status" = "DEBUG TAP TO CHANGE STATUS";
 
+// MARK: - Kitchen Board Components
+"kitchen_urgent" = "URGENT";
+"kitchen_modifications" = "Modifications:";
+"kitchen_tables" = "Tables:";
+"kitchen_status" = "Status:";
+"kitchen_tap_to" = "Tap to";
+"kitchen_size" = "Size:";
+"kitchen_just_now" = "Just now";
+"kitchen_now" = "Now";
+"kitchen_items_count" = "%d items";
+
+// Kitchen Action Labels
+"kitchen_action_start_preparing" = "start preparing";
+"kitchen_action_mark_ready" = "mark ready";
+"kitchen_action_mark_served" = "mark served";
+"kitchen_action_completed" = "completed";
+"kitchen_action_cancel_order" = "cancel order";
+
+"kitchen_action_start_preparing_title" = "Start Preparing";
+"kitchen_action_mark_ready_title" = "Mark Ready";
+"kitchen_action_mark_served_title" = "Mark Served";
+"kitchen_action_complete_title" = "Complete";
+"kitchen_action_reorder_title" = "Reorder";
+
+"kitchen_action_start" = "Start";
+"kitchen_action_ready" = "Ready";
+"kitchen_action_serve" = "Serve";
+"kitchen_action_done" = "Done";
+
+// Kitchen Status Columns
+"kitchen_status_new" = "New";
+"kitchen_status_preparing" = "Preparing";
+"kitchen_status_ready" = "Ready";
+
+// Empty State
+"kitchen_empty_title" = "All caught up!";
+"kitchen_empty_subtitle" = "No items need preparation";
+"kitchen_empty_orders_count" = "Active orders: %d";
+

@@ -309,3 +309,42 @@
 // MARK: - Debug Views
 "debug_tap_change_status" = "デバッグ: 状態を変更";
 
+// MARK: - Kitchen Board Components
+"kitchen_urgent" = "緊急";
+"kitchen_modifications" = "変更:";
+"kitchen_tables" = "テーブル:";
+"kitchen_status" = "ステータス:";
+"kitchen_tap_to" = "タップして";
+"kitchen_size" = "サイズ:";
+"kitchen_just_now" = "たった今";
+"kitchen_now" = "今";
+"kitchen_items_count" = "%d 品目";
+
+// Kitchen Action Labels
+"kitchen_action_start_preparing" = "調理開始";
+"kitchen_action_mark_ready" = "完了にする";
+"kitchen_action_mark_served" = "提供済みにする";
+"kitchen_action_completed" = "完了";
+"kitchen_action_cancel_order" = "注文キャンセル";
+
+"kitchen_action_start_preparing_title" = "調理開始";
+"kitchen_action_mark_ready_title" = "完了にする";
+"kitchen_action_mark_served_title" = "提供済みにする";
+"kitchen_action_complete_title" = "完了";
+"kitchen_action_reorder_title" = "再注文";
+
+"kitchen_action_start" = "開始";
+"kitchen_action_ready" = "完了";
+"kitchen_action_serve" = "提供";
+"kitchen_action_done" = "完了";
+
+// Kitchen Status Columns
+"kitchen_status_new" = "新規";
+"kitchen_status_preparing" = "調理中";
+"kitchen_status_ready" = "完了";
+
+// Empty State
+"kitchen_empty_title" = "すべて完了！";
+"kitchen_empty_subtitle" = "調理が必要な品目はありません";
+"kitchen_empty_orders_count" = "アクティブな注文: %d";
+

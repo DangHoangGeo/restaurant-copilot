@@ -308,3 +308,42 @@
 // MARK: - Debug Views
 "debug_tap_change_status" = "DEBUG: đổi trạng thái";
 
+// MARK: - Kitchen Board Components
+"kitchen_urgent" = "KHẨN CẤP";
+"kitchen_modifications" = "Thay đổi:";
+"kitchen_tables" = "Bàn:";
+"kitchen_status" = "Trạng thái:";
+"kitchen_tap_to" = "Nhấn để";
+"kitchen_size" = "Kích cỡ:";
+"kitchen_just_now" = "Vừa xong";
+"kitchen_now" = "Bây giờ";
+"kitchen_items_count" = "%d món";
+
+// Kitchen Action Labels
+"kitchen_action_start_preparing" = "bắt đầu chuẩn bị";
+"kitchen_action_mark_ready" = "đánh dấu sẵn sàng";
+"kitchen_action_mark_served" = "đánh dấu đã phục vụ";
+"kitchen_action_completed" = "hoàn thành";
+"kitchen_action_cancel_order" = "hủy đơn hàng";
+
+"kitchen_action_start_preparing_title" = "Bắt đầu chuẩn bị";
+"kitchen_action_mark_ready_title" = "Đánh dấu sẵn sàng";
+"kitchen_action_mark_served_title" = "Đánh dấu đã phục vụ";
+"kitchen_action_complete_title" = "Hoàn thành";
+"kitchen_action_reorder_title" = "Đặt lại";
+
+"kitchen_action_start" = "Bắt đầu";
+"kitchen_action_ready" = "Sẵn sàng";
+"kitchen_action_serve" = "Phục vụ";
+"kitchen_action_done" = "Xong";
+
+// Kitchen Status Columns
+"kitchen_status_new" = "Mới";
+"kitchen_status_preparing" = "Đang chuẩn bị";
+"kitchen_status_ready" = "Sẵn sàng";
+
+// Empty State
+"kitchen_empty_title" = "Đã hoàn thành tất cả!";
+"kitchen_empty_subtitle" = "Không có món nào cần chuẩn bị";
+"kitchen_empty_orders_count" = "Đơn hàng đang hoạt động: %d";
+
