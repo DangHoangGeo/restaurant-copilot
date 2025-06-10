@@ -272,6 +272,7 @@ class PrinterManager: ObservableObject {
             notes: "No pickles",
             status: .served,
             created_at: ISO8601DateFormatter().string(from: Date()),
+            updated_at: ISO8601DateFormatter().string(from: Date()),
         )
 
         let mockOrderItem2 = OrderItem(
@@ -283,6 +284,7 @@ class PrinterManager: ObservableObject {
             notes: "No pickles",
             status: .served,
             created_at: ISO8601DateFormatter().string(from: Date()),
+            updated_at: ISO8601DateFormatter().string(from: Date()),
         )
 
         
@@ -446,5 +448,94 @@ extension PrinterManager {
         }
         
         addLog("Kitchen slip printed for order \(order.id.prefix(8))")
+    }
+}
+
+// MARK: - PrinterManager Extension for Kitchen Board
+extension PrinterManager {
+    func printKitchenBoardSummary(_ items: [GroupedItem]) async throws {
+        guard isConnected, let printer = selectedPrinter else {
+            throw PrinterError.notConnected
+        }
+        
+        do {
+            let formatter = PrintFormatter()
+            
+            // Create a summary text for all items
+            var summaryText = "KITCHEN BOARD SUMMARY\n"
+            summaryText += String(repeating: "=", count: 32) + "\n"
+            summaryText += "Items: \(items.count)\n"
+            summaryText += "Time: \(DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short))\n"
+            summaryText += String(repeating: "-", count: 32) + "\n"
+            
+            for item in items {
+                summaryText += "\(item.itemName) x\(item.quantity)\n"
+                summaryText += "Tables: \(Array(item.tables).joined(separator: ", "))\n"
+                summaryText += "Status: \(item.status.displayName)\n"
+                if let notes = item.notes, !notes.isEmpty {
+                    summaryText += "Notes: \(notes)\n"
+                }
+                summaryText += "-\n"
+            }
+            
+            summaryText += String(repeating: "=", count: 32) + "\n"
+            summaryText += "END OF SUMMARY\n\n\n"
+            
+            let printData = Data(summaryText.utf8)
+            try await printerService.connectAndSendData(data: printData)
+            addLog("Kitchen board summary printed with \(items.count) items")
+        } catch {
+            addLog("Kitchen board summary print failed: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    func printKitchenItemSummary(_ item: GroupedItem) async throws {
+        guard isConnected, let printer = selectedPrinter else {
+            throw PrinterError.notConnected
+        }
+        
+        do {
+            let formatter = PrintFormatter()
+            let printData = formatter.formatKitchenSummary(item)
+            try await printerService.connectAndSendData(data: printData)
+            addLog("Kitchen item summary printed for \(item.itemName)")
+        } catch {
+            addLog("Kitchen item summary print failed: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    func printKitchenSlip(_ item: GroupedItem) async throws {
+        guard isConnected, let printer = selectedPrinter else {
+            throw PrinterError.notConnected
+        }
+        
+        do {
+            // Create a kitchen slip for this grouped item
+            var slipText = "KITCHEN SLIP\n"
+            slipText += String(repeating: "=", count: 32) + "\n"
+            slipText += "Item: \(item.itemName)\n"
+            slipText += "Quantity: \(item.quantity)\n"
+            slipText += "Category: \(item.categoryName)\n"
+            slipText += "Tables: \(Array(item.tables).joined(separator: ", "))\n"
+            slipText += "Status: \(item.status.displayName)\n"
+            slipText += "Time: \(DateFormatter.localizedString(from: item.orderTime, dateStyle: .none, timeStyle: .short))\n"
+            
+            if let notes = item.notes, !notes.isEmpty {
+                slipText += "SPECIAL NOTES:\n\(notes)\n"
+            }
+            
+            slipText += String(repeating: "-", count: 32) + "\n"
+            slipText += "Priority: \(item.priority >= 4 ? "URGENT" : "Normal")\n"
+            slipText += String(repeating: "=", count: 32) + "\n\n\n"
+            
+            let printData = Data(slipText.utf8)
+            try await printerService.connectAndSendData(data: printData)
+            addLog("Kitchen slip printed for \(item.itemName)")
+        } catch {
+            addLog("Kitchen slip print failed: \(error.localizedDescription)")
+            throw error
+        }
     }
 }

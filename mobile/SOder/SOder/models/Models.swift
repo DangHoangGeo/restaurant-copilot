@@ -68,14 +68,15 @@ struct OrderItem: Decodable, Identifiable {
     let menu_item_id: String
     let quantity: Int
     let notes: String?
-    let status: OrderItemStatus
+    var status: OrderItemStatus
     let created_at: String
+    var updated_at: String
     
     // Related data
     var menu_item: MenuItem?
 }
 
-enum OrderItemStatus: String, Decodable, CaseIterable {
+enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
     case ordered = "ordered"
     case preparing = "preparing"
     case ready = "ready"
@@ -97,6 +98,16 @@ enum OrderItemStatus: String, Decodable, CaseIterable {
         case .ready: return "green"
         case .served: return "gray"
         }
+    }
+    
+    // Comparable conformance - defines ordering for status progression
+    static func < (lhs: OrderItemStatus, rhs: OrderItemStatus) -> Bool {
+        let order: [OrderItemStatus] = [.ordered, .preparing, .ready, .served]
+        guard let lhsIndex = order.firstIndex(of: lhs),
+              let rhsIndex = order.firstIndex(of: rhs) else {
+            return false
+        }
+        return lhsIndex < rhsIndex
     }
 }
 
@@ -305,6 +316,7 @@ struct OrderItemWithMenuResponse: Decodable {
             notes: notes,
             status: OrderItemStatus(rawValue: status) ?? .ordered,
             created_at: created_at,
+            updated_at: created_at,
             menu_item: menu_item.toMenuItem()
         )
     }

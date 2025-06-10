@@ -218,6 +218,7 @@ class OrderManager: ObservableObject {
                         notes: orderItems[itemIndex].notes,
                         status: newStatus,
                         created_at: orderItems[itemIndex].created_at,
+                        updated_at: orderItems[itemIndex].updated_at,
                         menu_item: orderItems[itemIndex].menu_item
                     )
                     break
