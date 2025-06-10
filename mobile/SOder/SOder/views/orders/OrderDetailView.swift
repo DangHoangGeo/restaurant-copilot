@@ -10,7 +10,6 @@ struct OrderDetailView: View {
     @State private var isUpdatingStatus = false
     @State private var selectedItems: Set<String> = []
     @State private var showingItemActions = false
-    @State private var showingItemDetail = false
     @State private var selectedItem: OrderItem? = nil
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -64,19 +63,16 @@ struct OrderDetailView: View {
                 }
                 .navigationTitle(order.table?.name ?? "Table \(order.table_id)")
                 .navigationBarTitleDisplayMode(horizontalSizeClass == .regular ? .inline : .large)
-                .sheet(isPresented: $showingItemDetail) {
-                    if let item = selectedItem {
-                        OrderItemDetailView(
-                            item: item,
-                            orderManager: orderManager,
-                            printerManager: printerManager,
-                            onComplete: {
-                                showingItemDetail = false
-                                selectedItem = nil
-                            },
-                            onPrintResult: onPrintResult
-                        )
-                    }
+                .sheet(item: $selectedItem) { item in
+                    OrderItemDetailView(
+                        item: item,
+                        orderManager: orderManager,
+                        printerManager: printerManager,
+                        onComplete: {
+                            selectedItem = nil
+                        },
+                        onPrintResult: onPrintResult
+                    )
                 }
                 .toolbar {
                     if horizontalSizeClass != .regular && order.status == .completed {
@@ -256,7 +252,6 @@ struct OrderDetailView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         selectedItem = item
-                        showingItemDetail = true
                     }
                     
                     // Add separator between items (except for the last item)

@@ -16,6 +16,7 @@ struct CheckoutView: View {
     @State private var showingSuccess = false
     @State private var receivedAmount: Double = 0
     @State private var paymentMethod: PaymentMethod = .cash
+    @State private var showingDiscount = false
     
     @Environment(\.dismiss) private var dismiss
     
@@ -78,20 +79,16 @@ struct CheckoutView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
-                    // Order Summary Header
-                    orderSummaryHeader
+                VStack(spacing: 10) {
+                    // Payment Selection
+                    paymentSection
                     
-                    // Payment Method Selection
-                    paymentMethodSection
-                    
-                    // Payment Details (for cash)
-                    if paymentMethod == .cash {
-                        paymentDetailsSection
+                    // Discount Section (only if showing)
+                    if showingDiscount {
+                        discountSection
+                    } else {
+                        discountToggleSection
                     }
-                    
-                    // Discount Section
-                    discountSection
                     
                     // Price Breakdown
                     priceBreakdown
@@ -101,7 +98,7 @@ struct CheckoutView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Checkout")
+            .navigationTitle(order.table?.name ?? "Table \(order.table_id)")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -133,9 +130,8 @@ struct CheckoutView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(order.table?.name ?? "Table \(order.table_id)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
+                                            .font(.title2)
+                                            .fontWeight(.bold)
                     HStack(spacing: 16) {
                         Label("\(order.guest_count)", systemImage: "person.2")
                             .font(.subheadline)
@@ -159,13 +155,34 @@ struct CheckoutView: View {
         .cornerRadius(12)
     }
     
-    private var paymentMethodSection: some View {
+    private var paymentSection: some View {
         VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    
+                    HStack(spacing: 16) {
+                        Label("\(order.guest_count)", systemImage: "person.2")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Label(formatTime(order.created_at), systemImage: "clock")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+                EnhancedStatusBadge(status: order.status)
+            }
+            
+            Divider()
+            
             Text("Payment Method")
                 .font(.headline)
                 .fontWeight(.semibold)
             
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 ForEach(PaymentMethod.allCases, id: \.self) { method in
                     Button(action: {
                         paymentMethod = method
@@ -173,18 +190,69 @@ struct CheckoutView: View {
                             receivedAmount = totalAmount
                         }
                     }) {
-                        VStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Image(systemName: method.icon)
-                                .font(.title2)
+                                .font(.subheadline)
                             Text(method.displayName)
-                                .font(.caption)
+                                .font(.subheadline)
                                 .fontWeight(.medium)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 60)
+                        .frame(height: 40)
                         .background(paymentMethod == method ? Color.blue : Color(.systemGray5))
                         .foregroundColor(paymentMethod == method ? .white : .primary)
-                        .cornerRadius(12)
+                        .cornerRadius(8)
+                    }
+                }
+            }
+            if paymentMethod == .cash {
+                VStack(spacing: 12) {
+                    HStack {
+                        Text("Total Amount:")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text("¥\(String(format: "%.0f", totalAmount))")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.blue)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Received Amount")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        TextField("0", value: $receivedAmount, format: .currency(code: "JPY"))
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                    }
+                    
+                    if changeAmount > 0 {
+                        HStack {
+                            Text("Change:")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text("¥\(String(format: "%.0f", changeAmount))")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(.green)
+                        }
+                        .padding()
+                        .background(Color.green.opacity(0.1))
+                        .cornerRadius(8)
+                    } else if paymentMethod == .cash && receivedAmount > 0 && receivedAmount < totalAmount {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                            Text("Insufficient amount")
+                                .font(.subheadline)
+                                .foregroundColor(.orange)
+                        }
+                        .padding()
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(8)
                     }
                 }
             }
@@ -195,73 +263,51 @@ struct CheckoutView: View {
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
     
-    private var paymentDetailsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Cash Payment")
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            VStack(spacing: 12) {
-                HStack {
-                    Text("Total Amount:")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    Spacer()
-                    Text("¥\(String(format: "%.0f", totalAmount))")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(.blue)
-                }
+    private var discountToggleSection: some View {
+        Button(action: {
+            showingDiscount = true
+        }) {
+            HStack {
+                Image(systemName: "percent")
+                    .font(.title3)
+                    .foregroundColor(.blue)
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Received Amount")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    TextField("0", value: $receivedAmount, format: .currency(code: "JPY"))
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .keyboardType(.decimalPad)
-                }
+                Text("Apply Discount")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
                 
-                if changeAmount > 0 {
-                    HStack {
-                        Text("Change:")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text("¥\(String(format: "%.0f", changeAmount))")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.green)
-                    }
-                    .padding()
-                    .background(Color.green.opacity(0.1))
-                    .cornerRadius(8)
-                } else if paymentMethod == .cash && receivedAmount > 0 && receivedAmount < totalAmount {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                        Text("Insufficient amount")
-                            .font(.subheadline)
-                            .foregroundColor(.orange)
-                    }
-                    .padding()
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(8)
-                }
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
+            .padding()
+            .background(Color(.systemBackground))
+            .cornerRadius(12)
+            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .buttonStyle(PlainButtonStyle())
     }
     
     private var discountSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Discount")
-                .font(.headline)
-                .fontWeight(.semibold)
+            HStack {
+                Text("Discount")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+                
+                Button("Remove") {
+                    showingDiscount = false
+                    discountCode = ""
+                    discountPercentage = 0
+                    customDiscountAmount = 0
+                }
+                .font(.subheadline)
+                .foregroundColor(.red)
+            }
             
             VStack(spacing: 16) {
                 // Discount Code
@@ -308,11 +354,11 @@ struct CheckoutView: View {
                     }
                 }
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
     
     private var priceBreakdown: some View {
