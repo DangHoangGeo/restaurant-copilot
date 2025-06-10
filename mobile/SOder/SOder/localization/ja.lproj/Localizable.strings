@@ -96,3 +96,22 @@
 "invalid_credentials" = "無効な認証情報";
 "server_error" = "サーバーエラーが発生しました";
 "unknown_error" = "不明なエラーが発生しました";
+
+// MARK: - Kitchen Board Additional
+"kitchen_all" = "すべて";
+"kitchen_loading_data" = "キッチンデータを読み込み中...";
+"kitchen_retry" = "再試行";
+"kitchen_print_status" = "印刷状況";
+"kitchen_print_success" = "キッチン概要を正常に印刷しました";
+"kitchen_print_failure" = "キッチン概要の印刷に失敗しました: %@";
+"kitchen_item_print_success" = "アイテム詳細を正常に印刷しました";
+"kitchen_item_print_failure" = "アイテムの印刷に失敗しました: %@";
+"order_table_number" = "テーブル%d";
+
+"kitchen_refresh" = "キッチンを更新";
+"kitchen_print_summary" = "概要を印刷";
+"kitchen_auto_printing" = "自動印刷";
+"kitchen_auto_print_new_orders" = "新規注文を自動印刷";
+"kitchen_clear_print_history" = "印刷履歴をクリア";
+"kitchen_sign_out" = "サインアウト";
+
