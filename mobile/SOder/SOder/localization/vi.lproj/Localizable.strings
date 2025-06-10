@@ -437,12 +437,22 @@
 
 // MARK: - Receipt Header Configuration
 "receipt_header_title" = "Tiêu đề Biên lai";
+"receipt_header_config_title" = "Cấu hình Tiêu đề Biên lai";
 "receipt_header_restaurant_name_label" = "Tên Nhà hàng";
+"receipt_header_restaurant_name_placeholder" = "Nhập tên nhà hàng";
 "receipt_header_address_label" = "Địa chỉ";
+"receipt_header_address_placeholder" = "Nhập địa chỉ";
 "receipt_header_phone_label" = "Số điện thoại";
+"receipt_header_phone_placeholder" = "Nhập số điện thoại";
 "receipt_header_auto_fetch_button" = "Tự động Lấy từ Cài đặt";
+"receipt_header_auto_fetch_title" = "Thiết lập Nhanh";
+"receipt_header_auto_fetch_description" = "Tự động điền các trường với cài đặt nhà hàng hiện tại.";
 "receipt_header_preview_title" = "Xem trước";
+"receipt_header_preview_section" = "Xem trước";
+"receipt_header_settings_title" = "Thông tin Tiêu đề";
+"receipt_header_settings_description" = "Thông tin này sẽ xuất hiện ở đầu tất cả biên lai được in.";
 "receipt_header_help_text" = "Cấu hình thông tin tiêu đề xuất hiện trên biên lai được in.";
+"printer_save_button" = "Lưu";
 
 // MARK: - Print Language Configuration
 "print_language_title" = "Ngôn ngữ In";

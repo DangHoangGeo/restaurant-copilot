@@ -32,8 +32,6 @@ struct PrinterSettingsView: View {
                 }
                 
                 mainContent
-                    .navigationViewStyle(StackNavigationViewStyle()) // Force stack style
-                    
             }
             .navigationViewStyle(StackNavigationViewStyle()) // Ensure stack style on iPad
         }

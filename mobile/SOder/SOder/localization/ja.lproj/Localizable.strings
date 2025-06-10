@@ -433,12 +433,22 @@
 
 // MARK: - Receipt Header Configuration
 "receipt_header_title" = "レシートヘッダー";
+"receipt_header_config_title" = "レシートヘッダー設定";
 "receipt_header_restaurant_name_label" = "レストラン名";
+"receipt_header_restaurant_name_placeholder" = "レストラン名を入力";
 "receipt_header_address_label" = "住所";
+"receipt_header_address_placeholder" = "住所を入力";
 "receipt_header_phone_label" = "電話番号";
+"receipt_header_phone_placeholder" = "電話番号を入力";
 "receipt_header_auto_fetch_button" = "設定から自動取得";
+"receipt_header_auto_fetch_title" = "クイック設定";
+"receipt_header_auto_fetch_description" = "既存のレストラン設定から自動的にフィールドを埋めます。";
 "receipt_header_preview_title" = "プレビュー";
+"receipt_header_preview_section" = "プレビュー";
+"receipt_header_settings_title" = "ヘッダー情報";
+"receipt_header_settings_description" = "この情報は印刷されるすべてのレシートの上部に表示されます。";
 "receipt_header_help_text" = "印刷されるレシートに表示されるヘッダー情報を設定します。";
+"printer_save_button" = "保存";
 
 // MARK: - Print Language Configuration
 "print_language_title" = "印刷言語";
