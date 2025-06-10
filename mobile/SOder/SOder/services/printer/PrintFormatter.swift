@@ -199,7 +199,7 @@ class PrintFormatter {
         var itemsContent = ""
         if let items = order.order_items {
             for item in items where item.status.rawValue != "cancelled" {
-                let itemName = item.menu_item?.name_en ?? "Unknown Item"
+                let itemName = getItemDisplayName(for: item)
                 itemsContent += "\(itemName)\n"
                 itemsContent += "  Qty: \(item.quantity)\n"
                 
@@ -325,18 +325,18 @@ class PrintFormatter {
     
     private func generateCustomerReceiptContent(order: Order, isOfficial: Bool) -> PrintContent {
         var sections: [PrintSection] = []
-        let restaurantSettings = settingsManager.restaurantSettings
+        let receiptHeader = settingsManager.receiptHeader
         
         // Restaurant Header
         sections.append(PrintSection(
-            content: "\(restaurantSettings.name)\n",
+            content: "\(receiptHeader.restaurantName)\n",
             alignment: .center,
             style: PrintStyle(isBold: true, fontSize: .doubleHeight)
         ))
         
-        var headerInfo = "\(restaurantSettings.address)\n"
-        if !restaurantSettings.phone.isEmpty {
-            headerInfo += "Tel: \(restaurantSettings.phone)\n"
+        var headerInfo = "\(receiptHeader.address)\n"
+        if !receiptHeader.phone.isEmpty {
+            headerInfo += "Tel: \(receiptHeader.phone)\n"
         }
         
         sections.append(PrintSection(
@@ -364,7 +364,7 @@ class PrintFormatter {
         
         let tableInfo = order.table?.name ?? "Table \(order.table?.name ?? "T00")"
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = restaurantSettings.dateTimeFormat
+        dateFormatter.dateFormat = settingsManager.restaurantSettings.dateTimeFormat
         let orderInfo = "Order #: \(order.id.prefix(8))\nTable: \(tableInfo)\nGuests: \(order.guest_count)\nDate: \(dateFormatter.string(from: Date()))\n"
         
         sections.append(PrintSection(
@@ -398,7 +398,7 @@ class PrintFormatter {
         
         if let items = order.order_items {
             for item in items where item.status.rawValue != "cancelled" {
-                let itemName = item.menu_item?.name_en ?? "Unknown Item"
+                let itemName = getItemDisplayName(for: item)
                 let price = item.menu_item?.price ?? 0
                 let total = price * Double(item.quantity)
                 subtotal += total
@@ -459,8 +459,8 @@ class PrintFormatter {
         ))
         
         var footerContent = "Thank you for your visit!\nありがとうございました！\n"
-        if !restaurantSettings.website.isEmpty {
-            footerContent += "\(restaurantSettings.website)\n"
+        if !settingsManager.restaurantSettings.website.isEmpty {
+            footerContent += "\(settingsManager.restaurantSettings.website)\n"
         }
         footerContent += "\n\n"
         
@@ -625,14 +625,15 @@ class PrintFormatter {
     // MARK: - Private Content Generators
     
     private func generateCheckoutReceiptPrintContent(_ receiptData: CheckoutReceiptData) -> String {
-        let settings = PrinterSettingsManager.shared.restaurantSettings
+        let receiptHeader = PrinterSettingsManager.shared.receiptHeader
+        let restaurantSettings = PrinterSettingsManager.shared.restaurantSettings
         var content = ""
         
-        // Restaurant header
-        content += centerText(settings.name.uppercased(), width: 48) + "\n"
-        content += centerText(settings.address, width: 48) + "\n"
-        if !settings.phone.isEmpty {
-            content += centerText("Tel: \(settings.phone)", width: 48) + "\n"
+        // Restaurant header - use receipt header settings
+        content += centerText(receiptHeader.restaurantName.uppercased(), width: 48) + "\n"
+        content += centerText(receiptHeader.address, width: 48) + "\n"
+        if !receiptHeader.phone.isEmpty {
+            content += centerText("Tel: \(receiptHeader.phone)", width: 48) + "\n"
         }
         content += "\n"
         
@@ -642,7 +643,7 @@ class PrintFormatter {
         
         // Order information
         let formatter = DateFormatter()
-        formatter.dateFormat = settings.dateTimeFormat
+        formatter.dateFormat = restaurantSettings.dateTimeFormat
         
         content += "Order ID: \(receiptData.order.id.prefix(8).uppercased())\n"
         content += "Table: \(receiptData.order.table?.name ?? "Table \(receiptData.order.table_id)")\n"
@@ -653,7 +654,7 @@ class PrintFormatter {
         // Order items
         if let items = receiptData.order.order_items {
             for item in items {
-                let itemName = item.menu_item?.displayName ?? "Unknown Item"
+                let itemName = getItemDisplayName(for: item)
                 let quantity = item.quantity
                 let unitPrice = item.menu_item?.price ?? 0
                 let totalPrice = unitPrice * Double(quantity)
@@ -708,9 +709,7 @@ class PrintFormatter {
         // Footer
         content += "\n"
         content += centerText("Thank you for dining with us!", width: 48) + "\n"
-        if !settings.website.isEmpty {
-            content += centerText(settings.website, width: 48) + "\n"
-        }
+        // Note: Website removed from receipt header - can be added back if needed
         content += "\n"
         content += centerText("Powered by SOder POS", width: 48) + "\n"
         content += "\n\n\n"
@@ -749,6 +748,30 @@ class PrintFormatter {
             return string.data(using: .ascii, allowLossyConversion: true)
         }
         return data
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    private func getItemDisplayName(for item: OrderItem) -> String {
+        let menuItem = item.menu_item
+        
+        // Check if the current print language is supported by the printer
+        if !settingsManager.printLanguage.isPrinterSupported {
+            // Fall back to item code if available
+            if let code = menuItem?.code, !code.isEmpty {
+                return code
+            }
+        }
+        
+        // Use the appropriate language name based on settings
+        switch settingsManager.printLanguage {
+        case .english:
+            return menuItem?.name_en ?? menuItem?.code ?? "Unknown Item"
+        case .japanese:
+            return menuItem?.name_ja ?? menuItem?.name_en ?? menuItem?.code ?? "Unknown Item"
+        case .vietnamese:
+            return menuItem?.name_vi ?? menuItem?.name_en ?? menuItem?.code ?? "Unknown Item"
+        }
     }
 }
 

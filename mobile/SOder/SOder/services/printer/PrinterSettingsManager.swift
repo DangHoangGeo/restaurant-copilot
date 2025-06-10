@@ -15,6 +15,10 @@ class PrinterSettingsManager: ObservableObject {
     // New: Printer mode selection
     @Published var printerMode: PrinterMode = .single
     
+    // New: Print language and receipt header settings
+    @Published var printLanguage: PrintLanguage = .english
+    @Published var receiptHeader: ReceiptHeaderSettings
+    
     private let userDefaults = UserDefaults.standard
     private let printersKey = "configured_printers"
     private let activePrinterKey = "active_printer_id"
@@ -22,6 +26,8 @@ class PrinterSettingsManager: ObservableObject {
     private let checkoutPrinterKey = "checkout_printer_id"
     private let printerModeKey = "printer_mode"
     private let restaurantSettingsKey = "restaurant_settings"
+    private let printLanguageKey = "print_language"
+    private let receiptHeaderKey = "receipt_header"
     
     private init() {
         // Initialize with default restaurant settings
@@ -31,6 +37,13 @@ class PrinterSettingsManager: ObservableObject {
             phone: "+81-xxx-xxx-xxxx",
             website: "soder-restaurant.com",
             dateTimeFormat: "yyyy-MM-dd HH:mm:ss"
+        )
+        
+        // Initialize receipt header with restaurant settings
+        self.receiptHeader = ReceiptHeaderSettings(
+            restaurantName: "SOder Restaurant",
+            address: "123 Restaurant Street, City",
+            phone: "+81-xxx-xxx-xxxx"
         )
         
         loadSettings()
@@ -192,6 +205,27 @@ class PrinterSettingsManager: ObservableObject {
         saveRestaurantSettings()
     }
     
+    // MARK: - Print Language Management
+    func setPrintLanguage(_ language: PrintLanguage) {
+        printLanguage = language
+        savePrintLanguage()
+    }
+    
+    // MARK: - Receipt Header Management
+    func updateReceiptHeader(_ header: ReceiptHeaderSettings) {
+        receiptHeader = header
+        saveReceiptHeader()
+    }
+    
+    func autoFetchReceiptHeaderFromRestaurantSettings() {
+        receiptHeader = ReceiptHeaderSettings(
+            restaurantName: restaurantSettings.name,
+            address: restaurantSettings.address,
+            phone: restaurantSettings.phone
+        )
+        saveReceiptHeader()
+    }
+    
     // MARK: - Persistence
     private func loadSettings() {
         loadConfiguredPrinters()
@@ -199,6 +233,8 @@ class PrinterSettingsManager: ObservableObject {
         loadDualPrinters()
         loadPrinterMode()
         loadRestaurantSettings()
+        loadPrintLanguage()
+        loadReceiptHeader()
     }
     
     private func loadConfiguredPrinters() {
@@ -240,6 +276,20 @@ class PrinterSettingsManager: ObservableObject {
         if let data = userDefaults.data(forKey: restaurantSettingsKey),
            let settings = try? JSONDecoder().decode(RestaurantSettings.self, from: data) {
             restaurantSettings = settings
+        }
+    }
+    
+    private func loadPrintLanguage() {
+        if let languageRawValue = userDefaults.string(forKey: printLanguageKey),
+           let language = PrintLanguage(rawValue: languageRawValue) {
+            printLanguage = language
+        }
+    }
+    
+    private func loadReceiptHeader() {
+        if let data = userDefaults.data(forKey: receiptHeaderKey),
+           let header = try? JSONDecoder().decode(ReceiptHeaderSettings.self, from: data) {
+            receiptHeader = header
         }
     }
     
@@ -287,6 +337,16 @@ class PrinterSettingsManager: ObservableObject {
     private func saveRestaurantSettings() {
         if let data = try? JSONEncoder().encode(restaurantSettings) {
             userDefaults.set(data, forKey: restaurantSettingsKey)
+        }
+    }
+    
+    private func savePrintLanguage() {
+        userDefaults.set(printLanguage.rawValue, forKey: printLanguageKey)
+    }
+    
+    private func saveReceiptHeader() {
+        if let data = try? JSONEncoder().encode(receiptHeader) {
+            userDefaults.set(data, forKey: receiptHeaderKey)
         }
     }
     
@@ -426,6 +486,48 @@ enum PrinterMode: String, Codable, CaseIterable {
         case .single: return "printer"
         case .dual: return "printer.dotmatrix"
         }
+    }
+}
+
+// MARK: - Print Language Support
+enum PrintLanguage: String, Codable, CaseIterable {
+    case english = "en"
+    case japanese = "ja"
+    case vietnamese = "vi"
+    
+    var displayName: String {
+        switch self {
+        case .english: return "print_language_english".localized
+        case .japanese: return "print_language_japanese".localized
+        case .vietnamese: return "print_language_vietnamese".localized
+        }
+    }
+    
+    var isPrinterSupported: Bool {
+        // For simplicity, we'll assume only English is fully supported by all printers
+        // Vietnamese and Japanese may have encoding issues on some receipt printers
+        switch self {
+        case .english: return true
+        case .japanese: return false // May have encoding issues
+        case .vietnamese: return false // May have encoding issues
+        }
+    }
+}
+
+// MARK: - Receipt Header Settings
+struct ReceiptHeaderSettings: Codable {
+    var restaurantName: String
+    var address: String
+    var phone: String
+    
+    init(
+        restaurantName: String = "",
+        address: String = "",
+        phone: String = ""
+    ) {
+        self.restaurantName = restaurantName
+        self.address = address
+        self.phone = phone
     }
 }
 

@@ -361,6 +361,62 @@
 "orders_more_items" = "and {count} more...";
 "orders_unknown_item" = "Unknown";
 
+// MARK: - Printer Settings View Localization
+"printer_settings_title" = "Printer Settings";
+"printer_configuration_title" = "Printer Configuration";
+"printer_mode_title" = "Printer Mode";
+"printer_mode_dual_kitchen_prefix" = "K: %@";
+"printer_mode_dual_checkout_prefix" = "C: %@";
+"printer_mode_dual_none" = "None";
+"printer_mode_single_display" = "Single Mode";
+"printer_current_status_title" = "Current Status";
+"printer_status_label" = "Printer Status";
+"printer_disconnect_button" = "Disconnect";
+"printer_available_printers_title" = "Available Printers";
+"printer_no_printers_found" = "No printers found";
+"printer_scan_button" = "Scan";
+"printer_refresh_printers_button" = "Refresh Printers";
+"printer_test_printing_title" = "Test Printing";
+"printer_print_test_receipt_button" = "Print Test Receipt";
+"printer_print_kitchen_test_button" = "Print Kitchen Test";
+"printer_print_logs_title" = "Print Logs";
+"printer_view_all_logs_button" = "View All Logs";
+"printer_manual_setup_title" = "Manual Setup";
+"printer_add_network_printer_button" = "Add Network Printer";
+"printer_error_title" = "Error";
+"printer_connection_alert_title" = "Printer Connection";
+"printer_alert_ok_button" = "OK";
+"printer_done_button" = "Done";
+"printer_connect_button" = "Connect";
+"printer_cancel_button" = "Cancel";
+
+// MARK: - Receipt Header Configuration
+"receipt_header_title" = "Receipt Header";
+"receipt_header_restaurant_name_label" = "Restaurant Name";
+"receipt_header_address_label" = "Address";
+"receipt_header_phone_label" = "Phone";
+"receipt_header_auto_fetch_button" = "Auto-Fetch from Settings";
+"receipt_header_preview_title" = "Preview";
+"receipt_header_help_text" = "Configure the header information that appears on printed receipts.";
+
+// MARK: - Print Language Configuration
+"print_language_title" = "Print Language";
+"print_language_selection_label" = "Language for Receipts";
+"print_language_english" = "English";
+"print_language_japanese" = "Japanese";
+"print_language_vietnamese" = "Vietnamese";
+"print_language_fallback_note" = "If printer doesn't support the selected language, item codes will be used instead of names.";
+
+// MARK: - Manual Printer Setup Localization
+"manual_printer_setup_title" = "Add Network Printer";
+"manual_printer_setup_printer_info_title" = "Printer Information";
+"manual_printer_setup_printer_name_label" = "Printer Name";
+"manual_printer_setup_ip_address_label" = "IP Address";
+"manual_printer_setup_port_label" = "Port";
+"manual_printer_setup_connection_title" = "Connection";
+"manual_printer_setup_add_button" = "Add Printer";
+"manual_printer_setup_help_text" = "Enter the IP address and port of your network printer. Most receipt printers use port 9100.";
+
 // MARK: - Order Detail
 "orders_not_found" = "Order not found";
 "orders_print_receipt" = "Print Receipt";

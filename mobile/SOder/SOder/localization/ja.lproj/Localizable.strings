@@ -402,3 +402,59 @@
 "orders_mark_as_serving" = "配膳中にマーク";
 "orders_checkout" = "会計";
 
+// MARK: - Printer Settings View Localization
+"printer_settings_title" = "プリンター設定";
+"printer_configuration_title" = "プリンター構成";
+"printer_mode_title" = "プリンターモード";
+"printer_mode_dual_kitchen_prefix" = "K: %@";
+"printer_mode_dual_checkout_prefix" = "C: %@";
+"printer_mode_dual_none" = "なし";
+"printer_mode_single_display" = "シングルモード";
+"printer_current_status_title" = "現在のステータス";
+"printer_status_label" = "プリンターステータス";
+"printer_disconnect_button" = "切断";
+"printer_available_printers_title" = "利用可能なプリンター";
+"printer_no_printers_found" = "プリンターが見つかりません";
+"printer_scan_button" = "スキャン";
+"printer_refresh_printers_button" = "プリンターを更新";
+"printer_test_printing_title" = "テスト印刷";
+"printer_print_test_receipt_button" = "テストレシートを印刷";
+"printer_print_kitchen_test_button" = "キッチンテストを印刷";
+"printer_print_logs_title" = "印刷ログ";
+"printer_view_all_logs_button" = "すべてのログを表示";
+"printer_manual_setup_title" = "手動セットアップ";
+"printer_add_network_printer_button" = "ネットワークプリンターを追加";
+"printer_error_title" = "エラー";
+"printer_connection_alert_title" = "プリンター接続";
+"printer_alert_ok_button" = "OK";
+"printer_done_button" = "完了";
+"printer_connect_button" = "接続";
+"printer_cancel_button" = "キャンセル";
+
+// MARK: - Receipt Header Configuration
+"receipt_header_title" = "レシートヘッダー";
+"receipt_header_restaurant_name_label" = "レストラン名";
+"receipt_header_address_label" = "住所";
+"receipt_header_phone_label" = "電話番号";
+"receipt_header_auto_fetch_button" = "設定から自動取得";
+"receipt_header_preview_title" = "プレビュー";
+"receipt_header_help_text" = "印刷されるレシートに表示されるヘッダー情報を設定します。";
+
+// MARK: - Print Language Configuration
+"print_language_title" = "印刷言語";
+"print_language_selection_label" = "レシートの言語";
+"print_language_english" = "英語";
+"print_language_japanese" = "日本語";
+"print_language_vietnamese" = "ベトナム語";
+"print_language_fallback_note" = "プリンターが選択された言語をサポートしていない場合、商品名の代わりに商品コードが使用されます。";
+
+// MARK: - Manual Printer Setup Localization
+"manual_printer_setup_title" = "ネットワークプリンターを追加";
+"manual_printer_setup_printer_info_title" = "プリンター情報";
+"manual_printer_setup_printer_name_label" = "プリンター名";
+"manual_printer_setup_ip_address_label" = "IPアドレス";
+"manual_printer_setup_port_label" = "ポート";
+"manual_printer_setup_connection_title" = "接続";
+"manual_printer_setup_add_button" = "プリンターを追加";
+"manual_printer_setup_help_text" = "ネットワークプリンターのIPアドレスとポートを入力してください。ほとんどのレシートプリンターはポート9100を使用します。";
+

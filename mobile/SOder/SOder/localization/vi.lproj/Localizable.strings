@@ -406,3 +406,59 @@
 "orders_mark_as_serving" = "Đánh dấu Đang phục vụ";
 "orders_checkout" = "Thanh toán";
 
+// MARK: - Printer Settings View Localization
+"printer_settings_title" = "Cài đặt Máy in";
+"printer_configuration_title" = "Cấu hình Máy in";
+"printer_mode_title" = "Chế độ Máy in";
+"printer_mode_dual_kitchen_prefix" = "K: %@";
+"printer_mode_dual_checkout_prefix" = "C: %@";
+"printer_mode_dual_none" = "Không có";
+"printer_mode_single_display" = "Chế độ Đơn";
+"printer_current_status_title" = "Trạng thái Hiện tại";
+"printer_status_label" = "Trạng thái Máy in";
+"printer_disconnect_button" = "Ngắt kết nối";
+"printer_available_printers_title" = "Máy in Khả dụng";
+"printer_no_printers_found" = "Không tìm thấy máy in";
+"printer_scan_button" = "Quét";
+"printer_refresh_printers_button" = "Làm mới Máy in";
+"printer_test_printing_title" = "In Thử nghiệm";
+"printer_print_test_receipt_button" = "In Biên lai Thử nghiệm";
+"printer_print_kitchen_test_button" = "In Thử nghiệm Bếp";
+"printer_print_logs_title" = "Nhật ký In";
+"printer_view_all_logs_button" = "Xem Tất cả Nhật ký";
+"printer_manual_setup_title" = "Thiết lập Thủ công";
+"printer_add_network_printer_button" = "Thêm Máy in Mạng";
+"printer_error_title" = "Lỗi";
+"printer_connection_alert_title" = "Kết nối Máy in";
+"printer_alert_ok_button" = "OK";
+"printer_done_button" = "Xong";
+"printer_connect_button" = "Kết nối";
+"printer_cancel_button" = "Hủy";
+
+// MARK: - Receipt Header Configuration
+"receipt_header_title" = "Tiêu đề Biên lai";
+"receipt_header_restaurant_name_label" = "Tên Nhà hàng";
+"receipt_header_address_label" = "Địa chỉ";
+"receipt_header_phone_label" = "Số điện thoại";
+"receipt_header_auto_fetch_button" = "Tự động Lấy từ Cài đặt";
+"receipt_header_preview_title" = "Xem trước";
+"receipt_header_help_text" = "Cấu hình thông tin tiêu đề xuất hiện trên biên lai được in.";
+
+// MARK: - Print Language Configuration
+"print_language_title" = "Ngôn ngữ In";
+"print_language_selection_label" = "Ngôn ngữ cho Biên lai";
+"print_language_english" = "Tiếng Anh";
+"print_language_japanese" = "Tiếng Nhật";
+"print_language_vietnamese" = "Tiếng Việt";
+"print_language_fallback_note" = "Nếu máy in không hỗ trợ ngôn ngữ đã chọn, mã món hàng sẽ được sử dụng thay vì tên.";
+
+// MARK: - Manual Printer Setup Localization
+"manual_printer_setup_title" = "Thêm Máy in Mạng";
+"manual_printer_setup_printer_info_title" = "Thông tin Máy in";
+"manual_printer_setup_printer_name_label" = "Tên Máy in";
+"manual_printer_setup_ip_address_label" = "Địa chỉ IP";
+"manual_printer_setup_port_label" = "Cổng";
+"manual_printer_setup_connection_title" = "Kết nối";
+"manual_printer_setup_add_button" = "Thêm Máy in";
+"manual_printer_setup_help_text" = "Nhập địa chỉ IP và cổng của máy in mạng. Hầu hết máy in biên lai sử dụng cổng 9100.";
+
