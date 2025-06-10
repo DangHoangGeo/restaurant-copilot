@@ -1,0 +1,98 @@
+/* 
+  Localizable.strings (English)
+  SOder
+*/
+
+// MARK: - App General
+"app_name" = "SOder";
+"app_subtitle" = "Restaurant Order Management";
+
+// MARK: - Login Screen
+"login_title" = "Sign In";
+"login_subtitle" = "Enter your restaurant staff credentials";
+"restaurant_subdomain" = "Restaurant Subdomain";
+"restaurant_subdomain_placeholder" = "e.g., myrestaurant";
+"email" = "Email";
+"email_placeholder" = "staff@restaurant.com";
+"password" = "Password";
+"password_placeholder" = "Enter password";
+"sign_in" = "Sign In";
+"signing_in" = "Signing In...";
+"login_error" = "Login Error";
+"ok" = "OK";
+
+// MARK: - Common Terms
+"cancel" = "Cancel";
+"done" = "Done";
+"save" = "Save";
+"delete" = "Delete";
+"edit" = "Edit";
+"add" = "Add";
+"remove" = "Remove";
+"yes" = "Yes";
+"no" = "No";
+"loading" = "Loading";
+"error" = "Error";
+"success" = "Success";
+
+// MARK: - Order Management
+"orders" = "Orders";
+"order_details" = "Order Details";
+"table" = "Table";
+"guest_count" = "Guests";
+"time" = "Time";
+"status" = "Status";
+"total" = "Total";
+"subtotal" = "Subtotal";
+"tax" = "Tax";
+"discount" = "Discount";
+
+// MARK: - Kitchen
+"kitchen" = "Kitchen";
+"kitchen_board" = "Kitchen Board";
+"ready_to_serve" = "Ready to Serve";
+"in_progress" = "In Progress";
+"pending" = "Pending";
+
+// MARK: - Checkout
+"checkout" = "Checkout";
+"payment_method" = "Payment Method";
+"cash" = "Cash";
+"card" = "Card";
+"paypay" = "PayPay";
+"received_amount" = "Received Amount";
+"change" = "Change";
+"apply_discount" = "Apply Discount";
+"discount_code" = "Discount Code";
+"discount_percentage" = "Discount Percentage";
+"discount_amount" = "Discount Amount";
+"complete_checkout" = "Complete Checkout";
+"print_receipt_only" = "Print Receipt Only";
+"checkout_complete" = "Checkout Complete";
+"checkout_success_message" = "Order has been completed and receipt printed successfully.";
+"insufficient_amount" = "Insufficient amount";
+"processing" = "Processing...";
+
+// MARK: - Printer
+"printer" = "Printer";
+"printers" = "Printers";
+"printer_settings" = "Printer Settings";
+"add_printer" = "Add Printer";
+"print" = "Print";
+"printing" = "Printing...";
+"print_error" = "Print Error";
+"printer_not_found" = "Printer not found";
+
+// MARK: - Settings
+"settings" = "Settings";
+"profile" = "Profile";
+"logout" = "Logout";
+"language" = "Language";
+"notifications" = "Notifications";
+
+// MARK: - Error Messages
+"network_error" = "Network connection error";
+"authentication_failed" = "Authentication failed";
+"invalid_credentials" = "Invalid credentials";
+"server_error" = "Server error occurred";
+"unknown_error" = "Unknown error occurred";

@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
   name_ja text NOT NULL,
   name_en text NOT NULL,
   name_vi text NOT NULL,
-  code text UNIQUE,                  -- unique code for the item
+  code text UNIQUE,
   description_ja text,
   description_en text,
   description_vi text,
@@ -70,13 +70,12 @@ CREATE TABLE IF NOT EXISTS menu_items (
 );
 CREATE INDEX ON menu_items (restaurant_id, category_id);
 CREATE INDEX ON menu_items (restaurant_id, available);
+CREATE INDEX ON menu_items (category_id, code);
 
 CREATE TABLE IF NOT EXISTS tables (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   name text NOT NULL,
-  --position_x integer,
-  --position_y integer,
   status text NOT NULL CHECK (status IN ('available','occupied','reserved')) DEFAULT 'available',
   capacity integer NOT NULL CHECK (capacity > 0),
   is_outdoor boolean DEFAULT false,
@@ -116,7 +115,7 @@ CREATE TABLE IF NOT EXISTS orders (
   table_id uuid NOT NULL REFERENCES tables(id) ON DELETE CASCADE,
   session_id uuid UNIQUE NOT NULL,
   guest_count integer NOT NULL DEFAULT 1 CHECK (guest_count > 0),
-  status text NOT NULL CHECK (status IN ('new','preparing','ready','completed')) DEFAULT 'new',
+  status text NOT NULL CHECK (status IN ('new','serving','completed', 'canceled')) DEFAULT 'new',
   total_amount numeric CHECK (total_amount >= 0),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -130,9 +129,12 @@ CREATE TABLE IF NOT EXISTS order_items (
   menu_item_id uuid NOT NULL REFERENCES menu_items(id) ON DELETE RESTRICT,
   quantity integer NOT NULL CHECK (quantity > 0),
   notes text,
-  created_at timestamptz DEFAULT now()
+  status text NOT NULL CHECK (status IN ('new','preparing','ready','completed', 'canceled')) DEFAULT 'new',
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
 );
 CREATE INDEX ON order_items (order_id);
+CREATE INDEX ON order_items (restaurant_id, status);
 
 CREATE TABLE IF NOT EXISTS reviews (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -246,21 +248,30 @@ CREATE POLICY "Anonymous can SELECT categories"
   TO anon
   USING (restaurant_id = current_setting('app.current_restaurant_id', true)::uuid);
 
+DROP POLICY IF EXISTS "Tenant can SELECT categories" ON categories; -- Drop existing first
+CREATE POLICY "Tenant can SELECT categories"
+  ON categories
+  FOR SELECT
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
+DROP POLICY IF EXISTS "Tenant can INSERT categories" ON categories; 
 CREATE POLICY "Tenant can INSERT categories"
   ON categories
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can UPDATE categories" ON categories; 
 CREATE POLICY "Tenant can UPDATE categories"
   ON categories
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can DELETE categories" ON categories; 
 CREATE POLICY "Tenant can DELETE categories"
   ON categories
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for menu_items
 CREATE POLICY "Anonymous can SELECT menu_items"
@@ -269,21 +280,31 @@ CREATE POLICY "Anonymous can SELECT menu_items"
   TO anon
   USING (restaurant_id = current_setting('app.current_restaurant_id', true)::uuid);
 
+
+DROP POLICY IF EXISTS "Tenant can SELECT menu_items" ON menu_items; -- Drop existing first
+CREATE POLICY "Tenant can SELECT menu_items"
+  ON menu_items
+  FOR SELECT
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
+DROP POLICY IF EXISTS "Tenant can INSERT menu_items" ON menu_items;
 CREATE POLICY "Tenant can INSERT menu_items"
   ON menu_items
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can UPDATE menu_items" ON menu_items;
 CREATE POLICY "Tenant can UPDATE menu_items"
   ON menu_items
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can DELETE menu_items" ON menu_items;
 CREATE POLICY "Tenant can DELETE menu_items"
   ON menu_items
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for tables
 CREATE POLICY "Anonymous can SELECT tables"
@@ -292,247 +313,264 @@ CREATE POLICY "Anonymous can SELECT tables"
   TO anon
   USING (restaurant_id = current_setting('app.current_restaurant_id', true)::uuid);
 
+DROP POLICY IF EXISTS "Tenant can SELECT tables" ON tables; -- Drop existing first
+CREATE POLICY "Tenant can SELECT tables"
+  ON tables
+  FOR SELECT
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
+DROP POLICY IF EXISTS "Tenant can INSERT tables" ON tables;
 CREATE POLICY "Tenant can INSERT tables"
   ON tables
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can UPDATE tables" ON tables;
 CREATE POLICY "Tenant can UPDATE tables"
   ON tables
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can DELETE tables" ON tables;
 CREATE POLICY "Tenant can DELETE tables"
   ON tables
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for employees
 CREATE POLICY "Tenant can SELECT employees"
   ON employees
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can INSERT employees"
   ON employees
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE employees"
   ON employees
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE employees"
   ON employees
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for schedules
 CREATE POLICY "Tenant can SELECT schedules"
   ON schedules
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can INSERT schedules"
   ON schedules
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE schedules"
   ON schedules
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE schedules"
   ON schedules
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for orders
+DROP POLICY IF EXISTS "Tenant can SELECT orders" ON orders; -- Drop existing first
 CREATE POLICY "Tenant can SELECT orders"
   ON orders
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can INSERT orders" ON orders; -- Drop existing first
 CREATE POLICY "Tenant can INSERT orders"
   ON orders
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can UPDATE orders" ON orders;
 CREATE POLICY "Tenant can UPDATE orders"
   ON orders
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can DELETE orders" ON orders;
 CREATE POLICY "Tenant can DELETE orders"
   ON orders
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for order_items
+DROP POLICY IF EXISTS "Tenant can SELECT order_items" ON order_items;
 CREATE POLICY "Tenant can SELECT order_items"
   ON order_items
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can INSERT order_items" ON order_items;
 CREATE POLICY "Tenant can INSERT order_items"
   ON order_items
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can UPDATE order_items" ON order_items;
 CREATE POLICY "Tenant can UPDATE order_items"
   ON order_items
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
+DROP POLICY IF EXISTS "Tenant can DELETE order_items" ON order_items;
 CREATE POLICY "Tenant can DELETE order_items"
   ON order_items
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for reviews
 CREATE POLICY "Tenant can SELECT reviews"
   ON reviews
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can INSERT reviews"
   ON reviews
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE reviews"
   ON reviews
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE reviews"
   ON reviews
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for feedback
 CREATE POLICY "Tenant can SELECT feedback"
   ON feedback
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can INSERT feedback"
   ON feedback
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE feedback"
   ON feedback
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE feedback"
   ON feedback
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for inventory_items
 CREATE POLICY "Tenant can SELECT inventory_items"
   ON inventory_items
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can INSERT inventory_items"
   ON inventory_items
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE inventory_items"
   ON inventory_items
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE inventory_items"
   ON inventory_items
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for analytics_snapshots
 CREATE POLICY "Tenant can SELECT analytics_snapshots"
   ON analytics_snapshots
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can INSERT analytics_snapshots"
   ON analytics_snapshots
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE analytics_snapshots"
   ON analytics_snapshots
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE analytics_snapshots"
   ON analytics_snapshots
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for chat_logs
 CREATE POLICY "Tenant can SELECT chat_logs"
   ON chat_logs
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can INSERT chat_logs"
   ON chat_logs
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE chat_logs"
   ON chat_logs
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE chat_logs"
   ON chat_logs
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for bookings
 CREATE POLICY "Tenant can SELECT bookings"
   ON bookings
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can INSERT bookings"
   ON bookings
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE bookings"
   ON bookings
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE bookings"
   ON bookings
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for users
 CREATE POLICY "Tenant can SELECT users"
   ON users
   FOR SELECT
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
   
 CREATE POLICY "User can select self"
   ON users
@@ -542,18 +580,18 @@ CREATE POLICY "User can select self"
 CREATE POLICY "Tenant can INSERT users"
   ON users
   FOR INSERT
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can UPDATE users"
   ON users
   FOR UPDATE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id')
-  WITH CHECK (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
+  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 CREATE POLICY "Tenant can DELETE users"
   ON users
   FOR DELETE
-  USING (restaurant_id::text = auth.jwt() ->> 'restaurant_id');
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- RLS Policies for storage.objects 
 -- Enable RLS for the storage bucket to ensure tenant isolation

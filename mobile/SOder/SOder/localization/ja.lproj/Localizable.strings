@@ -1,0 +1,98 @@
+/* 
+  Localizable.strings (Japanese)
+  SOder
+*/
+
+// MARK: - App General
+"app_name" = "SOder";
+"app_subtitle" = "レストランオーダー管理";
+
+// MARK: - Login Screen
+"login_title" = "サインイン";
+"login_subtitle" = "レストランスタッフの認証情報を入力してください";
+"restaurant_subdomain" = "レストランサブドメイン";
+"restaurant_subdomain_placeholder" = "例：myrestaurant";
+"email" = "メールアドレス";
+"email_placeholder" = "staff@restaurant.com";
+"password" = "パスワード";
+"password_placeholder" = "パスワードを入力";
+"sign_in" = "サインイン";
+"signing_in" = "サインイン中...";
+"login_error" = "ログインエラー";
+"ok" = "OK";
+
+// MARK: - Common Terms
+"cancel" = "キャンセル";
+"done" = "完了";
+"save" = "保存";
+"delete" = "削除";
+"edit" = "編集";
+"add" = "追加";
+"remove" = "削除";
+"yes" = "はい";
+"no" = "いいえ";
+"loading" = "読み込み中";
+"error" = "エラー";
+"success" = "成功";
+
+// MARK: - Order Management
+"orders" = "オーダー";
+"order_details" = "オーダー詳細";
+"table" = "テーブル";
+"guest_count" = "ゲスト";
+"time" = "時間";
+"status" = "ステータス";
+"total" = "合計";
+"subtotal" = "小計";
+"tax" = "税金";
+"discount" = "割引";
+
+// MARK: - Kitchen
+"kitchen" = "キッチン";
+"kitchen_board" = "キッチンボード";
+"ready_to_serve" = "提供準備完了";
+"in_progress" = "調理中";
+"pending" = "待機中";
+
+// MARK: - Checkout
+"checkout" = "会計";
+"payment_method" = "支払い方法";
+"cash" = "現金";
+"card" = "カード";
+"paypay" = "PayPay";
+"received_amount" = "受取金額";
+"change" = "お釣り";
+"apply_discount" = "割引適用";
+"discount_code" = "割引コード";
+"discount_percentage" = "割引率";
+"discount_amount" = "割引金額";
+"complete_checkout" = "会計完了";
+"print_receipt_only" = "レシート印刷のみ";
+"checkout_complete" = "会計完了";
+"checkout_success_message" = "オーダーが完了し、レシートが正常に印刷されました。";
+"insufficient_amount" = "金額が不足しています";
+"processing" = "処理中...";
+
+// MARK: - Printer
+"printer" = "プリンター";
+"printers" = "プリンター";
+"printer_settings" = "プリンター設定";
+"add_printer" = "プリンター追加";
+"print" = "印刷";
+"printing" = "印刷中...";
+"print_error" = "印刷エラー";
+"printer_not_found" = "プリンターが見つかりません";
+
+// MARK: - Settings
+"settings" = "設定";
+"profile" = "プロフィール";
+"logout" = "ログアウト";
+"language" = "言語";
+"notifications" = "通知";
+
+// MARK: - Error Messages
+"network_error" = "ネットワーク接続エラー";
+"authentication_failed" = "認証に失敗しました";
+"invalid_credentials" = "無効な認証情報";
+"server_error" = "サーバーエラーが発生しました";
+"unknown_error" = "不明なエラーが発生しました";
