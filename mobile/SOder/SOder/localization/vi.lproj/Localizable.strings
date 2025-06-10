@@ -1,3 +1,5 @@
+# Vietnamese Localization Strings (vi.lproj/Localizable.strings)
+
 /* 
   Localizable.strings (Vietnamese)
   SOder
@@ -5,15 +7,15 @@
 
 // MARK: - App General
 "app_name" = "SOder";
-"app_subtitle" = "Quản lý đặt món nhà hàng";
+"app_subtitle" = "Quản lý Đặt món Nhà hàng";
 
 // MARK: - Login Screen
 "login_title" = "Đăng nhập";
 "login_subtitle" = "Nhập thông tin đăng nhập nhân viên nhà hàng";
-"restaurant_subdomain" = "Tên miền phụ nhà hàng";
-"restaurant_subdomain_placeholder" = "ví dụ: myrestaurant";
+"restaurant_subdomain" = "Subdomain Nhà hàng";
+"restaurant_subdomain_placeholder" = "ví dụ: nhahangtoi";
 "email" = "Email";
-"email_placeholder" = "staff@restaurant.com";
+"email_placeholder" = "nhanvien@nhahang.com";
 "password" = "Mật khẩu";
 "password_placeholder" = "Nhập mật khẩu";
 "sign_in" = "Đăng nhập";
@@ -23,12 +25,12 @@
 
 // MARK: - Common Terms
 "cancel" = "Hủy";
-"done" = "Hoàn thành";
+"done" = "Xong";
 "save" = "Lưu";
 "delete" = "Xóa";
-"edit" = "Chỉnh sửa";
+"edit" = "Sửa";
 "add" = "Thêm";
-"remove" = "Xóa";
+"remove" = "Xóa bỏ";
 "yes" = "Có";
 "no" = "Không";
 "loading" = "Đang tải";
@@ -51,7 +53,7 @@
 "kitchen" = "Bếp";
 "kitchen_board" = "Bảng bếp";
 "ready_to_serve" = "Sẵn sàng phục vụ";
-"in_progress" = "Đang chế biến";
+"in_progress" = "Đang thực hiện";
 "pending" = "Đang chờ";
 
 // MARK: - Checkout
@@ -61,15 +63,15 @@
 "card" = "Thẻ";
 "paypay" = "PayPay";
 "received_amount" = "Số tiền nhận";
-"change" = "Tiền thối";
+"change" = "Tiền thừa";
 "apply_discount" = "Áp dụng giảm giá";
 "discount_code" = "Mã giảm giá";
 "discount_percentage" = "Phần trăm giảm giá";
 "discount_amount" = "Số tiền giảm giá";
-"complete_checkout" = "Hoàn thành thanh toán";
+"complete_checkout" = "Hoàn tất thanh toán";
 "print_receipt_only" = "Chỉ in hóa đơn";
-"checkout_complete" = "Thanh toán hoàn thành";
-"checkout_success_message" = "Đơn hàng đã hoàn thành và hóa đơn đã được in thành công.";
+"checkout_complete" = "Thanh toán hoàn tất";
+"checkout_success_message" = "Đơn hàng đã hoàn tất và hóa đơn đã được in thành công.";
 "insufficient_amount" = "Số tiền không đủ";
 "processing" = "Đang xử lý...";
 
