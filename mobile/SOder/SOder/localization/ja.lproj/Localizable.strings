@@ -115,3 +115,11 @@
 "kitchen_clear_print_history" = "印刷履歴をクリア";
 "kitchen_sign_out" = "サインアウト";
 
+// MARK: - Auto Print Status
+"status_auto_printing" = "自動印刷中...";
+"status_auto_print" = "自動印刷";
+"status_auto_print_stats" = "注文: %d | 準備完了: %d";
+
+// MARK: - Debug Views
+"debug_tap_change_status" = "デバッグ: 状態を変更";
+

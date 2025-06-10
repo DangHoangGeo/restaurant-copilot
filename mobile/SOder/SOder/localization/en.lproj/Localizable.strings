@@ -115,3 +115,11 @@
 "kitchen_clear_print_history" = "Clear Print History";
 "kitchen_sign_out" = "Sign Out";
 
+// MARK: - Auto Print Status
+"status_auto_printing" = "Auto-printing...";
+"status_auto_print" = "Auto-print";
+"status_auto_print_stats" = "Orders: %d | Ready: %d";
+
+// MARK: - Debug Views
+"debug_tap_change_status" = "DEBUG TAP TO CHANGE STATUS";
+

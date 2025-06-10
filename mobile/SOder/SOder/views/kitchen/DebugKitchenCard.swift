@@ -2,6 +2,7 @@ import SwiftUI
 
 // Debug version to test if CompactKitchenItemCard is working
 struct DebugCompactKitchenItemCard: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let item: GroupedItem
     let onStatusTap: () -> Void
     let onDetailTap: () -> Void
@@ -32,7 +33,7 @@ struct DebugCompactKitchenItemCard: View {
             
             // Debug: Basic status button
             Button(action: onStatusTap) {
-                Text("DEBUG TAP TO CHANGE STATUS")
+                Text("debug_tap_change_status".localized)
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(.white)

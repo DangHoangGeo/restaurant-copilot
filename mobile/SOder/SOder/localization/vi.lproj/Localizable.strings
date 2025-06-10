@@ -117,3 +117,11 @@
 "kitchen_clear_print_history" = "Xóa lịch sử in";
 "kitchen_sign_out" = "Đăng xuất";
 
+// MARK: - Auto Print Status
+"status_auto_printing" = "Đang tự động in...";
+"status_auto_print" = "Tự động in";
+"status_auto_print_stats" = "Đơn: %d | Món sẵn: %d";
+
+// MARK: - Debug Views
+"debug_tap_change_status" = "DEBUG: đổi trạng thái";
+
