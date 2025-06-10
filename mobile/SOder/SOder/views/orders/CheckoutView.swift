@@ -19,6 +19,7 @@ struct CheckoutView: View {
     @State private var showingDiscount = false
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     enum PaymentMethod: String, CaseIterable {
         case cash = "cash"
@@ -27,9 +28,9 @@ struct CheckoutView: View {
         
         var displayName: String {
             switch self {
-            case .cash: return "Cash"
-            case .card: return "Card"
-            case .paypay: return "PayPay"
+            case .cash: return "cash".localized
+            case .card: return "card".localized
+            case .paypay: return "paypay".localized
             }
         }
         
@@ -102,7 +103,7 @@ struct CheckoutView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("cancel".localized) {
                         dismiss()
                     }
                 }
@@ -111,17 +112,17 @@ struct CheckoutView: View {
                 receivedAmount = totalAmount
             }
         }
-        .alert("Error", isPresented: $showingError) {
-            Button("OK") { }
+        .alert("error".localized, isPresented: $showingError) {
+            Button("ok".localized) { }
         } message: {
             Text(errorMessage)
         }
-        .alert("Checkout Complete", isPresented: $showingSuccess) {
-            Button("Done") {
+        .alert("checkout_complete".localized, isPresented: $showingSuccess) {
+            Button("done".localized) {
                 onComplete()
             }
         } message: {
-            Text("Order has been completed and receipt printed successfully.")
+            Text("checkout_success_message".localized)
         }
     }
     
@@ -178,7 +179,7 @@ struct CheckoutView: View {
             
             Divider()
             
-            Text("Payment Method")
+            Text("payment_method".localized)
                 .font(.headline)
                 .fontWeight(.semibold)
             
@@ -208,7 +209,7 @@ struct CheckoutView: View {
             if paymentMethod == .cash {
                 VStack(spacing: 12) {
                     HStack {
-                        Text("Total Amount:")
+                        Text("total".localized + ":")
                             .font(.subheadline)
                             .fontWeight(.medium)
                         Spacer()
@@ -219,7 +220,7 @@ struct CheckoutView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Received Amount")
+                        Text("received_amount".localized)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
@@ -230,7 +231,7 @@ struct CheckoutView: View {
                     
                     if changeAmount > 0 {
                         HStack {
-                            Text("Change:")
+                            Text("change".localized + ":")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             Spacer()
@@ -246,7 +247,7 @@ struct CheckoutView: View {
                         HStack {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundColor(.orange)
-                            Text("Insufficient amount")
+                            Text("insufficient_amount".localized)
                                 .font(.subheadline)
                                 .foregroundColor(.orange)
                         }
@@ -272,7 +273,7 @@ struct CheckoutView: View {
                     .font(.title3)
                     .foregroundColor(.blue)
                 
-                Text("Apply Discount")
+                Text("apply_discount".localized)
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
