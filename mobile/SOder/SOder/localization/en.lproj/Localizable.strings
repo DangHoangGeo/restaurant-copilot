@@ -166,7 +166,6 @@
 "printer_test_receipt_failed_alert" = "Failed to print test receipt";
 "printer_kitchen_test_success_alert" = "Kitchen test receipt printed successfully!";
 "printer_kitchen_test_failed_alert" = "Failed to print kitchen test receipt";
-"printer_connect_button" = "Connect";
 "printer_manual_setup_printer_info_title" = "Printer Information";
 "printer_manual_setup_printer_name_label" = "Printer Name";
 "printer_manual_setup_ip_address_label" = "IP Address";
@@ -392,12 +391,22 @@
 
 // MARK: - Receipt Header Configuration
 "receipt_header_title" = "Receipt Header";
+"receipt_header_config_title" = "Receipt Header Configuration";
 "receipt_header_restaurant_name_label" = "Restaurant Name";
+"receipt_header_restaurant_name_placeholder" = "Enter restaurant name";
 "receipt_header_address_label" = "Address";
+"receipt_header_address_placeholder" = "Enter address";
 "receipt_header_phone_label" = "Phone";
+"receipt_header_phone_placeholder" = "Enter phone number";
 "receipt_header_auto_fetch_button" = "Auto-Fetch from Settings";
+"receipt_header_auto_fetch_title" = "Quick Setup";
+"receipt_header_auto_fetch_description" = "Automatically fill fields with existing restaurant settings.";
 "receipt_header_preview_title" = "Preview";
+"receipt_header_preview_section" = "Preview";
+"receipt_header_settings_title" = "Header Information";
+"receipt_header_settings_description" = "This information will appear at the top of all printed receipts.";
 "receipt_header_help_text" = "Configure the header information that appears on printed receipts.";
+"printer_save_button" = "Save";
 
 // MARK: - Print Language Configuration
 "print_language_title" = "Print Language";

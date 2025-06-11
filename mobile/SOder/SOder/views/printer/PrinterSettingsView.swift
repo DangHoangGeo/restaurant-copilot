@@ -6,23 +6,24 @@ struct PrinterSettingsView: View {
     @State private var showingConnectionAlert = false
     @State private var connectionMessage = ""
     @State private var isConnecting = false
+    @State private var showingAllLogs = false // New state variable
     
     var body: some View {
         // Use NavigationStack for iOS 16+ or NavigationView with proper iPad handling
         if #available(iOS 16.0, *) {
             NavigationStack {
                 mainContent
+                    .navigationDestination(for: String.self) { destination in
+                        if destination == "manual-setup" {
+                            ManualPrinterSetupView(printerManager: printerManager)
+                        } else if destination == "receipt-header" {
+                            ReceiptHeaderConfigView()
+                        } else if destination == "print-language" {
+                            PrintLanguageConfigView()
+                        }
+                    }
             }
-            .navigationDestination(for: String.self) { destination in
-                if destination == "manual-setup" {
-                    ManualPrinterSetupView(printerManager: printerManager)
-                } else if destination == "receipt-header" {
-                    ReceiptHeaderConfigView()
-                } else if destination == "print-language" {
-                    PrintLanguageConfigView()
-                }
-            }
-            
+            .navigationBarTitleDisplayMode(.inline) // Ensure inline title for consistency
         } else {
             NavigationView {
                 // Empty sidebar for iPad to force content to main area
@@ -32,8 +33,6 @@ struct PrinterSettingsView: View {
                 }
                 
                 mainContent
-                    .navigationViewStyle(StackNavigationViewStyle()) // Force stack style
-                    
             }
             .navigationViewStyle(StackNavigationViewStyle()) // Ensure stack style on iPad
         }
@@ -63,12 +62,6 @@ struct PrinterSettingsView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
                     }
                 } else {
@@ -84,12 +77,6 @@ struct PrinterSettingsView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
                     }
                 }
@@ -118,10 +105,6 @@ struct PrinterSettingsView: View {
                                     .foregroundColor(.orange)
                                     .font(.caption)
                             }
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
                     }
                 } else {
@@ -145,10 +128,6 @@ struct PrinterSettingsView: View {
                                     .foregroundColor(.orange)
                                     .font(.caption)
                             }
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
                     }
                 }
@@ -184,20 +163,20 @@ struct PrinterSettingsView: View {
             // Available Printers Section
             Section("printer_available_printers_title".localized) {
                 if printerManager.availablePrinters.isEmpty {
-                    HStack {
+                    VStack(alignment: .center) {
                         Image(systemName: "magnifyingglass")
+                            .font(.largeTitle)
                             .foregroundColor(.gray)
+                            .padding(.bottom, 2)
                         Text("printer_no_printers_found".localized)
                             .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Button("printer_scan_button".localized) {
-                            printerManager.checkAvailablePrinters()
-                        }
-                        .buttonStyle(.bordered)
+                        Text("printer_scans_for_network_and_bluetooth".localized) // New localized string
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
                     }
-                    .padding(.vertical, 4)
+                    .frame(maxWidth: .infinity)
+                    .padding()
                 } else {
                     ForEach(printerManager.availablePrinters) { printer in
                         PrinterRowView(
@@ -210,10 +189,19 @@ struct PrinterSettingsView: View {
                     }
                 }
                 
-                Button("printer_refresh_printers_button".localized) {
-                    printerManager.checkAvailablePrinters()
+                // Unified and styled refresh button
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        printerManager.checkAvailablePrinters()
+                    }) {
+                        Label("printer_refresh_printers_button".localized, systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.blue)
+                    Spacer()
                 }
-                .foregroundColor(.blue)
+                .padding(.top, printerManager.availablePrinters.isEmpty ? 4 : 8) // Adjust padding based on content
             }
             
             // Test Printing Section
@@ -254,7 +242,7 @@ struct PrinterSettingsView: View {
             // Print Logs Section
             if !printerManager.printLogs.isEmpty {
                 Section("printer_print_logs_title".localized) {
-                    ForEach(printerManager.printLogs.suffix(5), id: \.self) { log in
+                    ForEach(Array(printerManager.printLogs.suffix(5).enumerated()), id: \.offset) { index, log in
                         Text(log)
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -262,7 +250,7 @@ struct PrinterSettingsView: View {
                     
                     if printerManager.printLogs.count > 5 {
                         Button("printer_view_all_logs_button".localized) {
-                            // Show all logs in a separate view
+                            showingAllLogs = true // Show the all logs view
                         }
                         .font(.caption)
                         .foregroundColor(.blue)
@@ -298,22 +286,26 @@ struct PrinterSettingsView: View {
                 }
             }
         }
-        .navigationTitle("printer_settings_title")
+        .navigationTitle("printer_settings_title".localized)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("printer_done_button") {
-                    // This would dismiss the view in a navigation context
+                Button("printer_view_all_logs_button".localized) {
+                    showingAllLogs = true // Show the all logs view
                 }
+                .fontWeight(.semibold)
             }
         }
-        .alert("printer_connection_alert_title", isPresented: $showingConnectionAlert) {
-            Button("printer_alert_ok_button") { }
+        .alert("printer_connection_alert_title".localized, isPresented: $showingConnectionAlert) {
+            Button("printer_alert_ok_button".localized) { }
         } message: {
             Text(connectionMessage)
         }
         .onAppear{
             printerManager.checkAvailablePrinters()
+        }
+        .sheet(isPresented: $showingAllLogs) { // Add sheet modifier
+            AllPrintLogsView(printerManager: printerManager)
         }
     }
     
@@ -431,13 +423,14 @@ struct PrinterRowView: View {
             
             Spacer()
             
-            if isSelected {
+            if isSelected && printer.isConnected {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
             } else if isConnecting {
                 ProgressView()
                     .scaleEffect(0.8)
-            } else {
+            }
+            else {
                 Button("printer_connect_button") {
                     onConnect()
                 }
@@ -458,37 +451,39 @@ struct ManualPrinterSetupView: View {
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
-        NavigationView {
-            Form {
-                Section("manual_printer_setup_printer_info_title") {
-                    TextField("manual_printer_setup_printer_name_label", text: $printerName)
-                    TextField("manual_printer_setup_ip_address_label", text: $ipAddress)
-                        .keyboardType(.numbersAndPunctuation)
-                    TextField("manual_printer_setup_port_label", text: $port)
-                        .keyboardType(.numberPad)
-                }
-                
-                Section("manual_printer_setup_connection_title") {
-                    Button("manual_printer_setup_add_button") {
-                        addNetworkPrinter()
-                    }
-                    .disabled(printerName.isEmpty || ipAddress.isEmpty)
-                }
-                
-                Section {
-                    Text("manual_printer_setup_help_text")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+        content
+        .navigationTitle("manual_printer_setup_title".localized)
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("printer_cancel_button".localized) {
+                    presentationMode.wrappedValue.dismiss()
                 }
             }
-            .navigationTitle("manual_printer_setup_title")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("printer_cancel_button") {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+        }
+    }
+
+    private var content: some View {
+        Form {
+            Section("manual_printer_setup_printer_info_title".localized) {
+                TextField("manual_printer_setup_printer_name_label".localized, text: $printerName)
+                TextField("manual_printer_setup_ip_address_label".localized, text: $ipAddress)
+                    .keyboardType(.numbersAndPunctuation)
+                TextField("manual_printer_setup_port_label".localized, text: $port)
+                    .keyboardType(.numberPad)
+            }
+            
+            Section("manual_printer_setup_connection_title".localized) {
+                Button("manual_printer_setup_add_button".localized) {
+                    addNetworkPrinter()
                 }
+                .disabled(printerName.isEmpty || ipAddress.isEmpty)
+            }
+            
+            Section {
+                Text("manual_printer_setup_help_text".localized)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
     }

@@ -10,8 +10,7 @@ struct ReceiptHeaderConfigView: View {
     @State private var hasChanges: Bool = false
     
     var body: some View {
-        NavigationView {
-            Form {
+        Form {
                 Section {
                     VStack(alignment: .leading, spacing: 16) {
                         // Restaurant Name
@@ -20,10 +19,10 @@ struct ReceiptHeaderConfigView: View {
                                 Image(systemName: "building.2")
                                     .foregroundColor(.blue)
                                     .frame(width: 20)
-                                Text("receipt_header_restaurant_name_label")
+                                Text("receipt_header_restaurant_name_label".localized)
                                     .font(.headline)
                             }
-                            TextField("receipt_header_restaurant_name_placeholder", text: $restaurantName)
+                            TextField("receipt_header_restaurant_name_placeholder".localized, text: $restaurantName)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .onChange(of: restaurantName) { _ in hasChanges = true }
                         }
@@ -34,10 +33,10 @@ struct ReceiptHeaderConfigView: View {
                                 Image(systemName: "location")
                                     .foregroundColor(.blue)
                                     .frame(width: 20)
-                                Text("receipt_header_address_label")
+                                Text("receipt_header_address_label".localized)
                                     .font(.headline)
                             }
-                            TextField("receipt_header_address_placeholder", text: $address)
+                            TextField("receipt_header_address_placeholder".localized, text: $address)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .onChange(of: address) { _ in hasChanges = true }
                         }
@@ -48,10 +47,10 @@ struct ReceiptHeaderConfigView: View {
                                 Image(systemName: "phone")
                                     .foregroundColor(.blue)
                                     .frame(width: 20)
-                                Text("receipt_header_phone_label")
+                                Text("receipt_header_phone_label".localized)
                                     .font(.headline)
                             }
-                            TextField("receipt_header_phone_placeholder", text: $phone)
+                            TextField("receipt_header_phone_placeholder".localized, text: $phone)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .keyboardType(.phonePad)
                                 .onChange(of: phone) { _ in hasChanges = true }
@@ -59,9 +58,9 @@ struct ReceiptHeaderConfigView: View {
                     }
                     .padding(.vertical, 8)
                 } header: {
-                    Text("receipt_header_settings_title")
+                    Text("receipt_header_settings_title".localized)
                 } footer: {
-                    Text("receipt_header_settings_description")
+                    Text("receipt_header_settings_description".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -71,7 +70,7 @@ struct ReceiptHeaderConfigView: View {
                         HStack {
                             Image(systemName: "arrow.clockwise")
                                 .foregroundColor(.blue)
-                            Text("receipt_header_auto_fetch_button")
+                            Text("receipt_header_auto_fetch_button".localized)
                                 .foregroundColor(.blue)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -80,9 +79,9 @@ struct ReceiptHeaderConfigView: View {
                         }
                     }
                 } header: {
-                    Text("receipt_header_auto_fetch_title")
+                    Text("receipt_header_auto_fetch_title".localized)
                 } footer: {
-                    Text("receipt_header_auto_fetch_description")
+                    Text("receipt_header_auto_fetch_description".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -93,7 +92,7 @@ struct ReceiptHeaderConfigView: View {
                         HStack {
                             Image(systemName: "doc.text")
                                 .foregroundColor(.green)
-                            Text("receipt_header_preview_title")
+                            Text("receipt_header_preview_title".localized)
                                 .font(.headline)
                                 .foregroundColor(.green)
                         }
@@ -117,32 +116,30 @@ struct ReceiptHeaderConfigView: View {
                         .cornerRadius(8)
                     }
                 } header: {
-                    Text("receipt_header_preview_section")
+                    Text("receipt_header_preview_section".localized)
                 }
             }
-            .navigationTitle("receipt_header_config_title")
+            .navigationTitle("receipt_header_config_title".localized)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("printer_cancel_button") {
+                    Button("printer_cancel_button".localized) {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("printer_save_button") {
+                    Button("printer_save_button".localized) {
                         saveSettings()
                         dismiss()
                     }
                     .fontWeight(.semibold)
                     .disabled(!hasChanges)
                 }
-            }
-            .onAppear {
-                loadCurrentSettings()
-            }
+            }                .onAppear {
+                    loadCurrentSettings()
+                }
         }
-    }
     
     private func loadCurrentSettings() {
         restaurantName = settingsManager.receiptHeader.restaurantName

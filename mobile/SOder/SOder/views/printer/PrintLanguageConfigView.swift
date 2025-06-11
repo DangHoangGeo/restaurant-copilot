@@ -6,8 +6,7 @@ struct PrintLanguageConfigView: View {
     @State private var showSuccessMessage = false
     
     var body: some View {
-        NavigationView {
-            content
+        content
                 .navigationTitle("print_language_config_title".localized)
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
@@ -21,7 +20,6 @@ struct PrintLanguageConfigView: View {
                 .alert("print_language_changed_success".localized, isPresented: $showSuccessMessage) {
                     Button("ok".localized) { }
                 }
-        }
     }
     
     private var content: some View {
