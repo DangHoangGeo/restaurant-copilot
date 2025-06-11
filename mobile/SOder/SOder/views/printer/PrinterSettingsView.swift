@@ -163,20 +163,20 @@ struct PrinterSettingsView: View {
             // Available Printers Section
             Section("printer_available_printers_title".localized) {
                 if printerManager.availablePrinters.isEmpty {
-                    HStack {
+                    VStack(alignment: .center) {
                         Image(systemName: "magnifyingglass")
+                            .font(.largeTitle)
                             .foregroundColor(.gray)
+                            .padding(.bottom, 2)
                         Text("printer_no_printers_found".localized)
                             .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Button("printer_scan_button".localized) {
-                            printerManager.checkAvailablePrinters()
-                        }
-                        .buttonStyle(.bordered)
+                        Text("printer_scans_for_network_and_bluetooth".localized) // New localized string
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
                     }
-                    .padding(.vertical, 4)
+                    .frame(maxWidth: .infinity)
+                    .padding()
                 } else {
                     ForEach(printerManager.availablePrinters) { printer in
                         PrinterRowView(
@@ -189,10 +189,19 @@ struct PrinterSettingsView: View {
                     }
                 }
                 
-                Button("printer_refresh_printers_button".localized) {
-                    printerManager.checkAvailablePrinters()
+                // Unified and styled refresh button
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        printerManager.checkAvailablePrinters()
+                    }) {
+                        Label("printer_refresh_printers_button".localized, systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.blue)
+                    Spacer()
                 }
-                .foregroundColor(.blue)
+                .padding(.top, printerManager.availablePrinters.isEmpty ? 4 : 8) // Adjust padding based on content
             }
             
             // Test Printing Section
@@ -281,9 +290,10 @@ struct PrinterSettingsView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("printer_done_button".localized) {
-                    // This would dismiss the view in a navigation context
+                Button("printer_view_all_logs_button".localized) {
+                    showingAllLogs = true // Show the all logs view
                 }
+                .fontWeight(.semibold)
             }
         }
         .alert("printer_connection_alert_title".localized, isPresented: $showingConnectionAlert) {
@@ -441,6 +451,19 @@ struct ManualPrinterSetupView: View {
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
+        content
+        .navigationTitle("manual_printer_setup_title".localized)
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("printer_cancel_button".localized) {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
+        }
+    }
+
+    private var content: some View {
         Form {
             Section("manual_printer_setup_printer_info_title".localized) {
                 TextField("manual_printer_setup_printer_name_label".localized, text: $printerName)
@@ -461,15 +484,6 @@ struct ManualPrinterSetupView: View {
                 Text("manual_printer_setup_help_text".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
-            }
-        }
-        .navigationTitle("manual_printer_setup_title".localized)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("printer_cancel_button".localized) {
-                    presentationMode.wrappedValue.dismiss()
-                }
             }
         }
     }

@@ -13,7 +13,7 @@ struct AllPrintLogsView: View {
                         .font(.caption)
                 }
             }
-            .navigationTitle("printer_all_logs_title".localized)
+            .navigationTitle("printer_print_logs_title".localized)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("printer_done_button".localized) {
