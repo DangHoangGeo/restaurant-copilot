@@ -15,7 +15,6 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
-import { WeekdaySelector } from '@/components/features/admin/menu/WeekdaySelector';
 import { StarRating } from '@/components/ui/star-rating';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -26,8 +25,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { MenuItemForm } from '@/components/features/admin/menu/MenuItemForm';
 // import { Switch } from "@/components/ui/switch"; // For availability toggle if preferred
 
 /*
@@ -54,6 +52,24 @@ interface MenuItem {
   position: number;
   averageRating?: number;
   reviewCount?: number;
+  category_id?: string;
+  toppings?: Array<{
+    id?: string;
+    name_en: string;
+    name_ja?: string;
+    name_vi?: string;
+    price: number;
+    position: number;
+  }>;
+  menu_item_sizes?: Array<{
+    id?: string;
+    size_key: string;
+    name_en: string;
+    name_ja?: string;
+    name_vi?: string;
+    price: number;
+    position: number;
+  }>;
 }
 
 interface Category {
@@ -71,6 +87,25 @@ interface MenuClientContentProps {
 }
 
 // Zod Schemas for validation
+const toppingSchema = z.object({
+  id: z.string().optional(),
+  name_en: z.string().min(1, "English name is required"),
+  name_ja: z.string().optional(),
+  name_vi: z.string().optional(),
+  price: z.coerce.number().min(0, "Price must be non-negative"),
+  position: z.coerce.number().int().min(0),
+});
+
+const menuItemSizeSchema = z.object({
+  id: z.string().optional(),
+  size_key: z.string().min(1, "Size key is required (e.g., S, M, L)"),
+  name_en: z.string().min(1, "English name is required"),
+  name_ja: z.string().optional(),
+  name_vi: z.string().optional(),
+  price: z.coerce.number().min(0, "Price must be non-negative"),
+  position: z.coerce.number().int().min(0),
+});
+
 const getCategorySchema = (t: ReturnType<typeof useTranslations<'AdminMenu.validation'>>) => z.object({
   id: z.string().optional(),
   name_en: z.string().min(1, t('name_en_required')).max(50, t('name_en_max_length', { maxLength: 50 })),
@@ -95,8 +130,12 @@ const getMenuItemSchema = (t: ReturnType<typeof useTranslations<'AdminMenu.valid
   weekday_visibility: z.array(z.number()).optional().nullable(),
   stock_level: z.number().min(0, t('stock_level_min', {min: 0})).optional().nullable(),
   position: z.number({ required_error: t('position_required') }),
+  tags: z.array(z.string()).optional(), // Tags are optional, not part of DB schema directly
   // For image file handling, not part of DB schema directly for menu_item
   imageFile: z.instanceof(File).refine(file => file.size <= 5 * 1024 * 1024, t('logoFile.maxSize', { maxSize: 5 })).optional().nullable(),
+  // Add toppings and sizes to the schema
+  toppings: z.array(toppingSchema).optional(),
+  sizes: z.array(menuItemSizeSchema).optional(),
 });
 
 type CategoryFormData = z.infer<ReturnType<typeof getCategorySchema>>;
@@ -120,11 +159,59 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   // const [editingItem, setEditingItem] = useState<Partial<MenuItemFormData> | null>(null); // Removed
   // const [selectedCategoryIdForItem, setSelectedCategoryIdForItem] = useState<string | null>(null); // Removed
   // const [imageFile, setImageFile] = useState<File | null>(null); // Removed
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  // const [imagePreview, setImagePreview] = useState<string | null>(null); // Not used with MenuItemForm
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
   const supabase = createClient();
+
+  // Get owner's preferred language from locale
+  const ownerLanguage = (locale === 'ja' ? 'ja' : locale === 'vi' ? 'vi' : 'en') as 'en' | 'ja' | 'vi';
+
+  // Translation function
+  const handleTranslate = async (text: string, field: string, context: 'item' | 'topping') => {
+    try {
+      const response = await fetch('/api/v1/ai/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, field, context }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Translation failed');
+      }
+
+      const translations = await response.json();
+      return translations;
+    } catch (error) {
+      console.error('Translation error:', error);
+      throw error;
+    }
+  };
+  // Generate Description function
+  const handleGenerateDescription = async (text: string, initialData: string) => {
+    try {
+      const response = await fetch('/api/v1/ai/generate-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ itemName: text, initialData: initialData, language: ownerLanguage }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Description generation failed');
+      }
+
+      const descriptions = await response.json();
+      return descriptions;
+    } catch (error) {
+      console.error('Description generation error:', error);
+      throw error;
+    }
+  }
 
   const categoryForm = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
@@ -138,6 +225,8 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       weekday_visibility: [1, 2, 3, 4, 5, 6, 7], position: 0, stock_level: null,
       category_id: '', // Initialize category_id
       imageFile: undefined,
+      toppings: [], // Initialize toppings array
+      sizes: [], // Initialize sizes array
     },
   });
 
@@ -155,28 +244,27 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   };
 
   const handleOpenItemModal = (category: Category, itemData: Partial<MenuItemFormData> | null = null) => {
-    // setSelectedCategoryIdForItem(category.id); // Removed
-    // setImageFile(null); // Removed, handled by form reset
-
     if (itemData) {
-      setImagePreview(itemData.image_url || null);
       itemForm.reset({
         ...itemData,
+        stock_level: itemData.stock_level ?? 10, // Default to 10 if not set
         category_id: category.id, // ensure category_id is set from the context
         weekday_visibility: itemData.weekday_visibility || [],
         imageFile: undefined, // Explicitly reset file
       });
     } else {
-      setImagePreview(null);
       itemForm.reset({
         name_en: '', name_ja: '', name_vi: '',
         description_en: '', description_ja: '', description_vi: '',
         price: 0, image_url: '', available: true,
         weekday_visibility: [1, 2, 3, 4, 5, 6, 7],
-        stock_level: null, // Use null for optional numbers not set
+        stock_level: 10, // Use null for optional numbers not set
+        tags: [], // Initialize tags array
         position: category.menu_items.length,
         category_id: category.id, // Set category_id for new item
         imageFile: undefined,
+        toppings: [], // Initialize toppings array
+        sizes: [], // Initialize sizes array
       });
     }
     setIsItemModalOpen(true);
@@ -305,8 +393,6 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       toast.success(data.id ? t('item.update_success') : t('item.create_success'));
       setIsItemModalOpen(false);
       itemForm.reset(); 
-      // setImageFile(null); // Removed
-      setImagePreview(null); 
       router.refresh();
     } catch (error) {
       console.error('Error saving menu item:', error);
@@ -655,94 +741,69 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       </Dialog>
 
       {/* Item Modal */}
-      <Dialog open={isItemModalOpen} onOpenChange={(isOpen) => { if (!isOpen) { itemForm.reset(); setImagePreview(null); /* setImageFile(null); */ } setIsItemModalOpen(isOpen); }}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{itemForm.getValues("id") ? t('edit_item') : t('add_item')}</DialogTitle>
-          </DialogHeader>
-          <Form {...itemForm}>
-            <form onSubmit={itemForm.handleSubmit(onItemSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 max-h-[70vh] overflow-y-auto p-1">
-                {/* Column 1: Names, Descriptions */}
-                <div className="space-y-4">
-                  <FormField control={itemForm.control} name="name_en" render={({ field }) => (
-                    <FormItem><FormLabel>{t('item.name_en')}*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                  )}/>
-                  <FormField control={itemForm.control} name="name_ja" render={({ field }) => (
-                    <FormItem><FormLabel>{t('item.name_ja')}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                  )}/>
-                  <FormField control={itemForm.control} name="name_vi" render={({ field }) => (
-                    <FormItem><FormLabel>{t('item.name_vi')}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                  )}/>
-                  <FormField control={itemForm.control} name="description_en" render={({ field }) => (
-                    <FormItem><FormLabel>{t('item.description_en')}</FormLabel><FormControl><Textarea {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                  )}/>
-                  <FormField control={itemForm.control} name="description_ja" render={({ field }) => (
-                    <FormItem><FormLabel>{t('item.description_ja')}</FormLabel><FormControl><Textarea {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                  )}/>
-                  <FormField control={itemForm.control} name="description_vi" render={({ field }) => (
-                    <FormItem><FormLabel>{t('item.description_vi')}</FormLabel><FormControl><Textarea {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                  )}/>
-                </div>
-
-                {/* Column 2: Price, Image, Stock, Availability */}
-                <div className="space-y-4">
-                  <FormField control={itemForm.control} name="price" render={({ field }) => (
-                    <FormItem><FormLabel>{t('item.price')}*</FormLabel><FormControl><Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} /></FormControl><FormMessage /></FormItem>
-                  )}/>
-
-                  <FormField control={itemForm.control} name="imageFile" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('item.upload_image')}</FormLabel>
-                      <FormControl>
-                        <Input type="file" accept="image/*" onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          field.onChange(file); // Update RHF state
-                          // setImageFile(file); // Removed
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => setImagePreview(reader.result as string);
-                            reader.readAsDataURL(file);
-                          } else {
-                            // If no file, preview existing image_url from form (set during modal open)
-                            setImagePreview(itemForm.getValues("image_url") || null);
-                          }
-                        }} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90" />
-                      </FormControl>
-                      {imagePreview && <div className="mt-2"><img src={imagePreview} alt={t('item.image_preview_alt')} className="max-h-40 w-auto rounded-md" /></div>}
-                      <FormMessage />
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('item.image_upload_note')}</p>
-                    </FormItem>
-                  )}/>
-
-                  <FormField control={itemForm.control} name="stock_level" render={({ field }) => (
-                    <FormItem><FormLabel>{t('item.stock_level')}</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseInt(e.target.value))} /></FormControl><FormMessage /></FormItem>
-                  )}/>
-
-                  <FormField control={itemForm.control} name="available" render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                      <div className="space-y-1 leading-none"><FormLabel>{t('item.is_available')}</FormLabel></div>
-                    </FormItem>
-                  )}/>
-                </div>
-              </div>
-              
-              <FormField control={itemForm.control} name="weekday_visibility" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('item.weekday_visibility')}</FormLabel>
-                  <WeekdaySelector selectedDays={field.value || []} onChange={field.onChange} />
-                  <FormMessage />
-                </FormItem>
-              )}/>
-
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-4">{t('form_hint')}</p>
-              <DialogFooter className="mt-6 pt-4 border-t dark:border-slate-700">
-                <Button type="button" variant="secondary" onClick={() => { itemForm.reset(); setImagePreview(null); /* setImageFile(null); */ setIsItemModalOpen(false); }}>{t('cancel')}</Button>
-                <Button type="submit" variant="default" disabled={isLoading}>{isLoading ? t('buttons.saving') : t('save')}</Button>
-              </DialogFooter>
-            </form>
-          </Form>
+      <Dialog open={isItemModalOpen} onOpenChange={(isOpen) => { 
+        if (!isOpen) { 
+          itemForm.reset(); 
+        } 
+        setIsItemModalOpen(isOpen); 
+      }}>
+        <DialogContent className="max-w-screen sm:max-w-5xl max-h-[90vh] overflow-y-auto">
+          <MenuItemForm
+            initialData={ {
+              id: itemForm.getValues().id || '',
+              name_en: itemForm.getValues().name_en || '',
+              name_ja: itemForm.getValues().name_ja || '',
+              name_vi: itemForm.getValues().name_vi || '',
+              description_en: itemForm.getValues().description_en || '',
+              description_ja: itemForm.getValues().description_ja || '',
+              description_vi: itemForm.getValues().description_vi || '',
+              price: itemForm.getValues().price || 0,
+              tags: itemForm.getValues().tags || [],
+              position: itemForm.getValues().position || 0,
+              image_url: itemForm.getValues().image_url || '',
+              available: itemForm.getValues().available ?? true,
+              category_id: itemForm.getValues().category_id || '',
+              weekdayVisibility: itemForm.getValues().weekday_visibility || [],
+              stock_level: itemForm.getValues().stock_level ?? 20,
+              toppings: itemForm.getValues().toppings || [],
+              menu_item_sizes: itemForm.getValues().sizes || [],
+            } }
+            categories={menuData.map(cat => ({
+              id: cat.id,
+              name: getLocalizedText({ 
+                name_en: cat.name_en, 
+                name_ja: cat.name_ja, 
+                name_vi: cat.name_vi 
+              }, locale),
+            }))}
+            ownerLanguage={ownerLanguage}
+            onTranslate={handleTranslate}
+            onGenerateDescription={handleGenerateDescription}
+            onSave={async (data, menuItemId) => {
+              // Transform MenuItemForm data to match onItemSubmit expected format
+              const transformedData: MenuItemFormData = {
+                ...data,
+                id: menuItemId,
+                weekday_visibility: data.weekdayVisibility,
+                position: itemForm.getValues().position || 0,
+                category_id: data.category_id,
+                toppings: data.toppings,
+                sizes: data.sizes,
+              };
+              await onItemSubmit(transformedData);
+            }}
+            onCancel={() => {
+              itemForm.reset();
+              setIsItemModalOpen(false);
+            }}
+            texts={{
+              saveButton: isLoading ? t('buttons.saving') : t('save'),
+              cancelButton: t('cancel'),
+              title: itemForm.getValues("id") ? t('edit_item') : t('add_item'),
+              successMessage: itemForm.getValues("id") ? t('item.update_success') : t('item.create_success'),
+              errorMessage: t('item.save_error'),
+            }}
+          />
         </DialogContent>
       </Dialog>
     </DragDropContext>

@@ -3,6 +3,25 @@ import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
+// Schema for toppings
+const toppingSchema = z.object({
+  name_en: z.string().min(1).max(100),
+  name_ja: z.string().max(100).optional(),
+  name_vi: z.string().max(100).optional(),
+  price: z.number().min(0),
+  position: z.number().optional(),
+});
+
+// Schema for menu item sizes
+const menuItemSizeSchema = z.object({
+  size_key: z.string().min(1).max(50),
+  name_en: z.string().min(1).max(100),
+  name_ja: z.string().max(100).optional(),
+  name_vi: z.string().max(100).optional(),
+  price: z.number().min(0),
+  position: z.number().optional(),
+});
+
 // Schema for validating the request body when creating/updating a menu item
 const menuItemSchema = z.object({
   category_id: z.string().uuid(),
@@ -18,6 +37,8 @@ const menuItemSchema = z.object({
   weekday_visibility: z.array(z.number().min(1).max(7)).optional(),
   stock_level: z.number().min(0).optional(),
   position: z.number().optional(),
+  toppings: z.array(toppingSchema).optional(),
+  sizes: z.array(menuItemSizeSchema).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -53,7 +74,24 @@ export async function GET(req: NextRequest) {
         available,
         weekday_visibility,
         stock_level,
-        position
+        position,
+        toppings (
+          id,
+          name_en,
+          name_ja,
+          name_vi,
+          price,
+          position
+        ),
+        menu_item_sizes (
+          id,
+          size_key,
+          name_en,
+          name_ja,
+          name_vi,
+          price,
+          position
+        )
       `)
       .eq('restaurant_id', restaurantId)
       .order('position', { ascending: true });
@@ -101,7 +139,9 @@ export async function POST(req: Request) {
       available,
       weekday_visibility,
       stock_level,
-      position
+      position,
+      toppings,
+      sizes
     } = validatedData.data;
 
     // Verify that the category belongs to the user's restaurant
@@ -150,6 +190,7 @@ export async function POST(req: Request) {
       menuItemData.stock_level = stock_level;
     }
 
+    // Start a transaction to create menu item and its related data
     const { data, error } = await supabaseAdmin
       .from('menu_items')
       .insert([menuItemData])
@@ -161,7 +202,74 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Error creating menu item', details: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'Menu item created successfully', menuItem: data }, { status: 201 });
+    const menuItemId = data.id;
+
+    // Insert toppings if provided
+    if (toppings && toppings.length > 0) {
+      const toppingsData = toppings.map((topping, index) => ({
+        restaurant_id: user.restaurantId,
+        menu_item_id: menuItemId,
+        name_en: topping.name_en,
+        name_ja: topping.name_ja || topping.name_en,
+        name_vi: topping.name_vi || topping.name_en,
+        price: topping.price,
+        position: topping.position ?? index,
+      }));
+
+      const { error: toppingsError } = await supabaseAdmin
+        .from('toppings')
+        .insert(toppingsData);
+
+      if (toppingsError) {
+        console.error('Error creating toppings:', toppingsError);
+        // Clean up the menu item if toppings fail
+        await supabaseAdmin.from('menu_items').delete().eq('id', menuItemId);
+        return NextResponse.json({ message: 'Error creating toppings', details: toppingsError.message }, { status: 500 });
+      }
+    }
+
+    // Insert sizes if provided
+    if (sizes && sizes.length > 0) {
+      const sizesData = sizes.map((size, index) => ({
+        restaurant_id: user.restaurantId,
+        menu_item_id: menuItemId,
+        size_key: size.size_key,
+        name_en: size.name_en,
+        name_ja: size.name_ja || size.name_en,
+        name_vi: size.name_vi || size.name_en,
+        price: size.price,
+        position: size.position ?? index,
+      }));
+
+      const { error: sizesError } = await supabaseAdmin
+        .from('menu_item_sizes')
+        .insert(sizesData);
+
+      if (sizesError) {
+        console.error('Error creating sizes:', sizesError);
+        // Clean up the menu item and toppings if sizes fail
+        await supabaseAdmin.from('menu_items').delete().eq('id', menuItemId);
+        return NextResponse.json({ message: 'Error creating sizes', details: sizesError.message }, { status: 500 });
+      }
+    }
+
+    // Fetch the complete menu item with toppings and sizes
+    const { data: completeMenuItem, error: fetchError } = await supabaseAdmin
+      .from('menu_items')
+      .select(`
+        *,
+        toppings (*),
+        menu_item_sizes (*)
+      `)
+      .eq('id', menuItemId)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching complete menu item:', fetchError);
+      return NextResponse.json({ message: 'Menu item created but error fetching complete data', details: fetchError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Menu item created successfully', menuItem: completeMenuItem }, { status: 201 });
 
   } catch (error) {
     console.error('API Error in POST menu items:', error);

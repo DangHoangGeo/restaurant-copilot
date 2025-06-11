@@ -1,0 +1,340 @@
+/**
+ * Google Gemini AI Helper Library
+ * 
+ * This library provides a unified interface for Google Gemini AI interactions
+ * across the restaurant management system. It supports:
+ * - Multi-language translation for menu items
+ * - Future features: customer chat, owner assistance, content generation
+ */
+
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
+
+// Types for the library
+export interface TranslationResult {
+  en: string;
+  ja: string;
+  vi: string;
+}
+
+export interface DescriptionResult {
+  en: string;
+  ja: string;
+  vi: string;
+}
+
+export interface GeminiConfig {
+  apiKey: string;
+  model?: string;
+}
+
+export interface TranslationRequest {
+  text: string;
+  sourceLanguage?: 'en' | 'ja' | 'vi' | 'auto';
+  context?: 'menu_item' | 'topping' | 'description' | 'general';
+}
+
+export interface ChatRequest {
+  message: string;
+  context: 'owner_assistance' | 'customer_support' | 'menu_help';
+  language?: 'en' | 'ja' | 'vi';
+}
+
+export interface ChatResponse {
+  response: string;
+  language: string;
+  confidence?: number;
+}
+
+class GeminiHelper {
+  private genAI: GoogleGenerativeAI;
+  private model: GenerativeModel;
+
+  constructor(config: GeminiConfig) {
+    if (!config.apiKey) {
+      throw new Error('Gemini API key is required');
+    }
+
+    this.genAI = new GoogleGenerativeAI(config.apiKey);
+    this.model = this.genAI.getGenerativeModel({ 
+      model: config.model || 'gemini-2.0-flash' 
+    });
+  }
+
+  /**
+   * Translate text to multiple languages for restaurant menus
+   */
+  async translateMenuText(request: TranslationRequest): Promise<TranslationResult> {
+    const { text, sourceLanguage = 'auto', context = 'menu_item' } = request;
+
+    const contextPrompts = {
+      menu_item: 'This is a restaurant menu item name. Provide accurate, appetizing translations.',
+      topping: 'This is a food topping or ingredient. Provide accurate culinary translations.',
+      description: 'This is a restaurant menu item description. Provide detailed, appetizing translations.',
+      general: 'This is general restaurant-related text. Provide accurate translations.'
+    };
+
+    const prompt = `
+You are a professional restaurant menu translator with expertise in Vietnamese, Japanese, and English cuisine.
+
+Context: ${contextPrompts[context]}
+Text to translate: "${text}"
+Source language: ${sourceLanguage}
+
+Please provide translations in this exact JSON format (no additional text):
+{
+  "en": "English translation",
+  "ja": "Japanese translation", 
+  "vi": "Vietnamese translation"
+}
+
+Translation guidelines:
+- For Vietnamese dishes, use proper Vietnamese names with English descriptions where helpful
+- For Japanese dishes, use proper Japanese names with accurate translations
+- Keep culinary terms authentic and appetizing
+- Use proper capitalization for menu items
+- Ensure translations sound natural for restaurant menus
+- If the source is already in one language, improve/refine it if needed
+
+Text: "${text}"
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const textResponse = response.text();
+      
+      // Extract JSON from the response
+      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in response');
+      }
+
+      const translations = JSON.parse(jsonMatch[0]);
+      
+      // Validate the response structure
+      if (!translations.en || !translations.ja || !translations.vi) {
+        throw new Error('Incomplete translation response');
+      }
+
+      return translations as TranslationResult;
+    } catch (error) {
+      console.error('Gemini translation error:', error);
+      
+      // Fallback to basic translation pattern
+      return {
+        en: `${text} (English)`,
+        ja: `${text} (日本語)`,
+        vi: text,
+      };
+    }
+  }
+
+  /**
+   * Generate restaurant content using AI
+   */
+  async generateContent(prompt: string, context: string = 'general'): Promise<string> {
+    const contextualPrompt = `
+You are an AI assistant for a restaurant management system. 
+Context: ${context}
+
+${prompt}
+
+Please provide a helpful, professional response in plain text.
+`;
+
+    try {
+      const result = await this.model.generateContent(contextualPrompt);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error('Gemini content generation error:', error);
+      throw new Error('Failed to generate content');
+    }
+  }
+
+  /**
+   * Chat interface for owner/customer assistance (future feature)
+   */
+  async chat(request: ChatRequest): Promise<ChatResponse> {
+    const { message, context, language = 'en' } = request;
+
+    const contextPrompts = {
+      owner_assistance: 'You are helping a restaurant owner manage their business.',
+      customer_support: 'You are helping a restaurant customer with their experience.',
+      menu_help: 'You are helping with menu-related questions and recommendations.'
+    };
+
+    const languagePrompts = {
+      en: 'Respond in English.',
+      ja: 'Respond in Japanese (日本語).',
+      vi: 'Respond in Vietnamese (Tiếng Việt).'
+    };
+
+    const prompt = `
+${contextPrompts[context]}
+${languagePrompts[language]}
+
+User message: "${message}"
+
+Provide a helpful, professional response that assists with their restaurant-related needs.
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      
+      return {
+        response: response.text(),
+        language: language,
+        confidence: 0.95 // Placeholder - Gemini doesn't provide confidence scores
+      };
+    } catch (error) {
+      console.error('Gemini chat error:', error);
+      throw new Error('Failed to process chat request');
+    }
+  }
+
+  /**
+   * Generate menu descriptions from item names
+   */
+  async generateMenuDescription(itemName: string, initialData: string, language: 'en' | 'ja' | 'vi' = 'en'): Promise<DescriptionResult> {
+    const languagePrompts = {
+      en: 'English',
+      ja: 'Japanese (日本語)',
+      vi: 'Vietnamese (Tiếng Việt)'
+    };
+
+    const prompt = `
+You are a professional menu writer for restaurants.
+Write an appetizing menu description in 3 languages: English, Japanese, and Vietnamese.
+User's original language: ${languagePrompts[language]}
+Dish name:  "${itemName}"
+Description context from user:
+${initialData}
+
+Please provide descriptions in this exact JSON format (no additional text):
+{
+  "en": "English description",
+  "ja": "Japanese description", 
+  "vi": "Vietnamese description"
+}
+
+Guidelines:
+- Keep it concise (2-3 sentences)
+- Make it sound appetizing and descriptive
+- Include key ingredients or cooking methods if obvious from the name
+- Use appropriate culinary language
+- Don't add prices or availability information
+
+Dish name: "${itemName}"
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const textResponse = response.text();
+      
+      // Extract JSON from the response
+      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in response');
+      }
+	  const descriptions = JSON.parse(jsonMatch[0]);
+	  return descriptions;
+    } catch (error) {
+      console.error('Gemini description generation error:', error);
+      return {
+		en: `Description for "${itemName}" could not be generated at this time.`,
+		ja: `「${itemName}」の説明は現在生成できません。`,
+		vi: `Mô tả cho "${itemName}" hiện không thể tạo được.`,
+	  };
+    }
+  }
+
+  /**
+   * Analyze menu item popularity and suggest improvements
+   */
+  async analyzeMenuItem(itemData: {
+    name: string;
+    description?: string;
+    price: number;
+    category: string;
+    ratings?: number;
+    orders?: number;
+  }): Promise<{
+    suggestions: string[];
+    marketingTips: string[];
+    pricingAdvice?: string;
+  }> {
+    const prompt = `
+You are a restaurant business consultant analyzing a menu item.
+
+Item Details:
+- Name: ${itemData.name}
+- Description: ${itemData.description || 'No description'}
+- Price: $${itemData.price}
+- Category: ${itemData.category}
+- Average Rating: ${itemData.ratings || 'No ratings'}
+- Total Orders: ${itemData.orders || 'No data'}
+
+Provide analysis in this JSON format:
+{
+  "suggestions": ["improvement suggestion 1", "improvement suggestion 2"],
+  "marketingTips": ["marketing tip 1", "marketing tip 2"],
+  "pricingAdvice": "pricing recommendation"
+}
+
+Focus on:
+- Menu description improvements
+- Pricing optimization
+- Marketing positioning
+- Ingredient highlights
+- Presentation suggestions
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const textResponse = response.text();
+      
+      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      
+      // Fallback response
+      return {
+        suggestions: ['Consider adding more descriptive language to the menu item'],
+        marketingTips: ['Highlight unique ingredients or cooking methods'],
+        pricingAdvice: 'Current pricing appears reasonable for the category'
+      };
+    } catch (error) {
+      console.error('Gemini menu analysis error:', error);
+      return {
+        suggestions: ['Unable to analyze at this time'],
+        marketingTips: ['Try updating the description'],
+        pricingAdvice: 'Review competitor pricing'
+      };
+    }
+  }
+}
+
+// Factory function to create Gemini helper instance
+export function createGeminiHelper(config?: Partial<GeminiConfig>): GeminiHelper {
+  const apiKey = config?.apiKey || process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY environment variable is required');
+  }
+
+  return new GeminiHelper({
+    apiKey,
+    model: config?.model
+  });
+}
+
+// Export the main class
+export { GeminiHelper };
+
+// Default export for convenience
+export default GeminiHelper;

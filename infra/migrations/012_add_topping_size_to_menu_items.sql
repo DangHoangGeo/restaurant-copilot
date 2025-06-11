@@ -33,15 +33,27 @@ CREATE INDEX ON menu_item_sizes (restaurant_id, menu_item_id);
 -- allow RLS
 ALTER TABLE menu_item_sizes ENABLE ROW LEVEL SECURITY;
 -- Enable RLS policies for menu_item_sizes
+CREATE POLICY "Tenant can SELECT menu_item_sizes"
+  ON menu_item_sizes
+  FOR SELECT
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
 CREATE POLICY menu_item_sizes_policy ON menu_item_sizes
   FOR ALL
   USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
 -- Enable RLS policies for toppings
 ALTER TABLE toppings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Tenant can SELECT toppings"
+  ON toppings
+  FOR SELECT
+  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
 CREATE POLICY toppings_policy ON toppings
   FOR ALL
   USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+
 -- then copy your menu_items policies, replacing table names → menu_item_sizes
 
 -- link your orders to a chosen size
