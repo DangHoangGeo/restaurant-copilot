@@ -226,8 +226,8 @@ struct DualPrinterStatusView: View {
                 .buttonStyle(.bordered)
                 .disabled(settingsManager.configuredPrinters.count < 2)
                 
-                NavigationLink("printer_mode_selection_alert_manual_setup_button".localized) {
-                    DualPrinterAssignmentView()
+                NavigationLink(destination: DualPrinterAssignmentView()) {
+                    Text("printer_mode_selection_alert_manual_setup_button".localized)
                 }
                 .buttonStyle(.bordered)
             }
