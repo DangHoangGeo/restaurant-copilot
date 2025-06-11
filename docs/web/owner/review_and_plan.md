@@ -1,6 +1,6 @@
 # Review and Plan: Toppings and Sizes - Owner Flow
 
-This document outlines the review of the current system and the plan for implementing management of toppings and sizes for menu items in the owner (admin/dashboard) flow.
+This document outlines the review of the current system and the plan for implementing management of toppings and sizes for menu items in the owner (dashboard) flow.
 
 ## 1. UI/UX Review
 
@@ -108,4 +108,3 @@ This document outlines the review of the current system and the plan for impleme
     *   **Batch Operations:** If performance becomes an issue with many individual POST/PUT/DELETE requests for toppings/sizes when a menu item is saved, consider creating database functions (stored procedures) that can accept an array of topping/size objects and perform batch upserts/deletes. This can reduce network overhead and ensure atomicity for changes to an item's toppings and sizes. However, for typical numbers of toppings/sizes per item, individual API calls coordinated by the frontend are often acceptable initially.
     *   **No immediate complex pure SQL queries are flagged for conversion** beyond the standard CRUD operations, which Supabase handles well. The main optimization is efficient fetching and potentially batching modifications if needed.
 
-This plan provides a framework for extending the owner's menu management capabilities, allowing for richer and more flexible menu item definitions.
