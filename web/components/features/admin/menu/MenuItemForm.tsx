@@ -1,205 +1,335 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
+import { useForm, useFieldArray, Control, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useTranslations } from 'next-intl';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import Image from 'next/image';
+import { Weekday, weekdays } from '@/lib/types/common.types';
+import { MenuItemCategory } from '@/lib/types/menu-item-category.types';
+import { MenuItem } from '@/lib/types/menu-item.types';
+import { PlusCircle, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
-// Define the schema for multi-language text
-/*
-const localizedStringSchema = z.object({
-  en: z.string().min(1, { message: "validation.required_field" }).max(100, { message: "validation.max_length_100" }),
-  ja: z.string().max(100, { message: "validation.max_length_100" }).optional(),
-  vi: z.string().max(100, { message: "validation.max_length_100" }).optional(),
-}).partial().refine(data => data.en || data.ja || data.vi, {
-  message: "validation.at_least_one_language_required",
-  path: ["en"],
+// Zod Schemas
+const toppingSchema = z.object({
+  id: z.string().optional(),
+  name_en: z.string().min(1, "English name is required"),
+  name_ja: z.string().optional(),
+  name_vi: z.string().optional(),
+  price: z.coerce.number().min(0, "Price must be non-negative"),
+  position: z.coerce.number().int().min(0), // Changed: position is now a required number
 });
-*/
+type ToppingData = z.infer<typeof toppingSchema>; // Added type
+
+const menuItemSizeSchema = z.object({
+  id: z.string().optional(),
+  size_key: z.string().min(1, "Size key is required (e.g., S, M, L)"),
+  name_en: z.string().min(1, "English name is required"),
+  name_ja: z.string().optional(),
+  name_vi: z.string().optional(),
+  price: z.coerce.number().min(0, "Price must be non-negative"),
+  position: z.coerce.number().int().min(0), // Changed: position is now a required number
+});
+type MenuItemSizeData = z.infer<typeof menuItemSizeSchema>; // Added type
 
 const menuItemFormSchema = z.object({
-  name_en: z.string().min(1, { message: "validation.required_field" }).max(100, { message: "validation.max_length_100" }),
-  name_ja: z.string().max(100, { message: "validation.max_length_100" }).optional(),
-  name_vi: z.string().max(100, { message: "validation.max_length_100" }).optional(),
-  description_en: z.string().max(500, { message: "validation.max_length_500" }).optional(),
-  description_ja: z.string().max(500, { message: "validation.max_length_500" }).optional(),
-  description_vi: z.string().max(500, { message: "validation.max_length_500" }).optional(),
-  price: z.coerce.number().min(0.01, { message: "validation.min_price" }),
-  imageUrl: z.string().url({ message: "validation.invalid_url" }).optional().nullable(), // This will be for existing URL
-  imageFile: z.any().optional(), // For new file upload
-  available: z.boolean(),
-  weekdayVisibility: z.array(z.string()),
-  stockLevel: z.coerce.number().int().min(0, { message: "validation.min_stock" }).optional().nullable(),
-  clearImage: z.boolean().optional(), // For clearing existing image
-}).refine(data => data.name_en || data.name_ja || data.name_vi, {
-  message: "validation.at_least_one_language_required",
-  path: ["name_en"],
+  name_en: z.string().min(1, "English name is required"),
+  name_ja: z.string().optional(),
+  name_vi: z.string().optional(),
+  description_en: z.string().optional(),
+  description_ja: z.string().optional(),
+  description_vi: z.string().optional(),
+  price: z.coerce.number().min(0, "Price must be non-negative"),
+  image_url: z.string().url("Invalid URL format").optional().or(z.literal('')),
+  category_id: z.string().min(1, "Category is required"),
+  available: z.boolean().default(true),
+  weekdayVisibility: z.array(z.enum(weekdays)).default([]),
+  toppings: z.array(toppingSchema).optional(),
+  sizes: z.array(menuItemSizeSchema).optional(),
 });
 
-type MenuItemFormData = z.infer<typeof menuItemFormSchema>;
+type MenuItemFormZodData = z.infer<typeof menuItemFormSchema>;
+type MenuItemFormData = MenuItemFormZodData;
 
 interface MenuItemFormProps {
-  initialData?: { 
-    id: string; 
-    name: { en: string; ja?: string; vi?: string; }; 
-    description?: { en: string; ja?: string; vi?: string; }; 
-    price: number; 
-    image_url?: string | null; 
-    available: boolean; 
-    weekday_visibility: string[]; 
-    stock_level?: number | null;
-    category_id: string;
-    restaurant_id: string;
+  initialData?: MenuItem & {
+    toppings?: ToppingData[];
+    menu_item_sizes?: MenuItemSizeData[];
   };
-  restaurantId: string;
-  categoryId: string;
-  locale: string;
+  categories: MenuItemCategory[];
+  onSave: (data: MenuItemFormData, menuItemId?: string) => Promise<void>;
+  onCancel: () => void;
+  texts: {
+    saveButton: string;
+    cancelButton: string;
+    title: string;
+    successMessage: string;
+    errorMessage: string;
+  };
 }
 
-const WeekdaySelector = ({ selectedDays, onChange }: { selectedDays: string[], onChange: (days: string[]) => void }) => {
-  const t = useTranslations('Common'); // Assuming common translations for weekdays
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return (
-    <div>
-      <FormLabel className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('admin.menu.item.weekday_visibility')}</FormLabel>
-      <div className="flex flex-wrap gap-2">
-        {days.map(day => (
-          <label key={day} className="flex items-center space-x-1.5 px-2.5 py-1.5 border rounded-lg cursor-pointer hover:border-[--brand-color] has-[:checked]:bg-[--brand-color]/10 has-[:checked]:border-[--brand-color]">
-            <Checkbox
-              checked={selectedDays.includes(day)}
-              onCheckedChange={(checked: boolean) => { // Explicitly type 'checked'
-                const newDays = checked ? [...selectedDays, day] : selectedDays.filter(d => d !== day);
-                onChange(newDays);
-              }}
-            />
-            <span className="text-sm text-slate-700 dark:text-slate-300">{t(`weekdays.${day.toLowerCase()}`)}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-
-export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormProps) {
-  const t = useTranslations('AdminMenuPage.item_form');
-  const tCommon = useTranslations('Common');
-  //const tValidation = useTranslations('Validation');
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url || null);
-  const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>(initialData?.weekday_visibility || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+export function MenuItemForm({ initialData, categories, onSave, onCancel, texts }: MenuItemFormProps) {
+  const t = useTranslations('MenuItemForm');
+  const tValidation = useTranslations('Validation'); // Kept for future use
 
   const form = useForm<MenuItemFormData>({
     resolver: zodResolver(menuItemFormSchema),
     defaultValues: {
-      name_en: initialData?.name?.en || '',
-      name_ja: initialData?.name?.ja || '',
-      name_vi: initialData?.name?.vi || '',
-      description_en: initialData?.description?.en || '',
-      description_ja: initialData?.description?.ja || '',
-      description_vi: initialData?.description?.vi || '',
+      name_en: initialData?.name_en || '',
+      name_ja: initialData?.name_ja || '',
+      name_vi: initialData?.name_vi || '',
+      description_en: initialData?.description_en || '',
+      description_ja: initialData?.description_ja || '',
+      description_vi: initialData?.description_vi || '',
       price: initialData?.price || 0,
-      imageUrl: initialData?.image_url || null,
-      available: initialData?.available ?? true,
-      weekdayVisibility: initialData?.weekday_visibility || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      stockLevel: initialData?.stock_level ?? null,
-      clearImage: false,
+      image_url: initialData?.image_url || '',
+      category_id: initialData?.category_id || '',
+      available: initialData?.available === undefined ? true : initialData.available,
+      weekdayVisibility: initialData?.weekdayVisibility || [],
+      toppings: initialData?.toppings?.map(t => ({ ...t, position: t.position ?? 0 })) || [], // Ensure position default
+      sizes: initialData?.menu_item_sizes?.map(s => ({ ...s, position: s.position ?? 0 })) || [], // Ensure position default
     },
   });
 
+  const { fields: toppingFields, append: appendTopping, remove: removeTopping } = useFieldArray({
+    control: form.control, // Removed cast
+    name: "toppings",
+  });
+
+  const { fields: sizeFields, append: appendSize, remove: removeSize } = useFieldArray({
+    control: form.control, // Removed cast
+    name: "sizes",
+  });
+
+  const [isToppingsOpen, setIsToppingsOpen] = useState(!!initialData?.toppings?.length);
+  const [isSizesOpen, setIsSizesOpen] = useState(!!initialData?.menu_item_sizes?.length);
+
+  const watchedSizes = form.watch("sizes");
+  const hasSizes = watchedSizes && watchedSizes.length > 0;
+
   useEffect(() => {
-    // Update image preview if initialData.image_url changes (e.g., when switching between items)
-    setImagePreview(initialData?.image_url || null);
-    setSelectedWeekdays(initialData?.weekday_visibility || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
-    form.reset({
-      name_en: initialData?.name?.en || '',
-      name_ja: initialData?.name?.ja || '',
-      name_vi: initialData?.name?.vi || '',
-      description_en: initialData?.description?.en || '',
-      description_ja: initialData?.description?.ja || '',
-      description_vi: initialData?.description?.vi || '',
-      price: initialData?.price || 0,
-      imageUrl: initialData?.image_url || null,
-      available: initialData?.available ?? true,
-      weekdayVisibility: initialData?.weekday_visibility || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      stockLevel: initialData?.stock_level ?? null,
-      clearImage: false,
-    });
-  }, [initialData, form]);
-
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      form.setValue('imageFile', file);
-      setImagePreview(URL.createObjectURL(file));
-      form.setValue('clearImage', false); // If new image is selected, don't clear
+    if (initialData) {
+      form.reset({
+        ...initialData,
+        weekdayVisibility: initialData.weekdayVisibility || [],
+        toppings: initialData.toppings?.map(t => ({ ...t, position: t.position ?? 0 })) || [], // Ensure position default
+        menu_item_sizes: initialData.menu_item_sizes?.map(s => ({ ...s, position: s.position ?? 0 })) || [], // Ensure position default
+      });
+      setIsToppingsOpen(!!initialData.toppings?.length);
+      setIsSizesOpen(!!initialData.menu_item_sizes?.length);
     } else {
-      form.setValue('imageFile', undefined);
-      if (!initialData?.image_url) { // Only clear preview if no initial image
-        setImagePreview(null);
-      }
+      form.reset({
+        name_en: '',
+        name_ja: '',
+        name_vi: '',
+        description_en: '',
+        description_ja: '',
+        description_vi: '',
+        price: 0,
+        image_url: '',
+        category_id: '',
+        available: true,
+        weekdayVisibility: [],
+        toppings: [],
+        sizes: [],
+      });
+      setIsToppingsOpen(false);
+      setIsSizesOpen(false);
     }
+  }, [initialData, form.reset]);
+
+
+  const onSubmit: SubmitHandler<MenuItemFormData> = async (data) => {
+    console.log("Form data submitted:", data);
+    await onSave(data, initialData?.id);
   };
 
-  const handleClearImage = () => {
-    setImagePreview(null);
-    form.setValue('imageFile', undefined);
-    form.setValue('imageUrl', null); // Clear the existing URL from form state
-    form.setValue('clearImage', true); // Set flag to clear image on backend
-  };
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="space-y-4">
+          <div>
+            <FormLabel>{t('name_en_label')}</FormLabel>
+            <FormControl>
+              <Input placeholder={t('name_en_placeholder')} {...form.register('name_en')} />
+            </FormControl>
+            <FormMessage />
+          </div>
+          <div>
+            <FormLabel>{t('name_ja_label')}</FormLabel>
+            <FormControl>
+              <Input placeholder={t('name_ja_placeholder')} {...form.register('name_ja')} />
+            </FormControl>
+            <FormMessage />
+          </div>
+          <div>
+            <FormLabel>{t('name_vi_label')}</FormLabel>
+            <FormControl>
+              <Input placeholder={t('name_vi_placeholder')} {...form.register('name_vi')} />
+            </FormControl>
+            <FormMessage />
+          </div>
 
-  const onSubmit = async (data: MenuItemFormData) => {
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('name.en', data.name_en);
-      if (data.name_ja) formData.append('name.ja', data.name_ja);
-      if (data.name_vi) formData.append('name.vi', data.name_vi);
-      if (data.description_en) formData.append('description.en', data.description_en);
-      if (data.description_ja) formData.append('description.ja', data.description_ja);
-      if (data.description_vi) formData.append('description.vi', data.description_vi);
-      formData.append('price', data.price.toString());
-      formData.append('available', data.available.toString());
-      formData.append('weekdayVisibility', JSON.stringify(selectedWeekdays)); // Use selectedWeekdays state
-      if (data.stockLevel !== null && data.stockLevel !== undefined) formData.append('stockLevel', data.stockLevel.toString());
+          <div>
+            <FormLabel>{t('description_en_label')}</FormLabel>
+            <FormControl>
+              <Textarea placeholder={t('description_en_placeholder')} {...form.register('description_en')} />
+            </FormControl>
+            <FormMessage />
+          </div>
+          <div>
+            <FormLabel>{t('description_ja_label')}</FormLabel>
+            <FormControl>
+              <Textarea placeholder={t('description_ja_placeholder')} {...form.register('description_ja')} />
+            </FormControl>
+            <FormMessage />
+          </div>
+          <div>
+            <FormLabel>{t('description_vi_label')}</FormLabel>
+            <FormControl>
+              <Textarea placeholder={t('description_vi_placeholder')} {...form.register('description_vi')} />
+            </FormControl>
+            <FormMessage />
+          </div>
+
+          <div>
+            <FormLabel>{t('price_label')}</FormLabel>
+            <FormControl>
+              <Input 
+                type="number" 
+                step="0.01" 
+                placeholder={t('price_placeholder')} 
+                {...form.register('price')}
+                disabled={hasSizes} 
+              />
+            </FormControl>
+            {hasSizes && (
+              <FormDescription>{t('price_disabled_note')}</FormDescription>
+            )}
+            <FormMessage />
+          </div>
+
+          <div>
+            <FormLabel>{t('image_label')}</FormLabel>
+            <FormControl>
+              <Input type="file" accept="image/*" onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  form.setValue('imageFile', file);
+                  form.setValue('image_url', URL.createObjectURL(file));
+                }
+              }} />
+            </FormControl>
+            <FormDescription>{t('image_upload_note')}</FormDescription>
+            <FormMessage />
+          </div>
+
+          <div>
+            <FormLabel>{t('category_label')}</FormLabel>
+            <FormControl>
+              <Select onValueChange={(value) => form.setValue('category_id', value)} defaultValue={initialData?.category_id}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('select_category')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </div>
+
+          <div>
+            <FormLabel>{t('available_label')}</FormLabel>
+            <FormControl>
+              <Checkbox
+                checked={form.watch('available')}
+                onCheckedChange={(checked) => form.setValue('available', checked)}
+              />
+            </FormControl>
+            <FormMessage />
+          </div>
+
+          <div>
+            <FormLabel>{t('weekday_visibility_label')}</FormLabel>
+            <div className="flex flex-wrap gap-2">
+              {weekdays.map((day) => (
+                <Button
+                  key={day}
+                  variant={form.watch('weekdayVisibility').includes(day) ? 'default' : 'outline'}
+                  onClick={() => {
+                    const currentDays = form.getValues('weekdayVisibility') || [];
+                    if (currentDays.includes(day)) {
+                      form.setValue('weekdayVisibility', currentDays.filter(d => d !== day));
+                    } else {
+                      form.setValue('weekdayVisibility', [...currentDays, day]);
+                    }
+                  }}
+                >
+                  {t(`weekdays.${day.toLowerCase()}`)}
+                </Button>
+              ))}
+            </div>
+            <FormMessage />
+          </div>
+
+          {/* Toppings Section */}
+          <div>
+            <FormLabel>{t('toppings_label')}</FormLabel>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => appendTopping({ name_en: '', price: 0, position: 0 })} // Added default position
+              className="mt-2"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" /> {t('addTopping')}
+            </Button>
+            <Collapsible open={isToppingsOpen} onOpenChange={setIsToppingsOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start p-2 mb-2 text-lg font-semibold">
+                  {t('view_edit_toppings')}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 p-1 border rounded-md">
+                {toppingFields.map((field, index) => (
       
-      if (data.imageFile) {
-        formData.append('imageFile', data.imageFile);
-      } else if (initialData?.image_url && !data.clearImage) {
-        formData.append('existingImageUrl', initialData.image_url);
-      } else if (data.clearImage) {
-        formData.append('clearImage', 'true');
-      }
+      // Sizes to add or update
+      if (data.sizes) {
+        for (const size of data.sizes) {
+          const sizePayload = { ...size };
+          delete sizePayload.id;
 
-      let response;
-      if (initialData?.id) { // Editing
-        response = await fetch(`/api/v1/categories/${categoryId}/items/${initialData.id}`, {
-          method: 'PUT',
-          body: formData, // Use FormData for file uploads
-        });
-      } else { // Creating
-        response = await fetch(`/api/v1/categories/${categoryId}/items`, {
-          method: 'POST',
-          body: formData, // Use FormData for file uploads
-        });
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save menu item.');
+          if (size.id) { // Update existing size
+            // TODO: Implement API call: PUT /api/v1/menu-items/${itemId}/sizes/${size.id}
+            console.log(`Simulating PUT size: ${size.id}`, sizePayload);
+            // const updateResponse = await fetch(`/api/v1/menu-items/${itemId}/sizes/${size.id}`, {
+            //   method: 'PUT',
+            //   headers: { 'Content-Type': 'application/json' },
+            //   body: JSON.stringify(sizePayload),
+            // });
+            // if (!updateResponse.ok) throw new Error(\`Failed to update size ${size.id}\`);
+          } else { // Create new size
+            // TODO: Implement API call: POST /api/v1/menu-items/${itemId}/sizes
+            console.log(`Simulating POST size for item ${itemId}:`, sizePayload);
+            // const createResponse = await fetch(`/api/v1/menu-items/${itemId}/sizes`, {
+            //   method: 'POST',
+            //   headers: { 'Content-Type': 'application/json' },
+            //   body: JSON.stringify(sizePayload),
+            // });
+            // if (!createResponse.ok) throw new Error('Failed to create size');
+          }
+        }
       }
 
       toast(initialData?.id ? t('update_success_desc') : t('create_success_desc') );
@@ -215,7 +345,7 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
 
   return (
     <Card className="max-w-4xl mx-auto">
-      <Form<MenuItemFormData> {...form}>
+      <Form {...form}> { /* Pass the fully typed form object */}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardHeader>
             <CardTitle>{initialData ? t('edit_title') : t('add_title')}</CardTitle>
@@ -223,7 +353,7 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             {/* Name fields */}
             <FormField
-              control={form.control}
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="name_en"
               render={({ field }) => (
                 <FormItem>
@@ -235,8 +365,8 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
                 </FormItem>
               )}
             />
-            <FormField<MenuItemFormData>
-              control={form.control}
+            <FormField
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="name_ja"
               render={({ field }) => (
                 <FormItem>
@@ -248,8 +378,8 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
                 </FormItem>
               )}
             />
-            <FormField<MenuItemFormData>
-              control={form.control}
+            <FormField
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="name_vi"
               render={({ field }) => (
                 <FormItem>
@@ -263,8 +393,8 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
             />
 
             {/* Description fields */}
-            <FormField<MenuItemFormData>
-              control={form.control}
+            <FormField
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="description_en"
               render={({ field }) => (
                 <FormItem>
@@ -276,8 +406,8 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
                 </FormItem>
               )}
             />
-            <FormField<MenuItemFormData>
-              control={form.control}
+            <FormField
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="description_ja"
               render={({ field }) => (
                 <FormItem>
@@ -289,8 +419,8 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
                 </FormItem>
               )}
             />
-            <FormField<MenuItemFormData>
-              control={form.control}
+            <FormField
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="description_vi"
               render={({ field }) => (
                 <FormItem>
@@ -304,18 +434,31 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
             />
 
             {/* Price */}
-            <FormField<MenuItemFormData>
-              control={form.control}
+            <FormField
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('price_label')}</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" placeholder={t('price_placeholder')} {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const sizesArray = form.watch('sizes') || []; // Ensure sizesArray is always an array
+                return (
+                  <FormItem>
+                    <FormLabel>{t('price_label')}</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder={t('price_placeholder')} 
+                        {...field} 
+                        onChange={e => field.onChange(parseFloat(e.target.value))}
+                        disabled={sizesArray.length > 0} 
+                      />
+                    </FormControl>
+                    {sizesArray.length > 0 && (
+                      <FormDescription>{t('price_disabled_note')}</FormDescription>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             {/* Image Upload */}
@@ -337,8 +480,8 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
             </FormItem>
 
             {/* Stock Level */}
-            <FormField<MenuItemFormData>
-              control={form.control}
+            <FormField
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="stockLevel"
               render={({ field }) => (
                 <FormItem>
@@ -359,8 +502,8 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
             />
 
             {/* Available Checkbox */}
-            <FormField<MenuItemFormData>
-              control={form.control}
+            <FormField
+              control={form.control as Control<MenuItemFormData>} // Cast control
               name="available"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
@@ -381,6 +524,206 @@ export function MenuItemForm({ initialData, categoryId, locale }: MenuItemFormPr
             {/* Weekday Selector */}
             <div className="md:col-span-2">
               <WeekdaySelector selectedDays={selectedWeekdays} onChange={setSelectedWeekdays} />
+            </div>
+
+            {/* Toppings Section */}
+            <div className="md:col-span-2">
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start p-2 mb-2 text-lg font-semibold">
+                    {tToppings('title')} ({toppingFields.length})
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 p-1 border rounded-md">
+                  {toppingFields.map((field, index) => (
+                    <div key={field.id} className="p-3 border rounded-md space-y-3 bg-slate-50 dark:bg-slate-800/30 relative">
+                       <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-1 right-1 p-1 h-auto text-red-500 hover:text-red-700"
+                        onClick={() => removeTopping(index)}
+                      >
+                        <Trash2 size={18} />
+                      </Button>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`toppings.${index}.name_en`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tToppings('name_en_label')}</FormLabel>
+                              <FormControl><Input placeholder={tToppings('name_en_placeholder')} {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`toppings.${index}.name_ja`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tToppings('name_ja_label')}</FormLabel>
+                              <FormControl><Input placeholder={tToppings('name_ja_placeholder')} {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`toppings.${index}.name_vi`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tToppings('name_vi_label')}</FormLabel>
+                              <FormControl><Input placeholder={tToppings('name_vi_placeholder')} {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`toppings.${index}.price`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tToppings('price_label')}</FormLabel>
+                              <FormControl><Input type="number" step="0.01" placeholder={tToppings('price_placeholder')} {...f} onChange={e => f.onChange(parseFloat(e.target.value))} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`toppings.${index}.position`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tToppings('position_label')}</FormLabel>
+                              <FormControl><Input type="number" placeholder={tToppings('position_placeholder')} {...f} onChange={e => f.onChange(parseInt(e.target.value))} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 flex items-center gap-1"
+                    onClick={() => appendTopping({ name_en: '', price: 0, position: 0, name_ja: '', name_vi: '' })}
+                  >
+                    <PlusCircle size={16} /> {tToppings('add_button')}
+                  </Button>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+
+            {/* Sizes Section */}
+            <div className="md:col-span-2">
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start p-2 mb-2 text-lg font-semibold">
+                     {tSizes('title')} ({sizeFields.length})
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 p-1 border rounded-md">
+                  {sizeFields.map((field, index) => (
+                    <div key={field.id} className="p-3 border rounded-md space-y-3 bg-slate-50 dark:bg-slate-800/30 relative">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-1 right-1 p-1 h-auto text-red-500 hover:text-red-700"
+                        onClick={() => removeSize(index)}
+                      >
+                        <Trash2 size={18} />
+                      </Button>
+                      <FormField
+                        control={form.control as Control<MenuItemFormData>} // Cast control
+                        name={`sizes.${index}.size_key`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>{tSizes('size_key_label')}</FormLabel>
+                            <FormControl><Input placeholder={tSizes('size_key_placeholder')} {...f} /></FormControl>
+                            <FormDescription>{tSizes('size_key_note')}</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`sizes.${index}.name_en`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tSizes('name_en_label')}</FormLabel>
+                              <FormControl><Input placeholder={tSizes('name_en_placeholder')} {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`sizes.${index}.name_ja`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tSizes('name_ja_label')}</FormLabel>
+                              <FormControl><Input placeholder={tSizes('name_ja_placeholder')} {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`sizes.${index}.name_vi`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tSizes('name_vi_label')}</FormLabel>
+                              <FormControl><Input placeholder={tSizes('name_vi_placeholder')} {...f} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`sizes.${index}.price`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tSizes('price_label')}</FormLabel>
+                              <FormControl><Input type="number" step="0.01" placeholder={tSizes('price_placeholder')} {...f} onChange={e => f.onChange(parseFloat(e.target.value))} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control as Control<MenuItemFormData>} // Cast control
+                          name={`sizes.${index}.position`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{tSizes('position_label')}</FormLabel>
+                              <FormControl><Input type="number" placeholder={tSizes('position_placeholder')} {...f} onChange={e => f.onChange(parseInt(e.target.value))} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 flex items-center gap-1"
+                    onClick={() => appendSize({ size_key: '', name_en: '', price: 0, position: 0, name_ja: '', name_vi: '' })}
+                  >
+                    <PlusCircle size={16} /> {tSizes('add_button')}
+                  </Button>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
 
           </CardContent>

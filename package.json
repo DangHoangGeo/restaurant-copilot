@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "@hello-pangea/dnd": "^18.0.1",
-    "@hookform/resolvers": "^5.1.0",
-    "html-to-image": "^1.11.13",
-    "react-hook-form": "^7.57.0",
-    "zod": "^3.25.56"
-  }
-}
