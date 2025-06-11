@@ -166,7 +166,6 @@
 "printer_test_receipt_failed_alert" = "Failed to print test receipt";
 "printer_kitchen_test_success_alert" = "Kitchen test receipt printed successfully!";
 "printer_kitchen_test_failed_alert" = "Failed to print kitchen test receipt";
-"printer_connect_button" = "Connect";
 "printer_manual_setup_printer_info_title" = "Printer Information";
 "printer_manual_setup_printer_name_label" = "Printer Name";
 "printer_manual_setup_ip_address_label" = "IP Address";

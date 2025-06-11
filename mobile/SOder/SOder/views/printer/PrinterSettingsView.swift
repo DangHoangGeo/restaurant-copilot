@@ -6,6 +6,7 @@ struct PrinterSettingsView: View {
     @State private var showingConnectionAlert = false
     @State private var connectionMessage = ""
     @State private var isConnecting = false
+    @State private var showingAllLogs = false // New state variable
     
     var body: some View {
         // Use NavigationStack for iOS 16+ or NavigationView with proper iPad handling
@@ -240,7 +241,7 @@ struct PrinterSettingsView: View {
                     
                     if printerManager.printLogs.count > 5 {
                         Button("printer_view_all_logs_button".localized) {
-                            // Show all logs in a separate view
+                            showingAllLogs = true // Show the all logs view
                         }
                         .font(.caption)
                         .foregroundColor(.blue)
@@ -292,6 +293,9 @@ struct PrinterSettingsView: View {
         }
         .onAppear{
             printerManager.checkAvailablePrinters()
+        }
+        .sheet(isPresented: $showingAllLogs) { // Add sheet modifier
+            AllPrintLogsView(printerManager: printerManager)
         }
     }
     
@@ -409,13 +413,14 @@ struct PrinterRowView: View {
             
             Spacer()
             
-            if isSelected {
+            if isSelected && printer.isConnected {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
             } else if isConnecting {
                 ProgressView()
                     .scaleEffect(0.8)
-            } else {
+            }
+            else {
                 Button("printer_connect_button") {
                     onConnect()
                 }
