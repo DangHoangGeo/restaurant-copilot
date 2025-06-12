@@ -5,7 +5,6 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // Schema for validating the request body when creating/updating a category
 const categorySchema = z.object({
-  name: z.string().min(1).max(50).optional(), // Optional if name_en is primary
   name_en: z.string().min(1).max(50).optional(),
   name_ja: z.string().max(50).optional(),
   name_vi: z.string().max(50).optional(),
@@ -109,18 +108,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ errors: validatedData.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { name, name_en, name_ja, name_vi, position } = validatedData.data;
+    const { name_en, name_ja, name_vi, position } = validatedData.data;
 
     // Ensure the category is created for the user's restaurant
     // Use name_en as primary, fallback to name if provided
-    const primaryName = name_en || name;
+    const primaryName = name_en;
     if (!primaryName) {
         return NextResponse.json({ error: 'Category name (name_en or name) is required.' }, { status: 400 });
     }
 
     const categoryData: Record<string, unknown> = {
         restaurant_id: user.restaurantId, // Use authenticated user's restaurant ID
-        name: primaryName, 
         name_en: primaryName, // Use name_en as primary
     };
 

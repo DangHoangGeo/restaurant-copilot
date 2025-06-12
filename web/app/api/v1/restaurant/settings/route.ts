@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { z } from "zod";
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; // Ensure this path is correct
 
@@ -24,7 +23,6 @@ const settingsSchema = z.object({
 });
 
 export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
@@ -38,7 +36,7 @@ export async function GET() {
   // }
 
   try {
-    const { data: restaurant, error: restaurantError } = await supabase
+    const { data: restaurant, error: restaurantError } = await supabaseAdmin
       .from("restaurants")
       .select(`
         name,
@@ -87,7 +85,6 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
   console.log("User from request:", user);
   console.log("User restaurantId:", user?.restaurantId);
@@ -125,7 +122,7 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: "No settings provided to update" }, { status: 400 });
     }
 
-    const { data: updatedRestaurant, error: updateError } = await supabase
+    const { data: updatedRestaurant, error: updateError } = await supabaseAdmin
       .from("restaurants")
       .update(validation.data)
       .eq("id", user.restaurantId) // CRITICAL: Update based on authenticated user's restaurant ID

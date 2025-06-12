@@ -559,3 +559,87 @@ CREATE POLICY "Tenant can UPDATE audit logs"
 -- Revoke all permissions on audit_logs and grant specific necessary privileges
 REVOKE ALL ON audit_logs FROM authenticated;
 GRANT INSERT, SELECT, UPDATE ON audit_logs TO authenticated;
+
+
+-- Enable RLS for the storage bucket to ensure tenant isolation
+--ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Users can view own restaurant files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload to own restaurant folder" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own restaurant files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own restaurant files" ON storage.objects;
+
+-- Allow authenticated users to read files from their own restaurant folder
+CREATE POLICY "Users can view own restaurant files"
+  ON storage.objects
+  FOR SELECT
+  USING (
+    bucket_id = 'restaurant-uploads'
+    AND (
+      -- Check if the name starts with restaurants/{restaurant_id}/ where restaurant_id matches JWT
+      name LIKE ('restaurants/' || ((auth.jwt() ->> 'app_metadata')::json ->> 'restaurant_id') || '/%')
+      OR
+      -- Fallback: check against user's restaurant_id from users table
+      EXISTS (
+        SELECT 1 FROM users 
+        WHERE users.id = auth.uid() 
+        AND name LIKE ('restaurants/' || users.restaurant_id || '/%')
+      )
+    )
+  );
+
+-- Allow authenticated users to upload files to their own restaurant folder
+CREATE POLICY "Users can upload to own restaurant folder"
+  ON storage.objects
+  FOR INSERT
+  WITH CHECK (
+    bucket_id = 'restaurant-uploads'
+    AND (
+      -- Check if the name starts with restaurants/{restaurant_id}/ where restaurant_id matches JWT
+      name LIKE ('restaurants/' || ((auth.jwt() ->> 'app_metadata')::json ->> 'restaurant_id') || '/%')
+      OR
+      -- Fallback: check against user's restaurant_id from users table
+      EXISTS (
+        SELECT 1 FROM users 
+        WHERE users.id = auth.uid() 
+        AND name LIKE ('restaurants/' || users.restaurant_id || '/%')
+      )
+    )
+  );
+
+-- Allow authenticated users to update files in their own restaurant folder
+CREATE POLICY "Users can update own restaurant files"
+  ON storage.objects
+  FOR UPDATE
+  USING (
+    bucket_id = 'restaurant-uploads'
+    AND (
+      name LIKE ('restaurants/' || ((auth.jwt() ->> 'app_metadata')::json ->> 'restaurant_id') || '/%')
+      OR
+      EXISTS (
+        SELECT 1 FROM users 
+        WHERE users.id = auth.uid() 
+        AND name LIKE ('restaurants/' || users.restaurant_id || '/%')
+      )
+    )
+  );
+
+-- Allow authenticated users to delete files from their own restaurant folder
+CREATE POLICY "Users can delete own restaurant files"
+  ON storage.objects
+  FOR DELETE
+  USING (
+    bucket_id = 'restaurant-uploads'
+    AND (
+      name LIKE ('restaurants/' || ((auth.jwt() ->> 'app_metadata')::json ->> 'restaurant_id') || '/%')
+      OR
+      EXISTS (
+        SELECT 1 FROM users 
+        WHERE users.id = auth.uid() 
+        AND name LIKE ('restaurants/' || users.restaurant_id || '/%')
+      )
+    )
+  );
+
+REVOKE ALL ON storage.objects FROM authenticated;
