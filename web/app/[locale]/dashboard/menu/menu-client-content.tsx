@@ -133,7 +133,9 @@ const getMenuItemSchema = (t: ReturnType<typeof useTranslations<'AdminMenu.valid
   position: z.number({ required_error: t('position_required') }),
   tags: z.array(z.string()).optional(), // Tags are optional, not part of DB schema directly
   // For image file handling, not part of DB schema directly for menu_item
-  imageFile: z.instanceof(File).refine(file => file.size <= 5 * 1024 * 1024, t('logoFile.maxSize', { maxSize: 5 })).optional().nullable(),
+  imageFile: z.instanceof(File)
+    .refine(file => file.size <= 0.5 * 1024 * 1024, t('imageFile.maxSize', { maxSize: 0.5 }))
+    .optional().nullable(),
   // Add toppings and sizes to the schema
   toppings: z.array(toppingSchema).optional(),
   sizes: z.array(menuItemSizeSchema).optional(),
@@ -932,7 +934,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         } 
         setIsItemModalOpen(isOpen); 
       }}>
-        <DialogContent className="max-w-screen sm:max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-full sm:max-w-5xl max-h-[90vh] overflow-y-auto">
           <MenuItemForm
             initialData={ {
               id: itemForm.getValues().id || '',

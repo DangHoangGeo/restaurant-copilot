@@ -505,6 +505,10 @@
         "maxSize": "Image file must be {maxSize} MB or less.",
         "invalidType": "Invalid image file type. Please upload a PNG, JPG, or WEBP image."
       },
+      "imageFile": {
+        "maxSize": "Image must be less than {maxSize}MB."
+      },
+      "compressionError": "Error compressing menu item image. Please try a different image.",
       "description_en_max_length": "English description must be {maxLength} characters or less.",
       "description_ja_max_length": "Japanese description must be {maxLength} characters or less.",
       "description_vi_max_length": "Vietnamese description must be {maxLength} characters or less.",
@@ -612,7 +616,8 @@
         "logoRemovedMessage": "Logo removed. Save changes to confirm.",
         "fileTooLarge": "File is too large. Max 5MB.",
         "invalidFileType": "Invalid file type. Please upload an image.",
-        "settingsSaveFailedGeneric": "Failed to save settings. Please try again."
+        "settingsSaveFailedGeneric": "Failed to save settings. Please try again.",
+        "compressionError": "Error compressing image. Please try a different image or check its format."
       },
       "altText": {
         "logoPreview": "Restaurant logo preview",
