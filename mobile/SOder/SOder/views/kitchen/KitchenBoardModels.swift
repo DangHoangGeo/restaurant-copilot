@@ -56,8 +56,8 @@ struct GroupedItem: Identifiable, Equatable, Hashable {
     var toppings: [String] {
         var list: [String] = []
         for item in orderItems {
-            if let topping = item.topping {
-                list.append(topping.displayName)
+            if let toppings = item.toppings {
+                list.append(contentsOf: toppings.map { $0.displayName })
             } else if let notes = item.notes, !notes.isEmpty {
                 list.append(contentsOf: notes.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) })
             }

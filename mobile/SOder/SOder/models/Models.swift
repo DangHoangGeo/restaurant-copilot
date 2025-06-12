@@ -65,7 +65,8 @@ struct OrderItem: Decodable, Identifiable {
     let quantity: Int
     let notes: String?
     let menu_item_size_id: String?
-    let topping_id: String?
+    let topping_ids: [String]
+    let price_at_order: Double
     var status: OrderItemStatus
     let created_at: String
     var updated_at: String
@@ -73,7 +74,7 @@ struct OrderItem: Decodable, Identifiable {
     // Related data
     var menu_item: MenuItem?
     var menu_item_size: MenuItemSize?
-    var topping: Topping?
+    var toppings: [Topping]?
 }
 
 enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
@@ -359,12 +360,13 @@ struct OrderItemWithMenuResponse: Decodable {
     let quantity: Int
     let notes: String?
     let menu_item_size_id: String?
-    let topping_id: String?
+    let topping_ids: [String]
+    let price_at_order: Double
     let status: String
     let created_at: String
     let menu_item: MenuItemResponse
     let menu_item_size: MenuItemSizeResponse?
-    let topping: ToppingResponse?
+    let toppings: [ToppingResponse]?
     
     func toOrderItem() -> OrderItem {
         return OrderItem(
@@ -375,13 +377,14 @@ struct OrderItemWithMenuResponse: Decodable {
             quantity: quantity,
             notes: notes,
             menu_item_size_id: menu_item_size_id,
-            topping_id: topping_id,
+            topping_ids: topping_ids,
+            price_at_order: price_at_order,
             status: OrderItemStatus(rawValue: status) ?? .ordered,
             created_at: created_at,
             updated_at: created_at,
             menu_item: menu_item.toMenuItem(),
             menu_item_size: menu_item_size?.toMenuItemSize(),
-            topping: topping?.toTopping()
+            toppings: toppings?.map { $0.toTopping() }
         )
     }
 }

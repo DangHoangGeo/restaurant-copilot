@@ -147,7 +147,7 @@ class OrderManager: ObservableObject {
                             )
                         ),
                         menu_item_size:menu_item_sizes(*),
-                        topping:toppings(*)
+                        toppings:toppings(*)
                     )
                 """)
                 .eq("restaurant_id", value: restaurantId)
@@ -207,7 +207,7 @@ class OrderManager: ObservableObject {
                             )
                         ),
                         menu_item_size:menu_item_sizes(*),
-                        topping:toppings(*)
+                        toppings:toppings(*)
                     )
                 """)
                 .eq("restaurant_id", value: restaurantId)

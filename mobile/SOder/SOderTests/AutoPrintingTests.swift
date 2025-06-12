@@ -159,13 +159,14 @@ class AutoPrintingTests: XCTestCase {
             quantity: 1,
             notes: nil,
             menu_item_size_id: nil,
-            topping_id: nil,
+            topping_ids: [],
+            price_at_order: 500,
             status: status,
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
             menu_item: createMockMenuItem(),
             menu_item_size: nil,
-            topping: nil
+            toppings: []
         )
     }
     
