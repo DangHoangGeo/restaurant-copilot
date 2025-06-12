@@ -38,7 +38,7 @@ export default async function EmployeesPage({
   let restaurantId: string | null = null;
   let errorGettingId: string | null = null;
   if (user && user.subdomain !== subdomain) {
-    errorGettingId = t("Settings.Page.errors.noSubdomainDetected");
+    errorGettingId = tCommon("errors.noSubdomainDetected");
   }
   restaurantId = user?.restaurantId || null;
 
@@ -97,7 +97,7 @@ export default async function EmployeesPage({
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-          {t("AdminNav.admin_employees_title")}
+          {t("title")}
         </h1>
       </header>
 
