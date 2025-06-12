@@ -385,7 +385,11 @@
       "order": "Thứ tự hiển thị",
       "reorder_success": "Sắp xếp lại danh mục thành công.",
       "reorder_error": "Sắp xếp lại danh mục thất bại.",
-      "delete_error_fallback": "Xóa danh mục thất bại. Danh mục có thể đang được sử dụng hoặc có lỗi máy chủ."
+      "delete_error_fallback": "Xóa danh mục thất bại. Danh mục có thể đang được sử dụng hoặc có lỗi máy chủ.",
+      "auto_translations_label": "Bản dịch tự động",
+      "auto_translate_name_en_placeholder": "Bản dịch tự động tên danh mục",
+      "auto_translate_name_ja_placeholder": "Bản dịch tự động tên danh mục",
+      "auto_translate_name_vi_placeholder": "Bản dịch tự động tên danh mục"
     },
     "buttons": {
       "saving": "Đang lưu..."

@@ -80,15 +80,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['item', 'topping'].includes(context)) {
+    if (!['item', 'topping', 'category'].includes(context)) {
       return NextResponse.json(
-        { error: 'Context must be either "item" or "topping"' },
+        { error: 'Context must be either "item", "topping", or "category"' },
         { status: 400 }
       );
     }
 
     // Get translations using Google Gemini AI
-    const translations = await translateWithGemini(text, context as 'item' | 'topping');
+    // For categories, use 'item' context since they are similar restaurant menu text
+    const apiContext = context === 'category' ? 'item' : context;
+    const translations = await translateWithGemini(text, apiContext as 'item' | 'topping');
 
     return NextResponse.json(translations);
   } catch (error) {

@@ -150,9 +150,32 @@ interface CategoryModalProps {
   onSubmit: (data: CategoryFormData) => Promise<void>;
   isLoading: boolean;
   t: (key: string) => string;
+  onTranslate?: (text: string, field: string, context: 'item' | 'topping' | 'category') => Promise<{ en: string; ja: string; vi: string }>;
+  ownerLanguage?: 'en' | 'ja' | 'vi';
 }
 
-function CategoryModal({ isOpen, onClose, categoryForm, onSubmit, isLoading, t }: CategoryModalProps) {
+function CategoryModal({ isOpen, onClose, categoryForm, onSubmit, isLoading, t, onTranslate, ownerLanguage = 'en' }: CategoryModalProps) {
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Helper function to handle translation
+  const translateText = async (text: string, field: string) => {
+    if (!onTranslate || !text.trim()) return;
+    
+    setIsTranslating(true);
+    try {
+      const translations = await onTranslate(text, field, 'category');
+      
+      // Auto-fill all language fields with translations
+      categoryForm.setValue('name_en', translations.en);
+      categoryForm.setValue('name_ja', translations.ja);
+      categoryForm.setValue('name_vi', translations.vi);
+    } catch (error) {
+      console.error('Translation failed:', error);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(isOpen) => { 
       if (!isOpen) {
@@ -166,39 +189,145 @@ function CategoryModal({ isOpen, onClose, categoryForm, onSubmit, isLoading, t }
         </DialogHeader>
         <Form {...categoryForm}>
           <form onSubmit={categoryForm.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={categoryForm.control}
-              name="name_en"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('category.name_en')}*</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={categoryForm.control}
-              name="name_ja"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('category.name_ja')}</FormLabel>
-                  <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={categoryForm.control}
-              name="name_vi"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('category.name_vi')}</FormLabel>
-                  <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Primary language field based on owner's language */}
+            {ownerLanguage === 'en' && (
+              <FormField
+                control={categoryForm.control}
+                name="name_en"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('category.name_en')}*
+                      {onTranslate && field.value && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2 h-6 px-2 text-xs"
+                          onClick={() => translateText(field.value || '', 'name')}
+                          disabled={isTranslating || !field.value}
+                        >
+                          {isTranslating ? '...' : '🌐'}
+                        </Button>
+                      )}
+                    </FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            
+            {ownerLanguage === 'ja' && (
+              <FormField
+                control={categoryForm.control}
+                name="name_ja"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('category.name_ja')}*
+                      {onTranslate && field.value && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2 h-6 px-2 text-xs"
+                          onClick={() => translateText(field.value || '', 'name')}
+                          disabled={isTranslating || !field.value}
+                        >
+                          {isTranslating ? '...' : '🌐'}
+                        </Button>
+                      )}
+                    </FormLabel>
+                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            
+            {ownerLanguage === 'vi' && (
+              <FormField
+                control={categoryForm.control}
+                name="name_vi"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('category.name_vi')}*
+                      {onTranslate && field.value && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2 h-6 px-2 text-xs"
+                          onClick={() => translateText(field.value || '', 'name')}
+                          disabled={isTranslating || !field.value}
+                        >
+                          {isTranslating ? '...' : '🌐'}
+                        </Button>
+                      )}
+                    </FormLabel>
+                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Auto-generated translation fields (non-primary languages) */}
+            {onTranslate && (
+              <div className="space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {t('category.auto_translations_label')}
+                </p>
+                
+                {ownerLanguage !== 'en' && (
+                  <FormField
+                    control={categoryForm.control}
+                    name="name_en"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-gray-500">{t('category.name_en')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="h-8 text-sm" placeholder={t('category.auto_translate_name_en_placeholder')} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
+                {ownerLanguage !== 'ja' && (
+                  <FormField
+                    control={categoryForm.control}
+                    name="name_ja"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-gray-500">{t('category.name_ja')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value ?? ''} className="h-8 text-sm" placeholder={t('category.auto_translate_name_ja_placeholder')} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
+                {ownerLanguage !== 'vi' && (
+                  <FormField
+                    control={categoryForm.control}
+                    name="name_vi"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-gray-500">{t('category.name_vi')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value ?? ''} className="h-8 text-sm" placeholder={t('category.auto_translate_name_vi_placeholder')} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            )}
+            
             <p className="text-xs text-slate-500 dark:text-slate-400">{t('form_hint')}</p>
             <DialogFooter className="mt-6">
               <Button type="button" variant="secondary" onClick={() => { 
@@ -246,7 +375,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   const ownerLanguage = (locale === 'ja' ? 'ja' : locale === 'vi' ? 'vi' : 'en') as 'en' | 'ja' | 'vi';
 
   // Translation function
-  const handleTranslate = async (text: string, field: string, context: 'item' | 'topping') => {
+  const handleTranslate = async (text: string, field: string, context: 'item' | 'topping' | 'category') => {
     try {
       const response = await fetch('/api/v1/ai/translate', {
         method: 'POST',
@@ -630,6 +759,8 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
           onSubmit={onCategorySubmit}
           isLoading={isLoading}
           t={t}
+          onTranslate={handleTranslate}
+          ownerLanguage={ownerLanguage}
         />
       </>
     );
@@ -790,6 +921,8 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         onSubmit={onCategorySubmit}
         isLoading={isLoading}
         t={t}
+        onTranslate={handleTranslate}
+        ownerLanguage={ownerLanguage}
       />
 
       {/* Item Modal */}
