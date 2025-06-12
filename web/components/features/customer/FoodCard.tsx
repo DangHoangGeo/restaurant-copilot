@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PlusCircle, Star, Minus, Plus } from "lucide-react";
 import type { ViewType, ViewProps } from "./screens/types";
+import type { MenuItemSize, Topping } from '@/shared/types/customer';
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -23,6 +24,8 @@ export interface FoodItem {
   weekday_visibility: number[];
   averageRating?: number;
   reviewCount?: number;
+  menu_item_sizes?: MenuItemSize[];
+  toppings?: Topping[];
 }
 
 interface FoodCardProps {
@@ -58,6 +61,18 @@ export function FoodCard({
 }: FoodCardProps) {
   const t = useTranslations("Customer");
   const [isAdding, setIsAdding] = useState(false);
+
+  const getPriceDisplayString = (currentItem: FoodItem, currentLocale: string, translateFunc: Function) => {
+    if (currentItem.menu_item_sizes && currentItem.menu_item_sizes.length > 0) {
+      const prices = currentItem.menu_item_sizes.map(s => s.price);
+      if (prices.length === 0) { // Should not happen if menu_item_sizes has items
+          return translateFunc('currency_format', { value: currentItem.price / 100 });
+      }
+      const minPrice = Math.min(...prices);
+      return translateFunc('common.from_price', { value: translateFunc('currency_format', { value: minPrice / 100 }) });
+    }
+    return translateFunc('currency_format', { value: currentItem.price / 100 });
+  };
 
   const handleAdd = () => {
     if (!canAddItems) return;
@@ -150,6 +165,12 @@ export function FoodCard({
                   {itemDescription}
                 </p>
               )}
+              {( (item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
+                 (item.toppings && item.toppings.length > 0) ) && (
+                <p className="text-xs text-sky-600 dark:text-sky-400 mt-1 font-medium">
+                  {t('menu.customizable', '+ Sizes/Toppings')}
+                </p>
+              )}
 
               {item.reviewCount && item.reviewCount > 0 && (
                 <p className="text-xs text-slate-500 mb-2">
@@ -162,7 +183,7 @@ export function FoodCard({
           <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 mt-auto">
             <div className="flex justify-between items-center gap-2">
               <p className="text-base sm:text-lg font-bold truncate" style={{ color: brandColor }}>
-                {t("currency_format", { value: item.price })}
+                {getPriceDisplayString(item, locale, t)}
               </p>
 
               {canAddItems ? (
@@ -253,6 +274,12 @@ export function FoodCard({
                   {itemDescription}
                 </p>
               )}
+              {( (item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
+                 (item.toppings && item.toppings.length > 0) ) && (
+                <p className="text-xs text-sky-600 dark:text-sky-400 mt-1 font-medium">
+                  {t('menu.customizable', '+ Sizes/Toppings')}
+                </p>
+              )}
             </div>
 
           </div>
@@ -260,7 +287,7 @@ export function FoodCard({
             <div className="flex justify-between  mx-auto">
 
               <p className="text-md font-bold flex-shrink-0" style={{ color: brandColor }}>
-                {t("currency_format", { value: item.price })}
+                {getPriceDisplayString(item, locale, t)}
               </p>
               {canAddItems ? (
                 qtyInCart > 0 ? (

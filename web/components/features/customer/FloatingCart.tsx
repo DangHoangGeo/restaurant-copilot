@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useCart } from "./CartContext";
+import { getLocalizedText, useGetCurrentLocale } from "@/lib/customerUtils";
 
 interface Props {
   count: number;
@@ -19,6 +20,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
   const t = useTranslations("Customer");
   const [isExpanded, setIsExpanded] = useState(false);
   const { cart, updateQuantity, removeFromCart } = useCart();
+  const currentLocale = useGetCurrentLocale();
 
   if (count === 0) return null;
 
@@ -26,11 +28,11 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
     setIsExpanded(!isExpanded);
   };
 
-  const handleUpdateQuantity = (itemId: string, newQty: number) => {
+  const handleUpdateQuantity = (uniqueId: string, newQty: number) => {
     if (newQty <= 0) {
-      removeFromCart(itemId);
+      removeFromCart(uniqueId);
     } else {
-      updateQuantity(itemId, newQty);
+      updateQuantity(uniqueId, newQty);
     }
   };
 
@@ -62,20 +64,36 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
                 </div>
 
                 <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin">
-                  {cart.map((item) => (
+                  {cart.map((item) => {
+                    const localizedItemName = getLocalizedText({ name_en: item.name_en, name_ja: item.name_ja, name_vi: item.name_vi }, currentLocale);
+                    let detailsDisplay: string[] = [];
+                    if (item.selectedSize) {
+                      const localizedSizeName = getLocalizedText({ name_en: item.selectedSize.name_en, name_ja: item.selectedSize.name_ja, name_vi: item.selectedSize.name_vi }, currentLocale);
+                      detailsDisplay.push(localizedSizeName);
+                    }
+                    if (item.selectedToppings && item.selectedToppings.length > 0) {
+                      const toppingNames = item.selectedToppings.map(t => getLocalizedText({ name_en: t.name_en, name_ja: t.name_ja, name_vi: t.name_vi }, currentLocale)).join(", ");
+                      detailsDisplay.push(t('cart.toppings_label', { toppings: toppingNames }));
+                    }
+                    return (
                     <motion.div
-                      key={item.itemId}
+                      key={item.uniqueId}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
                       className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-slate-600 last:border-b-0"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
-                          {item.name}
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate" title={localizedItemName}>
+                          {localizedItemName}
                         </p>
+                        {detailsDisplay.length > 0 && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate" title={detailsDisplay.join(" / ")}>
+                            {detailsDisplay.join(" / ")}
+                          </p>
+                        )}
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {t("currency_format", { value: item.price })} each
+                          {t("currency_format", { value: item.price / 100 })} {t('common.each', 'each')}
                         </p>
                       </div>
 
@@ -83,7 +101,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleUpdateQuantity(item.itemId, item.qty - 1)}
+                          onClick={() => handleUpdateQuantity(item.uniqueId, item.qty - 1)}
                           className="h-6 w-6 p-0 rounded-full"
                         >
                           <Minus className="h-3 w-3" />
@@ -94,14 +112,14 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleUpdateQuantity(item.itemId, item.qty + 1)}
+                          onClick={() => handleUpdateQuantity(item.uniqueId, item.qty + 1)}
                           className="h-6 w-6 p-0 rounded-full"
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>
                     </motion.div>
-                  ))}
+                  )})}
                 </div>
 
                 <div className="border-t border-slate-200 dark:border-slate-600 pt-3 mt-3">

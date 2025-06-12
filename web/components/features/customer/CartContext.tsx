@@ -1,23 +1,30 @@
 // web/components/features/customer/CartContext.tsx
 "use client";
 import React, { useState, createContext, useContext, ReactNode } from "react";
-import type { MenuItem } from "@/shared/types/customer";
+import type { MenuItem, MenuItemSize, Topping } from "@/shared/types/customer";
 
 export interface CartItem {
+  uniqueId: string;
   itemId: string;
-  name: string; // Changed from MenuItem to string
+  name_en: string;
+  name_ja: string;
+  name_vi: string;
   price: number;
   qty: number;
   imageUrl?: string;
-  description?: string; // Changed from MenuItem to string
+  description_en?: string;
+  description_ja?: string;
+  description_vi?: string;
+  selectedSize?: MenuItemSize;
+  selectedToppings?: Topping[];
 }
 
 export interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: MenuItem, qty?: number) => void;
-  updateQuantity: (id: string, qty: number) => void;
-  getQuantityInCart: (id: string) => number; // Added
-  removeFromCart: (id: string) => void; // Added
+  addToCart: (item: MenuItem, quantity?: number, selectedSize?: MenuItemSize, selectedToppings?: Topping[]) => void;
+  updateQuantity: (uniqueId: string, qty: number) => void;
+  getQuantityInCart: (uniqueId: string) => number; // Added
+  removeFromCart: (uniqueId: string) => void; // Added
   totalCartItems: number;
   totalCartPrice: number;
   clearCart: () => void;
@@ -38,43 +45,75 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return item.description_en || item.description_ja || item.description_vi || "";
   };
 
-  const addToCart = (item: MenuItem, quantity = 1) => {
+  const addToCart = (
+    item: MenuItem,
+    quantity = 1,
+    selectedSize?: MenuItemSize,
+    selectedToppings?: Topping[],
+  ) => {
     setCart((prev) => {
-      const existing = prev.find((ci) => ci.itemId === item.id);
+      const toppingIds = selectedToppings
+        ?.map((t) => t.id)
+        .sort()
+        .join("_");
+      const uniqueId = `${item.id}${selectedSize ? `_${selectedSize.id}` : ""}${
+        toppingIds ? `_${toppingIds}` : ""
+      }`;
+
+      let itemPrice = item.price;
+      if (selectedSize) {
+        itemPrice = selectedSize.price; // Use size price if available
+      }
+      if (selectedToppings) {
+        itemPrice += selectedToppings.reduce((sum, t) => sum + t.price, 0);
+      }
+
+      const existing = prev.find((ci) => ci.uniqueId === uniqueId);
       if (existing) {
         return prev.map((ci) =>
-          ci.itemId === item.id ? { ...ci, qty: ci.qty + quantity } : ci,
+          ci.uniqueId === uniqueId
+            ? { ...ci, qty: ci.qty + quantity }
+            : ci,
         );
       }
       return [
         ...prev,
         {
+          uniqueId,
           itemId: item.id,
-          name: getLocalizedName(item), // Extract localized name as string
-          price: item.price,
+          name_en: item.name_en,
+          name_ja: item.name_ja,
+          name_vi: item.name_vi,
+          price: itemPrice,
           qty: quantity,
           imageUrl: item.image_url || undefined,
-          description: getLocalizedDescription(item), // Extract localized description as string
+          description_en: item.description_en,
+          description_ja: item.description_ja,
+          description_vi: item.description_vi,
+          selectedSize,
+          selectedToppings,
         },
       ];
     });
   };
 
-  const updateQuantity = (id: string, qty: number) => {
+  const updateQuantity = (uniqueId: string, qty: number) => {
     if (qty <= 0) {
-      setCart((prev) => prev.filter((c) => c.itemId !== id));
+      setCart((prev) => prev.filter((c) => c.uniqueId !== uniqueId));
     } else {
-      setCart((prev) => prev.map((c) => (c.itemId === id ? { ...c, qty } : c)));
+      setCart((prev) =>
+        prev.map((c) => (c.uniqueId === uniqueId ? { ...c, qty } : c)),
+      );
     }
   };
 
-  const getQuantityInCart = (id: string): number => {
-    const item = cart.find((ci) => ci.itemId === id);
+  const getQuantityInCart = (uniqueId: string): number => {
+    const item = cart.find((ci) => ci.uniqueId === uniqueId);
     return item ? item.qty : 0;
   };
 
-  const removeFromCart = (id: string) => {
-    setCart((prev) => prev.filter((ci) => ci.itemId !== id));
+  const removeFromCart = (uniqueId: string) => {
+    setCart((prev) => prev.filter((ci) => ci.uniqueId !== uniqueId));
   };
 
   const clearCart = () => setCart([]);
