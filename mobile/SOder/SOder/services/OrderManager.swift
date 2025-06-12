@@ -146,8 +146,7 @@ class OrderManager: ObservableObject {
                                 name_vi
                             )
                         ),
-                        menu_item_size:menu_item_sizes(*),
-                        toppings:toppings(*)
+                        menu_item_size:menu_item_sizes(*)
                     )
                 """)
                 .eq("restaurant_id", value: restaurantId)
@@ -158,10 +157,6 @@ class OrderManager: ObservableObject {
             
             self.orders = response.map { $0.toOrder() }
             print("Fetched \(orders.count) active orders")
-            
-            for order in orders {
-                print("Order ID: \(order.id), Table: \(order.table?.name ?? order.table_id), Status: \(order.status), Items: \(order.order_items?.count ?? 0)")
-            }
             
         } catch {
             errorMessage = "Failed to fetch orders: \(error.localizedDescription)"
@@ -206,8 +201,7 @@ class OrderManager: ObservableObject {
                                 name_vi
                             )
                         ),
-                        menu_item_size:menu_item_sizes(*),
-                        toppings:toppings(*)
+                        menu_item_size:menu_item_sizes(*)
                     )
                 """)
                 .eq("restaurant_id", value: restaurantId)
@@ -290,6 +284,9 @@ class OrderManager: ObservableObject {
                         menu_item_id: orderItems[itemIndex].menu_item_id,
                         quantity: orderItems[itemIndex].quantity,
                         notes: notes,
+                        menu_item_size_id: orderItems[itemIndex].menu_item_size_id,
+                        topping_ids: orderItems[itemIndex].topping_ids,
+                        price_at_order: orderItems[itemIndex].price_at_order,
                         status: orderItems[itemIndex].status,
                         created_at: orderItems[itemIndex].created_at,
                         updated_at: orderItems[itemIndex].updated_at,
@@ -334,6 +331,9 @@ class OrderManager: ObservableObject {
                         menu_item_id: orderItems[itemIndex].menu_item_id,
                         quantity: orderItems[itemIndex].quantity,
                         notes: orderItems[itemIndex].notes,
+                        menu_item_size_id: orderItems[itemIndex].menu_item_size_id,
+                        topping_ids: orderItems[itemIndex].topping_ids,
+                        price_at_order: orderItems[itemIndex].price_at_order,
                         status: .cancelled,
                         created_at: orderItems[itemIndex].created_at,
                         updated_at: ISO8601DateFormatter().string(from: Date()),
@@ -376,6 +376,9 @@ class OrderManager: ObservableObject {
                         menu_item_id: orderItems[itemIndex].menu_item_id,
                         quantity: orderItems[itemIndex].quantity,
                         notes: orderItems[itemIndex].notes,
+                        menu_item_size_id: orderItems[itemIndex].menu_item_size_id,
+                        topping_ids: orderItems[itemIndex].topping_ids,
+                        price_at_order: orderItems[itemIndex].price_at_order,
                         status: newStatus,
                         created_at: orderItems[itemIndex].created_at,
                         updated_at: orderItems[itemIndex].updated_at,

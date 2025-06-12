@@ -133,7 +133,7 @@ export function FoodCard({
               <Image
                 src={
                   item.image_url ||
-                  "https://placehold.co/300x200/E2E8F0/334155?text=Food"
+                  "/placeholder-food.png"
                 }
                 width={300}
                 height={200}
@@ -250,7 +250,7 @@ export function FoodCard({
               <Image
                 src={
                   item.image_url ||
-                  "https://placehold.co/120x80/E2E8F0/334155?text=Food"
+                  "/placeholder-food.png"
                 }
                 width={80}
                 height={64}

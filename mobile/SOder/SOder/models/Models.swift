@@ -65,7 +65,7 @@ struct OrderItem: Decodable, Identifiable {
     let quantity: Int
     let notes: String?
     let menu_item_size_id: String?
-    let topping_ids: [String]
+    let topping_ids: [String]?
     let price_at_order: Double
     var status: OrderItemStatus
     let created_at: String
@@ -360,7 +360,7 @@ struct OrderItemWithMenuResponse: Decodable {
     let quantity: Int
     let notes: String?
     let menu_item_size_id: String?
-    let topping_ids: [String]
+    let topping_ids: [String]?
     let price_at_order: Double
     let status: String
     let created_at: String

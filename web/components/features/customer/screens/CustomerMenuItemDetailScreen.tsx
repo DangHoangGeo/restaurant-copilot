@@ -92,7 +92,9 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
     setShowAddedMessage(true);
     setTimeout(() => {
       setShowAddedMessage(false);
-    }, 2500);
+      // Navigate back to menu after adding to cart
+      setView('menu', { tableId, sessionId, tableNumber, canAddItems });
+    }, 1500);
   };
 
   const handleIncreaseQuantity = () => {
@@ -219,11 +221,11 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
             {(selectedSize || selectedToppings.length > 0) && (
               <div className="text-sm text-gray-500 mt-1">
                 <div>
-                  {t('menu.base_price')}: ¥{((selectedSize?.price || item.price) / 100).toFixed(0)}
+                  {t('menu.base_price')}: ¥{(selectedSize?.price || item.price)}
                 </div>
                 {selectedToppings.length > 0 && (
                   <div>
-                    {t('menu.toppings_price')}: +¥{(selectedToppings.reduce((sum, t) => sum + t.price, 0) / 100).toFixed(0)}
+                    {t('menu.toppings_price')}: +¥{(selectedToppings.reduce((sum, t) => sum + t.price, 0))}
                   </div>
                 )}
               </div>

@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parse = orderSchema.safeParse(body);
   if (!parse.success) {
+    console.error("Order validation failed:", parse.error);
     return NextResponse.json({ success: false, errors: parse.error.errors }, { status: 400 });
   }
   const { sessionId, items } = parse.data;
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
     .select("id,status,total_amount")
     .eq("session_id", sessionId)
     .eq("restaurant_id", restaurantId)
-    .in("status", ["new", "preparing"]) // Allow adding items to orders that are new or preparing
+    .in("status", ["new", "serving"]) // Allow adding items to orders that are new or serving
     .single();
     
   if (!orderRow) {
@@ -130,7 +131,7 @@ export async function POST(req: NextRequest) {
 
   const { data: updatedOrder, error: orderUpdateError } = await supabaseAdmin
     .from("orders")
-    .update({ total_amount: totalAmount, status: "preparing" }) // Update status here as well
+    .update({ total_amount: totalAmount, status: "serving" }) // Update status here as well
     .eq("id", orderRow.id) // Use orderRow.id directly
     .select("id")
     .single();

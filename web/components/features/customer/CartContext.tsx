@@ -24,6 +24,7 @@ export interface CartContextType {
   addToCart: (item: MenuItem, quantity?: number, selectedSize?: MenuItemSize, selectedToppings?: Topping[]) => void;
   updateQuantity: (uniqueId: string, qty: number) => void;
   getQuantityInCart: (uniqueId: string) => number; // Added
+  getQuantityByItemId: (itemId: string) => number; // Helper for simple cart interface
   removeFromCart: (uniqueId: string) => void; // Added
   totalCartItems: number;
   totalCartPrice: number;
@@ -102,6 +103,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return item ? item.qty : 0;
   };
 
+  const getQuantityByItemId = (itemId: string): number => {
+    return cart
+      .filter((ci) => ci.itemId === itemId)
+      .reduce((sum, ci) => sum + ci.qty, 0);
+  };
+
   const removeFromCart = (uniqueId: string) => {
     setCart((prev) => prev.filter((ci) => ci.uniqueId !== uniqueId));
   };
@@ -118,6 +125,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addToCart,
         updateQuantity,
         getQuantityInCart, // Added
+        getQuantityByItemId, // Helper for simple cart interface
         removeFromCart, // Added
         totalCartItems,
         totalCartPrice,

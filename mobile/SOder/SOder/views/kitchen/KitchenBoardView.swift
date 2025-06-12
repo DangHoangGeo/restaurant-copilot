@@ -180,86 +180,69 @@ struct KitchenBoardView: View {
     }
     
     private func computeCategoryGrouping() {
-        var newGroupedItems: [GroupedItem] = [] // Changed variable name to avoid conflict
+        var newGroupedItems: [GroupedItem] = []
         
-        for order in orderManager.orders {
+        // Sort orders by creation time first (oldest first - first come first serve)
+        let sortedOrders = orderManager.orders.sorted { order1, order2 in
+            let date1 = dateFromString(order1.created_at)
+            let date2 = dateFromString(order2.created_at)
+            return date1 < date2
+        }
+        
+        for order in sortedOrders {
             for orderItem in order.order_items ?? [] {
                 guard let menuItem = orderItem.menu_item else { continue }
                 
                 // Only show active items (new, preparing)
                 guard orderItem.status == .ordered || orderItem.status == .preparing else { continue }
                 
+                // Use the individual order item's creation time, not the order's creation time
+                let itemTime = dateFromString(orderItem.created_at)
+                
                 // Safely unwrap optionals and provide default values
                 let itemName = menuItem.displayName
                 let quantity = orderItem.quantity ?? 0
-                let orderTime = dateFromString(order.created_at) ?? Date() // Use current date as fallback
-                // FIXME: The OrderItem model does not have a priority field. Defaulting to 0.
-                // This needs to be addressed in the data model or by providing a default mechanism.
                 let priority = 0 // Default priority
 
-                // Get category name from the fetched category data, with fallback to category_id
+                // Get category name from the fetched category data
                 let categoryName = menuItem.categoryDisplayName
                 
                 // Get table name instead of ID
                 let tableName = order.table?.name ?? String(format: "order_table_number".localized, order.table_id)
                 
-                // Items with notes or different statuses should not be grouped
-                // Create unique identifier including notes and status for grouping
-                let groupingKey = "\(menuItem.id)_\(orderItem.notes ?? "")_\(orderItem.status.rawValue)"
+                // Create a UNIQUE identifier that ensures items with different sizes/toppings are NEVER grouped
+                // Include order ID to prevent grouping across different orders
+                let sizeKey = orderItem.menu_item_size_id ?? "no_size"
+                let toppingsKey = (orderItem.topping_ids?.sorted().joined(separator: ",")) ?? "no_toppings"
+                let notesKey = orderItem.notes ?? "no_notes"
+                let uniqueKey = "\(order.id)_\(menuItem.id)_\(sizeKey)_\(toppingsKey)_\(notesKey)_\(orderItem.status.rawValue)"
                 
-                if let existingItemIndex = newGroupedItems.firstIndex(where: { 
-                    $0.itemId == groupingKey && 
-                    $0.categoryName == categoryName && 
-                    $0.itemName == itemName && 
-                    $0.notes == orderItem.notes &&
-                    $0.status == orderItem.status 
-                }) {
-                    // Update existing item in the new list
-                    newGroupedItems[existingItemIndex].quantity += quantity
-                    newGroupedItems[existingItemIndex].tables.insert(tableName)
-                    newGroupedItems[existingItemIndex].orderItems.append(orderItem)
-                    // Ensure orderTime is the earliest for the group
-                    if orderTime < newGroupedItems[existingItemIndex].orderTime {
-                        newGroupedItems[existingItemIndex].orderTime = orderTime
-                    }
-                    // Potentially update priority if logic is defined
-
-                } else {
-                    // Create new group
-                    let newGroupedItem = GroupedItem(
-                        itemId: groupingKey,
-                        itemName: itemName,
-                        quantity: quantity,
-                        tables: [tableName],
-                        orderItems: [orderItem],
-                        categoryName: categoryName,
-                        notes: orderItem.notes,
-                        orderTime: orderTime,
-                        priority: priority,
-                        status: orderItem.status
-                    )
-                    newGroupedItems.append(newGroupedItem)
-                }
+                // Each unique combination should be its own item - no grouping across different sizes/toppings
+                let newGroupedItem = GroupedItem(
+                    itemId: uniqueKey,
+                    itemName: itemName,
+                    quantity: quantity,
+                    tables: [tableName],
+                    orderItems: [orderItem],
+                    categoryName: categoryName,
+                    notes: orderItem.notes,
+                    orderTime: itemTime, // Use individual item time instead of order time
+                    priority: priority,
+                    status: orderItem.status
+                )
+                newGroupedItems.append(newGroupedItem)
             }
         }
         
-        // Sort and group the items
-        groupedByCategory = newGroupedItems // Assign to the correct state variable
-            .sorted(by: { $0.categoryName < $1.categoryName })
-            .reduce(into: [String: [GroupedItem]]()) { result, item in
-                result[item.categoryName, default: []].append(item)
-            }
+        // Group by category and maintain the order (already sorted by order time)
+        groupedByCategory = Dictionary(grouping: newGroupedItems) { $0.categoryName }
             .map { categoryName, items in
                 CategoryGroup(
                     categoryName: categoryName,
-                    items: items.sorted { item1, item2 in
-                        if item1.priority != item2.priority {
-                            return item1.priority > item2.priority
-                        }
-                        return item1.orderTime < item2.orderTime
-                    }
+                    items: items // Already sorted by order time (first come first serve)
                 )
             }
+            .sorted { $0.categoryName < $1.categoryName }
     }
     
     private func advanceItemStatus(_ groupedItem: GroupedItem) {

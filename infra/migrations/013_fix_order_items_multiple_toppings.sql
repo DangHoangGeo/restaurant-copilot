@@ -28,5 +28,4 @@ WHERE topping_ids IS NULL;
 -- Make the new columns NOT NULL with defaults
 ALTER TABLE order_items 
   ALTER COLUMN topping_ids SET DEFAULT '{}',
-  ALTER COLUMN topping_ids SET NOT NULL,
   ALTER COLUMN price_at_order SET NOT NULL;
