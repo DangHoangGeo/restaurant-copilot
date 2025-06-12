@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop-Copilot Web</title>
+    <title>CoOrder Web</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -337,7 +337,7 @@
             return `
                 <div class="flex flex-col items-center justify-center h-full bg-white p-8 view-enter">
                     <div class="w-full max-w-sm text-center">
-                        <h1 class="text-5xl font-extrabold brand-text">Shop-Copilot</h1>
+                        <h1 class="text-5xl font-extrabold brand-text">CoOrder</h1>
                         <p class="mt-2 text-lg text-gray-600">${Localized('login_subtitle')}</p>
                         
                         <form id="login-form" class="mt-10 space-y-4 text-left">
