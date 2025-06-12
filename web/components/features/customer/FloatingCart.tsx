@@ -66,7 +66,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
                 <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin">
                   {cart.map((item) => {
                     const localizedItemName = getLocalizedText({ name_en: item.name_en, name_ja: item.name_ja, name_vi: item.name_vi }, currentLocale);
-                    let detailsDisplay: string[] = [];
+                    const detailsDisplay: string[] = [];
                     if (item.selectedSize) {
                       const localizedSizeName = getLocalizedText({ name_en: item.selectedSize.name_en, name_ja: item.selectedSize.name_ja, name_vi: item.selectedSize.name_vi }, currentLocale);
                       detailsDisplay.push(localizedSizeName);
@@ -93,7 +93,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
                           </p>
                         )}
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {t("currency_format", { value: item.price / 100 })} {t('common.each', 'each')}
+                          {t("currency_format", { value: item.price / 100 })} each
                         </p>
                       </div>
 

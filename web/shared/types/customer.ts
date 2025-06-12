@@ -13,6 +13,8 @@ export interface MenuItem {
   weekday_visibility: number[]; // 1 (Mon) to 7 (Sun)
   averageRating?: number;
   reviewCount?: number;
+  menu_item_sizes?: MenuItemSize[];
+  toppings?: Topping[];
 }
 
 export interface Category {

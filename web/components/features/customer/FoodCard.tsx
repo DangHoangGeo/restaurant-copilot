@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { getLocalizedText } from "@/lib/customerUtils";
+import Image from "next/image";
 
 export interface FoodItem {
   id: string;
@@ -62,7 +63,7 @@ export function FoodCard({
   const t = useTranslations("Customer");
   const [isAdding, setIsAdding] = useState(false);
 
-  const getPriceDisplayString = (currentItem: FoodItem, currentLocale: string, translateFunc: Function) => {
+  const getPriceDisplayString = (currentItem: FoodItem, currentLocale: string, translateFunc: (key: string, params?: Record<string, string | number>) => string) => {
     if (currentItem.menu_item_sizes && currentItem.menu_item_sizes.length > 0) {
       const prices = currentItem.menu_item_sizes.map(s => s.price);
       if (prices.length === 0) { // Should not happen if menu_item_sizes has items
@@ -129,7 +130,7 @@ export function FoodCard({
             onClick={handleCardClick}
           >
             <div className="relative overflow-hidden rounded-t-lg">
-              <img
+              <Image
                 src={
                   item.image_url ||
                   "https://placehold.co/300x200/E2E8F0/334155?text=Food"
@@ -168,7 +169,7 @@ export function FoodCard({
               {( (item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
                  (item.toppings && item.toppings.length > 0) ) && (
                 <p className="text-xs text-sky-600 dark:text-sky-400 mt-1 font-medium">
-                  {t('menu.customizable', '+ Sizes/Toppings')}
+                  + Sizes/Toppings
                 </p>
               )}
 
@@ -245,7 +246,7 @@ export function FoodCard({
             onClick={handleCardClick}>
 
             <div className="relative flex-shrink-0 overflow-hidden rounded-lg">
-              <img
+              <Image
                 src={
                   item.image_url ||
                   "https://placehold.co/120x80/E2E8F0/334155?text=Food"
@@ -277,7 +278,7 @@ export function FoodCard({
               {( (item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
                  (item.toppings && item.toppings.length > 0) ) && (
                 <p className="text-xs text-sky-600 dark:text-sky-400 mt-1 font-medium">
-                  {t('menu.customizable', '+ Sizes/Toppings')}
+                  + Sizes/Toppings
                 </p>
               )}
             </div>

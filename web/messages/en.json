@@ -949,11 +949,16 @@
       "view_only": "View Only",
       "decrease_quantity": "Decrease quantity",
       "increase_quantity": "Increase quantity",
-      "item_added_to_cart_msg": "{item} added to cart!"
+      "item_added_to_cart_msg": "{item} added to cart!",
+      "select_size": "Select Size",
+      "select_toppings": "Select Toppings",
+      "base_price": "Base Price",
+      "toppings_price": "Toppings"
     },
     "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",
-      "review_order_button": "Review Order"
+      "review_order_button": "Review Order",
+      "toppings_label": "Toppings: {toppings}"
     },
     "guest_dialog": {
       "title": "Welcome! How many guests?",

@@ -7,6 +7,7 @@ import { Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import type { RestaurantSettings } from "@/shared/types/customer";
+import Image from "next/image";
 
 interface CustomerHeaderProps {
   restaurantSettings: RestaurantSettings;
@@ -38,10 +39,12 @@ export function CustomerHeader({
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center">
           {restaurantSettings.logoUrl && (
-            <img
+            <Image
               src={restaurantSettings.logoUrl}
               alt={`${restaurantSettings.name} logo`}
               className="h-10 w-10 rounded-full mr-3 object-cover bg-white p-0.5"
+              width={40}
+              height={40}
             />
           )}
           <h1 className="text-xl font-bold text-white">

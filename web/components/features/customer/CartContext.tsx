@@ -35,16 +35,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Helper function to get localized text
-  const getLocalizedName = (item: MenuItem) => {
-    // Try to get current locale from URL or context, fallback to English
-    return item.name_en || item.name_ja || item.name_vi || "Item";
-  };
-
-  const getLocalizedDescription = (item: MenuItem) => {
-    return item.description_en || item.description_ja || item.description_vi || "";
-  };
-
   const addToCart = (
     item: MenuItem,
     quantity = 1,
@@ -87,9 +77,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           price: itemPrice,
           qty: quantity,
           imageUrl: item.image_url || undefined,
-          description_en: item.description_en,
-          description_ja: item.description_ja,
-          description_vi: item.description_vi,
+          description_en: item.description_en || undefined,
+          description_ja: item.description_ja || undefined,
+          description_vi: item.description_vi || undefined,
           selectedSize,
           selectedToppings,
         },
