@@ -13,6 +13,7 @@ type SignupFormInputs = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const t = useTranslations('auth');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -226,16 +227,16 @@ export default function SignupPage() {
 
           <div>
             <label htmlFor="defaultLanguage" className="block text-sm font-medium text-gray-700">
-              {t('defaultLanguageLabel')}
+              {tCommon('defaultLanguageLabel')}
             </label>
             <select
               id="defaultLanguage"
               {...register("defaultLanguage")}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              <option value="en">{t('languageOption.en')}</option>
-              <option value="ja">{t('languageOption.ja')}</option>
-              <option value="vi">{t('languageOption.vi')}</option>
+              <option value="en">{tCommon('languageOption.en')}</option>
+              <option value="ja">{tCommon('languageOption.ja')}</option>
+              <option value="vi">{tCommon('languageOption.vi')}</option>
             </select>
             {errors.defaultLanguage && <p className="mt-1 text-sm text-red-600">{errors.defaultLanguage.message}</p>}
           </div>
