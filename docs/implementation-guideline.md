@@ -1,4 +1,4 @@
-Below are the implementation guidelines that any AI agent (or developer) should follow when generating or modifying code for Shop-Copilot. These instructions align with the latest Overview, Requirements Checklist, and High-Level Development Plan.
+Below are the implementation guidelines that any AI agent (or developer) should follow when generating or modifying code for CoOrder. These instructions align with the latest Overview, Requirements Checklist, and High-Level Development Plan.
 
 ---
 
@@ -240,7 +240,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
      4. Insert into `restaurants (name, subdomain, default_language)`.
      5. Update that Auth user’s `app_metadata` with `{ restaurant_id, role: "owner" }`.
      6. Insert into `users (id, restaurant_id, email, name, role: "owner")`.
-     7. Return `{ success: true, redirect: "https://{subdomain}.shop-copilot.com/{defaultLanguage}/dashboard" }`.
+     7. Return `{ success: true, redirect: "https://{subdomain}.coorder/{defaultLanguage}/dashboard" }`.
    * Any failure in steps (3–6) must be accompanied by a call to `logEvent({ level: "ERROR", endpoint: "/api/v1/register", message, metadata })`.
 
 4. **Wildcard Subdomain & Next.js Middleware**
@@ -252,9 +252,9 @@ Below are the implementation guidelines that any AI agent (or developer) should 
      const parts = host.split(".");
      const subdomain = parts.length > 2 ? parts[0] : null;
      ```
-   * If `subdomain` is null or equals `"shop-copilot"`, allow root pages (landing, signup, login, marketing). Otherwise, call `/api/v1/restaurant/exists?subdomain=${subdomain}`:
+   * If `subdomain` is null or equals `"coorder"`, allow root pages (landing, signup, login, marketing). Otherwise, call `/api/v1/restaurant/exists?subdomain=${subdomain}`:
 
-     * If `exists: false`, redirect to `https://shop-copilot.com/404`.
+     * If `exists: false`, redirect to `https://coorder/404`.
      * If `exists: true`, set `req.nextUrl.searchParams.set("restaurant", subdomain)` so downstream code can fetch the correct `restaurant_id`.
 
 ---
@@ -341,7 +341,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
      * Compute:
 
        ```
-       url = `https://${subdomain}.shop-copilot.com/${locale}/customer/order?tableId=${tableId}`
+       url = `https://${subdomain}.coorder/${locale}/customer/order?tableId=${tableId}`
        ```
      * Render `<QRCode value={url} size={256} />` from `react-qr-code`.
      * For “Download PNG”, convert the `<svg>` to a `<canvas>`, then call `canvas.toDataURL("image/png")` and trigger a download link.
@@ -391,7 +391,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
    * QR code URL format:
 
      ```
-     https://{subdomain}.shop-copilot.com/{locale}/customer/order?tableId={tableId}
+     https://{subdomain}.coorder/{locale}/customer/order?tableId={tableId}
      ```
    * `/web/app/api/v1/sessions/create`:
 

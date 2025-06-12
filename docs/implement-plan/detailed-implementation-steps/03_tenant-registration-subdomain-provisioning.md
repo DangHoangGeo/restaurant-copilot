@@ -145,7 +145,7 @@ TTL:    Default (or 1 hour)
 
   (Req 3.4, 3.5)
 * Implement `/web/app/api/v1/restaurant/exists.ts` to query `restaurants` by `subdomain` and return `{ exists: boolean }`.
-* Test by visiting `foo.shop-copilot.com`: if `foo` is a valid subdomain, you see the tenant’s site; if invalid, you get redirected to a 404 page.
+* Test by visiting `foo.coorder`: if `foo` is a valid subdomain, you see the tenant’s site; if invalid, you get redirected to a 404 page.
   ‣ (Req 3.4, 3.5)
 
 ---

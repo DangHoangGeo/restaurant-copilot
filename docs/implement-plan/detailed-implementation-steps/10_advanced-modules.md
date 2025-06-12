@@ -40,7 +40,7 @@ import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 (Req 8.1)
 10.1.3. **iOS PaymentSheet Integration (FEATURE\_FLAGS.enablePayments)**
 \- In `CheckoutView.swift`, if `FeatureFlags.enablePayments` is `true`:
-1\. Fetch `clientSecret` via a POST to `https://{restaurantSubdomain}.shop-copilot.com/api/v2/payments/create-intent` with `orderId` and `amount`.
+1\. Fetch `clientSecret` via a POST to `https://{restaurantSubdomain}.coorder/api/v2/payments/create-intent` with `orderId` and `amount`.
 2\. Create and configure a `PaymentSheet` object with `PaymentSheet.Configuration()`.
 3\. Present `paymentSheet.present(from: viewController)`; handle `.completed`, `.failed`, `.canceled`.
 4\. On `.completed`, call `OrderService.updateOrderStatus(orderId, "completed")` and `PrinterManager.printReceipt(order)`.

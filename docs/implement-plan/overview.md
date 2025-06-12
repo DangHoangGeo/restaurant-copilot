@@ -1,4 +1,4 @@
-## A. a **High-Level Development Plan** for Shop-Copilot (both web and iOS), followed by **Detailed Implementation Steps**, each explicitly tied back to the numbered items in the Requirements Checklist. Use this as a roadmap—each bullet points to specific checklist entries (e.g., “(Req 2.1.1)” for Foundational & Security → Monorepo Structure).
+## A. a **High-Level Development Plan** for CoOrder (both web and iOS), followed by **Detailed Implementation Steps**, each explicitly tied back to the numbered items in the Requirements Checklist. Use this as a roadmap—each bullet points to specific checklist entries (e.g., “(Req 2.1.1)” for Foundational & Security → Monorepo Structure).
 
 ## B. Detailed Implementation Steps (Linked to Checklist)
 
@@ -18,4 +18,4 @@ Below, each major step is laid out in sequence. Wherever a step satisfies one or
 * **8. Advanced Modules** → Checklist 8.1 – 8.4
 * **9. Testing & CI/CD** → Checklist 9.1 – 9.4
 
-By proceeding through these nine sections—each containing multiple sub-steps—you will build a secure, scalable, and feature-complete Shop-Copilot SaaS platform. The checklist references ensure you can verify each requirement as you go.
+By proceeding through these nine sections—each containing multiple sub-steps—you will build a secure, scalable, and feature-complete CoOrder SaaS platform. The checklist references ensure you can verify each requirement as you go.

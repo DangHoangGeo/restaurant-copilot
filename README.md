@@ -1,11 +1,11 @@
-Shop-Copilot is a mobile-first, AI-augmented SaaS platform that empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet. Each restaurant gets its own subdomain (e.g. `restaurantabc.shop-copilot.com`) and full data isolation via Supabase’s Row-Level Security. Customers can browse a multilingual menu, book a table, preorder dishes, place orders via QR codes, and leave reviews. Staff use an iOS app to receive and process orders in real time, print kitchen tickets and customer receipts over Bluetooth ESC/POS, manage bookings, and view smart analytics. Advanced features—including credit-card/PayPay payments, an AI-powered chatbot assistant, and messaging integrations—are feature-flagged for a smooth, iterative rollout.
+CoOrder is a mobile-first, AI-augmented SaaS platform that empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet. Each restaurant gets its own subdomain (e.g. `restaurantabc.coorder`) and full data isolation via Supabase’s Row-Level Security. Customers can browse a multilingual menu, book a table, preorder dishes, place orders via QR codes, and leave reviews. Staff use an iOS app to receive and process orders in real time, print kitchen tickets and customer receipts over Bluetooth ESC/POS, manage bookings, and view smart analytics. Advanced features—including credit-card/PayPay payments, an AI-powered chatbot assistant, and messaging integrations—are feature-flagged for a smooth, iterative rollout.
 
 ---
 
 ## Key Features
 
 * **Multi-Tenant Architecture & Subdomains**
-  • Each restaurant registers its own subdomain (e.g. `yourbrand.shop-copilot.com`).
+  • Each restaurant registers its own subdomain (e.g. `yourbrand.coorder`).
   • Supabase RLS ensures total data isolation: users and staff in one restaurant cannot access another’s data.
 
 * **Restaurant Admin Dashboard (Web)**
@@ -111,8 +111,8 @@ Shop-Copilot is a mobile-first, AI-augmented SaaS platform that empowers small r
 1. **Clone the Repository**
 
    ```bash
-   git clone git@github.com:<your-org>/shop-copilot.git
-   cd shop-copilot
+   git clone git@github.com:<your-org>/coorder.git
+   cd coorder
    ```
 
 2. **Environment Setup (Web)**
@@ -178,11 +178,11 @@ Shop-Copilot is a mobile-first, AI-augmented SaaS platform that empowers small r
 
 ---
 
-## Why Shop-Copilot?
+## Why CoOrder?
 
 * **Mobile-First Staff Experience**: Kitchen staff and servers never need to juggle a laptop—everything works on iPads and iPhones.
 * **Smart, AI-Ready Foundation**: Generative AI chatbot, payment integrations, messaging hooks, and advanced analytics can be adopted gradually via feature flags—no large refactor later.
 * **Turnkey Multi-Language & Multi-Tenant**: Full Japanese/English/Vietnamese support from day one, with each restaurant on an auto-provisioned subdomain.
 * **Built for Growth**: RLS, rate limiting, WAF, audit logging, and CI/CD ensure security and reliability at every scale.
 
-With Shop-Copilot, small restaurants can modernize their operations, delight customers with seamless ordering/booking, and leverage data-driven insights—all from the palm of their hand.
+With CoOrder, small restaurants can modernize their operations, delight customers with seamless ordering/booking, and leverage data-driven insights—all from the palm of their hand.

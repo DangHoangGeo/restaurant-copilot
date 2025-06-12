@@ -139,7 +139,7 @@ Then call `uploadImage(newItem.id, file, restaurantId)`.
 \- `/web/app/[locale]/dashboard/tables/[tableId]/qr/page.tsx`:
 \- Use a client component that reads `restaurantSubdomain` from `useRestaurantContext()` and `locale` from params.
 \- Compute URL:
-`          https://${restaurantSubdomain}.shop-copilot.com/${locale}/customer/order?tableId=${tableId}
+`          https://${restaurantSubdomain}.coorder/${locale}/customer/order?tableId=${tableId}
          `
 \- Render `<QRCode value={url} size={256} />` from `react-qr-code`.
 \- Implement a “Download PNG” button that:

@@ -1,11 +1,11 @@
-Shop-Copilot is a mobile-first, AI-augmented SaaS platform that empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet. Each restaurant gets its own subdomain (e.g. `restaurantabc.shop-copilot.com`) and full data isolation via Supabase’s Row-Level Security. Customers can browse a multilingual menu, book a table, preorder dishes, place orders via QR codes, and leave reviews. Staff use an iOS app to receive and process orders in real time, print kitchen tickets and customer receipts over Bluetooth ESC/POS, manage bookings, and view smart analytics. Advanced features—including credit-card/PayPay payments, an AI-powered chatbot assistant, and messaging integrations—are feature-flagged for a smooth, iterative rollout.
+CoOrder is a mobile-first, AI-augmented SaaS platform that empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet. Each restaurant gets its own subdomain (e.g. `restaurantabc.coorder`) and full data isolation via Supabase’s Row-Level Security. Customers can browse a multilingual menu, book a table, preorder dishes, place orders via QR codes, and leave reviews. Staff use an iOS app to receive and process orders in real time, print kitchen tickets and customer receipts over Bluetooth ESC/POS, manage bookings, and view smart analytics. Advanced features—including credit-card/PayPay payments, an AI-powered chatbot assistant, and messaging integrations—are feature-flagged for a smooth, iterative rollout.
 
 ---
 
 ## Key Features
 
 * **Multi-Tenant Architecture & Subdomains**
-  • Each restaurant registers its own subdomain (e.g. `yourbrand.shop-copilot.com`).
+  • Each restaurant registers its own subdomain (e.g. `yourbrand.coorder`).
   • Supabase RLS ensures total data isolation: users and staff in one restaurant cannot access another’s data.
 
 * **Restaurant Admin Dashboard (Web)**

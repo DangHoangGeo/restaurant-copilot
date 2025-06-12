@@ -6,7 +6,7 @@ import CoreBluetooth // For PrinterManager
 
 // This would be your main App struct.
 // @main
-struct ShopCopilotApp: App {
+struct CoorderApp: App {
     @StateObject private var authManager = AuthManager()
 
     var body: some Scene {
@@ -264,7 +264,7 @@ struct LoginView: View {
             Spacer()
             
             // App Title
-            Text("Shop-Copilot")
+            Text("CoOrder")
                 .font(.system(size: 40, weight: .bold, design: .rounded))
                 .foregroundColor(.brand)
             

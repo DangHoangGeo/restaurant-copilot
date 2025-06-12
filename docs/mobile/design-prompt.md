@@ -1,4 +1,4 @@
-You are a senior UX/UI designer specializing in native iOS (SwiftUI). Your task is to design a modern, professional iPad/iPhone interface for the Shop-Copilot staff app. The app must be built in SwiftUI, support secure Supabase authentication, and satisfy all of these requirements:
+You are a senior UX/UI designer specializing in native iOS (SwiftUI). Your task is to design a modern, professional iPad/iPhone interface for the CoOrder staff app. The app must be built in SwiftUI, support secure Supabase authentication, and satisfy all of these requirements:
 
 1. **Localization & Branding**
 
@@ -186,7 +186,7 @@ You are a senior UX/UI designer specializing in native iOS (SwiftUI). Your task 
 **Final Prompt to the AI:**
 
 ```
-You are a senior SwiftUI UX/UI designer. Design Shop-Copilot’s native iOS staff app with the following tabs and features, using SwiftUI and adhering to Supabase + RLS security and feature-flag rules:
+You are a senior SwiftUI UX/UI designer. Design CoOrder’s native iOS staff app with the following tabs and features, using SwiftUI and adhering to Supabase + RLS security and feature-flag rules:
 
 1. LoginView: Email, Password, Subdomain fields; localized in ja/en/vi; validate inputs; call Supabase Auth; store JWT and role; navigate to main TabView.
 

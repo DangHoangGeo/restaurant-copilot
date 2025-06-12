@@ -12,7 +12,7 @@
       <div className="flex flex-col min-h-screen">
         <header>…</header>
         <main>{children}</main>
-        <footer>© {new Date().getFullYear()} Shop-Copilot</footer>
+        <footer>© {new Date().getFullYear()} CoOrder</footer>
       </div>
     );
   }
@@ -54,7 +54,7 @@
 * When a customer scans the QR code, the web browser opens a URL like:
 
   ```
-  https://{restaurantSubdomain}.shop-copilot.com/{locale}/customer/order?tableId={tableId}
+  https://{restaurantSubdomain}.coorder/{locale}/customer/order?tableId={tableId}
   ```
 * That page’s server component calls this API (`GET /api/v1/sessions/create?tableId={tableId}`) and then redirects or sets a cookie with the returned `sessionId`.
   ‣ (Req 5.2)
