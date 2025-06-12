@@ -7,8 +7,36 @@ import { routing } from "@/i18n/routing";
 
 
 export const metadata: Metadata = {
-  title: "Shop-Copilot",
-  description: "Smart restaurant management system",
+  title: "coorder ai | your co-pilot for restaurant management",
+  keywords: [
+    "restaurant management",
+    "AI support",
+    "co-pilot",
+    "restaurant operations",
+    "restaurant software",
+    "restaurant AI",
+    "order management",
+    "menu management",
+    "staff management",
+    "customer management",
+    "restaurant analytics",
+    "restaurant efficiency",
+    "restaurant technology",
+    "restaurant automation",
+    "restaurant solutions",
+    "restaurant tools",
+    "restaurant innovation",
+    "restaurant success",
+    "restaurant growth",
+    "restaurant industry",
+  ],
+  authors: [
+    {
+      name: "coorder ai",
+      url: "https://coorder.ai",
+    },
+  ],
+  description: "coorder ai is your co-pilot for restaurant management, providing AI-driven support to streamline operations and enhance efficiency.",
 };
 
 export default async function RootLayout({

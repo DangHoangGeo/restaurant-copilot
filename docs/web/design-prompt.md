@@ -1,8 +1,8 @@
-You are an expert UX/UI designer tasked with creating a modern, mobile-first web interface for “Shop-Copilot,” a multi-tenant SaaS platform for small restaurants. The frontend must be built with Next.js (App Router), Tailwind CSS, and TypeScript, and must satisfy all of these requirements:
+You are an expert UX/UI designer tasked with creating a modern, mobile-first web interface for “CoOrder,” a multi-tenant SaaS platform for small restaurants. The frontend must be built with Next.js (App Router), Tailwind CSS, and TypeScript, and must satisfy all of these requirements:
 
 1. **Multi-Tenant & Subdomain Awareness**
 
-   * Each restaurant has its own subdomain (e.g. `restaurantabc.shop-copilot.com`).
+   * Each restaurant has its own subdomain (e.g. `restaurantabc.coorder`).
    * All navigation, API calls, and visual branding should adapt automatically based on the tenant’s subdomain.
    * Owners log in at their subdomain to access the Admin Dashboard; customers access via `/[locale]/customer` on that same subdomain.
 
@@ -51,7 +51,7 @@ You are an expert UX/UI designer tasked with creating a modern, mobile-first web
 
 4. **Customer-Facing Ordering Site Structure**
 
-   * URL format: `https://{subdomain}.shop-copilot.com/{locale}/customer/...`.
+   * URL format: `https://{subdomain}.coorder/{locale}/customer/...`.
 
    * **Order Entry** (via table QR code):
 
@@ -147,7 +147,7 @@ You are an expert UX/UI designer tasked with creating a modern, mobile-first web
 **Final Prompt to the AI:**
 
 ```
-You are a senior UX/UI designer. Design a complete, mobile-first web interface for Shop-Copilot’s Next.js + Tailwind front end, incorporating:
+You are a senior UX/UI designer. Design a complete, mobile-first web interface for CoOrder’s Next.js + Tailwind front end, incorporating:
 
 1. Multi-tenant subdomain awareness (restaurant-specific branding and routing).
 2. Full localization in Japanese, English, and Vietnamese.

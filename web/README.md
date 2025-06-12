@@ -1,6 +1,6 @@
-# Shop-Copilot Web App
+# CoOrder Web App
 
-Shop-Copilot is a multi-tenant SaaS platform for small restaurants, built with Next.js (App Router), Tailwind CSS, and TypeScript. Each restaurant uses its own subdomain (e.g., `restaurantabc.shop-copilot.com`) to manage menus, tables, orders, employees, reports, and more. Customers access a localized ordering site (Japanese, English, Vietnamese) via QR codes on tables.
+CoOrder is a multi-tenant SaaS platform for small restaurants, built with Next.js (App Router), Tailwind CSS, and TypeScript. Each restaurant uses its own subdomain (e.g., `restaurantabc.coorder`) to manage menus, tables, orders, employees, reports, and more. Customers access a localized ordering site (Japanese, English, Vietnamese) via QR codes on tables.
 
 This repository contains the **Next.js web frontend** (Admin Dashboard + Customer Ordering Site). All UI components use [shadcn/ui](https://ui.shadcn.com/) for consistent styling and layout, and [lucide-react](https://lucide.dev/docs/react/) for icons.
 
@@ -34,7 +34,7 @@ This repository contains the **Next.js web frontend** (Admin Dashboard + Custome
 
 ## Features
 
-- **Multi-Tenant Subdomains**: Each restaurant has its own subdomain (e.g., `restaurantabc.shop-copilot.com`), isolating data via Supabase RLS.
+- **Multi-Tenant Subdomains**: Each restaurant has its own subdomain (e.g., `restaurantabc.coorder`), isolating data via Supabase RLS.
 - **Admin Dashboard**:
   - Restaurant profile & branding (logo, brand color, default language).
   - Menu management (categories drag-and-drop, multi-language item creation, per-weekday visibility).
@@ -130,8 +130,8 @@ Refer to `/web/.env.example` for a template. CI/CD pipelines must inject real pr
 1. Clone this repository and navigate to the `web` folder:
 
    ```bash
-   git clone https://github.com/your-org/shop-copilot.git
-   cd shop-copilot/web
+   git clone https://github.com/your-org/coorder.git
+   cd coorder/web
    ```
 
 2. Install dependencies:
@@ -180,11 +180,11 @@ npm run start
 
 **Vercel Deployment**:
 
-- On push to `develop`, GitHub Actions triggers deploy to the `staging.shop-copilot.com` environment (staging Supabase project).
-- On push to `main`, deploy to `shop-copilot.com` (production Supabase project).
+- On push to `develop`, GitHub Actions triggers deploy to the `staging.coorder` environment (staging Supabase project).
+- On push to `main`, deploy to `coorder` (production Supabase project).
 - Ensure your Vercel settings include:
 
-  - Wildcard domain `*.shop-copilot.com`
+  - Wildcard domain `*.coorder`
   - Environment variables matching those in `.env.local` (staging vs. production).
 
 ---

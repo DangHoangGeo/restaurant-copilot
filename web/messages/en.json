@@ -1,6 +1,6 @@
 {
   "HomePage": {
-    "heroTitle": "Modernize Your Restaurant with Shop-Copilot",
+    "heroTitle": "Modernize Your Restaurant with CoOrder",
     "heroSubtitle": "All-in-one, mobile-first platform for menus, orders, bookings, staff, and analytics. Delight customers and empower your team—anywhere, anytime.",
     "cta": "Get Started Free"
   },
@@ -46,7 +46,7 @@
   },
   "LandingPage": {
     "header": {
-      "logo_aria_label": "Shop-Copilot logo",
+      "logo_aria_label": "CoOrder logo",
       "login": "Login",
       "signup": "Sign Up"
     },
@@ -56,18 +56,18 @@
     "hero": {
       "headline_part1": "Mobile-First, AI-Augmented SaaS for ",
       "headline_part2": "Small Restaurants.",
-      "subheadline": "Shop-Copilot empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet.",
+      "subheadline": "CoOrder empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet.",
       "cta": {
         "signup": "Start Free Trial",
         "demo": "Watch Demo",
         "subtext": "No credit card required. 14-day free trial."
       },
-      "image_alt": "Shop-Copilot Dashboard Mockup"
+      "image_alt": "CoOrder Dashboard Mockup"
     },
     "social_proof": {
       "trusted_by": "Powering Success for Restaurants Like Yours",
       "testimonial1": {
-        "quote": "Shop-Copilot transformed our daily operations. Orders are smoother, staff is happier, and our customers love the QR ordering!"
+        "quote": "CoOrder transformed our daily operations. Orders are smoother, staff is happier, and our customers love the QR ordering!"
       },
       "testimonial2": {
         "quote": "The analytics dashboard is a game-changer. We can now make data-driven decisions that truly impact our bottom line."
@@ -78,7 +78,7 @@
     },
     "features": {
       "title": "Powerful Features to Accelerate Your Business",
-      "subtitle": "Shop-Copilot is packed with features designed to streamline your operations and delight your customers.",
+      "subtitle": "CoOrder is packed with features designed to streamline your operations and delight your customers.",
       "menu_management": {
         "title": "Intuitive Menu Management",
         "description": "Easily create, update, and organize your digital menus with photos, descriptions, and pricing. Supports multiple languages.",
@@ -128,7 +128,7 @@
     },
     "benefits": {
       "title": "Real Results for Your Restaurant",
-      "subtitle": "Shop-Copilot isn't just software; it's a growth partner. See how we help:",
+      "subtitle": "CoOrder isn't just software; it's a growth partner. See how we help:",
       "item1": "Increase Revenue by up to 20%",
       "item2": "Save up to 10 hours/week on admin tasks",
       "item3": "Boost Customer Satisfaction Scores",
@@ -139,8 +139,8 @@
     "faq": {
       "title": "Frequently Asked Questions",
       "item1": {
-        "q": "What kind of restaurants is Shop-Copilot for?",
-        "a": "Shop-Copilot is designed for small to medium-sized restaurants, cafes, bars, and food trucks looking to modernize their operations and improve customer experience."
+        "q": "What kind of restaurants is CoOrder for?",
+        "a": "CoOrder is designed for small to medium-sized restaurants, cafes, bars, and food trucks looking to modernize their operations and improve customer experience."
       },
       "item2": {
         "q": "Is it difficult to set up?",
@@ -148,7 +148,7 @@
       },
       "item3": {
         "q": "Do I need special hardware?",
-        "a": "No, Shop-Copilot is mobile-first. You can manage everything from your existing smartphones or tablets. No expensive POS systems needed."
+        "a": "No, CoOrder is mobile-first. You can manage everything from your existing smartphones or tablets. No expensive POS systems needed."
       },
       "item4": {
         "q": "What about customer support?",
@@ -157,7 +157,7 @@
     },
     "cta_section": {
       "title": "Ready to Transform Your Restaurant?",
-      "subtitle": "Join hundreds of restaurants simplifying their operations and boosting profits with Shop-Copilot.",
+      "subtitle": "Join hundreds of restaurants simplifying their operations and boosting profits with CoOrder.",
       "cta": {
         "signup": "Get Started For Free",
         "contact_sales": "Request a Demo"
@@ -301,7 +301,7 @@
       "settings_link": "Restaurant Settings",
       "logout_button": "Logout"
     },
-    "default_restaurant_name": "Shop-Copilot"
+    "default_restaurant_name": "CoOrder"
   },
   "AdminNav": {
     "admin_sidebar_dashboard": "Dashboard",
@@ -532,7 +532,7 @@
     }
   },
   "Metadata": {
-    "admin_dashboard_title": "Admin Dashboard - Shop Copilot"
+    "admin_dashboard_title": "Admin Dashboard - CoOrder.ai"
   },
   "logout": {
     "title": "Logging You Out...",
