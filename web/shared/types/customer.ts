@@ -35,6 +35,26 @@ export interface TableInfo {
   capacity: number | null;
 }
 
+export interface MenuItemSize {
+  id: string;
+  size_key: string; // e.g., "small", "medium", "large"
+  name_en: string;
+  name_ja: string;
+  name_vi: string;
+  price: number; // Price for this size
+  position: number; // For ordering
+}
+
+export interface Topping {
+  id: string;
+  name_en: string;
+  name_ja: string;
+  name_vi: string;
+  price: number; // Additional price for this topping
+  position: number; // For ordering
+  // restaurant_id and menu_item_id are implicit or handled by backend association
+}
+
 export interface RestaurantSettings {
   name: string;
   logoUrl: string | null;
