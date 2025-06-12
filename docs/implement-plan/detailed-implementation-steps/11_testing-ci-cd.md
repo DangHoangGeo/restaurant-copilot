@@ -242,7 +242,7 @@
             vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
             vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
             working-directory: web
-            scope: shop-copilot
+            scope: coorder
           env:
             VERCEL_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
     ios-ci:
@@ -270,8 +270,8 @@
             xcrun altool --upload-app -f $PWD/build/SOder.jp.ipa -t ios --apiKey $APP_STORE_API_KEY --apiIssuer $APP_STORE_API_ISSUER_ID
   ```
 
-  * On `develop` branch, Vercel automatically deploys to staging (`staging.shop-copilot.com`) with staging Supabase credentials.
-  * On `main` branch, it deploys to production (`shop-copilot.com`) with production credentials.
+  * On `develop` branch, Vercel automatically deploys to staging (`staging.coorder`) with staging Supabase credentials.
+  * On `main` branch, it deploys to production (`coorder`) with production credentials.
     (Req 9.4)
 
 * Ensure that `feature-flags` environment variables differ between staging and production, enabling or disabling features accordingly.

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // Mock Localization Data (in a real app, use a library like i18next)
 const localizations = {
   en: {
-    LOGIN_SCREEN_TITLE: "Shop-Copilot Login",
+    LOGIN_SCREEN_TITLE: "CoOrder Login",
     EMAIL_LABEL: "Email",
     EMAIL_PLACEHOLDER: "Enter your email",
     PASSWORD_LABEL: "Password",
@@ -43,7 +43,7 @@ const localizations = {
     LOADING: "サインイン処理中...",
   },
   vi: {
-    LOGIN_SCREEN_TITLE: "Đăng nhập Shop-Copilot",
+    LOGIN_SCREEN_TITLE: "Đăng nhập CoOrder",
     EMAIL_LABEL: "Email",
     EMAIL_PLACEHOLDER: "Nhập email của bạn",
     PASSWORD_LABEL: "Mật khẩu",
@@ -191,7 +191,7 @@ const App = () => {
         />
       </div>
        <footer className="text-center mt-8 text-slate-500 text-sm">
-          Shop-Copilot &copy; 2025. All rights reserved.
+          CoOrder &copy; 2025. All rights reserved.
         </footer>
     </div>
   );

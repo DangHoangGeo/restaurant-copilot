@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { localeDetails } from '@/config/i18n.config';
@@ -52,7 +51,6 @@ export function LanguageSwitcher({ currentLocale, onLocaleChange, preserveQuery 
         <Button variant="ghost" className="flex items-center px-2 sm:px-3" aria-label={t('language_switcher.toggle_label')}>
           <span className="mr-1 sm:mr-2 text-lg">{selectedLocaleDetail.flag}</span>
           <span className="hidden sm:inline text-sm">{selectedLocaleDetail.name}</span>
-          <ChevronDown className="ml-1 h-4 w-4 text-muted-foreground hidden sm:inline" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">

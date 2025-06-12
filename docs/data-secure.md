@@ -1,4 +1,4 @@
-Data isolation and security in a multi-tenant SaaS like Shop-Copilot are critical. The high-level principle is that every query, insert, update, or delete must be scoped to the current restaurant (tenant) so that no user—whether owner, manager, or staff—can ever “see” another shop’s data. Below are the key strategies to achieve that:
+Data isolation and security in a multi-tenant SaaS like CoOrder are critical. The high-level principle is that every query, insert, update, or delete must be scoped to the current restaurant (tenant) so that no user—whether owner, manager, or staff—can ever “see” another shop’s data. Below are the key strategies to achieve that:
 
 ---
 
@@ -14,7 +14,7 @@ Data isolation and security in a multi-tenant SaaS like Shop-Copilot are critica
    * Whenever you create a new record—whether via the Admin Dashboard (web) or via API calls from the iOS app—always set `restaurant_id = CURRENT_TENANT_ID`.
    * On the backend, you can derive `CURRENT_TENANT_ID` from:
 
-     * The subdomain (e.g. `demo-ramen.shop-copilot.com`) via middleware, or
+     * The subdomain (e.g. `demo-ramen.coorder`) via middleware, or
      * A custom claim inside the user’s JWT (more on that below).
 
 3. **Never Expose a “Global” List Without a WHERE Clause**
@@ -63,7 +63,7 @@ Instead of manually adding `WHERE restaurant_id = …` to every query, Supabase�
    * **(B) Look up `restaurant_id` by subdomain in a middleware function**
      If you prefer not to embed it in the JWT, you can create a Supabase Edge Function (or Next.js API route) that:
 
-     1. Reads the Host header (e.g. `demo-ramen.shop-copilot.com`).
+     1. Reads the Host header (e.g. `demo-ramen.coorder`).
      2. Queries `restaurants` to find the matching `id`.
      3. Sets a Postgres session variable: `SET app.current_restaurant_id = '<UUID>'`.
      4. Inside your RLS policy, you refer to that session variable:
@@ -104,7 +104,7 @@ On the web side (Next.js), you typically determine “which restaurant” by rea
    export function middleware(req: NextRequest) {
      const host = req.headers.get("host") || "";
      const subdomain = host.split(".")[0];           // e.g. "demo-ramen"
-     if (!subdomain || subdomain === "shop-copilot") {
+     if (!subdomain || subdomain === "coorder") {
        return NextResponse.next();                    // landing page or 404
      }
 

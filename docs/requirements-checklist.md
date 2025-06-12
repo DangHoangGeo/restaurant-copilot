@@ -1,4 +1,4 @@
-Below is a comprehensive, sectioned checklist covering **every requirement** for Shop-Copilot. Use this to mark off features as they are implemented and verified.
+Below is a comprehensive, sectioned checklist covering **every requirement** for CoOrder. Use this to mark off features as they are implemented and verified.
 
 ---
 
@@ -190,12 +190,12 @@ Below is a comprehensive, sectioned checklist covering **every requirement** for
   * [ ] Inserts into `restaurants` with `(name, subdomain, default_language)`.
   * [ ] Updates Auth user’s custom claims: `app_metadata.restaurant_id = restaurant_id`, `role = "owner"`.
   * [ ] Inserts into `users` table with `(id = auth user ID, restaurant_id, role = "owner", name, email)`.
-  * [ ] Returns `{ success: true, redirect: "https://{subdomain}.shop-copilot.com/ja/dashboard" }`.
+  * [ ] Returns `{ success: true, redirect: "https://{subdomain}.coorder/ja/dashboard" }`.
 
 * [ ] **Wildcard Subdomain Setup**
 
-  * [ ] DNS: `CNAME *.shop-copilot.com → cname.vercel-dns.com`.
-  * [ ] Vercel: wildcard domain `*.shop-copilot.com` and root `shop-copilot.com` configured.
+  * [ ] DNS: `CNAME *.coorder → cname.vercel-dns.com`.
+  * [ ] Vercel: wildcard domain `*.coorder` and root `coorder` configured.
   * [ ] Next.js middleware extracts `subdomain` from `Host` header and calls `/api/v1/restaurant/exists?subdomain=…` to validate.
 
 * [ ] **Restaurant Existence API**
@@ -254,7 +254,7 @@ Below is a comprehensive, sectioned checklist covering **every requirement** for
   * [ ] “Generate QR” page that displays a QR code for URL:
 
     ```
-    https://{subdomain}.shop-copilot.com/{locale}/customer/order?tableId={tableId}
+    https://{subdomain}.coorder/{locale}/customer/order?tableId={tableId}
     ```
   * [ ] “Download PNG” button to download the QR code image.
 

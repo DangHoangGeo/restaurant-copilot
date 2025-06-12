@@ -1,0 +1,486 @@
+/* 
+  Localizable.strings (Vietnamese)
+  SOder
+*/
+
+// MARK: - App General
+"app_name" = "SOder";
+"app_subtitle" = "Quản lý Đặt món Nhà hàng";
+
+// MARK: - Login Screen
+"login_title" = "Đăng nhập";
+"login_subtitle" = "Nhập thông tin đăng nhập nhân viên nhà hàng";
+"restaurant_subdomain" = "Subdomain Nhà hàng";
+"restaurant_subdomain_placeholder" = "ví dụ: nhahangtoi";
+"email" = "Email";
+"email_placeholder" = "nhanvien@nhahang.com";
+"password" = "Mật khẩu";
+"password_placeholder" = "Nhập mật khẩu";
+"sign_in" = "Đăng nhập";
+"signing_in" = "Đang đăng nhập...";
+"login_error" = "Lỗi đăng nhập";
+"ok" = "OK";
+
+// MARK: - Common Terms
+"cancel" = "Hủy";
+"done" = "Xong";
+"save" = "Lưu";
+"delete" = "Xóa";
+"edit" = "Sửa";
+"add" = "Thêm";
+"remove" = "Xóa bỏ";
+"yes" = "Có";
+"no" = "Không";
+"loading" = "Đang tải";
+"error" = "Lỗi";
+"success" = "Thành công";
+
+// MARK: - Order Management
+"orders" = "Đơn hàng";
+"order_details" = "Chi tiết đơn hàng";
+"table" = "Bàn";
+"guest_count" = "Khách";
+"time" = "Thời gian";
+"status" = "Trạng thái";
+"total" = "Tổng cộng";
+"subtotal" = "Tạm tính";
+"tax" = "Thuế";
+"discount" = "Giảm giá";
+
+// MARK: - Kitchen
+"kitchen" = "Bếp";
+"kitchen_board" = "Bảng bếp";
+"ready_to_serve" = "Sẵn sàng phục vụ";
+"in_progress" = "Đang thực hiện";
+"pending" = "Đang chờ";
+
+// MARK: - Checkout
+"checkout" = "Thanh toán";
+"payment_method" = "Phương thức thanh toán";
+"cash" = "Tiền mặt";
+"card" = "Thẻ";
+"paypay" = "PayPay";
+"received_amount" = "Số tiền nhận";
+"change" = "Tiền thừa";
+"apply_discount" = "Áp dụng giảm giá";
+"discount_code" = "Mã giảm giá";
+"discount_percentage" = "Phần trăm giảm giá";
+"discount_amount" = "Số tiền giảm giá";
+"complete_checkout" = "Hoàn tất thanh toán";
+"print_receipt_only" = "Chỉ in hóa đơn";
+"checkout_complete" = "Thanh toán hoàn tất";
+"checkout_success_message" = "Đơn hàng đã hoàn tất và hóa đơn đã được in thành công.";
+"insufficient_amount" = "Số tiền không đủ";
+"processing" = "Đang xử lý...";
+
+// MARK: - Checkout Additional Keys
+"checkout_discount_section_title" = "Giảm giá";
+"checkout_remove_discount_button" = "Xóa bỏ";
+"checkout_discount_code_placeholder" = "Nhập mã giảm giá";
+"checkout_discount_type_picker_label" = "Loại giảm giá";
+"checkout_discount_type_percentage" = "Phần trăm";
+"checkout_discount_type_fixed" = "Số tiền cố định";
+"checkout_price_after_discount_label" = "Sau khi giảm giá";
+"checkout_price_tax_label" = "Thuế (%d%%)";
+"checkout_total_label" = "Tổng cộng";
+
+// MARK: - Printer
+"printer" = "Máy in";
+"printers" = "Máy in";
+"printer_settings" = "Cài đặt máy in";
+"add_printer" = "Thêm máy in";
+"print" = "In";
+"printing" = "Đang in...";
+"print_error" = "Lỗi in";
+"printer_not_found" = "Không tìm thấy máy in";
+"printer_disconnected_status" = "Đã ngắt kết nối";
+"printer_default_suffix" = " (Mặc định)";
+"printer_default_config_log" = "Đang sử dụng cấu hình máy in mặc định - hãy định cấu hình máy in của riêng bạn trong cài đặt";
+"printer_connecting_status" = "Đang kết nối...";
+"printer_connected_to_printer_status" = "Đã kết nối với %@";
+"printer_failed_to_connect_status" = "Không thể kết nối";
+"printer_invalid_address_format_error" = "Định dạng địa chỉ máy in không hợp lệ";
+"printer_unable_to_reach_error" = "Không thể kết nối tới máy in";
+"printer_bluetooth_connection_failed_error" = "Kết nối Bluetooth không thành công";
+"printer_disconnected_log" = "Đã ngắt kết nối khỏi máy in";
+"printer_no_printer_connected_error" = "Không có máy in nào được kết nối";
+"printer_test_receipt_success_log" = "Đã in biên lai thử nghiệm thành công";
+"printer_test_print_failed_log" = "In thử nghiệm thất bại: %@";
+"printer_order_receipt_success_log" = "Đã in biên lai cho đơn hàng %@";
+"printer_receipt_print_failed_log" = "In biên lai thất bại: %@";
+"printer_kitchen_summary_success_log" = "Đã in tóm tắt bếp cho %@";
+"printer_kitchen_summary_failed_log" = "In tóm tắt bếp thất bại: %@";
+"printer_kitchen_test_receipt_success_log" = "Đã in biên lai thử nghiệm bếp thành công";
+"printer_kitchen_test_print_failed_log" = "In thử nghiệm bếp thất bại: %@";
+"printer_saved_printer_status" = "Đã lưu: %@";
+"printer_type_bluetooth" = "Bluetooth";
+"printer_type_network" = "Mạng";
+"printer_checkout_receipt_success_log" = "Đã in biên lai thanh toán - Tổng cộng: ¥%@";
+"printer_failed_to_format_kitchen_slip_error" = "Không thể định dạng phiếu bếp";
+"printer_kitchen_slip_success_log" = "Đã in phiếu bếp cho đơn hàng %@";
+"printer_kitchen_board_summary_title" = "TÓM TẮT BẢNG BẾP";
+"printer_kitchen_board_items" = "Mặt hàng: %@";
+"printer_kitchen_board_time" = "Thời gian: %@";
+"printer_kitchen_board_tables" = "Bàn: %@";
+"printer_kitchen_board_status" = "Trạng thái: %@";
+"printer_kitchen_board_notes" = "Ghi chú: %@";
+"printer_kitchen_board_end_of_summary" = "KẾT THÚC TÓM TẮT";
+"printer_kitchen_board_summary_success_log" = "Đã in tóm tắt bảng bếp với %@ mặt hàng";
+"printer_kitchen_board_summary_failed_log" = "In tóm tắt bảng bếp thất bại: %@";
+"printer_kitchen_item_summary_success_log" = "Đã in tóm tắt mặt hàng bếp cho %@";
+"printer_kitchen_item_summary_failed_log" = "In tóm tắt mặt hàng bếp thất bại: %@";
+"printer_kitchen_slip_title" = "PHIẾU BẾP";
+"printer_kitchen_slip_item" = "Mặt hàng: %@";
+"printer_kitchen_slip_quantity" = "Số lượng: %@";
+"printer_kitchen_slip_category" = "Danh mục: %@";
+"printer_kitchen_slip_special_notes" = "GHI CHÚ ĐẶC BIỆT:\n%@";
+"printer_kitchen_slip_priority" = "Ưu tiên: %@";
+"printer_priority_urgent" = "KHẨN CẤP";
+"printer_priority_normal" = "Bình thường";
+"printer_config_title" = "Cấu hình Máy in";
+"printer_mode_title" = "Chế độ Máy in";
+"printer_mode_dual" = "Chế độ Kép";
+"printer_mode_dual_kitchen_prefix" = "B: %@";
+"printer_mode_dual_checkout_prefix" = "T: %@";
+"printer_mode_dual_none" = "Không có";
+"printer_mode_single" = "Chế độ Đơn";
+"printer_current_status_title" = "Trạng thái Hiện tại";
+"printer_status_title" = "Trạng thái Máy in";
+"printer_disconnect_button" = "Ngắt kết nối";
+"printer_available_printers_title" = "Máy in Khả dụng";
+"printer_no_printers_found" = "Không tìm thấy máy in nào";
+"printer_scan_button" = "Quét";
+"printer_refresh_printers_button" = "Làm mới Máy in";
+"printer_test_printing_title" = "In Thử";
+"printer_print_test_receipt_button" = "In Biên lai Thử";
+"printer_print_kitchen_test_button" = "In Thử Bếp";
+"printer_print_logs_title" = "Nhật ký In";
+"printer_view_all_logs_button" = "Xem Tất cả Nhật ký";
+"printer_manual_setup_title" = "Thiết lập Thủ công";
+"printer_add_network_printer_button" = "Thêm Máy in Mạng";
+"printer_error_title" = "Lỗi";
+"printer_connection_alert_title" = "Kết nối Máy in";
+"printer_connection_success_message" = "Kết nối thành công với %@";
+"printer_connection_failed_message" = "Không thể kết nối với %@";
+"printer_test_receipt_success_alert" = "In biên lai thử thành công!";
+"printer_test_receipt_failed_alert" = "Không thể in biên lai thử";
+"printer_kitchen_test_success_alert" = "In biên lai thử bếp thành công!";
+"printer_kitchen_test_failed_alert" = "Không thể in biên lai thử bếp";
+"printer_connect_button" = "Kết nối";
+"printer_manual_setup_printer_info_title" = "Thông tin Máy in";
+"printer_manual_setup_printer_name_label" = "Tên Máy in";
+"printer_manual_setup_ip_address_label" = "Địa chỉ IP";
+"printer_manual_setup_port_label" = "Cổng";
+"printer_manual_setup_add_button" = "Thêm Máy in";
+"printer_manual_setup_help_text" = "Nhập địa chỉ IP và cổng của máy in mạng của bạn. Hầu hết các máy in hóa đơn sử dụng cổng 9100.";
+"printer_mode_single_display_name" = "Chế độ một máy in";
+"printer_mode_dual_display_name" = "Chế độ hai máy in";
+"printer_mode_single_description" = "Sử dụng một máy in cho cả đơn đặt hàng bếp và biên lai của khách hàng";
+"printer_mode_dual_description" = "Sử dụng các máy in riêng biệt: một cho đơn đặt hàng bếp, một cho biên lai của khách hàng";
+"printer_type_receipt_display_name" = "Máy in biên lai";
+"printer_type_kitchen_display_name" = "Máy in bếp";
+"printer_type_label_display_name" = "Máy in nhãn";
+"printer_add_edit_info_title" = "Thông tin Máy in";
+"printer_add_edit_name_label" = "Tên Máy in";
+"printer_add_edit_type_label" = "Loại Máy in";
+"printer_add_edit_network_settings_title" = "Cài đặt Mạng";
+"printer_add_edit_ip_address_label" = "Địa chỉ IP";
+"printer_add_edit_port_label" = "Cổng";
+"printer_add_edit_advanced_settings_title" = "Cài đặt Nâng cao";
+"printer_add_edit_connection_timeout_label" = "Thời gian chờ kết nối: %@ giây";
+"printer_add_edit_max_retries_label" = "Số lần thử lại tối đa: %@";
+"printer_add_edit_notes_title" = "Ghi chú (Tùy chọn)";
+"printer_add_edit_notes_placeholder" = "Thêm ghi chú về máy in này...";
+"printer_add_edit_issues_title" = "Sự cố";
+"printer_add_edit_test_connection_title" = "Kiểm tra Kết nối";
+"printer_add_edit_testing_button" = "Đang kiểm tra...";
+"printer_add_edit_test_connection_button" = "Kiểm tra Kết nối";
+"printer_add_edit_connection_success_alert" = "✅ Kết nối thành công!";
+"printer_add_edit_connection_failed_alert" = "❌ Kết nối thất bại";
+"printer_add_edit_help_text" = "Đảm bảo máy in của bạn được kết nối vào cùng một mạng và hỗ trợ lệnh ESC/POS. Hầu hết các máy in hóa đơn nhiệt sử dụng cổng 9100.";
+"printer_add_title" = "Thêm Máy in";
+"printer_edit_title" = "Sửa Máy in";
+"restaurant_settings_info_title" = "Thông tin Nhà hàng";
+"restaurant_settings_name_label" = "Tên Nhà hàng";
+"restaurant_settings_address_label" = "Địa chỉ";
+"restaurant_settings_phone_label" = "Số Điện thoại";
+"restaurant_settings_website_label" = "Trang web";
+"restaurant_settings_receipt_title" = "Cài đặt Biên lai";
+"restaurant_settings_datetime_format_label" = "Định dạng Ngày/Giờ";
+"restaurant_settings_datetime_format_current" = "Định dạng hiện tại: %@";
+"restaurant_settings_preview_title" = "Xem trước";
+"restaurant_settings_preview_name_placeholder" = "Tên Nhà hàng";
+"restaurant_settings_preview_phone_prefix" = "ĐT: %@";
+"restaurant_settings_help_text" = "Thông tin này sẽ xuất hiện trên biên lai in và đơn đặt hàng bếp.";
+"restaurant_settings_title" = "Cài đặt Nhà hàng";
+"printer_mode_selection_header_title" = "Chế độ Cài đặt Máy in";
+"printer_mode_selection_header_subtitle" = "Chọn cách bạn muốn cấu hình máy in của mình";
+"printer_mode_selection_issues_title" = "Sự cố Cài đặt:";
+"printer_mode_selection_alert_enable_dual_title" = "Bật Chế độ Hai Máy in?";
+"printer_mode_selection_alert_auto_assign_button" = "Tự động Gán";
+"printer_mode_selection_alert_manual_setup_button" = "Thiết lập Thủ công";
+"printer_mode_selection_alert_message" = "Bạn có thể tự động gán máy in dựa trên loại của chúng hoặc thiết lập thủ công.";
+"printer_mode_selection_dual_assignment_title" = "Gán Máy in Kép";
+"printer_mode_selection_kitchen_printer_title" = "Bếp";
+"printer_mode_selection_checkout_printer_title" = "Thanh toán";
+"printer_mode_selection_not_assigned" = "Chưa Gán";
+"printer_mode_selection_dual_assign_description" = "Gán máy in cụ thể cho đơn đặt hàng bếp và biên lai của khách hàng.";
+"printer_mode_selection_kitchen_picker_label" = "Máy in Bếp";
+"printer_mode_selection_checkout_picker_label" = "Máy in Thanh toán";
+"printer_mode_selection_picker_none" = "Không có";
+"printer_mode_selection_test_kitchen_button" = "Kiểm tra Máy in Bếp";
+"printer_mode_selection_test_checkout_button" = "Kiểm tra Máy in Thanh toán";
+"printer_mode_selection_dual_setup_title" = "Thiết lập Máy in Kép";
+"printer_config_status_title" = "Trạng thái Cấu hình";
+"printer_config_status_configured_title" = "Máy in Đã được Cấu hình";
+"printer_config_status_default_title" = "Đang sử dụng Cài đặt Mặc định";
+"printer_config_status_default_subtitle" = "Định cấu hình máy in của riêng bạn để kiểm soát tốt hơn";
+"printer_config_status_custom_subtitle" = "Cấu hình máy in tùy chỉnh đang hoạt động";
+"printer_config_setup_button" = "Thiết lập";
+"printer_config_active_printer_title" = "Máy in Hoạt động";
+"printer_config_configured_printers_title" = "Máy in Đã Cấu hình";
+"printer_config_add_another_button" = "Thêm Máy in Khác";
+"printer_config_get_started_title" = "Bắt đầu";
+"printer_config_add_first_button" = "Thêm Máy in Đầu tiên của Bạn";
+"printer_config_why_configure_title" = "Tại sao nên cấu hình máy in của bạn?";
+"printer_config_why_configure_item1" = "• Độ tin cậy kết nối tốt hơn";
+"printer_config_why_configure_item2" = "• Cài đặt thời gian chờ và thử lại tùy chỉnh";
+"printer_config_why_configure_item3" = "• Hỗ trợ nhiều máy in";
+"printer_config_why_configure_item4" = "• Chi tiết nhà hàng được cá nhân hóa trên biên lai";
+"printer_config_restaurant_info_title" = "Thông tin Nhà hàng";
+"printer_config_edit_restaurant_button" = "Chỉnh sửa Chi tiết Nhà hàng";
+"printer_config_default_settings_title" = "Cài đặt Máy in Mặc định";
+"printer_config_fallback_title" = "Cấu hình Dự phòng";
+"printer_config_default_ip_label" = "IP: %@";
+"printer_config_default_port_label" = "Cổng: %@";
+"printer_config_default_usage_info" = "Điều này được sử dụng khi không có máy in tùy chỉnh nào được cấu hình";
+"printer_config_delete_alert_title" = "Xóa Máy in";
+"printer_config_delete_alert_message" = "Bạn có chắc chắn muốn xóa cấu hình máy in này không?";
+"printer_config_row_active_badge" = "Hoạt động";
+"printer_config_row_deactivate_button" = "Hủy kích hoạt";
+"printer_config_row_activate_button" = "Kích hoạt";
+"connection_status_database" = "Cơ sở dữ liệu";
+"connection_status_live_updates" = "Cập nhật Trực tiếp";
+"connection_status_printer" = "Máy in";
+
+// MARK: - Tab Navigation
+"tab_orders" = "Đơn hàng";
+"tab_kitchen" = "Bếp";
+"tab_printer_settings" = "Cài đặt máy in";
+
+// MARK: - Settings
+"settings" = "Cài đặt";
+"profile" = "Hồ sơ";
+"logout" = "Đăng xuất";
+"language" = "Ngôn ngữ";
+"notifications" = "Thông báo";
+
+// MARK: - Error Messages
+"network_error" = "Lỗi kết nối mạng";
+"authentication_failed" = "Xác thực thất bại";
+"invalid_credentials" = "Thông tin đăng nhập không hợp lệ";
+"server_error" = "Đã xảy ra lỗi máy chủ";
+"unknown_error" = "Đã xảy ra lỗi không xác định";
+
+// MARK: - Kitchen Board Additional
+"kitchen_all" = "Tất cả";
+"kitchen_loading_data" = "Đang tải dữ liệu bếp...";
+"kitchen_retry" = "Thử lại";
+"kitchen_print_status" = "Trạng thái in";
+"kitchen_print_success" = "Đã in tóm tắt bếp thành công";
+"kitchen_print_failure" = "In tóm tắt bếp thất bại: %@";
+"kitchen_item_print_success" = "Đã in chi tiết món thành công";
+"kitchen_item_print_failure" = "In món thất bại: %@";
+"order_table_number" = "Bàn %d";
+
+"kitchen_refresh" = "Làm mới bếp";
+"kitchen_print_summary" = "In tóm tắt";
+"kitchen_auto_printing" = "Tự động in";
+"kitchen_auto_print_new_orders" = "Tự động in đơn mới";
+"kitchen_clear_print_history" = "Xóa lịch sử in";
+"kitchen_sign_out" = "Đăng xuất";
+
+// MARK: - Auto Print Status
+"status_auto_printing" = "Đang tự động in...";
+"status_auto_print" = "Tự động in";
+"status_auto_print_stats" = "Đơn: %d | Món sẵn: %d";
+
+// MARK: - Debug Views
+"debug_tap_change_status" = "DEBUG: đổi trạng thái";
+
+// MARK: - Kitchen Board Components
+"kitchen_urgent" = "KHẨN CẤP";
+"kitchen_modifications" = "Thay đổi:";
+"kitchen_tables" = "Bàn:";
+"kitchen_status" = "Trạng thái:";
+"kitchen_tap_to" = "Nhấn để";
+"kitchen_size" = "Kích cỡ:";
+"kitchen_just_now" = "Vừa xong";
+"kitchen_now" = "Bây giờ";
+
+// MARK: - Kitchen Empty States
+"kitchen_empty_all_caught_up" = "Đã xong hết!";
+"kitchen_empty_no_items" = "Không có món nào cần chuẩn bị";
+"kitchen_empty_total_orders" = "Có {count} đơn hàng tổng cộng";
+"kitchen_empty_no_orders" = "Có vẻ như chưa có đơn hàng nào.";
+
+// MARK: - Kitchen Status
+"kitchen_status_new_orders" = "Đơn hàng mới";
+
+// MARK: - Kitchen Items Count
+"kitchen_items_count" = "{count} món";
+
+// MARK: - Kitchen Action Labels (Short)
+"kitchen_action_start" = "Bắt đầu";
+"kitchen_action_ready" = "Hoàn thành";
+"kitchen_action_serve" = "Phục vụ";
+"kitchen_action_done" = "Xong";
+"kitchen_action_reorder" = "Đặt lại";
+
+// Kitchen Action Labels
+"kitchen_action_start_preparing" = "bắt đầu chuẩn bị";
+"kitchen_action_mark_ready" = "đánh dấu sẵn sàng";
+"kitchen_action_mark_served" = "đánh dấu đã phục vụ";
+"kitchen_action_completed" = "hoàn thành";
+"kitchen_action_cancel_order" = "hủy đơn hàng";
+
+"kitchen_action_start_preparing_title" = "Bắt đầu chuẩn bị";
+"kitchen_action_mark_ready_title" = "Đánh dấu sẵn sàng";
+"kitchen_action_mark_served_title" = "Đánh dấu đã phục vụ";
+"kitchen_action_complete_title" = "Hoàn thành";
+"kitchen_action_reorder_title" = "Đặt lại";
+
+"kitchen_action_start" = "Bắt đầu";
+"kitchen_action_ready" = "Sẵn sàng";
+"kitchen_action_serve" = "Phục vụ";
+"kitchen_action_done" = "Xong";
+
+// Kitchen Status Columns
+"kitchen_status_new" = "Mới";
+"kitchen_status_preparing" = "Đang chuẩn bị";
+"kitchen_status_ready" = "Sẵn sàng";
+
+// Empty State
+"kitchen_empty_title" = "Đã hoàn thành tất cả!";
+"kitchen_empty_subtitle" = "Không có món nào cần chuẩn bị";
+"kitchen_empty_orders_count" = "Đơn hàng đang hoạt động: %d";
+
+// MARK: - Debug
+"debug_item_name" = "DEBUG";
+"debug_quantity" = "DEBUG Số lượng";
+"debug_tables" = "DEBUG Bàn";
+"debug_tap_change_status" = "CHẠM ĐỂ THAY ĐỔI TRẠNG THÁI";
+
+// MARK: - Orders Filter
+"orders_filter_active" = "Hoạt động";
+"orders_filter_new" = "Mới";
+"orders_filter_serving" = "Đang phục vụ";
+"orders_filter_completed" = "Hoàn thành";
+"orders_filter_canceled" = "Đã hủy";
+
+// MARK: - Orders UI
+"orders_system_message" = "Thông báo Hệ thống";
+"orders_ok" = "OK";
+"orders_loading" = "Đang tải đơn hàng...";
+"orders_retry" = "Thử lại";
+"orders_refresh" = "Làm mới Đơn hàng";
+"orders_auto_printing" = "Tự động In";
+"orders_auto_print_new_orders" = "Tự động In Đơn hàng Mới";
+"orders_clear_print_history" = "Xóa Lịch sử In";
+"orders_sign_out" = "Đăng xuất";
+"orders_active_orders" = "Đơn hàng Hoạt động";
+"orders_all_orders" = "Tất cả Đơn hàng";
+"orders_select_order" = "Chọn Đơn hàng";
+"orders_select_order_desc" = "Chọn đơn hàng từ thanh bên để xem chi tiết";
+"orders_table_prefix" = "Bàn";
+"orders_id_prefix" = "ID";
+"orders_new_badge" = "MỚI";
+"orders_unknown_time" = "Không xác định";
+"orders_more_items" = "và {count} món khác...";
+"orders_unknown_item" = "Không xác định";
+
+// MARK: - Order Detail
+"orders_not_found" = "Không tìm thấy đơn hàng";
+"orders_print_receipt" = "In Biên lai";
+"orders_total_amount" = "Tổng Số tiền";
+"orders_mark_as_serving" = "Đánh dấu Đang phục vụ";
+"orders_checkout" = "Thanh toán";
+
+// MARK: - Printer Settings View Localization
+"printer_settings_title" = "Cài đặt Máy in";
+"printer_configuration_title" = "Cấu hình Máy in";
+"printer_mode_title" = "Chế độ Máy in";
+"printer_mode_dual_kitchen_prefix" = "K: %@";
+"printer_mode_dual_checkout_prefix" = "C: %@";
+"printer_mode_dual_none" = "Không có";
+"printer_mode_single_display" = "Chế độ Đơn";
+"printer_current_status_title" = "Trạng thái Hiện tại";
+"printer_status_label" = "Trạng thái Máy in";
+"printer_disconnect_button" = "Ngắt kết nối";
+"printer_available_printers_title" = "Máy in Khả dụng";
+"printer_no_printers_found" = "Không tìm thấy máy in";
+"printer_scan_button" = "Quét";
+"printer_refresh_printers_button" = "Làm mới Máy in";
+"printer_test_printing_title" = "In Thử nghiệm";
+"printer_print_test_receipt_button" = "In Biên lai Thử nghiệm";
+"printer_print_kitchen_test_button" = "In Thử nghiệm Bếp";
+"printer_print_logs_title" = "Nhật ký In";
+"printer_view_all_logs_button" = "Xem Tất cả Nhật ký";
+"printer_manual_setup_title" = "Thiết lập Thủ công";
+"printer_add_network_printer_button" = "Thêm Máy in Mạng";
+"printer_error_title" = "Lỗi";
+"printer_connection_alert_title" = "Kết nối Máy in";
+"printer_alert_ok_button" = "OK";
+"printer_done_button" = "Xong";
+"printer_connect_button" = "Kết nối";
+"printer_cancel_button" = "Hủy";
+
+// MARK: - Receipt Header Configuration
+"receipt_header_title" = "Tiêu đề Biên lai";
+"receipt_header_config_title" = "Cấu hình Tiêu đề Biên lai";
+"receipt_header_restaurant_name_label" = "Tên Nhà hàng";
+"receipt_header_restaurant_name_placeholder" = "Nhập tên nhà hàng";
+"receipt_header_address_label" = "Địa chỉ";
+"receipt_header_address_placeholder" = "Nhập địa chỉ";
+"receipt_header_phone_label" = "Số điện thoại";
+"receipt_header_phone_placeholder" = "Nhập số điện thoại";
+"receipt_header_auto_fetch_button" = "Tự động Lấy từ Cài đặt";
+"receipt_header_auto_fetch_title" = "Thiết lập Nhanh";
+"receipt_header_auto_fetch_description" = "Tự động điền các trường với cài đặt nhà hàng hiện tại.";
+"receipt_header_preview_title" = "Xem trước";
+"receipt_header_preview_section" = "Xem trước";
+"receipt_header_settings_title" = "Thông tin Tiêu đề";
+"receipt_header_settings_description" = "Thông tin này sẽ xuất hiện ở đầu tất cả biên lai được in.";
+"receipt_header_help_text" = "Cấu hình thông tin tiêu đề xuất hiện trên biên lai được in.";
+"printer_save_button" = "Lưu";
+
+// MARK: - Print Language Configuration
+"print_language_title" = "Ngôn ngữ In";
+"print_language_config_title" = "Cấu hình Ngôn ngữ In";
+"print_language_selection_title" = "Lựa chọn Ngôn ngữ";
+"print_language_selection_label" = "Ngôn ngữ cho Biên lai";
+"print_language_english" = "Tiếng Anh";
+"print_language_japanese" = "Tiếng Nhật";
+"print_language_vietnamese" = "Tiếng Việt";
+"print_language_fallback_title" = "Thông tin Dự phòng";
+"print_language_fallback_description" = "Khi máy in không hỗ trợ ngôn ngữ đã chọn, hệ thống sẽ tự động sử dụng mã món hàng thay vì tên món hàng đã dịch.";
+"print_language_current_fallback_message" = "Ngôn ngữ hiện tại không được hỗ trợ đầy đủ bởi hầu hết các máy in. Mã món hàng sẽ được sử dụng để in.";
+"print_language_current_status" = "Cấu hình Hiện tại";
+"print_language_selected_language" = "Ngôn ngữ Đã chọn";
+"print_language_printer_support" = "Hỗ trợ Máy in";
+"print_language_supported" = "Hỗ trợ Đầy đủ";
+"print_language_not_supported" = "Hỗ trợ Hạn chế";
+"print_language_fallback_mode" = "Chế độ Dự phòng";
+"print_language_changed_success" = "Ngôn ngữ in đã được cập nhật thành công!";
+"print_language_fallback_note" = "Nếu máy in không hỗ trợ ngôn ngữ đã chọn, mã món hàng sẽ được sử dụng thay vì tên.";
+
+// MARK: - Manual Printer Setup Localization
+"manual_printer_setup_title" = "Thêm Máy in Mạng";
+"manual_printer_setup_printer_info_title" = "Thông tin Máy in";
+"manual_printer_setup_printer_name_label" = "Tên Máy in";
+"manual_printer_setup_ip_address_label" = "Địa chỉ IP";
+"manual_printer_setup_port_label" = "Cổng";
+"manual_printer_setup_connection_title" = "Kết nối";
+"manual_printer_setup_add_button" = "Thêm Máy in";
+"manual_printer_setup_help_text" = "Nhập địa chỉ IP và cổng của máy in mạng. Hầu hết máy in biên lai sử dụng cổng 9100.";
+

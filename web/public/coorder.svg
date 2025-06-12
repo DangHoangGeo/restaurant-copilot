@@ -1,0 +1,27 @@
+<svg width="2560" height="2560" viewBox="0 0 2560 2560" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 0H2560V2560H0V0Z" fill="#D9D9D9" fill-opacity="0.1"/>
+<g filter="url(#filter0_d_3_120)">
+<path d="M978.769 677.525C1210.13 448.706 1582.62 449.864 1812.57 679.432L1815.26 682.143L1883.54 751.174C2112.36 982.534 2111.2 1355.03 1881.63 1584.97L1878.92 1587.67L1580.29 1883.02C1348.93 2111.84 976.438 2110.68 746.496 1881.11L743.798 1878.4L675.525 1809.37L672.844 1806.64C446.719 1575.09 448.764 1204.61 677.432 975.571L680.143 972.871L978.769 677.525Z" stroke="url(#paint0_linear_3_120)" stroke-width="435" shape-rendering="crispEdges"/>
+</g>
+<path d="M1601.18 723.39C1782.12 586.341 2039.91 621.927 2176.96 802.874L2206.21 841.5C2203.05 834.467 2199.78 827.471 2196.41 820.512C2196.95 821.094 2197.49 821.675 2198.03 822.254C2343.84 1124.89 2290.09 1499.18 2037.87 1748.63L1739.24 2043.98L1737.38 2045.82C1419.57 2358.15 908.735 2354.72 595.163 2037.66L526.889 1968.63L525.052 1966.77C499.605 1940.88 476.256 1913.7 455 1885.46C597.576 1988.18 795.954 1991.09 943.349 1879.46L1028.52 1814.94C1163.12 1870.02 1323.43 1843.41 1433.36 1734.7L1731.98 1439.35C1878.27 1294.67 1880.14 1059.15 1736.6 912.166L1734.9 910.44L1666.63 841.409C1632.28 806.685 1592.82 780.099 1550.64 761.663L1601.18 723.39Z" fill="url(#paint1_linear_3_120)"/>
+<defs>
+<filter id="filter0_d_3_120" x="287.081" y="289.081" width="2047.3" height="2087.78" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dx="33" dy="76"/>
+<feGaussianBlur stdDeviation="14.7"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.416898 0 0 0 0 0.397458 0 0 0 0 0.397458 0 0 0 0.16 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_3_120"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_3_120" result="shape"/>
+</filter>
+<linearGradient id="paint0_linear_3_120" x1="-245.938" y1="1709.82" x2="1555.56" y2="879.318" gradientUnits="userSpaceOnUse">
+<stop stop-color="#019AB1"/>
+<stop offset="0.966811" stop-color="#0264AC"/>
+</linearGradient>
+<linearGradient id="paint1_linear_3_120" x1="550.934" y1="2635.4" x2="1164.55" y2="786.511" gradientUnits="userSpaceOnUse">
+<stop stop-color="#003B7A"/>
+<stop offset="0.966811" stop-color="#003878"/>
+</linearGradient>
+</defs>
+</svg>

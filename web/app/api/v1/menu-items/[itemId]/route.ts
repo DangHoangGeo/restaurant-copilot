@@ -3,6 +3,25 @@ import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
+// Schema for toppings
+const toppingSchema = z.object({
+  name_en: z.string().min(1).max(100),
+  name_ja: z.string().max(100).optional(),
+  name_vi: z.string().max(100).optional(),
+  price: z.number().min(0),
+  position: z.number().optional(),
+});
+
+// Schema for menu item sizes
+const menuItemSizeSchema = z.object({
+  size_key: z.string().min(1).max(50),
+  name_en: z.string().min(1).max(100),
+  name_ja: z.string().max(100).optional(),
+  name_vi: z.string().max(100).optional(),
+  price: z.number().min(0),
+  position: z.number().optional(),
+});
+
 // Schema for validating the request body when updating a menu item
 const menuItemUpdateSchema = z.object({
   category_id: z.string().uuid().optional(),
@@ -18,6 +37,8 @@ const menuItemUpdateSchema = z.object({
   weekday_visibility: z.array(z.number().min(1).max(7)).optional(),
   stock_level: z.number().min(0).optional(),
   position: z.number().optional(),
+  toppings: z.array(toppingSchema).optional(),
+  sizes: z.array(menuItemSizeSchema).optional(),
 });
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ itemId: string }> }) {
@@ -46,13 +67,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
     }
 
     const updateData = validatedData.data;
+    const { toppings, sizes, ...menuItemUpdateData } = updateData;
 	console.log('Update data:', updateData);
     // If category_id is being updated, verify it belongs to the user's restaurant
-    if (updateData.category_id) {
+    if (menuItemUpdateData.category_id) {
       const { data: category, error: categoryError } = await supabaseAdmin
         .from('categories')
         .select('restaurant_id')
-        .eq('id', updateData.category_id)
+        .eq('id', menuItemUpdateData.category_id)
         .single();
 
       if (categoryError || !category || category.restaurant_id !== user.restaurantId) {
@@ -71,20 +93,112 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
       return NextResponse.json({ error: 'Menu item not found or does not belong to your restaurant' }, { status: 404 });
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('menu_items')
-      .update(updateData)
-      .eq('id', itemId)
-      .eq('restaurant_id', user.restaurantId)
-      .select()
-      .single();
+    // Update menu item basic data if provided
+    if (Object.keys(menuItemUpdateData).length > 0) {
+      const { error } = await supabaseAdmin
+        .from('menu_items')
+        .update(menuItemUpdateData)
+        .eq('id', itemId)
+        .eq('restaurant_id', user.restaurantId);
 
-    if (error) {
-      console.error('Error updating menu item:', error);
-      return NextResponse.json({ message: 'Error updating menu item', details: error.message }, { status: 500 });
+      if (error) {
+        console.error('Error updating menu item:', error);
+        return NextResponse.json({ message: 'Error updating menu item', details: error.message }, { status: 500 });
+      }
     }
 
-    return NextResponse.json({ message: 'Menu item updated successfully', menuItem: data }, { status: 200 });
+    // Handle toppings update if provided
+    if (toppings !== undefined) {
+      // Delete existing toppings
+      const { error: deleteError } = await supabaseAdmin
+        .from('toppings')
+        .delete()
+        .eq('menu_item_id', itemId)
+        .eq('restaurant_id', user.restaurantId);
+
+      if (deleteError) {
+        console.error('Error deleting existing toppings:', deleteError);
+        return NextResponse.json({ message: 'Error updating toppings', details: deleteError.message }, { status: 500 });
+      }
+
+      // Insert new toppings if any
+      if (toppings.length > 0) {
+        const toppingsData = toppings.map((topping, index) => ({
+          restaurant_id: user.restaurantId,
+          menu_item_id: itemId,
+          name_en: topping.name_en,
+          name_ja: topping.name_ja || topping.name_en,
+          name_vi: topping.name_vi || topping.name_en,
+          price: topping.price,
+          position: topping.position ?? index,
+        }));
+
+        const { error: insertError } = await supabaseAdmin
+          .from('toppings')
+          .insert(toppingsData);
+
+        if (insertError) {
+          console.error('Error inserting new toppings:', insertError);
+          return NextResponse.json({ message: 'Error updating toppings', details: insertError.message }, { status: 500 });
+        }
+      }
+    }
+
+    // Handle sizes update if provided
+    if (sizes !== undefined) {
+      // Delete existing sizes
+      const { error: deleteError } = await supabaseAdmin
+        .from('menu_item_sizes')
+        .delete()
+        .eq('menu_item_id', itemId)
+        .eq('restaurant_id', user.restaurantId);
+
+      if (deleteError) {
+        console.error('Error deleting existing sizes:', deleteError);
+        return NextResponse.json({ message: 'Error updating sizes', details: deleteError.message }, { status: 500 });
+      }
+
+      // Insert new sizes if any
+      if (sizes.length > 0) {
+        const sizesData = sizes.map((size, index) => ({
+          restaurant_id: user.restaurantId,
+          menu_item_id: itemId,
+          size_key: size.size_key,
+          name_en: size.name_en,
+          name_ja: size.name_ja || size.name_en,
+          name_vi: size.name_vi || size.name_en,
+          price: size.price,
+          position: size.position ?? index,
+        }));
+
+        const { error: insertError } = await supabaseAdmin
+          .from('menu_item_sizes')
+          .insert(sizesData);
+
+        if (insertError) {
+          console.error('Error inserting new sizes:', insertError);
+          return NextResponse.json({ message: 'Error updating sizes', details: insertError.message }, { status: 500 });
+        }
+      }
+    }
+
+    // Fetch the complete updated menu item with toppings and sizes
+    const { data: completeMenuItem, error: completeError } = await supabaseAdmin
+      .from('menu_items')
+      .select(`
+        *,
+        toppings (*),
+        menu_item_sizes (*)
+      `)
+      .eq('id', itemId)
+      .single();
+
+    if (completeError) {
+      console.error('Error fetching complete menu item:', completeError);
+      return NextResponse.json({ message: 'Menu item updated but error fetching complete data', details: completeError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Menu item updated successfully', menuItem: completeMenuItem }, { status: 200 });
 
   } catch (error) {
     console.error('API Error in PUT menu item:', error);

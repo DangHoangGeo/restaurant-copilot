@@ -4,11 +4,12 @@
 /node_modules
 /.pnp
 .pnp.js
-
+*.xcuserdatad
 # testing
 /coverage
 
 *.plist
+mobile/SOder/SOder.xcodeproj
 
 # next.js
 /.next/

@@ -3,17 +3,21 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { getLocalizedText } from "@/lib/customerUtils";
-import type { RestaurantSettings } from "@/shared/types/customer";
+import type { RestaurantSettings, MenuItemSize, Topping } from '@/shared/types/customer';
+
+interface OrderSummaryItem {
+  uniqueId: string;
+  name_en: string;
+  name_ja: string;
+  name_vi: string;
+  qty: number;
+  price: number; // This is the final price per unit for this configuration
+  selectedSize?: MenuItemSize;
+  selectedToppings?: Topping[];
+}
 
 interface OrderSummaryProps {
-  items: Array<{
-    itemId: string;
-    name: string;
-    qty: number;
-    price: number;
-    quantity?: number;
-    itemName?: string;
-  }>;
+  items: OrderSummaryItem[];
   total: number;
   restaurantSettings: RestaurantSettings;
   locale: string;
@@ -26,23 +30,40 @@ export function OrderSummary({ items, total, restaurantSettings, locale , classN
   return (
     <Card className={`p-4 text-left ${className || ""}`}>
       <h3 className="text-lg font-semibold mb-3">{t("checkout.order_summary")}</h3>
-      {items.map((item, index) => (
-        <div key={`${item.itemId}-${index}`} className="flex justify-between items-start py-2 border-b last:border-b-0 dark:border-slate-700">
-          <div className="flex-1">
-            <h4 className="font-medium text-sm">
-              {getLocalizedText(item.name, locale)||item.itemName || item.name}
-            </h4>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              {t("checkout.quantity")}: {item.qty || item.quantity || 1}
-            </p>
+      {items.map((item, index) => {
+        const localizedItemName = getLocalizedText({ name_en: item.name_en, name_ja: item.name_ja, name_vi: item.name_vi }, locale);
+        let detailsDisplay: string[] = [];
+        if (item.selectedSize) {
+          const localizedSizeName = getLocalizedText({ name_en: item.selectedSize.name_en, name_ja: item.selectedSize.name_ja, name_vi: item.selectedSize.name_vi }, locale);
+          detailsDisplay.push(localizedSizeName);
+        }
+        if (item.selectedToppings && item.selectedToppings.length > 0) {
+          const toppingNames = item.selectedToppings.map(t => getLocalizedText({ name_en: t.name_en, name_ja: t.name_ja, name_vi: t.name_vi }, locale)).join(", ");
+          detailsDisplay.push(t('cart.toppings_label', { toppings: toppingNames }));
+        }
+        return (
+          <div key={item.uniqueId} className="flex justify-between items-start py-2 border-b last:border-b-0 dark:border-slate-700">
+            <div className="flex-1">
+              <h4 className="font-medium text-sm text-slate-900 dark:text-slate-100" title={localizedItemName}>
+                {localizedItemName}
+              </h4>
+              {detailsDisplay.length > 0 && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5" title={detailsDisplay.join(" / ")}>
+                  {detailsDisplay.join(" / ")}
+                </p>
+              )}
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                {t("checkout.quantity")}: {item.qty}
+              </p>
+            </div>
+            <div className="text-right ml-4">
+              <p className="font-medium text-sm text-slate-900 dark:text-slate-100">
+                {t("currency_format", { value: (item.price * item.qty) / 100 })}
+              </p>
+            </div>
           </div>
-          <div className="text-right ml-4">
-            <p className="font-medium">
-              {t("currency_format", { value: (item.price * (item.qty || item.quantity || 1)) })}
-            </p>
-          </div>
-        </div>
-      ))}
+        );
+      })}
       
       <div className="border-t pt-4 mt-4">
         <div className="flex justify-between items-center">

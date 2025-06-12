@@ -1,6 +1,6 @@
 {
   "HomePage": {
-    "heroTitle": "Modernize Your Restaurant with Shop-Copilot",
+    "heroTitle": "Modernize Your Restaurant with CoOrder",
     "heroSubtitle": "All-in-one, mobile-first platform for menus, orders, bookings, staff, and analytics. Delight customers and empower your team—anywhere, anytime.",
     "cta": "Get Started Free"
   },
@@ -46,7 +46,7 @@
   },
   "LandingPage": {
     "header": {
-      "logo_aria_label": "Shop-Copilot logo",
+      "logo_aria_label": "CoOrder logo",
       "login": "Login",
       "signup": "Sign Up"
     },
@@ -56,18 +56,18 @@
     "hero": {
       "headline_part1": "Mobile-First, AI-Augmented SaaS for ",
       "headline_part2": "Small Restaurants.",
-      "subheadline": "Shop-Copilot empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet.",
+      "subheadline": "CoOrder empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet.",
       "cta": {
         "signup": "Start Free Trial",
         "demo": "Watch Demo",
         "subtext": "No credit card required. 14-day free trial."
       },
-      "image_alt": "Shop-Copilot Dashboard Mockup"
+      "image_alt": "CoOrder Dashboard Mockup"
     },
     "social_proof": {
       "trusted_by": "Powering Success for Restaurants Like Yours",
       "testimonial1": {
-        "quote": "Shop-Copilot transformed our daily operations. Orders are smoother, staff is happier, and our customers love the QR ordering!"
+        "quote": "CoOrder transformed our daily operations. Orders are smoother, staff is happier, and our customers love the QR ordering!"
       },
       "testimonial2": {
         "quote": "The analytics dashboard is a game-changer. We can now make data-driven decisions that truly impact our bottom line."
@@ -78,7 +78,7 @@
     },
     "features": {
       "title": "Powerful Features to Accelerate Your Business",
-      "subtitle": "Shop-Copilot is packed with features designed to streamline your operations and delight your customers.",
+      "subtitle": "CoOrder is packed with features designed to streamline your operations and delight your customers.",
       "menu_management": {
         "title": "Intuitive Menu Management",
         "description": "Easily create, update, and organize your digital menus with photos, descriptions, and pricing. Supports multiple languages.",
@@ -128,7 +128,7 @@
     },
     "benefits": {
       "title": "Real Results for Your Restaurant",
-      "subtitle": "Shop-Copilot isn't just software; it's a growth partner. See how we help:",
+      "subtitle": "CoOrder isn't just software; it's a growth partner. See how we help:",
       "item1": "Increase Revenue by up to 20%",
       "item2": "Save up to 10 hours/week on admin tasks",
       "item3": "Boost Customer Satisfaction Scores",
@@ -139,8 +139,8 @@
     "faq": {
       "title": "Frequently Asked Questions",
       "item1": {
-        "q": "What kind of restaurants is Shop-Copilot for?",
-        "a": "Shop-Copilot is designed for small to medium-sized restaurants, cafes, bars, and food trucks looking to modernize their operations and improve customer experience."
+        "q": "What kind of restaurants is CoOrder for?",
+        "a": "CoOrder is designed for small to medium-sized restaurants, cafes, bars, and food trucks looking to modernize their operations and improve customer experience."
       },
       "item2": {
         "q": "Is it difficult to set up?",
@@ -148,7 +148,7 @@
       },
       "item3": {
         "q": "Do I need special hardware?",
-        "a": "No, Shop-Copilot is mobile-first. You can manage everything from your existing smartphones or tablets. No expensive POS systems needed."
+        "a": "No, CoOrder is mobile-first. You can manage everything from your existing smartphones or tablets. No expensive POS systems needed."
       },
       "item4": {
         "q": "What about customer support?",
@@ -157,7 +157,7 @@
     },
     "cta_section": {
       "title": "Ready to Transform Your Restaurant?",
-      "subtitle": "Join hundreds of restaurants simplifying their operations and boosting profits with Shop-Copilot.",
+      "subtitle": "Join hundreds of restaurants simplifying their operations and boosting profits with CoOrder.",
       "cta": {
         "signup": "Get Started For Free",
         "contact_sales": "Request a Demo"
@@ -301,7 +301,7 @@
       "settings_link": "Restaurant Settings",
       "logout_button": "Logout"
     },
-    "default_restaurant_name": "Shop-Copilot"
+    "default_restaurant_name": "CoOrder"
   },
   "AdminNav": {
     "admin_sidebar_dashboard": "Dashboard",
@@ -375,6 +375,63 @@
       "7_short": "Sunday"
     },
     "item": {
+      "name_en_label": "Name (English)",
+      "name_en_placeholder": "Enter name in English",
+      "name_ja_label": "Name (Japanese)",
+      "name_ja_placeholder": "Enter name in Japanese",
+      "name_vi_label": "Name (Vietnamese)",
+      "name_vi_placeholder": "Enter name in Vietnamese",
+      "description_en_label": "Description (English)",
+      "description_en_placeholder": "Enter description in English",
+      "description_ja_label": "Description (Japanese)",
+      "description_ja_placeholder": "Enter description in Japanese",
+      "description_vi_label": "Description (Vietnamese)",
+      "description_vi_placeholder": "Enter description in Vietnamese",
+      "price_label": "Price",
+      "price_placeholder": "Enter price",
+      "category_label": "Category",
+      "category_placeholder": "Select category",
+      "image_url_label": "Image URL",
+      "image_url_placeholder": "Enter image URL",
+      "image_file_label": "Upload Image",
+      "image_preview_alt": "Image preview",
+      "available_label": "Available",
+      "stock_level_label": "Stock Level",
+      "stock_level_placeholder": "Enter stock level",
+      "weekday_visibility_label": "Available Days",
+      "view_edit_toppings": "Toppings",
+      "addTopping": "Add Topping",
+      "topping_name_en_label": "Topping Name (English)",
+      "topping_name_en_placeholder": "Enter topping name in English",
+      "topping_name_ja_label": "Topping Name (Japanese)",
+      "topping_name_ja_placeholder": "Enter topping name in Japanese",
+      "topping_name_vi_label": "Topping Name (Vietnamese)",
+      "topping_name_vi_placeholder": "Enter topping name in Vietnamese",
+      "topping_price_label": "Topping Price",
+      "topping_price_placeholder": "Enter topping price",
+      "topping_position_label": "Position",
+      "topping_position_placeholder": "Enter position",
+      "view_edit_sizes": "Sizes",
+      "addSize": "Add Size",
+      "size_key_label": "Size Key",
+      "size_key_placeholder": "e.g., S, M, L",
+      "size_key_note": "Short identifier for this size",
+      "size_name_en_label": "Size Name (English)",
+      "size_name_en_placeholder": "e.g., Small, Medium, Large",
+      "size_name_ja_label": "Size Name (Japanese)",
+      "size_name_ja_placeholder": "Enter size name in Japanese",
+      "size_name_vi_label": "Size Name (Vietnamese)",
+      "size_name_vi_placeholder": "Enter size name in Vietnamese",
+      "size_price_label": "Size Price",
+      "size_price_placeholder": "Enter size price",
+      "size_position_label": "Position",
+      "size_position_placeholder": "Enter position",
+      "add_standard_sizes": "Add Standard Sizes (S/M/L)",
+      "add_custom_size": "Add Custom Size",
+      "set_base_price_first": "Set a base price first to generate standard sizes",
+      "auto_translations_label": "Auto-generated translations",
+      "adding_to_category": "Adding to category",
+      "select_category_first": "Please select a category first",
       "update_success": "Menu item updated successfully!",
       "create_success": "Menu item created successfully!",
       "save_error": "Failed to save menu item. Please try again.",
@@ -388,13 +445,18 @@
       "price": "Price",
       "image_url": "Image URL",
       "upload_image": "Upload Image",
-      "image_preview_alt": "Image preview",
       "image_upload_note": "Upload an image for the menu item (max 5MB).",
       "stock_level": "Stock Level",
       "is_available": "Is Available?",
       "weekday_visibility": "Visible on Weekdays",
       "reorder_success": "Menu items reordered successfully.",
-      "reorder_error": "Failed to reorder menu items."
+      "reorder_error": "Failed to reorder menu items.",
+      "auto_translate_name_en_placeholder":"Auto-translation",
+      "auto_translate_name_ja_placeholder":"Auto-translation",
+      "auto_translate_name_vi_placeholder":"Auto-translation",
+      "auto_translate_description_en_placeholder":"Auto-translation",
+      "auto_translate_description_ja_placeholder":"Auto-translation",
+      "auto_translate_description_vi_placeholder":"Auto-translation"
     },
     "errors": {
       "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
@@ -470,7 +532,7 @@
     }
   },
   "Metadata": {
-    "admin_dashboard_title": "Admin Dashboard - Shop Copilot"
+    "admin_dashboard_title": "Admin Dashboard - CoOrder.ai"
   },
   "logout": {
     "title": "Logging You Out...",

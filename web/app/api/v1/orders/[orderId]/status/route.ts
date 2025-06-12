@@ -4,7 +4,7 @@ import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { z } from "zod";
 
 const updateOrderStatusSchema = z.object({
-  status: z.enum(["new", "preparing", "ready", "completed", "canceled"]),
+  status: z.enum(["new", "serving", "completed", "canceled"]),
 });
 
 export async function PATCH(

@@ -781,7 +781,7 @@ const TableManagementScreen = ({ restaurantSettings }) => {
     setIsQrModalOpen(true);
   };
 
-  const qrCodeUrl = selectedTableForQr ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.shop-copilot.com/${getCurrentLocale()}/customer/order?tableId=${selectedTableForQr.id}` : '';
+  const qrCodeUrl = selectedTableForQr ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.coorder/${getCurrentLocale()}/customer/order?tableId=${selectedTableForQr.id}` : '';
 
   return (
     <div>
@@ -1218,7 +1218,7 @@ const CustomerHeader = ({ restaurantSettings, onCartClick, cartItemCount }) => (
 const CustomerFooter = ({ restaurantSettings }) => (
   <footer className="bg-slate-100 dark:bg-slate-800 py-8 text-center">
     <p className="text-slate-600 dark:text-slate-400 text-sm">&copy; {new Date().getFullYear()} {restaurantSettings.name}. {t('common.all_rights_reserved')}</p>
-    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{t('common.powered_by')} Shop-Copilot</p>
+    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{t('common.powered_by')} CoOrder</p>
   </footer>
 );
 

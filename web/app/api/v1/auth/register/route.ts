@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User record creation failed" }, { status: 500 });
     }
 
-    // 7. Return { success: true, redirect: "https://{subdomain}.shop-copilot.com/ja/dashboard" }.
+    // 7. Return { success: true, redirect: "https://{subdomain}.coorder/ja/dashboard" }.
     
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT!;
     const productionUrl = process.env.NEXT_PRIVATE_PRODUCTION_URL || "baoan.jp";

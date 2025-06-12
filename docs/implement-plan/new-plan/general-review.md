@@ -1,4 +1,4 @@
-# Shop-Copilot Web Features Review
+# CoOrder Web Features Review
 
 This document summarizes the current state of the `web` application in comparison with the high level requirements outlined in `docs/requirements-checklist.md` and `docs/overview.md`.
 

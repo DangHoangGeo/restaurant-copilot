@@ -17,7 +17,7 @@ export function CustomerFooter({ restaurantSettings }: CustomerFooterProps) {
         {t("all_rights_reserved")}
       </p>
       <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-        {t("powered_by")} Shop-Copilot
+        {t("powered_by")} CoOrder
       </p>
     </footer>
   );

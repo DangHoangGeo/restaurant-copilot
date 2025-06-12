@@ -7,7 +7,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 const nextIntl = createNextIntlMiddleware(routing);
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'baoan.jp';
+// const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'baoan.jp';
 // const W_ROOT_DOMAIN = `www.${ROOT_DOMAIN}`; // Not used in the current logic
 
 // This function is adapted from the core logic of the previous web/lib/supabase/middleware.ts
@@ -62,8 +62,8 @@ async function handleSupabaseAndRls(
           console.error(`Middleware: Error setting app.current_restaurant_id for ${restaurant.id} via RPC: ${rpcError.message}`);
         }
       }
-    } catch (e: any) {
-      console.error('Middleware: Exception while setting RLS restaurant context:', e.message);
+    } catch (error) {
+      console.error('Middleware: Exception while setting RLS restaurant context:', error);
     }
   }
   return { user, response }; // response is modified with cookies
@@ -84,6 +84,16 @@ export async function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
   
+  // Skip next/image and public files
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/coorder.png') ||
+    pathname.match(/\.(png|svg|jpg|jpeg|gif|webp)$/)
+  ) {
+    return;
+  }
+
   // 2. API Route Locale Stripping:
   // Manually detect locale from pathname since req.nextUrl.locale is not populated for API routes
   let detectedLocale: string | null = null;
