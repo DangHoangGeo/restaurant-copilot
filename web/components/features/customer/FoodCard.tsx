@@ -63,16 +63,16 @@ export function FoodCard({
   const t = useTranslations("Customer");
   const [isAdding, setIsAdding] = useState(false);
 
-  const getPriceDisplayString = (currentItem: FoodItem, currentLocale: string, translateFunc: (key: string, params?: Record<string, string | number>) => string) => {
+  const getPriceDisplayString = (currentItem: FoodItem) => {
     if (currentItem.menu_item_sizes && currentItem.menu_item_sizes.length > 0) {
       const prices = currentItem.menu_item_sizes.map(s => s.price);
       if (prices.length === 0) { // Should not happen if menu_item_sizes has items
-          return translateFunc('currency_format', { value: currentItem.price / 100 });
+          return  `¥${(currentItem.price)}`;//`¥${(currentItem.price / 100).toFixed(0)}`;
       }
       const minPrice = Math.min(...prices);
-      return translateFunc('common.from_price', { value: translateFunc('currency_format', { value: minPrice / 100 }) });
+      return t('common.from_price', { price: `¥${(minPrice)}` });
     }
-    return translateFunc('currency_format', { value: currentItem.price / 100 });
+    return `¥${(currentItem.price)}`;
   };
 
   const handleAdd = () => {
@@ -135,6 +135,8 @@ export function FoodCard({
                   item.image_url ||
                   "https://placehold.co/300x200/E2E8F0/334155?text=Food"
                 }
+                width={300}
+                height={200}
                 alt={itemName}
                 className="w-full h-36 sm:h-40 object-cover group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"
@@ -184,7 +186,7 @@ export function FoodCard({
           <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 mt-auto">
             <div className="flex justify-between items-center gap-2">
               <p className="text-base sm:text-lg font-bold truncate" style={{ color: brandColor }}>
-                {getPriceDisplayString(item, locale, t)}
+                {getPriceDisplayString(item)}
               </p>
 
               {canAddItems ? (
@@ -217,13 +219,12 @@ export function FoodCard({
                     style={{ backgroundColor: brandColor }}
                     className="text-white hover:opacity-90 rounded-full px-3 py-2 text-xs sm:text-sm font-medium min-h-[36px] shadow-lg"
                   >
-                    <PlusCircle className="h-3 w-3 mr-1" />
-                    Add
+                    <PlusCircle className="h-3 w-3" />
                   </Button>
                 )
               ) : (
                 <div className="text-xs sm:text-sm text-gray-500 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
-                  View only
+                  {t("menu.view_only")}
                 </div>
               )}
             </div>
@@ -251,6 +252,8 @@ export function FoodCard({
                   item.image_url ||
                   "https://placehold.co/120x80/E2E8F0/334155?text=Food"
                 }
+                width={80}
+                height={64}
                 alt={itemName}
                 className="w-20 h-16 sm:w-24 sm:h-20 object-cover group-hover:scale-105 transition-transform duration-300 rounded-lg"
                 loading="lazy"
@@ -288,7 +291,7 @@ export function FoodCard({
             <div className="flex justify-between  mx-auto">
 
               <p className="text-md font-bold flex-shrink-0" style={{ color: brandColor }}>
-                {getPriceDisplayString(item, locale, t)}
+                {getPriceDisplayString(item)}
               </p>
               {canAddItems ? (
                 qtyInCart > 0 ? (
@@ -318,14 +321,14 @@ export function FoodCard({
                     size="sm"
                     onClick={handleAdd}
                     style={{ backgroundColor: brandColor }}
-                    className="text-white hover:opacity-90 rounded-full px-3 py-1.5 text-xs font-medium min-h-[32px]"
+                    className="text-white hover:opacity-90 rounded-full px-3 py-2 text-xs font-medium min-h-[32px]"
                   >
-                    <PlusCircle className="h-3 w-3 mr-1" />
+                    <PlusCircle className="h-3 w-3" />
                   </Button>
                 )
               ) : (
                 <div className="text-xs text-gray-500 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
-                  View only
+                  {t("menu.view_only")}
                 </div>
               )}
             </div>

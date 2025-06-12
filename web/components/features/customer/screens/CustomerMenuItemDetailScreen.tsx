@@ -45,7 +45,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
   // Set default size if available
   React.useEffect(() => {
     if (availableSizes.length > 0 && !selectedSize) {
-      setSelectedSize(availableSizes[0]);
+      setSelectedSize(availableSizes[1] || availableSizes[0]);
     }
   }, [availableSizes, selectedSize]);
 
@@ -131,12 +131,12 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
           height={300}
         />
 
-        <div className="p-6">
-          <h1 className="text-3xl font-bold mb-3">
+        <div className="p-4">
+          <h1 className="text-3xl font-bold mb-2">
             {getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale)}
           </h1>
 
-          <p className="text-gray-600 mb-4 text-sm">
+          <p className="text-gray-600 mb-3 text-sm">
             {getLocalizedText({
               en: item.description_en || "",
               ja: item.description_ja || item.description_en || "",
@@ -146,8 +146,8 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
 
           {/* Size Selection */}
           {availableSizes.length > 0 && (
-            <Card className="p-4 mb-4">
-              <h3 className="text-lg font-semibold mb-3">{t('menu.select_size')}</h3>
+            <Card className="p-4 mb-2">
+              <h3 className="text-lg font-semibold">{t('menu.select_size')}</h3>
               <div className="space-y-2">
                 {availableSizes.map((size) => {
                   const sizeName = getLocalizedText({
@@ -165,7 +165,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
                       onClick={() => handleSizeSelection(size)}
                     >
                       <span>{sizeName}</span>
-                      <span>{t('currency_format', { value: size.price / 100 })}</span>
+                      <span>¥{size.price}</span>
                     </Button>
                   );
                 })}
@@ -176,7 +176,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
           {/* Topping Selection */}
           {availableToppings.length > 0 && (
             <Card className="p-4 mb-4">
-              <h3 className="text-lg font-semibold mb-3">{t('menu.select_toppings')}</h3>
+              <h3 className="text-lg font-semibold">{t('menu.select_toppings')}</h3>
               <div className="space-y-3">
                 {availableToppings.map((topping) => {
                   const toppingName = getLocalizedText({
@@ -194,10 +194,10 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
                         onCheckedChange={() => handleToppingToggle(topping)}
                       />
                       <Label htmlFor={topping.id} className="flex-1 cursor-pointer">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center space-x-2">
                           <span>{toppingName}</span>
                           <Badge variant="secondary">
-                            +{t('currency_format', { value: topping.price / 100 })}
+                            +¥{topping.price}
                           </Badge>
                         </div>
                       </Label>
@@ -213,17 +213,17 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
             <div className="flex items-center justify-between">
               <span className="text-lg font-medium">{t('menu.total_price')}</span>
               <span className="text-2xl font-semibold text-green-600">
-                {t('currency_format', { value: calculatedPrice / 100 })}
+                ¥{calculatedPrice}
               </span>
             </div>
             {(selectedSize || selectedToppings.length > 0) && (
               <div className="text-sm text-gray-500 mt-1">
                 <div>
-                  {t('menu.base_price')}: {t('currency_format', { value: (selectedSize?.price || item.price) / 100 })}
+                  {t('menu.base_price')}: ¥{((selectedSize?.price || item.price) / 100).toFixed(0)}
                 </div>
                 {selectedToppings.length > 0 && (
                   <div>
-                    {t('menu.toppings_price')}: +{t('currency_format', { value: selectedToppings.reduce((sum, t) => sum + t.price, 0) / 100 })}
+                    {t('menu.toppings_price')}: +¥{(selectedToppings.reduce((sum, t) => sum + t.price, 0) / 100).toFixed(0)}
                   </div>
                 )}
               </div>

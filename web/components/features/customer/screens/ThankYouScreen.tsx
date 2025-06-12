@@ -86,7 +86,7 @@ export function ThankYouScreen({
       interval = setInterval(fetchOrderHistory, 30000);
       return () => clearInterval(interval);
     }
-  }, [tableId, sessionId]);
+  }, [tableId, sessionId, fetchOrderHistory, order]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -196,7 +196,7 @@ export function ThankYouScreen({
             </div>
             <div className="text-right">
               <p className="font-semibold text-lg">
-                {t("currency_format", { value: order.total_amount })}
+                ¥{order.total_amount.toFixed(0)}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 {order.items.length} {order.items.length === 1 ? t("thankyou.item") : t("thankyou.items")}
@@ -230,7 +230,7 @@ export function ThankYouScreen({
                 </div>
                 <div className="text-right ml-4">
                   <p className="font-medium">
-                    {t("currency_format", { value: item.total })}
+                    ¥{item.total.toFixed(0)}
                   </p>
                 </div>
               </div>

@@ -93,7 +93,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
                           </p>
                         )}
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {t("currency_format", { value: item.price / 100 })} each
+                          ¥{(item.price / 100).toFixed(0)} each
                         </p>
                       </div>
 
@@ -128,7 +128,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
                       Total:
                     </span>
                     <span className="font-bold text-lg" style={{ color: brandColor }}>
-                      {t("currency_format", { value: total })}
+                      ¥{total.toFixed(0)}
                     </span>
                   </div>
                   <Button
@@ -182,7 +182,7 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
                       {t("cart.items_in_cart_plural", { count })}
                     </p>
                     <p className="text-xs opacity-90">
-                      {t("common.total")}: {t("currency_format", { value: total })}
+                      {t("common.total")}: ¥{total.toFixed(0)}
                     </p>
                   </div>
                 </button>

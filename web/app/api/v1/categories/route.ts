@@ -50,11 +50,31 @@ export async function GET(req: NextRequest) {
           available,
           weekday_visibility,
           stock_level,
-          position
+          position,
+          toppings (
+            id,
+            name_en,
+            name_ja,
+            name_vi,
+            price,
+            position
+          ),
+          menu_item_sizes (
+            id,
+            size_key,
+            name_en,
+            name_ja,
+            name_vi,
+            price,
+            position
+          )
         )
       `)
       .eq('restaurant_id', restaurantId)
-      .order('position', { ascending: true });
+      .order('position', { ascending: true })
+      .order('position', { foreignTable: 'menu_items', ascending: true })
+      .order('position', { foreignTable: 'menu_items.toppings', ascending: true })
+      .order('position', { foreignTable: 'menu_items.menu_item_sizes', ascending: true });
       
     if (error) {
       console.error('Error fetching categories:', error);

@@ -58,7 +58,7 @@ export function OrderSummary({ items, total, restaurantSettings, locale , classN
             </div>
             <div className="text-right ml-4">
               <p className="font-medium text-sm text-slate-900 dark:text-slate-100">
-                {t("currency_format", { value: (item.price * item.qty) / 100 })}
+                ¥{((item.price * item.qty) / 100).toFixed(0)}
               </p>
             </div>
           </div>
@@ -72,7 +72,7 @@ export function OrderSummary({ items, total, restaurantSettings, locale , classN
             className="text-xl font-bold"
             style={{ color: restaurantSettings.primaryColor || "#0ea5e9" }}
           >
-            {t("currency_format", { value: total })}
+            ¥{total.toFixed(0)}
           </span>
         </div>
       </div>

@@ -216,7 +216,7 @@ export function ReviewOrderScreen({
                     </Button>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">
-                    {t("currency_format", { value: item.price })} each
+                    ¥{item.price.toFixed(0)} each
                   </p>
                   {itemNotes[item.itemId] && (
                     <p className="text-sm text-blue-600 italic mb-2">
@@ -257,7 +257,7 @@ export function ReviewOrderScreen({
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-lg">
-                    {t("currency_format", { value: item.price * item.qty })}
+                    ¥{(item.price * item.qty).toFixed(0)}
                   </p>
                 </div>
               </div>
@@ -265,7 +265,7 @@ export function ReviewOrderScreen({
           ))}
           <div className="flex justify-between items-center text-xl font-bold pt-4">
             <span>{t("checkout.total")}</span>
-            <span>{t("currency_format", { value: totalCartPrice })}</span>
+            <span>¥{totalCartPrice.toFixed(0)}</span>
           </div>
         </div>
       </Card>
@@ -339,7 +339,7 @@ export function ReviewOrderScreen({
             <h3 className="text-xl font-bold mb-4">{t("checkout.confirm_order")}</h3>
             <p className="text-gray-600 mb-6">
               {t("checkout.confirm_message", { 
-                total: t("currency_format", { value: totalCartPrice }),
+                total: `¥${totalCartPrice.toFixed(0)}`,
                 items: cart.length
               })}
             </p>
