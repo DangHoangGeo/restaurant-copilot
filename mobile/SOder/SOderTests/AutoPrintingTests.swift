@@ -158,10 +158,15 @@ class AutoPrintingTests: XCTestCase {
             menu_item_id: "test-item",
             quantity: 1,
             notes: nil,
+            menu_item_size_id: nil,
+            topping_ids: [],
+            price_at_order: 500,
             status: status,
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
-            menu_item: createMockMenuItem()
+            menu_item: createMockMenuItem(),
+            menu_item_size: nil,
+            toppings: []
         )
     }
     
@@ -177,9 +182,10 @@ class AutoPrintingTests: XCTestCase {
             description_ja: "テスト説明",
             description_vi: "Mô tả test",
             price: 500,
-            is_available: true,
+            tags: nil,
             image_url: nil,
-            allergens: nil,
+            stock_level: 10,
+            available: true,
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
             category: nil

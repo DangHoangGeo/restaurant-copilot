@@ -26,6 +26,7 @@ import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MenuItemForm } from '@/components/features/admin/menu/MenuItemForm';
+import Image from 'next/image';
 // import { Switch } from "@/components/ui/switch"; // For availability toggle if preferred
 
 /*
@@ -616,10 +617,12 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
                                         )}
                                         <div className="flex items-center mb-2 sm:mb-0 flex-grow">
                                           {item.image_url ? (
-                                            <img
+                                            <Image
                                               src={item.image_url}
                                               alt={getLocalizedText({ en: item.name_en, ja: item.name_ja, vi: item.name_vi }, locale)}
                                               className="w-20 h-16 object-cover rounded-md mr-4 flex-shrink-0"
+                                              width={80}
+                                              height={64}
                                             />
                                           ) : (
                                             <div className="w-20 h-16 rounded-md mr-4 flex-shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">

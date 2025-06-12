@@ -875,6 +875,16 @@
   },
   "Customer": {
     "guest_dialog": {"title": "Xin chào! Bao nhiêu khách?", "confirm": "Bắt đầu gọi món"},
-    "orderhistory": {"checkout_button": "Thanh toán", "price_per_person": "Mỗi người: {value}"}
+    "orderhistory": {"checkout_button": "Thanh toán", "price_per_person": "Mỗi người: {value}"},
+    "menu": {
+      "select_size": "Chọn kích cỡ",
+      "select_toppings": "Chọn topping",
+      "total_price": "Tổng giá",
+      "base_price": "Giá cơ bản",
+      "toppings_price": "Topping"
+    },
+    "cart": {
+      "toppings_label": "Topping: {toppings}"
+    }
   }
 }

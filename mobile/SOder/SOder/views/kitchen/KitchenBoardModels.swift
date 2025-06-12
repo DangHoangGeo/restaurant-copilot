@@ -54,27 +54,30 @@ struct GroupedItem: Identifiable, Equatable, Hashable {
     }
     
     var toppings: [String] {
-        // Extract toppings from notes or menu item details
-        return orderItems.compactMap { item in
-            if let notes = item.notes, !notes.isEmpty {
-                // Parse toppings from notes (could be "Extra cheese, No onions")
-                return notes.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        var list: [String] = []
+        for item in orderItems {
+            if let toppings = item.toppings {
+                list.append(contentsOf: toppings.map { $0.displayName })
+            } else if let notes = item.notes, !notes.isEmpty {
+                list.append(contentsOf: notes.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) })
             }
-            return nil
-        }.flatMap { $0 }
+        }
+        return list
     }
-    
+
     var size: String? {
-        // Extract size information from menu item or notes
-        return orderItems.compactMap { item in
+        for item in orderItems {
+            if let size = item.menu_item_size?.displayName {
+                return size
+            }
             if let notes = item.notes, !notes.isEmpty {
                 let lowercased = notes.lowercased()
                 if lowercased.contains("large") { return "Large" }
                 if lowercased.contains("medium") { return "Medium" }
                 if lowercased.contains("small") { return "Small" }
             }
-            return nil
-        }.first
+        }
+        return nil
     }
     
     // Equatable conformance

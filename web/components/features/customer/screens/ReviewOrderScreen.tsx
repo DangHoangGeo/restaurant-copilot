@@ -6,10 +6,9 @@ import { ArrowLeft, MinusCircle, PlusCircle, Edit3, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert } from "@/components/ui/alert";
 import { useCart } from "../CartContext";
 import type { RestaurantSettings } from "@/shared/types/customer";
-// import { getCurrentLocale } from "@/lib/customerUtils"; // Not used
+import { getLocalizedText, useGetCurrentLocale } from "@/lib/customerUtils";
 import { CheckoutViewProps, ViewProps, ViewType, MenuViewProps, ThankYouScreenViewProps } from "./types"; // Updated imports
 
 interface ReviewOrderScreenProps {
@@ -28,7 +27,8 @@ export function ReviewOrderScreen({
 }: ReviewOrderScreenProps) {
   const t = useTranslations("Customer");
   const tCommon = useTranslations("Common");
-  const { cart, clearCart, totalCartPrice, updateQuantity } = useCart();
+  const locale = useGetCurrentLocale();
+  const { cart, clearCart, totalCartPrice, updateQuantity, getQuantityInCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [specialInstructions, setSpecialInstructions] = useState("");
@@ -41,6 +41,15 @@ export function ReviewOrderScreen({
   const sessionId = viewProps?.sessionId || localStorage.getItem("sessionId");
   const tableNumber = viewProps?.tableNumber || localStorage.getItem("tableNumber");
 
+  // Helper function to get localized name for cart items
+  const getCartItemName = (item: { name_en?: string; name_ja?: string; name_vi?: string }) => {
+    const localizedObj: { [key: string]: string } = {};
+    if (item.name_en) localizedObj.name_en = item.name_en;
+    if (item.name_ja) localizedObj.name_ja = item.name_ja;
+    if (item.name_vi) localizedObj.name_vi = item.name_vi;
+    return getLocalizedText(localizedObj, locale);
+  };
+
   useEffect(() => {
     if (cart.length === 0 && !isConfirmModalOpen) {
       // Pass necessary props for menu view
@@ -48,23 +57,22 @@ export function ReviewOrderScreen({
     }
   }, [cart, isConfirmModalOpen, setView, tableId, sessionId, tableNumber]);
 
-  const handleIncreaseQuantity = (itemId: string) => {
-    const item = cart.find(c => c.itemId === itemId);
-    if (item) {
-      updateQuantity(itemId, item.qty + 1);
+  const handleIncreaseQuantity = (uniqueId: string) => {
+    updateQuantity(uniqueId, (getQuantityInCart(uniqueId) || 0) + 1);
+  };
+
+  const handleDecreaseQuantity = (uniqueId: string) => {
+    const currentQty = getQuantityInCart(uniqueId) || 0;
+    if (currentQty > 1) {
+      updateQuantity(uniqueId, currentQty - 1);
+    } else {
+      updateQuantity(uniqueId, 0); // This will remove the item
     }
   };
 
-  const handleDecreaseQuantity = (itemId: string) => {
-    const item = cart.find(c => c.itemId === itemId);
-    if (item) {
-      updateQuantity(itemId, item.qty - 1); // updateQuantity handles qty <= 0 by removing item
-    }
-  };
-
-  const handleEditNote = (itemId: string) => {
-    setEditingNoteForItem(itemId);
-    setTempNote(itemNotes[itemId] || "");
+  const handleEditNote = (uniqueId: string) => {
+    setEditingNoteForItem(uniqueId);
+    setTempNote(itemNotes[uniqueId] || "");
   };
 
   const handleSaveNote = () => {
@@ -101,7 +109,9 @@ export function ReviewOrderScreen({
         items: cart.map((c) => ({ 
           menuItemId: c.itemId, 
           quantity: c.qty,
-          notes: itemNotes[c.itemId] || specialInstructions || undefined
+          notes: itemNotes[c.uniqueId] || specialInstructions || undefined,
+          menu_item_size_id: c.selectedSize?.id || undefined,
+          topping_ids: c.selectedToppings?.map(t => t.id) || undefined
         })),
       };
 
@@ -117,15 +127,16 @@ export function ReviewOrderScreen({
         // Prepare cart items for thank you screen
         const orderItems = cart.map(item => ({
           itemId: item.itemId,
-          name: item.name,
+          name: getCartItemName(item),
           qty: item.qty,
           price: item.price,
           quantity: item.qty, // For compatibility
-          itemName: item.name // For compatibility
+          itemName: getCartItemName(item) // For compatibility
         }));
         
         setView("thankyou", {
           orderId: data.orderId,
+          sessionId: sessionId!,
           items: orderItems,
           total: totalCartPrice,
           tableId,
@@ -174,42 +185,68 @@ export function ReviewOrderScreen({
         </Button>
         <h1 className="text-2xl font-bold">{t("checkout.title")}</h1>
       </div>
-
-      {tableNumber && (
-        <Alert className="mb-6">
-          <div>
-            <p className="font-medium">{t("checkout.table_info", { number: tableNumber })}</p>
-            <p className="text-sm text-gray-600">{t("checkout.session_active")}</p>
-          </div>
-        </Alert>
-      )}
-
       <Card className="p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">{t("checkout.order_summary")}</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">{t("checkout.order_summary")}</h2>
+          {tableNumber && (<h2 className="font-semibold">{t("checkout.table_info", { number: tableNumber })}</h2>)}
+        </div>
         <div className="space-y-4">
           {cart.map((item) => (
-            <div key={item.itemId} className="border-b pb-4 last:border-b-0">
+            <div key={item.uniqueId} className="border-b pb-4 last:border-b-0">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-lg">
-                      {item.name}
+                      {getCartItemName(item)}
                     </h3>
+                    {/* Display size information if available */}
+                    {item.selectedSize && (
+                      <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        {getLocalizedText({
+                          name_en: item.selectedSize.name_en,
+                          name_ja: item.selectedSize.name_ja,
+                          name_vi: item.selectedSize.name_vi
+                        }, locale)}
+                      </span>
+                    )}
+                    {/* Display toppings if available */}
+                    {item.selectedToppings && item.selectedToppings.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {item.selectedToppings.map((topping) => (
+                          <span key={topping.id} className="text-xs bg-blue-100 px-2 py-1 rounded">
+                            {getLocalizedText({
+                              name_en: topping.name_en,
+                              name_ja: topping.name_ja,
+                              name_vi: topping.name_vi
+                            }, locale)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleEditNote(item.itemId)}
+                      onClick={() => handleEditNote(item.uniqueId)}
                       className="p-1 h-auto text-gray-500 hover:text-gray-700"
                     >
                       <Edit3 className="h-4 w-4" />
+                       {itemNotes[item.uniqueId] ? (
+                        <span className="text-blue-600 italic">
+                          {t("checkout.edit_note")}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">
+                          {t("checkout.add_note")}
+                        </span>
+                      )}
                     </Button>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">
-                    {t("currency_format", { value: item.price })} each
+                    {t("checkout.price_each", { price: item.price.toFixed(0) })}
                   </p>
-                  {itemNotes[item.itemId] && (
+                  {itemNotes[item.uniqueId] && (
                     <p className="text-sm text-blue-600 italic mb-2">
-                      Note: {itemNotes[item.itemId]}
+                      {t("checkout.edit_note")}: {itemNotes[item.uniqueId]}
                     </p>
                   )}
                   <div className="flex items-center gap-3">
@@ -217,7 +254,7 @@ export function ReviewOrderScreen({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDecreaseQuantity(item.itemId)}
+                        onClick={() => handleDecreaseQuantity(item.uniqueId)}
                         className="h-8 w-8 p-0"
                       >
                         <MinusCircle className="h-4 w-4" />
@@ -228,7 +265,7 @@ export function ReviewOrderScreen({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleIncreaseQuantity(item.itemId)}
+                        onClick={() => handleIncreaseQuantity(item.uniqueId)}
                         className="h-8 w-8 p-0"
                       >
                         <PlusCircle className="h-4 w-4" />
@@ -246,7 +283,7 @@ export function ReviewOrderScreen({
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-lg">
-                    {t("currency_format", { value: item.price * item.qty })}
+                    ¥{(item.price * item.qty).toFixed(0)}
                   </p>
                 </div>
               </div>
@@ -254,7 +291,7 @@ export function ReviewOrderScreen({
           ))}
           <div className="flex justify-between items-center text-xl font-bold pt-4">
             <span>{t("checkout.total")}</span>
-            <span>{t("currency_format", { value: totalCartPrice })}</span>
+            <span>¥{totalCartPrice.toFixed(0)}</span>
           </div>
         </div>
       </Card>
@@ -288,7 +325,7 @@ export function ReviewOrderScreen({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">
-              {t("checkout.add_note_for", { itemName: cart.find(c => c.itemId === editingNoteForItem)?.name || t("checkout.item") })}
+              {t("checkout.add_note_for", { itemName: cart.find(c => c.uniqueId === editingNoteForItem) ? getCartItemName(cart.find(c => c.uniqueId === editingNoteForItem)!) : t("checkout.item") })}
             </h3>
             <Textarea
               value={tempNote}
@@ -328,7 +365,7 @@ export function ReviewOrderScreen({
             <h3 className="text-xl font-bold mb-4">{t("checkout.confirm_order")}</h3>
             <p className="text-gray-600 mb-6">
               {t("checkout.confirm_message", { 
-                total: t("currency_format", { value: totalCartPrice }),
+                total: `¥${totalCartPrice.toFixed(0)}`,
                 items: cart.length
               })}
             </p>

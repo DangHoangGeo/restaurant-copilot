@@ -1,6 +1,6 @@
 // web/components/features/customer/screens/ThankYouScreen.tsx
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback} from "react";
 import { useTranslations } from "next-intl";
 import { CheckCircle, Star, Clock, Utensils, Truck, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,29 +17,45 @@ interface ThankYouScreenProps {
 }
 
 interface OrderItem {
-  id: string;
-  quantity: number;
-  notes?: string;
-  status: 'ordered' | 'preparing' | 'ready' | 'served';
-  created_at: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  unit_price: number;
-  total: number;
-  menu_item_id: string;
+	id: string;
+	quantity: number;
+	notes?: string;
+	status: 'ordered' | 'preparing' | 'ready' | 'served';
+	created_at: string;
+	name_en: string;
+	name_ja: string;
+	name_vi: string;
+	unit_price: number;
+	total: number;
+	menu_item_id: string;
+	price_at_order?: number;
+	toppings?: Array<{
+		id: string;
+		name_en: string;
+		name_ja: string;
+		name_vi: string;
+		price: number;
+	}>;
+	menu_item_sizes?: {
+		id: string;
+		size_key: string;
+		name_en: string;
+		name_ja: string;
+		name_vi: string;
+		price: number;
+	} | null;
 }
 
 interface Order {
-  id: string;
-  session_id: string;
-  guest_count: number;
-  status: string;
-  table_id: string | null;
-  table_name: string | null;
-  total_amount: number;
-  created_at: string;
-  items: OrderItem[];
+	id: string;
+	session_id: string;
+	guest_count: number;
+	status: string;
+	table_id: string | null;
+	table_name: string | null;
+	total_amount: number;
+	created_at: string;
+	items: OrderItem[];
 }
 
 export function ThankYouScreen({
@@ -51,42 +67,49 @@ export function ThankYouScreen({
   const tCommon = useTranslations("Common");
   const { orderId, sessionId, tableId, tableNumber } = viewProps;
   const locale = useGetCurrentLocale();
-  
+  //const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   // State for order history
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const [shouldPoll, setShouldPoll] = useState(true);
   const canShowReviewButton = true;
 
-  const fetchOrderHistory = async () => {
-    try {
-      const params = new URLSearchParams();
-      if (tableId) params.append('tableId', tableId);
-      if (sessionId) params.append('sessionId', sessionId); // Using orderId as sessionId for now
-
-      const response = await fetch(`/api/v1/orders/session-info?${params.toString()}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setOrder(data.orders || null);
+  const fetchOrderHistory = useCallback(async () => {
+      try {
+        const params = new URLSearchParams();
+        if (tableId) params.append('tableId', tableId); // Only append if tableId exists
+        if (sessionId) {
+          params.append('sessionId', sessionId);
+        }
+  
+        const response = await fetch(`/api/v1/orders/session-info?${params.toString()}`); // Ensure params is stringified
+        const data = await response.json();
+        if (data.success) {
+          const fetchedOrder = data.orders || null;
+          setOrder(fetchedOrder);
+          //setCurrentSessionId(data.currentSessionId || null);
+          
+          // Stop polling if order is completed or cancelled
+          if (fetchedOrder && (fetchedOrder.status === 'completed' || fetchedOrder.status === 'cancelled')) {
+            setShouldPoll(false);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch order history:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to fetch order history:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, [tableId, sessionId]);
 
   useEffect(() => {
-    fetchOrderHistory();
-
-    // Poll for updates every 30 seconds only if order is active
-    let interval: NodeJS.Timeout;
-    if (order && order.status !== 'completed' && order.status !== 'cancelled') {
-      interval = setInterval(fetchOrderHistory, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [tableId, sessionId]);
+    if (!shouldPoll) return;
+		
+		const interval = setInterval(() => {
+			fetchOrderHistory();
+		}, 30000);
+		
+		return () => clearInterval(interval);
+  }, [shouldPoll, fetchOrderHistory]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -144,23 +167,18 @@ export function ThankYouScreen({
 
   return (
     <div className="text-center py-12">
-      <CheckCircle
-        className="mx-auto mb-6 text-green-500 dark:text-green-400"
-        size={64}
-      />
       <h2 className="text-3xl font-bold mb-3">{t("thankyou.title")}</h2>
-      <p
-        className="text-lg font-semibold mb-2"
-        style={{ color: restaurantSettings.primaryColor || "#0ea5e9" }}
-      >
-        {t("thankyou.order_id_label")}: {orderId.substring(28, 36)}
-      </p>
-
+      
       {tableNumber && (
         <Card className="max-w-2xl mx-auto p-2 mb-4">
-          <h3 className="font-semibold text-lg">
-            {t("thankyou.table_number_label")}: {tableNumber}
-          </h3>
+          <div className="text-center mb-4 flex flex-col">
+            <h3 className="text-2xl font-semibold mb-1">
+              {t("thankyou.table_number", {"number": tableNumber})}
+            </h3>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              {t("thankyou.order_id_label")}: {orderId.substring(28, 36)}
+            </p>
+          </div>
           <p className="text-sm text-gray-600 dark:text-gray-300">
             {order && order.status !== "completed" ? t("session_active_more") : t("thankyou.inactive_session_message")}
           </p>
@@ -196,7 +214,7 @@ export function ThankYouScreen({
             </div>
             <div className="text-right">
               <p className="font-semibold text-lg">
-                {t("currency_format", { value: order.total_amount })}
+                ¥{order.total_amount.toFixed(0)}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 {order.items.length} {order.items.length === 1 ? t("thankyou.item") : t("thankyou.items")}
@@ -208,9 +226,21 @@ export function ThankYouScreen({
             {order.items.map((item) => (
               <div key={item.id} className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h4 className="font-medium">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium">
                     {getLocalizedText({ "name_en": item.name_en, "name_vi": item.name_vi, "name_jp": item.name_ja }, locale)}
-                  </h4>
+                    </h4>
+                    {item.menu_item_sizes && item.menu_item_sizes.name_en && (
+                      <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                        {getLocalizedText({
+                          "name_en": item.menu_item_sizes.name_en,
+                          "name_vi": item.menu_item_sizes.name_vi,
+                          "name_ja": item.menu_item_sizes.name_ja
+                        }, locale)}
+                      </Badge>
+                    )}
+                  </div>
+                  
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-sm text-gray-600 dark:text-gray-300">
                       {t("menu.item_quantity", {quantity: item.quantity})}
@@ -222,6 +252,27 @@ export function ThankYouScreen({
                       </span>
                     </Badge>
                   </div>
+                  {/* Display toppings */}
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {t("menu.selected_toppings")}
+                    </p>
+                    {item.toppings && item.toppings.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {item.toppings.map((topping) => (
+                          <Badge key={topping.id} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                            {getLocalizedText({
+                              "name_en": topping.name_en,
+                              "name_vi": topping.name_vi,
+                              "name_jp": topping.name_ja
+                            }, locale)}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Display notes if available */}
                   {item.notes && (
                     <p className="text-sm text-gray-500 mt-1">
                       {t("menu.item_notes",{notes: item.notes})}
@@ -230,7 +281,7 @@ export function ThankYouScreen({
                 </div>
                 <div className="text-right ml-4">
                   <p className="font-medium">
-                    {t("currency_format", { value: item.total })}
+                    ¥{item.total.toFixed(0)}
                   </p>
                 </div>
               </div>

@@ -30,9 +30,9 @@ export function OrderSummary({ items, total, restaurantSettings, locale , classN
   return (
     <Card className={`p-4 text-left ${className || ""}`}>
       <h3 className="text-lg font-semibold mb-3">{t("checkout.order_summary")}</h3>
-      {items.map((item, index) => {
+      {items.map((item) => {
         const localizedItemName = getLocalizedText({ name_en: item.name_en, name_ja: item.name_ja, name_vi: item.name_vi }, locale);
-        let detailsDisplay: string[] = [];
+        const detailsDisplay: string[] = [];
         if (item.selectedSize) {
           const localizedSizeName = getLocalizedText({ name_en: item.selectedSize.name_en, name_ja: item.selectedSize.name_ja, name_vi: item.selectedSize.name_vi }, locale);
           detailsDisplay.push(localizedSizeName);
@@ -58,7 +58,7 @@ export function OrderSummary({ items, total, restaurantSettings, locale , classN
             </div>
             <div className="text-right ml-4">
               <p className="font-medium text-sm text-slate-900 dark:text-slate-100">
-                {t("currency_format", { value: (item.price * item.qty) / 100 })}
+                ¥{((item.price * item.qty) / 100).toFixed(0)}
               </p>
             </div>
           </div>
@@ -72,7 +72,7 @@ export function OrderSummary({ items, total, restaurantSettings, locale , classN
             className="text-xl font-bold"
             style={{ color: restaurantSettings.primaryColor || "#0ea5e9" }}
           >
-            {t("currency_format", { value: total })}
+            ¥{total.toFixed(0)}
           </span>
         </div>
       </div>

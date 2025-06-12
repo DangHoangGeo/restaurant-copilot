@@ -24,6 +24,7 @@ export interface CartContextType {
   addToCart: (item: MenuItem, quantity?: number, selectedSize?: MenuItemSize, selectedToppings?: Topping[]) => void;
   updateQuantity: (uniqueId: string, qty: number) => void;
   getQuantityInCart: (uniqueId: string) => number; // Added
+  getQuantityByItemId: (itemId: string) => number; // Helper for simple cart interface
   removeFromCart: (uniqueId: string) => void; // Added
   totalCartItems: number;
   totalCartPrice: number;
@@ -34,16 +35,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-
-  // Helper function to get localized text
-  const getLocalizedName = (item: MenuItem) => {
-    // Try to get current locale from URL or context, fallback to English
-    return item.name_en || item.name_ja || item.name_vi || "Item";
-  };
-
-  const getLocalizedDescription = (item: MenuItem) => {
-    return item.description_en || item.description_ja || item.description_vi || "";
-  };
 
   const addToCart = (
     item: MenuItem,
@@ -87,9 +78,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           price: itemPrice,
           qty: quantity,
           imageUrl: item.image_url || undefined,
-          description_en: item.description_en,
-          description_ja: item.description_ja,
-          description_vi: item.description_vi,
+          description_en: item.description_en || undefined,
+          description_ja: item.description_ja || undefined,
+          description_vi: item.description_vi || undefined,
           selectedSize,
           selectedToppings,
         },
@@ -112,6 +103,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return item ? item.qty : 0;
   };
 
+  const getQuantityByItemId = (itemId: string): number => {
+    return cart
+      .filter((ci) => ci.itemId === itemId)
+      .reduce((sum, ci) => sum + ci.qty, 0);
+  };
+
   const removeFromCart = (uniqueId: string) => {
     setCart((prev) => prev.filter((ci) => ci.uniqueId !== uniqueId));
   };
@@ -128,6 +125,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addToCart,
         updateQuantity,
         getQuantityInCart, // Added
+        getQuantityByItemId, // Helper for simple cart interface
         removeFromCart, // Added
         totalCartItems,
         totalCartPrice,

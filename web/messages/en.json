@@ -909,6 +909,7 @@
     "menu_item_detail_add_to_cart": "Add to Cart",
     "decrease_quantity": "Decrease quantity by one",
     "increase_quantity": "Increase quantity by one",
+    "search_placeholder": "Search menu items...",
     "menu_item_detail_added_to_cart_msg": "{itemName} has been added to your cart.",
     "no_order_found": "No orders found",
     "no_order_items": "No orders have been placed at this table yet.",
@@ -949,11 +950,17 @@
       "view_only": "View Only",
       "decrease_quantity": "Decrease quantity",
       "increase_quantity": "Increase quantity",
-      "item_added_to_cart_msg": "{item} added to cart!"
+      "item_added_to_cart_msg": "{item} added to cart!",
+      "select_size": "Select Size",
+      "select_toppings": "Select Toppings",
+      "selected_toppings": "Selected Toppings:",
+      "base_price": "Base Price",
+      "toppings_price": "Toppings"
     },
     "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",
-      "review_order_button": "Review Order"
+      "review_order_button": "Review Order",
+      "toppings_label": "Toppings: {toppings}"
     },
     "guest_dialog": {
       "title": "Welcome! How many guests?",
@@ -979,6 +986,9 @@
       "confirm_message": "Are you sure you want to place this order with {items} items for {total}?",
       "cancel": "Cancel",
       "confirm": "Confirm",
+      "add_note": "Add Note",
+      "edit_note": "Edit Note",
+      "price_each": "¥{price} each",
       "add_note_for":"Add a note for {itemName}",
       "save_note":"Save Note",
       "note_saved":"Note saved successfully!",
@@ -1008,7 +1018,7 @@
       "message": "Your order is confirmed and we are preparing it now!",
       "order_id_label": "Order ID",
       "table_number": "Table {number}",
-      "table_number_label": "Table Number:",
+      "table_number_label": "Table",
       "order_summary_title": "Order Summary",
       "preparation_message": "What would you like to do next?",
       "view_order_history": "View Order History",
@@ -1071,6 +1081,7 @@
       "total": "Total",
       "cancel": "Cancel Order",
       "confirm": "Confirm Order",
+      "from_price": "From {price}",
       "restaurant_not_found": "Restaurant not found. Please check the URL or contact support.",
       "error_loading_menu": "Error loading menu. Please try again later.",
       "error_loading_cart": "Error loading cart. Please try again later.",

@@ -43,11 +43,53 @@ export function CustomerMenuScreen({
   canAddItems = true,
 }: CustomerMenuScreenProps) {
   const t = useTranslations("Customer");
-  const { addToCart, updateQuantity, getQuantityInCart } = useCart();
-  const [useSmartDiscovery, setUseSmartDiscovery] = useState(true);
+  const { addToCart: addToCartAdvanced, updateQuantity, getQuantityByItemId, cart } = useCart();
+  const [useSmartDiscovery, setUseSmartDiscovery] = useState(false);
 
   const toggleDiscoveryMode = () => {
     setUseSmartDiscovery(!useSmartDiscovery);
+  };
+
+  // Simple cart interface wrappers for menu components
+  const addToCartSimple = (item: MenuItem) => {
+    // For simple add to cart (no sizes/toppings), use default parameters
+    addToCartAdvanced(item, 1, undefined, undefined);
+  };
+
+  const getQtySimple = (itemId: string) => {
+    // Use the helper method from CartContext
+    return getQuantityByItemId(itemId);
+  };
+
+  const updateQtySimple = (itemId: string, newQty: number) => {
+    // Find all cart items for this itemId
+    const itemVariations = cart.filter(cartItem => cartItem.itemId === itemId);
+    
+    if (itemVariations.length === 0) {
+      // No variations exist, this shouldn't happen in normal flow
+      return;
+    }
+
+    if (newQty <= 0) {
+      // Remove all variations of this item
+      itemVariations.forEach(variation => {
+        updateQuantity(variation.uniqueId, 0);
+      });
+      return;
+    }
+
+    if (itemVariations.length === 1) {
+      // Only one variation exists, update it directly
+      updateQuantity(itemVariations[0].uniqueId, newQty);
+    } else {
+      // Multiple variations exist - this is complex case
+      // For now, distribute the quantity proportionally or update the first variation
+      // and remove others (simplified approach)
+      updateQuantity(itemVariations[0].uniqueId, newQty);
+      for (let i = 1; i < itemVariations.length; i++) {
+        updateQuantity(itemVariations[i].uniqueId, 0);
+      }
+    }
   };
 
   return (
@@ -81,9 +123,9 @@ export function CustomerMenuScreen({
         <SmartDiscoveryMenu
           categories={categories}
           locale="en" // You may want to get this from props or context
-          addToCart={addToCart}
-          updateQty={updateQuantity}
-          getQty={getQuantityInCart}
+          addToCart={addToCartSimple}
+          updateQty={updateQtySimple}
+          getQty={getQtySimple}
           brandColor={restaurantSettings.primaryColor || '#0ea5e9'}
           canAddItems={canAddItems}
           setView={setView}
@@ -96,9 +138,9 @@ export function CustomerMenuScreen({
           categories={categories}
           searchPlaceholder={t("search_placeholder")}
           locale="en" // You may want to get this from props or context
-          addToCart={addToCart}
-          updateQty={updateQuantity}
-          getQty={getQuantityInCart}
+          addToCart={addToCartSimple}
+          updateQty={updateQtySimple}
+          getQty={getQtySimple}
           brandColor={restaurantSettings.primaryColor || '#0ea5e9'}
           canAddItems={canAddItems}
           setView={setView}

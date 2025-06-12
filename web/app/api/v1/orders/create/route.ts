@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parse = orderSchema.safeParse(body);
   if (!parse.success) {
+    console.error("Order validation failed:", parse.error);
     return NextResponse.json({ success: false, errors: parse.error.errors }, { status: 400 });
   }
   const { sessionId, items } = parse.data;
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
     .select("id,status,total_amount")
     .eq("session_id", sessionId)
     .eq("restaurant_id", restaurantId)
-    .in("status", ["new", "preparing"]) // Allow adding items to orders that are new or preparing
+    .in("status", ["new", "serving"]) // Allow adding items to orders that are new or serving
     .single();
     
   if (!orderRow) {
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
   for (const orderItem of items) {
     const { menuItemId, quantity, menu_item_size_id, topping_ids, notes } = orderItem;
 
-    const { data: menuItem } = await supabaseAdmin
+    const { data: menuItem }: { data: { price: number; available: boolean; weekday_visibility: number[]; restaurant_id: string } | null } = await supabaseAdmin
       .from("menu_items")
       .select("price,available,weekday_visibility, restaurant_id") // Ensure restaurant_id is fetched for validation
       .eq("id", menuItemId)
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
     let currentItemPrice = Number(menuItem.price);
 
     if (menu_item_size_id) {
-      const { data: sizeInfo } = await supabaseAdmin
+      const { data: sizeInfo }: { data: { price: number; menu_item_id: string; restaurant_id: string } | null } = await supabaseAdmin
         .from("menu_item_sizes")
         .select("price, menu_item_id, restaurant_id")
         .eq("id", menu_item_size_id)
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
 
     let additionalToppingsPrice = 0;
     if (topping_ids && topping_ids.length > 0) {
-      const { data: toppingsInfo, error: toppingsError } = await supabaseAdmin
+      const { data: toppingsInfo, error: toppingsError }: { data: { price: number; menu_item_id: string; restaurant_id: string }[] | null; error: unknown } = await supabaseAdmin
         .from("toppings")
         .select("price, menu_item_id, restaurant_id")
         .in("id", topping_ids)
@@ -130,7 +131,7 @@ export async function POST(req: NextRequest) {
 
   const { data: updatedOrder, error: orderUpdateError } = await supabaseAdmin
     .from("orders")
-    .update({ total_amount: totalAmount, status: "preparing" }) // Update status here as well
+    .update({ total_amount: totalAmount, status: "serving" }) // Update status here as well
     .eq("id", orderRow.id) // Use orderRow.id directly
     .select("id")
     .single();

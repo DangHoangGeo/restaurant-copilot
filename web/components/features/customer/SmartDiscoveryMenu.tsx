@@ -605,7 +605,7 @@ export function SmartDiscoveryMenu({
                                 <div key={item.id} className="bg-white dark:bg-slate-700 rounded-lg p-2 border">
                                   <div className="flex items-center space-x-3">
                                     <Image
-                                      src={item.image_url || 'https://placehold.co/40x40/E2E8F0/334155?text=Food'}
+                                      src={item.image_url || '/placeholder-food.png'}
                                       alt={getLocalizedText(item as unknown as Record<string, unknown>, locale)}
                                       width={40}
                                       height={40}
@@ -956,7 +956,7 @@ export function SmartDiscoveryMenu({
                   >
                     <div className="relative h-full">
                       <Image
-                        src={item.image_url || 'https://placehold.co/200x200/E2E8F0/334155?text=Food'}
+                        src={item.image_url || '/placeholder-food.png'}
                         alt={getLocalizedText(item as unknown as Record<string, unknown>, locale)}
                         width={200}
                         height={200}

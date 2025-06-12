@@ -59,6 +59,7 @@ BEGIN
     'items', (
       SELECT jsonb_agg(
         jsonb_build_object(
+          'id', oi.id,
           'menu_item_id', oi.menu_item_id,
           'name_en',     mi.name_en,
           'name_ja',     mi.name_ja,
@@ -67,7 +68,38 @@ BEGIN
           'notes',      oi.notes,
           'status', oi.status,
           'unit_price',  mi.price,
-          'total',  oi.quantity * mi.price
+          'total',  COALESCE(oi.price_at_order, mi.price) * oi.quantity,
+          'price_at_order', oi.price_at_order,
+          'created_at', oi.created_at,
+          'menu_item_sizes', CASE 
+            WHEN oi.menu_item_size_id IS NOT NULL THEN
+              (SELECT jsonb_build_object(
+                'id', mis.id,
+                'size_key', mis.size_key,
+                'name_en', mis.name_en,
+                'name_ja', mis.name_ja,
+                'name_vi', mis.name_vi,
+                'price', mis.price
+              )
+              FROM menu_item_sizes mis 
+              WHERE mis.id = oi.menu_item_size_id)
+            ELSE NULL
+          END,
+          'toppings', CASE 
+            WHEN oi.topping_ids IS NOT NULL AND array_length(oi.topping_ids, 1) > 0 THEN
+              (SELECT jsonb_agg(
+                jsonb_build_object(
+                  'id', t.id,
+                  'name_en', t.name_en,
+                  'name_ja', t.name_ja,
+                  'name_vi', t.name_vi,
+                  'price', t.price
+                )
+              )
+              FROM toppings t 
+              WHERE t.id = ANY(oi.topping_ids))
+            ELSE '[]'::jsonb
+          END
         )
       )
       FROM order_items oi
