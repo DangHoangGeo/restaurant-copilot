@@ -44,7 +44,7 @@ export function CustomerMenuScreen({
 }: CustomerMenuScreenProps) {
   const t = useTranslations("Customer");
   const { addToCart, updateQuantity, getQuantityInCart } = useCart();
-  const [useSmartDiscovery, setUseSmartDiscovery] = useState(true);
+  const [useSmartDiscovery, setUseSmartDiscovery] = useState(false);
 
   const toggleDiscoveryMode = () => {
     setUseSmartDiscovery(!useSmartDiscovery);

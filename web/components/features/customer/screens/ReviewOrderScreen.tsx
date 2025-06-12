@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert } from "@/components/ui/alert";
 import { useCart } from "../CartContext";
 import type { RestaurantSettings } from "@/shared/types/customer";
-// import { getCurrentLocale } from "@/lib/customerUtils"; // Not used
+import { getLocalizedText, useGetCurrentLocale } from "@/lib/customerUtils";
 import { CheckoutViewProps, ViewProps, ViewType, MenuViewProps, ThankYouScreenViewProps } from "./types"; // Updated imports
 
 interface ReviewOrderScreenProps {
@@ -28,6 +28,7 @@ export function ReviewOrderScreen({
 }: ReviewOrderScreenProps) {
   const t = useTranslations("Customer");
   const tCommon = useTranslations("Common");
+  const locale = useGetCurrentLocale();
   const { cart, clearCart, totalCartPrice, updateQuantity } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -40,6 +41,15 @@ export function ReviewOrderScreen({
   const tableId = viewProps?.tableId;
   const sessionId = viewProps?.sessionId || localStorage.getItem("sessionId");
   const tableNumber = viewProps?.tableNumber || localStorage.getItem("tableNumber");
+
+  // Helper function to get localized name for cart items
+  const getCartItemName = (item: { name_en?: string; name_ja?: string; name_vi?: string }) => {
+    const localizedObj: { [key: string]: string } = {};
+    if (item.name_en) localizedObj.name_en = item.name_en;
+    if (item.name_ja) localizedObj.name_ja = item.name_ja;
+    if (item.name_vi) localizedObj.name_vi = item.name_vi;
+    return getLocalizedText(localizedObj, locale);
+  };
 
   useEffect(() => {
     if (cart.length === 0 && !isConfirmModalOpen) {
@@ -117,15 +127,16 @@ export function ReviewOrderScreen({
         // Prepare cart items for thank you screen
         const orderItems = cart.map(item => ({
           itemId: item.itemId,
-          name: item.name,
+          name: getCartItemName(item),
           qty: item.qty,
           price: item.price,
           quantity: item.qty, // For compatibility
-          itemName: item.name // For compatibility
+          itemName: getCartItemName(item) // For compatibility
         }));
         
         setView("thankyou", {
           orderId: data.orderId,
+          sessionId: sessionId!,
           items: orderItems,
           total: totalCartPrice,
           tableId,
@@ -193,7 +204,7 @@ export function ReviewOrderScreen({
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-lg">
-                      {item.name}
+                      {getCartItemName(item)}
                     </h3>
                     <Button
                       variant="ghost"
@@ -205,7 +216,7 @@ export function ReviewOrderScreen({
                     </Button>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">
-                    {t("currency_format", { value: item.price })} each
+                    ¥{item.price.toFixed(0)} each
                   </p>
                   {itemNotes[item.itemId] && (
                     <p className="text-sm text-blue-600 italic mb-2">
@@ -246,7 +257,7 @@ export function ReviewOrderScreen({
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-lg">
-                    {t("currency_format", { value: item.price * item.qty })}
+                    ¥{(item.price * item.qty).toFixed(0)}
                   </p>
                 </div>
               </div>
@@ -254,7 +265,7 @@ export function ReviewOrderScreen({
           ))}
           <div className="flex justify-between items-center text-xl font-bold pt-4">
             <span>{t("checkout.total")}</span>
-            <span>{t("currency_format", { value: totalCartPrice })}</span>
+            <span>¥{totalCartPrice.toFixed(0)}</span>
           </div>
         </div>
       </Card>
@@ -288,7 +299,7 @@ export function ReviewOrderScreen({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">
-              {t("checkout.add_note_for", { itemName: cart.find(c => c.itemId === editingNoteForItem)?.name || t("checkout.item") })}
+              {t("checkout.add_note_for", { itemName: cart.find(c => c.itemId === editingNoteForItem) ? getCartItemName(cart.find(c => c.itemId === editingNoteForItem)!) : t("checkout.item") })}
             </h3>
             <Textarea
               value={tempNote}
@@ -328,7 +339,7 @@ export function ReviewOrderScreen({
             <h3 className="text-xl font-bold mb-4">{t("checkout.confirm_order")}</h3>
             <p className="text-gray-600 mb-6">
               {t("checkout.confirm_message", { 
-                total: t("currency_format", { value: totalCartPrice }),
+                total: `¥${totalCartPrice.toFixed(0)}`,
                 items: cart.length
               })}
             </p>

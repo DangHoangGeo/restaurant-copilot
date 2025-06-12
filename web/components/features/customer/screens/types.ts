@@ -47,6 +47,7 @@ export interface OrderPlacedScreenViewProps {
   items: CartItem[]; // Items directly from the cart
   total: number;
   tableId?: string; // For navigation options like "add more items"
+  sessionId?: string; // Required for navigation to thank you screen
 }
 
 export interface ThankYouScreenViewProps {

@@ -5,9 +5,9 @@ import { useTranslations } from "next-intl";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderSummary } from "@/components/features/customer/OrderSummary";
-import { useGetCurrentLocale } from "@/lib/customerUtils";
+import { getLocalizedText, useGetCurrentLocale } from "@/lib/customerUtils";
 import type { RestaurantSettings } from "@/shared/types/customer";
-import { ViewProps, ViewType, OrderPlacedScreenViewProps, MenuViewProps, ThankYouScreenViewProps } from "./types";
+import { ViewProps, ViewType, OrderPlacedScreenViewProps, MenuViewProps, ThankYouScreenViewProps, OrderItemDetail } from "./types";
 
 interface OrderPlacedScreenProps {
   setView: (v: ViewType, props?: ViewProps) => void;
@@ -22,7 +22,7 @@ export function OrderPlacedScreen({
 }: OrderPlacedScreenProps) {
   const t = useTranslations("Customer");
   const tCommon = useTranslations("Common");
-  const { orderId, items, total, tableId } = viewProps;
+  const { orderId, items, total, tableId, sessionId } = viewProps;
   const locale = useGetCurrentLocale();
 
   return (
@@ -62,7 +62,31 @@ export function OrderPlacedScreen({
           {tCommon("add_more_items")}
         </Button>
         <Button
-          onClick={() => setView("thankyou", { ...viewProps, tableNumber: undefined } as ThankYouScreenViewProps)}
+          onClick={() => {
+            const orderItems: OrderItemDetail[] = items.map(item => {
+              const nameObj: { [key: string]: string } = {};
+              if (item.name_en) nameObj.name_en = item.name_en;
+              if (item.name_ja) nameObj.name_ja = item.name_ja;
+              if (item.name_vi) nameObj.name_vi = item.name_vi;
+              const localizedName = getLocalizedText(nameObj, locale);
+              
+              return {
+                itemId: item.itemId,
+                name: localizedName,
+                qty: item.qty,
+                price: item.price,
+                quantity: item.qty,
+                itemName: localizedName
+              };
+            });
+            setView("thankyou", { 
+              orderId, 
+              sessionId: sessionId || '',
+              items: orderItems, 
+              total, 
+              tableId 
+            } as ThankYouScreenViewProps);
+          }}
           style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
           className="text-white hover:opacity-90"
         >

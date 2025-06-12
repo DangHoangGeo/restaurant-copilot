@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Clock, CheckCircle, Utensils, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,7 +57,9 @@ export function OrderHistoryScreen({
 	//const totalPrice = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
 	const guestCount = viewProps.guestCount || order?.guest_count || 1;
 
-	const fetchOrderHistory = async () => {
+	const [shouldPoll, setShouldPoll] = useState(true);
+
+	const fetchOrderHistory = useCallback(async () => {
 		try {
 			const params = new URLSearchParams();
 			if (tableId) params.append('tableId', tableId); // Only append if tableId exists
@@ -69,26 +71,37 @@ export function OrderHistoryScreen({
 			const data = await response.json();
 
 			if (data.success) {
-				setOrder(data.orders || null);
+				const fetchedOrder = data.orders || null;
+				setOrder(fetchedOrder);
 				setCurrentSessionId(data.currentSessionId || null);
+				
+				// Stop polling if order is completed or cancelled
+				if (fetchedOrder && (fetchedOrder.status === 'completed' || fetchedOrder.status === 'cancelled')) {
+					setShouldPoll(false);
+				}
 			}
 		} catch (error) {
 			console.error("Failed to fetch order history:", error);
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [tableId, sessionId]);
 
+	// Initial fetch when component mounts or when tableId/sessionId changes
 	useEffect(() => {
 		fetchOrderHistory();
+	}, [fetchOrderHistory]);
 
-		// Poll for updates every 30 seconds only if order is active
-		let interval: NodeJS.Timeout;
-		if (order && order.status !== 'completed' && order.status !== 'cancelled') {
-			interval = setInterval(fetchOrderHistory, 30000);
-			return () => clearInterval(interval);
-		}
-	}, [tableId, sessionId]);
+	// Polling useEffect that respects shouldPoll state
+	useEffect(() => {
+		if (!shouldPoll) return;
+
+		const interval = setInterval(() => {
+			fetchOrderHistory();
+		}, 30000);
+		
+		return () => clearInterval(interval);
+	}, [fetchOrderHistory, shouldPoll]);
 
 	const getStatusIcon = (status: string) => {
 		switch (status) {

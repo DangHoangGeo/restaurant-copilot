@@ -635,7 +635,17 @@
   },
   "Customer": {
     "guest_dialog": {"title": "ご来店ありがとうございます。人数を入力してください", "confirm": "注文を開始"},
-    "orderhistory": {"checkout_button": "会計", "price_per_person": "1人あたり: {value}"}
+    "orderhistory": {"checkout_button": "会計", "price_per_person": "1人あたり: {value}"},
+    "menu": {
+      "select_size": "サイズを選択",
+      "select_toppings": "トッピングを選択",
+      "total_price": "合計価格",
+      "base_price": "基本価格",
+      "toppings_price": "トッピング"
+    },
+    "cart": {
+      "toppings_label": "トッピング: {toppings}"
+    }
   },
   "Common": {
     "defaultUnnamedRestaurant": "名称未設定のレストラン"
