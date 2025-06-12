@@ -64,12 +64,17 @@ struct OrderItem: Decodable, Identifiable {
     let menu_item_id: String
     let quantity: Int
     let notes: String?
+    let menu_item_size_id: String?
+    let topping_ids: [String]
+    let price_at_order: Double
     var status: OrderItemStatus
     let created_at: String
     var updated_at: String
-    
+
     // Related data
     var menu_item: MenuItem?
+    var menu_item_size: MenuItemSize?
+    var toppings: [Topping]?
 }
 
 enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
@@ -159,6 +164,38 @@ struct MenuItem:  Decodable, Identifiable {
     var categoryDisplayName: String {
         return category?.displayName ?? category_id
     }
+}
+
+// MARK: - Menu Item Size & Topping Models
+struct MenuItemSize: Decodable, Identifiable {
+    let id: String
+    let restaurant_id: String
+    let menu_item_id: String
+    let size_key: String
+    let name_en: String
+    let name_ja: String
+    let name_vi: String
+    let price: Double
+    let position: Int
+    let created_at: String
+    let updated_at: String
+
+    var displayName: String { name_en }
+}
+
+struct Topping: Decodable, Identifiable {
+    let id: String
+    let restaurant_id: String
+    let menu_item_id: String
+    let name_ja: String
+    let name_en: String
+    let name_vi: String
+    let price: Double
+    let position: Int
+    let created_at: String
+    let updated_at: String
+
+    var displayName: String { name_en }
 }
 
 struct Table: Decodable, Identifiable {
@@ -322,9 +359,14 @@ struct OrderItemWithMenuResponse: Decodable {
     let menu_item_id: String
     let quantity: Int
     let notes: String?
+    let menu_item_size_id: String?
+    let topping_ids: [String]
+    let price_at_order: Double
     let status: String
     let created_at: String
     let menu_item: MenuItemResponse
+    let menu_item_size: MenuItemSizeResponse?
+    let toppings: [ToppingResponse]?
     
     func toOrderItem() -> OrderItem {
         return OrderItem(
@@ -334,10 +376,15 @@ struct OrderItemWithMenuResponse: Decodable {
             menu_item_id: menu_item_id,
             quantity: quantity,
             notes: notes,
+            menu_item_size_id: menu_item_size_id,
+            topping_ids: topping_ids,
+            price_at_order: price_at_order,
             status: OrderItemStatus(rawValue: status) ?? .ordered,
             created_at: created_at,
             updated_at: created_at,
-            menu_item: menu_item.toMenuItem()
+            menu_item: menu_item.toMenuItem(),
+            menu_item_size: menu_item_size?.toMenuItemSize(),
+            toppings: toppings?.map { $0.toTopping() }
         )
     }
 }
@@ -386,6 +433,64 @@ struct MenuItemResponse: Decodable {
             created_at: created_at,
             updated_at: updated_at,
             category: category
+        )
+    }
+}
+
+struct MenuItemSizeResponse: Decodable {
+    let id: String
+    let restaurant_id: String
+    let menu_item_id: String
+    let size_key: String
+    let name_en: String
+    let name_ja: String
+    let name_vi: String
+    let price: Double
+    let position: Int
+    let created_at: String
+    let updated_at: String
+
+    func toMenuItemSize() -> MenuItemSize {
+        MenuItemSize(
+            id: id,
+            restaurant_id: restaurant_id,
+            menu_item_id: menu_item_id,
+            size_key: size_key,
+            name_en: name_en,
+            name_ja: name_ja,
+            name_vi: name_vi,
+            price: price,
+            position: position,
+            created_at: created_at,
+            updated_at: updated_at
+        )
+    }
+}
+
+struct ToppingResponse: Decodable {
+    let id: String
+    let restaurant_id: String
+    let menu_item_id: String
+    let name_ja: String
+    let name_en: String
+    let name_vi: String
+    let price: Double
+    let position: Int
+    let created_at: String
+    let updated_at: String
+
+    func toTopping() -> Topping {
+        Topping(
+            id: id,
+            restaurant_id: restaurant_id,
+            menu_item_id: menu_item_id,
+            name_ja: name_ja,
+            name_en: name_en,
+            name_vi: name_vi,
+            price: price,
+            position: position,
+            created_at: created_at,
+            updated_at: updated_at
         )
     }
 }
