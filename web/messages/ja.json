@@ -718,6 +718,18 @@
     }
   },
   "AdminEmployees": {
+    "title": "従業員とスケジュール管理",
+    "subtitle": "スタッフ、役割、週次スケジュールを管理",
+    "no_employees": "表示する従業員がいません。",
+    "search_placeholder": "名前またはメールアドレスで従業員を検索...",
+    "filter_by_role": "役割で絞り込む",
+    "all_roles": "すべての役割",
+    "manager": "マネージャー",
+    "chef": "シェフ",
+    "server": "サーバー",
+    "cashier": "キャッシャー",
+    "employee_list": "従業員一覧",
+    "employee_details": "従業員詳細",
     "add_employee": "従業員を追加",
     "edit_employee": "従業員を編集",
     "employee_name": "従業員名",

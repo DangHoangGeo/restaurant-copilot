@@ -718,6 +718,18 @@
     }
   },
   "AdminEmployees": {
+    "title": "Quản lý Nhân viên & Lịch làm việc",
+    "subtitle": "Quản lý nhân viên, vai trò và lịch làm việc hàng tuần",
+    "no_employees": "Không có nhân viên nào để hiển thị.",
+    "search_placeholder": "Tìm kiếm nhân viên theo tên hoặc email...",
+    "filter_by_role": "Lọc theo Vai trò",
+    "all_roles": "Tất cả Vai trò",
+    "manager": "Quản lý",
+    "chef": "Đầu bếp",
+    "server": "Phục vụ",
+    "cashier": "Thu ngân",
+    "employee_list": "Danh sách nhân viên",
+    "employee_details": "Chi tiết nhân viên",
     "add_employee": "Thêm nhân viên",
     "edit_employee": "Sửa nhân viên",
     "employee_name": "Tên nhân viên",

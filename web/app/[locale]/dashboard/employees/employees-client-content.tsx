@@ -34,8 +34,8 @@ interface EmployeesClientContentProps {
 
 export function EmployeesClientContent({
   initialData,
-}: EmployeesClientContentProps) {
-  const t = useTranslations();
+}: EmployeesClientContentProps) { 
+  const t = useTranslations("AdminEmployees");
   const [employees, setEmployees] = useState<Employee[]>(initialData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
@@ -88,9 +88,6 @@ export function EmployeesClientContent({
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
-          {t("AdminNav.admin_employees_title")}
-        </h2>
         <div className="flex items-center space-x-2">
           <div className="p-0.5 bg-slate-200 dark:bg-slate-700 rounded-xl flex">
             <Button
@@ -112,7 +109,7 @@ export function EmployeesClientContent({
           </div>
           <Button onClick={() => handleOpenModal()}>
             <UserPlus className="mr-1 sm:mr-2" />
-            {t("AdminEmployees.add_employee")}
+            {t("add_employee")}
           </Button>
         </div>
       </div>
@@ -144,14 +141,14 @@ export function EmployeesClientContent({
       {viewMode === "schedule" && (
         <Card className="p-4 space-y-4">
           <p className="p-4 text-sm text-slate-600 dark:text-slate-400">
-            {t("AdminEmployees.schedule_calendar_note")}
+            {t("schedule_calendar_note")}
           </p>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px] text-sm border-collapse">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-700">
                   <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-700 p-2 border dark:border-slate-600 text-left">
-                    {t("AdminEmployees.employee_name")}
+                    {t("employee_name")}
                   </th>
                   {daysOfWeek.map((day) => (
                     <th
@@ -212,8 +209,8 @@ export function EmployeesClientContent({
           <DialogHeader>
             <DialogTitle>
               {editingEmployee?.id
-                ? t("AdminEmployees.edit_employee")
-                : t("AdminEmployees.add_employee")}
+                ? t("edit_employee")
+                : t("add_employee")}
             </DialogTitle>
           </DialogHeader>
           {editingEmployee && (
@@ -233,7 +230,7 @@ export function EmployeesClientContent({
                     name: e.target.value,
                   })
                 }
-                placeholder={t("AdminEmployees.form.full_name")}
+                placeholder={t("form.full_name")}
               />
               <Input
                 name="email"
@@ -245,7 +242,7 @@ export function EmployeesClientContent({
                     email: e.target.value,
                   })
                 }
-                placeholder={t("AdminEmployees.form.email_lookup_placeholder")}
+                placeholder={t("form.email_lookup_placeholder")}
               />
               <Select
                 value={editingEmployee.role}
@@ -286,7 +283,7 @@ export function EmployeesClientContent({
       <Dialog open={isScheduleModalOpen} onOpenChange={setIsScheduleModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{t("AdminEmployees.edit_shifts")}</DialogTitle>
+            <DialogTitle>{t("edit_shifts")}</DialogTitle>
           </DialogHeader>
           {scheduleEmployee && (
             <form

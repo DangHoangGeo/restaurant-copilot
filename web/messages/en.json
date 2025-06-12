@@ -496,6 +496,11 @@
       "name_vi_max_length": "Vietnamese name must be {maxLength} characters or less.",
       "position_required": "Position is required.",
       "category_id_required": "Category is required.",
+      "logoFile": {
+        "required": "Image file is required.",
+        "maxSize": "Image file must be {maxSize} MB or less.",
+        "invalidType": "Invalid image file type. Please upload a PNG, JPG, or WEBP image."
+      },
       "description_en_max_length": "English description must be {maxLength} characters or less.",
       "description_ja_max_length": "Japanese description must be {maxLength} characters or less.",
       "description_vi_max_length": "Vietnamese description must be {maxLength} characters or less.",
@@ -711,6 +716,18 @@
     }
   },
   "AdminEmployees": {
+    "title": "Employee & Schedule Management",
+    "subtitle": "Manage your staff, their roles, and weekly schedules",
+    "no_employees": "No employees to display.",
+    "search_placeholder": "Search employees by name or email...",
+    "filter_by_role": "Filter by Role",
+    "all_roles": "All Roles",
+    "manager": "Manager",
+    "chef": "Chef",
+    "server": "Server",
+    "cashier": "Cashier",
+    "employee_list": "Employee List",
+    "employee_details": "Employee Details",
     "add_employee": "Add Employee",
     "edit_employee": "Edit Employee",
     "employee_name": "Employee Name",

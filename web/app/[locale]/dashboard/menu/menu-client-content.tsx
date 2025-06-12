@@ -142,6 +142,82 @@ const getMenuItemSchema = (t: ReturnType<typeof useTranslations<'AdminMenu.valid
 type CategoryFormData = z.infer<ReturnType<typeof getCategorySchema>>;
 type MenuItemFormData = z.infer<ReturnType<typeof getMenuItemSchema>>;
 
+// CategoryModal component
+interface CategoryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  categoryForm: ReturnType<typeof useForm<CategoryFormData>>;
+  onSubmit: (data: CategoryFormData) => Promise<void>;
+  isLoading: boolean;
+  t: (key: string) => string;
+}
+
+function CategoryModal({ isOpen, onClose, categoryForm, onSubmit, isLoading, t }: CategoryModalProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={(isOpen) => { 
+      if (!isOpen) {
+        categoryForm.reset(); 
+        onClose();
+      }
+    }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{categoryForm.getValues("id") ? t('edit_category') : t('add_category')}</DialogTitle>
+        </DialogHeader>
+        <Form {...categoryForm}>
+          <form onSubmit={categoryForm.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={categoryForm.control}
+              name="name_en"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('category.name_en')}*</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={categoryForm.control}
+              name="name_ja"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('category.name_ja')}</FormLabel>
+                  <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={categoryForm.control}
+              name="name_vi"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('category.name_vi')}</FormLabel>
+                  <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t('form_hint')}</p>
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="secondary" onClick={() => { 
+                categoryForm.reset(); 
+                onClose(); 
+              }}>
+                {t('cancel')}
+              </Button>
+              <Button type="submit" variant="default" disabled={isLoading}>
+                {isLoading ? t('buttons.saving') : t('save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 export function MenuClientContent({ initialData, error }: MenuClientContentProps) {
   const t = useTranslations('AdminMenu');
@@ -511,34 +587,51 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
   if (error) {
     return (
-      <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md">
-        {error}
-      </div>
+      <>
+        <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md">
+          {error}
+        </div>
+      </>
     );
   }
+  
   // TODO: Add a proper loading state UI, perhaps a spinner overlay or skeleton loaders.
   if (isLoading && menuData.length === 0) {
       return (
-        <div className="flex items-center justify-center h-64">
-          {/* TODO: Replace with a proper spinner component from shadcn/ui if available, or a custom one */}
-          <MenuIcon className="h-12 w-12 text-slate-400 animate-spin" />
-        </div>
+        <>
+          <div className="flex items-center justify-center h-64">
+            {/* TODO: Replace with a proper spinner component from shadcn/ui if available, or a custom one */}
+            <MenuIcon className="h-12 w-12 text-slate-400 animate-spin" />
+          </div>
+        </>
       );
   }
 
   if (!error && menuData.length === 0) {
     return (
-      <div className="text-center py-12">
-        <MenuIcon className="mx-auto h-12 w-12 text-slate-400" />
-        <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('empty_state.no_categories_title')}</h3>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('empty_state.no_categories_description')}</p>
-        <div className="mt-6">
-          <Button onClick={() => handleOpenCategoryModal(null)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {t('add_category')}
-          </Button>
+      <>
+        <div className="text-center py-12">
+          <MenuIcon className="mx-auto h-12 w-12 text-slate-400" />
+          <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('empty_state.no_categories_title')}</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('empty_state.no_categories_description')}</p>
+          <div className="mt-6">
+            <Button onClick={() => handleOpenCategoryModal()}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('add_category')}
+            </Button>
+          </div>
         </div>
-      </div>
+        
+        {/* Category Modal - Always render for empty state */}
+        <CategoryModal
+          isOpen={isCategoryModalOpen}
+          onClose={() => setIsCategoryModalOpen(false)}
+          categoryForm={categoryForm}
+          onSubmit={onCategorySubmit}
+          isLoading={isLoading}
+          t={t}
+        />
+      </>
     );
   }
 
@@ -690,58 +783,14 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       </div>
 
       {/* Category Modal */}
-      {/* Category Modal */}
-      <Dialog open={isCategoryModalOpen} onOpenChange={(isOpen) => { if (!isOpen) categoryForm.reset(); setIsCategoryModalOpen(isOpen); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{categoryForm.getValues("id") ? t('edit_category') : t('add_category')}</DialogTitle>
-          </DialogHeader>
-          <Form {...categoryForm}>
-            <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
-              <FormField
-                control={categoryForm.control}
-                name="name_en"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('category.name_en')}*</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={categoryForm.control}
-                name="name_ja"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('category.name_ja')}</FormLabel>
-                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={categoryForm.control}
-                name="name_vi"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('category.name_vi')}</FormLabel>
-                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Position field can be hidden or read-only as D&D handles it */}
-              {/* <FormField control={categoryForm.control} name="position" render={({ field }) => ( <FormItem> <FormLabel>{t('category.order')}</FormLabel> <FormControl><Input type="number" {...field} /></FormControl> <FormMessage /> </FormItem> )}/> */}
-              <p className="text-xs text-slate-500 dark:text-slate-400">{t('form_hint')}</p>
-              <DialogFooter className="mt-6">
-                <Button type="button" variant="secondary" onClick={() => { categoryForm.reset(); setIsCategoryModalOpen(false); }}>{t('cancel')}</Button>
-                <Button type="submit" variant="default" disabled={isLoading}>{isLoading ? t('buttons.saving') : t('save')}</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        categoryForm={categoryForm}
+        onSubmit={onCategorySubmit}
+        isLoading={isLoading}
+        t={t}
+      />
 
       {/* Item Modal */}
       <Dialog open={isItemModalOpen} onOpenChange={(isOpen) => { 
