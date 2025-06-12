@@ -3,7 +3,7 @@ import { logEvent } from "../../../../../lib/logger";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
 import { ZodError } from "zod"; // Import ZodError explicitly
-import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     body = await req.json(); // Assign to the outer-scoped body
     const { name, subdomain, email, password, defaultLanguage } = signupSchema.parse(body);
-    const supabaseAdmin = await createClient()
+
     // 2. Recheck subdomain in restaurants; if taken, return 409.
     const { data: existingRestaurant, error: checkError } = await supabaseAdmin
       .from("restaurants")
@@ -61,12 +61,12 @@ export async function POST(req: NextRequest) {
     if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows found
       throw checkError;
     }
-
+    console.log("user data", body);
     // 3. Create Supabase Auth user
     const { data: userData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true,
+      email_confirm: true, // Automatically confirm email
       user_metadata: { name },
     });
 
@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
         message: `Supabase Auth user creation failed: ${authError.message}`,
         metadata: { email, stack: authError.stack },
       });
+      console.error("Supabase Auth user creation failed:", authError);
       return NextResponse.json({ error: authError.message }, { status: 400 });
     }
 
