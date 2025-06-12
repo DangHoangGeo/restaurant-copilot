@@ -1,33 +1,38 @@
 {
   "HomePage": {
     "heroTitle": "CoOrderでレストランを近代化",
-    "heroSubtitle": "メニュー、注文、予約、スタッフ、分析をすべてスマホで管理。顧客満足とチーム力をどこでも実現。",
+    "heroSubtitle": "メニュー、注文、予約、スタッフ、分析をすべてモバイルで一元管理。いつでもどこでも、顧客を喜ばせ、チームを力づけます。",
     "cta": "無料で始める"
   },
-  "SIGN_UP_TITLE": "店舗登録",
-  "LOGIN_TITLE": "ログイン",
-  "FORGOT_PASSWORD_TITLE": "パスワードを忘れた場合",
-  "SignupPage": {
-    "title": "店舗を登録する",
-    "nameLabel": "店舗名",
+  "auth": {
+    "title": {
+      "login": "ログイン",
+      "signup": "レストランを登録",
+      "forgotPassword": "パスワードをお忘れですか"
+    },
+    "emailLabel": "メールアドレス",
+    "emailPlaceholder": "メールアドレスを入力してください",
+    "passwordLabel": "パスワード",
+    "passwordPlaceholder": "パスワードを入力してください",
+    "loginButton": "ログイン",
+    "loggingIn": "ログイン中...",
+    "forgotPassword": "パスワードをお忘れですか",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "signUp": "新規登録",
+    "loginFailed": "ログインに失敗しました。認証情報を確認して、もう一度お試しください。",
+    "subdomainNotFound": "サブドメインが見つかりません。",
+    "anErrorOccurred": "エラーが発生しました。もう一度お試しください。",
+    "nameLabel": "レストラン名",
     "subdomainLabel": "サブドメイン",
-    "subdomainChecking": "利用可能性を確認中...",
+    "subdomainChecking": "利用可能か確認中...",
     "subdomainAvailable": "利用可能です！",
     "subdomainNotAvailable": "利用できません",
     "subdomainErrors": {
-      "invalid_format": "サブドメインは3〜30文字の小文字、数字、またはハイフンである必要があります。",
-      "not_available": "このサブドメインはすでに使用されています。",
+      "invalid_format": "サブドメインは3〜30文字の小文字の英数字またはハイフンでなければなりません。",
+      "not_available": "このサブドメインは既に使用されています。",
       "check_failed": "サブドメインの利用可能性の確認に失敗しました。もう一度お試しください。"
     },
-    "emailLabel": "メールアドレス",
-    "passwordLabel": "パスワード",
-    "confirmPasswordLabel": "パスワードを再入力",
-    "defaultLanguageLabel": "デフォルト言語",
-    "languageOption": {
-      "en": "英語",
-      "ja": "日本語",
-      "vi": "ベトナム語"
-    },
+    "confirmPasswordLabel": "パスワード（確認用）",
     "captchaRequired": "CAPTCHAを完了してください。",
     "captchaInvalid": "CAPTCHA認証に失敗しました。もう一度お試しください。",
     "captchaExpired": "CAPTCHAの有効期限が切れました。再認証してください。",
@@ -36,96 +41,96 @@
     "registerButton": "登録",
     "twoFactorTitle": "二段階認証",
     "otpLabel": "認証コード",
-    "verifyOtpButton": "確認する",
-    "otpInvalid": "コードが正しくありません。もう一度お試しください。"
+    "verifyOtpButton": "コードを認証",
+    "otpInvalid": "無効なコードです。もう一度お試しください。"
   },
   "LandingPage": {
     "header": {
       "logo_aria_label": "CoOrderロゴ",
       "login": "ログイン",
-      "signup": "サインアップ"
+      "signup": "新規登録"
     },
     "theme": {
       "toggle": "テーマを切り替える"
     },
     "hero": {
-      "headline_part1": "レストラン運営を簡単に、",
-      "headline_part2": "顧客満足度を向上",
-      "subheadline": "CoOrderは、小規模レストラン向けのオールインワンプラットフォームです。注文、メニュー、テーブル管理、そして成長を支援します。煩雑さから解放され、効率性を手に入れましょう。",
+      "headline_part1": "小規模レストラン向け、AI強化型SaaS",
+      "headline_part2": "モバイルファーストで実現。",
+      "subheadline": "CoOrderは、小規模レストランがメニュー、注文、テーブル予約、スタッフ、分析といった全業務をスマートフォンやタブレットから一元管理できるようにします。",
       "cta": {
-        "signup": "無料で始める",
+        "signup": "無料トライアルを開始",
         "demo": "デモを見る",
         "subtext": "クレジットカード不要。14日間無料トライアル。"
       },
-      "image_alt": "CoOrderダッシュボードモックアップ"
+      "image_alt": "CoOrderダッシュボードのモックアップ"
     },
     "social_proof": {
-      "trusted_by": "あなたのレストランの成功を後押し",
+      "trusted_by": "あなたのようなレストランの成功を後押し",
       "testimonial1": {
-        "quote": "CoOrderは私たちの日常業務を変革しました。注文はよりスムーズになり、スタッフはより幸せになり、お客様はQR注文を気に入っています！"
+        "quote": "CoOrderは私たちの日常業務を一変させました。注文はスムーズになり、スタッフは満足し、お客様はQR注文を大変気に入っています！"
       },
       "testimonial2": {
-        "quote": "分析ダッシュボードは画期的です。今では、収益に真に影響を与えるデータ駆動型の意思決定を行うことができます。"
+        "quote": "分析ダッシュボードは画期的です。今では、収益に真に影響を与えるデータに基づいた意思決定ができます。"
       },
       "security_badge1": "SSL暗号化",
-      "security_badge2": "99.9%稼働時間",
+      "security_badge2": "稼働率99.9%",
       "security_badge3": "GDPR準拠"
     },
     "features": {
-      "title": "ビジネスを加速するパワフルな機能",
-      "subtitle": "CoOrderには、業務を効率化し、顧客を喜ばせるための機能が満載です。",
+      "title": "ビジネスを加速する強力な機能",
+      "subtitle": "CoOrderには、業務を効率化し、お客様を喜ばせるための機能が満載です。",
       "menu_management": {
         "title": "直感的なメニュー管理",
-        "description": "写真、説明、価格を含むデジタルメニューを簡単に作成、更新、整理できます。多言語に対応しています。",
-        "benefit": "数時間ではなく数分でメニューを更新。"
+        "description": "写真、説明、価格付きのデジタルメニューを簡単に作成、更新、整理できます。多言語対応。",
+        "benefit": "メニュー更新は数時間ではなく数分で完了。"
       },
       "qr_ordering": {
         "title": "シームレスなQR注文",
-        "description": "お客様はテーブルのQRコードをスキャンしてメニューを表示し、注文し、スマートフォンから直接支払うこともできます。",
-        "benefit": "注文の正確性とテーブル回転率を向上。"
+        "description": "お客様はテーブルのQRコードをスキャンしてメニューを表示し、注文し、スマートフォンから直接支払いもできます。",
+        "benefit": "注文の正確性とテーブル回転率を向上させます。"
       },
       "booking_preordering": {
         "title": "高度な予約と事前注文",
-        "description": "テーブル予約を管理し、お客様がスムーズな食事体験のために食事を事前注文できるようにします。",
-        "benefit": "待ち時間を短縮し、顧客の流れを改善。"
+        "description": "テーブル予約を管理し、お客様が食事を事前注文できるようにすることで、スムーズな食事体験を提供します。",
+        "benefit": "待ち時間を短縮し、顧客フローを改善します。"
       },
       "smart_analytics": {
         "title": "スマート分析とレポート",
-        "description": "売上、人気料理、スタッフのパフォーマンス、顧客からのフィードバックに関するリアルタイムの洞察を得て、ビジネスを最適化します。",
-        "benefit": "成長のためのデータ駆動型意思決定。"
+        "description": "売上、人気料理、スタッフのパフォーマンス、顧客フィードバックに関するリアルタイムの洞察を得て、ビジネスを最適化します。",
+        "benefit": "成長のためのデータに基づいた意思決定を。"
       },
       "staff_management": {
         "title": "効率的なスタッフ管理",
-        "description": "チーム専用のモバイルアプリで、役割の割り当て、シフトの管理、スタッフのパフォーマンスの追跡を行います。",
-        "benefit": "モバイルツールでチームを強化。"
+        "description": "チーム専用のモバイルアプリで、役割の割り当て、シフトの管理、スタッフのパフォーマンス追跡ができます。",
+        "benefit": "モバイルツールでチームを強化します。"
       },
       "mobile_first": {
         "title": "真のモバイルファースト体験",
-        "description": "既存のスマートフォンやタブレットからレストラン全体を管理できます。かさばるハードウェアや複雑なセットアップは不要です。",
-        "benefit": "どこからでもビジネスを運営。"
+        "description": "スマートフォンやタブレットからレストラン全体を管理できます。かさばるハードウェアや複雑な設定は不要です。",
+        "benefit": "どこからでもビジネスを運営できます。"
       }
     },
     "howitworks": {
-      "title": "数分で始められます",
-      "subtitle": "いくつかの簡単なステップで、最新のレストランプラットフォームを立ち上げましょう。",
+      "title": "数分で開始",
+      "subtitle": "簡単な数ステップで、最新のレストランプラットフォームを立ち上げましょう。",
       "step1": {
-        "title": "サインアップとカスタマイズ",
-        "description": "アカウントを作成し、レストランのプロフィールを設定し、デジタルメニューとブランドをカスタマイズします。"
+        "title": "登録とカスタマイズ",
+        "description": "アカウントを作成し、レストランのプロフィールを設定し、デジタルメニューとブランディングをカスタマイズします。"
       },
       "step2": {
-        "title": "QRコードを生成",
-        "description": "各テーブルまたはセクションに固有のQRコードを印刷します。お客様はスキャンしてメニューにアクセスし、注文します。"
+        "title": "QRコードの生成",
+        "description": "各テーブルやセクションに固有のQRコードを印刷します。お客様はスキャンしてメニューにアクセスし、注文します。"
       },
       "step3": {
-        "title": "サービスを開始し、成長する",
-        "description": "スタッフアプリで直接注文を受け取り、テーブルを管理し、スマートな洞察でビジネスが繁栄するのを見守ります。"
+        "title": "提供と成長を開始",
+        "description": "スタッフアプリで直接注文を受け取り、テーブルを管理し、スマートな洞察でビジネスの繁栄を見守りましょう。"
       }
     },
     "benefits": {
-      "title": "あなたのレストランのための真の結果",
-      "subtitle": "CoOrderは単なるソフトウェアではありません。成長パートナーです。どのように役立つかをご覧ください：",
+      "title": "あなたのレストランに具体的な成果を",
+      "subtitle": "CoOrderは単なるソフトウェアではなく、成長パートナーです。私たちがどのようにお手伝いするかをご覧ください：",
       "item1": "収益を最大20%増加",
-      "item2": "管理タスクで週に最大10時間節約",
+      "item2": "管理業務で週に最大10時間節約",
       "item3": "顧客満足度スコアを向上",
       "item4": "注文とテーブル管理を効率化",
       "item5": "モバイルツールでスタッフを強化",
@@ -134,37 +139,37 @@
     "faq": {
       "title": "よくある質問",
       "item1": {
-        "q": "CoOrderはどのようなレストラン向けですか？",
+        "q": "CoOrderはどのような種類のレストラン向けですか？",
         "a": "CoOrderは、業務を近代化し、顧客体験を向上させたい中小規模のレストラン、カフェ、バー、フードトラック向けに設計されています。"
       },
       "item2": {
-        "q": "セットアップは難しいですか？",
-        "a": "まったく難しくありません！直感的なインターフェースとガイド付きのセットアッププロセスにより、数分で開始できます。技術的な専門知識は不要です。"
+        "q": "設定は難しいですか？",
+        "a": "全く難しくありません！直感的なインターフェースとガイド付きのセットアッププロセスにより、数分で始めることができます。技術的な専門知識は不要です。"
       },
       "item3": {
-        "q": "特別なハードウェアが必要ですか？",
+        "q": "特別なハードウェアは必要ですか？",
         "a": "いいえ、CoOrderはモバイルファーストです。既存のスマートフォンやタブレットからすべてを管理できます。高価なPOSシステムは不要です。"
       },
       "item4": {
-        "q": "カスタマーサポートはどうですか？",
-        "a": "包括的なオンラインサポート、チュートリアル、およびご質問や問題に対応する専任のサポートチームを提供しています。"
+        "q": "カスタマーサポートはどうなっていますか？",
+        "a": "私たちは包括的なオンラインサポート、チュートリアル、そして質問や問題に対応する専任のサポートチームを提供しています。"
       }
     },
     "cta_section": {
-      "title": "レストランを変革する準備はできましたか？",
-      "subtitle": "CoOrderで業務を簡素化し、利益を増やしている何百ものレストランに参加しましょう。",
+      "title": "あなたのレストランを変革する準備はできましたか？",
+      "subtitle": "何百ものレストランがCoOrderで業務を簡素化し、利益を上げています。あなたも参加しませんか。",
       "cta": {
         "signup": "無料で始める",
         "contact_sales": "デモをリクエスト"
       }
     },
     "footer": {
-      "tagline": "一度に1つの注文で小規模レストランを近代化。",
+      "tagline": "小規模レストランを、一度に一つの注文から近代化。",
       "links": {
         "product_title": "製品",
         "features": "機能",
         "pricing": "価格",
-        "integrations": "統合",
+        "integrations": "連携",
         "company_title": "会社",
         "about_us": "会社概要",
         "careers": "採用情報",
@@ -178,7 +183,7 @@
       "terms_of_service": "利用規約"
     },
     "common": {
-      "all_rights_reserved": "全著作権所有。"
+      "all_rights_reserved": "All rights reserved."
     }
   },
   "404": {
@@ -186,113 +191,172 @@
     "description": "申し訳ありませんが、お探しのページは存在しないか、移動されました。",
     "back_home": "ホームに戻る"
   },
-  "Dashboard": {
-    "dashboard": "ダッシュボード",
-    "recentOrders": "最近の注文",
-    "orderId": "注文ID",
-    "type": "Type",
-    "status": "ステータス",
+  "Common": {
+    "loading": "読み込み中...",
+    "all_rights_reserved": "All rights reserved.",
+    "powered_by": "Powered by",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "edit": "編集",
+    "delete": "削除",
+    "confirm": "確認",
+    "view_details": "詳細を見る",
+    "close_modal": "モーダルを閉じる",
+    "search": "検索...",
+    "available": "利用可能",
+    "unavailable": "利用不可",
+    "list": "リスト",
+    "schedule": "スケジュール",
+    "off_duty": "非番",
+    "export_csv": "CSVをエクスポート",
+    "export_pdf": "PDFをエクスポート",
+    "unknown_item": "不明な商品",
     "total": "合計",
-    "quickActions": "クイックアクション",
-    "addNewMenuItem": "新しいメニューアイテムを追加",
-    "generateQRForTable": "テーブル用のQRを生成",
-    "addNewEmployee": "新しい従業員を追加",
-    "orderStatus": {
-      "new": "New",
-      "preparing": "Preparing",
-      "ready": "Ready",
-      "completed": "Completed"
+    "admin_panel_button": "管理パネル",
+    "needs_attention": "要注意",
+    "all_good": "問題なし",
+    "zod_form_hint": "フォームの検証はZodによって処理されます。すべての必須フィールドが正しく入力されていることを確認してください。",
+    "feature_in_development": "「{feature}」機能は現在開発中であり、まもなく利用可能になります。",
+    "form_placeholder": "フォームフィールドはここに配置されます。",
+    "back_to_menu": "メニューに戻る",
+    "add_more_items": "さらに商品を追加",
+    "recharts_note": "グラフはRechartsを利用しています。",
+    "datatable_component_note": "データテーブルコンポーネントのプレースホルダー。",
+    "sold": "販売済み",
+    "cancel_booking": "予約をキャンセル",
+    "confirm_booking": "予約を確定",
+    "order_status": {
+      "new": "新規",
+      "ordered": "注文済み",
+      "preparing": "調理中",
+      "ready": "準備完了",
+      "completed": "完了",
+      "canceled": "キャンセル済み"
     },
-    "Settings": {
-      "labels": {
-        "restaurantName": "レストラン名",
-        "defaultLanguage": "デフォルト言語",
-        "brandColor": "ブランドカラー",
-        "logo": "ロゴ",
-        "contactInfo": "連絡先情報",
-        "address": "住所",
-        "hours": "営業時間",
-        "description": "説明"
+    "order_item_status": {
+      "ordered": "注文済み",
+      "preparing": "調理中",
+      "ready": "準備完了",
+      "served": "提供済み"
+    },
+    "view_cart_label": "カートを見る",
+    "order_history_label": "注文履歴",
+    "weekdays": {
+      "mon": "月曜日",
+      "tue": "火曜日",
+      "wed": "水曜日",
+      "thu": "木曜日",
+      "fri": "金曜日",
+      "sat": "土曜日",
+      "sun": "日曜日",
+      "mon_short": "月",
+      "tue_short": "火",
+      "wed_short": "水",
+      "thu_short": "木",
+      "fri_short": "金",
+      "sat_short": "土",
+      "sun_short": "日"
+    },
+    "language_switcher": {
+      "toggle_label": "言語を変更"
+    },
+    "defaultLanguageLabel": "デフォルト言語",
+    "defaultLanguagePlaceholder": "デフォルト言語を選択",
+    "languageOption": {
+      "en": "英語",
+      "ja": "日本語",
+      "vi": "ベトナム語"
+    },
+    "rating": {
+      "set_stars": "評価を{count}つ星に設定",
+      "current_stars": "現在の評価：{count}つ星",
+      "no_reviews": "まだレビューはありません"
+    },
+    "alert": {
+      "info": {
+        "title": "情報"
       },
-      "placeholders": {
-        "restaurantName": "レストラン名を入力してください",
-        "brandColor": "#RRGGBB",
-        "contactInfo": "例：電話番号、メールアドレス",
-        "address": "レストランの完全な住所",
-        "hours": "例：月〜金：午前9時〜午後10時、土〜日：午前10時〜午後11時",
-        "description": "レストランの簡単な説明"
+      "success": {
+        "title": "成功"
       },
-      "buttons": {
-        "saveChanges": "変更を保存",
-        "uploadingLogo": "アップロード中...",
-        "updatingSettings": "更新中..."
+      "warning": {
+        "title": "警告"
       },
-      "notifications": {
-        "successTitle": "設定が更新されました",
-        "successMessage": "レストランの設定が正常に更新されました。",
-        "errorTitle": "更新失敗",
-        "errorMessage": "設定を更新できませんでした：{error}",
-        "logoUploadErrorTitle": "ロゴのアップロード失敗",
-        "logoUploadErrorMessage": "ロゴをアップロードできませんでした：{error}",
-        "logoRemovedMessage": "ロゴが削除されました。変更を保存して確認してください。",
-        "fileTooLarge": "ファイルサイズが大きすぎます。最大5MBです。",
-        "invalidFileType": "無効なファイルタイプです。画像をアップロードしてください。",
-        "settingsSaveFailedGeneric": "設定の保存に失敗しました。もう一度お試しください。"
-      },
-      "altText": {
-        "logoPreview": "レストランロゴのプレビュー",
-        "logoIconFallback": "ロゴ"
-      },
-      "text": {
-        "dragDropLogo": "ドラッグ＆ドロップまたはクリックしてロゴを選択",
-        "currentBrandColor": "現在のブランドカラー",
-        "nameRequired": "名前は必須です",
-        "nameMaxLength": "名前は100文字以内である必要があります",
-        "languageRequired": "デフォルト言語は必須です",
-        "invalidHexFormat": "無効な16進カラー形式（例：#RRGGBB）",
-        "contactInfoMaxLength": "連絡先情報は500文字以内である必要があります",
-        "addressMaxLength": "住所は500文字以内である必要があります",
-        "hoursMaxLength": "営業時間は200文字以内である必要があります",
-        "descriptionMaxLength": "説明は1000文字以内である必要があります",
-        "logoUrlInvalid": "ロゴのURL形式が無効です。"
-      },
-      "Page": {
-        "title": "レストラン設定",
-        "errors": {
-          "noSubdomainDetected": "レストランのサブドメインが検出できませんでした。",
-          "noRestaurantIdForSubdomain": "指定されたサブドメインのレストランIDが見つかりませんでした。",
-          "noRestaurantIdTitle": "レストランが特定できません",
-          "noRestaurantIdMessage": "レストランIDを特定できませんでした。正しくアクセスしているか確認してください。",
-          "fetchErrorTitle": "設定の読み込みエラー",
-          "fetchErrorMessage": "レストラン設定の取得中に問題が発生しました。後でもう一度お試しください。",
-          "noSettingsFoundTitle": "設定が見つかりません",
-          "noSettingsFoundMessage": "このレストランの設定データが見つかりませんでした。"
-        },
-        "validation": {
-          "nameRequired": "レストラン名は必須です。",
-          "nameMaxLength": "レストラン名は{maxLength}文字以内で入力してください。",
-          "defaultLanguageRequired": "デフォルト言語は必須です。",
-          "brandColorInvalidFormat": "ブランドカラーの形式が無効です。#RRGGBB を使用してください。",
-          "contactInfoMaxLength": "連絡先情報は{maxLength}文字以内で入力してください。",
-          "addressMaxLength": "住所は{maxLength}文字以内で入力してください。",
-          "opening_hoursMaxLength": "営業時間は{maxLength}文字以内で入力してください。",
-          "descriptionMaxLength": "説明は{maxLength}文字以内で入力してください。",
-          "logoFileMaxSize": "ロゴ画像は{maxSize}MB以下にしてください。",
-          "logoFileInvalidType": "無効なファイルタイプです。PNG、JPG、またはWEBP画像をアップロードしてください。",
-          "logoUrlInvalidFormat": "ロゴURLの形式が無効です。"
-        }
+      "error": {
+        "title": "エラー"
       }
     },
-    "Layout": {
-      "errors": {
-        "fallbackRestaurantName": "代替レストラン",
-        "configurationErrorTitle": "レストラン設定エラー",
-        "configurationErrorDescription": "サブドメイン「{subdomain}」の設定を読み込めませんでした。代替設定で表示しています。",
-        "adminPanelTitle": "管理パネル",
-        "noRestaurantContextTitle": "エラー：レストランコンテキストがありません",
-        "noRestaurantContextDescription": "このダッシュボードを正しく機能させるには、有効なレストランのサブドメインが必要です。"
-      }
-    }
+    "errors": {
+      "noSubdomainDetected": "レストランのサブドメインが検出できませんでした。",
+      "noRestaurantIdForSubdomain": "提供されたサブドメインのレストランIDが見つかりませんでした。",
+      "noRestaurantIdTitle": "レストランが特定できません",
+      "noRestaurantIdMessage": "レストランIDを特定できませんでした。このページに正しくアクセスしていることを確認してください。",
+      "fetchErrorTitle": "設定の読み込みエラー",
+      "fetchErrorMessage": "レストラン設定の取得中に問題が発生しました。後でもう一度お試しください。",
+      "noSettingsFoundTitle": "設定が見つかりません",
+      "noSettingsFoundMessage": "このレストランの設定データが見つかりませんでした。"
+    },
+    "validation": {
+      "nameRequired": "レストラン名は必須です。",
+      "nameMaxLength": "レストラン名は{maxLength}文字以下である必要があります。",
+      "defaultLanguageRequired": "デフォルト言語は必須です。",
+      "brandColorInvalidFormat": "無効なブランドカラー形式です。#RRGGBBを使用してください。",
+      "contactInfoMaxLength": "連絡先情報は{maxLength}文字以下である必要があります。",
+      "addressMaxLength": "住所は{maxLength}文字以下である必要があります。",
+      "openingHoursMaxLength": "営業時間は{maxLength}文字以下である必要があります。",
+      "descriptionMaxLength": "説明は{maxLength}文字以下である必要があります。",
+      "logoFileMaxSize": "ロゴ画像は{maxSize}MB以下である必要があります。",
+      "logoFileInvalidType": "無効なファイルタイプです。PNG、JPG、またはWEBP画像をアップロードしてください。",
+      "logoUrlinvalidFormat": "無効なロゴURL形式です。"
+    },
+    "coming_soon": {
+      "title": "機能が近日公開予定",
+      "description": "この機能は現在開発中であり、まもなく利用可能になります。お楽しみに！"
+    },
+    "mark_resolved": "解決済みにする",
+    "mark_unresolved": "未解決にする",
+    "defaultUnnamedRestaurant": "名称未設定のレストラン",
+    "saving": "保存中...",
+    "processing": "処理中..."
+  },
+  "AdminLayout": {
+    "sidebar": {
+      "toggle_aria_label": "サイドバーナビゲーションの切り替え",
+      "close_aria_label": "サイドバーを閉じる"
+    },
+    "theme": {
+      "toggle_aria_label": "ライト/ダークテーマの切り替え",
+      "toggle_label": "テーマを切り替える"
+    },
+    "user_menu": {
+      "admin_user_placeholder": "管理者ユーザー",
+      "my_account_label": "マイアカウント",
+      "profile_link": "プロフィール",
+      "settings_link": "レストラン設定",
+      "logout_button": "ログアウト"
+    },
+    "default_restaurant_name": "CoOrder"
+  },
+  "AdminNav": {
+    "admin_sidebar_dashboard": "ダッシュボード",
+    "admin_sidebar_restaurant_settings": "レストラン設定",
+    "admin_sidebar_menu_management": "メニュー管理",
+    "admin_sidebar_orders": "注文",
+    "admin_sidebar_table_qr_management": "テーブルとQRコード",
+    "admin_sidebar_employees_schedules": "従業員とスケジュール",
+    "admin_sidebar_bookings_preorders": "予約と事前注文",
+    "admin_sidebar_reports_analytics": "レポートと分析",
+    "admin_sidebar_design_system": "デザインシステムガイド",
+    "admin_sidebar_view_customer_site": "顧客サイトを表示",
+    "admin_sidebar_logout": "ログアウト",
+    "admin_dashboard_title": "ダッシュボード概要",
+    "admin_settings_title": "レストラン設定",
+    "admin_menu_title": "メニュー管理",
+    "admin_tables_title": "テーブルとQR管理",
+    "admin_employees_title": "従業員とスケジュール管理",
+    "admin_bookings_title": "予約管理",
+    "admin_reports_title": "レポートと分析",
+    "sidebar_close_aria_label": "サイドバーを閉じる"
   },
   "AdminMenu": {
     "title": "メニュー管理",
@@ -345,26 +409,6 @@
       "7_short": "日"
     },
     "item": {
-      "update_success": "メニュー品目を更新しました！",
-      "create_success": "メニュー品目を作成しました！",
-      "save_error": "メニュー品目の保存に失敗しました。もう一度お試しください。",
-      "delete_success": "メニュー品目を削除しました！",
-      "delete_error": "メニュー品目の削除に失敗しました。もう一度お試しください。",
-      "name_en": "品目名（英語）",
-      "name_ja": "品目名（日本語）",
-      "name_vi": "品目名（ベトナム語）",
-      "description_en": "説明（英語）",
-      "description_ja": "説明（日本語）",
-      "description_vi": "説明（ベトナム語）",
-      "price": "価格",
-      "image_url": "画像URL",
-      "upload_image": "画像アップロード",
-      "image_upload_note": "メニュー品目の画像をアップロードしてください（最大5MB）。",
-      "stock_level": "在庫数",
-      "is_available": "提供中ですか？",
-      "weekday_visibility": "表示する曜日",
-      "reorder_success": "メニュー項目の並び順を更新しました。",
-      "reorder_error": "メニュー項目の並び順の更新に失敗しました。",
       "name_en_label": "名前（英語）",
       "name_en_placeholder": "英語で名前を入力",
       "name_ja_label": "名前（日本語）",
@@ -404,10 +448,10 @@
       "view_edit_sizes": "サイズ",
       "addSize": "サイズを追加",
       "size_key_label": "サイズキー",
-      "size_key_placeholder": "例：S、M、L",
+      "size_key_placeholder": "例：S, M, L",
       "size_key_note": "このサイズの短い識別子",
       "size_name_en_label": "サイズ名（英語）",
-      "size_name_en_placeholder": "例：小、中、大",
+      "size_name_en_placeholder": "例：小, 中, 大",
       "size_name_ja_label": "サイズ名（日本語）",
       "size_name_ja_placeholder": "日本語でサイズ名を入力",
       "size_name_vi_label": "サイズ名（ベトナム語）",
@@ -420,22 +464,38 @@
       "add_custom_size": "カスタムサイズを追加",
       "set_base_price_first": "標準サイズを生成するには、まず基本価格を設定してください",
       "auto_translations_label": "自動生成された翻訳",
-      "auto_translate_name_en_placeholder":"自動翻訳",
-      "auto_translate_name_ja_placeholder":"自動翻訳",
-      "auto_translate_name_vi_placeholder":"自動翻訳",
-      "auto_translate_description_en_placeholder":"自動翻訳",
-      "auto_translate_description_ja_placeholder":"自動翻訳",
-      "auto_translate_description_vi_placeholder":"自動翻訳"
+      "adding_to_category": "カテゴリに追加中",
+      "select_category_first": "最初にカテゴリを選択してください",
+      "update_success": "メニュー品目を更新しました！",
+      "create_success": "メニュー品目を作成しました！",
+      "save_error": "メニュー品目の保存に失敗しました。もう一度お試しください。",
+      "delete_error": "メニュー品目の削除に失敗しました。もう一度お試しください。",
+      "name_en": "品目名（英語）",
+      "name_ja": "品目名（日本語）",
+      "name_vi": "品目名（ベトナム語）",
+      "description_en": "説明（英語）",
+      "description_ja": "説明（日本語）",
+      "description_vi": "説明（ベトナム語）",
+      "price": "価格",
+      "image_url": "画像URL",
+      "upload_image": "画像アップロード",
+      "image_upload_note": "メニュー品目の画像をアップロードしてください（最大5MB）。",
+      "stock_level": "在庫数",
+      "is_available": "提供中ですか？",
+      "weekday_visibility": "表示する曜日",
+      "reorder_success": "メニュー項目の並び順を更新しました。",
+      "reorder_error": "メニュー項目の並び順の更新に失敗しました。",
+      "auto_translate_name_en_placeholder": "自動翻訳",
+      "auto_translate_name_ja_placeholder": "自動翻訳",
+      "auto_translate_name_vi_placeholder": "自動翻訳",
+      "auto_translate_description_en_placeholder": "自動翻訳",
+      "auto_translate_description_ja_placeholder": "自動翻訳",
+      "auto_translate_description_vi_placeholder": "自動翻訳"
     },
     "errors": {
       "restaurant_not_found": "レストランコンテキストを特定できませんでした。有効なレストランサブドメイン経由でアクセスしていることを確認してください。",
       "data_fetch_error": "メニューデータの読み込みに失敗しました。後でもう一度お試しください。",
       "no_categories_found": "メニューカテゴリが見つかりません。開始するにはカテゴリを追加してください。"
-    },
-    "AdminOrders": {
-      "errors": {
-        "fetch_failed": "注文データの取得に失敗しました。もう一度お試しください。"
-      }
     },
     "validation": {
       "name_en_required": "英語名は必須です。",
@@ -503,6 +563,83 @@
       "low_stock_alerts_dashboard": "ダッシュボードの在庫僅少アラート",
       "sales_over_time_chart": "売上推移チャート",
       "popular_items_report": "人気商品レポート"
+    }
+  },
+  "Metadata": {
+    "admin_dashboard_title": "管理ダッシュボード - CoOrder.ai"
+  },
+  "logout": {
+    "title": "ログアウトしています...",
+    "message": "正常にログアウトしました。まもなくリダイレクトされます。",
+    "login_again_button": "再度ログイン"
+  },
+  "Dashboard": {
+    "Settings": {
+      "labels": {
+        "restaurantName": "レストラン名",
+        "defaultLanguage": "デフォルト言語",
+        "brandColor": "ブランドカラー",
+        "logo": "ロゴ",
+        "contactInfo": "連絡先情報",
+        "address": "住所",
+        "hours": "営業時間",
+        "description": "説明"
+      },
+      "placeholders": {
+        "restaurantName": "レストラン名を入力してください",
+        "brandColor": "#RRGGBB",
+        "contactInfo": "例：電話番号、メールアドレス",
+        "address": "レストランの完全な住所",
+        "hours": "例：月～金：午前9時～午後10時、土～日：午前10時～午後11時",
+        "description": "レストランの簡単な説明"
+      },
+      "buttons": {
+        "saveChanges": "変更を保存",
+        "uploadingLogo": "アップロード中...",
+        "updatingSettings": "更新中..."
+      },
+      "notifications": {
+        "successTitle": "設定が更新されました",
+        "successMessage": "レストランの設定が正常に更新されました。",
+        "settingsSaved": "設定が正常に保存されました。",
+        "saveError": "設定の保存中にエラーが発生しました。もう一度お試しください。",
+        "uploadError": "ロゴのアップロード中にエラーが発生しました。もう一度お試しください。",
+        "errorTitle": "更新失敗",
+        "errorMessage": "設定を更新できませんでした：{error}",
+        "logoUploadErrorTitle": "ロゴのアップロード失敗",
+        "logoUploadErrorMessage": "ロゴをアップロードできませんでした：{error}",
+        "logoRemovedMessage": "ロゴが削除されました。変更を保存して確認してください。",
+        "fileTooLarge": "ファイルサイズが大きすぎます。最大5MBです。",
+        "invalidFileType": "無効なファイルタイプです。画像をアップロードしてください。",
+        "settingsSaveFailedGeneric": "設定の保存に失敗しました。もう一度お試しください。"
+      },
+      "altText": {
+        "logoPreview": "レストランロゴのプレビュー",
+        "logoIconFallback": "ロゴ"
+      },
+      "text": {
+        "dragDropLogo": "ドラッグ＆ドロップまたはクリックしてロゴを選択",
+        "currentBrandColor": "現在のブランドカラー",
+        "nameRequired": "名前は必須です",
+        "nameMaxLength": "名前は100文字以内である必要があります",
+        "languageRequired": "デフォルト言語は必須です",
+        "invalidHexFormat": "無効な16進カラー形式（例：#RRGGBB）",
+        "contactInfoMaxLength": "連絡先情報は500文字以内である必要があります",
+        "addressMaxLength": "住所は500文字以内である必要があります",
+        "hoursMaxLength": "営業時間は200文字以内である必要があります",
+        "descriptionMaxLength": "説明は1000文字以内である必要があります",
+        "logoUrlInvalid": "ロゴのURL形式が無効です。"
+      }
+    },
+    "Layout": {
+      "errors": {
+        "fallbackRestaurantName": "代替レストラン",
+        "configurationErrorTitle": "レストラン設定エラー",
+        "configurationErrorDescription": "サブドメイン「{subdomain}」の設定を読み込めませんでした。代替設定で表示しています。",
+        "adminPanelTitle": "管理パネル",
+        "noRestaurantContextTitle": "エラー：レストランコンテキストがありません",
+        "noRestaurantContextDescription": "このダッシュボードを正しく機能させるには、有効なレストランのサブドメインが必要です。"
+      }
     }
   },
   "AdminTables": {
@@ -580,6 +717,159 @@
       "notification_error": "{count}テーブルの追加に失敗しました。エラー: {errors}"
     }
   },
+  "AdminEmployees": {
+    "add_employee": "従業員を追加",
+    "edit_employee": "従業員を編集",
+    "employee_name": "従業員名",
+    "schedule_calendar_note": "週次スケジュール概要。",
+    "edit_shifts": "シフトを編集",
+    "edit_shifts_action": "シフト編集アクション",
+    "form": {
+      "full_name": "氏名",
+      "email_lookup": "メールアドレス",
+      "email_lookup_placeholder": "employee@example.com",
+      "role": "役職"
+    }
+  },
+  "Roles": {
+    "manager": "マネージャー",
+    "chef": "シェフ",
+    "server": "サーバー",
+    "cashier": "キャッシャー"
+  },
+  "AdminBookings": {
+    "title": "予約と事前注文管理",
+    "subtitle": "予約、事前注文、顧客詳細を管理",
+    "today_only": "本日のみ",
+    "no_bookings": "表示する予約はありません。",
+    "new_booking": "新規予約",
+    "search_placeholder": "顧客名、連絡先、または日付で予約を検索...",
+    "filter_by_status": "ステータスで絞り込む",
+    "all_statuses": "すべてのステータス",
+    "pending": "保留中",
+    "confirmed": "確定済み",
+    "canceled": "キャンセル済み",
+    "booking_items": "予約項目",
+    "details_title": "予約詳細",
+    "preorder_items": "事前注文品目",
+    "no_preorder_items": "事前注文品目なし",
+    "table": {
+      "customer_name": "顧客名",
+      "contact": "連絡先",
+      "date_time": "日時",
+      "party_size": "人数",
+      "status": "ステータス",
+      "actions": "アクション"
+    },
+    "empty_state": {
+      "title": "予約が見つかりません",
+      "description": "予約はまだありません。新しい予約を追加して始めましょう。",
+      "no_matching_bookings": "現在のフィルターに一致する予約はありません。",
+      "no_bookings_found": "予約が見つかりません。新しい予約を追加して始めましょう。"
+    },
+    "create_new_booking": "新規予約を作成",
+    "select_table": "テーブルを選択",
+    "choose_table": "予約のためのテーブルを選択",
+    "select_menu_items": "メニューアイテムを選択",
+    "create_booking": "予約を作成",
+    "add_items_to_booking": "予約にアイテムを追加",
+    "add_items": "アイテムを追加",
+    "Settings": {
+      "Page": {
+        "errors": {
+          "fetchErrorTitle": "予約の取得エラー"
+        }
+      }
+    },
+    "errors": {
+      "no_bookings_found": "予約が見つかりません。"
+    }
+  },
+  "Bookings": {
+    "status": {
+      "pending": "保留中",
+      "confirmed": "確定済み",
+      "canceled": "キャンセル済み"
+    }
+  },
+  "AdminOrders": {
+    "title": "注文管理",
+    "subtitle": "注文の管理、品目の追跡、会計処理",
+    "today_only": "本日のみ",
+    "items_view": "品目ビュー",
+    "orders_view": "注文ビュー",
+    "no_orders": "表示する注文はありません。",
+    "new_order": "新規注文",
+    "search_placeholder": "テーブル、品目、または注文を検索...",
+    "filter_by_status": "ステータスで絞り込む",
+    "all_statuses": "すべてのステータス",
+    "ordered": "注文済み",
+    "preparing": "調理中",
+    "ready": "準備完了",
+    "served": "提供済み",
+    "completed": "完了",
+    "canceled": "キャンセル済み",
+    "order_items": "注文品目",
+    "table": "テーブル",
+    "item": "品目",
+    "quantity": "数量",
+    "notes": "メモ",
+    "status": "ステータス",
+    "actions": "アクション",
+    "orders": "注文",
+    "items_count": "品目数",
+    "total": "合計",
+    "created": "作成日時",
+    "items": "品目",
+    "create_new_order": "新規注文を作成",
+    "select_table": "テーブルを選択",
+    "choose_table": "テーブルを選択してください",
+    "select_menu_items": "メニュー品目を選択",
+    "create_order": "注文を作成",
+    "add_items_to_order": "注文に品目を追加",
+    "add_items": "品目を追加",
+    "process_checkout": "会計処理",
+    "checkout_confirmation": "これにより、すべての品目が提供済みとマークされ、注文が完了します。",
+    "process_payment": "支払いを処理",
+    "item_status_updated": "品目ステータスが正常に更新されました",
+    "order_status_updated": "注文ステータスが正常に更新されました",
+    "error_updating_status": "ステータスの更新に失敗しました",
+    "notes_updated": "メモが正常に更新されました",
+    "error_updating_notes": "メモの更新に失敗しました",
+    "add_notes": "メモを追加...",
+    "select_table_and_items": "テーブルを選択し、品目を追加してください",
+    "select_items": "追加する品目を選択してください",
+    "order_created": "注文が正常に作成されました",
+    "error_creating_order": "注文の作成に失敗しました",
+    "items_added": "品目が注文に正常に追加されました",
+    "error_adding_items": "注文への品目の追加に失敗しました",
+    "checkout_processed": "会計処理が正常に完了しました",
+    "error_processing_checkout": "会計処理に失敗しました",
+    "details_title": "注文詳細",
+    "selected_items": "選択された品目",
+    "no_order_items": "この注文には品目がありません。",
+    "order_details": "注文詳細",
+    "search_items": "名前またはコードで品目を検索...",
+    "item_code": "品目コード",
+    "item_availability": "在庫状況",
+    "select_item": "品目を選択",
+    "add_custom_item": "カスタム品目を追加",
+    "custom_item_name": "品目名",
+    "custom_item_price": "価格",
+    "custom_item_quantity": "数量",
+    "add_to_order": "注文に追加",
+    "close": "閉じる",
+    "errors": {
+      "noSubdomainDetected": "無効なレストランのサブドメイン",
+      "noRestaurantIdMessage": "レストランIDを特定できませんでした。このページに正しくアクセスしていることを確認してください。",
+      "fetch_failed": "注文データの取得に失敗しました。もう一度お試しください。"
+    },
+    "empty_state": {
+      "no_matching_items": "現在のフィルターに一致する品目がありません。",
+      "no_matching_orders": "現在のフィルターに一致する注文がありません。"
+    },
+    "order_id_prefix": "注文"
+  },
   "AdminReports": {
     "Recommendations": {
       "title": "トップ販売メニューアイテム（過去7日間）",
@@ -633,21 +923,227 @@
       "description_last_50": "過去50件のレビュー"
     }
   },
+  "CustomerHome": {
+    "welcome": "{restaurantName}へようこそ",
+    "menu_title": "メニュー",
+    "add_to_cart": "追加",
+    "no_menu_items": "利用可能なメニュー項目はありません"
+  },
   "Customer": {
-    "guest_dialog": {"title": "ご来店ありがとうございます。人数を入力してください", "confirm": "注文を開始"},
-    "orderhistory": {"checkout_button": "会計", "price_per_person": "1人あたり: {value}"},
+    "admin_panel": {
+      "toggle_label": "管理パネルを切り替え"
+    },
+    "pick_for_you": "あなたへのおすすめ",
+    "popular_items": "人気アイテム",
+    "recommended_items": "おすすめアイテム",
+    "view_cart": "カートを見る",
+    "no_results_found": "結果が見つかりません",
+    "adjusting_filters_or_search": "フィルターや検索条件を調整してみてください。",
+    "current_session": "現在の注文セッション",
+    "active": "アクティブ",
+    "inactive": "非アクティブ",
+    "session_active_more": "まだ商品を追加できます！",
+    "menu_item_detail_back_to_menu": "メニューに戻る",
+    "menu_item_detail_add_to_cart": "カートに追加",
+    "decrease_quantity": "数量を1つ減らす",
+    "increase_quantity": "数量を1つ増やす",
+    "search_placeholder": "メニュー品目を検索...",
+    "menu_item_detail_added_to_cart_msg": "{itemName}がカートに追加されました。",
+    "no_order_found": "注文が見つかりません",
+    "no_order_items": "このテーブルではまだ注文が行われていません。",
+    "session": {
+      "created_title": "セッションが作成されました！",
+      "share_passcode": "この4桁のコードをテーブルの他の人と共有して、注文に参加してもらいましょう：",
+      "passcode_instruction": "他の人はテーブルのQRコードをスキャンし、このパスコードを入力してセッションに参加できます。",
+      "ask_for_passcode": "パスコードを尋ねる",
+      "ask_for_passcode_instruction": "パスコードをお持ちでない場合は、注文を開始した方にお尋ねください。",
+      "start_ordering": "注文を開始",
+      "enter_passcode_title": "パスコードを入力",
+      "enter_passcode_placeholder": "4桁のコードを入力",
+      "join_session": "セッションに参加",
+      "session_expired": "セッションの有効期限が切れました",
+      "session_expired_message": "ご注文のセッションは完了したか、有効期限が切れました。ご来店ありがとうございました！",
+      "session_expired_instruction": "新しい注文をするには、テーブルのQRコードを再度スキャンしてください。",
+      "invalid_table": "無効なテーブル",
+      "invalid_table_message": "テーブルIDが無効か、このレストランに属していません。",
+      "invalid_table_instruction": "このレストランのテーブルから有効なQRコードをスキャンしてください。",
+      "view_menu_only": "メニューのみ表示"
+    },
     "menu": {
+      "title": "メニュー",
+      "serving_today": "本日提供中",
+      "view_menu": "メニューを見る",
+      "item_details": "品目詳細",
+      "add_to_cart": "追加",
+      "out_of_stock": "在庫切れ",
+      "quantity": "数量",
+      "item_quantity": "数量: {quantity}",
+      "item_notes": "メモ: {notes}",
+      "total_price": "合計金額",
+      "search_placeholder": "メニューを検索...",
+      "popular_now": "人気商品",
+      "recommended": "おすすめ",
+      "add_to_cart_success": "{itemName}をカートに追加しました。",
+      "add_to_cart_error": "{itemName}のカートへの追加に失敗しました。もう一度お試しください。",
+      "view_only": "表示のみ",
+      "decrease_quantity": "数量を減らす",
+      "increase_quantity": "数量を増やす",
+      "item_added_to_cart_msg": "{item}をカートに追加しました！",
       "select_size": "サイズを選択",
       "select_toppings": "トッピングを選択",
-      "total_price": "合計価格",
+      "selected_toppings": "選択したトッピング:",
       "base_price": "基本価格",
       "toppings_price": "トッピング"
     },
     "cart": {
+      "items_in_cart_plural": "カートに{count}個の商品",
+      "review_order_button": "注文を確認",
       "toppings_label": "トッピング: {toppings}"
-    }
+    },
+    "guest_dialog": {
+      "title": "ようこそ！何名様ですか？",
+      "confirm": "注文を開始"
+    },
+    "checkout": {
+      "redirecting_empty_cart": "カートは空です。メニューにリダイレクトしています...",
+      "title": "注文内容の確認",
+      "order_summary": "注文概要",
+      "quantity": "数量",
+      "total": "合計",
+      "special_instructions": "特記事項",
+      "special_instructions_placeholder": "特別なご要望やアレルギーに関する注意事項など...",
+      "characters": "文字",
+      "payment_method": "お支払い方法",
+      "cash_payment": "現金で支払う",
+      "card_payment": "カードで支払う",
+      "pay_at_table": "お食事が準備できたらお支払い",
+      "coming_soon": "近日公開",
+      "place_order": "注文を確定する",
+      "placing_order": "注文を確定中...",
+      "confirm_order": "注文を確定",
+      "confirm_message": "{items}品、合計{total}でこの注文を確定しますか？",
+      "cancel": "キャンセル",
+      "confirm": "確定",
+      "add_note": "メモを追加",
+      "edit_note": "メモを編集",
+      "price_each": "各{price}円",
+      "add_note_for": "{itemName}のメモを追加",
+      "save_note": "メモを保存",
+      "note_saved": "メモを保存しました！",
+      "confirming": "確定中...",
+      "empty_cart_title": "カートは空です",
+      "empty_cart_message": "カートにおいしい商品を追加して続けてください。",
+      "table_info": "テーブル {number}",
+      "session_active": "注文セッションは有効です",
+      "session_not_found_alert": "セッションが見つかりません。メニューに戻ってやり直してください。",
+      "empty_cart_alert": "カートは空です。",
+      "order_failed_error": "注文の確定に失敗しました。もう一度お試しください。",
+      "order_failed_error_network": "ネットワークエラーです。接続を確認してもう一度お試しください。",
+      "payment_instruction_table": "テーブル{tableId}のお支払いを完了するために、レジにお越しいただくか、スタッフをお呼びください。",
+      "payment_instruction_counter": "お支払いを完了するために、レジにお越しください。",
+      "place_order_button": "注文する",
+      "confirm_modal_title": "注文の確認",
+      "confirm_modal_text": "合計{total}の注文を確定してもよろしいですか？"
+    },
+    "orderplaced": {
+      "title": "注文が完了しました",
+      "message": "ご注文は厨房に送信されました。引き続き注文するか、準備ができたら会計に進んでください。",
+      "proceed_to_checkout_button": "会計に進む"
+    },
+    "thankyou": {
+      "title": "ご注文ありがとうございました！",
+      "subtitle": "ご注文は受理され、現在準備中です。",
+      "message": "ご注文は確定し、現在準備中です！",
+      "order_id_label": "注文ID",
+      "table_number": "テーブル {number}",
+      "table_number_label": "テーブル",
+      "order_summary_title": "注文概要",
+      "preparation_message": "次に何をしますか？",
+      "view_order_history": "注文履歴を見る",
+      "review_button": "体験を評価する",
+      "add_more_button": "さらに商品を追加",
+      "order_history_button": "注文履歴を確認",
+      "rate_dishes_title": "お料理を評価してください",
+      "review_prompt": "個々のお料理を評価して、改善にご協力ください：",
+      "order_history_title": "注文履歴",
+      "inactive_session_message": "注文セッションは終了しました。新しいセッションを開始するには、テーブルのQRコードをスキャンしてください。",
+      "thankyou_message": "ご来店ありがとうございました！またのお越しをお待ちしております。",
+      "item": "品",
+      "items": "品",
+      "status_ordered": "注文済み",
+      "status_preparing": "調理中",
+      "status_ready": "準備完了",
+      "status_completed": "提供済み"
+    },
+    "review": {
+      "title": "体験を評価する",
+      "rating_prompt": "この品目をどう評価しますか？",
+      "rating_required": "送信する前に評価を選択してください。",
+      "comment_label": "コメント",
+      "optional": "任意",
+      "comment_placeholder": "あなたの体験について教えてください...",
+      "characters": "文字",
+      "skip_button": "スキップ",
+      "submit_button": "レビューを送信",
+      "next_item": "次の品目",
+      "submitting": "送信中...",
+      "submission_error": "レビューの送信に失敗しました。もう一度お試しください。",
+      "item_progress": "{total}品目中{current}品目",
+      "no_items": "レビューする品目がありません。",
+      "back_to_thank_you": "「ありがとうございました」に戻る",
+      "rating_required_alert": "評価を入力してください。",
+      "submission_thank_you_title": "レビューが送信されました！",
+      "submission_thank_you_message": "貴重なご意見ありがとうございます！",
+      "rating_label": "あなたの評価"
+    },
+    "orderhistory": {
+      "checkout_button": "会計",
+      "price_per_person": "一人当たり: {value}"
+    },
+    "booking": {
+      "title": "テーブル予約",
+      "submission_thank_you_title": "予約が確定しました！",
+      "book_table_button": "テーブルを予約",
+      "submission_thank_you_message": "テーブルの予約が正常に確定しました。お会いできるのを楽しみにしています！",
+      "form": {
+        "validation_error_fill_fields": "すべての必須フィールドを入力してください。",
+        "table_select_placeholder": "テーブルを選択",
+        "table_capacity": "{count}名様",
+        "name_placeholder": "氏名",
+        "contact_placeholder": "電話番号またはメールアドレス",
+        "preorder_optional_title": "事前注文（任意）",
+        "submit_button": "予約を確定"
+      }
+    },
+    "common": {
+      "total": "合計",
+      "cancel": "注文をキャンセル",
+      "confirm": "注文を確定",
+      "from_price": "{price}から",
+      "restaurant_not_found": "レストランが見つかりません。URLを確認するか、サポートにお問い合わせください。",
+      "error_loading_menu": "メニューの読み込み中にエラーが発生しました。後でもう一度お試しください。",
+      "error_loading_cart": "カートの読み込み中にエラーが発生しました。後でもう一度お試しください。",
+      "error_loading_checkout": "チェックアウトの読み込み中にエラーが発生しました。後でもう一度お試しください。",
+      "error_loading_booking": "予約フォームの読み込み中にエラーが発生しました。後でもう一度お試しください。",
+      "error_loading_order_summary": "注文概要の読み込み中にエラーが発生しました。後でもう一度お試しください。",
+      "error_loading_review_form": "レビューフォームの読み込み中にエラーが発生しました。後でもう一度お試しください。"
+    },
+    "weekdays": {
+      "mon": "月曜日",
+      "tue": "火曜日",
+      "wed": "水曜日",
+      "thu": "木曜日",
+      "fri": "金曜日",
+      "sat": "土曜日",
+      "sun": "日曜日"
+    },
+    "currency_format": "{value, number, ::currency/JPY}",
+    "ordering_for_table": "テーブル{tableId}の注文",
+    "serving_today": "本日提供中: {day}",
+    "item_added_to_cart_msg": "{item}をカートに追加しました！",
+    "admin_panel_button": "管理パネル"
   },
-  "Common": {
-    "defaultUnnamedRestaurant": "名称未設定のレストラン"
+  "ai_chat": {
+    "toggle_label": "AIチャットを切り替え"
   }
 }

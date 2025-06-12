@@ -70,7 +70,7 @@ export default async function OrdersPage({
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "AdminOrders" });
   const tCommon = await getTranslations({ locale, namespace: "Common" });
-
+ 
   const host = (await headers()).get("host") || "";
   const subdomain = getSubdomainFromHost(host);
 

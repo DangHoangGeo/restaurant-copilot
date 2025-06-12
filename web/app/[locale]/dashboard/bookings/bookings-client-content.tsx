@@ -28,18 +28,19 @@ interface Booking {
 }
 
 interface BookingsClientContentProps {
-  initialBookings: Booking[] | null;
+  initialBookings: Booking[];
 }
 
 export function BookingsClientContent({ initialBookings }: BookingsClientContentProps) {
-  const t = useTranslations()
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings || [])
+  const t = useTranslations("AdminBookings");
+  const tCommon = useTranslations("Common");
+  const [bookings, setBookings] = useState<Booking[]>(initialBookings)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   if (!FEATURE_FLAGS.tableBooking) {
-    return <ComingSoon featureName="AdminNav.admin_bookings_title" />;
+    return <ComingSoon featureName="title" />;
   }
 
   const handleViewDetails = (booking: Booking) => {
@@ -59,14 +60,14 @@ export function BookingsClientContent({ initialBookings }: BookingsClientContent
         const updatedBooking = await res.json(); // Assuming API returns updated booking
         setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: updatedBooking.booking.status } : b));
         if (selectedBooking?.id === bookingId) setSelectedBooking({ ...selectedBooking, status: updatedBooking.booking.status });
-        toast.success(t('AdminBookings.notifications.update_success'));
+        toast.success(t('notifications.update_success'));
         if (status === 'confirmed' || status === 'canceled') setIsDetailModalOpen(false);
       } else {
         const errorData = await res.json().catch(() => ({}));
-        toast.error(t('AdminBookings.notifications.update_failed', { error: errorData.message || 'Unknown error' }));
+        toast.error(t('notifications.update_failed', { error: errorData.message || 'Unknown error' }));
       }
     } catch (e) {
-      toast.error(t('AdminBookings.notifications.update_failed', { error: e instanceof Error ? e.message : 'Unknown error' }));
+      toast.error(t('notifications.update_failed', { error: e instanceof Error ? e.message : 'Unknown error' }));
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -83,16 +84,14 @@ export function BookingsClientContent({ initialBookings }: BookingsClientContent
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-6">{t('AdminNav.admin_bookings_title')}</h2>
-
       {bookings.length === 0 ? (
         <Card className="p-8 text-center">
           <CalendarX className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500" />
           <h3 className="mt-4 text-lg font-semibold text-slate-700 dark:text-slate-200">
-            {t('AdminBookings.empty_state.title')}
+            {t('empty_state.title')}
           </h3>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            {t('AdminBookings.empty_state.description')}
+            {t('empty_state.description')}
           </p>
         </Card>
       ) : (
@@ -102,7 +101,7 @@ export function BookingsClientContent({ initialBookings }: BookingsClientContent
               <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                 <tr>
                   {['customer_name','contact','date_time','party_size','status','actions'].map(col => (
-                    <th key={col} className="px-4 py-3">{t(`AdminBookings.table.${col}`)}</th>
+                    <th key={col} className="px-4 py-3">{t(`table.${col}`)}</th>
                   ))}
                 </tr>
               </thead>
@@ -130,17 +129,17 @@ export function BookingsClientContent({ initialBookings }: BookingsClientContent
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{t('AdminBookings.details_title')}</DialogTitle>
+            <DialogTitle>{t('details_title')}</DialogTitle>
           </DialogHeader>
           {selectedBooking && (
             <div className="space-y-2">
-              <p><strong>{t('AdminBookings.table.customer_name')}:</strong> {selectedBooking.customerName}</p>
-              <p><strong>{t('AdminBookings.table.contact')}:</strong> {selectedBooking.contact}</p>
-              <p><strong>{t('AdminBookings.table.date_time')}:</strong> {selectedBooking.date} @ {selectedBooking.time}</p>
-              <p><strong>{t('AdminBookings.table.party_size')}:</strong> {selectedBooking.partySize}</p>
-              <p><strong>{t('AdminBookings.table.status')}:</strong> {statusBadge(selectedBooking.status)}</p>
+              <p><strong>{t('table.customer_name')}:</strong> {selectedBooking.customerName}</p>
+              <p><strong>{t('table.contact')}:</strong> {selectedBooking.contact}</p>
+              <p><strong>{t('table.date_time')}:</strong> {selectedBooking.date} @ {selectedBooking.time}</p>
+              <p><strong>{t('table.party_size')}:</strong> {selectedBooking.partySize}</p>
+              <p><strong>{t('table.status')}:</strong> {statusBadge(selectedBooking.status)}</p>
               {/* TODO: Display preOrderItems if available and structure is known */}
-              {selectedBooking.preOrderItems?.length === 0 && <p className="text-sm mt-2 text-slate-500">{t('AdminBookings.no_preorder_items')}</p>}
+              {selectedBooking.preOrderItems?.length === 0 && <p className="text-sm mt-2 text-slate-500">{t('no_preorder_items')}</p>}
 
             </div>
           )}
@@ -149,15 +148,15 @@ export function BookingsClientContent({ initialBookings }: BookingsClientContent
               <>
                 <Button variant="outline" onClick={() => handleUpdateStatus(selectedBooking.id, 'canceled')} disabled={isUpdatingStatus}>
                   {isUpdatingStatus && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t('Common.cancel_booking')}
+                  {tCommon('cancel_booking')}
                 </Button>
                 <Button variant="default" onClick={() => handleUpdateStatus(selectedBooking.id, 'confirmed')} disabled={isUpdatingStatus}>
                   {isUpdatingStatus && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t('Common.confirm_booking')}
+                  {tCommon('confirm_booking')}
                 </Button>
               </>
             )}
-             <Button variant="ghost" onClick={() => setIsDetailModalOpen(false)}>{t('Common.close_modal')}</Button>
+             <Button variant="ghost" onClick={() => setIsDetailModalOpen(false)}>{tCommon('close_modal')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

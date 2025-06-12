@@ -216,7 +216,6 @@
     "needs_attention": "Needs Attention",
     "all_good": "All Good",
     "zod_form_hint": "Form validation is handled by Zod. Please ensure all required fields are filled correctly.",
-    "coming_soon": "Coming Soon!",
     "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
     "form_placeholder": "Form fields go here.",
     "back_to_menu": "Back to Menu",
@@ -278,6 +277,33 @@
       "success": { "title": "Success" },
       "warning": { "title": "Warning" },
       "error": { "title": "Error" }
+    },
+    "errors": {
+        "noSubdomainDetected": "No subdomain could be detected for the restaurant.",
+        "noRestaurantIdForSubdomain": "Could not find a restaurant ID for the provided subdomain.",
+        "noRestaurantIdTitle": "Restaurant Not Identified",
+        "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
+        "fetchErrorTitle": "Error Loading Settings",
+        "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
+        "noSettingsFoundTitle": "Settings Not Found",
+        "noSettingsFoundMessage": "No settings data found for this restaurant."
+      },
+      "validation": {
+        "nameRequired": "Restaurant name is required.",
+        "nameMaxLength": "Restaurant name must be {maxLength} characters or less.",
+        "defaultLanguageRequired": "Default language is required.",
+        "brandColorInvalidFormat": "Invalid brand color format. Use #RRGGBB.",
+        "contactInfoMaxLength": "Contact information must be {maxLength} characters or less.",
+        "addressMaxLength": "Address must be {maxLength} characters or less.",
+        "openingHoursMaxLength": "Operating hours must be {maxLength} characters or less.",
+        "descriptionMaxLength": "Description must be {maxLength} characters or less.",
+        "logoFileMaxSize": "Logo image must be {maxSize}MB or less.",
+        "logoFileInvalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
+        "logoUrlinvalidFormat": "Invalid logo URL format."
+      },
+    "coming_soon": {
+      "title": "Feature Coming Soon",
+      "description": "This feature is currently in development and will be available soon. Stay tuned!"
     },
     "mark_resolved": "Mark Resolved",
     "mark_unresolved": "Mark Unresolved",
@@ -595,33 +621,8 @@
         "hoursMaxLength": "Hours must be 200 characters or less",
         "descriptionMaxLength": "Description must be 1000 characters or less",
         "logoUrlInvalid": "Invalid URL format for logo."
-      },
-      "Page": {
-        "title": "Restaurant Settings",
-        "errors": {
-          "noSubdomainDetected": "No subdomain could be detected for the restaurant.",
-          "noRestaurantIdForSubdomain": "Could not find a restaurant ID for the provided subdomain.",
-          "noRestaurantIdTitle": "Restaurant Not Identified",
-          "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
-          "fetchErrorTitle": "Error Loading Settings",
-          "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
-          "noSettingsFoundTitle": "Settings Not Found",
-          "noSettingsFoundMessage": "No settings data found for this restaurant."
-        },
-        "validation": {
-          "nameRequired": "Restaurant name is required.",
-          "nameMaxLength": "Restaurant name must be {maxLength} characters or less.",
-          "defaultLanguageRequired": "Default language is required.",
-          "brandColorInvalidFormat": "Invalid brand color format. Use #RRGGBB.",
-          "contactInfoMaxLength": "Contact information must be {maxLength} characters or less.",
-          "addressMaxLength": "Address must be {maxLength} characters or less.",
-          "openingHoursMaxLength": "Operating hours must be {maxLength} characters or less.",
-          "descriptionMaxLength": "Description must be {maxLength} characters or less.",
-          "logoFileMaxSize": "Logo image must be {maxSize}MB or less.",
-          "logoFileInvalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
-          "logoUrlinvalidFormat": "Invalid logo URL format."
-        }
       }
+      
     },
     "Layout": {
       "errors": {
@@ -730,6 +731,18 @@
     "cashier": "Cashier"
   },
   "AdminBookings": {
+    "title": "Booking & Pre-order Management",
+    "subtitle": "Manage bookings, pre-orders, and customer details",
+    "today_only": "Today Only",
+    "no_bookings": "No bookings to display.",
+    "new_booking": "New Booking",
+    "search_placeholder": "Search bookings by customer name, contact, or date...",
+    "filter_by_status": "Filter by Status",
+    "all_statuses": "All Statuses",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "canceled": "Canceled",
+    "booking_items": "Booking Items",
     "details_title": "Booking Details",
     "preorder_items": "Pre-Order Items",
     "no_preorder_items": "No pre-order items",
@@ -741,6 +754,19 @@
       "status": "Status",
       "actions": "Actions"
     },
+    "empty_state": {
+      "title": "No Bookings Found",
+      "description": "Get started by creating your first booking or pre-order.",
+      "no_matching_bookings": "No bookings match your current filters.",
+      "no_bookings_found": "No bookings found. Start by adding a new booking."
+    },
+    "create_new_booking": "Create New Booking",
+    "select_table": "Select Table",
+    "choose_table": "Choose a table for the booking",
+    "select_menu_items": "Select Menu Items",
+    "create_booking": "Create Booking",
+    "add_items_to_booking": "Add Items to Booking",
+    "add_items": "Add Items",
     "Settings": {
       "Page": {
         "errors": {
@@ -901,6 +927,13 @@
     "admin_panel": {
       "toggle_label": "Toggle Admin Panel"
     },
+    "pick_for_you": "Recommended for You",
+    "popular_items": "Popular Items",
+    "recommended_items": "Recommended Items",
+    "view_cart": "View Cart",
+    "no_results_found": "No results found",
+    "adjusting_filters_or_search": "Try adjusting your filters or search terms.",
+    "clear_filters": "Clear Filters",
     "current_session": "Current Ordering Session",
     "active": "Active",
     "inactive": "Inactive",

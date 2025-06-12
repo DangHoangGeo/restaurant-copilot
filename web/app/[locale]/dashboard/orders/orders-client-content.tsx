@@ -203,8 +203,7 @@ export function OrdersClientContent({
   const getAllOrderItems = (): FlatOrderItem[] => {
     const allItems: FlatOrderItem[] = [];
     orders.forEach(order => {
-      const tableName = order.tables[0].name || `Order ${order.id.slice(0, 6)}`;
-      
+      const tableName = order.tables && order.tables.length > 0 ? order.tables[0].name : `Order ${order.id.slice(0, 6)}`;
       order.order_items.forEach(item => {
         const menuItem = item.menu_items;
         if (menuItem) {
