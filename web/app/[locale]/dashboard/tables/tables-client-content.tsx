@@ -65,7 +65,7 @@ interface Table {
 
 interface TablesClientContentProps {
   restaurantSettings: RestaurantSettings
-  initialData: Table[] | null
+  initialData: Table[]
   error: string | null
 }
 
@@ -112,7 +112,7 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     }
   });
 
-  const [tablesData, setTablesData] = useState<Table[]>(initialData || [])
+  const [tablesData, setTablesData] = useState<Table[]>(initialData)
   const [isTableModalOpen, setIsTableModalOpen] = useState(false)
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
   const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false); // Kept for now
@@ -280,10 +280,8 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     );
   }
 
-  // Loading state for initial data
-  // Assuming initialData might be null during SSR/fetch, and tablesData is populated after client-side hydration
-  // A more robust loading state might be needed if initialData itself is fetched client-side and can be undefined/loading
-  const isInitialLoading = initialData === null && !error; // Or some other indicator if you fetch client-side
+  // Loading state - since initialData is always an array, no loading state needed
+  const isInitialLoading = false;
 
   return (
     <div>

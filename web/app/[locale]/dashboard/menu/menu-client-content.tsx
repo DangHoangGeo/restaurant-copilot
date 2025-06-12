@@ -83,7 +83,7 @@ interface Category {
 }
 
 interface MenuClientContentProps {
-  initialData: Category[] | null;
+  initialData: Category[];
   error: string | null;
 }
 

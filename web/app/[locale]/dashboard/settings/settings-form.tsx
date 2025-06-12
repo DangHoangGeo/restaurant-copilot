@@ -4,7 +4,7 @@ import React, { useState, useEffect, ChangeEvent } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input"; // Assuming @ alias is web
 import { Textarea } from "@/components/ui/textarea"; // Assuming @ alias is web
@@ -58,7 +58,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
 
   const settingsSchema = getSettingsSchema(tValidation);
   type SettingsFormData = z.infer<typeof settingsSchema>;
-  const supabase = createClientComponentClient(); // Untyped client
+  const supabase = createClient(); // Untyped client
   const [logoPreview, setLogoPreview] = useState<string | null>(initialSettings.logo_url || null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [currentBrandColor, setCurrentBrandColor] = useState<string | null>(initialSettings.brand_color);
@@ -119,9 +119,9 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
     let publicLogoUrl = data.logoUrl || initialSettings.logo_url;
 
     if (data.logoFile) {
-      const filePath = `restaurant-uploads/restaurants/${initialSettings.id}/logos/logo.png`;
+      const filePath = `restaurants/${initialSettings.id}/logos/logo.png`;
       const { error: uploadError } = await supabase.storage
-        .from("restaurant-assets")
+        .from("restaurant-uploads")
         .upload(filePath, data.logoFile, {
           cacheControl: "3600",
           upsert: true,
@@ -133,7 +133,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
         return;
       }
 
-      const { data: urlData } = supabase.storage.from("restaurant-assets").getPublicUrl(filePath);
+      const { data: urlData } = supabase.storage.from("restaurant-uploads").getPublicUrl(filePath);
       publicLogoUrl = urlData.publicUrl;
       setValue("logoUrl", publicLogoUrl); // Update form state with new URL
     }

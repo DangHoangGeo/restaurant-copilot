@@ -42,7 +42,7 @@ export default async function MenuPage({
 	const { locale } = await params;
 	setRequestLocale(locale);
 	const t = await getTranslations({ locale, namespace: 'AdminMenu' });
-
+	const tCommon = await getTranslations({ locale, namespace: 'Common' });
 	const host = (await headers()).get("host") || "";
 	const subdomain = getSubdomainFromHost(host);
 
@@ -50,11 +50,11 @@ export default async function MenuPage({
 	let errorGettingId: string | null = null;
 	const user = await getUserFromRequest();
 	if (user && user.subdomain !== subdomain) {
-		errorGettingId = t("Settings.Page.errors.noSubdomainDetected");
+		errorGettingId = tCommon("errors.noSubdomainDetected");
 	}
 	restaurantId = user?.restaurantId || null;
 
-	let initialData: Category[] | null = null;
+	let initialData: Category[] = [];
 	let fetchError: string | null = null;
 
 	if (user && user.restaurantId) {
@@ -84,10 +84,7 @@ export default async function MenuPage({
 				menu_items: category.menu_items || [],
 			}));
 		} else {
-			initialData = null; // No categories found
-		}
-		if (!categories || categories.length === 0) {
-			return <MenuClientContent initialData={null} error={t('errors.no_categories_found')} />;
+			initialData = []; // Empty array for no categories, not null
 		}
 
 		return (
@@ -101,7 +98,7 @@ export default async function MenuPage({
 				{errorGettingId && (
 					<Alert variant="destructive" className="mb-6">
 						<AlertTriangle className="h-4 w-4" />
-						<AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
+						<AlertTitle>{tCommon("errors.noRestaurantIdTitle")}</AlertTitle>
 						<AlertDescription>{errorGettingId}</AlertDescription>
 					</Alert>
 				)}
@@ -109,32 +106,24 @@ export default async function MenuPage({
 				{!errorGettingId && !restaurantId && !fetchError && (
 					<Alert variant="destructive" className="mb-6">
 						<AlertTriangle className="h-4 w-4" />
-						<AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
-						<AlertDescription>{t("errors.noRestaurantIdMessage")}</AlertDescription>
+						<AlertTitle>{tCommon("errors.noRestaurantIdTitle")}</AlertTitle>
+						<AlertDescription>{tCommon("errors.noRestaurantIdMessage")}</AlertDescription>
 					</Alert>
 				)}
 
 				{restaurantId && fetchError && (
 					<Alert variant="destructive" className="mb-6">
 						<AlertTriangle className="h-4 w-4" />
-						<AlertTitle>{t("Settings.Page.errors.fetchErrorTitle")}</AlertTitle>
+						<AlertTitle>{tCommon("errors.fetchErrorTitle")}</AlertTitle>
 						<AlertDescription>{fetchError}</AlertDescription>
 					</Alert>
 				)}
 
-				{restaurantId && initialData && !fetchError && (
+				{restaurantId && !fetchError && (
 					<MenuClientContent
 						initialData={initialData}
 						error={null}
 					/>
-				)}
-
-				{restaurantId && !initialData && !fetchError && (
-					<Alert variant="warning" className="mb-6">
-						<AlertTriangle className="h-4 w-4" />
-						<AlertTitle>{t("Settings.Page.errors.noSettingsFoundTitle")}</AlertTitle>
-						<AlertDescription>{t("errors.no_categories_found")}</AlertDescription>
-					</Alert>
 				)}
 			</div>
 		);

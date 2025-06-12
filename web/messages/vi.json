@@ -4,181 +4,186 @@
     "heroSubtitle": "Nền tảng tất cả trong một, ưu tiên di động cho thực đơn, đơn hàng, đặt bàn, nhân viên và phân tích. Làm hài lòng khách hàng và nâng cao hiệu quả đội ngũ—mọi lúc, mọi nơi.",
     "cta": "Bắt đầu miễn phí"
   },
-  "SIGN_UP_TITLE": "Đăng ký nhà hàng của bạn",
-  "LOGIN_TITLE": "Đăng nhập",
-  "FORGOT_PASSWORD_TITLE": "Quên mật khẩu",
-  "SignupPage": {
-    "title": "Đăng ký nhà hàng của bạn",
-    "nameLabel": "Tên nhà hàng",
-    "subdomainLabel": "Tên miền phụ",
-    "subdomainChecking": "Đang kiểm tra tính khả dụng...",
-    "subdomainAvailable": "Khả dụng!",
-    "subdomainNotAvailable": "Không khả dụng",
-    "subdomainErrors": {
-      "invalid_format": "Tên miền phụ phải có từ 3-30 chữ cái thường, số hoặc dấu gạch ngang.",
-      "not_available": "Tên miền phụ này đã được sử dụng.",
-      "check_failed": "Không thể kiểm tra tính khả dụng của tên miền phụ. Vui lòng thử lại."
+  "auth": {
+    "title": {
+      "login": "Đăng nhập",
+      "signup": "Đăng ký Nhà hàng của bạn",
+      "forgotPassword": "Quên mật khẩu"
     },
     "emailLabel": "Email",
+    "emailPlaceholder": "Nhập email của bạn",
     "passwordLabel": "Mật khẩu",
-    "confirmPasswordLabel": "Xác nhận mật khẩu",
-    "defaultLanguageLabel": "Ngôn ngữ mặc định",
-    "languageOption": {
-      "en": "Tiếng Anh",
-      "ja": "Tiếng Nhật",
-      "vi": "Tiếng Việt"
+    "passwordPlaceholder": "Nhập mật khẩu của bạn",
+    "loginButton": "Đăng nhập",
+    "loggingIn": "Đang đăng nhập...",
+    "forgotPassword": "Quên mật khẩu",
+    "noAccount": "Chưa có tài khoản?",
+    "signUp": "Đăng ký",
+    "loginFailed": "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
+    "subdomainNotFound": "Không tìm thấy tên miền phụ.",
+    "anErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "nameLabel": "Tên Nhà hàng",
+    "subdomainLabel": "Tên miền phụ",
+    "subdomainChecking": "Đang kiểm tra tính khả dụng...",
+    "subdomainAvailable": "Có sẵn!",
+    "subdomainNotAvailable": "Không có sẵn",
+    "subdomainErrors": {
+      "invalid_format": "Tên miền phụ phải có 3-30 chữ cái thường, số, hoặc dấu gạch ngang.",
+      "not_available": "Tên miền phụ này đã được sử dụng.",
+      "check_failed": "Kiểm tra tính khả dụng của tên miền phụ thất bại. Vui lòng thử lại."
     },
+    "confirmPasswordLabel": "Xác nhận Mật khẩu",
     "captchaRequired": "Vui lòng hoàn thành CAPTCHA.",
     "captchaInvalid": "Xác minh CAPTCHA thất bại. Vui lòng thử lại.",
     "captchaExpired": "CAPTCHA đã hết hạn. Vui lòng xác minh lại.",
     "registrationFailed": "Đăng ký thất bại. Vui lòng thử lại.",
     "registering": "Đang đăng ký...",
     "registerButton": "Đăng ký",
-    "twoFactorTitle": "Xác minh hai bước",
+    "twoFactorTitle": "Xác minh hai yếu tố",
     "otpLabel": "Mã xác thực",
-    "verifyOtpButton": "Xác minh",
+    "verifyOtpButton": "Xác minh Mã",
     "otpInvalid": "Mã không hợp lệ. Vui lòng thử lại."
   },
   "LandingPage": {
     "header": {
-      "logo_aria_label": "CoOrder logo",
-      "login": "Login",
-      "signup": "Sign Up"
+      "logo_aria_label": "Logo CoOrder",
+      "login": "Đăng nhập",
+      "signup": "Đăng ký"
     },
     "theme": {
-      "toggle": "Toggle theme"
+      "toggle": "Chuyển đổi chủ đề"
     },
     "hero": {
-      "headline_part1": "Mobile-First, AI-Augmented SaaS for ",
-      "headline_part2": "Small Restaurants.",
-      "subheadline": "CoOrder empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet.",
+      "headline_part1": "Nền tảng SaaS Ưu tiên Di động, Tăng cường bởi AI cho ",
+      "headline_part2": "Nhà hàng nhỏ.",
+      "subheadline": "CoOrder trao quyền cho các nhà hàng nhỏ quản lý toàn bộ hoạt động của họ—thực đơn, đơn hàng, đặt bàn, nhân viên và phân tích—hoàn toàn từ điện thoại thông minh hoặc máy tính bảng.",
       "cta": {
-        "signup": "Start Free Trial",
-        "demo": "Watch Demo",
-        "subtext": "No credit card required. 14-day free trial."
+        "signup": "Bắt đầu Dùng thử Miễn phí",
+        "demo": "Xem Demo",
+        "subtext": "Không cần thẻ tín dụng. Dùng thử miễn phí 14 ngày."
       },
-      "image_alt": "CoOrder Dashboard Mockup"
+      "image_alt": "Mô hình Bảng điều khiển CoOrder"
     },
     "social_proof": {
-      "trusted_by": "Powering Success for Restaurants Like Yours",
+      "trusted_by": "Thúc đẩy thành công cho các nhà hàng như của bạn",
       "testimonial1": {
-        "quote": "CoOrder transformed our daily operations. Orders are smoother, staff is happier, and our customers love the QR ordering!"
+        "quote": "CoOrder đã thay đổi hoạt động hàng ngày của chúng tôi. Đơn hàng mượt mà hơn, nhân viên vui vẻ hơn, và khách hàng của chúng tôi yêu thích việc đặt hàng qua mã QR!"
       },
       "testimonial2": {
-        "quote": "The analytics dashboard is a game-changer. We can now make data-driven decisions that truly impact our bottom line."
+        "quote": "Bảng điều khiển phân tích là một yếu tố thay đổi cuộc chơi. Bây giờ chúng tôi có thể đưa ra các quyết định dựa trên dữ liệu thực sự tác động đến lợi nhuận của chúng tôi."
       },
-      "security_badge1": "SSL Encrypted",
-      "security_badge2": "99.9% Uptime",
-      "security_badge3": "GDPR Compliant"
+      "security_badge1": "Mã hóa SSL",
+      "security_badge2": "Thời gian hoạt động 99,9%",
+      "security_badge3": "Tuân thủ GDPR"
     },
     "features": {
-      "title": "Powerful Features to Accelerate Your Business",
-      "subtitle": "CoOrder is packed with features designed to streamline your operations and delight your customers.",
+      "title": "Các tính năng mạnh mẽ để tăng tốc kinh doanh của bạn",
+      "subtitle": "CoOrder được trang bị các tính năng được thiết kế để tối ưu hóa hoạt động của bạn và làm hài lòng khách hàng.",
       "menu_management": {
-        "title": "Intuitive Menu Management",
-        "description": "Easily create, update, and organize your digital menus with photos, descriptions, and pricing. Supports multiple languages.",
-        "benefit": "Update menus in minutes, not hours."
+        "title": "Quản lý thực đơn trực quan",
+        "description": "Dễ dàng tạo, cập nhật và sắp xếp thực đơn kỹ thuật số của bạn với hình ảnh, mô tả và giá cả. Hỗ trợ nhiều ngôn ngữ.",
+        "benefit": "Cập nhật thực đơn trong vài phút, không phải vài giờ."
       },
       "qr_ordering": {
-        "title": "Seamless QR Ordering",
-        "description": "Customers scan a QR code at their table to view the menu, place orders, and even pay directly from their smartphone.",
-        "benefit": "Increase order accuracy and table turnover."
+        "title": "Đặt hàng bằng QR liền mạch",
+        "description": "Khách hàng quét mã QR tại bàn để xem thực đơn, đặt món và thậm chí thanh toán trực tiếp từ điện thoại thông minh của họ.",
+        "benefit": "Tăng độ chính xác của đơn hàng và tốc độ quay vòng bàn."
       },
       "booking_preordering": {
-        "title": "Advanced Booking & Pre-ordering",
-        "description": "Manage table reservations and allow customers to pre-order their meals for a smooth dining experience.",
-        "benefit": "Reduce wait times and improve customer flow."
+        "title": "Đặt bàn & Đặt món trước nâng cao",
+        "description": "Quản lý đặt bàn và cho phép khách hàng đặt trước bữa ăn của họ để có trải nghiệm ăn uống suôn sẻ.",
+        "benefit": "Giảm thời gian chờ đợi và cải thiện luồng khách hàng."
       },
       "smart_analytics": {
-        "title": "Smart Analytics & Reporting",
-        "description": "Gain real-time insights into sales, popular dishes, staff performance, and customer feedback to optimize your business.",
-        "benefit": "Make data-driven decisions for growth."
+        "title": "Phân tích & Báo cáo thông minh",
+        "description": "Nhận thông tin chi tiết theo thời gian thực về doanh số, các món ăn phổ biến, hiệu suất nhân viên và phản hồi của khách hàng để tối ưu hóa doanh nghiệp của bạn.",
+        "benefit": "Đưa ra quyết định dựa trên dữ liệu để phát triển."
       },
       "staff_management": {
-        "title": "Efficient Staff Management",
-        "description": "Assign roles, manage shifts, and track staff performance with a dedicated mobile app for your team.",
-        "benefit": "Empower your team with mobile tools."
+        "title": "Quản lý nhân viên hiệu quả",
+        "description": "Phân công vai trò, quản lý ca làm việc và theo dõi hiệu suất của nhân viên bằng một ứng dụng di động dành riêng cho đội ngũ của bạn.",
+        "benefit": "Trao quyền cho đội ngũ của bạn bằng các công cụ di động."
       },
       "mobile_first": {
-        "title": "True Mobile-First Experience",
-        "description": "Manage your entire restaurant from any smartphone or tablet. No bulky hardware or complex setups required.",
-        "benefit": "Run your business from anywhere."
+        "title": "Trải nghiệm ưu tiên di động đích thực",
+        "description": "Quản lý toàn bộ nhà hàng của bạn từ bất kỳ điện thoại thông minh hoặc máy tính bảng nào. Không cần phần cứng cồng kềnh hoặc thiết lập phức tạp.",
+        "benefit": "Điều hành doanh nghiệp của bạn từ bất cứ đâu."
       }
     },
     "howitworks": {
-      "title": "Get Started in Minutes",
-      "subtitle": "Launch your modern restaurant platform with a few simple steps.",
+      "title": "Bắt đầu trong vài phút",
+      "subtitle": "Khởi chạy nền tảng nhà hàng hiện đại của bạn với một vài bước đơn giản.",
       "step1": {
-        "title": "Sign Up & Customize",
-        "description": "Create your account, set up your restaurant profile, and customize your digital menu and branding."
+        "title": "Đăng ký & Tùy chỉnh",
+        "description": "Tạo tài khoản, thiết lập hồ sơ nhà hàng của bạn và tùy chỉnh thực đơn kỹ thuật số cũng như thương hiệu của bạn."
       },
       "step2": {
-        "title": "Generate QR Codes",
-        "description": "Print unique QR codes for each table or section. Customers scan to access your menu and order."
+        "title": "Tạo mã QR",
+        "description": "In mã QR duy nhất cho mỗi bàn hoặc khu vực. Khách hàng quét để truy cập thực đơn và đặt hàng của bạn."
       },
       "step3": {
-        "title": "Start Serving & Growing",
-        "description": "Receive orders directly on your staff app, manage tables, and watch your business thrive with smart insights."
+        "title": "Bắt đầu phục vụ & Phát triển",
+        "description": "Nhận đơn hàng trực tiếp trên ứng dụng nhân viên của bạn, quản lý bàn và xem doanh nghiệp của bạn phát triển mạnh mẽ với những thông tin chi tiết thông minh."
       }
     },
     "benefits": {
-      "title": "Real Results for Your Restaurant",
-      "subtitle": "CoOrder isn't just software; it's a growth partner. See how we help:",
-      "item1": "Increase Revenue by up to 20%",
-      "item2": "Save up to 10 hours/week on admin tasks",
-      "item3": "Boost Customer Satisfaction Scores",
-      "item4": "Streamline Order & Table Management",
-      "item5": "Empower Your Staff with Mobile Tools",
-      "item6": "Gain Actionable Business Insights"
+      "title": "Kết quả thực sự cho nhà hàng của bạn",
+      "subtitle": "CoOrder không chỉ là phần mềm; đó là một đối tác tăng trưởng. Xem cách chúng tôi giúp đỡ:",
+      "item1": "Tăng doanh thu lên đến 20%",
+      "item2": "Tiết kiệm đến 10 giờ/tuần cho các công việc quản trị",
+      "item3": "Tăng điểm hài lòng của khách hàng",
+      "item4": "Tối ưu hóa quản lý đơn hàng & bàn",
+      "item5": "Trao quyền cho nhân viên của bạn bằng công cụ di động",
+      "item6": "Nhận thông tin chi tiết kinh doanh hữu ích"
     },
     "faq": {
-      "title": "Frequently Asked Questions",
+      "title": "Các câu hỏi thường gặp",
       "item1": {
-        "q": "What kind of restaurants is CoOrder for?",
-        "a": "CoOrder is designed for small to medium-sized restaurants, cafes, bars, and food trucks looking to modernize their operations and improve customer experience."
+        "q": "CoOrder dành cho loại nhà hàng nào?",
+        "a": "CoOrder được thiết kế cho các nhà hàng, quán cà phê, quán bar và xe tải thực phẩm vừa và nhỏ muốn hiện đại hóa hoạt động và cải thiện trải nghiệm của khách hàng."
       },
       "item2": {
-        "q": "Is it difficult to set up?",
-        "a": "Not at all! Our intuitive interface and guided setup process allow you to get started in minutes. No technical expertise required."
+        "q": "Việc thiết lập có khó không?",
+        "a": "Hoàn toàn không! Giao diện trực quan và quy trình thiết lập có hướng dẫn của chúng tôi cho phép bạn bắt đầu trong vài phút. Không yêu cầu chuyên môn kỹ thuật."
       },
       "item3": {
-        "q": "Do I need special hardware?",
-        "a": "No, CoOrder is mobile-first. You can manage everything from your existing smartphones or tablets. No expensive POS systems needed."
+        "q": "Tôi có cần phần cứng đặc biệt không?",
+        "a": "Không, CoOrder là ưu tiên di động. Bạn có thể quản lý mọi thứ từ điện thoại thông minh hoặc máy tính bảng hiện có của mình. Không cần hệ thống POS đắt tiền."
       },
       "item4": {
-        "q": "What about customer support?",
-        "a": "We offer comprehensive online support, tutorials, and a dedicated support team ready to assist you with any questions or issues."
+        "q": "Còn hỗ trợ khách hàng thì sao?",
+        "a": "Chúng tôi cung cấp hỗ trợ trực tuyến toàn diện, các hướng dẫn và một đội ngũ hỗ trợ chuyên dụng sẵn sàng giúp bạn giải đáp mọi thắc mắc hoặc vấn đề."
       }
     },
     "cta_section": {
-      "title": "Ready to Transform Your Restaurant?",
-      "subtitle": "Join hundreds of restaurants simplifying their operations and boosting profits with CoOrder.",
+      "title": "Sẵn sàng để thay đổi nhà hàng của bạn?",
+      "subtitle": "Tham gia cùng hàng trăm nhà hàng đang đơn giản hóa hoạt động và tăng lợi nhuận với CoOrder.",
       "cta": {
-        "signup": "Get Started For Free",
-        "contact_sales": "Request a Demo"
+        "signup": "Bắt đầu miễn phí",
+        "contact_sales": "Yêu cầu Demo"
       }
     },
     "footer": {
-      "tagline": "Modernizing small restaurants, one order at a time.",
+      "tagline": "Hiện đại hóa các nhà hàng nhỏ, mỗi lần một đơn hàng.",
       "links": {
-        "product_title": "Product",
-        "features": "Features",
-        "pricing": "Pricing",
-        "integrations": "Integrations",
-        "company_title": "Company",
-        "about_us": "About Us",
-        "careers": "Careers",
+        "product_title": "Sản phẩm",
+        "features": "Tính năng",
+        "pricing": "Giá cả",
+        "integrations": "Tích hợp",
+        "company_title": "Công ty",
+        "about_us": "Về chúng tôi",
+        "careers": "Tuyển dụng",
         "blog": "Blog",
-        "support_title": "Support",
-        "help_center": "Help Center",
-        "contact_us": "Contact Us",
-        "status": "Status"
+        "support_title": "Hỗ trợ",
+        "help_center": "Trung tâm trợ giúp",
+        "contact_us": "Liên hệ",
+        "status": "Trạng thái"
       },
-      "privacy_policy": "Privacy Policy",
-      "terms_of_service": "Terms of Service"
+      "privacy_policy": "Chính sách bảo mật",
+      "terms_of_service": "Điều khoản dịch vụ"
     },
     "common": {
-      "all_rights_reserved": "All rights reserved."
+      "all_rights_reserved": "Đã đăng ký bản quyền."
     }
   },
   "404": {
@@ -211,7 +216,6 @@
     "needs_attention": "Cần chú ý",
     "all_good": "Tất cả đều tốt",
     "zod_form_hint": "Xác thực biểu mẫu được xử lý bởi Zod. Vui lòng đảm bảo tất cả các trường bắt buộc được điền chính xác.",
-    "coming_soon": "Sắp ra mắt!",
     "feature_in_development": "Tính năng '{feature}' hiện đang được phát triển và sẽ sớm ra mắt.",
     "form_placeholder": "Các trường biểu mẫu ở đây.",
     "back_to_menu": "Quay lại Thực đơn",
@@ -269,10 +273,45 @@
       "no_reviews": "Chưa có đánh giá nào"
     },
     "alert": {
-      "info": { "title": "Thông tin" },
-      "success": { "title": "Thành công" },
-      "warning": { "title": "Cảnh báo" },
-      "error": { "title": "Lỗi" }
+      "info": {
+        "title": "Thông tin"
+      },
+      "success": {
+        "title": "Thành công"
+      },
+      "warning": {
+        "title": "Cảnh báo"
+      },
+      "error": {
+        "title": "Lỗi"
+      }
+    },
+    "errors": {
+      "noSubdomainDetected": "Không thể phát hiện tên miền phụ cho nhà hàng.",
+      "noRestaurantIdForSubdomain": "Không thể tìm thấy ID nhà hàng cho tên miền phụ được cung cấp.",
+      "noRestaurantIdTitle": "Không xác định được nhà hàng",
+      "noRestaurantIdMessage": "Không thể xác định ID nhà hàng. Vui lòng đảm bảo bạn đang truy cập trang này một cách chính xác.",
+      "fetchErrorTitle": "Lỗi tải cài đặt",
+      "fetchErrorMessage": "Đã có sự cố khi truy xuất cài đặt nhà hàng. Vui lòng thử lại sau.",
+      "noSettingsFoundTitle": "Không tìm thấy cài đặt",
+      "noSettingsFoundMessage": "Không tìm thấy dữ liệu cài đặt cho nhà hàng này."
+    },
+    "validation": {
+      "nameRequired": "Tên nhà hàng là bắt buộc.",
+      "nameMaxLength": "Tên nhà hàng phải có {maxLength} ký tự trở xuống.",
+      "defaultLanguageRequired": "Ngôn ngữ mặc định là bắt buộc.",
+      "brandColorInvalidFormat": "Định dạng màu thương hiệu không hợp lệ. Sử dụng #RRGGBB.",
+      "contactInfoMaxLength": "Thông tin liên hệ phải có {maxLength} ký tự trở xuống.",
+      "addressMaxLength": "Địa chỉ phải có {maxLength} ký tự trở xuống.",
+      "openingHoursMaxLength": "Giờ hoạt động phải có {maxLength} ký tự trở xuống.",
+      "descriptionMaxLength": "Mô tả phải có {maxLength} ký tự trở xuống.",
+      "logoFileMaxSize": "Ảnh logo phải từ {maxSize}MB trở xuống.",
+      "logoFileInvalidType": "Loại tệp không hợp lệ. Vui lòng tải lên hình ảnh PNG, JPG hoặc WEBP.",
+      "logoUrlinvalidFormat": "Định dạng URL logo không hợp lệ."
+    },
+    "coming_soon": {
+      "title": "Tính năng sắp ra mắt",
+      "description": "Tính năng này hiện đang trong quá trình phát triển và sẽ sớm có sẵn. Hãy theo dõi!"
     },
     "mark_resolved": "Đánh dấu đã giải quyết",
     "mark_unresolved": "Đánh dấu chưa giải quyết",
@@ -389,6 +428,7 @@
       "image_url_label": "URL hình ảnh",
       "image_url_placeholder": "Nhập URL hình ảnh",
       "image_file_label": "Tải lên hình ảnh",
+      "image_preview_alt": "Xem trước hình ảnh",
       "available_label": "Có sẵn",
       "stock_level_label": "Mức tồn kho",
       "stock_level_placeholder": "Nhập mức tồn kho",
@@ -407,7 +447,7 @@
       "topping_position_placeholder": "Nhập vị trí",
       "view_edit_sizes": "Kích cỡ",
       "addSize": "Thêm kích cỡ",
-      "size_key_label": "Khóa kích cỡ",
+      "size_key_label": "Mã kích cỡ",
       "size_key_placeholder": "ví dụ: S, M, L",
       "size_key_note": "Định danh ngắn cho kích cỡ này",
       "size_name_en_label": "Tên kích cỡ (Tiếng Anh)",
@@ -424,10 +464,11 @@
       "add_custom_size": "Thêm kích cỡ tùy chỉnh",
       "set_base_price_first": "Đặt giá cơ bản trước để tạo kích cỡ tiêu chuẩn",
       "auto_translations_label": "Bản dịch tự động",
+      "adding_to_category": "Đang thêm vào danh mục",
+      "select_category_first": "Vui lòng chọn danh mục trước",
       "update_success": "Cập nhật món thành công!",
       "create_success": "Tạo món thành công!",
       "save_error": "Lưu món thất bại. Vui lòng thử lại.",
-      "delete_success": "Xóa món thành công!",
       "delete_error": "Xóa món thất bại. Vui lòng thử lại.",
       "name_en": "Tên món (Tiếng Anh)",
       "name_ja": "Tên món (Tiếng Nhật)",
@@ -438,19 +479,18 @@
       "price": "Giá",
       "image_url": "URL Hình ảnh",
       "upload_image": "Tải ảnh lên",
-      "image_preview_alt": "Xem trước hình ảnh",
       "image_upload_note": "Tải ảnh cho món ăn (tối đa 5MB).",
       "stock_level": "Số lượng tồn kho",
       "is_available": "Còn hàng?",
       "weekday_visibility": "Hiển thị vào các ngày trong tuần",
       "reorder_success": "Sắp xếp lại các món ăn thành công.",
       "reorder_error": "Sắp xếp lại các món ăn thất bại.",
-      "auto_translate_name_en_placeholder":"Tự động dịch",
-      "auto_translate_name_ja_placeholder":"Tự động dịch",
-      "auto_translate_name_vi_placeholder":"Tự động dịch",
-      "auto_translate_description_en_placeholder":"Tự động dịch",
-      "auto_translate_description_ja_placeholder":"Tự động dịch",
-      "auto_translate_description_vi_placeholder":"Tự động dịch"
+      "auto_translate_name_en_placeholder": "Tự động dịch",
+      "auto_translate_name_ja_placeholder": "Tự động dịch",
+      "auto_translate_name_vi_placeholder": "Tự động dịch",
+      "auto_translate_description_en_placeholder": "Tự động dịch",
+      "auto_translate_description_ja_placeholder": "Tự động dịch",
+      "auto_translate_description_vi_placeholder": "Tự động dịch"
     },
     "errors": {
       "restaurant_not_found": "Không thể xác định ngữ cảnh nhà hàng. Vui lòng đảm bảo bạn đang truy cập thông qua một tên miền phụ nhà hàng hợp lệ.",
@@ -523,6 +563,83 @@
       "low_stock_alerts_dashboard": "Cảnh báo tồn kho thấp trên Bảng điều khiển",
       "sales_over_time_chart": "Biểu đồ Doanh số theo Thời gian",
       "popular_items_report": "Báo cáo Mặt hàng Phổ biến"
+    }
+  },
+  "Metadata": {
+    "admin_dashboard_title": "Bảng điều khiển Quản trị - CoOrder.ai"
+  },
+  "logout": {
+    "title": "Đang đăng xuất...",
+    "message": "Bạn đã đăng xuất thành công. Sẽ chuyển hướng bạn trong giây lát.",
+    "login_again_button": "Đăng nhập lại"
+  },
+  "Dashboard": {
+    "Settings": {
+      "labels": {
+        "restaurantName": "Tên Nhà Hàng",
+        "defaultLanguage": "Ngôn Ngữ Mặc Định",
+        "brandColor": "Màu Thương Hiệu",
+        "logo": "Logo",
+        "contactInfo": "Thông Tin Liên Hệ",
+        "address": "Địa Chỉ",
+        "hours": "Giờ Hoạt Động",
+        "description": "Mô Tả"
+      },
+      "placeholders": {
+        "restaurantName": "Nhập tên nhà hàng của bạn",
+        "brandColor": "#RRGGBB",
+        "contactInfo": "Ví dụ: số điện thoại, email",
+        "address": "Địa chỉ đầy đủ của nhà hàng",
+        "hours": "Ví dụ: Thứ 2-Thứ 6: 9h-22h, Thứ 7-CN: 10h-23h",
+        "description": "Mô tả ngắn về nhà hàng của bạn"
+      },
+      "buttons": {
+        "saveChanges": "Lưu Thay Đổi",
+        "uploadingLogo": "Đang tải lên...",
+        "updatingSettings": "Đang cập nhật..."
+      },
+      "notifications": {
+        "successTitle": "Cài Đặt Đã Được Cập Nhật",
+        "successMessage": "Cài đặt nhà hàng của bạn đã được cập nhật thành công.",
+        "settingsSaved": "Đã lưu cài đặt thành công.",
+        "saveError": "Lỗi lưu cài đặt. Vui lòng thử lại.",
+        "uploadError": "Lỗi tải lên logo. Vui lòng thử lại.",
+        "errorTitle": "Cập Nhật Thất Bại",
+        "errorMessage": "Không thể cập nhật cài đặt: {error}",
+        "logoUploadErrorTitle": "Tải Lên Logo Thất Bại",
+        "logoUploadErrorMessage": "Không thể tải lên logo: {error}",
+        "logoRemovedMessage": "Logo đã được xóa. Lưu thay đổi để xác nhận.",
+        "fileTooLarge": "Tệp quá lớn. Tối đa 5MB.",
+        "invalidFileType": "Loại tệp không hợp lệ. Vui lòng tải lên một hình ảnh.",
+        "settingsSaveFailedGeneric": "Lưu cài đặt thất bại. Vui lòng thử lại."
+      },
+      "altText": {
+        "logoPreview": "Xem trước logo nhà hàng",
+        "logoIconFallback": "Logo"
+      },
+      "text": {
+        "dragDropLogo": "Kéo và thả hoặc nhấp để chọn logo",
+        "currentBrandColor": "Màu thương hiệu hiện tại",
+        "nameRequired": "Tên là bắt buộc",
+        "nameMaxLength": "Tên phải dài 100 ký tự trở xuống",
+        "languageRequired": "Ngôn ngữ mặc định là bắt buộc",
+        "invalidHexFormat": "Định dạng màu hex không hợp lệ (ví dụ: #RRGGBB)",
+        "contactInfoMaxLength": "Thông tin liên hệ phải dài 500 ký tự trở xuống",
+        "addressMaxLength": "Địa chỉ phải dài 500 ký tự trở xuống",
+        "hoursMaxLength": "Giờ hoạt động phải dài 200 ký tự trở xuống",
+        "descriptionMaxLength": "Mô tả phải dài 1000 ký tự trở xuống",
+        "logoUrlInvalid": "Định dạng URL cho logo không hợp lệ."
+      }
+    },
+    "Layout": {
+      "errors": {
+        "fallbackRestaurantName": "Nhà hàng Dự phòng",
+        "configurationErrorTitle": "Lỗi Cấu hình Nhà hàng",
+        "configurationErrorDescription": "Không thể tải cài đặt cho tên miền phụ: {subdomain}. Đang hiển thị với cài đặt dự phòng.",
+        "adminPanelTitle": "Bảng Quản trị",
+        "noRestaurantContextTitle": "Lỗi: Thiếu Ngữ cảnh Nhà hàng",
+        "noRestaurantContextDescription": "Bảng điều khiển này yêu cầu một tên miền phụ nhà hàng hợp lệ để hoạt động chính xác."
+      }
     }
   },
   "AdminTables": {
@@ -600,7 +717,39 @@
       "notification_error": "Thêm thất bại {count} bàn. Lỗi: {errors}"
     }
   },
+  "AdminEmployees": {
+    "add_employee": "Thêm nhân viên",
+    "edit_employee": "Sửa nhân viên",
+    "employee_name": "Tên nhân viên",
+    "schedule_calendar_note": "Tổng quan lịch làm việc hàng tuần.",
+    "edit_shifts": "Sửa ca làm việc",
+    "edit_shifts_action": "Hành động sửa ca làm việc",
+    "form": {
+      "full_name": "Họ và tên",
+      "email_lookup": "Email",
+      "email_lookup_placeholder": "nhanvien@example.com",
+      "role": "Vai trò"
+    }
+  },
+  "Roles": {
+    "manager": "Quản lý",
+    "chef": "Đầu bếp",
+    "server": "Phục vụ",
+    "cashier": "Thu ngân"
+  },
   "AdminBookings": {
+    "title": "Quản lý Đặt chỗ & Đặt trước",
+    "subtitle": "Quản lý đặt chỗ, đặt trước và chi tiết khách hàng",
+    "today_only": "Chỉ hôm nay",
+    "no_bookings": "Không có đặt chỗ nào để hiển thị.",
+    "new_booking": "Đặt chỗ mới",
+    "search_placeholder": "Tìm kiếm đặt chỗ theo tên khách hàng, liên hệ, hoặc ngày...",
+    "filter_by_status": "Lọc theo Trạng thái",
+    "all_statuses": "Tất cả Trạng thái",
+    "pending": "Đang chờ",
+    "confirmed": "Đã xác nhận",
+    "canceled": "Đã hủy",
+    "booking_items": "Các mục đặt chỗ",
     "details_title": "Chi tiết Đặt chỗ",
     "preorder_items": "Món đặt trước",
     "no_preorder_items": "Không có món đặt trước",
@@ -612,6 +761,19 @@
       "status": "Trạng thái",
       "actions": "Hành động"
     },
+    "empty_state": {
+      "title": "Không tìm thấy đặt chỗ nào",
+      "description": "Bắt đầu bằng cách tạo đặt chỗ hoặc đặt trước đầu tiên của bạn.",
+      "no_matching_bookings": "Không có đặt chỗ nào khớp với bộ lọc hiện tại của bạn.",
+      "no_bookings_found": "Không tìm thấy đặt chỗ nào. Bắt đầu bằng cách thêm một đặt chỗ mới."
+    },
+    "create_new_booking": "Tạo đặt chỗ mới",
+    "select_table": "Chọn bàn",
+    "choose_table": "Chọn một bàn cho đặt chỗ",
+    "select_menu_items": "Chọn các món từ thực đơn",
+    "create_booking": "Tạo đặt chỗ",
+    "add_items_to_booking": "Thêm món vào đặt chỗ",
+    "add_items": "Thêm món",
     "Settings": {
       "Page": {
         "errors": {
@@ -620,19 +782,7 @@
       }
     },
     "errors": {
-      "no_bookings_found": "Không tìm thấy đặt chỗ nào.",
-      "data_fetch_error": "Tải dữ liệu đặt chỗ thất bại. Vui lòng thử lại."
-    },
-    "notifications": {
-      "update_success": "Cập nhật trạng thái đặt chỗ thành công.",
-      "update_failed": "Cập nhật trạng thái đặt chỗ thất bại: {error}"
-    },
-    "empty_state": {
-      "title": "Không tìm thấy Đặt chỗ nào",
-      "description": "Hiện tại không có đặt chỗ nào để hiển thị."
-    },
-    "Page": {
-      "title": "Quản lý Đặt chỗ"
+      "no_bookings_found": "Không tìm thấy đặt chỗ nào."
     }
   },
   "Bookings": {
@@ -720,106 +870,6 @@
     },
     "order_id_prefix": "Đơn hàng"
   },
-  "Metadata": {
-    "admin_dashboard_title": "Admin Dashboard - CoOrder.ai"
-  },
-  "logout": {
-    "title": "Logging You Out...",
-    "message": "You have been successfully logged out. Redirecting you shortly.",
-    "login_again_button": "Login Again"
-  },
-  "Dashboard": {
-    "Settings": {
-      "labels": {
-        "restaurantName": "Tên Nhà Hàng",
-        "defaultLanguage": "Ngôn Ngữ Mặc Định",
-        "brandColor": "Màu Thương Hiệu",
-        "logo": "Logo",
-        "contactInfo": "Thông Tin Liên Hệ",
-        "address": "Địa Chỉ",
-        "hours": "Giờ Hoạt Động",
-        "description": "Mô Tả"
-      },
-      "placeholders": {
-        "restaurantName": "Nhập tên nhà hàng của bạn",
-        "brandColor": "#RRGGBB",
-        "contactInfo": "Ví dụ: số điện thoại, email",
-        "address": "Địa chỉ đầy đủ của nhà hàng",
-        "hours": "Ví dụ: Thứ 2-Thứ 6: 9h-22h, Thứ 7-CN: 10h-23h",
-        "description": "Mô tả ngắn về nhà hàng của bạn"
-      },
-      "buttons": {
-        "saveChanges": "Lưu Thay Đổi",
-        "uploadingLogo": "Đang tải lên...",
-        "updatingSettings": "Đang cập nhật..."
-      },
-      "notifications": {
-        "successTitle": "Cài Đặt Đã Được Cập Nhật",
-        "successMessage": "Cài đặt nhà hàng của bạn đã được cập nhật thành công.",
-        "errorTitle": "Cập Nhật Thất Bại",
-        "errorMessage": "Không thể cập nhật cài đặt: {error}",
-        "logoUploadErrorTitle": "Tải Lên Logo Thất Bại",
-        "logoUploadErrorMessage": "Không thể tải lên logo: {error}",
-        "logoRemovedMessage": "Logo đã được xóa. Lưu thay đổi để xác nhận.",
-        "fileTooLarge": "Tệp quá lớn. Tối đa 5MB.",
-        "invalidFileType": "Loại tệp không hợp lệ. Vui lòng tải lên một hình ảnh.",
-        "settingsSaveFailedGeneric": "Lưu cài đặt thất bại. Vui lòng thử lại."
-      },
-      "altText": {
-        "logoPreview": "Xem trước logo nhà hàng",
-        "logoIconFallback": "Logo"
-      },
-      "text": {
-        "dragDropLogo": "Kéo và thả hoặc nhấp để chọn logo",
-        "currentBrandColor": "Màu thương hiệu hiện tại",
-        "nameRequired": "Tên là bắt buộc",
-        "nameMaxLength": "Tên phải dài 100 ký tự trở xuống",
-        "languageRequired": "Ngôn ngữ mặc định là bắt buộc",
-        "invalidHexFormat": "Định dạng màu hex không hợp lệ (ví dụ: #RRGGBB)",
-        "contactInfoMaxLength": "Thông tin liên hệ phải dài 500 ký tự trở xuống",
-        "addressMaxLength": "Địa chỉ phải dài 500 ký tự trở xuống",
-        "hoursMaxLength": "Giờ hoạt động phải dài 200 ký tự trở xuống",
-        "descriptionMaxLength": "Mô tả phải dài 1000 ký tự trở xuống",
-        "logoUrlInvalid": "Định dạng URL cho logo không hợp lệ."
-      },
-      "Page": {
-        "title": "Cài Đặt Nhà Hàng",
-        "errors": {
-          "noSubdomainDetected": "Không thể phát hiện tên miền phụ cho nhà hàng.",
-          "noRestaurantIdForSubdomain": "Không thể tìm thấy ID nhà hàng cho tên miền phụ được cung cấp.",
-          "noRestaurantIdTitle": "Không Xác Định Được Nhà Hàng",
-          "noRestaurantIdMessage": "Không thể xác định ID nhà hàng. Vui lòng đảm bảo bạn đang truy cập trang này một cách chính xác.",
-          "fetchErrorTitle": "Lỗi Tải Cài Đặt",
-          "fetchErrorMessage": "Đã có sự cố khi truy xuất cài đặt nhà hàng. Vui lòng thử lại sau.",
-          "noSettingsFoundTitle": "Không Tìm Thấy Cài Đặt",
-          "noSettingsFoundMessage": "Không tìm thấy dữ liệu cài đặt cho nhà hàng này."
-        },
-        "validation": {
-          "nameRequired": "Tên nhà hàng là bắt buộc.",
-          "nameMaxLength": "Tên nhà hàng phải có {maxLength} ký tự trở xuống.",
-          "defaultLanguageRequired": "Ngôn ngữ mặc định là bắt buộc.",
-          "brandColorInvalidFormat": "Định dạng màu thương hiệu không hợp lệ. Sử dụng #RRGGBB.",
-          "contactInfoMaxLength": "Thông tin liên hệ phải có {maxLength} ký tự trở xuống.",
-          "addressMaxLength": "Địa chỉ phải có {maxLength} ký tự trở xuống.",
-          "opening_hoursMaxLength": "Giờ hoạt động phải có {maxLength} ký tự trở xuống.",
-          "descriptionMaxLength": "Mô tả phải có {maxLength} ký tự trở xuống.",
-          "logoFileMaxSize": "Ảnh logo phải từ {maxSize}MB trở xuống.",
-          "logoFileInvalidType": "Loại tệp không hợp lệ. Vui lòng tải lên hình ảnh PNG, JPG hoặc WEBP.",
-          "logoUrlInvalidFormat": "Định dạng URL logo không hợp lệ."
-        }
-      }
-    },
-    "Layout": {
-      "errors": {
-        "fallbackRestaurantName": "Nhà hàng Dự phòng",
-        "configurationErrorTitle": "Lỗi Cấu hình Nhà hàng",
-        "configurationErrorDescription": "Không thể tải cài đặt cho tên miền phụ: {subdomain}. Đang hiển thị với cài đặt dự phòng.",
-        "adminPanelTitle": "Bảng Quản trị",
-        "noRestaurantContextTitle": "Lỗi: Thiếu Ngữ cảnh Nhà hàng",
-        "noRestaurantContextDescription": "Bảng điều khiển này yêu cầu một tên miền phụ nhà hàng hợp lệ để hoạt động chính xác."
-      }
-    }
-  },
   "AdminReports": {
     "Recommendations": {
       "title": "Món Ăn Bán Chạy Nhất (7 Ngày Qua)",
@@ -873,18 +923,227 @@
       "description_last_50": "50 đánh giá gần nhất"
     }
   },
+  "CustomerHome": {
+    "welcome": "Chào mừng đến {restaurantName}",
+    "menu_title": "Thực đơn",
+    "add_to_cart": "Thêm",
+    "no_menu_items": "Không có món ăn nào"
+  },
   "Customer": {
-    "guest_dialog": {"title": "Xin chào! Bao nhiêu khách?", "confirm": "Bắt đầu gọi món"},
-    "orderhistory": {"checkout_button": "Thanh toán", "price_per_person": "Mỗi người: {value}"},
+    "admin_panel": {
+      "toggle_label": "Chuyển đổi Bảng Quản trị"
+    },
+    "pick_for_you": "Đề xuất cho bạn",
+    "popular_items": "Món ăn phổ biến",
+    "recommended_items": "Món ăn được đề xuất",
+    "view_cart": "Xem giỏ hàng",
+    "no_results_found": "Không tìm thấy kết quả",
+    "adjusting_filters_or_search": "Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm của bạn.",
+    "current_session": "Phiên đặt hàng hiện tại",
+    "active": "Đang hoạt động",
+    "inactive": "Không hoạt động",
+    "session_active_more": "Bạn vẫn có thể thêm món!",
+    "menu_item_detail_back_to_menu": "Quay lại Thực đơn",
+    "menu_item_detail_add_to_cart": "Thêm vào giỏ hàng",
+    "decrease_quantity": "Giảm số lượng đi một",
+    "increase_quantity": "Tăng số lượng lên một",
+    "search_placeholder": "Tìm kiếm món ăn...",
+    "menu_item_detail_added_to_cart_msg": "{itemName} đã được thêm vào giỏ hàng của bạn.",
+    "no_order_found": "Không tìm thấy đơn hàng nào",
+    "no_order_items": "Chưa có đơn hàng nào được đặt tại bàn này.",
+    "session": {
+      "created_title": "Phiên đã được tạo!",
+      "share_passcode": "Chia sẻ mã 4 chữ số này với những người khác tại bàn của bạn để họ có thể tham gia vào đơn hàng:",
+      "passcode_instruction": "Những người khác có thể quét mã QR của bàn và nhập mã này để tham gia phiên của bạn.",
+      "ask_for_passcode": "Hỏi mã",
+      "ask_for_passcode_instruction": "Nếu bạn không có mã, vui lòng hỏi người đã bắt đầu đơn hàng.",
+      "start_ordering": "Bắt đầu đặt hàng",
+      "enter_passcode_title": "Nhập Mã",
+      "enter_passcode_placeholder": "Nhập mã 4 chữ số",
+      "join_session": "Tham gia Phiên",
+      "session_expired": "Phiên đã hết hạn",
+      "session_expired_message": "Phiên đặt hàng của bạn đã hoàn tất hoặc hết hạn. Cảm ơn quý khách đã ghé thăm!",
+      "session_expired_instruction": "Để đặt hàng mới, vui lòng quét lại mã QR trên bàn của bạn.",
+      "invalid_table": "Bàn không hợp lệ",
+      "invalid_table_message": "ID bàn không hợp lệ hoặc không thuộc về nhà hàng này.",
+      "invalid_table_instruction": "Vui lòng quét một mã QR hợp lệ từ một bàn tại nhà hàng này.",
+      "view_menu_only": "Chỉ xem thực đơn"
+    },
     "menu": {
+      "title": "Thực đơn",
+      "serving_today": "Phục vụ hôm nay",
+      "view_menu": "Xem thực đơn",
+      "item_details": "Chi tiết món ăn",
+      "add_to_cart": "Thêm",
+      "out_of_stock": "Hết hàng",
+      "quantity": "Số lượng",
+      "item_quantity": "SL: {quantity}",
+      "item_notes": "Ghi chú: {notes}",
+      "total_price": "Tổng giá",
+      "search_placeholder": "Tìm kiếm thực đơn...",
+      "popular_now": "Phổ biến hiện nay",
+      "recommended": "Được đề xuất",
+      "add_to_cart_success": "{itemName} đã được thêm vào giỏ hàng của bạn.",
+      "add_to_cart_error": "Không thể thêm {itemName} vào giỏ hàng. Vui lòng thử lại.",
+      "view_only": "Chỉ xem",
+      "decrease_quantity": "Giảm số lượng",
+      "increase_quantity": "Tăng số lượng",
+      "item_added_to_cart_msg": "Đã thêm {item} vào giỏ hàng!",
       "select_size": "Chọn kích cỡ",
       "select_toppings": "Chọn topping",
-      "total_price": "Tổng giá",
+      "selected_toppings": "Topping đã chọn:",
       "base_price": "Giá cơ bản",
       "toppings_price": "Topping"
     },
     "cart": {
+      "items_in_cart_plural": "{count} món trong giỏ hàng",
+      "review_order_button": "Xem lại đơn hàng",
       "toppings_label": "Topping: {toppings}"
-    }
+    },
+    "guest_dialog": {
+      "title": "Xin chào! Quý khách đi bao nhiêu người?",
+      "confirm": "Bắt đầu gọi món"
+    },
+    "checkout": {
+      "redirecting_empty_cart": "Giỏ hàng trống. Đang chuyển hướng đến thực đơn...",
+      "title": "Xem lại đơn hàng",
+      "order_summary": "Tóm tắt đơn hàng",
+      "quantity": "Số lượng",
+      "total": "Tổng cộng",
+      "special_instructions": "Yêu cầu đặc biệt",
+      "special_instructions_placeholder": "Bất kỳ yêu cầu đặc biệt hoặc lưu ý về chế độ ăn uống...",
+      "characters": "ký tự",
+      "payment_method": "Phương thức thanh toán",
+      "cash_payment": "Thanh toán bằng tiền mặt",
+      "card_payment": "Thanh toán bằng thẻ",
+      "pay_at_table": "Thanh toán khi đơn hàng của bạn sẵn sàng",
+      "coming_soon": "Sắp có",
+      "place_order": "Đặt hàng",
+      "placing_order": "Đang đặt hàng...",
+      "confirm_order": "Xác nhận đơn hàng",
+      "confirm_message": "Bạn có chắc chắn muốn đặt đơn hàng này với {items} món với tổng giá {total} không?",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận",
+      "add_note": "Thêm ghi chú",
+      "edit_note": "Sửa ghi chú",
+      "price_each": "{price}đ mỗi món",
+      "add_note_for": "Thêm ghi chú cho {itemName}",
+      "save_note": "Lưu ghi chú",
+      "note_saved": "Đã lưu ghi chú thành công!",
+      "confirming": "Đang xác nhận...",
+      "empty_cart_title": "Giỏ hàng của bạn đang trống",
+      "empty_cart_message": "Thêm một số món ngon vào giỏ hàng để tiếp tục.",
+      "table_info": "Bàn {number}",
+      "session_active": "Phiên đặt hàng của bạn đang hoạt động",
+      "session_not_found_alert": "Không tìm thấy phiên. Vui lòng quay lại thực đơn và thử lại.",
+      "empty_cart_alert": "Giỏ hàng của bạn đang trống.",
+      "order_failed_error": "Đặt hàng thất bại. Vui lòng thử lại.",
+      "order_failed_error_network": "Lỗi mạng. Vui lòng kiểm tra kết nối của bạn và thử lại.",
+      "payment_instruction_table": "Vui lòng đến quầy hoặc gọi nhân viên để hoàn tất thanh toán cho Bàn {tableId}.",
+      "payment_instruction_counter": "Vui lòng đến quầy để hoàn tất thanh toán.",
+      "place_order_button": "Đặt hàng",
+      "confirm_modal_title": "Xác nhận Đơn hàng",
+      "confirm_modal_text": "Bạn có chắc chắn muốn xác nhận đơn hàng với tổng số tiền là {total} không?"
+    },
+    "orderplaced": {
+      "title": "Đã đặt hàng",
+      "message": "Đơn hàng của bạn đã được gửi đến nhà bếp. Bạn có thể tiếp tục đặt hàng hoặc tiến hành thanh toán khi sẵn sàng.",
+      "proceed_to_checkout_button": "Tiến hành thanh toán"
+    },
+    "thankyou": {
+      "title": "Cảm ơn bạn đã đặt hàng!",
+      "subtitle": "Đơn hàng của bạn đã được nhận và đang được chuẩn bị.",
+      "message": "Đơn hàng của bạn đã được xác nhận và chúng tôi đang chuẩn bị ngay bây giờ!",
+      "order_id_label": "Mã đơn hàng",
+      "table_number": "Bàn {number}",
+      "table_number_label": "Bàn",
+      "order_summary_title": "Tóm tắt đơn hàng",
+      "preparation_message": "Bạn muốn làm gì tiếp theo?",
+      "view_order_history": "Xem lịch sử đơn hàng",
+      "review_button": "Đánh giá trải nghiệm của bạn",
+      "add_more_button": "Thêm món khác",
+      "order_history_button": "Kiểm tra lịch sử đơn hàng",
+      "rate_dishes_title": "Đánh giá món ăn của bạn",
+      "review_prompt": "Giúp chúng tôi cải thiện bằng cách đánh giá từng món ăn:",
+      "order_history_title": "Lịch sử đơn hàng",
+      "inactive_session_message": "Phiên đặt hàng của bạn đã kết thúc. Vui lòng quét mã QR trên bàn của bạn để bắt đầu một phiên mới.",
+      "thankyou_message": "Cảm ơn bạn đã dùng bữa tại nhà hàng của chúng tôi! Chúng tôi hy vọng sẽ gặp lại bạn sớm.",
+      "item": "món",
+      "items": "món",
+      "status_ordered": "Đã đặt",
+      "status_preparing": "Đang chuẩn bị",
+      "status_ready": "Sẵn sàng",
+      "status_completed": "Đã phục vụ"
+    },
+    "review": {
+      "title": "Đánh giá trải nghiệm của bạn",
+      "rating_prompt": "Bạn sẽ đánh giá món này như thế nào?",
+      "rating_required": "Vui lòng chọn một đánh giá trước khi gửi.",
+      "comment_label": "Bình luận",
+      "optional": "tùy chọn",
+      "comment_placeholder": "Hãy cho chúng tôi biết về trải nghiệm của bạn...",
+      "characters": "ký tự",
+      "skip_button": "Bỏ qua",
+      "submit_button": "Gửi đánh giá",
+      "next_item": "Món tiếp theo",
+      "submitting": "Đang gửi...",
+      "submission_error": "Gửi đánh giá thất bại. Vui lòng thử lại.",
+      "item_progress": "Món {current} trên {total}",
+      "no_items": "Không có món nào để đánh giá.",
+      "back_to_thank_you": "Quay lại trang Cảm ơn",
+      "rating_required_alert": "Vui lòng cung cấp một đánh giá.",
+      "submission_thank_you_title": "Đã gửi đánh giá!",
+      "submission_thank_you_message": "Cảm ơn bạn đã phản hồi quý báu!",
+      "rating_label": "Đánh giá của bạn"
+    },
+    "orderhistory": {
+      "checkout_button": "Thanh toán",
+      "price_per_person": "Mỗi người: {value}"
+    },
+    "booking": {
+      "title": "Đặt bàn",
+      "submission_thank_you_title": "Đặt bàn thành công!",
+      "book_table_button": "Đặt bàn",
+      "submission_thank_you_message": "Đặt bàn của bạn đã được xác nhận thành công. Chúng tôi rất mong được gặp bạn!",
+      "form": {
+        "validation_error_fill_fields": "Vui lòng điền vào tất cả các trường bắt buộc.",
+        "table_select_placeholder": "Chọn một bàn",
+        "table_capacity": "{count} người",
+        "name_placeholder": "Họ tên của bạn",
+        "contact_placeholder": "Điện thoại hoặc Email của bạn",
+        "preorder_optional_title": "Đặt món trước (Tùy chọn)",
+        "submit_button": "Xác nhận đặt bàn"
+      }
+    },
+    "common": {
+      "total": "Tổng cộng",
+      "cancel": "Hủy đơn hàng",
+      "confirm": "Xác nhận đơn hàng",
+      "from_price": "Từ {price}",
+      "restaurant_not_found": "Không tìm thấy nhà hàng. Vui lòng kiểm tra URL hoặc liên hệ hỗ trợ.",
+      "error_loading_menu": "Lỗi tải thực đơn. Vui lòng thử lại sau.",
+      "error_loading_cart": "Lỗi tải giỏ hàng. Vui lòng thử lại sau.",
+      "error_loading_checkout": "Lỗi tải trang thanh toán. Vui lòng thử lại sau.",
+      "error_loading_booking": "Lỗi tải biểu mẫu đặt bàn. Vui lòng thử lại sau.",
+      "error_loading_order_summary": "Lỗi tải tóm tắt đơn hàng. Vui lòng thử lại sau.",
+      "error_loading_review_form": "Lỗi tải biểu mẫu đánh giá. Vui lòng thử lại sau."
+    },
+    "weekdays": {
+      "mon": "Thứ Hai",
+      "tue": "Thứ Ba",
+      "wed": "Thứ Tư",
+      "thu": "Thứ Năm",
+      "fri": "Thứ Sáu",
+      "sat": "Thứ Bảy",
+      "sun": "Chủ Nhật"
+    },
+    "currency_format": "{value, number, ::currency/VND}",
+    "ordering_for_table": "Đặt món cho Bàn {tableId}",
+    "serving_today": "Phục vụ hôm nay: {day}",
+    "item_added_to_cart_msg": "Đã thêm {item} vào giỏ hàng!",
+    "admin_panel_button": "Bảng quản trị"
+  },
+  "ai_chat": {
+    "toggle_label": "Chuyển đổi Trò chuyện AI"
   }
 }
