@@ -377,7 +377,11 @@
       "order": "Display Order",
       "reorder_success": "Categories reordered successfully.",
       "reorder_error": "Failed to reorder categories.",
-      "delete_error_fallback": "Failed to delete category. It might be in use or a server error occurred."
+      "delete_error_fallback": "Failed to delete category. It might be in use or a server error occurred.",
+      "auto_translations_label": "Auto-generated translations",
+      "auto_translate_name_en_placeholder": "Auto-translated category name",
+      "auto_translate_name_ja_placeholder": "Auto-translated category name",
+      "auto_translate_name_vi_placeholder": "Auto-translated category name"
     },
     "buttons": {
       "saving": "Saving..."

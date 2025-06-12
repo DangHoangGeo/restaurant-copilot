@@ -385,7 +385,11 @@
       "order": "表示順",
       "reorder_success": "カテゴリの並び順を更新しました。",
       "reorder_error": "カテゴリの並び順の更新に失敗しました。",
-      "delete_error_fallback": "カテゴリの削除に失敗しました。使用中か、サーバーエラーの可能性があります。"
+      "delete_error_fallback": "カテゴリの削除に失敗しました。使用中か、サーバーエラーの可能性があります。",
+      "auto_translations_label": "自動生成された翻訳",
+      "auto_translate_name_en_placeholder": "自動翻訳されたカテゴリ名",
+      "auto_translate_name_ja_placeholder": "自動翻訳されたカテゴリ名",
+      "auto_translate_name_vi_placeholder": "自動翻訳されたカテゴリ名"
     },
     "buttons": {
       "saving": "保存中..."
