@@ -22,7 +22,9 @@ CREATE TABLE IF NOT EXISTS restaurants (
   phone text,
   email text UNIQUE,
   website text,
-  description text,
+  description_en text,
+  description_vi text,
+  description_ja text,
   opening_hours jsonb,               -- e.g. {"mon": "09:00-21:00", "tue": "09:00-21:00", ...}
   social_links jsonb,                -- e.g. {"facebook": "https://...", "instagram": "https://..."}
   timezone text NOT NULL DEFAULT 'Asia/Tokyo',

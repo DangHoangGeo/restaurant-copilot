@@ -1,7 +1,5 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks, @next/next/no-img-element */
-
 import React, { useState, ReactNode, useEffect } from "react";
 import { useTranslations } from "next-intl";
 

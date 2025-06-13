@@ -15,15 +15,24 @@ import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 export type Restaurant = {
   id: string;
   name: string | null;
+  subdomain: string | null;
   default_language: "en" | "ja" | "vi" | null;
   brand_color: string | null;
   contact_info: string | null;
   address: string | null;
-  opening_hours: string | null;
-  description: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  opening_hours: string | null; // JSON string or structured data
+  description_en: string | null;
+  description_ja: string | null;
+  description_vi: string | null;
+  social_links: string | null; // JSON string
+  currency: string | null;
+  payment_methods: string[] | null;
+  delivery_options: string[] | null;
   logo_url: string | null;
   // ensure all fields expected by SettingsForm are here
-  subdomain?: string | null; // Add if needed, based on table structure
   created_at?: string | null; // Add if needed
   updated_at?: string | null; // Add if needed
   user_id?: string | null; // Add if needed
