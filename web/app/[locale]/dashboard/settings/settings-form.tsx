@@ -24,6 +24,7 @@ import {
 import { Label } from "@/components/ui/label"; // Assuming @ alias is web
 import { toast } from "sonner";
 import { Image as ImageIcon, Loader2 } from "lucide-react";
+import imageCompression from 'browser-image-compression';
 import { Restaurant } from "./page";
 
 // Local Restaurant type for the form's initial settings prop.
@@ -44,7 +45,7 @@ const getSettingsSchema = (t: ReturnType<typeof useTranslations<'Dashboard.Setti
   opening_hours: z.string().max(200, t("opening_hours.maxLength", { maxLength: 200 })).optional().nullable(),
   description: z.string().max(1000, t("description.maxLength", { maxLength: 1000 })).optional().nullable(),
   logoFile: z.instanceof(File)
-    .refine(file => file.size <= 5 * 1024 * 1024, t("logoFile.maxSize", { maxSize: 5 }))
+    .refine(file => file.size <= 1 * 1024 * 1024, t("logoFile.maxSize", { maxSize: 1 })) // Adjusted maxSize to 1MB
     .refine(file => ["image/png", "image/jpeg", "image/webp"].includes(file.type), t("logoFile.invalidType"))
     .optional().nullable(),
   logoUrl: z.string().url(t("logoUrl.invalidFormat")).optional().nullable(),
@@ -106,9 +107,23 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
     }
   }, [watchedLogoFile, initialSettings.logo_url]);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setValue("logoFile", event.target.files[0], { shouldValidate: true });
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      };
+      try {
+        const compressedFile = await imageCompression(file, options);
+        setValue("logoFile", compressedFile, { shouldValidate: true });
+      } catch (error) {
+        console.error("Error compressing image:", error);
+        toast.error(t("notifications.compressionError"));
+        // Optionally, set the original file if compression fails, or clear it
+        setValue("logoFile", null, { shouldValidate: true }); // Or file, if you want to allow uncompressed upload on error
+      }
     } else {
       setValue("logoFile", null, { shouldValidate: true });
     }
