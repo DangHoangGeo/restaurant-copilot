@@ -116,8 +116,13 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
         useWebWorker: true,
       };
       try {
-        const compressedFile = await imageCompression(file, options);
-        setValue("logoFile", compressedFile, { shouldValidate: true });
+        const compressedFileBlob = await imageCompression(file, options);
+        // Create a new File object from the compressed blob
+        const newFileObject = new File([compressedFileBlob], file.name, {
+          type: compressedFileBlob.type,
+          lastModified: Date.now(),
+        });
+        setValue("logoFile", newFileObject, { shouldValidate: true });
       } catch (error) {
         console.error("Error compressing image:", error);
         toast.error(t("notifications.compressionError"));

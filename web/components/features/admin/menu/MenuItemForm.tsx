@@ -611,8 +611,12 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
                             useWebWorker: true,
                           };
                           try {
-                            const compressedFile = await imageCompression(file, options);
-                            field.onChange(compressedFile);
+                            const compressedFileBlob = await imageCompression(file, options);
+                            const newFileObject = new File([compressedFileBlob], file.name, {
+                              type: compressedFileBlob.type,
+                              lastModified: Date.now(),
+                            });
+                            field.onChange(newFileObject);
                             const reader = new FileReader();
                             reader.onloadend = () => setImagePreview(reader.result as string);
                             reader.readAsDataURL(compressedFile);
