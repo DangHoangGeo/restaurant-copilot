@@ -39,10 +39,10 @@ import {
 import { toast } from "sonner";
 import { Image as ImageIcon, Loader2, Globe, Clock, MessageSquare, User, CreditCard, Truck } from "lucide-react";
 import imageCompression from 'browser-image-compression';
-import { Restaurant } from "./page";
 import { OperatingHoursEditor } from "@/components/features/dashboard/OperatingHoursEditor";
 import { SocialLinksEditor } from "@/components/features/dashboard/SocialLinksEditor";
 import { DescriptionGenerator } from "@/components/features/dashboard/DescriptionGenerator";
+import { Restaurant } from "@/shared/types";
 
 interface SettingsFormProps {
   initialSettings: Restaurant;

@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import * as htmlToImage from 'html-to-image'
+import { Table } from '@/shared/types'
 
 // Define Zod schema for table form validation
 const getTableSchema = (t: ReturnType<typeof useTranslations<'AdminTables.validation'>>) => z.object({
@@ -52,16 +53,6 @@ interface RestaurantSettings {
   logoUrl: string | null
 }
 
-interface Table {
-  id: string
-  name: string
-  capacity: number
-  status: 'available' | 'occupied' | 'reserved'
-  is_outdoor: boolean
-  is_accessible: boolean
-  notes?: string | null
-  qr_code?: string | null
-}
 
 interface TablesClientContentProps {
   restaurantSettings: RestaurantSettings
