@@ -17,6 +17,8 @@ import { WeekdaySelector } from '@/components/features/admin/menu/WeekdaySelecto
 import { PlusCircle, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem } from '@/components/ui/select';
+import imageCompression from 'browser-image-compression';
+import { toast } from 'sonner';
 
 // Zod Schemas
 const toppingSchema = z.object({
@@ -239,7 +241,7 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full w-screen md:max-w-4xl sm:max-h-[95vh] mx-auto">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full md:max-w-4xl sm:max-h-[95vh] mx-auto">
         <div className="flex-1 space-y-4 pr-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           {/* Column 1: Names, Descriptions */}
@@ -598,20 +600,35 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
                   <FormLabel>{t('item.image_label')}</FormLabel>
                   <FormControl>
                     <Input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
-                        field.onChange(file);
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => setImagePreview(reader.result as string);
-                          reader.readAsDataURL(file);
+                          const options = {
+                            maxSizeMB: 0.5,
+                            maxWidthOrHeight: 800,
+                            useWebWorker: true,
+                          };
+                          try {
+                            const compressedFile = await imageCompression(file, options);
+                            field.onChange(compressedFile);
+                            const reader = new FileReader();
+                            reader.onloadend = () => setImagePreview(reader.result as string);
+                            reader.readAsDataURL(compressedFile);
+                          } catch (error) {
+                            console.error("Error compressing image:", error);
+                            toast.error(t('validation.compressionError'));
+                            field.onChange(null);
+                            setImagePreview(form.getValues("image_url") || null);
+                            e.target.value = ''; // Clear the file input
+                          }
                         } else {
+                          field.onChange(null);
                           setImagePreview(form.getValues("image_url") || null);
                         }
-                      }} 
-                      className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90" 
+                      }}
+                      className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                     />
                   </FormControl>
                   {imagePreview && (
