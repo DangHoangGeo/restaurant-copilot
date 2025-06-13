@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Using shadcn Select
 import { Alert } from "@/components/ui/alert";
+import { AnimatedRestaurantHeader } from "@/components/common/AnimatedRestaurantHeader";
 import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import type { RestaurantSettings, TableInfo, Category, MenuItem } from "@/shared/types/customer";
 import { ViewProps, ViewType, MenuViewProps } from "./types"; // Updated imports
@@ -144,11 +145,23 @@ export function BookingScreen({
 
   return (
     <div>
-      <Button onClick={() => setView("menu", {} as MenuViewProps)} variant="ghost" className="mb-4 -ml-2">
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        {tCommon("back_to_menu")}
-      </Button>
-      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">{t("booking.title")}</h2>
+      <AnimatedRestaurantHeader
+        restaurantSettings={{
+          name: restaurantSettings.name || "Restaurant",
+          logoUrl: restaurantSettings.logoUrl
+        }}
+        rating={4.8}
+        badgeText="Table Booking"
+        badgeIcon={CalendarDays}
+        className="border-b border-slate-200 dark:border-slate-700"
+      />
+      
+      <div className="px-4 py-6">
+        <Button onClick={() => setView("menu", {} as MenuViewProps)} variant="ghost" className="mb-4 -ml-2">
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          {tCommon("back_to_menu")}
+        </Button>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">{t("booking.title")}</h2>
       {error && <Alert variant="destructive" className="mb-4">{error}</Alert>}
       <Card className="max-w-lg mx-auto p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -191,6 +204,7 @@ export function BookingScreen({
           </Button>
         </form>
       </Card>
+      </div>
     </div>
   );
 }

@@ -267,6 +267,10 @@
       "ja": "Tiếng Nhật",
       "vi": "Tiếng Việt"
     },
+    "theme": {
+      "toggle_aria_label": "Chuyển đổi chủ đề sáng/tối",
+      "toggle_label": "Chuyển đổi chủ đề"
+    },
     "rating": {
       "set_stars": "Đặt {count} sao đánh giá",
       "current_stars": "Đánh giá hiện tại: {count} sao",
@@ -323,10 +327,6 @@
     "sidebar": {
       "toggle_aria_label": "Chuyển đổi thanh bên điều hướng",
       "close_aria_label": "Đóng thanh bên"
-    },
-    "theme": {
-      "toggle_aria_label": "Chuyển đổi chủ đề sáng/tối",
-      "toggle_label": "Chuyển đổi chủ đề"
     },
     "user_menu": {
       "admin_user_placeholder": "Người dùng quản trị",
@@ -1009,7 +1009,9 @@
       "select_toppings": "Chọn topping",
       "selected_toppings": "Topping đã chọn:",
       "base_price": "Giá cơ bản",
-      "toppings_price": "Topping"
+      "toppings_price": "Topping",
+      "browse_categories": "Duyệt danh mục",
+      "no_items_found": "Không tìm thấy món nào trong danh mục này."
     },
     "cart": {
       "items_in_cart_plural": "{count} món trong giỏ hàng",

@@ -179,6 +179,23 @@
         "contact_us": "Contact Us",
         "status": "Status"
       },
+      "categories": {
+        "resources_title": "Resources",
+        "case_studies": "Case Studies",
+        "webinars": "Webinars",
+        "documentation": "Documentation",
+        "community": "Community",
+        "developers": "Developers",
+        "support": "Support"
+      },
+      "legal": {
+        "title": "Legal",
+        "terms": "Terms of Service",
+        "privacy": "Privacy Policy",
+        "cookie": "Cookie Policy",
+        "security": "Security"
+      },
+      "copyright": "© 2023 Coorder.ai. All rights reserved.",
       "privacy_policy": "Privacy Policy",
       "terms_of_service": "Terms of Service"
     },
@@ -276,6 +293,10 @@
       "ja": "Japanese",
       "vi": "Vietnamese"
     },
+    "theme": {
+      "toggle_aria_label": "Toggle light/dark theme",
+      "toggle_label": "Toggle Theme"
+    },
     "rating": {
       "set_stars": "Set {count} star rating",
       "current_stars": "Current rating: {count} stars",
@@ -324,10 +345,6 @@
     "sidebar": {
       "toggle_aria_label": "Toggle sidebar navigation",
       "close_aria_label": "Close sidebar"
-    },
-    "theme": {
-      "toggle_aria_label": "Toggle light/dark theme",
-      "toggle_label": "Toggle Theme"
     },
     "user_menu": {
       "admin_user_placeholder": "Admin User",
@@ -1184,7 +1201,9 @@
       "base_price": "Base Price",
       "toppings_price": "Toppings",
       "view_smart": "View Smart Menu",
-      "view_classic": "View Classic Menu"
+      "view_classic": "View Classic Menu",
+      "browse_categories": "Browse Categories",
+      "no_items_found": "No items found in this category."
     },
     "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",
@@ -1303,7 +1322,8 @@
         "name_placeholder": "Your Full Name",
         "contact_placeholder": "Your Phone or Email",
         "preorder_optional_title": "Pre-order (Optional)",
-        "submit_button": "Confirm Booking"
+        "submit_button": "Confirm Booking",
+        "party_size_placeholder": "Party Size"
       }
     },
     "common": {

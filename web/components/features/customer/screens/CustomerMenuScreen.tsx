@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { List, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -8,12 +8,9 @@ import { SmartDiscoveryMenu } from "../SmartDiscoveryMenu";
 import { useCart } from "../CartContext";
 import type { ViewType, ViewProps, MenuViewProps } from "./types";
 import { MenuItem, Category } from "@/shared/types/menu";
+import { ContextualGreeting, generateContextualInfo } from "@/components/common/ContextualGreeting";
+import { RestaurantSettings } from "@/shared/types";
 
-interface RestaurantSettings {
-  primaryColor?: string;
-  name?: string;
-  logoUrl?: string;
-}
 
 interface CustomerMenuScreenProps {
   categories: Category[];
@@ -24,6 +21,7 @@ interface CustomerMenuScreenProps {
     tableBooking: boolean;
   };
   canAddItems?: boolean;
+  locale?: string; // Optional locale prop for flexibility
 }
 
 export function CustomerMenuScreen({
@@ -32,6 +30,7 @@ export function CustomerMenuScreen({
   restaurantSettings,
   viewProps,
   canAddItems = true,
+  locale = "en", // Default to English if not provided
 }: CustomerMenuScreenProps) {
   const t = useTranslations("Customer");
   const { addToCart: addToCartAdvanced, updateQuantity, getQuantityByItemId, cart } = useCart();
@@ -40,6 +39,11 @@ export function CustomerMenuScreen({
   const toggleDiscoveryMode = () => {
     setUseSmartDiscovery(!useSmartDiscovery);
   };
+
+  // Contextual information using the reusable helper
+  const contextualInfo = useMemo(() => {
+    return generateContextualInfo(restaurantSettings?.name, locale);
+  }, [restaurantSettings?.name, locale]);
 
   // Simple cart interface wrappers for menu components
   const addToCartSimple = (item: MenuItem) => {
@@ -85,10 +89,20 @@ export function CustomerMenuScreen({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
+      {/* Reusable Contextual Greeting Component */}
+      <ContextualGreeting 
+        contextualInfo={contextualInfo}
+        variant="default"
+        showWeather={true}
+        showTimeInfo={true}
+      />
+
       {/* Mode Toggle */}
-      <div className=" bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
         <div className="px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Menu</h1>
+          <h2 className="text-lg font-medium text-slate-700 dark:text-slate-300">
+            {useSmartDiscovery ? t("menu.smart_discovery") : t("menu.browse_categories")}
+          </h2>
           <Button
             variant="outline"
             size="sm"
@@ -123,6 +137,7 @@ export function CustomerMenuScreen({
           tableId={viewProps.tableId}
           sessionId={viewProps.sessionId}
           tableNumber={viewProps.tableNumber}
+          restaurantSettings={restaurantSettings}
         />
       ) : (
         <MenuList

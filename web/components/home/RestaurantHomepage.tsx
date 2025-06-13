@@ -15,8 +15,6 @@ import {
   Star,
   TrendingUp,
   Sparkles,
-  ThermometerSun,
-  Snowflake,
   Bot,
   MessageCircle,
   Award,
@@ -26,6 +24,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Button, Card, Icon } from '.';
+import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
 
 // Types for restaurant data
 interface OpeningHours {
@@ -78,54 +77,11 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Update time every minute for contextual features
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Contextual information based on time and conditions
+  // Contextual information using the reusable helper
   const contextualInfo = useMemo(() => {
-    const hour = currentTime.getHours();
-    const isWeekend = [0, 6].includes(currentTime.getDay());
-    const isHot = Math.random() > 0.5; // Simulate weather
-    const temperature = Math.floor(Math.random() * 20) + 15; // 15-35°C
-
-    let timeContext = "";
-    let greeting = "";
-    let weatherSuggestion = "";
-
-    if (hour >= 5 && hour < 11) {
-      timeContext = "Morning";
-      greeting = "Good Morning! Start your day right";
-      weatherSuggestion = isHot ? "Perfect weather for iced coffee" : "Warm breakfast specials await";
-    } else if (hour >= 11 && hour < 15) {
-      timeContext = "Lunch Time";
-      greeting = "Lunch Time! Fuel your afternoon";
-      weatherSuggestion = isHot ? "Light and refreshing options" : "Hearty comfort food";
-    } else if (hour >= 15 && hour < 18) {
-      timeContext = "Afternoon";
-      greeting = "Afternoon Treats Available";
-      weatherSuggestion = "Perfect time for desserts and coffee";
-    } else {
-      timeContext = "Evening";
-      greeting = "Evening Dining Experience";
-      weatherSuggestion = isHot ? "Al fresco dining weather" : "Cozy indoor atmosphere";
-    }
-
-    return {
-      timeContext,
-      greeting,
-      weatherSuggestion,
-      isWeekend,
-      isHot,
-      temperature
-    };
-  }, [currentTime]);
+    return generateContextualInfo(restaurantData?.restaurant?.name, locale);
+  }, [restaurantData?.restaurant?.name, locale]);
 
   useEffect(() => {
     const fetchRestaurantData = async () => {
@@ -346,41 +302,13 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
         </div>
 
         <div className="container mx-auto px-4 text-center relative z-10">
-          {/* Contextual Time-based Greeting */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            <div className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl" />
-              <div className="relative px-4 py-6 text-center">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-3"
-                >
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                    {contextualInfo.greeting}
-                  </h1>
-                  <p className="text-white/80 max-w-md mx-auto">
-                    {contextualInfo.weatherSuggestion}
-                    {contextualInfo.isWeekend && " • Perfect weekend vibes"}
-                  </p>
-                  <div className="flex items-center justify-center space-x-4 text-sm text-white/70">
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{contextualInfo.timeContext}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      {contextualInfo.isHot ? <ThermometerSun className="h-4 w-4" /> : <Snowflake className="h-4 w-4" />}
-                      <span>{contextualInfo.temperature}°C</span>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </motion.div>
+          {/* Reusable Contextual Greeting Component */}
+          <ContextualGreeting 
+            contextualInfo={contextualInfo}
+            variant="default"
+            showWeather={true}
+            showTimeInfo={true}
+          />
 
           {/* Main Restaurant Title with Animation */}
           <motion.h2 
