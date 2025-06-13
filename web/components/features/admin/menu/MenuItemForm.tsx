@@ -619,7 +619,7 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
                             field.onChange(newFileObject);
                             const reader = new FileReader();
                             reader.onloadend = () => setImagePreview(reader.result as string);
-                            reader.readAsDataURL(compressedFile);
+                            reader.readAsDataURL(newFileObject); // Corrected to use newFileObject
                           } catch (error) {
                             console.error("Error compressing image:", error);
                             toast.error(t('validation.compressionError'));
