@@ -11,8 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import type { MenuItemCategory } from '@/shared/types/menu-item-category.types';
-import type { MenuItem } from '@/shared/types/menu-item.types';
+import type { MenuItem, MenuItemCategory } from '@/shared/types/menu';
 import { WeekdaySelector } from '@/components/features/admin/menu/WeekdaySelector';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import Image from 'next/image';
@@ -109,7 +108,7 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
       image_url: initialData?.image_url || '',
       category_id: initialData?.category_id || '',
       available: initialData?.available === undefined ? true : initialData.available,
-      weekdayVisibility: initialData?.weekdayVisibility || [],
+      weekdayVisibility: initialData?.weekday_visibility || [],
       stock_level: initialData?.stock_level || 10,
       imageFile: null,
       toppings: initialData?.toppings?.map((top: ToppingData) => ({ ...top, position: top.position ?? 0 })) || [],
@@ -198,8 +197,12 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
     if (initialData) {
       form.reset({
         ...initialData,
+        description_en: initialData.description_en || undefined,
+        description_ja: initialData.description_ja || undefined,
+        description_vi: initialData.description_vi || undefined,
+        image_url: initialData.image_url || undefined,
         available: initialData.available === undefined ? true : initialData.available, // ensure boolean
-        weekdayVisibility: initialData.weekdayVisibility || [], // ensure array
+        weekdayVisibility: initialData.weekday_visibility || [], // ensure array
         stock_level: initialData.stock_level || null,
         imageFile: null,
         toppings: initialData.toppings?.map((top: ToppingData) => ({ ...top, position: top.position ?? 0 })) || [],

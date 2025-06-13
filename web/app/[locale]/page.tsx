@@ -2,7 +2,7 @@
 import React, { useState, useEffect, ReactNode, useContext } from 'react';
 import Image from 'next/image';
 import {
-  ChevronRight, PlayCircle, Users, MessageSquare, BarChart2, QrCode, Menu as MenuIcon, Zap, ShieldCheck, ArrowRight, Plus, Minus, Globe, Sun, Moon, Building,
+  ChevronRight, PlayCircle, Users, BarChart2, QrCode, Menu as MenuIcon, Zap, ShieldCheck, ArrowRight, Plus, Minus, Globe, Sun, Moon, Building,
   ThumbsUp, Clock, Smile, Coffee, Phone, Lightbulb, DollarSign, TrendingUp, CalendarDays, Server, Palette, PlusCircle
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -73,12 +73,20 @@ const LanguageSwitcherLanding = () => {
   const currentLocale = useLocale();
   const locales = [ { code: 'en', name: 'English', flag: '🇺🇸' }, { code: 'ja', name: '日本語', flag: '🇯🇵' }, { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' }];
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedLocaleCode, setSelectedLocaleCode] = useState(currentLocale);
 
   const switchLocale = (localeCode: string) => {
+    setSelectedLocaleCode(localeCode);
     router.push(`/${localeCode}`); // Navigate to the new locale
     setIsOpen(false);
   };
-  const selectedLocale = locales.find(l => l.code === currentLocale) || locales[0];
+  
+  const selectedLocale = locales.find(l => l.code === selectedLocaleCode) || locales[0];
+
+  // Update selected locale when current locale changes (e.g., from URL changes)
+  useEffect(() => {
+    setSelectedLocaleCode(currentLocale);
+  }, [currentLocale]);
 
   return (
     <div className="relative">
@@ -89,7 +97,24 @@ const LanguageSwitcherLanding = () => {
       </Button>
       {isOpen && (
         <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-700 rounded-xl shadow-lg py-1 z-50">
-          {locales.map(locale => ( <button key={locale.code} onClick={() => switchLocale(locale.code)} className="w-full text-left flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" role="menuitem"> <span className="mr-2">{locale.flag}</span> {locale.name} </button> ))}
+          {locales.map(locale => ( 
+            <button 
+              key={locale.code} 
+              onClick={() => switchLocale(locale.code)} 
+              className={`w-full text-left flex items-center px-4 py-2 text-sm transition-colors duration-150 ${
+                locale.code === selectedLocaleCode 
+                  ? 'bg-[--brand-color-landing]/10 text-[--brand-color-landing] font-medium' 
+                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600'
+              }`} 
+              role="menuitem"
+            > 
+              <span className="mr-2">{locale.flag}</span> 
+              {locale.name}
+              {locale.code === selectedLocaleCode && (
+                <span className="ml-auto text-[--brand-color-landing]">✓</span>
+              )}
+            </button> 
+          ))}
         </div>
       )}
     </div>
@@ -101,23 +126,86 @@ const LanguageSwitcherLanding = () => {
 const LandingPageHeader = ({ locale }: { locale: string }) => {
   const { theme, toggleTheme } = useThemeLanding();
   const t = useTranslations('LandingPage');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+          {/* Logo */}
           <a href="#" className="flex items-center" aria-label={t('header.logo_aria_label')}>
-            <Image src="/coorder-ai.png" alt="coorder.ai" width={40} height={40} className="w-10 h-10" />
-            <span className="ml-2 text-2xl font-bold text-slate-800 dark:text-slate-100">coorder<span className="text-[--brand-color-landing]">.ai</span></span>
+            <Image src="/coorder-ai.png" alt="coorder.ai" width={32} height={32} className="w-8 h-8 sm:w-10 sm:h-10" />
+            <span className="ml-2 text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
+              coorder<span className="text-[--brand-color-landing]">.ai</span>
+            </span>
           </a>
-          <div className="flex items-center space-x-2 sm:space-x-3">
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-3">
             <LanguageSwitcherLanding />
             <Button variant="ghost" size="sm" onClick={toggleTheme} className="!shadow-none" aria-label={t('theme.toggle')} iconLeft={null} iconRight={null} href="#">
               <Icon name={theme === 'light' ? Moon : Sun} />
             </Button>
-            <Button href={locale+"/login"} variant="ghost" size="sm" className="hidden sm:inline-flex !shadow-none" onClick={() => {}} iconLeft={null} iconRight={null}>{t('header.login')}</Button>
-            <Button href={locale+"/signup"} variant="primary" size="sm" onClick={() => {}} iconLeft={null} iconRight={null}>{t('header.signup')}</Button>
+            <Button href={locale+"/login"} variant="ghost" size="sm" className="!shadow-none outline" onClick={() => {}} iconLeft={null} iconRight={null}>
+              {t('header.login')}
+            </Button>
+            <Button href={locale+"/signup"} variant="primary" size="sm" onClick={() => {}} iconLeft={null} iconRight={null}>
+              {t('header.signup')}
+            </Button>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="flex md:hidden items-center space-x-2">
+            <LanguageSwitcherLanding />
+            <Button variant="ghost" size="sm" onClick={toggleTheme} className="!shadow-none !p-2" aria-label={t('theme.toggle')} iconLeft={null} iconRight={null} href="#">
+              <Icon name={theme === 'light' ? Moon : Sun} size={18} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="!shadow-none !p-2" 
+              aria-label="Toggle menu"
+              iconLeft={null} 
+              iconRight={null} 
+              href="#"
+            >
+              <Icon name={MenuIcon} size={20} />
+            </Button>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute left-0 right-0 top-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-lg">
+            <div className="container mx-auto px-4 py-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  href={locale+"/login"} 
+                  variant="ghost" 
+                  size="sm" 
+                  className="!shadow-none w-full outline" 
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                  iconLeft={null} 
+                  iconRight={null}
+                >
+                  {t('header.login')}
+                </Button>
+                <Button 
+                  href={locale+"/signup"} 
+                  variant="primary" 
+                  size="sm" 
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                  iconLeft={null} 
+                  iconRight={null}
+                  className="w-full"
+                >
+                  {t('header.signup')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
@@ -159,7 +247,7 @@ const HeroSection = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [aiFeatures.length]);
 
   return (
     <section className="py-16 sm:py-20 lg:py-28 bg-gradient-to-br from-slate-50 to-indigo-100 dark:from-slate-900 dark:to-indigo-900/30 overflow-hidden">
@@ -343,8 +431,8 @@ const SocialProofSection = () => {
     { name: "LocalEats Award", icon: ThumbsUp },
   ];
   const testimonials = [
-    { quote: "social_proof.testimonial1.quote", name: "Maria R.", role: "Owner, The Cozy Corner", image: "/myorder-dashboard.jpg" },
-    { quote: "social_proof.testimonial2.quote", name: "Kenji T.", role: "Chef, Sushi Express", image: "/myorder-dashboard.jpg" },
+    { quote: "social_proof.testimonial1.quote", name: "Maria R.", role: "Owner, The Cozy Corner", image: "/coorder-ai.png" },
+    { quote: "social_proof.testimonial2.quote", name: "Kenji T.", role: "Chef, Sushi Express", image: "/coorder-ai.png" },
   ];
 
   return (
@@ -365,7 +453,6 @@ const SocialProofSection = () => {
         <div className="mt-16 grid md:grid-cols-2 gap-8 lg:gap-12">
           {testimonials.map((testimonial, idx) => (
             <Card key={idx} className="relative">
-              <Icon name={MessageSquare} size={32} className="absolute top-6 left-6 text-[--brand-color-landing]/20 dark:text-[--brand-color-landing]/30" />
               <blockquote className="relative z-10">
                 <p className="text-lg text-slate-700 dark:text-slate-200">{t(testimonial.quote)}</p>
                 <footer className="mt-6 flex items-center">

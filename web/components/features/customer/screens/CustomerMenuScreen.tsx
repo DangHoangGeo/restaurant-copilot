@@ -7,16 +7,7 @@ import { MenuList } from "../MenuList";
 import { SmartDiscoveryMenu } from "../SmartDiscoveryMenu";
 import { useCart } from "../CartContext";
 import type { ViewType, ViewProps, MenuViewProps } from "./types";
-import { MenuItem } from "@/shared/types/customer";
-
-interface Category {
-  id: string;
-  position: number;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  menu_items: MenuItem[];
-}
+import { MenuItem, Category } from "@/shared/types/menu";
 
 interface RestaurantSettings {
   primaryColor?: string;
@@ -95,7 +86,7 @@ export function CustomerMenuScreen({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Mode Toggle */}
-      <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+      <div className=" bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
         <div className="px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-semibold">Menu</h1>
           <Button
@@ -107,12 +98,12 @@ export function CustomerMenuScreen({
             {useSmartDiscovery ? (
               <>
                 <List className="h-4 w-4" />
-                <span>Classic View</span>
+                <span>{t("menu.view_classic")}</span>
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                <span>Smart Discovery</span>
+                <span>{t("menu.view_smart")}</span>
               </>
             )}
           </Button>

@@ -27,6 +27,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { MenuItemForm } from '@/components/features/admin/menu/MenuItemForm';
 import Image from 'next/image';
+import { Category } from '@/shared/types/menu';
 // import { Switch } from "@/components/ui/switch"; // For availability toggle if preferred
 
 /*
@@ -36,51 +37,6 @@ interface LocalizedText {
   name_ja?: string;
   name_vi?: string;
 }*/
-
-interface MenuItem {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  description_en: string;
-  description_ja: string;
-  description_vi: string;
-  price: number;
-  image_url?: string;
-  available: boolean;
-  weekday_visibility: number[];
-  stock_level?: number;
-  position: number;
-  averageRating?: number;
-  reviewCount?: number;
-  category_id?: string;
-  toppings?: Array<{
-    id?: string;
-    name_en: string;
-    name_ja?: string;
-    name_vi?: string;
-    price: number;
-    position: number;
-  }>;
-  menu_item_sizes?: Array<{
-    id?: string;
-    size_key: string;
-    name_en: string;
-    name_ja?: string;
-    name_vi?: string;
-    price: number;
-    position: number;
-  }>;
-}
-
-interface Category {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  position: number;
-  menu_items: MenuItem[];
-}
 
 interface MenuClientContentProps {
   initialData: Category[];
@@ -950,7 +906,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
               image_url: itemForm.getValues().image_url || '',
               available: itemForm.getValues().available ?? true,
               category_id: itemForm.getValues().category_id || '',
-              weekdayVisibility: itemForm.getValues().weekday_visibility || [],
+              weekday_visibility: itemForm.getValues().weekday_visibility || [],
               stock_level: itemForm.getValues().stock_level ?? 20,
               toppings: itemForm.getValues().toppings || [],
               menu_item_sizes: itemForm.getValues().sizes || [],
@@ -962,6 +918,11 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
                 name_ja: cat.name_ja, 
                 name_vi: cat.name_vi 
               }, locale),
+              name_en: cat.name_en,
+              name_ja: cat.name_ja,
+              name_vi: cat.name_vi,
+              position: cat.position,
+              restaurant_id: cat.restaurant_id,
             }))}
             ownerLanguage={ownerLanguage}
             onTranslate={handleTranslate}

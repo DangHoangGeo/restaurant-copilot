@@ -110,7 +110,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
   };
 
   // Placeholder for image if item.image_url is not available
-  const imageUrl = item.image_url || `https://via.placeholder.com/400x300.png?text=${encodeURIComponent(getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale))}`;
+  const imageUrl = item.image_url || `https://via.placeholder.com/400x300.png?text=${encodeURIComponent(getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi || "","name_ja":item.name_ja || ""}, locale))}`;
 
   return (
     <div className="container mx-auto p-4 max-w-lg">
@@ -127,7 +127,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
         <Image
           src={imageUrl}
-          alt={getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale)}
+          alt={getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi || "","name_ja":item.name_ja || ""}, locale)}
           className="w-full h-64 object-cover"
           width={400}
           height={300}
@@ -135,7 +135,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
 
         <div className="p-4">
           <h1 className="text-3xl font-bold mb-2">
-            {getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale)}
+            {getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi || "","name_ja":item.name_ja || ""}, locale)}
           </h1>
 
           <p className="text-gray-600 mb-3 text-sm">
@@ -153,9 +153,9 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
               <div className="space-y-2">
                 {availableSizes.map((size) => {
                   const sizeName = getLocalizedText({
-                    name_en: size.name_en,
-                    name_ja: size.name_ja,
-                    name_vi: size.name_vi
+                    name_en: size.name_en || '',
+                    name_ja: size.name_ja || '',
+                    name_vi: size.name_vi || ''
                   }, locale);
                   const isSelected = selectedSize?.id === size.id;
                   
@@ -183,8 +183,8 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
                 {availableToppings.map((topping) => {
                   const toppingName = getLocalizedText({
                     name_en: topping.name_en,
-                    name_ja: topping.name_ja,
-                    name_vi: topping.name_vi
+                    name_ja: topping.name_ja || topping.name_en,
+                    name_vi: topping.name_vi || topping.name_en
                   }, locale);
                   const isSelected = selectedToppings.some(t => t.id === topping.id);
                   
@@ -271,7 +271,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
           
           {showAddedMessage && (
             <div className="mt-4 text-center text-green-600 font-semibold text-sm py-2 px-3 bg-green-50 rounded-md border border-green-200">
-              {t('menu_item_detail_added_to_cart_msg', { itemName: getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_ja":item.name_ja}, locale) })}
+              {t('menu_item_detail_added_to_cart_msg', { itemName: getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi || "","name_ja":item.name_ja || ""}, locale) })}
             </div>
           )}
         </div>

@@ -204,8 +204,8 @@ export function ReviewOrderScreen({
                       <span className="text-xs bg-gray-100 px-2 py-1 rounded">
                         {getLocalizedText({
                           name_en: item.selectedSize.name_en,
-                          name_ja: item.selectedSize.name_ja,
-                          name_vi: item.selectedSize.name_vi
+                          name_ja: item.selectedSize.name_ja || "",
+                          name_vi: item.selectedSize.name_vi || ""
                         }, locale)}
                       </span>
                     )}
@@ -216,8 +216,8 @@ export function ReviewOrderScreen({
                           <span key={topping.id} className="text-xs bg-blue-100 px-2 py-1 rounded">
                             {getLocalizedText({
                               name_en: topping.name_en,
-                              name_ja: topping.name_ja,
-                              name_vi: topping.name_vi
+                              name_ja: topping.name_ja || "",
+                              name_vi: topping.name_vi || ""
                             }, locale)}
                           </span>
                         ))}

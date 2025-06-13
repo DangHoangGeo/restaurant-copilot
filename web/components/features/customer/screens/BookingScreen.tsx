@@ -179,7 +179,7 @@ export function BookingScreen({
                 <div key={item.id} className="p-3 border rounded-lg dark:border-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <label className="flex items-center space-x-3 cursor-pointer flex-grow">
                     <input type="checkbox" name="preOrderItems" value={item.id} checked={!!preOrderedItem} onChange={handleInputChange} className="form-checkbox h-4 w-4 rounded accent-[--brand-color]" style={{'--brand-color': restaurantSettings.primaryColor || "#0ea5e9"} as React.CSSProperties} />
-                    <span className="text-sm">{getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi,"name_jp":item.name_ja}, locale)} (¥{item.price.toFixed(0)})</span>
+                    <span className="text-sm">{getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi || "","name_jp":item.name_ja || ""}, locale)} (¥{item.price.toFixed(0)})</span>
                   </label>
                   {preOrderedItem && <Input type="number" value={preOrderedItem.quantity} min="1" onChange={(e) => handlePreOrderItemQuantityChange(item.id, e.target.value)} className="w-20 text-sm py-1 h-8" />}
                 </div>

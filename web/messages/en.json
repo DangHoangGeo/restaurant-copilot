@@ -1014,7 +1014,9 @@
       "select_toppings": "Select Toppings",
       "selected_toppings": "Selected Toppings:",
       "base_price": "Base Price",
-      "toppings_price": "Toppings"
+      "toppings_price": "Toppings",
+      "view_smart": "View Smart Menu",
+      "view_classic": "View Classic Menu"
     },
     "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",

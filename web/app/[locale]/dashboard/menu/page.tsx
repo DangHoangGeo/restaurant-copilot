@@ -6,33 +6,10 @@ import { getSubdomainFromHost } from '@/lib/utils';
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { MenuItem, Category } from '@/shared/types/menu';
 
-export interface MenuItem {
-	id: string;
-	name_en: string;
-	name_ja: string;
-	name_vi: string;
-	description_en: string;
-	description_ja: string;
-	description_vi: string;
-	price: number;
-	image_url?: string;
-	available: boolean;
-	weekday_visibility: number[];
-	stock_level?: number;
-	position: number;
-	averageRating?: number;
-	reviewCount?: number;
-}
-
-export interface Category {
-	id: string;
-	name_en: string;
-	name_ja: string;
-	name_vi: string;
-	position: number;
-	menu_items: MenuItem[];
-}
+// Re-export types for this page
+export type { MenuItem, Category };
 
 export default async function MenuPage({
 	params
