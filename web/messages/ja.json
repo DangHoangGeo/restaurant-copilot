@@ -10,8 +10,19 @@
       "signup": "レストランを登録",
       "forgotPassword": "パスワードをお忘れですか"
     },
+    "subtitle":{
+      "login": "お帰りなさい！ダッシュボードにアクセスするための認証情報を入力してください。",
+      "signup": "レストランのアカウントを作成して、業務の管理を開始しましょう。",
+      "forgotPassword": "パスワードをリセットするためにメールアドレスを入力してください。"
+    },
+    "navigation": {
+      "login": "すでにアカウントをお持ちですか？ログイン",
+      "signup": "アカウントをお持ちでないですか？新規登録",
+      "forgotPassword": "パスワードをお忘れですか？こちらでリセット"
+    },
     "emailLabel": "メールアドレス",
     "emailPlaceholder": "メールアドレスを入力してください",
+    "emailHelp": "このメールアドレスに確認リンクを送信します。",
     "passwordLabel": "パスワード",
     "passwordPlaceholder": "パスワードを入力してください",
     "loginButton": "ログイン",
@@ -31,6 +42,14 @@
       "invalid_format": "サブドメインは3〜30文字の小文字の英数字またはハイフンでなければなりません。",
       "not_available": "このサブドメインは既に使用されています。",
       "check_failed": "サブドメインの利用可能性の確認に失敗しました。もう一度お試しください。"
+    },
+    "footer": {
+      "rights": "すべての権利を保有",
+      "description": "Coorder.aiは、メニュー、注文、予約、スタッフ、分析を管理するための最新のツールを提供する、モバイルファーストのAI強化型SaaSプラットフォームです。",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "contact": "お問い合わせ",
+      "help": "ヘルプセンター"
     },
     "confirmPasswordLabel": "パスワード（確認用）",
     "captchaRequired": "CAPTCHAを完了してください。",
