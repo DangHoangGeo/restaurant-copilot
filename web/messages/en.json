@@ -8,17 +8,68 @@
     "title": {
       "login": "Login",
       "signup": "Register Your Restaurant",
-      "forgotPassword": "Forgot Password"
+      "forgotPassword": "Forgot Password",
+      "updatePassword": "Update Password",
+      "resetPassword": "Reset Password",
+      "twoFactor": "Two-Factor Authentication",
+      "verifyEmail": "Verify Your Email"
     },
     "subtitle":{
       "login": "Welcome back! Please enter your credentials to access your restaurant dashboard.",
       "signup": "Create your restaurant's account to start managing your operations.",
-      "forgotPassword": "Enter your email to reset your password."
+      "forgotPassword": "Enter your email to reset your password.",
+      "updatePassword": "Update your password to keep your account secure."
     },
     "navigation": {
       "login": "Already have an account? Login",
       "signup": "Don't have an account? Sign Up",
       "forgotPassword": "Forgot your password? Reset it here"
+    },
+    "sending": "Sending...",
+    "success": {
+      "login": "Login successful! Redirecting to your dashboard...",
+      "signup": "Registration successful! Please check your email to verify your account.",
+      "passwordReset": "Password reset link sent! Please check your email to reset your password.",
+      "emailSent": "Check your email",
+      "emailSentDescription": "If an account with this email exists, a password reset link has been sent to your inbox."
+    },
+    "error": {
+      "login": "Login failed. Please check your email and password.",
+      "signup": "Registration failed. Please try again later.",
+      "forgotPassword": "Failed to send reset link. Please try again.",
+      "notAuthenticatedUpdate": "You must be logged in to update your password.",
+      "notAuthenticatedReset": "You must be logged in to reset your password.",
+      "anErrorOccurred": "An error occurred. Please try again."
+    },
+    "info": {
+      "signInToUpdatePassword": "Sign in to update your password.",
+      "emailVerification": "Please verify your email address to complete registration.",
+      "emailVerificationSent": "A verification link has been sent to your email. Please check your inbox.",
+      "emailAlreadyVerified": "Your email is already verified. You can now log in."
+    },
+    "password":{
+      "reset": "Reset your password",
+      "update": "Update password",
+      "updating": "Updating password...",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter your new password",
+      "confirmPassword": "Confirm New Password",
+      "confirmPasswordPlaceholder": "Re-enter your new password",
+      "passwordMatch": "Passwords match!",
+      "requirements": "Password Requirements",
+      "minLength": "At least 8 characters long",
+      "uppercase": "Contains uppercase letter",
+      "lowercase": "Contains lowercase letter",
+      "number": "Contains number",
+      "passwordMismatch": "Passwords do not match. Please try again.",
+      "passwordUpdated": "Your password has been updated successfully.",
+      "passwordStrength": "Password Strength: ",
+      "strength": {
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "veryStrong": "Very Strong"
+      }
     },
     "emailLabel": "Email",
     "emailPlaceholder": "Enter your email",
@@ -30,6 +81,7 @@
     "forgotPassword": "Forgot Password",
     "noAccount": "Don't have an account?",
     "signUp": "Sign Up",
+    "sendResetLink": "Send Reset Link",
     "loginFailed": "Login failed. Please check your credentials and try again.",
     "subdomainNotFound": "Subdomain not found.",
     "anErrorOccurred": "An error occurred. Please try again.",

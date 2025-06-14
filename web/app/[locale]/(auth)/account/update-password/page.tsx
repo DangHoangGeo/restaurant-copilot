@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -104,12 +103,12 @@ export default function UpdatePasswordPage() {
   };
 
   const passwordStrength = getPasswordStrength(newPassword);
-  const strengthLabels = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
+  const strengthLabels = ["veryWeak", "weak", "medium", "strong", "veryStrong"];
   const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-blue-500", "bg-green-500"];
 
   if (checkingAuth) {
     return (
-      <AuthLayout title={t("title.updatePassword") || "Update Password"}>
+      <div >
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center space-x-2">
             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -118,18 +117,12 @@ export default function UpdatePasswordPage() {
             </span>
           </div>
         </div>
-      </AuthLayout>
+      </div>
     );
   }
 
   return (
-    <AuthLayout
-      title={t("title.updatePassword") || "Update Password"}
-      subtitle={userAuthenticated 
-        ? (t("subtitle.updatePassword") || "Choose a strong new password") 
-        : (t("subtitle.loginRequired") || "Please sign in to update your password")
-      }
-    >
+    <div>
       {!userAuthenticated ? (
         <div className="text-center space-y-4">
           <div className="w-16 h-16 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
@@ -164,7 +157,7 @@ export default function UpdatePasswordPage() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="newPassword" className="text-slate-700 dark:text-slate-300">
-                {t("newPassword") || "New Password"}
+                {t("password.newPassword") || "New Password"}
               </Label>
               <div className="relative mt-1">
                 <Input
@@ -174,7 +167,7 @@ export default function UpdatePasswordPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={6}
-                  placeholder={t("newPasswordPlaceholder") || "Enter your new password"}
+                  placeholder={t("password.newPasswordPlaceholder") || "Enter your new password"}
                   className="pl-10 pr-10 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                 />
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -201,7 +194,7 @@ export default function UpdatePasswordPage() {
                     ))}
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Password strength: {strengthLabels[passwordStrength - 1] || "Very Weak"}
+                    {t("password.passwordStrength") || "Password Strength: "}{t(`password.strength.${strengthLabels[passwordStrength - 1]}`) || "Very Weak"}
                   </p>
                 </div>
               )}
@@ -209,7 +202,7 @@ export default function UpdatePasswordPage() {
             
             <div>
               <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">
-                {t("confirmPassword") || "Confirm Password"}
+                {t("password.confirmPassword") || "Confirm Password"}
               </Label>
               <div className="relative mt-1">
                 <Input
@@ -219,7 +212,7 @@ export default function UpdatePasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={6}
-                  placeholder={t("confirmPasswordPlaceholder") || "Confirm your new password"}
+                  placeholder={t("password.confirmPasswordPlaceholder") || "Confirm your new password"}
                   className="pl-10 pr-10 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                 />
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -238,12 +231,12 @@ export default function UpdatePasswordPage() {
                   {newPassword === confirmPassword ? (
                     <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
                       <CheckCircle className="w-3 h-3 mr-1" />
-                      Passwords match
+                      {t("password.passwordMatch") || "Passwords match!"}
                     </p>
                   ) : (
                     <p className="text-xs text-red-600 dark:text-red-400 flex items-center">
                       <AlertCircle className="w-3 h-3 mr-1" />
-                      Passwords do not match
+                      {t("password.passwordMismatch") || "Passwords do not match"}
                     </p>
                   )}
                 </div>
@@ -253,24 +246,24 @@ export default function UpdatePasswordPage() {
 
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
             <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Password Requirements:
+              {t("password.requirements") || "Password Requirements:"}
             </h4>
             <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
               <li className="flex items-center">
                 <div className={`w-2 h-2 rounded-full mr-2 ${newPassword.length >= 8 ? 'bg-green-500' : 'bg-slate-300'}`} />
-                At least 8 characters long
+                {t("password.minLength") || "At least 8 characters long"}
               </li>
               <li className="flex items-center">
                 <div className={`w-2 h-2 rounded-full mr-2 ${/[A-Z]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
-                Contains uppercase letter
+                {t("password.uppercase") || "Contains uppercase letter"}
               </li>
               <li className="flex items-center">
                 <div className={`w-2 h-2 rounded-full mr-2 ${/[a-z]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
-                Contains lowercase letter
+                {t("password.lowercase") || "Contains lowercase letter"}
               </li>
               <li className="flex items-center">
                 <div className={`w-2 h-2 rounded-full mr-2 ${/[0-9]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
-                Contains number
+                {t("password.number") || "Contains number"}
               </li>
             </ul>
           </div>
@@ -283,17 +276,17 @@ export default function UpdatePasswordPage() {
             {loading ? (
               <div className="flex items-center justify-center">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                {t("messages.loading") || "Updating..."}
+                {t("password.updating") || "Updating..."}
               </div>
             ) : (
               <>
                 <Shield className="w-4 h-4 mr-2" />
-                {t("updatePassword") || "Update Password"}
+                {t("password.update") || "Update Password"}
               </>
             )}
           </Button>
         </form>
       )}
-    </AuthLayout>
+    </div>
   );
 }

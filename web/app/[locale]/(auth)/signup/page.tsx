@@ -8,6 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import { AlertCircle, CheckCircle, Eye, EyeOff, Lock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type SignupFormInputs = z.infer<typeof signupSchema>;
 
@@ -15,6 +18,10 @@ export default function SignupPage() {
   const t = useTranslations('auth');
   const tCommon = useTranslations('Common');
   const router = useRouter();
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [subdomainAvailability, setSubdomainAvailability] = useState<"checking" | "available" | "not-available" | null>(null);
@@ -113,7 +120,7 @@ export default function SignupPage() {
       }
     } catch (error) {
       console.error("Captcha verification failed:", error);
-      setServerError(t("captchaVerificationFailed"));
+      setServerError(t("captchaInvalid"));
       return;
     }
 
@@ -145,6 +152,21 @@ export default function SignupPage() {
       setServerError(t("registrationFailed"));
     }
   };
+
+  const getPasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    return strength;
+  };
+
+  const passwordStrength = getPasswordStrength(newPassword);
+  const strengthLabels = ["veryWeak", "weak", "medium", "strong", "veryStrong"];
+  const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-blue-500", "bg-green-500"];
+
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -199,30 +221,121 @@ export default function SignupPage() {
             {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-foreground">
-              {t('passwordLabel')}
-            </label>
-            <input
-              id="password"
-              type="password"
-              {...register("password")}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
+                {t("password.newPassword") || "Password"}
+              </Label>
+              <div className="relative mt-1">
+                <Input
+                  type={showNewPassword ? "text" : "password"}
+                  id="password"
+                  {...register("password", {
+                    onChange: (e) => setNewPassword(e.target.value)
+                  })}
+                  required
+                  minLength={6}
+                  placeholder={t("password.newPasswordPlaceholder") || "Enter your new password"}
+                  className="pl-10 pr-10 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+                />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                >
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+              
+              {/* Password Strength Indicator */}
+              {newPassword && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex space-x-1">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <div
+                        key={level}
+                        className={`h-1 flex-1 rounded-full ${
+                          level <= passwordStrength ? strengthColors[passwordStrength - 1] : "bg-slate-200 dark:bg-slate-600"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {t("password.passwordStrength") || "Password Strength: "}{t(`password.strength.${strengthLabels[passwordStrength - 1]}`) || "Very Weak"}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">
+                {t("password.confirmPassword") || "Confirm Password"}
+              </Label>
+              <div className="relative mt-1">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  {...register("confirmPassword", {
+                    onChange: (e) => setConfirmPassword(e.target.value)
+                  })}
+                  required
+                  minLength={6}
+                  placeholder={t("password.confirmPasswordPlaceholder") || "Confirm your new password"}
+                  className="pl-10 pr-10 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+                />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>}
+              {/* Password Match Indicator */}
+              {confirmPassword && (
+                <div className="mt-1">
+                  {newPassword === confirmPassword ? (
+                    <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      {t("password.passwordMatch") || "Passwords match!"}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-red-600 dark:text-red-400 flex items-center">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      {t("password.passwordMismatch") || "Passwords do not match"}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
-              {t('confirmPasswordLabel')}
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              {...register("confirmPassword")}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>}
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              {t("password.requirements") || "Password Requirements:"}
+            </h4>
+            <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <li className="flex items-center">
+                <div className={`w-2 h-2 rounded-full mr-2 ${newPassword.length >= 8 ? 'bg-green-500' : 'bg-slate-300'}`} />
+                {t("password.minLength") || "At least 8 characters long"}
+              </li>
+              <li className="flex items-center">
+                <div className={`w-2 h-2 rounded-full mr-2 ${/[A-Z]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
+                {t("password.uppercase") || "Contains uppercase letter"}
+              </li>
+              <li className="flex items-center">
+                <div className={`w-2 h-2 rounded-full mr-2 ${/[a-z]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
+                {t("password.lowercase") || "Contains lowercase letter"}
+              </li>
+              <li className="flex items-center">
+                <div className={`w-2 h-2 rounded-full mr-2 ${/[0-9]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
+                {t("password.number") || "Contains number"}
+              </li>
+            </ul>
           </div>
 
           <div>
