@@ -170,12 +170,12 @@ export default function ForgotPasswordPage() {
       {/* Additional Links */}
       <div className="mt-6 text-center space-y-3">
         <div className="flex justify-center space-x-4">
-          <Link href={`/${locale}/auth/login`}>
+          <Link href={`/${locale}/login`}>
             <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
               {t('loginButton') || 'Sign In'}
             </Button>
           </Link>
-          <Link href={`/${locale}/auth/signup`}>
+          <Link href={`/${locale}/signup`}>
             <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
               {t('signUp') || 'Sign Up'}
             </Button>
