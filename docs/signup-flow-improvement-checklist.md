@@ -64,21 +64,22 @@
 ## Phase 3: Enhance Signup Schema & Validation
 
 ### 3.1 Update Signup Schema
-- [ ] Add `policyAgreement: boolean` field to `/web/shared/schemas/signup.ts`
-- [ ] Add proper validation rules for policy agreement
-- [ ] Update TypeScript types
-- [ ] Test schema validation
+- [x] Add `policyAgreement: boolean` field to `/web/shared/schemas/signup.ts`
+- [x] Add proper validation rules for policy agreement
+- [x] Update TypeScript types
+- [x] Test schema validation
 
 ### 3.2 Translation Updates
-- [ ] Add policy agreement text to `/web/messages/en.json`
-- [ ] Add policy agreement text to `/web/messages/ja.json`
-- [ ] Add terms/privacy page content translations
-- [ ] Add error messages for policy validation
+- [x] Add policy agreement text to `/web/messages/en.json`
+- [x] Add policy agreement text to `/web/messages/ja.json`
+- [x] Add terms/privacy page content translations
+- [x] Add error messages for policy validation
 
 ### 3.3 Enhanced Form Validation
-- [ ] Improve error state handling
-- [ ] Add success state feedback
-- [ ] Better loading states throughout form
+- [x] Improve error state handling
+- [x] Add success state feedback
+- [x] Better loading states throughout form
+- [x] Client-side validation improvements
 - [ ] Client-side validation improvements
 
 ---

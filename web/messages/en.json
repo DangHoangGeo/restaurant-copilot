@@ -133,7 +133,13 @@
       "policyAgreementRequired": "You must agree to the Terms of Service and Privacy Policy",
       "formInvalid": "Please fix the errors below and try again",
       "success": "Registration successful! Please check your email to verify your account.",
-      "serverError": "Registration failed. Please try again later."
+      "serverError": "Registration failed. Please try again later.",
+      "networkError": "Network error. Please check your connection and try again.",
+      "emailAlreadyExists": "An account with this email already exists",
+      "subdomainNotAvailable": "This subdomain is not available",
+      "verificationSent": "Verification email sent! Please check your inbox.",
+      "validating": "Validating...",
+      "processing": "Processing..."
     }
   },
   "LandingPage": {
