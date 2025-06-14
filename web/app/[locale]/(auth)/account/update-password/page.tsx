@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -109,7 +108,7 @@ export default function UpdatePasswordPage() {
 
   if (checkingAuth) {
     return (
-      <AuthLayout title={t("title.updatePassword") || "Update Password"}>
+      <div >
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center space-x-2">
             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -118,7 +117,7 @@ export default function UpdatePasswordPage() {
             </span>
           </div>
         </div>
-      </AuthLayout>
+      </div>
     );
   }
 
