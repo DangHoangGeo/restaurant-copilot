@@ -81,9 +81,11 @@ export default function UpdatePasswordPage() {
         setNewPassword("");
         setConfirmPassword("");
         // Optionally redirect after success
+        // TODO: check if authenticated user is still valid, then redirect to account page
+        // if not, redirect to login
         setTimeout(() => {
-          router.push("/dashboard");
-        }, 2000);
+          router.push("/login");
+        }, 1000);
       }
     } catch {
       setError(t("error.anErrorOccurred"));
