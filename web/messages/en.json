@@ -20,6 +20,19 @@
       "signup": "Don't have an account? Sign Up",
       "forgotPassword": "Forgot your password? Reset it here"
     },
+    "sending": "Sending...",
+    "success": {
+      "login": "Login successful! Redirecting to your dashboard...",
+      "signup": "Registration successful! Please check your email to verify your account.",
+      "passwordReset": "Password reset link sent! Please check your email to reset your password.",
+      "emailSent": "If an account with this email exists, a password reset link has been sent to your inbox.",
+      "emailSentDescription": "If an account with this email exists, a password reset link has been sent to your inbox."
+    },
+    "error": {
+      "login": "Login failed. Please check your email and password.",
+      "signup": "Registration failed. Please try again later.",
+      "forgotPassword": "Failed to send reset link. Please try again."
+    },
     "emailLabel": "Email",
     "emailPlaceholder": "Enter your email",
     "emailHelp": "We'll send you a verification link to this email.",

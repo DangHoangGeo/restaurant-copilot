@@ -20,6 +20,19 @@
       "signup": "Bạn chưa có tài khoản? Đăng ký",
       "forgotPassword": "Quên mật khẩu? Đặt lại ở đây"
     },
+    "sending": "Đang gửi...",
+    "success": {
+      "login": "Đăng nhập thành công! Đang chuyển hướng đến bảng điều khiển của bạn...",
+      "signup": "Đăng ký thành công! Vui lòng kiểm tra email của bạn để xác minh tài khoản.",
+      "passwordReset": "Liên kết đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra email của bạn để đặt lại mật khẩu.",
+      "emailSent": "Nếu tài khoản với email này tồn tại, liên kết đặt lại mật khẩu đã được gửi đến hộp thư đến của bạn.",
+      "emailSentDescription": "Nếu tài khoản với email này tồn tại, một liên kết đặt lại mật khẩu đã được gửi đến hộp thư đến của bạn."
+    },
+    "error": {
+      "login": "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu của bạn.",
+      "signup": "Đăng ký thất bại. Vui lòng thử lại sau.",
+      "forgotPassword": "Gửi liên kết đặt lại thất bại. Vui lòng thử lại."
+    },
     "emailLabel": "Email",
     "emailPlaceholder": "Nhập email của bạn",
     "emailHelp": "Chúng tôi sẽ gửi cho bạn một liên kết xác minh đến email này.",
