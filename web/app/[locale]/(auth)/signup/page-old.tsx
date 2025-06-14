@@ -198,38 +198,28 @@ export default function SignupPage() {
         />
 
         {/* Password */}
-        <div className="space-y-2">
-          <PasswordInput
-            label={t("password.newPassword") || "Password"}
-            {...register("password")}
-            value={passwordValue}
-            showStrengthIndicator={true}
-            showRequirements={true}
-            confirmPassword={confirmPasswordValue}
-            placeholder={t("password.newPasswordPlaceholder") || "Enter your password"}
-            onPasswordChange={(password) => setValue("password", password)}
-          />
-          {errors.password && (
-            <p className="text-sm text-red-600">{errors.password.message}</p>
-          )}
-        </div>
+        <PasswordInput
+          label={t("password.newPassword") || "Password"}
+          {...register("password")}
+          value={passwordValue}
+          error={errors.password?.message}
+          showStrengthIndicator={true}
+          showRequirements={true}
+          confirmPassword={confirmPasswordValue}
+          placeholder={t("password.newPasswordPlaceholder") || "Enter your password"}
+        />
 
         {/* Confirm Password */}
-        <div className="space-y-2">
-          <PasswordInput
-            label={t("password.confirmPassword") || "Confirm Password"}
-            {...register("confirmPassword")}
-            value={confirmPasswordValue}
-            showStrengthIndicator={false}
-            showRequirements={false}
-            confirmPassword={passwordValue}
-            placeholder={t("password.confirmPasswordPlaceholder") || "Confirm your password"}
-            onPasswordChange={(password) => setValue("confirmPassword", password)}
-          />
-          {errors.confirmPassword && (
-            <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
-          )}
-        </div>
+        <PasswordInput
+          label={t("password.confirmPassword") || "Confirm Password"}
+          {...register("confirmPassword")}
+          value={confirmPasswordValue}
+          error={errors.confirmPassword?.message}
+          showStrengthIndicator={false}
+          showRequirements={false}
+          confirmPassword={passwordValue}
+          placeholder={t("password.confirmPasswordPlaceholder") || "Confirm your password"}
+        />
 
         {/* Default Language */}
         <div className="space-y-2">
