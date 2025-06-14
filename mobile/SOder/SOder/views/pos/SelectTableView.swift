@@ -27,6 +27,7 @@ extension TableStatus {
 }
 
 
+
 struct SelectTableView: View {
     // Using EnvironmentObject assuming these are set up higher in the hierarchy in a real app
     // For isolated preview/testing, @StateObject might be used initially.
@@ -34,6 +35,7 @@ struct SelectTableView: View {
     @EnvironmentObject var supabaseManager: SupabaseManager // For fetching tables
 
     @State private var tables: [Table] = [] // This will now be [Models.Table]
+
     @State private var isLoading = false
     @State private var showingErrorAlert = false
     @State private var errorMessage: String? = nil

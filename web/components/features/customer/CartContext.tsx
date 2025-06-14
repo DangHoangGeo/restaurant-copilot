@@ -7,8 +7,8 @@ export interface CartItem {
   uniqueId: string;
   itemId: string;
   name_en: string;
-  name_ja: string;
-  name_vi: string;
+  name_ja?: string;
+  name_vi?: string;
   price: number;
   qty: number;
   imageUrl?: string;

@@ -46,6 +46,7 @@ export function AdminHeader({
   const { theme, setTheme } = useTheme();
   const t = useTranslations('AdminLayout');
   const tNav = useTranslations('AdminNav');
+  const tCommon = useTranslations('Common');
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
@@ -112,11 +113,11 @@ export function AdminHeader({
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            aria-label={t('theme.toggle_aria_label')}
+            aria-label={tCommon('theme.toggle_aria_label')}
           >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">{t('theme.toggle_label')}</span>
+            <span className="sr-only">{tCommon('theme.toggle_label')}</span>
           </Button>
 
           <DropdownMenu>

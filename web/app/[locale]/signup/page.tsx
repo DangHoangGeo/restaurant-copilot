@@ -13,6 +13,7 @@ type SignupFormInputs = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const t = useTranslations('auth');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export default function SignupPage() {
 
       setSubdomainAvailability("checking");
       try {
-        const response = await fetch(`/api/v1/subdomain/check?subdomain=${subdomain}`);
+        const response = await fetch(`/api/v1/restaurant/check-subdomain?subdomain=${subdomain}`);
         const data = await response.json();
         if (data.available) {
           setSubdomainAvailability("available");
@@ -146,12 +147,12 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">{t('title.signup')}</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-foreground">
               {t('nameLabel')}
             </label>
             <input
@@ -164,7 +165,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="subdomain" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="subdomain" className="block text-sm font-medium text-foreground">
               {t('subdomainLabel')}
             </label>
             <input
@@ -186,7 +187,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-foreground">
               {t('emailLabel')}
             </label>
             <input
@@ -199,7 +200,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground">
               {t('passwordLabel')}
             </label>
             <input
@@ -212,7 +213,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
               {t('confirmPasswordLabel')}
             </label>
             <input
@@ -225,17 +226,17 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="defaultLanguage" className="block text-sm font-medium text-gray-700">
-              {t('defaultLanguageLabel')}
+            <label htmlFor="defaultLanguage" className="block text-sm font-medium text-foreground">
+              {tCommon('defaultLanguageLabel')}
             </label>
             <select
               id="defaultLanguage"
               {...register("defaultLanguage")}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              <option value="en">{t('languageOption.en')}</option>
-              <option value="ja">{t('languageOption.ja')}</option>
-              <option value="vi">{t('languageOption.vi')}</option>
+              <option value="en">{tCommon('languageOption.en')}</option>
+              <option value="ja">{tCommon('languageOption.ja')}</option>
+              <option value="vi">{tCommon('languageOption.vi')}</option>
             </select>
             {errors.defaultLanguage && <p className="mt-1 text-sm text-red-600">{errors.defaultLanguage.message}</p>}
           </div>

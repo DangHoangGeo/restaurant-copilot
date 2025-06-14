@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
     // Supabase client's signInWithPassword handles session cookies.
 
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
-    const productionUrl = process.env.NEXT_PRIVATE_PRODUCTION_URL || "baoan.jp";
+    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
     let redirectUrl = `https://${restaurantSubdomain}.${productionUrl}/${defaultLanguage}/dashboard`;
     if (isDevelopment) {
       redirectUrl = `http://${restaurantSubdomain}.localhost:3000/${defaultLanguage}/dashboard`;

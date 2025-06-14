@@ -1,30 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { z } from "zod";
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; // Ensure this path is correct
 
 const settingsSchema = z.object({
   name: z.string().min(1).max(100).optional(),
+  subdomain: z.string().min(3).max(50).regex(/^[a-z0-9-]+$/).optional(),
   default_language: z.enum(["ja", "en", "vi"]).optional(),
   brand_color: z.string().regex(/^#([0-9A-Fa-f]{6})$/).nullable().optional(),
   contact_info: z.string().max(500).nullable().optional(),
   address: z.string().max(500).nullable().optional(),
   phone: z.string().max(50).nullable().optional(),
-  email: z.string().email().max(100).nullable().optional(),
-  website: z.string().url().max(200).nullable().optional(),
-  description: z.string().max(1000).nullable().optional(),
-  opening_hours: z.string().max(500).nullable().optional(), // Consider a more structured type
-  social_links: z.string().max(1000).nullable().optional(), // Consider JSON or structured type
-  timezone: z.string().max(100).nullable().optional(), // Default removed here, handle in logic or DB
-  currency: z.string().max(10).nullable().optional(), // Default removed here
-  payment_methods: z.array(z.string()).nullable().optional(),
-  delivery_options: z.array(z.string()).nullable().optional(),
-  logo_url: z.string().url().nullable().optional(), // Removed double nullable()
+  email: z.string().max(100).nullable().optional()
+    .refine((val) => !val || val === "" || z.string().email().safeParse(val).success, "Invalid email format"),
+  website: z.string().max(200).nullable().optional()
+    .refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Invalid website URL"),
+  description_en: z.string().max(1000).nullable().optional(),
+  description_ja: z.string().max(1000).nullable().optional(),
+  description_vi: z.string().max(1000).nullable().optional(),
+  opening_hours: z.record(z.string(), z.object({
+    isOpen: z.boolean(),
+    openTime: z.string().optional(),
+    closeTime: z.string().optional(),
+    isClosed: z.boolean().optional()
+  })).optional(),
+  social_links: z.object({
+    facebook: z.string().nullable().optional()
+      .refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Invalid Facebook URL"),
+    instagram: z.string().nullable().optional()
+      .refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Invalid Instagram URL"),
+    twitter: z.string().nullable().optional()
+      .refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Invalid Twitter URL"),
+    website: z.string().nullable().optional()
+      .refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Invalid website URL"),
+  }).nullable().optional(),
+  timezone: z.string().max(100).nullable().optional(),
+  currency: z.enum(["JPY", "USD", "VND"]).nullable().optional(),
+  payment_methods: z.array(z.enum(["cash", "credit_card", "mobile_payment", "paypay"])).nullable().optional(),
+  delivery_options: z.array(z.enum(["pickup", "delivery", "dine_in"])).nullable().optional(),
+  logo_url: z.string().url().nullable().optional(),
 });
 
 export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
@@ -38,18 +55,28 @@ export async function GET() {
   // }
 
   try {
-    const { data: restaurant, error: restaurantError } = await supabase
+    const { data: restaurant, error: restaurantError } = await supabaseAdmin
       .from("restaurants")
       .select(`
         name,
-        logo_url,
         subdomain,
+        logo_url,
         brand_color,
         default_language,
         contact_info,
-        description,
+        address,
+        phone,
+        email,
+        website,
+        description_en,
+        description_ja,
+        description_vi,
         opening_hours,
-        phone
+        social_links,
+        timezone,
+        currency,
+        payment_methods,
+        delivery_options
       `)
       .eq("id", user.restaurantId) // Use authenticated user's restaurant ID
       .single();
@@ -65,16 +92,52 @@ export async function GET() {
         return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
     }
 
+    // Parse JSON strings back to objects for consistent API response
+    let parsedOpeningHours = null;
+    let parsedSocialLinks = null;
+
+    try {
+      if (restaurant.opening_hours && typeof restaurant.opening_hours === 'string') {
+        parsedOpeningHours = JSON.parse(restaurant.opening_hours);
+      } else {
+        parsedOpeningHours = restaurant.opening_hours;
+      }
+    } catch (error) {
+      console.warn('Failed to parse opening_hours JSON:', error);
+      parsedOpeningHours = restaurant.opening_hours;
+    }
+
+    try {
+      if (restaurant.social_links && typeof restaurant.social_links === 'string') {
+        parsedSocialLinks = JSON.parse(restaurant.social_links);
+      } else {
+        parsedSocialLinks = restaurant.social_links;
+      }
+    } catch (error) {
+      console.warn('Failed to parse social_links JSON:', error);
+      parsedSocialLinks = restaurant.social_links;
+    }
+
     return NextResponse.json({
       name: restaurant.name,
-      logoUrl: restaurant.logo_url,
       subdomain: restaurant.subdomain,
+      logoUrl: restaurant.logo_url,
       primaryColor: restaurant.brand_color || "#3B82F6",
       defaultLocale: restaurant.default_language || "en",
       contactInfo: restaurant.contact_info,
-      description: restaurant.description,
-      opening_hours: restaurant.opening_hours, // Ensure this matches the selected column name
+      address: restaurant.address,
       phone: restaurant.phone,
+      email: restaurant.email,
+      website: restaurant.website,
+      description_en: restaurant.description_en,
+      description_ja: restaurant.description_ja,
+      description_vi: restaurant.description_vi,
+      opening_hours: parsedOpeningHours,
+      social_links: parsedSocialLinks,
+      timezone: restaurant.timezone,
+      currency: restaurant.currency,
+      payment_methods: restaurant.payment_methods,
+      delivery_options: restaurant.delivery_options,
     });
   } catch (error) {
     console.error("Unexpected error in restaurant settings API:", error);
@@ -87,10 +150,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
-  console.log("User from request:", user);
-  console.log("User restaurantId:", user?.restaurantId);
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: "Unauthorized: Missing user or restaurant ID" }, { status: 401 });
   }
@@ -125,9 +185,22 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: "No settings provided to update" }, { status: 400 });
     }
 
-    const { data: updatedRestaurant, error: updateError } = await supabase
+    // Transform data for database storage (convert objects to JSON strings where needed)
+    const dataForDB: Record<string, unknown> = { ...validation.data };
+    
+    // Convert opening_hours object to JSON string for database storage
+    if (validation.data.opening_hours) {
+      dataForDB.opening_hours = JSON.stringify(validation.data.opening_hours);
+    }
+    
+    // Convert social_links object to JSON string for database storage  
+    if (validation.data.social_links) {
+      dataForDB.social_links = JSON.stringify(validation.data.social_links);
+    }
+
+    const { data: updatedRestaurant, error: updateError } = await supabaseAdmin
       .from("restaurants")
-      .update(validation.data)
+      .update(dataForDB)
       .eq("id", user.restaurantId) // CRITICAL: Update based on authenticated user's restaurant ID
       .select()
       .single();

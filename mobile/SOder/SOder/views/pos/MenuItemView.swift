@@ -1,7 +1,5 @@
 import SwiftUI
 
-// Local MenuItem stub removed, will use canonical MenuItem from Models.swift
-
 struct MenuItemView: View {
     let category: Category // Canonical Category model
     let orderId: String
@@ -20,7 +18,6 @@ struct MenuItemView: View {
 
     @State private var errorMessage: String? = nil
     @State private var showingErrorAlert: Bool = false
-
     var body: some View {
         Group {
             if isLoading {

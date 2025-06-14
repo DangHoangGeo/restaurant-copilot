@@ -178,6 +178,7 @@ class OrderManager: ObservableObject {
 
     @MainActor
     public func addItemToDraftOrder(orderId: String, menuItemId: String, quantity: Int, notes: String?, selectedSizeId: MenuItemSizeId?, selectedToppingIds: [ToppingId]?, priceAtOrder: Double) async throws -> OrderItem {
+
         guard let restaurantId = supabaseManager.currentRestaurantId else {
             throw OrderManagerError.missingRestaurantId
         }
@@ -392,7 +393,6 @@ class OrderManager: ObservableObject {
             print("Returning cached currentDraftOrder for id: \(orderId)")
             return currentDraft
         }
-
         // If orderId is "previewOrder123" or similar, it implies a preview context.
         // For robust previews that don't rely on DB state, construct a full mock Order here.
         if orderId.starts(with: "previewOrder") || orderId == "mockDraftOrder123" { // Adjusted for DraftOrderView preview
@@ -421,7 +421,6 @@ class OrderManager: ObservableObject {
             self.currentDraftOrder = mockOrderInstance
             return mockOrderInstance
         }
-
         print("Fetching draft order \(orderId) from database.")
         do {
             let orderResponse: Order? = try await supabaseManager.client

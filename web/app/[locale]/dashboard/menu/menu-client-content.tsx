@@ -27,6 +27,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { MenuItemForm } from '@/components/features/admin/menu/MenuItemForm';
 import Image from 'next/image';
+import { Category } from '@/shared/types/menu';
 // import { Switch } from "@/components/ui/switch"; // For availability toggle if preferred
 
 /*
@@ -37,53 +38,8 @@ interface LocalizedText {
   name_vi?: string;
 }*/
 
-interface MenuItem {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  description_en: string;
-  description_ja: string;
-  description_vi: string;
-  price: number;
-  image_url?: string;
-  available: boolean;
-  weekday_visibility: number[];
-  stock_level?: number;
-  position: number;
-  averageRating?: number;
-  reviewCount?: number;
-  category_id?: string;
-  toppings?: Array<{
-    id?: string;
-    name_en: string;
-    name_ja?: string;
-    name_vi?: string;
-    price: number;
-    position: number;
-  }>;
-  menu_item_sizes?: Array<{
-    id?: string;
-    size_key: string;
-    name_en: string;
-    name_ja?: string;
-    name_vi?: string;
-    price: number;
-    position: number;
-  }>;
-}
-
-interface Category {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  position: number;
-  menu_items: MenuItem[];
-}
-
 interface MenuClientContentProps {
-  initialData: Category[] | null;
+  initialData: Category[];
   error: string | null;
 }
 
@@ -133,7 +89,9 @@ const getMenuItemSchema = (t: ReturnType<typeof useTranslations<'AdminMenu.valid
   position: z.number({ required_error: t('position_required') }),
   tags: z.array(z.string()).optional(), // Tags are optional, not part of DB schema directly
   // For image file handling, not part of DB schema directly for menu_item
-  imageFile: z.instanceof(File).refine(file => file.size <= 5 * 1024 * 1024, t('logoFile.maxSize', { maxSize: 5 })).optional().nullable(),
+  imageFile: z.instanceof(File)
+    .refine(file => file.size <= 0.5 * 1024 * 1024, t('imageFile.maxSize', { maxSize: 0.5 }))
+    .optional().nullable(),
   // Add toppings and sizes to the schema
   toppings: z.array(toppingSchema).optional(),
   sizes: z.array(menuItemSizeSchema).optional(),
@@ -141,6 +99,211 @@ const getMenuItemSchema = (t: ReturnType<typeof useTranslations<'AdminMenu.valid
 
 type CategoryFormData = z.infer<ReturnType<typeof getCategorySchema>>;
 type MenuItemFormData = z.infer<ReturnType<typeof getMenuItemSchema>>;
+
+// CategoryModal component
+interface CategoryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  categoryForm: ReturnType<typeof useForm<CategoryFormData>>;
+  onSubmit: (data: CategoryFormData) => Promise<void>;
+  isLoading: boolean;
+  t: (key: string) => string;
+  onTranslate?: (text: string, field: string, context: 'item' | 'topping' | 'category') => Promise<{ en: string; ja: string; vi: string }>;
+  ownerLanguage?: 'en' | 'ja' | 'vi';
+}
+
+function CategoryModal({ isOpen, onClose, categoryForm, onSubmit, isLoading, t, onTranslate, ownerLanguage = 'en' }: CategoryModalProps) {
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Helper function to handle translation
+  const translateText = async (text: string, field: string) => {
+    if (!onTranslate || !text.trim()) return;
+    
+    setIsTranslating(true);
+    try {
+      const translations = await onTranslate(text, field, 'category');
+      
+      // Auto-fill all language fields with translations
+      categoryForm.setValue('name_en', translations.en);
+      categoryForm.setValue('name_ja', translations.ja);
+      categoryForm.setValue('name_vi', translations.vi);
+    } catch (error) {
+      console.error('Translation failed:', error);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(isOpen) => { 
+      if (!isOpen) {
+        categoryForm.reset(); 
+        onClose();
+      }
+    }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{categoryForm.getValues("id") ? t('edit_category') : t('add_category')}</DialogTitle>
+        </DialogHeader>
+        <Form {...categoryForm}>
+          <form onSubmit={categoryForm.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Primary language field based on owner's language */}
+            {ownerLanguage === 'en' && (
+              <FormField
+                control={categoryForm.control}
+                name="name_en"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('category.name_en')}*
+                      {onTranslate && field.value && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2 h-6 px-2 text-xs"
+                          onClick={() => translateText(field.value || '', 'name')}
+                          disabled={isTranslating || !field.value}
+                        >
+                          {isTranslating ? '...' : '🌐'}
+                        </Button>
+                      )}
+                    </FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            
+            {ownerLanguage === 'ja' && (
+              <FormField
+                control={categoryForm.control}
+                name="name_ja"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('category.name_ja')}*
+                      {onTranslate && field.value && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2 h-6 px-2 text-xs"
+                          onClick={() => translateText(field.value || '', 'name')}
+                          disabled={isTranslating || !field.value}
+                        >
+                          {isTranslating ? '...' : '🌐'}
+                        </Button>
+                      )}
+                    </FormLabel>
+                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            
+            {ownerLanguage === 'vi' && (
+              <FormField
+                control={categoryForm.control}
+                name="name_vi"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('category.name_vi')}*
+                      {onTranslate && field.value && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2 h-6 px-2 text-xs"
+                          onClick={() => translateText(field.value || '', 'name')}
+                          disabled={isTranslating || !field.value}
+                        >
+                          {isTranslating ? '...' : '🌐'}
+                        </Button>
+                      )}
+                    </FormLabel>
+                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Auto-generated translation fields (non-primary languages) */}
+            {onTranslate && (
+              <div className="space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {t('category.auto_translations_label')}
+                </p>
+                
+                {ownerLanguage !== 'en' && (
+                  <FormField
+                    control={categoryForm.control}
+                    name="name_en"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-gray-500">{t('category.name_en')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="h-8 text-sm" placeholder={t('category.auto_translate_name_en_placeholder')} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
+                {ownerLanguage !== 'ja' && (
+                  <FormField
+                    control={categoryForm.control}
+                    name="name_ja"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-gray-500">{t('category.name_ja')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value ?? ''} className="h-8 text-sm" placeholder={t('category.auto_translate_name_ja_placeholder')} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
+                {ownerLanguage !== 'vi' && (
+                  <FormField
+                    control={categoryForm.control}
+                    name="name_vi"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-gray-500">{t('category.name_vi')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value ?? ''} className="h-8 text-sm" placeholder={t('category.auto_translate_name_vi_placeholder')} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            )}
+            
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t('form_hint')}</p>
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="secondary" onClick={() => { 
+                categoryForm.reset(); 
+                onClose(); 
+              }}>
+                {t('cancel')}
+              </Button>
+              <Button type="submit" variant="default" disabled={isLoading}>
+                {isLoading ? t('buttons.saving') : t('save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 
 export function MenuClientContent({ initialData, error }: MenuClientContentProps) {
@@ -170,7 +333,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   const ownerLanguage = (locale === 'ja' ? 'ja' : locale === 'vi' ? 'vi' : 'en') as 'en' | 'ja' | 'vi';
 
   // Translation function
-  const handleTranslate = async (text: string, field: string, context: 'item' | 'topping') => {
+  const handleTranslate = async (text: string, field: string, context: 'item' | 'topping' | 'category') => {
     try {
       const response = await fetch('/api/v1/ai/translate', {
         method: 'POST',
@@ -511,34 +674,53 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
   if (error) {
     return (
-      <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md">
-        {error}
-      </div>
+      <>
+        <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md">
+          {error}
+        </div>
+      </>
     );
   }
+  
   // TODO: Add a proper loading state UI, perhaps a spinner overlay or skeleton loaders.
   if (isLoading && menuData.length === 0) {
       return (
-        <div className="flex items-center justify-center h-64">
-          {/* TODO: Replace with a proper spinner component from shadcn/ui if available, or a custom one */}
-          <MenuIcon className="h-12 w-12 text-slate-400 animate-spin" />
-        </div>
+        <>
+          <div className="flex items-center justify-center h-64">
+            {/* TODO: Replace with a proper spinner component from shadcn/ui if available, or a custom one */}
+            <MenuIcon className="h-12 w-12 text-slate-400 animate-spin" />
+          </div>
+        </>
       );
   }
 
   if (!error && menuData.length === 0) {
     return (
-      <div className="text-center py-12">
-        <MenuIcon className="mx-auto h-12 w-12 text-slate-400" />
-        <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('empty_state.no_categories_title')}</h3>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('empty_state.no_categories_description')}</p>
-        <div className="mt-6">
-          <Button onClick={() => handleOpenCategoryModal(null)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {t('add_category')}
-          </Button>
+      <>
+        <div className="text-center py-12">
+          <MenuIcon className="mx-auto h-12 w-12 text-slate-400" />
+          <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('empty_state.no_categories_title')}</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('empty_state.no_categories_description')}</p>
+          <div className="mt-6">
+            <Button onClick={() => handleOpenCategoryModal()}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('add_category')}
+            </Button>
+          </div>
         </div>
-      </div>
+        
+        {/* Category Modal - Always render for empty state */}
+        <CategoryModal
+          isOpen={isCategoryModalOpen}
+          onClose={() => setIsCategoryModalOpen(false)}
+          categoryForm={categoryForm}
+          onSubmit={onCategorySubmit}
+          isLoading={isLoading}
+          t={t}
+          onTranslate={handleTranslate}
+          ownerLanguage={ownerLanguage}
+        />
+      </>
     );
   }
 
@@ -690,58 +872,16 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       </div>
 
       {/* Category Modal */}
-      {/* Category Modal */}
-      <Dialog open={isCategoryModalOpen} onOpenChange={(isOpen) => { if (!isOpen) categoryForm.reset(); setIsCategoryModalOpen(isOpen); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{categoryForm.getValues("id") ? t('edit_category') : t('add_category')}</DialogTitle>
-          </DialogHeader>
-          <Form {...categoryForm}>
-            <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
-              <FormField
-                control={categoryForm.control}
-                name="name_en"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('category.name_en')}*</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={categoryForm.control}
-                name="name_ja"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('category.name_ja')}</FormLabel>
-                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={categoryForm.control}
-                name="name_vi"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('category.name_vi')}</FormLabel>
-                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Position field can be hidden or read-only as D&D handles it */}
-              {/* <FormField control={categoryForm.control} name="position" render={({ field }) => ( <FormItem> <FormLabel>{t('category.order')}</FormLabel> <FormControl><Input type="number" {...field} /></FormControl> <FormMessage /> </FormItem> )}/> */}
-              <p className="text-xs text-slate-500 dark:text-slate-400">{t('form_hint')}</p>
-              <DialogFooter className="mt-6">
-                <Button type="button" variant="secondary" onClick={() => { categoryForm.reset(); setIsCategoryModalOpen(false); }}>{t('cancel')}</Button>
-                <Button type="submit" variant="default" disabled={isLoading}>{isLoading ? t('buttons.saving') : t('save')}</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        categoryForm={categoryForm}
+        onSubmit={onCategorySubmit}
+        isLoading={isLoading}
+        t={t}
+        onTranslate={handleTranslate}
+        ownerLanguage={ownerLanguage}
+      />
 
       {/* Item Modal */}
       <Dialog open={isItemModalOpen} onOpenChange={(isOpen) => { 
@@ -750,7 +890,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         } 
         setIsItemModalOpen(isOpen); 
       }}>
-        <DialogContent className="max-w-screen sm:max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-full sm:max-w-5xl max-h-[90vh] overflow-y-auto">
           <MenuItemForm
             initialData={ {
               id: itemForm.getValues().id || '',
@@ -766,7 +906,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
               image_url: itemForm.getValues().image_url || '',
               available: itemForm.getValues().available ?? true,
               category_id: itemForm.getValues().category_id || '',
-              weekdayVisibility: itemForm.getValues().weekday_visibility || [],
+              weekday_visibility: itemForm.getValues().weekday_visibility || [],
               stock_level: itemForm.getValues().stock_level ?? 20,
               toppings: itemForm.getValues().toppings || [],
               menu_item_sizes: itemForm.getValues().sizes || [],
@@ -778,6 +918,11 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
                 name_ja: cat.name_ja, 
                 name_vi: cat.name_vi 
               }, locale),
+              name_en: cat.name_en,
+              name_ja: cat.name_ja,
+              name_vi: cat.name_vi,
+              position: cat.position,
+              restaurant_id: cat.restaurant_id,
             }))}
             ownerLanguage={ownerLanguage}
             onTranslate={handleTranslate}

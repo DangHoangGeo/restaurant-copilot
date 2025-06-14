@@ -7,27 +7,12 @@ import { AlertTriangle } from "lucide-react";
 import { headers } from 'next/headers';
 import { getSubdomainFromHost } from "@/lib/utils";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
+import { Restaurant } from "@/shared/types";
 
 // TODO: The restaurant logo can be stored in Supabase Storage for now.
 // Consider using api/v1/restaurant/settings/route.ts for API interactions
 // also other fileds like social links, timezone, etc. can be added later.
 
-export type Restaurant = {
-  id: string;
-  name: string | null;
-  default_language: "en" | "ja" | "vi" | null;
-  brand_color: string | null;
-  contact_info: string | null;
-  address: string | null;
-  opening_hours: string | null;
-  description: string | null;
-  logo_url: string | null;
-  // ensure all fields expected by SettingsForm are here
-  subdomain?: string | null; // Add if needed, based on table structure
-  created_at?: string | null; // Add if needed
-  updated_at?: string | null; // Add if needed
-  user_id?: string | null; // Add if needed
-};
 
 
 export default async function SettingsPage({
@@ -37,6 +22,7 @@ export default async function SettingsPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Dashboard" });
+  const tCommon = await getTranslations({ locale, namespace: "Common" });
   const host = (await headers()).get("host") || "";
   const subdomain = getSubdomainFromHost(host);
 
@@ -44,8 +30,8 @@ export default async function SettingsPage({
   let errorGettingId: string | null = null;
   const user = await getUserFromRequest();
   if (user && user.subdomain !== subdomain) {
-    errorGettingId = t("Settings.Page.errors.noSubdomainDetected");
-  } 
+    errorGettingId = tCommon("errors.noSubdomainDetected");
+  }
   restaurantId = user?.restaurantId || null;
   let initialSettings: Restaurant | null = null;
   let fetchError: string | null = null;
@@ -83,7 +69,7 @@ export default async function SettingsPage({
       {errorGettingId && (
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
+          <AlertTitle>{tCommon("errors.noRestaurantIdTitle")}</AlertTitle>
           <AlertDescription>{errorGettingId}</AlertDescription>
         </Alert>
       )}
@@ -92,15 +78,15 @@ export default async function SettingsPage({
          // This case should ideally be covered by errorGettingId if subdomain was present but no ID found
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
-          <AlertDescription>{t("errors.noRestaurantIdMessage")}</AlertDescription>
+          <AlertTitle>{tCommon("errors.noRestaurantIdTitle")}</AlertTitle>
+          <AlertDescription>{tCommon("errors.noRestaurantIdMessage")}</AlertDescription>
         </Alert>
       )}
 
       {restaurantId && fetchError && (
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.fetchErrorTitle")}</AlertTitle>
+          <AlertTitle>{tCommon("errors.fetchErrorTitle")}</AlertTitle>
           <AlertDescription>{fetchError}</AlertDescription>
         </Alert>
       )}
@@ -109,8 +95,8 @@ export default async function SettingsPage({
         // This means ID was found, no DB error, but no record (might have been deleted between ID fetch and settings fetch)
         <Alert variant="warning" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noSettingsFoundTitle")}</AlertTitle>
-          <AlertDescription>{t("errors.noSettingsFoundMessage")}</AlertDescription>
+          <AlertTitle>{tCommon("errors.noSettingsFoundTitle")}</AlertTitle>
+          <AlertDescription>{tCommon("errors.noSettingsFoundMessage")}</AlertDescription>
         </Alert>
       )}
 

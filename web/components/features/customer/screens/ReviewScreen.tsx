@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert } from "@/components/ui/alert";
+import { AnimatedRestaurantHeader } from "@/components/common/AnimatedRestaurantHeader";
 import type { RestaurantSettings } from "@/shared/types/customer";
 import { ViewProps, ViewType, ReviewViewProps, ThankYouScreenViewProps } from "./types"; // Updated imports
 
@@ -83,11 +84,23 @@ export function ReviewScreen({
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <div className="flex items-center mb-6">
-        <Button
-          onClick={() => setView("thankyou", { orderId, items: viewProps?.items, total: 0 } as ThankYouScreenViewProps)}
-          variant="ghost"
+    <div>
+      <AnimatedRestaurantHeader
+        restaurantSettings={{
+          name: restaurantSettings.name || "Restaurant",
+          logoUrl: restaurantSettings.logoUrl
+        }}
+        rating={4.8}
+        badgeText="Reviews"
+        badgeIcon={Star}
+        className="border-b border-slate-200 dark:border-slate-700"
+      />
+      
+      <div className="max-w-2xl mx-auto p-4">
+        <div className="flex items-center mb-6">
+          <Button
+            onClick={() => setView("thankyou", { orderId, items: viewProps?.items, total: 0 } as ThankYouScreenViewProps)}
+            variant="ghost"
           size="sm"
           className="mr-2"
         >
@@ -163,6 +176,7 @@ export function ReviewScreen({
           {isSubmitting ? t("review.submitting_review") : t("review.submit_review_button")}
         </Button>
       </Card>
+      </div>
     </div>
   );
 }

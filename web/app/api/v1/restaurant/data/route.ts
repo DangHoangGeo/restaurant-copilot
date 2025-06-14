@@ -33,7 +33,9 @@ export async function GET(req: NextRequest) {
       .from("categories")
       .select(`
         id,
-        name,
+        name_en,
+        name_ja,
+        name_vi,
         position,
         menu_items (
           id,
@@ -53,6 +55,7 @@ export async function GET(req: NextRequest) {
       .order("position", { foreignTable: "menu_items", ascending: true });
 
     if (categoriesError) {
+      console.error("Error fetching categories:", categoriesError);
       return NextResponse.json(
         { error: categoriesError.message },
         { status: 500 }

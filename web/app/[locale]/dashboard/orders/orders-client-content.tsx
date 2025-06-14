@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Category } from '@/shared/types/menu';
 import {
   Table,
   TableBody,
@@ -54,21 +55,6 @@ interface Table {
   id: string;
   name: string;
   status?: "available" | "occupied" | "reserved";
-}
-
-interface Category {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  menu_items: {
-    id: string;
-    name_en: string;
-    name_ja: string;
-    name_vi: string;
-    price: number;
-    available: boolean;
-  }[];
 }
 
 interface OrdersClientContentProps {
@@ -203,8 +189,7 @@ export function OrdersClientContent({
   const getAllOrderItems = (): FlatOrderItem[] => {
     const allItems: FlatOrderItem[] = [];
     orders.forEach(order => {
-      const tableName = order.tables[0].name || `Order ${order.id.slice(0, 6)}`;
-      
+      const tableName = order.tables && order.tables.length > 0 ? order.tables[0].name : `Order ${order.id.slice(0, 6)}`;
       order.order_items.forEach(item => {
         const menuItem = item.menu_items;
         if (menuItem) {
@@ -514,9 +499,9 @@ export function OrdersClientContent({
                       <div className="flex flex-col">
                         <span className="font-medium">
                           {getLocalizedText({
-                            "name_en": item.menu_item_name_en,
-                            "name_vi": item.menu_item_name_vi,
-                            "name_ja": item.menu_item_name_ja
+                            "name_en": item.menu_item_name_en || '',
+                            "name_vi": item.menu_item_name_vi || '',
+                            "name_ja": item.menu_item_name_ja || ''
                           }, locale)}
                         </span>
                         <span className="text-sm text-gray-500">
@@ -719,8 +704,8 @@ export function OrdersClientContent({
       item: {
         id: string;
         name_en: string;
-        name_ja: string;
-        name_vi: string;
+        name_ja?: string;
+        name_vi?: string;
         price: number;
         available: boolean;
       };
@@ -737,9 +722,9 @@ export function OrdersClientContent({
         .map(item => ({
           ...item,
           categoryName: getLocalizedText({
-            "name_en": category.name_en,
-            "name_vi": category.name_vi, 
-            "name_ja": category.name_ja
+            "name_en": category.name_en || '',
+            "name_vi": category.name_vi || '', 
+            "name_ja": category.name_ja || ''
           }, locale)
         }))
     );
@@ -747,9 +732,9 @@ export function OrdersClientContent({
     // Filter items based on search
     const filteredItems = allMenuItems.filter(item => {
       const itemName = getLocalizedText({
-        "name_en": item.name_en,
-        "name_vi": item.name_vi,
-        "name_ja": item.name_ja
+        "name_en": item.name_en || '',
+        "name_vi": item.name_vi || '',
+        "name_ja": item.name_ja || ''
       }, locale).toLowerCase();
       
       const search = searchTerm.toLowerCase();
@@ -782,9 +767,9 @@ export function OrdersClientContent({
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
                         {getLocalizedText({
-                          "name_en": item.name_en,
-                          "name_vi": item.name_vi,
-                          "name_ja": item.name_ja
+                          "name_en": item.name_en || '',
+                          "name_vi": item.name_vi || '',
+                          "name_ja": item.name_ja || ''
                         }, locale)}
                       </span>
                       <span className="text-sm text-gray-500 ml-2">
@@ -909,9 +894,9 @@ export function OrdersClientContent({
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium">
                       {getLocalizedText({
-                        "name_en": item.name_en,
-                        "name_vi": item.name_vi,
-                        "name_ja": item.name_ja
+                        "name_en": item.name_en || '',
+                        "name_vi": item.name_vi || '',
+                        "name_ja": item.name_ja || ''
                       }, locale)}
                     </h4>
                     <Badge variant="outline" className="text-xs">
@@ -1153,9 +1138,9 @@ export function OrdersClientContent({
                     <li key={item.id} className="flex justify-between">
                       <span>
                         {getLocalizedText({
-                          "name_en": item.menu_items[0].name_en,
-                          "name_vi": item.menu_items[0].name_vi,
-                          "name_ja": item.menu_items[0].name_ja
+                          "name_en": item.menu_items[0].name_en || '',
+                          "name_vi": item.menu_items[0].name_vi || '',
+                          "name_ja": item.menu_items[0].name_ja || ''
                         }, locale)} ({item.quantity})
                       </span>
                       <span>¥{(item.menu_items[0].price! * item.quantity).toLocaleString()}</span>

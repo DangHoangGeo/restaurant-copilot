@@ -252,6 +252,64 @@ Dish name: "${itemName}"
   }
 
   /**
+   * Generate restaurant descriptions from restaurant info
+   */
+  async generateRestaurantDescription(restaurantName: string, contextInfo: string, language: 'en' | 'ja' | 'vi' = 'en'): Promise<DescriptionResult> {
+    const languagePrompts = {
+      en: 'English',
+      ja: 'Japanese (日本語)',
+      vi: 'Vietnamese (Tiếng Việt)'
+    };
+
+    const prompt = `
+You are a professional restaurant marketing writer.
+Write compelling restaurant descriptions in 3 languages: English, Japanese, and Vietnamese.
+User's original language: ${languagePrompts[language]}
+
+Restaurant Information:
+${contextInfo}
+
+Please provide descriptions in this exact JSON format (no additional text):
+{
+  "en": "English description",
+  "ja": "Japanese description", 
+  "vi": "Vietnamese description"
+}
+
+Guidelines:
+- Keep each description concise (3-4 sentences)
+- Make it sound inviting and memorable
+- Highlight unique features, atmosphere, and specialties
+- Use appropriate cultural language for each market
+- Avoid specific prices or hours
+- Focus on the dining experience and quality
+
+Restaurant: "${restaurantName}"
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const textResponse = response.text();
+      
+      // Extract JSON from the response
+      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in response');
+      }
+	  const descriptions = JSON.parse(jsonMatch[0]);
+	  return descriptions;
+    } catch (error) {
+      console.error('Gemini restaurant description generation error:', error);
+      return {
+		en: `Description for "${restaurantName}" could not be generated at this time.`,
+		ja: `「${restaurantName}」の説明は現在生成できません。`,
+		vi: `Mô tả cho "${restaurantName}" hiện không thể tạo được.`,
+	  };
+    }
+  }
+
+  /**
    * Analyze menu item popularity and suggest improvements
    */
   async analyzeMenuItem(itemData: {

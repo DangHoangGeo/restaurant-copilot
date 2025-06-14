@@ -7,34 +7,7 @@ import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-
-export type Table = {
-  id: string;
-  name: string;
-  capacity: number;
-  restaurant_id: string;
-  status: 'available' | 'occupied' | 'reserved';
-  position_x?: number | null;
-  position_y?: number | null;
-  is_outdoor: boolean;
-  is_accessible: boolean;
-  notes?: string | null;
-  qr_code?: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type Restaurant = {
-  id: string;
-  name: string | null;
-  default_language: "en" | "ja" | "vi" | null;
-  brand_color: string | null;
-  contact_info: string | null;
-  address: string | null;
-  opening_hours: string | null;
-  description: string | null;
-  logo_url: string | null;
-};
+import { Table } from '@/shared/types/';
 
 export default async function TablesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
@@ -42,16 +15,16 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
   const host = (await headers()).get('host') || ''
   const subdomain = getSubdomainFromHost(host)
   const t = await getTranslations({ locale, namespace: 'AdminTables' })
-
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
   let restaurantId: string | null = null;
   let errorGettingId: string | null = null;
   const user = await getUserFromRequest();
   if (user && user.subdomain !== subdomain) {
-    errorGettingId = t("Settings.Page.errors.noSubdomainDetected");
-  } 
+    errorGettingId = tCommon("errors.noSubdomainDetected");
+  }
   restaurantId = user?.restaurantId || null;
 
-  let initialData: Table[] | null = null;
+  let initialData: Table[] = [];
   let fetchError: string | null = null;
   let restaurantSettings: { name: string; logoUrl: string | null } | null = null;
 
@@ -88,9 +61,7 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
       }
       
       initialData = tablesData as Table[];
-      if (!initialData || initialData.length === 0) {
-        fetchError = t("errors.no_tables_found");
-      }
+      // No need to set fetchError for empty array - let client component handle empty state
     } catch (error) {
       console.error("Error fetching tables data:", error);
       fetchError = (error instanceof Error ? error.message : t("errors.data_fetch_error"));
@@ -108,7 +79,7 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
       {errorGettingId && (
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
+          <AlertTitle>{tCommon("errors.noRestaurantIdTitle")}</AlertTitle>
           <AlertDescription>{errorGettingId}</AlertDescription>
         </Alert>
       )}
@@ -116,33 +87,25 @@ export default async function TablesPage({ params }: { params: Promise<{ locale:
       {!errorGettingId && !restaurantId && !fetchError && (
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
-          <AlertDescription>{t("errors.noRestaurantIdMessage")}</AlertDescription>
+          <AlertTitle>{tCommon("errors.noRestaurantIdTitle")}</AlertTitle>
+          <AlertDescription>{tCommon("errors.noRestaurantIdMessage")}</AlertDescription>
         </Alert>
       )}
 
       {restaurantId && fetchError && (
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.fetchErrorTitle")}</AlertTitle>
+          <AlertTitle>{tCommon("errors.fetchErrorTitle")}</AlertTitle>
           <AlertDescription>{fetchError}</AlertDescription>
         </Alert>
       )}
 
-      {restaurantId && initialData && !fetchError && restaurantSettings && (
+      {restaurantId && !fetchError && restaurantSettings && (
         <TablesClientContent 
           initialData={initialData} 
           error={null}
           restaurantSettings={restaurantSettings}
         />
-      )}
-
-      {restaurantId && !initialData && !fetchError && restaurantSettings && (
-        <Alert variant="warning" className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noSettingsFoundTitle")}</AlertTitle>
-          <AlertDescription>{t("errors.no_tables_found")}</AlertDescription>
-        </Alert>
       )}
     </div>
   );

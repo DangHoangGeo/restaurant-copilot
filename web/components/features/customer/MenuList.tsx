@@ -1,6 +1,5 @@
 "use client";
 import { useState, useMemo, useRef } from "react";
-//import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X as XIcon,  Sparkles, Bot, MessageCircle, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -9,15 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { getLocalizedText } from "./utils";
 import type { ViewType, ViewProps } from "./screens/types";
 import { FoodCard, FoodItem } from "./FoodCard";
-
-interface Category {
-  id: string;
-  position: number;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  menu_items: FoodItem[];
-}
+import { useTranslations } from "next-intl";
+import {  Category } from '@/shared/types/menu';
 
 interface Props {
   categories: Category[];
@@ -52,6 +44,7 @@ export function MenuList({
 }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const t = useTranslations("Customer");
   //const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [minRating, setMinRating] = useState(0);
@@ -238,7 +231,7 @@ export function MenuList({
         <div className="mb-6 px-4">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <Sparkles className="h-5 w-5" style={{ color: brandColor }} />
-            <span>Top Picks for You</span>
+            <span>{t("pick_for_you")}</span>
           </h2>
           
           <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
@@ -359,13 +352,13 @@ export function MenuList({
           >
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
-              No items found
+              {t("no_results_found")}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-4">
-              Try adjusting your search or filters
+              {t("adjusting_filters_or_search")}
             </p>
             <Button onClick={clearSearch} variant="outline">
-              Clear filters
+              {t("clear_filters")}
             </Button>
           </motion.div>
         )}

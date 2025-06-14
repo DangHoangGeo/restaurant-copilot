@@ -65,14 +65,14 @@ export function FloatingCart({ count, total, onCheckout, brandColor }: Props) {
 
                 <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin">
                   {cart.map((item) => {
-                    const localizedItemName = getLocalizedText({ name_en: item.name_en, name_ja: item.name_ja, name_vi: item.name_vi }, currentLocale);
+                    const localizedItemName = getLocalizedText({ name_en: item.name_en, name_ja: item.name_ja || '', name_vi: item.name_vi || '' }, currentLocale);
                     const detailsDisplay: string[] = [];
                     if (item.selectedSize) {
-                      const localizedSizeName = getLocalizedText({ name_en: item.selectedSize.name_en, name_ja: item.selectedSize.name_ja, name_vi: item.selectedSize.name_vi }, currentLocale);
+                      const localizedSizeName = getLocalizedText({ name_en: item.selectedSize.name_en, name_ja: item.selectedSize.name_ja || '', name_vi: item.selectedSize.name_vi || '' }, currentLocale);
                       detailsDisplay.push(localizedSizeName);
                     }
                     if (item.selectedToppings && item.selectedToppings.length > 0) {
-                      const toppingNames = item.selectedToppings.map(t => getLocalizedText({ name_en: t.name_en, name_ja: t.name_ja, name_vi: t.name_vi }, currentLocale)).join(", ");
+                      const toppingNames = item.selectedToppings.map(t => getLocalizedText({ name_en: t.name_en || '', name_ja: t.name_ja || '', name_vi: t.name_vi || '' }, currentLocale)).join(", ");
                       detailsDisplay.push(t('cart.toppings_label', { toppings: toppingNames }));
                     }
                     return (

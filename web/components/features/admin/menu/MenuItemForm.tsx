@@ -11,12 +11,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import type { MenuItemCategory } from '@/shared/types/menu-item-category.types';
-import type { MenuItem } from '@/shared/types/menu-item.types';
+import type { MenuItem, MenuItemCategory } from '@/shared/types/menu';
 import { WeekdaySelector } from '@/components/features/admin/menu/WeekdaySelector';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem } from '@/components/ui/select';
+import imageCompression from 'browser-image-compression';
+import { toast } from 'sonner';
 
 // Zod Schemas
 const toppingSchema = z.object({
@@ -107,7 +108,7 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
       image_url: initialData?.image_url || '',
       category_id: initialData?.category_id || '',
       available: initialData?.available === undefined ? true : initialData.available,
-      weekdayVisibility: initialData?.weekdayVisibility || [],
+      weekdayVisibility: initialData?.weekday_visibility || [],
       stock_level: initialData?.stock_level || 10,
       imageFile: null,
       toppings: initialData?.toppings?.map((top: ToppingData) => ({ ...top, position: top.position ?? 0 })) || [],
@@ -196,8 +197,12 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
     if (initialData) {
       form.reset({
         ...initialData,
+        description_en: initialData.description_en || undefined,
+        description_ja: initialData.description_ja || undefined,
+        description_vi: initialData.description_vi || undefined,
+        image_url: initialData.image_url || undefined,
         available: initialData.available === undefined ? true : initialData.available, // ensure boolean
-        weekdayVisibility: initialData.weekdayVisibility || [], // ensure array
+        weekdayVisibility: initialData.weekday_visibility || [], // ensure array
         stock_level: initialData.stock_level || null,
         imageFile: null,
         toppings: initialData.toppings?.map((top: ToppingData) => ({ ...top, position: top.position ?? 0 })) || [],
@@ -239,7 +244,7 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full w-screen md:max-w-4xl sm:max-h-[95vh] mx-auto">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full md:max-w-4xl sm:max-h-[95vh] mx-auto">
         <div className="flex-1 space-y-4 pr-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           {/* Column 1: Names, Descriptions */}
@@ -598,20 +603,39 @@ export function MenuItemForm({ initialData, categories, onSave, onCancel, texts,
                   <FormLabel>{t('item.image_label')}</FormLabel>
                   <FormControl>
                     <Input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
-                        field.onChange(file);
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => setImagePreview(reader.result as string);
-                          reader.readAsDataURL(file);
+                          const options = {
+                            maxSizeMB: 0.5,
+                            maxWidthOrHeight: 800,
+                            useWebWorker: true,
+                          };
+                          try {
+                            const compressedFileBlob = await imageCompression(file, options);
+                            const newFileObject = new File([compressedFileBlob], file.name, {
+                              type: compressedFileBlob.type,
+                              lastModified: Date.now(),
+                            });
+                            field.onChange(newFileObject);
+                            const reader = new FileReader();
+                            reader.onloadend = () => setImagePreview(reader.result as string);
+                            reader.readAsDataURL(newFileObject); // Corrected to use newFileObject
+                          } catch (error) {
+                            console.error("Error compressing image:", error);
+                            toast.error(t('validation.compressionError'));
+                            field.onChange(null);
+                            setImagePreview(form.getValues("image_url") || null);
+                            e.target.value = ''; // Clear the file input
+                          }
                         } else {
+                          field.onChange(null);
                           setImagePreview(form.getValues("image_url") || null);
                         }
-                      }} 
-                      className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90" 
+                      }}
+                      className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                     />
                   </FormControl>
                   {imagePreview && (

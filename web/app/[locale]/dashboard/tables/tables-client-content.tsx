@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import * as htmlToImage from 'html-to-image'
+import { Table } from '@/shared/types'
 
 // Define Zod schema for table form validation
 const getTableSchema = (t: ReturnType<typeof useTranslations<'AdminTables.validation'>>) => z.object({
@@ -52,20 +53,10 @@ interface RestaurantSettings {
   logoUrl: string | null
 }
 
-interface Table {
-  id: string
-  name: string
-  capacity: number
-  status: 'available' | 'occupied' | 'reserved'
-  is_outdoor: boolean
-  is_accessible: boolean
-  notes?: string | null
-  qr_code?: string | null
-}
 
 interface TablesClientContentProps {
   restaurantSettings: RestaurantSettings
-  initialData: Table[] | null
+  initialData: Table[]
   error: string | null
 }
 
@@ -112,7 +103,7 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     }
   });
 
-  const [tablesData, setTablesData] = useState<Table[]>(initialData || [])
+  const [tablesData, setTablesData] = useState<Table[]>(initialData)
   const [isTableModalOpen, setIsTableModalOpen] = useState(false)
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
   const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false); // Kept for now
@@ -280,10 +271,8 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     );
   }
 
-  // Loading state for initial data
-  // Assuming initialData might be null during SSR/fetch, and tablesData is populated after client-side hydration
-  // A more robust loading state might be needed if initialData itself is fetched client-side and can be undefined/loading
-  const isInitialLoading = initialData === null && !error; // Or some other indicator if you fetch client-side
+  // Loading state - since initialData is always an array, no loading state needed
+  const isInitialLoading = false;
 
   return (
     <div>

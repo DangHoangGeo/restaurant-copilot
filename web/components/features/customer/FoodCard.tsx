@@ -3,30 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PlusCircle, Star, Minus, Plus } from "lucide-react";
 import type { ViewType, ViewProps } from "./screens/types";
-import type { MenuItemSize, Topping } from '@/shared/types/customer';
+import { MenuItem } from '@/shared/types/menu';
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { getLocalizedText } from "@/lib/customerUtils";
 import Image from "next/image";
 
-export interface FoodItem {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  rating?: number;
-  description_en?: string | null;
-  description_ja?: string | null;
-  description_vi?: string | null;
-  price: number;
-  image_url?: string | null;
-  available: boolean;
-  weekday_visibility: number[];
-  averageRating?: number;
-  reviewCount?: number;
-  menu_item_sizes?: MenuItemSize[];
-  toppings?: Topping[];
+// For backward compatibility, create an alias
+export interface FoodItem extends MenuItem {
+  categoryId?: string;
+  categoryName?: string;
 }
 
 interface FoodCardProps {
@@ -103,7 +90,7 @@ export function FoodCard({
   };
 
   const itemName = getLocalizedText(
-    { name_en: item.name_en, name_vi: item.name_vi, name_ja: item.name_ja },
+    { name_en: item.name_en, name_vi: item.name_vi || '', name_ja: item.name_ja || '' },
     locale,
   );
 

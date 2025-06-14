@@ -15,6 +15,7 @@ struct AddItemDetailView: View {
     @State private var quantity: Int = 1
     @State private var selectedSize: MenuItemSize? = nil // Canonical MenuItemSize
     @State private var selectedToppings: Set<Topping.ID> = Set() // Set of canonical Topping IDs
+
     @State private var notes: String = ""
 
     @State private var isAddingItem = false

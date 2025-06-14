@@ -32,16 +32,17 @@ export default async function EmployeesPage({
   const host = (await headers()).get("host") || "";
   const subdomain = getSubdomainFromHost(host);
   const t = await getTranslations({ locale, namespace: "AdminEmployees" });
+  const tCommon = await getTranslations({ locale, namespace: "Common" });
 
   const user = await getUserFromRequest();
   let restaurantId: string | null = null;
   let errorGettingId: string | null = null;
   if (user && user.subdomain !== subdomain) {
-    errorGettingId = t("Settings.Page.errors.noSubdomainDetected");
+    errorGettingId = tCommon("errors.noSubdomainDetected");
   }
   restaurantId = user?.restaurantId || null;
 
-  let initialEmployees: Employee[] | null = null;
+  let initialEmployees: Employee[] = [];
   let fetchError: string | null = null;
 
   if (user && user.restaurantId) {
@@ -83,9 +84,7 @@ export default async function EmployeesPage({
           } as Employee;
         });
 
-        if (initialEmployees.length === 0) {
-          fetchError = t("errors.no_employees_found");
-        }
+        // No need to set fetchError for empty array - let client component handle empty state
       }
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -98,7 +97,7 @@ export default async function EmployeesPage({
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-          {t("AdminNav.admin_employees_title")}
+          {t("title")}
         </h1>
       </header>
 
@@ -106,7 +105,7 @@ export default async function EmployeesPage({
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>
-            {t("Settings.Page.errors.noRestaurantIdTitle")}
+            {tCommon("errors.noRestaurantIdTitle")}
           </AlertTitle>
           <AlertDescription>{errorGettingId}</AlertDescription>
         </Alert>
@@ -116,10 +115,10 @@ export default async function EmployeesPage({
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>
-            {t("Settings.Page.errors.noRestaurantIdTitle")}
+            {tCommon("errors.noRestaurantIdTitle")}
           </AlertTitle>
           <AlertDescription>
-            {t("errors.noRestaurantIdMessage")}
+            {tCommon("errors.noRestaurantIdMessage")}
           </AlertDescription>
         </Alert>
       )}
@@ -132,18 +131,8 @@ export default async function EmployeesPage({
         </Alert>
       )}
 
-      {restaurantId && initialEmployees && !fetchError && (
+      {restaurantId && !fetchError && (
         <EmployeesClientContent initialData={initialEmployees} />
-      )}
-
-      {restaurantId && !initialEmployees && !fetchError && (
-        <Alert variant="warning" className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>
-            {t("Settings.Page.errors.noSettingsFoundTitle")}
-          </AlertTitle>
-          <AlertDescription>{t("errors.no_employees_found")}</AlertDescription>
-        </Alert>
       )}
     </div>
   );

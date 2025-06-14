@@ -7,34 +7,8 @@ import { createClient as createSupabaseServerClient } from "@/lib/supabase/serve
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { Booking } from '@/shared/types'
 
-export interface PreOrderItem {
-  itemId: string
-  quantity: number
-}
-
-export interface Booking {
-  id: string
-  customerName: string
-  contact: string
-  date: string
-  time: string
-  partySize: number
-  status: string
-  preOrderItems: PreOrderItem[]
-}
-
-export type Restaurant = {
-  id: string;
-  name: string | null;
-  default_language: "en" | "ja" | "vi" | null;
-  brand_color: string | null;
-  contact_info: string | null;
-  address: string | null;
-  opening_hours: string | null;
-  description: string | null;
-  logo_url: string | null;
-};
 
 export default async function BookingsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
@@ -42,16 +16,16 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
   const host = (await headers()).get('host') || ''
   const subdomain = getSubdomainFromHost(host)
   const t = await getTranslations({ locale, namespace: 'AdminBookings' })
-
+  const tCommon = await getTranslations({ locale, namespace: 'Common' })
   let restaurantId: string | null = null;
   let errorGettingId: string | null = null;
   const user = await getUserFromRequest();
   if (user && user.subdomain !== subdomain) {
-    errorGettingId = t("Settings.Page.errors.noSubdomainDetected");
+    errorGettingId = tCommon("errors.noSubdomainDetected");
   } 
   restaurantId = user?.restaurantId || null;
 
-  let initialBookings: Booking[] | null = null;
+  let initialBookings: Booking[] = [];
   let fetchError: string | null = null;
   
   if (user && user.restaurantId) {
@@ -80,9 +54,7 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
         preOrderItems: b.pre_order_items || [] // Assuming pre_order_items is stored as JSONB
       })) as Booking[];
 
-      if (!initialBookings || initialBookings.length === 0) {
-        fetchError = t("errors.no_bookings_found"); // This will show an error alert. Client component also handles empty.
-      }
+      // No need to set fetchError for empty array - let client component handle empty state
     } catch (error) {
       // console.error("Error fetching bookings data:", error);
       fetchError = (error instanceof Error ? error.message : t("errors.data_fetch_error")); // Use a generic data fetch error from AdminBookings
@@ -93,14 +65,14 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-          {t("Bookings.Page.title")}
+          {t("title")}
         </h1>
       </header>
 
       {errorGettingId && (
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
+          <AlertTitle>{tCommon("errors.noRestaurantIdTitle")}</AlertTitle>
           <AlertDescription>{errorGettingId}</AlertDescription>
         </Alert>
       )}
@@ -108,8 +80,8 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
       {!errorGettingId && !restaurantId && !fetchError && (
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noRestaurantIdTitle")}</AlertTitle>
-          <AlertDescription>{t("errors.noRestaurantIdMessage")}</AlertDescription>
+          <AlertTitle>{tCommon("errors.noRestaurantIdTitle")}</AlertTitle>
+          <AlertDescription>{tCommon("errors.noRestaurantIdMessage")}</AlertDescription>
         </Alert>
       )}
 
@@ -121,18 +93,10 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
         </Alert>
       )}
 
-      {restaurantId && initialBookings && !fetchError && (
+      {restaurantId && !fetchError && (
         <BookingsClientContent 
           initialBookings={initialBookings}
         />
-      )}
-
-      {restaurantId && !initialBookings && !fetchError && (
-        <Alert variant="warning" className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t("Settings.Page.errors.noSettingsFoundTitle")}</AlertTitle>
-          <AlertDescription>{t("errors.no_bookings_found")}</AlertDescription>
-        </Alert>
       )}
     </div>
   );

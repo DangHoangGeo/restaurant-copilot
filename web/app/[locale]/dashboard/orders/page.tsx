@@ -6,6 +6,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { OrdersClientContent } from "./orders-client-content";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { Category } from '@/shared/types/menu';
 
 
 export interface OrderItem {
@@ -46,21 +47,6 @@ export interface Table {
   status?: "available" | "occupied" | "reserved";
 }
 
-export interface Category {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  menu_items: {
-    id: string;
-    name_en: string;
-    name_ja: string;
-    name_vi: string;
-    price: number;
-    available: boolean;
-  }[];
-}
-
 export default async function OrdersPage({
   params,
 }: {
@@ -70,7 +56,7 @@ export default async function OrdersPage({
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "AdminOrders" });
   const tCommon = await getTranslations({ locale, namespace: "Common" });
-
+ 
   const host = (await headers()).get("host") || "";
   const subdomain = getSubdomainFromHost(host);
 
