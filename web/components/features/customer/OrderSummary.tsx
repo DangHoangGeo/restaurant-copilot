@@ -8,8 +8,8 @@ import type { RestaurantSettings, MenuItemSize, Topping } from '@/shared/types/c
 interface OrderSummaryItem {
   uniqueId: string;
   name_en: string;
-  name_ja: string;
-  name_vi: string;
+  name_ja?: string;
+  name_vi?: string;
   qty: number;
   price: number; // This is the final price per unit for this configuration
   selectedSize?: MenuItemSize;
@@ -31,14 +31,14 @@ export function OrderSummary({ items, total, restaurantSettings, locale , classN
     <Card className={`p-4 text-left ${className || ""}`}>
       <h3 className="text-lg font-semibold mb-3">{t("checkout.order_summary")}</h3>
       {items.map((item) => {
-        const localizedItemName = getLocalizedText({ name_en: item.name_en, name_ja: item.name_ja, name_vi: item.name_vi }, locale);
+        const localizedItemName = getLocalizedText({ name_en: item.name_en, name_ja: item.name_ja || '', name_vi: item.name_vi || '' }, locale);
         const detailsDisplay: string[] = [];
         if (item.selectedSize) {
-          const localizedSizeName = getLocalizedText({ name_en: item.selectedSize.name_en, name_ja: item.selectedSize.name_ja, name_vi: item.selectedSize.name_vi }, locale);
+          const localizedSizeName = getLocalizedText({ name_en: item.selectedSize.name_en, name_ja: item.selectedSize.name_ja || '', name_vi: item.selectedSize.name_vi || '' }, locale);
           detailsDisplay.push(localizedSizeName);
         }
         if (item.selectedToppings && item.selectedToppings.length > 0) {
-          const toppingNames = item.selectedToppings.map(t => getLocalizedText({ name_en: t.name_en, name_ja: t.name_ja, name_vi: t.name_vi }, locale)).join(", ");
+          const toppingNames = item.selectedToppings.map(t => getLocalizedText({ name_en: t.name_en || '', name_ja: t.name_ja || '', name_vi: t.name_vi || '' }, locale)).join(", ");
           detailsDisplay.push(t('cart.toppings_label', { toppings: toppingNames }));
         }
         return (

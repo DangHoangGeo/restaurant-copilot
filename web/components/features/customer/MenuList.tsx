@@ -1,6 +1,5 @@
 "use client";
 import { useState, useMemo, useRef } from "react";
-//import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X as XIcon,  Sparkles, Bot, MessageCircle, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -10,15 +9,7 @@ import { getLocalizedText } from "./utils";
 import type { ViewType, ViewProps } from "./screens/types";
 import { FoodCard, FoodItem } from "./FoodCard";
 import { useTranslations } from "next-intl";
-
-interface Category {
-  id: string;
-  position: number;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  menu_items: FoodItem[];
-}
+import {  Category } from '@/shared/types/menu';
 
 interface Props {
   categories: Category[];

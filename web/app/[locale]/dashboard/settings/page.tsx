@@ -7,27 +7,12 @@ import { AlertTriangle } from "lucide-react";
 import { headers } from 'next/headers';
 import { getSubdomainFromHost } from "@/lib/utils";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
+import { Restaurant } from "@/shared/types";
 
 // TODO: The restaurant logo can be stored in Supabase Storage for now.
 // Consider using api/v1/restaurant/settings/route.ts for API interactions
 // also other fileds like social links, timezone, etc. can be added later.
 
-export type Restaurant = {
-  id: string;
-  name: string | null;
-  default_language: "en" | "ja" | "vi" | null;
-  brand_color: string | null;
-  contact_info: string | null;
-  address: string | null;
-  opening_hours: string | null;
-  description: string | null;
-  logo_url: string | null;
-  // ensure all fields expected by SettingsForm are here
-  subdomain?: string | null; // Add if needed, based on table structure
-  created_at?: string | null; // Add if needed
-  updated_at?: string | null; // Add if needed
-  user_id?: string | null; // Add if needed
-};
 
 
 export default async function SettingsPage({

@@ -1,46 +1,10 @@
 import 'server-only'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { getRestaurantIdFromSubdomain } from './restaurant-settings'
+import { MenuItem, Category as MenuCategory } from '@/shared/types/menu'
 
-export interface MenuItem {
-  id: string
-  name_en: string
-  name_ja: string
-  name_vi: string
-  description_en: string | null
-  description_ja: string | null
-  description_vi: string | null
-  price: number
-  image_url: string | null
-  available: boolean
-  weekday_visibility: number[]
-  menu_item_sizes?: {
-    id: string;
-    size_key: string;
-    name_en: string;
-    name_ja: string;
-    name_vi: string;
-    price: number;
-    position: number;
-  }[];
-  toppings?: {
-    id: string;
-    name_en: string;
-    name_ja: string;
-    name_vi: string;
-    price: number;
-    position: number;
-  }[];
-}
-
-export interface MenuCategory {
-  id: string
-  position: number
-  name_en: string
-  name_ja: string
-  name_vi: string
-  menu_items: MenuItem[]
-}
+// Re-export types for this module
+export type { MenuItem, MenuCategory }
 
 
 
@@ -52,7 +16,7 @@ export async function fetchMenuAndTables(subdomain: string) {
     .select(
       `id, position, name_en, name_ja, name_vi,
          menu_items(
-           id,name_en,name_ja,name_vi,description_en,description_ja,description_vi,price,image_url,available,weekday_visibility,
+           id,name_en,name_ja,name_vi,description_en,description_ja,description_vi,price,image_url,available,weekday_visibility,position,
            menu_item_sizes(id,size_key,name_en,name_ja,name_vi,price,position),
            toppings(id,name_en,name_ja,name_vi,price,position)
          )`

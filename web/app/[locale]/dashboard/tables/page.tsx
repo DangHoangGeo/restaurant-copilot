@@ -7,34 +7,7 @@ import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-
-export type Table = {
-  id: string;
-  name: string;
-  capacity: number;
-  restaurant_id: string;
-  status: 'available' | 'occupied' | 'reserved';
-  position_x?: number | null;
-  position_y?: number | null;
-  is_outdoor: boolean;
-  is_accessible: boolean;
-  notes?: string | null;
-  qr_code?: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type Restaurant = {
-  id: string;
-  name: string | null;
-  default_language: "en" | "ja" | "vi" | null;
-  brand_color: string | null;
-  contact_info: string | null;
-  address: string | null;
-  opening_hours: string | null;
-  description: string | null;
-  logo_url: string | null;
-};
+import { Table } from '@/shared/types/';
 
 export default async function TablesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params

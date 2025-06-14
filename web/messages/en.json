@@ -179,6 +179,23 @@
         "contact_us": "Contact Us",
         "status": "Status"
       },
+      "categories": {
+        "resources_title": "Resources",
+        "case_studies": "Case Studies",
+        "webinars": "Webinars",
+        "documentation": "Documentation",
+        "community": "Community",
+        "developers": "Developers",
+        "support": "Support"
+      },
+      "legal": {
+        "title": "Legal",
+        "terms": "Terms of Service",
+        "privacy": "Privacy Policy",
+        "cookie": "Cookie Policy",
+        "security": "Security"
+      },
+      "copyright": "© 2023 Coorder.ai. All rights reserved.",
       "privacy_policy": "Privacy Policy",
       "terms_of_service": "Terms of Service"
     },
@@ -219,6 +236,15 @@
     "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
     "form_placeholder": "Form fields go here.",
     "back_to_menu": "Back to Menu",
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday", 
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
     "add_more_items": "Add More Items",
     "recharts_note": "Charts powered by Recharts.",
     "datatable_component_note": "Data table component placeholder.",
@@ -266,6 +292,10 @@
       "en": "English",
       "ja": "Japanese",
       "vi": "Vietnamese"
+    },
+    "theme": {
+      "toggle_aria_label": "Toggle light/dark theme",
+      "toggle_label": "Toggle Theme"
     },
     "rating": {
       "set_stars": "Set {count} star rating",
@@ -315,10 +345,6 @@
     "sidebar": {
       "toggle_aria_label": "Toggle sidebar navigation",
       "close_aria_label": "Close sidebar"
-    },
-    "theme": {
-      "toggle_aria_label": "Toggle light/dark theme",
-      "toggle_label": "Toggle Theme"
     },
     "user_menu": {
       "admin_user_placeholder": "Admin User",
@@ -580,35 +606,113 @@
   },
   "Dashboard": {
     "Settings": {
+      "Page": {
+        "title": "Restaurant Settings"
+      },
       "labels": {
         "restaurantName": "Restaurant Name",
+        "subdomain": "Domain Name",
         "defaultLanguage": "Default Language",
         "brandColor": "Brand Color",
         "logo": "Logo",
         "contactInfo": "Contact Information",
         "address": "Address",
-        "hours": "Operating Hours",
-        "description": "Description"
+        "phone": "Phone Number",
+        "email": "Email Address",
+        "website": "Website",
+        "operatingHours": "Operating Hours",
+        "description": "Description",
+        "descriptions": "Multi-language Descriptions",
+        "descriptionEn": "Description (English)",
+        "descriptionJa": "Description (Japanese)",
+        "descriptionVi": "Description (Vietnamese)",
+        "socialLinks": "Social Media Links",
+        "currency": "Currency",
+        "paymentMethods": "Payment Methods",
+        "deliveryOptions": "Service Options"
       },
       "placeholders": {
         "restaurantName": "Enter your restaurant's name",
+        "subdomain": "yourrestaurant (will become yourrestaurant.coorder.ai)",
         "brandColor": "#RRGGBB",
         "contactInfo": "e.g., phone number, email",
         "address": "Restaurant's full address",
+        "phone": "+1 234 567 8900",
+        "email": "contact@yourrestaurant.com",
+        "website": "https://yourrestaurant.com",
         "hours": "e.g., Mon-Fri: 9am-10pm, Sat-Sun: 10am-11pm",
-        "description": "A brief description of your restaurant"
+        "description": "A brief description of your restaurant",
+        "descriptionEn": "Describe your restaurant in English",
+        "descriptionJa": "日本語でレストランを説明してください",
+        "descriptionVi": "Mô tả nhà hàng của bạn bằng tiếng Việt"
+      },
+      "operatingHours": {
+        "title": "Operating Hours",
+        "description": "Set your restaurant's daily operating hours.",
+        "presets": {
+          "standard": "9-21",
+          "restaurant": "11-22", 
+          "cafe": "7-17",
+          "closed": "Closed"
+        },
+        "closed": "Closed",
+        "helpText": "Customers will see these on your restaurant page."
+      },
+      "socialLinks": {
+        "helpText": "Add your social media profiles to help customers connect with you."
+      },
+      "paymentMethods": {
+        "cash": "Cash",
+        "creditCard": "Credit Card",
+        "mobilePayment": "Mobile Payment",
+        "paypay": "PayPay"
+      },
+      "deliveryOptions": {
+        "title": "Service Options",
+        "description": "Choose how customers can enjoy your food",
+        "dineIn": "Dine In",
+        "pickup": "Pickup",
+        "delivery": "Delivery"
+      },
+      "currency": {
+        "JPY": "Japanese Yen (¥)",
+        "USD": "US Dollar ($)",
+        "VND": "Vietnamese Dong (₫)"
+      },
+      "aiDescription": {
+        "title": "✨ AI-Powered Description Generator",
+        "subtitle": "Let AI create compelling descriptions in all three languages for your restaurant",
+        "cuisine": "Cuisine Type",
+        "atmosphere": "Atmosphere",
+        "specialties": "Specialties",
+        "location": "Location",
+        "additionalInfo": "Additional Information",
+        "cuisinePlaceholder": "e.g., Japanese, Vietnamese, Italian",
+        "atmospherePlaceholder": "e.g., Cozy, Modern, Traditional",
+        "specialtiesPlaceholder": "e.g., Fresh sushi, Authentic pho",
+        "locationPlaceholder": "e.g., Downtown Tokyo, Shibuya",
+        "additionalInfoPlaceholder": "Any unique features, history, or special information about your restaurant...",
+        "generate": "Generate Descriptions",
+        "generating": "Generating...",
+        "success": "Descriptions generated successfully!",
+        "disclaimer": "AI-generated content should be reviewed and edited as needed.",
+        "errors": {
+          "missingName": "Please enter a restaurant name first",
+          "generationFailed": "Failed to generate descriptions. Please try again."
+        }
       },
       "buttons": {
         "saveChanges": "Save Changes",
         "uploadingLogo": "Uploading...",
-        "updatingSettings": "Updating..."
+        "updatingSettings": "Updating...",
+        "checkAvailability": "Check Availability"
       },
       "notifications": {
         "successTitle": "Settings Updated",
         "successMessage": "Your restaurant settings have been updated successfully.",
         "settingsSaved": "Settings saved successfully.",
-        "saveError": "Error saving settings. Please try again.",
-        "uploadError": "Error uploading logo. Please try again.",
+        "saveError": "Error saving settings: {error}",
+        "uploadError": "Error uploading logo: {error}",
         "errorTitle": "Update Failed",
         "errorMessage": "Could not update settings: {error}",
         "logoUploadErrorTitle": "Logo Upload Failed",
@@ -617,26 +721,107 @@
         "fileTooLarge": "File is too large. Max 5MB.",
         "invalidFileType": "Invalid file type. Please upload an image.",
         "settingsSaveFailedGeneric": "Failed to save settings. Please try again.",
-        "compressionError": "Error compressing image. Please try a different image or check its format."
+        "compressionError": "Error compressing image. Please try a different image or check its format.",
+        "subdomainCheckSuccess": "Domain name is available!",
+        "subdomainCheckError": "Domain name is not available or invalid"
+      },
+      "validation": {
+        "name": {
+          "required": "Restaurant name is required",
+          "maxLength": "Name must be {maxLength} characters or less"
+        },
+        "subdomain": {
+          "minLength": "Domain must be at least {minLength} characters",
+          "maxLength": "Domain must be {maxLength} characters or less",
+          "invalidFormat": "Domain can only contain lowercase letters, numbers, and hyphens"
+        },
+        "defaultLanguage": {
+          "required": "Default language is required"
+        },
+        "brandColor": {
+          "invalidFormat": "Invalid color format. Use #RRGGBB format"
+        },
+        "contactInfo": {
+          "maxLength": "Contact info must be {maxLength} characters or less"
+        },
+        "address": {
+          "maxLength": "Address must be {maxLength} characters or less"
+        },
+        "phone": {
+          "maxLength": "Phone number must be {maxLength} characters or less"
+        },
+        "email": {
+          "invalidFormat": "Please enter a valid email address",
+          "maxLength": "Email must be {maxLength} characters or less"
+        },
+        "website": {
+          "invalidFormat": "Please enter a valid website URL",
+          "maxLength": "Website URL must be {maxLength} characters or less"
+        },
+        "description": {
+          "maxLength": "Description must be {maxLength} characters or less"
+        },
+        "socialLinks": {
+          "invalidUrl": "Please enter a valid URL"
+        },
+        "currency": {
+          "required": "Currency is required"
+        },
+        "logoFile": {
+          "maxSize": "Logo file must be {maxSize}MB or less",
+          "invalidType": "Logo must be PNG, JPEG, or WebP format"
+        },
+        "logoUrl": {
+          "invalidFormat": "Invalid logo URL format"
+        }
       },
       "altText": {
         "logoPreview": "Restaurant logo preview",
         "logoIconFallback": "Logo"
       },
-      "text": {
-        "dragDropLogo": "Drag & drop or click to select logo",
-        "currentBrandColor": "Current brand color",
-        "nameRequired": "Name is required",
-        "nameMaxLength": "Name must be 100 characters or less",
-        "languageRequired": "Default language is required",
-        "invalidHexFormat": "Invalid hex color format (e.g. #RRGGBB)",
-        "contactInfoMaxLength": "Contact info must be 500 characters or less",
-        "addressMaxLength": "Address must be 500 characters or less",
-        "hoursMaxLength": "Hours must be 200 characters or less",
-        "descriptionMaxLength": "Description must be 1000 characters or less",
-        "logoUrlInvalid": "Invalid URL format for logo."
+      "sections": {
+        "basic": "Basic Information",
+        "branding": "Branding & Visual",
+        "contact": "Contact & Location",
+        "operations": "Operations",
+        "descriptions": "Descriptions",
+        "online": "Online Presence",
+        "business": "Business Settings"
+      },
+      "tabs": {
+        "basic": "Basic",
+        "domain": "Domain",
+        "hours": "Hours",
+        "descriptions": "Descriptions",
+        "business": "Business",
+        "delivery": "Service"
+      },
+      "basicInfo": {
+        "title": "Basic Information",
+        "description": "Essential details about your restaurant"
+      },
+      "domainManagement": {
+        "title": "Domain Management",
+        "description": "Customize your restaurant's web address",
+        "checking": "Checking availability...",
+        "available": "✅ This domain is available!",
+        "unavailable": "❌ This domain is already taken",
+        "infoTitle": "How it works",
+        "infoText": "Your customers will access your menu and ordering system through your custom domain."
+      },
+      "descriptions": {
+        "title": "Restaurant Descriptions",
+        "description": "Create compelling descriptions in multiple languages"
+      },
+      "businessSettings": {
+        "title": "Business Settings",
+        "description": "Configure currency and payment options"
+      },
+      "currencyOptions": {
+        "JPY": "Japanese Yen (¥)",
+        "USD": "US Dollar ($)",
+        "VND": "Vietnamese Dong (₫)"
       }
-      
     },
     "Layout": {
       "errors": {
@@ -1014,7 +1199,11 @@
       "select_toppings": "Select Toppings",
       "selected_toppings": "Selected Toppings:",
       "base_price": "Base Price",
-      "toppings_price": "Toppings"
+      "toppings_price": "Toppings",
+      "view_smart": "View Smart Menu",
+      "view_classic": "View Classic Menu",
+      "browse_categories": "Browse Categories",
+      "no_items_found": "No items found in this category."
     },
     "cart": {
       "items_in_cart_plural": "{count} item(s) in cart",
@@ -1133,7 +1322,8 @@
         "name_placeholder": "Your Full Name",
         "contact_placeholder": "Your Phone or Email",
         "preorder_optional_title": "Pre-order (Optional)",
-        "submit_button": "Confirm Booking"
+        "submit_button": "Confirm Booking",
+        "party_size_placeholder": "Party Size"
       }
     },
     "common": {

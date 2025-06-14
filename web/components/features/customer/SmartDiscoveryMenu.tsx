@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import Image from "next/image"; // Added for Next.js Image component
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Sparkles, Clock, ThermometerSun, Snowflake, Heart, 
-  Zap,Camera, Search,
+  Sparkles, Heart, 
+  Zap, Camera, Search,
   TrendingUp, Star, Shuffle, ChevronRight,
   Bot, Send, MessageCircle, X, Loader2,
    Flame, Leaf,
@@ -22,15 +22,17 @@ import type { ViewType, ViewProps } from "./screens/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added for sort
 import { Checkbox } from "@/components/ui/checkbox"; // Added for dietary filters
 import { Label } from "@/components/ui/label"; // Added for checkbox labels
+import { Category } from '@/shared/types/menu';
+import { generateContextualInfo } from "@/components/common/ContextualGreeting";
+import { RestaurantSettings } from "@/shared/types";
 
-
-interface Category {
-  id: string;
-  position: number;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  menu_items: FoodItem[];
+// Extended FoodItem interface for smart discovery features
+interface SmartFoodItem extends FoodItem {
+  rating?: number;
+  reviewCount?: number;
+  categoryId: string;
+  categoryName: string;
+  searchText: string;
 }
 
 interface SmartDiscoveryMenuProps {
@@ -45,6 +47,7 @@ interface SmartDiscoveryMenuProps {
   tableId?: string;
   sessionId?: string;
   tableNumber?: string;
+  restaurantSettings: RestaurantSettings;
 }
 
 type MoodType = "quick" | "comfort" | "healthy" | "indulgent" | "adventure" | "classic";
@@ -131,13 +134,13 @@ export function SmartDiscoveryMenu({
   tableId,
   sessionId,
   tableNumber,
+  restaurantSettings
 }: SmartDiscoveryMenuProps) {
   // const t = useTranslations("Customer"); // Removed unused t
   const [discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>("smart");
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
   // const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 }); // Unused state variable
-
+  // Contextual information using the reusable helper
   // AI Chat States
   const [showAIChat, setShowAIChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -155,12 +158,6 @@ export function SmartDiscoveryMenu({
   });
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [sortBy, setSortBy] = useState<"popular" | "price" | "rating" | "name">("popular");
-
-  // Update time every minute for contextual recommendations
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
-  }, []);
 
   // Viewport size for responsive discovery
   useEffect(() => {
@@ -181,59 +178,30 @@ export function SmartDiscoveryMenu({
 
   // Enhanced smart context detection
   const contextualInfo = useMemo(() => {
-    const hour = currentTime.getHours();
-    const isWeekend = [0, 6].includes(currentTime.getDay());
-    const temp = Math.floor(Math.random() * 30) + 10; // Mock weather, could integrate API
-
-    let timeContext = "other";
-    let timeGreeting = "";
-    if (hour >= 6 && hour < 11) {
-      timeContext = "breakfast";
-      timeGreeting = "Start your day right";
-    } else if (hour >= 11 && hour < 15) {
-      timeContext = "lunch";
-      timeGreeting = "Perfect lunch time";
-    } else if (hour >= 15 && hour < 17) {
-      timeContext = "afternoon";
-      timeGreeting = "Afternoon pick-me-up";
-    } else if (hour >= 17 && hour < 22) {
-      timeContext = "dinner";
-      timeGreeting = "Dinner time delights";
-    } else {
-      timeContext = "late";
-      timeGreeting = "Late night cravings";
-    }
-
-    return {
-      timeContext,
-      timeGreeting,
-      isWeekend,
-      temperature: temp,
-      isHot: temp > 25,
-      isCold: temp < 15,
-      greeting: hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening",
-      weatherSuggestion: temp > 25 ? "Something cool and refreshing" : temp < 15 ? "Something warm and comforting" : "Whatever matches your mood",
-    };
-  }, [currentTime]);
+    return generateContextualInfo(restaurantSettings?.name, locale);
+  }, [restaurantSettings?.name, locale]);
 
   // const { timeContext, isHot, isCold, isWeekend, greeting, timeGreeting, weatherSuggestion } = contextualInfo; 
   // Use contextualInfo directly or ensure all destructured vars are used. The linter error suggests these specific two were not.
   // Using them directly from contextualInfo where needed, or ensuring the destructured ones are used.
   // For now, let's use the destructured ones as intended:
-  const { timeContext, isHot, isCold, isWeekend, greeting, timeGreeting: contextualTimeGreeting, weatherSuggestion: contextualWeatherSuggestion } = contextualInfo;
+  const { timeContext, isHot, isCold, isWeekend, greeting} = contextualInfo;
 
 
   // All available items with enhanced filtering
-  const allItems = useMemo(() => {
+  const allItems = useMemo((): SmartFoodItem[] => {
     const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
-    let items = categories.flatMap((cat) =>
+    let items: SmartFoodItem[] = categories.flatMap((cat) =>
       cat.menu_items
         .filter((item) => item.available && item.weekday_visibility.includes(today))
-        .map((item) => ({ 
+        .map((item): SmartFoodItem => ({ 
           ...item, 
           categoryId: cat.id, 
           categoryName: getLocalizedText(cat as unknown as Record<string, unknown>, locale),
-          searchText: `${getLocalizedText(item as unknown as Record<string, unknown>, locale)} ${item.description_en || ''} ${item.description_ja || ''} ${item.description_vi || ''}`.toLowerCase()
+          searchText: `${getLocalizedText(item as unknown as Record<string, unknown>, locale)} ${item.description_en || ''} ${item.description_ja || ''} ${item.description_vi || ''}`.toLowerCase(),
+          // Add default values for smart discovery features
+          rating: 4.0 + Math.random() * 1.0, // Random rating between 4.0-5.0 for demo
+          reviewCount: Math.floor(Math.random() * 50) + 5 // Random review count 5-55 for demo
         }))
     );
 
@@ -276,7 +244,7 @@ export function SmartDiscoveryMenu({
   }, [categories, locale, dietaryFilters, priceRange, sortBy]);
 
   // Enhanced smart mood-based filtering
-  const getMoodItems = useCallback((mood: MoodType) => {
+  const getMoodItems = useCallback((mood: MoodType): SmartFoodItem[] => {
     const config = MOOD_CONFIG[mood];
     const itemCountLimit = 8;
 
@@ -289,7 +257,7 @@ export function SmartDiscoveryMenu({
       return score > 0;
     });
 
-    let combinedItems: FoodItem[];
+    let combinedItems: SmartFoodItem[];
 
     if (primaryKeywordItems.length < 4) { // Condition to add fallback items
       const primaryItemIds = new Set(primaryKeywordItems.map(item => item.id)); // Get IDs of primary items
@@ -324,7 +292,7 @@ export function SmartDiscoveryMenu({
   }, [allItems]);
 
   // Enhanced trending items with better logic
-  const trendingItems = useMemo(() => {
+  const trendingItems = useMemo((): SmartFoodItem[] => {
     return allItems
       .filter(item => (item.reviewCount || 0) > 0)
       .sort((a, b) => {
@@ -336,7 +304,7 @@ export function SmartDiscoveryMenu({
   }, [allItems]);
 
   // Enhanced contextual recommendations
-  const smartRecommendations = useMemo(() => {
+  const smartRecommendations = useMemo((): SmartFoodItem[] => {
     const items = [...allItems]; // Changed to const
     const contextScore = new Map<string, number>(); // Changed to const
 
@@ -499,36 +467,6 @@ export function SmartDiscoveryMenu({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-      {/* Enhanced Hero Section with Context */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
-        <div className="relative px-4 py-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-3"
-          >
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-              {contextualTimeGreeting}
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-              {contextualWeatherSuggestion}
-              {contextualInfo.isWeekend && " • Perfect weekend vibes"}
-            </p>
-            <div className="flex items-center justify-center space-x-4 text-sm text-slate-500">
-              <div className="flex items-center space-x-1">
-                <Clock className="h-4 w-4" />
-                <span>{contextualInfo.timeContext}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                {contextualInfo.isHot ? <ThermometerSun className="h-4 w-4" /> : <Snowflake className="h-4 w-4" />}
-                <span>{contextualInfo.temperature}°C</span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
       {/* Enhanced Discovery Mode Selector */}
       <div className="px-4 mb-6">
         <div className="flex gap-2 overflow-x-auto pb-2">

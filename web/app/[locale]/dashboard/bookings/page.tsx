@@ -7,34 +7,8 @@ import { createClient as createSupabaseServerClient } from "@/lib/supabase/serve
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { Booking } from '@/shared/types'
 
-export interface PreOrderItem {
-  itemId: string
-  quantity: number
-}
-
-export interface Booking {
-  id: string
-  customerName: string
-  contact: string
-  date: string
-  time: string
-  partySize: number
-  status: string
-  preOrderItems: PreOrderItem[]
-}
-
-export type Restaurant = {
-  id: string;
-  name: string | null;
-  default_language: "en" | "ja" | "vi" | null;
-  brand_color: string | null;
-  contact_info: string | null;
-  address: string | null;
-  opening_hours: string | null;
-  description: string | null;
-  logo_url: string | null;
-};
 
 export default async function BookingsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params

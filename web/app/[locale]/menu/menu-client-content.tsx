@@ -1,7 +1,5 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks, @next/next/no-img-element */
-
 import React, { useState, ReactNode, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
@@ -296,7 +294,7 @@ export function CustomerClientContent({
         ScreenComponent = (
           <CustomerMenuScreen
             setView={setView}
-            restaurantSettings={{...restaurantSettings, logoUrl: restaurantSettings?.logoUrl || undefined}}
+            restaurantSettings={{...restaurantSettings, logoUrl: restaurantSettings?.logoUrl || ""}}
             viewProps={viewProps as MenuViewProps} // Cast to specific view prop type
             categories={categories}
             featureFlags={menuScreenFeatureFlags}
@@ -395,7 +393,7 @@ export function CustomerClientContent({
         ScreenComponent = (
           <CustomerMenuScreen
             setView={setView}
-            restaurantSettings={{...restaurantSettings, logoUrl: restaurantSettings?.logoUrl || undefined}}
+            restaurantSettings={{...restaurantSettings, logoUrl: restaurantSettings?.logoUrl || ""}}
             viewProps={viewProps as MenuViewProps} // Cast
             categories={categories}
             featureFlags={menuScreenFeatureFlags}

@@ -51,7 +51,7 @@ export default function SignupPage() {
 
       setSubdomainAvailability("checking");
       try {
-        const response = await fetch(`/api/v1/subdomain/check?subdomain=${subdomain}`);
+        const response = await fetch(`/api/v1/restaurant/check-subdomain?subdomain=${subdomain}`);
         const data = await response.json();
         if (data.available) {
           setSubdomainAvailability("available");

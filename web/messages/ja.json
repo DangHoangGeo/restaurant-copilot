@@ -267,6 +267,10 @@
       "ja": "日本語",
       "vi": "ベトナム語"
     },
+    "theme": {
+      "toggle_aria_label": "ライト/ダークテーマの切り替え",
+      "toggle_label": "テーマを切り替える"
+    },
     "rating": {
       "set_stars": "評価を{count}つ星に設定",
       "current_stars": "現在の評価：{count}つ星",
@@ -323,10 +327,6 @@
     "sidebar": {
       "toggle_aria_label": "サイドバーナビゲーションの切り替え",
       "close_aria_label": "サイドバーを閉じる"
-    },
-    "theme": {
-      "toggle_aria_label": "ライト/ダークテーマの切り替え",
-      "toggle_label": "テーマを切り替える"
     },
     "user_menu": {
       "admin_user_placeholder": "管理者ユーザー",
@@ -1009,7 +1009,9 @@
       "select_toppings": "トッピングを選択",
       "selected_toppings": "選択したトッピング:",
       "base_price": "基本価格",
-      "toppings_price": "トッピング"
+      "toppings_price": "トッピング",
+      "browse_categories": "カテゴリをブラウズ",
+      "no_items_found": "このカテゴリにはアイテムが見つかりませんでした。"
     },
     "cart": {
       "items_in_cart_plural": "カートに{count}個の商品",
