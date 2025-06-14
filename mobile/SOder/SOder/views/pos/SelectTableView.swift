@@ -29,9 +29,10 @@ extension TableStatus {
 
 
 struct SelectTableView: View {
-    // Using EnvironmentObject assuming these are set up higher in the hierarchy in a real app
-    // For isolated preview/testing, @StateObject might be used initially.
-    @EnvironmentObject var orderManager: OrderManager // Will be used for starting a new order
+    let onOrderConfirmed: (() -> Void)?
+    
+    // Using StateObject like other views (OrdersView, KitchenBoardView) to maintain consistency
+    @StateObject private var orderManager = OrderManager()
     @EnvironmentObject var supabaseManager: SupabaseManager // For fetching tables
 
     @State private var tables: [Table] = [] // This will now be [Models.Table]
@@ -40,13 +41,14 @@ struct SelectTableView: View {
     @State private var showingErrorAlert = false
     @State private var errorMessage: String? = nil
 
-    // For navigation to MenuCategoryView (actual navigation will be set up later)
-    @State private var navigateToMenuForTable: Table? = nil // This will now be Models.Table?
+    // For navigation to MenuSelectionView
+    @State private var selectedTable: Table? = nil
+    @State private var newOrderId: String? = nil
 
     // Define grid layout: 3 columns for iPad, 2 for iPhone
     #if os(iOS)
     private var columns: [GridItem] {
-        UserInterfaceIdiom.current == .pad ?
+        UIDevice.current.userInterfaceIdiom == .pad ?
             Array(repeating: .init(.flexible()), count: 3) :
             Array(repeating: .init(.flexible()), count: 2)
     }
@@ -77,6 +79,13 @@ struct SelectTableView: View {
                 }
             }
             .navigationTitle("Select a Table")
+            .navigationDestination(item: $selectedTable) { table in
+                if let orderId = newOrderId {
+                    MenuSelectionView(orderId: orderId, table: table, onOrderConfirmed: onOrderConfirmed)
+                        .environmentObject(orderManager)
+                        .environmentObject(supabaseManager)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -93,20 +102,6 @@ struct SelectTableView: View {
                 if tables.isEmpty { // Fetch only if tables aren't already loaded
                     await fetchTables()
                 }
-            }
-            .alert("Start Order", isPresented: Binding(
-                get: { navigateToMenuForTable != nil },
-                set: { if !$0 { navigateToMenuForTable = nil } }
-            )) {
-                Button("OK") {
-                    // Actual navigation would be handled here, e.g., using NavigationLink value
-                    // For now, just dismisses the alert.
-                    // The next step would be to navigate to MenuCategoryView(table: selectedTable)
-                    print("Navigation to MenuCategoryView for table \(navigateToMenuForTable?.name ?? "") confirmed.")
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Proceed to menu for table \(navigateToMenuForTable?.name ?? "")?")
             }
             .alert("Error", isPresented: $showingErrorAlert) {
                 Button("OK") {}
@@ -138,11 +133,9 @@ struct SelectTableView: View {
                     .foregroundColor(status.swiftUIColor) // Use swiftUIColor
             }
 
-            if let capacity = table.capacity {
-                Text("Capacity: \(capacity)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
+            Text("Capacity: \(table.capacity)")
+                .font(.caption)
+                .foregroundColor(.gray)
         }
         .padding()
         .frame(minHeight: 120) // Give a minimum height for consistency
@@ -155,12 +148,14 @@ struct SelectTableView: View {
                 .stroke(status.swiftUIColor.opacity(0.7), lineWidth: status.isSelectableForNewOrder ? 2 : 0.5) // Use swiftUIColor
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(table.name), Status: \(status.displayName)\(table.capacity != nil ? ", Capacity: \(table.capacity!)" : "")")
+        .accessibilityLabel("\(table.name), Status: \(status.displayName), Capacity: \(table.capacity)")
         .accessibilityHint(status.isSelectableForNewOrder ? "Tap to start a new order for this table." : "This table is currently \(status.displayName).")
         .onTapGesture {
             if status.isSelectableForNewOrder {
                 print("Selected available table: \(table.name)")
-                navigateToMenuForTable = table // Trigger alert/navigation
+                // Create a new draft order ID
+                newOrderId = UUID().uuidString
+                selectedTable = table
             } else {
                 print("Selected non-available table: \(table.name), Status: \(status.displayName)")
                 // Optionally, show an alert or navigate to existing order details if occupied/reserved
@@ -206,16 +201,13 @@ struct SelectTableView: View {
 // Preview
 struct SelectTableView_Previews: PreviewProvider {
     static var previews: some View {
-        // For preview, create mock managers or use in-memory versions.
-        // The OrderManager and SupabaseManager should be the actual ones or mocks that behave similarly.
-        let mockOrderManager = OrderManager()
+        // For preview, create mock SupabaseManager
         let mockSupabaseManager = SupabaseManager.shared // Using shared for preview convenience
 
         // If SupabaseManager.shared.currentRestaurant is nil, the mock data generation might use a default.
         // For a more robust preview, ensure currentRestaurant is set or SupabaseManager is mocked appropriately.
 
-        return SelectTableView()
-            .environmentObject(mockOrderManager)
+        return SelectTableView(onOrderConfirmed: nil)
             .environmentObject(mockSupabaseManager)
     }
 }

@@ -64,7 +64,7 @@ class OrderManager: ObservableObject {
 
     // Define status constants
     let ORDER_STATUS_DRAFT = "draft"
-    let ORDER_ITEM_STATUS_DRAFT = "draft_item" // Example status for items in a draft order
+    let ORDER_ITEM_STATUS_DRAFT = "new" // Use 'new' status for items in draft orders (per DB constraint)
     let ORDER_STATUS_NEW = "new" // For when order is confirmed to kitchen
 
     enum OrderManagerError: Error, LocalizedError {
@@ -122,7 +122,7 @@ class OrderManager: ObservableObject {
     struct UpdateOrderItemPayload: Codable {
         let quantity: Int
         let notes: String?
-        let updated_at: String = ISO8601DateFormatter().string(from: Date())
+        var updated_at: String = ISO8601DateFormatter().string(from: Date())
         // Potentially price_at_order if quantity/options change price
     }
     
@@ -333,13 +333,14 @@ class OrderManager: ObservableObject {
 
     @MainActor
     public func confirmOrderToKitchen(orderId: String) async throws -> Order {
-        guard var orderToConfirm = currentDraftOrder, orderToConfirm.id == orderId else {
-            // If not the current draft, or currentDraftOrder is nil, fetch it first.
-            // This ensures we are confirming the most up-to-date version from local state if available.
-            // However, it might be safer to always re-fetch before confirming if multi-device editing of drafts is possible.
-            // For now, we assume currentDraftOrder is the source of truth if it matches orderId.
+        var orderToConfirm: Order
+        
+        if let currentOrder = currentDraftOrder, currentOrder.id == orderId {
+            orderToConfirm = currentOrder
+        } else {
+            // Fetch the order from database
             if let fetchedOrder = try await getDraftOrder(orderId: orderId, forceFetch: true) {
-                 orderToConfirm = fetchedOrder
+                orderToConfirm = fetchedOrder
             } else {
                 throw OrderManagerError.orderUpdateFailed("Order \(orderId) not found for confirmation.")
             }
@@ -348,12 +349,18 @@ class OrderManager: ObservableObject {
         // Recalculate total price one last time based on current items, just in case.
         let finalTotalPrice = orderToConfirm.order_items?.reduce(0.0) { $0 + ($1.price_at_order * Double($1.quantity)) } ?? 0
 
-        let updatePayload: [String: AnyEncodable] = [
-            "status": AnyEncodable(ORDER_STATUS_NEW), // Change status to "new" or similar for kitchen
-            "total_price": AnyEncodable(finalTotalPrice), // Ensure total_price is up-to-date
-            "updated_at": AnyEncodable(ISO8601DateFormatter().string(from: Date()))
-            // Any other fields to update on confirmation, e.g., order_number if not set by DB
-        ]
+        // Create a proper Codable struct for the update payload
+        struct OrderUpdatePayload: Codable {
+            let status: String
+            let total_price: Double
+            let updated_at: String
+        }
+        
+        let updatePayload = OrderUpdatePayload(
+            status: "new", // Change status to "new" or similar for kitchen
+            total_price: finalTotalPrice, // Ensure total_price is up-to-date
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
 
         do {
             let confirmedOrder: Order = try await supabaseManager.client
@@ -412,7 +419,7 @@ class OrderManager: ObservableObject {
             )
 
             let mockOrderInstance = Order(
-                id: orderId, restaurant_id: "resto_preview", table_id: mockTable.id, user_id: "user_preview",
+                id: orderId, restaurant_id: "resto_preview", table_id: mockTable.id,
                 session_id: "session_preview", guest_count: 2, status: .draft, total_price: 8.50, // 2*3.00 + 2.50
                 order_number: Int.random(in: 100...200), created_at: Date().ISO8601Format(), updated_at: Date().ISO8601Format(),
                 table: mockTable, order_items: [mockItem1, mockItem2],
@@ -423,12 +430,12 @@ class OrderManager: ObservableObject {
         }
         print("Fetching draft order \(orderId) from database.")
         do {
-            let orderResponse: Order? = try await supabaseManager.client
+            let orderResponse: Order = try await supabaseManager.client
                 .from("orders")
                 .select("*, table:tables(*), order_items(*, menu_item:menu_items(*, category:categories(*)), menu_item_size:menu_item_sizes(*))") // Added category to menu_item
                 .eq("id", value: orderId)
-                .eq("status", value: ORDER_STATUS_DRAFT) // Ensure it's still a draft
-                .maybeSingle() // Use maybeSingle if it might not exist
+                .eq("status", value: "draft") // Ensure it's still a draft
+                .single() // Use single instead of maybeSingle
                 .execute()
                 .value
 

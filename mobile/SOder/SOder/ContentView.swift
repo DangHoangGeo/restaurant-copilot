@@ -16,8 +16,10 @@ struct ContentView: View {
             if supabaseManager.isAuthenticated {
                 MainTabView()
                     .environmentObject(printerManager)
+                    .environmentObject(supabaseManager)
             } else {
                 LoginView()
+                    .environmentObject(supabaseManager)
             }
         }
         .onAppear {

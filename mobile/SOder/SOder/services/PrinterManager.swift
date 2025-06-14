@@ -319,6 +319,7 @@ class PrinterManager: ObservableObject {
             guest_count: 3,
             status: OrderStatus.serving, // Explicitly use OrderStatus
             total_price: 2900, // Assuming total_price from model refactor
+            order_number: 10,
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
             table: mockTable,

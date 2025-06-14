@@ -4,6 +4,7 @@ struct MenuItemView: View {
     let category: Category // Canonical Category model
     let orderId: String
     let table: Table     // Canonical Table model
+    let onOrderConfirmed: (() -> Void)?
 
     @EnvironmentObject var orderManager: OrderManager
     @EnvironmentObject var supabaseManager: SupabaseManager
@@ -12,9 +13,9 @@ struct MenuItemView: View {
     @State private var isLoading = false
     @State private var draftOrderItemsCount: Int = 0
 
-    // For placeholder navigation
-    @State private var navigateToAddItemDetail: MenuItem? = nil // Canonical MenuItem
-    @State private var navigateToDraftOrder = false
+    // For navigation
+    @State private var selectedMenuItem: MenuItem? = nil
+    @State private var showingDraftOrder = false
 
     @State private var errorMessage: String? = nil
     @State private var showingErrorAlert: Bool = false
@@ -38,7 +39,7 @@ struct MenuItemView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     print("Navigate to DraftOrderView for orderId: \(orderId)")
-                    navigateToDraftOrder = true
+                    showingDraftOrder = true
                 }) {
                     HStack {
                         Image(systemName: "cart")
@@ -59,18 +60,15 @@ struct MenuItemView: View {
         .task {
             await loadInitialData()
         }
-        .alert("Add/Customize Item", isPresented: Binding(
-            get: { navigateToAddItemDetail != nil },
-            set: { if !$0 { navigateToAddItemDetail = nil } }
-        )) {
-            Button("OK") { /* Placeholder for navigation to AddItemDetailView */ }
-        } message: {
-            Text("Would navigate to details/customization for item: \(navigateToAddItemDetail?.displayName ?? "N/A")")
+        .navigationDestination(item: $selectedMenuItem) { menuItem in
+            AddItemDetailView(menuItem: menuItem, orderId: orderId, table: table)
+                .environmentObject(orderManager)
         }
-        .alert("Navigate to Draft Order", isPresented: $navigateToDraftOrder) {
-             Button("OK") { /* Placeholder */ }
-        } message: {
-            Text("Would navigate to Draft Order View for order \(orderId). Items: \(draftOrderItemsCount)")
+        .sheet(isPresented: $showingDraftOrder) {
+            NavigationStack {
+                DraftOrderView(orderId: orderId, table: table, onOrderConfirmed: onOrderConfirmed)
+                    .environmentObject(orderManager)
+            }
         }
         // Alert for data fetching errors
         .alert("Error", isPresented: $showingErrorAlert) {
@@ -101,7 +99,7 @@ struct MenuItemView: View {
 
             Button(action: {
                 print("Selected item: \(item.displayName)")
-                navigateToAddItemDetail = item
+                selectedMenuItem = item
             }) {
                 Image(systemName: "plus.circle.fill")
                     .font(.title2)
@@ -188,7 +186,7 @@ struct MenuItemView_Previews: PreviewProvider {
         let mockOrderId = "previewOrderMenuItemView"
 
         return NavigationView { // For toolbar and title
-            MenuItemView(category: mockCategory, orderId: mockOrderId, table: mockTable)
+            MenuItemView(category: mockCategory, orderId: mockOrderId, table: mockTable, onOrderConfirmed: nil)
                 .environmentObject(mockOrderManager)
                 .environmentObject(mockSupabaseManager)
         }

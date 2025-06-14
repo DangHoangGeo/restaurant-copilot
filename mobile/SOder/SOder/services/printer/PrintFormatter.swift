@@ -436,7 +436,7 @@ class PrintFormatter {
         ))
         
         let subtotalStr = numberFormatter.string(from: NSNumber(value: subtotal)) ?? ""
-        let finalTotal = order.total_amount ?? subtotal
+        let finalTotal = order.total_price ?? subtotal
         let totalStr = numberFormatter.string(from: NSNumber(value: finalTotal)) ?? ""
         
         sections.append(PrintSection(

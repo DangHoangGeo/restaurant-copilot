@@ -5,6 +5,7 @@ import SwiftUI
 struct MenuCategoryView: View {
     let orderId: String
     let table: Table // This should be the canonical Table model from Models.swift
+    let onOrderConfirmed: (() -> Void)?
 
     @EnvironmentObject var orderManager: OrderManager
     @EnvironmentObject var supabaseManager: SupabaseManager
@@ -13,9 +14,9 @@ struct MenuCategoryView: View {
     @State private var isLoading = false
     @State private var draftOrderItemsCount: Int = 0
 
-    // For placeholder navigation
-    @State private var navigateToCategory: Category? = nil // Canonical Category
-    @State private var navigateToDraftOrder = false
+    // For navigation
+    @State private var selectedCategory: Category? = nil
+    @State private var showingDraftOrder = false
 
     @State private var errorMessage: String? = nil
     @State private var showingErrorAlert: Bool = false
@@ -33,7 +34,7 @@ struct MenuCategoryView: View {
                         ForEach(categories) { category in
                             Button(action: {
                                 print("Selected category: \(category.displayName)")
-                                navigateToCategory = category // Placeholder for navigation
+                                selectedCategory = category
                             }) {
                                 HStack {
                                     Text(category.displayName)
@@ -50,11 +51,22 @@ struct MenuCategoryView: View {
                 }
             }
             .navigationTitle("Table \(table.name) - Categories")
+            .navigationDestination(item: $selectedCategory) { category in
+                MenuItemView(category: category, orderId: orderId, table: table, onOrderConfirmed: onOrderConfirmed)
+                    .environmentObject(orderManager)
+                    .environmentObject(supabaseManager)
+            }
+            .sheet(isPresented: $showingDraftOrder) {
+                NavigationStack {
+                    DraftOrderView(orderId: orderId, table: table, onOrderConfirmed: onOrderConfirmed)
+                        .environmentObject(orderManager)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         print("Navigate to DraftOrderView for orderId: \(orderId)")
-                        navigateToDraftOrder = true // Placeholder for navigation
+                        showingDraftOrder = true
                     }) {
                         HStack {
                             Image(systemName: "cart")
@@ -75,26 +87,12 @@ struct MenuCategoryView: View {
             .task {
                 await loadInitialData()
             }
-            .alert("Navigate to Menu Items", isPresented: Binding(
-                get: { navigateToCategory != nil },
-                set: { if !$0 { navigateToCategory = nil } }
-            )) {
-                Button("OK") { /* Placeholder */ }
-            } message: {
-                Text("Would navigate to menu items for category: \(navigateToCategory?.displayName ?? "N/A")")
-            }
-            .alert("Navigate to Draft Order", isPresented: $navigateToDraftOrder) {
-                 Button("OK") { /* Placeholder */ }
-            } message: {
-                Text("Would navigate to Draft Order View for order \(orderId). Items: \(draftOrderItemsCount)")
-            }
             // Alert for data fetching errors
             .alert("Error", isPresented: $showingErrorAlert) {
                 Button("OK") {}
             } message: {
                 Text(errorMessage ?? "An unknown error occurred.")
             }
-        // }
     }
 
     @MainActor
@@ -168,7 +166,7 @@ struct MenuCategoryView_Previews: PreviewProvider {
         let mockOrderId = "previewOrder123"
 
         return NavigationView { // NavigationView for toolbar and title to show up correctly
-            MenuCategoryView(orderId: mockOrderId, table: mockTable)
+            MenuCategoryView(orderId: mockOrderId, table: mockTable, onOrderConfirmed: nil)
                 .environmentObject(mockOrderManager)
                 .environmentObject(mockSupabaseManager)
         }

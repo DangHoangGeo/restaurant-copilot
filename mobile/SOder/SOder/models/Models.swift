@@ -5,7 +5,7 @@ struct Order: Codable, Identifiable, Equatable, Hashable { // Changed to Codable
     let id: String
     let restaurant_id: String
     let table_id: String
-    let user_id: String? // Added user_id as it's in NewOrderPayload and often useful
+    //let user_id: String? // Added user_id as it's in NewOrderPayload and often useful
     let session_id: String? // session_id can be nullable in DB
     let guest_count: Int?
     var status: OrderStatus
@@ -218,7 +218,7 @@ struct MenuItemSize: Codable, Identifiable, Hashable { // Changed to Codable, ad
     let name_en: String
     let name_ja: String? // Made optional
     let name_vi: String? // Made optional
-    let price_modifier: Double // How much this size changes the base menu_item.price
+    let price: Double
     let position: Int? // Made optional
     let created_at: String
     let updated_at: String
@@ -270,8 +270,8 @@ struct Table: Codable, Identifiable, Hashable { // Changed to Codable, added Has
     let is_accessible: Bool? // Made optional
     let notes: String?
     let qr_code: String?
-    let created_at: String
-    let updated_at: String
+    let created_at: String?
+    let updated_at: String?
 
     // Hashable
     func hash(into hasher: inout Hasher) {
@@ -337,7 +337,6 @@ struct OrderWithTableResponse: Decodable { // Should remain Decodable, not Codab
             id: id,
             restaurant_id: restaurant_id,
             table_id: table_id,
-            user_id: user_id,
             session_id: session_id,
             guest_count: guest_count,
             status: OrderStatus(rawValue: status) ?? .new, // Default if status string is unknown
@@ -362,6 +361,8 @@ struct TableResponse: Decodable { // Should remain Decodable
     let is_accessible: Bool?
     let notes: String?
     let qr_code: String?
+    let created_at: String?
+    let updated_at: String?
     // created_at and updated_at might not be needed in all Table DTOs if not displayed
     
     func toTable() -> Table {
@@ -451,7 +452,7 @@ struct MenuItemResponse: Decodable { // Should remain Decodable
     let updated_at: String
     
     // Category information when fetched with joins (DTO)
-    let category: CategoryResponse? // Assuming CategoryResponse is a DTO for category
+    let category: Category? // Assuming CategoryResponse is a DTO for category
     
     func toMenuItem() -> MenuItem {
         return MenuItem(
@@ -506,7 +507,7 @@ struct MenuItemSizeResponse: Decodable { // Should remain Decodable
     let name_en: String
     let name_ja: String?
     let name_vi: String?
-    let price_modifier: Double // Changed from price to price_modifier to align with MenuItemSize model logic
+    let price: Double
     let position: Int?
     let created_at: String
     let updated_at: String
@@ -531,7 +532,7 @@ struct MenuItemSizeResponse: Decodable { // Should remain Decodable
 struct ToppingResponse: Decodable { // Should remain Decodable
     let id: String
     let restaurant_id: String
-    // let menu_item_id: String? // If toppings can be item-specific
+    //let menu_item_id: String? // If toppings can be item-specific
     let name_en: String
     let name_ja: String?
     let name_vi: String?
@@ -544,9 +545,8 @@ struct ToppingResponse: Decodable { // Should remain Decodable
         Topping(
             id: id,
             restaurant_id: restaurant_id,
-            menu_item_id: menu_item_id,
-            name_ja: name_ja,
             name_en: name_en,
+            name_ja: name_ja,
             name_vi: name_vi,
             price: price,
             position: position,

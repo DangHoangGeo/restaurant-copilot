@@ -273,6 +273,27 @@ class SupabaseManager: ObservableObject {
         }
     }
 
+    func fetchAllMenuItems() async throws -> [MenuItem] {
+        guard let restaurantId = self.currentRestaurantId else {
+            print("Error: Missing restaurantId in fetchAllMenuItems")
+            throw SupabaseManagerError.missingRestaurantId
+        }
+        do {
+            let menuItems: [MenuItem] = try await client
+                .from("menu_items")
+                .select("*, category:categories(*)") // Join category details for filtering
+                .eq("restaurant_id", value: restaurantId)
+                .eq("available", value: true) // Only fetch available items for POS
+                .order("position", ascending: true)
+                .execute()
+                .value
+            return menuItems
+        } catch {
+            print("Error fetching all menu items: \(error.localizedDescription)")
+            throw SupabaseManagerError.fetchError(error.localizedDescription)
+        }
+    }
+
     func fetchMenuItemDetails(menuItemId: String) async throws -> MenuItem {
         // Ensure currentRestaurantId is available if items are restaurant-specific
         // and RLS isn't solely relied upon for this check.
