@@ -7,10 +7,14 @@ import { routing } from "@/i18n/routing";
 
 
 export const metadata: Metadata = {
-  title: "coorder ai | your co-pilot for restaurant management",
+  title: "coorder ai | your AI assistant for restaurant management",
   keywords: [
     "restaurant management",
     "AI support",
+    "restaurant assistant",
+    "restaurant co-pilot",
+    "restaurant management software",
+    "restaurant management AI",
     "co-pilot",
     "restaurant operations",
     "restaurant software",
@@ -32,11 +36,11 @@ export const metadata: Metadata = {
   ],
   authors: [
     {
-      name: "coorder ai",
+      name: "Coorder AI",
       url: "https://coorder.ai",
     },
   ],
-  description: "coorder ai is your co-pilot for restaurant management, providing AI-driven support to streamline operations and enhance efficiency.",
+  description: "Coorder AI is your co-pilot for restaurant management, providing AI-driven support to streamline operations and enhance efficiency.",
 };
 
 export default async function RootLayout({

@@ -96,12 +96,12 @@ export const FooterSection = ({ locale }: { locale: string }) => {
               {t('footer.copyright', { year: new Date().getFullYear() })}
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#privacy" className="text-slate-600 dark:text-slate-300 hover:text-[--brand-color-landing] text-sm transition-colors duration-150">
+              <Link href={`/${locale}/privacy`} className="text-slate-600 dark:text-slate-300 hover:text-[--brand-color-landing] text-sm transition-colors duration-150">
                 {t('footer.legal.privacy')}
-              </a>
-              <a href="#terms" className="text-slate-600 dark:text-slate-300 hover:text-[--brand-color-landing] text-sm transition-colors duration-150">
+              </Link>
+              <Link href={`/${locale}/terms`} className="text-slate-600 dark:text-slate-300 hover:text-[--brand-color-landing] text-sm transition-colors duration-150">
                 {t('footer.legal.terms')}
-              </a>
+              </Link>
               <a href="#cookies" className="text-slate-600 dark:text-slate-300 hover:text-[--brand-color-landing] text-sm transition-colors duration-150">
                 {t('footer.legal.cookies')}
               </a>

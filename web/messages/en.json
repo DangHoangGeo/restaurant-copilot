@@ -114,7 +114,27 @@
     "twoFactorTitle": "Two-Factor Verification",
     "otpLabel": "Authentication Code",
     "verifyOtpButton": "Verify Code",
-    "otpInvalid": "Invalid code. Please try again."
+    "otpInvalid": "Invalid code. Please try again.",
+    "policyAgreement": {
+      "label": "I agree to the Terms of Service and Privacy Policy",
+      "required": "You must agree to the Terms of Service and Privacy Policy to create an account",
+      "termsLink": "Terms of Service",
+      "privacyLink": "Privacy Policy",
+      "text": "By creating an account, you agree to our {termsLink} and {privacyLink}."
+    },
+    "validation": {
+      "nameRequired": "Restaurant name is required",
+      "nameTooLong": "Restaurant name must be less than 100 characters",
+      "subdomainInvalid": "Subdomain must be 3-30 lowercase letters, numbers, or hyphens",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordRequirements": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      "passwordMismatch": "Passwords do not match",
+      "policyAgreementRequired": "You must agree to the Terms of Service and Privacy Policy",
+      "formInvalid": "Please fix the errors below and try again",
+      "success": "Registration successful! Please check your email to verify your account.",
+      "serverError": "Registration failed. Please try again later."
+    }
   },
   "LandingPage": {
     "header": {
@@ -1429,5 +1449,224 @@
   },
   "ai_chat": {
     "toggle_label": "Toggle AI Chat"
+  },
+  "legal": {
+    "terms": {
+      "metadata": {
+        "title": "Terms of Service",
+        "description": "Read the terms and conditions for using CoOrder restaurant management service."
+      },
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated: {date}",
+      "printButton": "Print this page",
+      "navigation": {
+        "acceptance": "1. Acceptance of Terms",
+        "description": "2. Description of Service",
+        "registration": "3. Account Registration",
+        "subscriptions": "4. Subscriptions and Payment",
+        "usage": "5. Acceptable Use",
+        "intellectual": "6. Intellectual Property",
+        "privacy": "7. Privacy and Data",
+        "termination": "8. Termination",
+        "liability": "9. Disclaimer of Warranties",
+        "governing": "10. Governing Law",
+        "changes": "11. Changes to Terms",
+        "contact": "12. Contact Information"
+      },
+      "sections": {
+        "acceptance": {
+          "title": "1. Acceptance of Terms",
+          "content": "By accessing and using the CoOrder restaurant management service (\"Service\"), you agree to be bound by these Terms of Service. If you do not agree to any part of these terms, you may not use our Service."
+        },
+        "description": {
+          "title": "2. Description of Service",
+          "content": "CoOrder provides a comprehensive restaurant management platform including menu management, order processing, booking system, staff management tools, and analytics. The Service is designed to help restaurants streamline their operations and improve customer experience."
+        },
+        "registration": {
+          "title": "3. Account Registration",
+          "content": "To use the Service, you must create an account. You agree to provide accurate, current, and complete information during registration and to update such information to keep it accurate. You are responsible for safeguarding your account password and for all activities under your account."
+        },
+        "subscriptions": {
+          "title": "4. Subscriptions and Payment",
+          "subtitle": "Subscription Plans",
+          "plans": {
+            "description": "We offer several subscription plans:",
+            "free": "**Free Plan**: Basic functionality with limited features",
+            "basic": "**Basic Plan**: Full access to core features with monthly pricing",
+            "premium": "**Premium Plan**: All features plus advanced analytics and priority support"
+          },
+          "billing": {
+            "title": "Billing",
+            "content": "Paid plans are billed monthly or annually in advance. All fees are non-refundable except as required by law. Pricing may change with 30 days notice."
+          },
+          "cancellation": {
+            "title": "Cancellation",
+            "content": "You may cancel your subscription at any time. Cancellation will be effective at the end of the current billing cycle."
+          }
+        },
+        "usage": {
+          "title": "5. Acceptable Use",
+          "content": "You agree to use the Service only for lawful purposes and in a way that does not infringe the rights of any third party. You must not:",
+          "restrictions": {
+            "0": "Use the Service for any illegal activities",
+            "1": "Upload or distribute viruses or other malicious code",
+            "2": "Attempt unauthorized access to our systems",
+            "3": "Interfere with the normal operation of the Service",
+            "4": "Violate any applicable laws or regulations"
+          }
+        },
+        "intellectual": {
+          "title": "6. Intellectual Property",
+          "content": "The Service and its original content, features and functionality are and will remain the exclusive property of CoOrder and its licensors. The Service is protected by copyright, trademark, and other laws. You may not copy, modify, distribute, sell, or lease any part of our Service."
+        },
+        "privacy": {
+          "title": "7. Privacy and Data",
+          "content": "Your privacy is important to us. Our collection and use of your information is governed by our Privacy Policy. By using the Service, you consent to the collection and use of information in accordance with our Privacy Policy."
+        },
+        "termination": {
+          "title": "8. Termination",
+          "content": "We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms of Service. Upon termination, your right to use the Service will cease immediately."
+        },
+        "liability": {
+          "title": "9. Disclaimer of Warranties",
+          "content": "The Service is provided on an \"as is\" and \"as available\" basis. CoOrder disclaims all warranties, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall CoOrder be liable for any indirect, incidental, special, consequential, or punitive damages."
+        },
+        "governing": {
+          "title": "10. Governing Law",
+          "content": "These Terms shall be interpreted and governed by the laws of [Your Jurisdiction], without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights."
+        },
+        "changes": {
+          "title": "11. Changes to Terms",
+          "content": "We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion."
+        },
+        "contact": {
+          "title": "12. Contact Information",
+          "content": "If you have any questions about these Terms of Service, please contact us at:",
+          "email": "Email: legal@coorder.com",
+          "address": "Address: [Your Company Address]",
+          "phone": "Phone: [Your Phone Number]"
+        }
+      }
+    },
+    "privacy": {
+      "metadata": {
+        "title": "Privacy Policy",
+        "description": "Learn how CoOrder collects, uses, and protects your personal information in our restaurant management service."
+      },
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: {date}",
+      "printButton": "Print this page",
+      "navigation": {
+        "overview": "1. Overview",
+        "collection": "2. Information We Collect",
+        "usage": "3. How We Use Information",
+        "sharing": "4. Information Sharing",
+        "security": "5. Data Security",
+        "retention": "6. Data Retention",
+        "rights": "7. Your Rights",
+        "cookies": "8. Cookies and Tracking",
+        "international": "9. International Transfers",
+        "children": "10. Children's Privacy",
+        "changes": "11. Changes to this Policy",
+        "contact": "12. Contact Us"
+      },
+      "sections": {
+        "overview": {
+          "title": "1. Overview",
+          "content": "CoOrder (\"we\", \"our\", or \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our CoOrder restaurant management service (\"Service\")."
+        },
+        "collection": {
+          "title": "2. Information We Collect",
+          "subtitle": "We collect information you provide directly to us:",
+          "direct": {
+            "account": "**Account Information**: Name, email address, password, and contact details",
+            "restaurant": "**Restaurant Information**: Restaurant name, address, phone number, and business details",
+            "payment": "**Payment Information**: Billing details and payment information (processed securely)",
+            "content": "**Content**: Menu information, dish descriptions, images, and other restaurant data"
+          },
+          "automatic": {
+            "title": "We also collect information automatically:",
+            "usage": "**Usage Data**: How you interact with our Service",
+            "device": "**Device Information**: IP address, browser type, operating system",
+            "location": "**Location Data**: General location information based on IP address",
+            "cookies": "**Cookies and Tracking Data**: As described in the Cookies section below"
+          }
+        },
+        "usage": {
+          "title": "3. How We Use Information",
+          "content": "We use the information we collect to:",
+          "purposes": {
+            "0": "Provide, maintain, and improve our Service",
+            "1": "Process transactions and send related notices",
+            "2": "Send technical notices, updates, and security alerts",
+            "3": "Provide customer support and respond to your requests",
+            "4": "Analyze usage to improve our Service",
+            "5": "Personalize your user experience",
+            "6": "Comply with legal obligations"
+          }
+        },
+        "sharing": {
+          "title": "4. Information Sharing",
+          "content": "We do not sell your personal information. We may share your information in the following circumstances:",
+          "circumstances": {
+            "0": "**Service Providers**: With trusted contractors who provide services on our behalf",
+            "1": "**Legal Requirements**: When required by law or to protect our rights",
+            "2": "**Business Transactions**: In the event of a merger, acquisition, or asset sale",
+            "3": "**Consent**: With your explicit consent for specific purposes"
+          }
+        },
+        "security": {
+          "title": "5. Data Security",
+          "content": "We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:",
+          "measures": {
+            "0": "Encryption of data in transit and at rest",
+            "1": "Regular access controls and system monitoring",
+            "2": "Employee training on security practices",
+            "3": "Regular security assessments"
+          }
+        },
+        "retention": {
+          "title": "6. Data Retention",
+          "content": "We retain your personal information only for as long as necessary to provide the Service and comply with legal obligations. When information is no longer needed, we will securely delete or anonymize it."
+        },
+        "rights": {
+          "title": "7. Your Rights",
+          "content": "Depending on your location, you may have the following rights regarding your personal information:",
+          "list": {
+            "0": "**Access**: Request a copy of the personal information we hold about you",
+            "1": "**Rectification**: Request that we correct inaccurate information",
+            "2": "**Erasure**: Request that we delete your personal information",
+            "3": "**Restriction**: Request that we restrict processing of your information",
+            "4": "**Portability**: Request transfer of your data to another organization",
+            "5": "**Objection**: Object to our processing of your personal information"
+          },
+          "exercise": "To exercise these rights, please contact us using the contact information provided below."
+        },
+        "cookies": {
+          "title": "8. Cookies and Tracking Technologies",
+          "content": "We use cookies and similar tracking technologies to collect and use personal information about you. Cookies are small files stored on your device. You can control cookies through your browser settings."
+        },
+        "international": {
+          "title": "9. International Transfers",
+          "content": "Your information may be transferred to and maintained on computers located outside of your state, province, country, or other governmental jurisdiction where data protection laws may differ from those in your jurisdiction."
+        },
+        "children": {
+          "title": "10. Children's Privacy",
+          "content": "Our Service is not intended for children under 13. We do not knowingly collect personally identifiable information from children under 13."
+        },
+        "changes": {
+          "title": "11. Changes to this Policy",
+          "content": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"last updated\" date."
+        },
+        "contact": {
+          "title": "12. Contact Us",
+          "content": "If you have any questions about this Privacy Policy, please contact us at:",
+          "email": "Email: privacy@coorder.com",
+          "address": "Address: [Your Company Address]",
+          "phone": "Phone: [Your Phone Number]",
+          "dpo": "Data Protection Officer: dpo@coorder.com"
+        }
+      }
+    }
   }
 }

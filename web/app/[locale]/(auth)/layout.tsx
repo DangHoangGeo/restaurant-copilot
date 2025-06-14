@@ -131,12 +131,12 @@ export default function AuthPageLayout({ children }: AuthPageLayoutProps) {
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-xs text-slate-500 dark:text-slate-400">
               <p>© {new Date().getFullYear()} Coorder.ai. {t('footer.rights') || 'All rights reserved.'}</p>
               <div className="flex space-x-4">
-                <a href="#privacy" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <Link href={`/${locale}/privacy`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t('footer.privacy') || 'Privacy Policy'}
-                </a>
-                <a href="#terms" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                </Link>
+                <Link href={`/${locale}/terms`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t('footer.terms') || 'Terms of Service'}
-                </a>
+                </Link>
               </div>
             </div>
           </div>
