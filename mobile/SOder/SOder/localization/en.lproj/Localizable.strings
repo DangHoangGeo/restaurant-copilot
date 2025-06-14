@@ -445,3 +445,5 @@
 "orders_mark_as_serving" = "Mark as Serving";
 "orders_checkout" = "Checkout";
 
+// MARK: - POS Flow Tab
+"tab_new_order" = "New Order";

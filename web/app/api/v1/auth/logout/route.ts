@@ -9,7 +9,7 @@ export async function POST() {
     secure: process.env.NEXT_PRIVATE_DEVELOPMENT !== "true",
     sameSite: "lax",
     path: "/",
-    domain: process.env.NEXT_PRIVATE_DEVELOPMENT === "true" ? "localhost" : "." + process.env.NEXT_PRIVATE_PRODUCTION_URL,
+    domain: process.env.NEXT_PRIVATE_DEVELOPMENT === "true" ? "localhost" : "." + process.env.NEXT_PUBLIC_PRODUCTION_URL,
     maxAge: 0, // This makes the cookie expire immediately
   });
 

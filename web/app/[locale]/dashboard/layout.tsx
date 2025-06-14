@@ -36,7 +36,7 @@ export default async function DashboardLayout({
   let subdomain = null;
   const parts = host.split('.');
 	// Determine root domain parts for production and handle localhost in development
-	let rootDomainParts = (process.env.NEXT_PRIVATE_PRODUCTION_URL || 'qorder.jp').split('.').length;
+	let rootDomainParts = (process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai').split('.').length;
 	// If running on localhost, treat 'localhost' as the root domain
 	if (host.includes('localhost')) {
 		rootDomainParts = 1; // 'abc.localhost:3000' => ['abc', 'localhost:3000']
