@@ -10,8 +10,19 @@
       "signup": "Register Your Restaurant",
       "forgotPassword": "Forgot Password"
     },
+    "subtitle":{
+      "login": "Welcome back! Please enter your credentials to access your restaurant dashboard.",
+      "signup": "Create your restaurant's account to start managing your operations.",
+      "forgotPassword": "Enter your email to reset your password."
+    },
+    "navigation": {
+      "login": "Already have an account? Login",
+      "signup": "Don't have an account? Sign Up",
+      "forgotPassword": "Forgot your password? Reset it here"
+    },
     "emailLabel": "Email",
     "emailPlaceholder": "Enter your email",
+    "emailHelp": "We'll send you a verification link to this email.",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
     "loginButton": "Login",
@@ -31,6 +42,14 @@
       "invalid_format": "Subdomain must be 3-30 lowercase letters, numbers, or hyphens.",
       "not_available": "This subdomain is already taken.",
       "check_failed": "Failed to check subdomain availability. Please try again."
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "description": "Coorder.ai is a mobile-first, AI-augmented SaaS platform designed to empower small restaurants with modern tools for managing menus, orders, bookings, staff, and analytics.",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "contact": "Contact Us",
+      "help": "Help Center"
     },
     "confirmPasswordLabel": "Confirm Password",
     "captchaRequired": "Please complete the CAPTCHA.",
@@ -236,6 +255,7 @@
     "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
     "form_placeholder": "Form fields go here.",
     "back_to_menu": "Back to Menu",
+    "back_to_home": "Back to Home",
     "days": {
       "monday": "Monday",
       "tuesday": "Tuesday", 
