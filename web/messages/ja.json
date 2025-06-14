@@ -8,7 +8,11 @@
     "title": {
       "login": "ログイン",
       "signup": "レストランを登録",
-      "forgotPassword": "パスワードをお忘れですか"
+      "forgotPassword": "パスワードをお忘れですか",
+      "updatePassword": "パスワードを更新",
+      "resetPassword": "パスワードをリセット",
+      "twoFactor": "二段階認証",
+      "verifyEmail": "メールアドレスを確認"
     },
     "subtitle":{
       "login": "お帰りなさい！ダッシュボードにアクセスするための認証情報を入力してください。",
@@ -20,6 +24,43 @@
       "signup": "アカウントをお持ちでないですか？新規登録",
       "forgotPassword": "パスワードをお忘れですか？こちらでリセット"
     },
+    "sending": "送信中...",
+    "success": {
+      "login": "ログインに成功しました！ダッシュボードにリダイレクトしています...",
+      "signup": "登録に成功しました！メールを確認してアカウントを確認してください。",
+      "passwordReset": "パスワードリセットリンクが送信されました！メールを確認してパスワードをリセットしてください。",
+      "emailSent": "メールが送信されました！",
+      "emailSentDescription": "このメールアドレスにアカウントが存在する場合、パスワードリセットリンクが受信トレイに送信されました。"
+    },
+    "error": {
+      "login": "ログインに失敗しました。メールアドレスとパスワードを確認してください。",
+      "signup": "登録に失敗しました。後でもう一度お試しください。",
+      "forgotPassword": "リセットリンクの送信に失敗しました。もう一度お試しください。"
+    },
+    "password":{
+      "reset": "パスワードをリセット",
+      "update": "パスワードを更新",
+      "updating": "パスワードを更新中...",
+      "newPassword": "新しいパスワード",
+      "newPasswordPlaceholder": "新しいパスワードを入力してください",
+      "confirmPassword": "新しいパスワードの確認",
+      "confirmPasswordPlaceholder": "新しいパスワードを再入力してください",
+      "passwordMatch": "パスワードが一致しました！",
+      "requirements": "パスワード要件",
+      "minLength": "8文字以上",
+      "uppercase": "大文字を含む",
+      "lowercase": "小文字を含む",
+      "number": "数字を含む",
+      "passwordMismatch": "パスワードが一致しません。もう一度お試しください。",
+      "passwordUpdated": "パスワードが正常に更新されました。",
+      "passwordStrength": "パスワードの強度: ",
+      "strength": {
+        "weak": "弱い",
+        "medium": "普通",
+        "strong": "強い",
+        "veryStrong": "非常に強い"
+      }
+    },
     "emailLabel": "メールアドレス",
     "emailPlaceholder": "メールアドレスを入力してください",
     "emailHelp": "このメールアドレスに確認リンクを送信します。",
@@ -30,6 +71,7 @@
     "forgotPassword": "パスワードをお忘れですか",
     "noAccount": "アカウントをお持ちでないですか？",
     "signUp": "新規登録",
+    "sendResetLink": "リセットリンクを送信",
     "loginFailed": "ログインに失敗しました。認証情報を確認して、もう一度お試しください。",
     "subdomainNotFound": "サブドメインが見つかりません。",
     "anErrorOccurred": "エラーが発生しました。もう一度お試しください。",

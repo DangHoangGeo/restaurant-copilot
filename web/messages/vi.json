@@ -8,7 +8,11 @@
     "title": {
       "login": "Đăng nhập",
       "signup": "Đăng ký Nhà hàng của bạn",
-      "forgotPassword": "Quên mật khẩu"
+      "forgotPassword": "Quên mật khẩu?",
+      "updatePassword": "Cập nhật mật khẩu",
+      "resetPassword": "Đặt lại mật khẩu",
+      "twoFactor": "Xác thực hai yếu tố",
+      "verifyEmail": "Xác minh email của bạn"
     },
     "subtitle":{
       "login": "Chào mừng trở lại! Vui lòng nhập thông tin xác thực của bạn để truy cập bảng điều khiển nhà hàng.",
@@ -20,6 +24,44 @@
       "signup": "Bạn chưa có tài khoản? Đăng ký",
       "forgotPassword": "Quên mật khẩu? Đặt lại ở đây"
     },
+    "sending": "Đang gửi...",
+    "success": {
+      "login": "Đăng nhập thành công! Đang chuyển hướng đến bảng điều khiển của bạn...",
+      "signup": "Đăng ký thành công! Vui lòng kiểm tra email của bạn để xác minh tài khoản.",
+      "passwordReset": "Liên kết đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra email của bạn để đặt lại mật khẩu.",
+      "emailSent": "Email đã được gửi!",
+      "emailSentDescription": "Nếu tài khoản với email này tồn tại, một liên kết đặt lại mật khẩu đã được gửi đến hộp thư đến của bạn."
+    },
+    "error": {
+      "login": "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu của bạn.",
+      "signup": "Đăng ký thất bại. Vui lòng thử lại sau.",
+      "forgotPassword": "Gửi liên kết đặt lại thất bại. Vui lòng thử lại."
+    },
+    "password":{
+      "reset": "Đặt lại mật khẩu của bạn",
+      "update": "Cập nhật mật khẩu của bạn",
+      "updating": "Đang cập nhật mật khẩu...",
+      "newPassword": "Mật khẩu mới",
+      "newPasswordPlaceholder": "Nhập mật khẩu mới của bạn",
+      "confirmPassword": "Xác nhận mật khẩu mới",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới của bạn",
+      "passwordMatch": "Mật khẩu khớp!",
+      "requirements": "Yêu cầu mật khẩu",
+      "minLength": "Ít nhất 8 ký tự",
+      "uppercase": "Chứa chữ cái viết hoa",
+      "lowercase": "Chứa chữ cái viết thường",
+      "number": "Chứa số",
+      "passwordMismatch": "Mật khẩu không khớp. Vui lòng thử lại.",
+      "passwordUpdated": "Mật khẩu của bạn đã được cập nhật thành công.",
+      "passwordStrength": "Độ mạnh mật khẩu: ",
+      "strength": {
+        "veryWeak": "Rất yếu",
+        "weak": "Yếu",
+        "medium": "Trung bình",
+        "strong": "Mạnh",
+        "veryStrong": "Rất mạnh"
+      }
+    },
     "emailLabel": "Email",
     "emailPlaceholder": "Nhập email của bạn",
     "emailHelp": "Chúng tôi sẽ gửi cho bạn một liên kết xác minh đến email này.",
@@ -30,6 +72,7 @@
     "forgotPassword": "Quên mật khẩu",
     "noAccount": "Chưa có tài khoản?",
     "signUp": "Đăng ký",
+    "sendResetLink": "Gửi link đặt lại",
     "loginFailed": "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
     "subdomainNotFound": "Không tìm thấy tên miền phụ.",
     "anErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại.",
