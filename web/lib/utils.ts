@@ -26,7 +26,7 @@ export function formatCurrency(
   }
 }
 
-export   const getLocalizedText = (obj: { [key: string]: string | undefined }, locale: string) => {
+export const getLocalizedText = (obj: { [key: string]: string | undefined }, locale: string) => {
   return obj[`name_${locale}`] || obj[`name_en`] || '';
 };
 
@@ -35,32 +35,24 @@ export function getSubdomainFromHost(host: string): string | null {
   if (!host) return null;
 
   const hostname = host.split(':')[0]; // Remove port
-  console.log('Subdomain detection - hostname:', hostname);
 
   // Handle localhost
   if (hostname.includes('localhost')) {
     const parts = hostname.split('.');
-    console.log('Localhost parts:', parts);
     if (parts.length > 1 && parts[0] !== 'localhost') { // e.g., sub.localhost
-      console.log('Detected localhost subdomain:', parts[0]);
       return parts[0];
     }
-    console.log('No localhost subdomain detected');
     return null; // Just 'localhost' or invalid
   }
 
   // Handle production domain
-  const rootDomain = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai'; // Consistent root domain
-  console.log('Root domain:', rootDomain);
+  const rootDomain = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai'; // Consistent root domai
   
   if (hostname === rootDomain || hostname === `www.${rootDomain}`) {
-    console.log('Hostname matches root domain, no subdomain');
     return null;
   }
 
   const parts = hostname.split('.');
-  console.log('Production hostname parts:', parts);
-  console.log('Root domain parts:', rootDomain.split('.'));
   
   if (parts.length > rootDomain.split('.').length) {
     // Check if the end of the hostname matches the rootDomain
@@ -70,15 +62,9 @@ export function getSubdomainFromHost(host: string): string | null {
     const potentialSubdomain = parts.slice(0, parts.length - rootDomainParts).join('.');
     const reconstructedDomain = parts.slice(parts.length - rootDomainParts).join('.');
 
-    console.log('Potential subdomain:', potentialSubdomain);
-    console.log('Reconstructed domain:', reconstructedDomain);
-
     if (reconstructedDomain === rootDomain && potentialSubdomain) {
-      console.log('Detected production subdomain:', potentialSubdomain);
       return potentialSubdomain;
     }
   }
-
-  console.log('No subdomain detected for hostname:', hostname);
   return null;
 }
