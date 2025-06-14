@@ -28,9 +28,14 @@ export function FormField({
   fieldSize = "md",
   className,
   id,
+  required,
+  disabled,
   ...props
 }: FormFieldProps) {
   const fieldId = id || `field-${Math.random().toString(36).substr(2, 9)}`;
+  const errorId = `${fieldId}-error`;
+  const helpId = `${fieldId}-help`;
+  const successId = `${fieldId}-success`;
   
   const sizeClasses = {
     sm: "h-8 text-sm",
@@ -91,6 +96,8 @@ export function FormField({
       <div className="relative">
         <Input
           id={fieldId}
+          required={required}
+          disabled={disabled}
           className={cn(
             sizeClasses[fieldSize],
             paddingClasses[fieldSize],
@@ -103,13 +110,11 @@ export function FormField({
             className
           )}
           aria-invalid={error ? "true" : "false"}
-          aria-describedby={
-            cn(
-              error && `${fieldId}-error`,
-              success && `${fieldId}-success`,
-              helpText && `${fieldId}-help`
-            )
-          }
+          aria-describedby={cn(
+            error && errorId,
+            success && successId,
+            helpText && helpId
+          ).trim() || undefined}
           {...props}
         />
         
@@ -152,7 +157,7 @@ export function FormField({
       {/* Help Text */}
       {helpText && !error && !success && (
         <p 
-          id={`${fieldId}-help`}
+          id={helpId}
           className="text-xs text-slate-500 dark:text-slate-400"
         >
           {helpText}
@@ -162,8 +167,9 @@ export function FormField({
       {/* Error Message */}
       {error && (
         <p 
-          id={`${fieldId}-error`}
+          id={errorId}
           className="text-xs text-red-600 dark:text-red-400 flex items-center"
+          role="alert"
         >
           <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" />
           {error}
@@ -173,8 +179,9 @@ export function FormField({
       {/* Success Message */}
       {success && (
         <p 
-          id={`${fieldId}-success`}
+          id={successId}
           className="text-xs text-green-600 dark:text-green-400 flex items-center"
+          role="status"
         >
           <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
           {success}

@@ -85,7 +85,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
               onClick={() => setBillingCycle('monthly')}
               className={`px-6 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
                 billingCycle === 'monthly'
-                  ? 'bg-[--brand-color-landing] text-white shadow-sm'
+                  ? 'bg-cyan-600 text-white shadow-sm'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -95,7 +95,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
               onClick={() => setBillingCycle('yearly')}
               className={`px-6 py-2 text-sm font-medium rounded-full transition-all duration-200 relative ${
                 billingCycle === 'yearly'
-                  ? 'bg-[--brand-color-landing] text-white shadow-sm'
+                  ? 'bg-cyan-600 text-white shadow-sm'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -124,7 +124,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <span className="bg-[--brand-color-landing] text-white px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                    <span className="bg-[--brand-color-landing] text-gray-900 dark:text-gray-100 px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
                       <Star className="w-4 h-4 fill-current" />
                       {t('popular')}
                     </span>

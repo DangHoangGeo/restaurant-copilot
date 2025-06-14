@@ -12,12 +12,20 @@
       "updatePassword": "Cập nhật mật khẩu",
       "resetPassword": "Đặt lại mật khẩu",
       "twoFactor": "Xác thực hai yếu tố",
-      "verifyEmail": "Xác minh email của bạn"
+      "verifyEmail": "Xác minh email của bạn",
+      "verifyingEmail": "Đang xác minh Email",
+      "emailVerified": "Email đã được xác minh",
+      "linkExpired": "Liên kết đã hết hạn",
+      "verificationFailed": "Xác minh thất bại"
     },
     "subtitle":{
       "login": "Chào mừng trở lại! Vui lòng nhập thông tin xác thực của bạn để truy cập bảng điều khiển nhà hàng.",
       "signup": "Tạo tài khoản nhà hàng của bạn để bắt đầu quản lý hoạt động.",
-      "forgotPassword": "Nhập email của bạn để đặt lại mật khẩu."
+      "forgotPassword": "Nhập email của bạn để đặt lại mật khẩu.",
+      "verifyingEmail": "Vui lòng đợi trong khi chúng tôi xác minh địa chỉ email của bạn...",
+      "emailVerified": "Email của bạn đã được xác minh thành công. Bây giờ bạn có thể đăng nhập vào tài khoản của mình.",
+      "linkExpired": "Liên kết xác minh của bạn đã hết hạn. Vui lòng yêu cầu liên kết mới.",
+      "verificationFailed": "Chúng tôi không thể xác minh địa chỉ email của bạn. Vui lòng thử lại hoặc liên hệ hỗ trợ."
     },
     "navigation": {
       "login": "Bạn đã có tài khoản? Đăng nhập",
@@ -36,7 +44,15 @@
     "error": {
       "login": "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu của bạn.",
       "signup": "Đăng ký thất bại. Vui lòng thử lại sau.",
-      "forgotPassword": "Gửi liên kết đặt lại thất bại. Vui lòng thử lại."
+      "forgotPassword": "Gửi liên kết đặt lại thất bại. Vui lòng thử lại.",
+      "emailRequired": "Email là bắt buộc.",
+      "captchaRequired": "Vui lòng hoàn thành CAPTCHA.",
+      "passwordsDoNotMatch": "Mật khẩu không khớp.",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "sessionCheck": "Lỗi kiểm tra phiên.",
+      "notAuthenticatedUpdate": "Bạn phải đăng nhập để cập nhật mật khẩu.",
+      "notAuthenticatedReset": "Bạn phải đăng nhập để đặt lại mật khẩu.",
+      "anErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại."
     },
     "password":{
       "reset": "Đặt lại mật khẩu của bạn",
@@ -74,6 +90,12 @@
     "noAccount": "Chưa có tài khoản?",
     "signUp": "Đăng ký",
     "sendResetLink": "Gửi link đặt lại",
+    "continueToLogin": "Tiếp tục đến trang đăng nhập",
+    "resendVerification": "Gửi lại email xác minh",
+    "backToSignup": "Quay lại đăng ký",
+    "resendIn": "Gửi lại sau",
+    "resending": "Đang gửi lại...",
+    "home": "Trang chủ",
     "loginFailed": "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
     "subdomainNotFound": "Không tìm thấy tên miền phụ.",
     "anErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại.",
@@ -105,7 +127,60 @@
     "twoFactorTitle": "Xác minh hai yếu tố",
     "otpLabel": "Mã xác thực",
     "verifyOtpButton": "Xác minh Mã",
-    "otpInvalid": "Mã không hợp lệ. Vui lòng thử lại."
+    "otpInvalid": "Mã không hợp lệ. Vui lòng thử lại.",
+    "verifying": "Đang xác minh...",
+    "otpPlaceholder": "Nhập mã 6 chữ số",
+    "otpHelp": "Nhập mã 6 chữ số từ ứng dụng xác thực của bạn",
+    "error": {
+      "login": "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu của bạn.",
+      "signup": "Đăng ký thất bại. Vui lòng thử lại sau.",
+      "forgotPassword": "Gửi liên kết đặt lại thất bại. Vui lòng thử lại.",
+      "emailRequired": "Email là bắt buộc.",
+      "captchaRequired": "Vui lòng hoàn thành CAPTCHA.",
+      "passwordsDoNotMatch": "Mật khẩu không khớp.",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "sessionCheck": "Lỗi kiểm tra phiên.",
+      "notAuthenticatedUpdate": "Bạn phải đăng nhập để cập nhật mật khẩu.",
+      "notAuthenticatedReset": "Bạn phải đăng nhập để đặt lại mật khẩu.",
+      "anErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại.",
+      "emailVerificationFailed": "Xác minh email thất bại.",
+      "emailVerificationExpired": "Liên kết xác minh đã hết hạn.",
+      "emailVerificationInvalid": "Liên kết xác minh không hợp lệ.",
+      "emailAlreadyVerified": "Email này đã được xác minh.",
+      "emailNotFound": "Không tìm thấy email này.",
+      "resendCooldown": "Có thể gửi lại sau {seconds} giây."
+    },
+    "info": {
+      "signInToUpdatePassword": "Đăng nhập để cập nhật mật khẩu của bạn.",
+      "emailVerification": "Vui lòng xác minh địa chỉ email của bạn để hoàn tất đăng ký.",
+      "emailVerificationSent": "Một liên kết xác minh đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến của bạn.",
+      "emailAlreadyVerified": "Email của bạn đã được xác minh. Bạn có thể đăng nhập ngay bây giờ.",
+      "redirectingToLogin": "Đang chuyển hướng đến trang đăng nhập...",
+      "pleaseWait": "Điều này có thể mất vài phút..."
+    },
+    "emailVerification": {
+      "title": "Xác minh Email",
+      "subtitle": "Vui lòng xác minh email của bạn để kích hoạt tài khoản",
+      "verifying": "Đang xác minh...",
+      "success": "Xác minh thành công!",
+      "successMessage": "Địa chỉ email của bạn đã được xác minh thành công.",
+      "error": "Lỗi xác minh",
+      "expired": "Liên kết đã hết hạn",
+      "expiredMessage": "Liên kết xác minh đã hết hạn. Vui lòng yêu cầu liên kết mới.",
+      "invalid": "Liên kết không hợp lệ",
+      "invalidMessage": "Liên kết xác minh không hợp lệ. Vui lòng yêu cầu liên kết mới.",
+      "alreadyVerified": "Đã được xác minh",
+      "alreadyVerifiedMessage": "Địa chỉ email này đã được xác minh.",
+      "notFound": "Không tìm thấy email",
+      "notFoundMessage": "Không tìm thấy địa chỉ email này.",
+      "resendButton": "Gửi lại email xác minh",
+      "resending": "Đang gửi lại...",
+      "resentSuccess": "Email xác minh đã được gửi lại!",
+      "resentError": "Gửi lại thất bại. Vui lòng thử lại.",
+      "cooldownMessage": "Có thể gửi lại sau {seconds} giây.",
+      "loginButton": "Đến trang đăng nhập",
+      "goToDashboard": "Đi đến bảng điều khiển"
+    }
   },
   "LandingPage": {
     "header": {

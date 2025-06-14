@@ -46,7 +46,9 @@
       "signInToUpdatePassword": "Sign in to update your password.",
       "emailVerification": "Please verify your email address to complete registration.",
       "emailVerificationSent": "A verification link has been sent to your email. Please check your inbox.",
-      "emailAlreadyVerified": "Your email is already verified. You can now log in."
+      "emailAlreadyVerified": "Your email is already verified. You can now log in.",
+      "redirectingToLogin": "Redirecting to login page...",
+      "pleaseWait": "This may take a few moments..."
     },
     "password":{
       "reset": "Reset your password",
