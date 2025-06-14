@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { Button, Card, Icon } from '.';
 import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 // Types for restaurant data
 interface OpeningHours {
@@ -77,7 +79,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
-
+  const tCommon = useTranslations('common');
   // Contextual information using the reusable helper
   const contextualInfo = useMemo(() => {
     return generateContextualInfo(restaurantData?.restaurant?.name, locale);
@@ -117,7 +119,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Loading restaurant...</p>
+          <p className="text-slate-600 dark:text-slate-400">{tCommon("loading")}</p>
         </div>
       </div>
     );
@@ -127,12 +129,12 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center p-8">
-          <h1 className="text-3xl font-bold mb-4 text-slate-800 dark:text-slate-100">Restaurant Not Found</h1>
+          <h1 className="text-3xl font-bold mb-4 text-slate-800 dark:text-slate-100">{tCommon("restaurant_not_found")}</h1>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
-            The restaurant &quot;{subdomain}&quot; could not be found.
+            {tCommon("restaurant_not_found_description", { subdomain })}
           </p>
           <Button href="/" variant="primary" onClick={() => {}} iconLeft={null} iconRight={null}>
-            Go to Homepage
+            {tCommon("go_to_homepage")}
           </Button>
         </div>
       </div>
@@ -317,7 +319,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
           >
-            Welcome to <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{restaurant.name}</span>
+            {tCommon("welcome_to")} <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{restaurant.name}</span>
           </motion.h2>
 
           {/* Restaurant Description with Stagger Animation */}
@@ -353,7 +355,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                 iconLeft={MenuIcon}
                 iconRight={null}
               >
-                <span className="group-hover:mr-2 transition-all">View Menu</span>
+                <span className="group-hover:mr-2 transition-all">{tCommon("view_menu")}</span>
                 <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all" />
               </Button>
             </motion.div>
@@ -425,7 +427,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                     >
                       <Icon name={MapPin} size={20} className="mr-2 text-[var(--brand-color)]" />
                     </motion.div>
-                    Contact Information
+                    {tCommon("contact_information")}
                   </motion.h3>
                   <div className="space-y-3">
                     {restaurant.address && (
@@ -474,7 +476,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                           rel="noopener noreferrer"
                           className="text-sm hover:text-[var(--brand-color)] transition-colors"
                         >
-                          Visit Website
+                          {tCommon("visit_website")}
                         </a>
                       </motion.div>
                     )}
@@ -504,7 +506,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                     >
                       <Icon name={Clock} size={20} className="mr-2 text-[var(--brand-color)]" />
                     </motion.div>
-                    Opening Hours
+                    {tCommon("opening_hours")}
                   </motion.h3>
                   <div className="space-y-2">
                     {Object.entries(getOpeningHours() || {}).map(([day, hours]: [string, OpeningHours[string]], index) => (
@@ -550,7 +552,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                   >
                     <Icon name={QrCode} size={20} className="mr-2 text-[var(--brand-color)]" />
                   </motion.div>
-                  Quick Actions
+                  {tCommon("quick_actions")}
                 </motion.h3>
                 <div className="space-y-3">
                   <motion.div
@@ -566,7 +568,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                       iconLeft={QrCode}
                       iconRight={null}
                     >
-                      <span className="group-hover:mr-2 transition-all">Scan QR Code</span>
+                      <span className="group-hover:mr-2 transition-all">{tCommon("scan_qr_code")}</span>
                       <Zap className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
                     </Button>
                   </motion.div>
@@ -602,7 +604,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                       iconLeft={CalendarDays}
                       iconRight={null}
                     >
-                      <span className="group-hover:mr-2 transition-all">Book Table</span>
+                      <span className="group-hover:mr-2 transition-all">{tCommon("book_table")}</span>
                       <Heart className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
                     </Button>
                   </motion.div>
@@ -684,7 +686,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                             >
                               <div className="inline-flex items-center space-x-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full text-xs">
                                 <Award className="h-3 w-3" />
-                                <span>Popular</span>
+                                <span>{tCommon("popular")}</span>
                               </div>
                             </motion.div>
                           )}
@@ -728,7 +730,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                     whileHover={{ x: '100%' }}
                     transition={{ duration: 0.6 }}
                   />
-                  <span className="relative group-hover:mr-2 transition-all">View Full Menu</span>
+                  <span className="relative group-hover:mr-2 transition-all">{tCommon("view_full_menu")}</span>
                   <Users className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all relative" />
                 </Button>
               </motion.div>
@@ -762,24 +764,23 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                 >
                   <Bot className="h-8 w-8 text-white" />
                 </motion.div>
-                <h3 className="text-xl font-bold">AI Assistant</h3>
+                <h3 className="text-xl font-bold">{tCommon("ai_assistant")}</h3>
                 <p className="text-slate-600 dark:text-slate-400">
-                  Coming soon! Your personal dining assistant will help you discover perfect meals, 
-                  get recommendations, and enhance your restaurant experience.
+                  {tCommon("ai_assistant_description")}
                 </p>
                 <div className="flex items-center justify-center space-x-2 text-sm text-slate-500">
                   <Sparkles className="h-4 w-4" />
-                  <span>Smart Recommendations</span>
+                  <span>{tCommon("smart_recommendations")}</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2 text-sm text-slate-500">
                   <MessageCircle className="h-4 w-4" />
-                  <span>Interactive Chat</span>
+                  <span>{tCommon("interactive_chat")}</span>
                 </div>
                 <Button
                   onClick={() => setShowAIAssistant(false)}
                   className="w-full"
                 >
-                  Got it!
+                  {tCommon("got_it")}
                 </Button>
               </div>
             </motion.div>
@@ -888,7 +889,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 2.8 }}
             >
-              © {new Date().getFullYear()} {restaurant.name}. All rights reserved.
+              © {new Date().getFullYear()} {restaurant.name}. {tCommon("all_rights_reserved")}
             </motion.p>
             <motion.p
               initial={{ y: 10, opacity: 0 }}
@@ -896,13 +897,15 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
               transition={{ delay: 3 }}
               className="mt-2 flex items-center justify-center space-x-2"
             >
-              <span>Powered by</span>
+              <span>{tCommon("powered_by")}</span>
               <motion.span
                 className="text-[var(--brand-color)] font-semibold"
                 animate={{ opacity: [1, 0.7, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                CoOrder AI
+                <Link href="https://coorder.ai" target="_blank" rel="noopener noreferrer">
+                  Coorder.ai
+                </Link>
               </motion.span>
               <Zap className="h-4 w-4 text-[var(--brand-color)]" />
             </motion.p>

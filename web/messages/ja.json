@@ -52,6 +52,7 @@
       "uppercase": "大文字を含む",
       "lowercase": "小文字を含む",
       "number": "数字を含む",
+      "special": "特殊文字を含む",
       "passwordMismatch": "パスワードが一致しません。もう一度お試しください。",
       "passwordUpdated": "パスワードが正常に更新されました。",
       "passwordStrength": "パスワードの強度: ",
@@ -77,7 +78,9 @@
     "subdomainNotFound": "サブドメインが見つかりません。",
     "anErrorOccurred": "エラーが発生しました。もう一度お試しください。",
     "nameLabel": "レストラン名",
+    "namePlaceholder": "レストラン名を入力してください",
     "subdomainLabel": "サブドメイン",
+    "subdomainPlaceholder": "あなたのレストラン名",
     "subdomainChecking": "利用可能か確認中...",
     "subdomainAvailable": "利用可能です！",
     "subdomainNotAvailable": "利用できません",
@@ -104,7 +107,81 @@
     "twoFactorTitle": "二段階認証",
     "otpLabel": "認証コード",
     "verifyOtpButton": "コードを認証",
-    "otpInvalid": "無効なコードです。もう一度お試しください。"
+    "otpInvalid": "無効なコードです。もう一度お試しください。",
+    "verifying": "認証中...",
+    "otpPlaceholder": "6桁のコードを入力",
+    "otpHelp": "認証アプリから6桁のコードを入力してください",
+    "error": {
+      "login": "ログインに失敗しました。メールアドレスとパスワードを確認してください。",
+      "signup": "登録に失敗しました。後でもう一度お試しください。",
+      "forgotPassword": "リセットリンクの送信に失敗しました。もう一度お試しください。",
+      "emailRequired": "メールアドレスは必須です。",
+      "captchaRequired": "CAPTCHAを完了してください。",
+      "passwordsDoNotMatch": "パスワードが一致しません。",
+      "passwordTooShort": "パスワードは8文字以上である必要があります。",
+      "sessionCheck": "セッション確認中にエラーが発生しました。",
+      "notAuthenticatedUpdate": "パスワードを更新するにはログインが必要です。",
+      "notAuthenticatedReset": "パスワードをリセットするにはログインが必要です。",
+      "anErrorOccurred": "エラーが発生しました。もう一度お試しください。",
+      "emailVerificationFailed": "メール認証に失敗しました。",
+      "emailVerificationExpired": "認証リンクの有効期限が切れています。",
+      "emailVerificationInvalid": "無効な認証リンクです。",
+      "emailAlreadyVerified": "このメールアドレスは既に認証済みです。",
+      "emailNotFound": "このメールアドレスは見つかりません。",
+      "resendCooldown": "再送信は{seconds}秒後に可能です。"
+    },
+    "info": {
+      "signInToUpdatePassword": "パスワードを更新するにはサインインしてください。",
+      "emailVerification": "登録を完了するためにメールアドレスを確認してください。",
+      "emailVerificationSent": "認証リンクがメールに送信されました。受信トレイを確認してください。",
+      "emailAlreadyVerified": "メールは既に認証済みです。ログインできます。",
+      "redirectingToLogin": "ログインページにリダイレクトしています...",
+      "pleaseWait": "少々お待ちください..."
+    },
+    "emailVerification": {
+      "title": "メール認証",
+      "subtitle": "アカウントを有効にするためにメールを確認してください",
+      "verifying": "認証中...",
+      "success": "認証成功！",
+      "successMessage": "メールアドレスが正常に認証されました。",
+      "error": "認証エラー",
+      "expired": "リンク期限切れ",
+      "expiredMessage": "認証リンクの有効期限が切れています。新しいリンクをリクエストしてください。",
+      "invalid": "無効なリンク",
+      "invalidMessage": "認証リンクが無効です。新しいリンクをリクエストしてください。",
+      "alreadyVerified": "既に認証済み",
+      "alreadyVerifiedMessage": "このメールアドレスは既に認証済みです。",
+      "notFound": "メールが見つかりません",
+      "notFoundMessage": "このメールアドレスは見つかりません。",
+      "resendButton": "認証メールを再送信",
+      "resending": "再送信中...",
+      "resentSuccess": "認証メールが再送信されました！",
+      "resentError": "再送信に失敗しました。もう一度お試しください。",
+      "cooldownMessage": "{seconds}秒後に再送信できます。",
+      "loginButton": "ログインページへ",
+      "goToDashboard": "ダッシュボードへ移動"
+    },
+    "policyAgreement": {
+      "label": "利用規約とプライバシーポリシーに同意する",
+      "required": "アカウントを作成するには、利用規約とプライバシーポリシーに同意する必要があります",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "text": "次に同意します：",
+      "and": "と"
+    },
+    "validation": {
+      "nameRequired": "レストラン名は必須です",
+      "nameTooLong": "レストラン名は100文字未満である必要があります",
+      "subdomainInvalid": "サブドメインは3〜30文字の小文字の英数字またはハイフンでなければなりません",
+      "emailInvalid": "有効なメールアドレスを入力してください",
+      "passwordTooShort": "パスワードは8文字以上である必要があります",
+      "passwordRequirements": "パスワードは大文字、小文字、数字を少なくとも1つずつ含む必要があります",
+      "passwordMismatch": "パスワードが一致しません",
+      "policyAgreementRequired": "利用規約とプライバシーポリシーに同意する必要があります",
+      "formInvalid": "以下のエラーを修正してもう一度お試しください",
+      "success": "登録に成功しました！メールを確認してアカウントを確認してください。",
+      "serverError": "登録に失敗しました。後でもう一度お試しください。"
+    }
   },
   "LandingPage": {
     "header": {
@@ -215,6 +292,58 @@
       "item4": {
         "q": "カスタマーサポートはどうなっていますか？",
         "a": "私たちは包括的なオンラインサポート、チュートリアル、そして質問や問題に対応する専任のサポートチームを提供しています。"
+      }
+    },
+    "pricing": {
+      "title": "プランを選択",
+      "subtitle": "レストランのニーズに合った最適なプランをお選びください。無料トライアルから始めて、準備ができたらアップグレードできます。",
+      "popular": "最も人気",
+      "billing": {
+        "monthly": "月払い",
+        "yearly": "年払い",
+        "per_month": "月額",
+        "billed_yearly": "年間一括払い",
+        "save_20": "20%節約"
+      },
+      "plans": {
+        "starter": {
+          "title": "スタータープラン",
+          "description": "1日100人未満のお客様をもてなす小規模店舗向け"
+        },
+        "growth": {
+          "title": "グロースプラン",
+          "description": "1日100〜500人のお客様をもてなす通常規模の店舗向け"
+        },
+        "enterprise": {
+          "title": "エンタープライズプラン",
+          "description": "複数店舗を管理するオーナー向け"
+        }
+      },
+      "features": {
+        "basic_order_management": "基本的な注文管理",
+        "ai_analytics_basic": "AI分析（基本的な洞察）",
+        "basic_customer_support": "基本的なカスタマーサポート",
+        "advanced_order_management": "高度な注文管理",
+        "enhanced_ai_analytics": "強化されたAI分析と洞察",
+        "priority_customer_support": "優先カスタマーサポート",
+        "external_platform_integrations": "外部プラットフォームとの連携",
+        "full_feature_access": "すべての機能への完全アクセス",
+        "comprehensive_ai_optimization": "包括的なAI駆動ビジネス最適化",
+        "dedicated_ai_support": "専用のAI対応カスタマー・技術サポート",
+        "multi_location_management": "複数拠点管理機能"
+      },
+      "cta": {
+        "start_free_trial": "無料トライアル開始",
+        "choose_plan": "プランを選択",
+        "contact_sales": "営業に連絡"
+      },
+      "up_to_customers": "1日最大{count}人のお客様",
+      "trial_info": "{days}日間の無料トライアル付き",
+      "bottom_cta": {
+        "title": "どのプランが適しているかわからない場合",
+        "start_free": "無料トライアル開始",
+        "or": "または",
+        "contact_sales": "営業担当者と話す"
       }
     },
     "cta_section": {
@@ -1225,5 +1354,247 @@
   },
   "ai_chat": {
     "toggle_label": "AIチャットを切り替え"
+  },
+  "legal": {
+    "terms": {
+      "metaTitle": "利用規約 - CoOrder",
+      "metaDescription": "CoOrderレストラン管理プラットフォームの利用規約",
+      "title": "利用規約",
+      "subtitle": "CoOrderプラットフォーム利用に関する合意",
+      "lastUpdated": "最終更新",
+      "lastUpdatedDate": "2025年6月15日",
+      "print": "印刷",
+      "acceptance": {
+        "title": "規約の承諾",
+        "content": "当SaaSサービス（CoOrder）にアクセスまたは利用することにより、お客様はこれらの利用規約（「規約」）に拘束されることに同意するものとします。これらの規約のいずれかの部分に同意しない場合は、本サービスにアクセスすることはできません。"
+      },
+      "userAccounts": {
+        "title": "ユーザーアカウント",
+        "accurate": "登録時には正確で完全な情報を提供する必要があります。",
+        "confidentiality": "アカウントの機密性を維持し、アカウント下でのすべての活動について責任を負うものとします。"
+      },
+      "useOfService": {
+        "title": "サービスの利用",
+        "intro": "お客様は以下に同意するものとします：",
+        "lawful": "合法的な目的でのみサービスを利用すること",
+        "noMisuse": "サービスを悪用、妨害、または危険にさらさないこと",
+        "comply": "適用されるすべての法律および規制に従うこと"
+      },
+      "subscriptions": {
+        "title": "サブスクリプションプラン",
+        "intro": "3つのサブスクリプション階層を提供しています：",
+        "starter": {
+          "title": "1. スタータープラン",
+          "description": "1日100人未満のお客様をもてなす小規模店舗向け",
+          "feature1": "基本的な注文管理",
+          "feature2": "AI分析（基本的な洞察）",
+          "feature3": "基本的なカスタマーサポート",
+          "price": "料金：年額180ドル（月額15ドル）"
+        },
+        "growth": {
+          "title": "2. グロースプラン",
+          "description": "1日100〜500人のお客様をもてなす通常規模の店舗向け",
+          "feature1": "高度な注文管理",
+          "feature2": "強化されたAI分析と洞察",
+          "feature3": "優先カスタマーサポート",
+          "feature4": "外部プラットフォームとの連携",
+          "price": "料金：年額480ドル（月額40ドル）"
+        },
+        "enterprise": {
+          "title": "3. エンタープライズプラン",
+          "description": "複数店舗を管理するオーナー向け",
+          "feature1": "すべての機能への完全アクセス",
+          "feature2": "包括的なAI駆動ビジネス最適化",
+          "feature3": "専用のAI対応カスタマー・技術サポート",
+          "feature4": "複数拠点管理機能",
+          "price": "料金：年額1,200ドル（月額100ドル）"
+        }
+      },
+      "payments": {
+        "title": "サブスクリプションと支払い",
+        "advance": "サブスクリプション料金は年次で前払いされます。",
+        "automatic": "サブスクリプションをキャンセルしない限り、自動継続支払いを承認するものとします。",
+        "pricing": "事前通知の上で価格を調整する権利を留保します。"
+      },
+      "cancellation": {
+        "title": "キャンセルと返金",
+        "anytime": "いつでもサブスクリプションをキャンセルできます。",
+        "refunds": "返金は当社の裁量または適用法の要求に応じて提供されます。"
+      },
+      "intellectualProperty": {
+        "title": "知的財産",
+        "content": "サービスにおけるすべての知的財産権は当社の独占的財産です。"
+      },
+      "liability": {
+        "title": "責任の制限",
+        "content": "当社は、お客様のサービス利用から生じる間接的、偶発的、特別、結果的、または懲罰的損害について責任を負いません。"
+      },
+      "termination": {
+        "title": "サービス終了",
+        "content": "これらの規約に違反した場合、アクセスを停止または終了する場合があります。"
+      },
+      "governingLaw": {
+        "title": "準拠法",
+        "content": "これらの規約は、当社の事業拠点が所在する管轄区域の法律に準拠し、それに従って解釈されます。"
+      },
+      "changes": {
+        "title": "規約の変更",
+        "content": "いつでもこれらの規約を変更する権利を留保します。更新は電子メールまたはサービス内で通知されます。"
+      },
+      "contact": {
+        "title": "お問い合わせ",
+        "content": "これらの規約に関するご質問は、legal@coorder.comまでお問い合わせください。"
+      }
+    },
+    "privacy": {
+      "metaTitle": "プライバシーポリシー - CoOrder",
+      "metaDescription": "CoOrderレストラン管理プラットフォームのプライバシーポリシー",
+      "title": "プライバシーポリシー",
+      "subtitle": "お客様の情報の収集、利用、保護について",
+      "lastUpdated": "最終更新",
+      "lastUpdatedDate": "2025年6月15日",
+      "print": "印刷",
+      "introduction": {
+        "title": "はじめに",
+        "content": "CoOrder（「サービス」）へようこそ。当社はお客様のプライバシーを重視し、個人情報の保護に努めています。このプライバシーポリシーは、お客様がサービスを利用する際に、当社がどのように個人情報を収集、利用、開示するかを説明しています。"
+      },
+      "collect": {
+        "title": "収集する情報",
+        "personal": {
+          "title": "個人情報",
+          "content": "登録時に、お名前、電子メールアドレス、電話番号、支払い情報、事業詳細を収集します。"
+        },
+        "usage": {
+          "title": "利用データ",
+          "content": "ログデータ、ブラウザ情報、IPアドレス、デバイス識別子、利用パターンなど、お客様がサービスとどのように相互作用するかに関するデータを収集します。"
+        },
+        "cookies": {
+          "title": "クッキーとトラッキング",
+          "content": "サービス上での活動を追跡し、特定の情報を保存するためにクッキーおよび類似のトラッキング技術を使用します。"
+        }
+      },
+      "usage": {
+        "title": "情報の利用方法",
+        "intro": "個人情報を以下の目的で利用します：",
+        "provide": "サービスの提供と維持",
+        "manage": "ユーザーアカウントの管理とカスタマーサポートの提供",
+        "process": "支払いの処理とサブスクリプションの管理",
+        "communicate": "更新、オファー、販促コンテンツの通信",
+        "analyze": "サービスの分析と改善",
+        "legal": "法的義務の遵守"
+      },
+      "legalBasis": {
+        "title": "処理の法的根拠（GDPR）",
+        "intro": "GDPRの下で、以下の根拠に基づいて個人データを処理します：",
+        "contract": {
+          "title": "契約",
+          "content": "お客様との契約履行に必要な処理"
+        },
+        "legitimate": {
+          "title": "正当な利益",
+          "content": "サービス改善など、当社の正当な事業利益のための処理"
+        },
+        "consent": {
+          "title": "同意",
+          "content": "マーケティング通信について明示的な同意をいただいた場合"
+        },
+        "legal": {
+          "title": "法的義務",
+          "content": "法的義務の遵守に必要な処理"
+        }
+      },
+      "sharing": {
+        "title": "情報の共有",
+        "intro": "個人情報を販売することはありません。ただし、以下の場合に情報を共有することがあります：",
+        "serviceProviders": {
+          "title": "サービスプロバイダー",
+          "payment": "支払い処理",
+          "email": "電子メールおよびメッセージング通信",
+          "analytics": "分析とサービス改善",
+          "hosting": "クラウドホスティングとインフラストラクチャ"
+        },
+        "legal": {
+          "title": "法的要件",
+          "content": "法的義務を遵守するため、または当局からの合法的な要求に応じて情報を開示することがあります。"
+        },
+        "business": {
+          "title": "事業譲渡",
+          "content": "合併、買収、または資産売却の場合、お客様の情報がその取引の一部として譲渡される場合があります。"
+        }
+      },
+      "security": {
+        "title": "データセキュリティ",
+        "intro": "お客様のデータを保護するために堅牢なセキュリティ対策を採用しています：",
+        "encryption": "転送中および保存中のデータ暗号化",
+        "access": "制限されたアクセス制御と認証",
+        "monitoring": "定期的なセキュリティ監視と監査",
+        "compliance": "業界セキュリティ標準への準拠",
+        "disclaimer": "最善の努力にも関わらず、インターネット伝送は完全に安全ではありません。絶対的なセキュリティを保証することはできません。"
+      },
+      "retention": {
+        "title": "データ保持",
+        "content": "以下の目的のために必要な期間、個人情報を保持します：",
+        "account": "アカウントの維持とサービスの提供",
+        "usage": "利用パターンの分析とサービスの改善（匿名化）",
+        "legal": "法的義務の遵守と紛争の解決"
+      },
+      "transfers": {
+        "title": "国際データ転送",
+        "content": "お客様の情報は、お客様の国以外の国に転送され、処理される場合があります。お客様のデータを保護するために適切な保護措置が講じられていることを確保します。"
+      },
+      "rights": {
+        "title": "お客様の権利",
+        "intro": "GDPRおよびその他のプライバシー法の下で、以下の権利があります：",
+        "access": {
+          "title": "アクセス権",
+          "content": "個人データへのアクセスを要求する"
+        },
+        "rectification": {
+          "title": "訂正権",
+          "content": "不正確な個人データの修正を要求する"
+        },
+        "erasure": {
+          "title": "削除権",
+          "content": "個人データの削除を要求する"
+        },
+        "restriction": {
+          "title": "処理制限権",
+          "content": "個人データの処理の制限を要求する"
+        },
+        "portability": {
+          "title": "データポータビリティ権",
+          "content": "データの他のサービスへの転送を要求する"
+        },
+        "objection": {
+          "title": "異議申立権",
+          "content": "個人データの処理に異議を申し立てる"
+        },
+        "withdrawal": {
+          "title": "同意撤回権",
+          "content": "同意に基づく処理について同意を撤回する"
+        },
+        "complaint": {
+          "title": "苦情申立権",
+          "content": "監督当局に苦情を申し立てる"
+        }
+      },
+      "children": {
+        "title": "子どものプライバシー",
+        "content": "当サービスは13歳未満の子どもを対象としていません。13歳未満の子どもから故意に個人情報を収集することはありません。子どもが個人情報を提供したことが判明した場合は、お問い合わせください。"
+      },
+      "changes": {
+        "title": "このポリシーの変更",
+        "content": "このプライバシーポリシーを定期的に更新することがあります。重要な変更については、電子メールまたはサービスを通じて通知します。変更後のサービスの継続利用は、更新されたポリシーの受諾を構成します。"
+      },
+      "contact": {
+        "title": "お問い合わせ情報",
+        "intro": "このプライバシーポリシーに関するご質問や権利の行使については、以下にお問い合わせください：",
+        "privacy": {
+          "title": "データ保護責任者",
+          "email": "電子メール",
+          "response": "30日以内にご要求にお応えします。"
+        }
+      }
+    }
   }
 }

@@ -3,6 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import type { RestaurantSettings } from "@/shared/types/customer";
+import Link from "next/link";
 
 interface CustomerFooterProps {
   restaurantSettings: RestaurantSettings;
@@ -17,7 +18,7 @@ export function CustomerFooter({ restaurantSettings }: CustomerFooterProps) {
         {t("all_rights_reserved")}
       </p>
       <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-        {t("powered_by")} CoOrder
+        {t("powered_by")} <Link target="_blank" href="https://coorder.ai">coorder.ai</Link>
       </p>
     </footer>
   );

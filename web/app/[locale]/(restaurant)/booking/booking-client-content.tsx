@@ -20,6 +20,7 @@ import { Alert } from "@/components/ui/alert";
 import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import { AnimatedRestaurantHeader } from "@/components/common/AnimatedRestaurantHeader";
 import type { RestaurantSettings, Category, TableInfo, MenuItem } from "@/shared/types/customer";
+import Link from "next/link";
 
 interface BookingClientContentProps {
   restaurantSettings: RestaurantSettings;
@@ -377,7 +378,7 @@ export function BookingClientContent({
                 animate={{ opacity: [1, 0.7, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                CoOrder AI
+                {tCommon("powered_by")} <Link target="_blank" href="https://coorder.ai">coorder.ai</Link>
               </motion.span>
               <Zap className="h-4 w-4 text-[var(--brand-color)]" />
             </motion.p>

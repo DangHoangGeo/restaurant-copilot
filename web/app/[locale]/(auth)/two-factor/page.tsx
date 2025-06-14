@@ -3,9 +3,9 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
+import { AuthCard, FormField } from "@/components/auth";
+import { Shield, AlertCircle } from "lucide-react";
 
 export default function TwoFactorPage() {
   const router = useRouter();
@@ -41,30 +41,47 @@ export default function TwoFactorPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center">
-          {t("twoFactorTitle")}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <div>
-            <Label htmlFor="code">{t("otpLabel")}</Label>
-            <Input
-              id="code"
-              type="text"
-              value={code}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setCode(e.target.value)
-              }
-              required
-            />
+    <AuthCard 
+      title={t("title.twoFactor") || "Two-Factor Authentication"}
+      description={t("subtitle.twoFactor") || "Enter the verification code from your authenticator app"}
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? t("loggingIn") : t("verifyOtpButton")}
-          </Button>
-        </form>
-      </div>
-    </div>
+        )}
+        
+        <FormField
+          label={t("otpLabel") || "Verification Code"}
+          type="text"
+          placeholder={t("otpPlaceholder") || "Enter 6-digit code"}
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          required
+          leftIcon={<Shield className="h-4 w-4" />}
+          helpText={t("otpHelp") || "Enter the 6-digit code from your authenticator app"}
+        />
+        
+        <Button 
+          type="submit" 
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-2.5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" 
+          disabled={loading}
+        >
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              {t("verifying") || "Verifying..."}
+            </div>
+          ) : (
+            <>
+              <Shield className="w-4 h-4 mr-2" />
+              {t("verifyOtpButton") || "Verify Code"}
+            </>
+          )}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }
