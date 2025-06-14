@@ -31,6 +31,7 @@
       "signup": "Registration successful! Please check your email to verify your account.",
       "passwordReset": "Password reset link sent! Please check your email to reset your password.",
       "emailSent": "Check your email",
+      "passwordUpdated": "Your password has been updated successfully.",
       "emailSentDescription": "If an account with this email exists, a password reset link has been sent to your inbox."
     },
     "error": {
