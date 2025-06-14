@@ -1,105 +1,44 @@
 import SwiftUI
 
-// --- Mock Data Structures ---
-// These would ideally be in a shared Models location
-
-// Re-defining MenuItem, Category, Table locally for self-contained AddItemDetailView development.
-// In a real app, these would be passed from the previous views or fetched from a shared model source.
-
-struct TableStub: Identifiable, Codable, Hashable {
-    let id: String
-    var name: String
-    var status: String
-}
-
-struct CategoryStub: Identifiable, Codable, Hashable {
-    let id: String
-    var name_en: String
-    var displayName: String { name_en }
-}
-
-struct MenuItemSizeMock: Identifiable, Hashable, Codable {
-    let id: String
-    let name: String // e.g., "Small", "Medium", "Large"
-    let priceModifier: Double // e.g., 0 for default, +100 for large, -50 for small
-
-    static let mockSizes: [MenuItemSizeMock] = [
-        MenuItemSizeMock(id: "size_s", name: "Small", priceModifier: -50),
-        MenuItemSizeMock(id: "size_m", name: "Medium", priceModifier: 0),
-        MenuItemSizeMock(id: "size_l", name: "Large", priceModifier: 100)
-    ]
-}
-
-struct ToppingMock: Identifiable, Hashable, Codable {
-    let id: String
-    let name: String // e.g., "Extra Cheese", "Avocado"
-    let price: Double // Price for this topping
-
-    static let mockToppings: [ToppingMock] = [
-        ToppingMock(id: "top_cheese", name: "Extra Cheese", price: 100),
-        ToppingMock(id: "top_avocado", name: "Avocado", price: 150),
-        ToppingMock(id: "top_bacon", name: "Crispy Bacon", price: 120),
-        ToppingMock(id: "top_chili", name: "Spicy Chili Flakes", price: 50)
-    ]
-}
-
-struct MenuItemStub: Identifiable, Codable, Hashable {
-    let id: String
-    let category_id: String
-    let name_en: String
-    let description_en: String?
-    let price: Double // Base price
-
-    var availableSizes: [MenuItemSizeMock]?
-    var availableToppings: [ToppingMock]?
-
-    var displayName: String { name_en }
-    var displayDescription: String? { description_en }
-
-    static let mockItemPlain = MenuItemStub(
-        id: "item_plain", category_id: "cat1", name_en: "Plain Burger",
-        description_en: "A simple burger.", price: 800
-    )
-
-    static let mockItemWithOptions = MenuItemStub(
-        id: "item_options", category_id: "cat1", name_en: "Customizable Pizza",
-        description_en: "Choose your size and toppings for this delicious pizza.", price: 1200,
-        availableSizes: MenuItemSizeMock.mockSizes,
-        availableToppings: ToppingMock.mockToppings
-    )
-}
-
-// --- AddItemDetailView ---
+// Local stubs for MenuItem, MenuItemSizeMock, ToppingMock, TableStub, CategoryStub removed.
+// This view will now use canonical models from Models.swift.
+// MenuItem passed in is expected to have availableSizes and availableToppings populated.
 
 struct AddItemDetailView: View {
-    let menuItem: MenuItemStub // Use the stub definition for now
+    let menuItem: MenuItem // Canonical MenuItem model
     let orderId: String
-    let table: TableStub // Use the stub definition for now
+    let table: Table     // Canonical Table model
 
     @EnvironmentObject var orderManager: OrderManager
     @Environment(\.dismiss) var dismiss
 
     @State private var quantity: Int = 1
-    @State private var selectedSize: MenuItemSizeMock? = nil
-    @State private var selectedToppings: Set<ToppingMock.ID> = Set() // Store IDs for multi-selection
+    @State private var selectedSize: MenuItemSize? = nil // Canonical MenuItemSize
+    @State private var selectedToppings: Set<Topping.ID> = Set() // Set of canonical Topping IDs
+
     @State private var notes: String = ""
 
     @State private var isAddingItem = false
     @State private var errorMessage: String? = nil
     @State private var showingErrorAlert = false
 
-    // Calculate total price based on selections
-    var currentTotalPrice: Double {
-        var total = menuItem.price
+    // Calculate price for ONE item with selected options
+    var priceForOneItemWithOptions: Double {
+        var currentItemPrice = menuItem.price
         if let size = selectedSize {
-            total += size.priceModifier
+            currentItemPrice += size.price_modifier // Canonical MenuItemSize has price_modifier
         }
         for toppingId in selectedToppings {
             if let topping = menuItem.availableToppings?.first(where: { $0.id == toppingId }) {
-                total += topping.price
+                currentItemPrice += topping.price // Canonical Topping has price
             }
         }
-        return total * Double(quantity)
+        return currentItemPrice
+    }
+
+    // Calculate total price for the line (item price with options * quantity)
+    var currentLineItemTotalPrice: Double {
+        return priceForOneItemWithOptions * Double(quantity)
     }
 
     var body: some View {
@@ -127,19 +66,20 @@ struct AddItemDetailView: View {
                 if let availableSizes = menuItem.availableSizes, !availableSizes.isEmpty {
                     Section(header: Text("Size")) {
                         Picker("Select Size", selection: $selectedSize) {
-                            Text("None").tag(MenuItemSizeMock?.none) // Optional selection
+                            Text("Standard").tag(MenuItemSize?.none) // Represents no specific size or default
                             ForEach(availableSizes) { size in
                                 HStack {
-                                    Text(size.name)
+                                    Text(size.displayName) // Use displayName from canonical model
                                     Spacer()
-                                    Text(String(format: "%+.0f円", size.priceModifier))
-                                }.tag(MenuItemSizeMock?.some(size))
+                                    Text(String(format: "%+.0f円", size.price_modifier))
+                                }.tag(MenuItemSize?.some(size))
                             }
                         }
-                        .pickerStyle(.menu) // Or .inline for some contexts
-                        .onAppear { // Set default size if not already set and sizes are available
+                        .pickerStyle(.menu)
+                        .onAppear {
                             if selectedSize == nil && !availableSizes.isEmpty {
-                                selectedSize = availableSizes.first(where: {$0.priceModifier == 0}) ?? availableSizes.first
+                                // Default to the size with no price modification, or the first one.
+                                selectedSize = availableSizes.first(where: { $0.price_modifier == 0 }) ?? availableSizes.first
                             }
                         }
                     }
@@ -148,13 +88,13 @@ struct AddItemDetailView: View {
                 // Topping Selection
                 if let availableToppings = menuItem.availableToppings, !availableToppings.isEmpty {
                     Section(header: Text("Toppings (\(selectedToppings.count))")) {
-                        List { // Use List for multi-selection pattern
+                        List {
                             ForEach(availableToppings) { topping in
                                 Button(action: {
                                     toggleToppingSelection(topping)
                                 }) {
                                     HStack {
-                                        Text(topping.name)
+                                        Text(topping.displayName) // Use displayName from canonical model
                                         Spacer()
                                         Text(String(format: "+%.0f円", topping.price))
                                         if selectedToppings.contains(topping.id) {
@@ -166,7 +106,7 @@ struct AddItemDetailView: View {
                                         }
                                     }
                                 }
-                                .foregroundColor(.primary) // Keep text color standard
+                                .foregroundColor(.primary)
                             }
                         }
                     }
@@ -179,8 +119,8 @@ struct AddItemDetailView: View {
                         .accessibilityLabel("Notes for kitchen")
                 }
 
-                Section(header: Text("Total Price")) {
-                    Text(String(format: "%.0f円", currentTotalPrice))
+                Section(header: Text("Total Price for This Item Line")) {
+                    Text(String(format: "%.0f円", currentLineItemTotalPrice))
                         .font(.title3)
                         .fontWeight(.bold)
                 }
@@ -228,7 +168,7 @@ struct AddItemDetailView: View {
         }
     }
 
-    private func toggleToppingSelection(_ topping: ToppingMock) {
+    private func toggleToppingSelection(_ topping: Topping) { // Parameter is now canonical Topping
         if selectedToppings.contains(topping.id) {
             selectedToppings.remove(topping.id)
         } else {
@@ -241,19 +181,23 @@ struct AddItemDetailView: View {
         isAddingItem = true
         errorMessage = nil
 
+        let singleItemPriceWithOptions = priceForOneItemWithOptions // Calculated price for one item with options
+
         Task {
             do {
-                // Map selectedSize and selectedToppings to what OrderManager expects (e.g., String IDs)
+                // OrderManager.addItemToDraftOrder will use this price directly.
+                // It expects MenuItemSizeId (String?) and [ToppingId] ([String]?)
                 let sizeId = selectedSize?.id
-                let toppingIds = selectedToppings.map { $0 } // Assuming OrderManager expects array of Topping IDs (Strings)
+                let toppingIdsArray = Array(selectedToppings)
 
                 _ = try await orderManager.addItemToDraftOrder(
                     orderId: orderId,
                     menuItemId: menuItem.id,
                     quantity: quantity,
                     notes: notes.isEmpty ? nil : notes,
-                    selectedSize: sizeId, // Pass ID
-                    selectedToppings: toppingIds // Pass array of IDs
+                    selectedSizeId: sizeId, // Pass ID of canonical MenuItemSize
+                    selectedToppingIds: toppingIdsArray, // Pass array of canonical Topping IDs
+                    priceAtOrder: singleItemPriceWithOptions // Pass the calculated unit price
                 )
 
                 // Success
@@ -277,23 +221,67 @@ struct AddItemDetailView: View {
 struct AddItemDetailView_Previews: PreviewProvider {
     static var previews: some View {
         let mockOrderManager = OrderManager()
-        let mockTable = TableStub(id: "tablePrev1", name: "Preview Table", status: "available")
+        let mockSupabaseManager = SupabaseManager.shared // For any implicit dependencies if models use it
 
-        // Preview with an item that has options
-        AddItemDetailView(
-            menuItem: MenuItemStub.mockItemWithOptions,
-            orderId: "previewOrderWithOptions",
-            table: mockTable
+        // Create a mock canonical Table for the preview
+        let mockTable = Table(
+            id: "tablePrev1", restaurant_id: "restoPrev", name: "Preview Table", status: .available,
+            capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil,
+            created_at: "", updated_at: ""
         )
-        .environmentObject(mockOrderManager)
 
-        // Preview with a plain item (no sizes/toppings)
-//        AddItemDetailView(
-//            menuItem: MenuItemStub.mockItemPlain,
-//            orderId: "previewOrderPlain",
-//            table: mockTable
-//        )
-//        .environmentObject(mockOrderManager)
-//        .previewDisplayName("Plain Item Preview")
+        // Create mock canonical MenuItemSize and Topping instances for the preview
+        let mockSizes: [MenuItemSize] = [
+            MenuItemSize(id: "s_small", restaurant_id: "r1", menu_item_id: "mi1", size_key: "S", name_en: "Small", name_ja: nil, name_vi: nil, price_modifier: -50, position: 1, created_at: "", updated_at: ""),
+            MenuItemSize(id: "s_medium", restaurant_id: "r1", menu_item_id: "mi1", size_key: "M", name_en: "Medium", name_ja: nil, name_vi: nil, price_modifier: 0, position: 2, created_at: "", updated_at: ""),
+            MenuItemSize(id: "s_large", restaurant_id: "r1", menu_item_id: "mi1", size_key: "L", name_en: "Large", name_ja: nil, name_vi: nil, price_modifier: 100, position: 3, created_at: "", updated_at: "")
+        ]
+        let mockToppings: [Topping] = [
+            Topping(id: "t_cheese", restaurant_id: "r1", name_en: "Extra Cheese", name_ja: nil, name_vi: nil, price: 100, position: 1, created_at: "", updated_at: ""),
+            Topping(id: "t_avocado", restaurant_id: "r1", name_en: "Avocado", name_ja: nil, name_vi: nil, price: 150, position: 2, created_at: "", updated_at: "")
+        ]
+
+        // Create a mock canonical MenuItem with options for the preview
+        let mockMenuItemWithOptions = MenuItem(
+            id: "item_options_canonical", category_id: "cat1_canonical", name_en: "Customizable Pizza (Live)",
+            name_ja: nil, name_vi: nil, code: nil,
+            description_en: "Choose your size and toppings for this delicious live pizza.",
+            description_ja: nil, description_vi: nil,
+            price: 1200, tags: nil, image_url: nil, stock_level: nil, available: true, position: nil,
+            created_at: "", updated_at: "", category: nil,
+            availableSizes: mockSizes,
+            availableToppings: mockToppings
+        )
+
+        let mockMenuItemPlain = MenuItem(
+            id: "item_plain_canonical", category_id: "cat1_canonical", name_en: "Plain Burger (Live)",
+            name_ja: nil, name_vi: nil, code: nil,
+            description_en: "A simple live burger.",
+            description_ja: nil, description_vi: nil,
+            price: 800, tags: nil, image_url: nil, stock_level: nil, available: true, position: nil,
+            created_at: "", updated_at: "", category: nil,
+            availableSizes: [], // No sizes
+            availableToppings: [] // No toppings
+        )
+
+        return Group {
+            AddItemDetailView(
+                menuItem: mockMenuItemWithOptions,
+                orderId: "previewOrderWithOptionsLive",
+                table: mockTable
+            )
+            .environmentObject(mockOrderManager)
+            .environmentObject(mockSupabaseManager)
+            .previewDisplayName("With Options (Live)")
+
+            AddItemDetailView(
+                menuItem: mockMenuItemPlain,
+                orderId: "previewOrderPlainLive",
+                table: mockTable
+            )
+            .environmentObject(mockOrderManager)
+            .environmentObject(mockSupabaseManager)
+            .previewDisplayName("Plain Item (Live)")
+        }
     }
 }

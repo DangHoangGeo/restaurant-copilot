@@ -177,51 +177,14 @@ class OrderManager: ObservableObject {
     }
 
     @MainActor
-    public func addItemToDraftOrder(orderId: String, menuItemId: String, quantity: Int, notes: String?, selectedSize: MenuItemSizeId?, selectedToppings: [ToppingId]?) async throws -> OrderItem {
+    public func addItemToDraftOrder(orderId: String, menuItemId: String, quantity: Int, notes: String?, selectedSizeId: MenuItemSizeId?, selectedToppingIds: [ToppingId]?, priceAtOrder: Double) async throws -> OrderItem {
+
         guard let restaurantId = supabaseManager.currentRestaurantId else {
             throw OrderManagerError.missingRestaurantId
         }
 
-        // 1. Fetch MenuItem details to get base price.
-        // This is a simplified fetch. A real app might need a more specific query or have items cached.
-        // For now, we'll assume a function in SupabaseManager or fetch directly.
-        // Let's assume MenuItem has a 'price' field.
-        // Sizes and Toppings might have price_modifier or absolute price.
-
-        // MOCK PRICE CALCULATION - Replace with actual logic
-        var itemBasePrice: Double = 0
-        var sizePriceModifier: Double = 0
-        var toppingsTotalPrice: Double = 0
-
-        do {
-            // Simplified fetch for base item price
-            if let menuItem: MenuItem = try? await supabaseManager.client.from("menu_items").select("price").eq("id", value: menuItemId).single().execute().value {
-                itemBasePrice = menuItem.price
-            } else {
-                throw OrderManagerError.itemFetchFailed(menuItemId)
-            }
-
-            // Fetch size price modifier (assuming MenuItemSize has 'price_modifier')
-            if let sizeId = selectedSize, !sizeId.isEmpty {
-                 // Placeholder: In a real app, fetch size details from DB
-                 // For mock, let's assume some logic:
-                 if sizeId == "size_l" { sizePriceModifier = 100 } // Example
-                 else if sizeId == "size_s" { sizePriceModifier = -50 } // Example
-            }
-
-            // Fetch topping prices (assuming Topping has 'price')
-            if let toppingIds = selectedToppings, !toppingIds.isEmpty {
-                // Placeholder: In a real app, fetch topping details from DB
-                // For mock, let's sum up some dummy prices:
-                toppingsTotalPrice = Double(toppingIds.count * 50) // Example: each topping costs 50
-            }
-
-        } catch {
-             throw OrderManagerError.generalError("Price calculation failed: \(error.localizedDescription)")
-        }
-
-        let finalPricePerItem = itemBasePrice + sizePriceModifier + toppingsTotalPrice
-        let priceAtOrder = finalPricePerItem // Price for one item with options
+        // Price calculation is now done in AddItemDetailView and passed as priceAtOrder.
+        // The MOCK PRICE CALCULATION block has been removed.
 
         let newOrderItemPayload = NewOrderItemPayload(
             order_id: orderId,
@@ -229,10 +192,10 @@ class OrderManager: ObservableObject {
             quantity: quantity,
             notes: notes,
             restaurant_id: restaurantId,
-            price_at_order: priceAtOrder, // This should be the price of a single item with its options
+            price_at_order: priceAtOrder, // Use the price calculated and passed by the view
             status: ORDER_ITEM_STATUS_DRAFT,
-            menu_item_size_id: selectedSize,
-            topping_ids: selectedToppings
+            menu_item_size_id: selectedSizeId,
+            topping_ids: selectedToppingIds
         )
 
         do {
@@ -423,10 +386,41 @@ class OrderManager: ObservableObject {
     @MainActor
     public func getDraftOrder(orderId: String, forceFetch: Bool = false) async throws -> Order? {
         if !forceFetch, let currentDraft = currentDraftOrder, currentDraft.id == orderId {
+            // If we have a cached version and not forcing fetch, return it.
+            // However, if its items are nil or empty, it might be an incompletely loaded order.
+            // A more robust cache would check if items are also populated.
+            // For now, this basic cache stands.
             print("Returning cached currentDraftOrder for id: \(orderId)")
             return currentDraft
         }
+        // If orderId is "previewOrder123" or similar, it implies a preview context.
+        // For robust previews that don't rely on DB state, construct a full mock Order here.
+        if orderId.starts(with: "previewOrder") || orderId == "mockDraftOrder123" { // Adjusted for DraftOrderView preview
+            print("getDraftOrder constructing MOCK for orderId: \(orderId)")
+            // Create mock MenuItems for more realistic OrderItems in the preview
+            let mockCat = Category(id: "cat_mock_drinks", name_en: "Mock Drinks", name_ja: nil, name_vi: nil, position: 1)
+            let mockMenuItem1 = MenuItem(id: "menuItem1_mock_preview", restaurant_id: "resto_preview", category_id: mockCat.id, name_en: "Mock Coffee", name_ja: nil, name_vi: nil, code: "MC01", description_en: "A warm mock coffee", description_ja: nil, description_vi: nil, price: 3.00, tags: nil, image_url: nil, stock_level: nil, available: true, position: 1, created_at: Date().ISO8601Format(), updated_at: Date().ISO8601Format(), category: mockCat, availableSizes: nil, availableToppings: nil)
+            let mockMenuItem2 = MenuItem(id: "menuItem2_mock_preview", restaurant_id: "resto_preview", category_id: mockCat.id, name_en: "Mock Tea", name_ja: nil, name_vi: nil, code: "MT01", description_en: "A soothing mock tea", description_ja: nil, description_vi: nil, price: 2.50, tags: nil, image_url: nil, stock_level: nil, available: true, position: 2, created_at: Date().ISO8601Format(), updated_at: Date().ISO8601Format(), category: mockCat, availableSizes: nil, availableToppings: nil)
 
+            let mockItem1 = OrderItem(id: "mockPreviewItem1", restaurant_id: "resto_preview", order_id: orderId, menu_item_id: mockMenuItem1.id, quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: nil, price_at_order: 3.00, status: .draft, created_at: Date().ISO8601Format(), updated_at: Date().ISO8601Format(), menu_item: mockMenuItem1)
+            let mockItem2 = OrderItem(id: "mockPreviewItem2", restaurant_id: "resto_preview", order_id: orderId, menu_item_id: mockMenuItem2.id, quantity: 1, notes: nil, menu_item_size_id: nil, topping_ids: nil, price_at_order: 2.50, status: .draft, created_at: Date().ISO8601Format(), updated_at: Date().ISO8601Format(), menu_item: mockMenuItem2)
+
+            let mockTable = Table(
+                id: "table_mock_preview_om", restaurant_id: "resto_preview", name: "Preview Tbl OM", status: .occupied,
+                capacity: 2, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil,
+                created_at: Date().ISO8601Format(), updated_at: Date().ISO8601Format()
+            )
+
+            let mockOrderInstance = Order(
+                id: orderId, restaurant_id: "resto_preview", table_id: mockTable.id, user_id: "user_preview",
+                session_id: "session_preview", guest_count: 2, status: .draft, total_price: 8.50, // 2*3.00 + 2.50
+                order_number: Int.random(in: 100...200), created_at: Date().ISO8601Format(), updated_at: Date().ISO8601Format(),
+                table: mockTable, order_items: [mockItem1, mockItem2],
+                payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil
+            )
+            self.currentDraftOrder = mockOrderInstance
+            return mockOrderInstance
+        }
         print("Fetching draft order \(orderId) from database.")
         do {
             let orderResponse: Order? = try await supabaseManager.client

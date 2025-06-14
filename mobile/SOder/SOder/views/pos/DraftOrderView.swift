@@ -2,21 +2,12 @@ import SwiftUI
 
 // --- Using existing stub definitions if possible, or local ones for clarity ---
 // Assuming Order and OrderItem structures are as mocked in OrderManager.
-// For TableStub, we can use the one defined in SelectTableView or AddItemDetailView for consistency in previews.
-
-// If not already globally available from previous steps, define local stubs:
-#if DEBUG // So these stubs don't interfere if global ones exist
-struct TableStubPreview: Identifiable, Codable, Hashable { // Renamed to avoid conflict if global TableStub exists
-    let id: String
-    var name: String
-    var status: String
-}
-#endif
-
+// TableStub / TableStubPreview local definitions removed.
+// This view will use the canonical Table model from Models.swift.
 
 struct DraftOrderView: View {
     let orderId: String
-    let table: TableStub // Expecting the stub defined in a previous POS view file.
+    let table: Table // Now using the canonical Table model
 
     @EnvironmentObject var orderManager: OrderManager
     @Environment(\.dismiss) var dismiss
@@ -270,9 +261,21 @@ struct DraftOrderView: View {
 struct DraftOrderView_Previews: PreviewProvider {
     static var previews: some View {
         let mockOrderManager = OrderManager()
-        // Assuming TableStub is defined as in AddItemDetailView or SelectTableView for preview consistency
-        let mockTable = TableStub(id: "previewTableDraft", name: "D1", status: "occupied")
-        let mockOrderId = "mockDraftOrder123"
+        // Use the canonical Table model for the preview
+        let mockTable = Table(
+            id: "previewTableDraft",
+            restaurant_id: "resto_preview_draft", // Provide a restaurant_id
+            name: "D1",
+            status: .occupied, // Use the TableStatus enum
+            capacity: 4,
+            is_outdoor: false,
+            is_accessible: true,
+            notes: "Preview Table for DraftOrderView",
+            qr_code: nil,
+            created_at: ISO8601DateFormatter().string(from: Date()),
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
+        let mockOrderId = "mockDraftOrder123" // This ID is handled by OrderManager.getDraftOrder for mock data
 
         // To make the preview more useful, ensure getDraftOrder in OrderManager
         // returns a mock Order with some items when called with `mockOrderId`.
@@ -283,10 +286,4 @@ struct DraftOrderView_Previews: PreviewProvider {
     }
 }
 
-// Ensure TableStub is available for the preview if not globally defined.
-// This might have been defined in SelectTableView.swift or AddItemDetailView.swift.
-// If running this file standalone for previews, you'd need its definition.
-#if DEBUG
-// Minimal TableStub for preview if not accessible from other files in current context
-// struct TableStub: Identifiable, Codable, Hashable { let id: String; var name: String; var status: String }
-#endif
+// Local TableStub definition for preview is no longer needed.

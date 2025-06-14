@@ -1,92 +1,23 @@
 import SwiftUI
 
-// Basic MenuItem model for this view's purpose
-// In a real app, this would come from the shared models directory
-struct MenuItem: Identifiable, Codable, Hashable {
-    let id: String
-    let category_id: String
-    let name_en: String
-    let name_ja: String?
-    let name_vi: String?
-    let description_en: String?
-    let description_ja: String?
-    let description_vi: String?
-    let price: Double
-    // Future properties: imageUrl, allergens, isPopular, sizes: [MenuItemSize], toppings: [Topping], etc.
-
-    var displayName: String {
-        // TODO: Integrate with LocalizationManager
-        return name_en
-    }
-    var displayDescription: String? {
-        // TODO: Integrate with LocalizationManager
-        return description_en
-    }
-
-    static func mockItems(categoryId: String) -> [MenuItem] {
-        let allItems = [
-            MenuItem(id: UUID().uuidString, category_id: "cat1", name_en: "Crispy Spring Rolls (Veg)", name_ja: "揚げ春巻き（野菜）", name_vi: "Chả Giò Chay Giòn", description_en: "4 pieces of crispy vegetarian spring rolls served with sweet chili sauce.", price: 650),
-            MenuItem(id: UUID().uuidString, category_id: "cat1", name_en: "Fresh Summer Rolls (Shrimp & Pork)", name_ja: "生春巻き（エビと豚肉）", name_vi: "Gỏi Cuốn Tôm Thịt", description_en: "2 large rolls with vermicelli, shrimp, pork, fresh herbs, served with peanut sauce.", price: 700),
-            MenuItem(id: UUID().uuidString, category_id: "cat1", name_en: "Edamame with Sea Salt", name_ja: "枝豆（海塩）", name_vi: "Đậu Nành Luộc Muối Biển", description_en: "Steamed young soybeans, lightly salted.", price: 450),
-
-            MenuItem(id: UUID().uuidString, category_id: "cat2", name_en: "Classic Beef Pho", name_ja: "定番牛肉のフォー", name_vi: "Phở Bò Truyền Thống", description_en: "Rich beef broth with rice noodles, sliced beef, and fresh herbs.", price: 1200),
-            MenuItem(id: UUID().uuidString, category_id: "cat2", name_en: "Spicy Lemongrass Chicken Noodle Soup", name_ja: "辛口レモングラスチキンヌードルスープ", name_vi: "Bún Gà Sả Ớt Cay", description_en: "Spicy and sour soup with chicken, lemongrass, and rice vermicelli.", price: 1100),
-
-            MenuItem(id: UUID().uuidString, category_id: "cat3", name_en: "Grilled Salmon with Dill", name_ja: "サーモンのグリル（ディル風味）", name_vi: "Cá Hồi Nướng Thì Là", description_en: "Pan-seared salmon fillet with a creamy dill sauce, served with asparagus.", price: 1800),
-            MenuItem(id: UUID().uuidString, category_id: "cat3", name_en: "Shaking Beef (Bo Luc Lac)", name_ja: "サイコロステーキ（ボー・ルック・ラック）", name_vi: "Bò Lúc Lắc", description_en: "Wok-tossed marinated beef cubes with bell peppers and onions.", price: 2200),
-
-            MenuItem(id: UUID().uuidString, category_id: "cat4", name_en: "Margherita Pizza", name_ja: "マルゲリータピザ", name_vi: "Pizza Margherita", description_en: "Classic pizza with tomato, mozzarella, and basil.", price: 1300),
-
-            MenuItem(id: UUID().uuidString, category_id: "cat5", name_en: "Tofu & Vegetable Curry", name_ja: "豆腐と野菜のカレー", name_vi: "Cà Ri Đậu Hũ Rau Củ", description_en: "Mild yellow curry with tofu, potatoes, carrots, and green beans. Served with rice.", price: 1400),
-
-            MenuItem(id: UUID().uuidString, category_id: "cat6", name_en: "Steamed Jasmine Rice", name_ja: "ジャスミンライス", name_vi: "Cơm Trắng", description_en: "Fluffy steamed jasmine rice.", price: 200),
-
-            MenuItem(id: UUID().uuidString, category_id: "cat7", name_en: "Mango Sticky Rice", name_ja: "マンゴーもち米", name_vi: "Xôi Xoài", description_en: "Sweet sticky rice with fresh mango slices and coconut cream.", price: 750),
-            MenuItem(id: UUID().uuidString, category_id: "cat7", name_en: "Mochi Ice Cream Selection", name_ja: "餅アイスセレクション", name_vi: "Kem Mochi Thập Cẩm", description_en: "Assortment of 3 mochi ice cream pieces (e.g., green tea, mango, strawberry).", price: 600),
-
-            MenuItem(id: UUID().uuidString, category_id: "cat8", name_en: "Vietnamese Iced Coffee", name_ja: "ベトナム風アイスコーヒー", name_vi: "Cà Phê Sữa Đá", description_en: "Strong drip coffee with condensed milk, served over ice.", price: 550),
-            MenuItem(id: UUID().uuidString, category_id: "cat8", name_en: "Japanese Green Tea (Pot)", name_ja: "緑茶（ポット）", name_vi: "Trà Xanh Nhật Bản (Ấm)", description_en: "Hot Japanese sencha.", price: 400),
-
-            MenuItem(id: UUID().uuidString, category_id: "cat9", name_en: "Asahi Super Dry Beer", name_ja: "アサヒスーパードライ", name_vi: "Bia Asahi Super Dry", description_en: "Japanese imported beer.", price: 700),
-        ]
-        // Simple mapping for mock categories used in MenuCategoryView to these item category_ids
-        let categoryMap = [
-            "Appetizers": "cat1",
-            "Soups & Salads": "cat2", // Example: Map to Pho for now
-            "Main Courses - Meat": "cat3", // Example: Map to Shaking Beef
-            "Main Courses - Fish": "cat3", // Example: Map to Salmon
-            "Pasta & Pizza": "cat4",
-            "Vegetarian Options": "cat5",
-            "Side Dishes": "cat6",
-            "Desserts": "cat7",
-            "Hot Drinks": "cat8", // Could be more specific
-            "Cold Drinks": "cat8", // Could be more specific
-            "Alcoholic Beverages": "cat9"
-        ]
-
-        let targetCatId = categoryMap[categoryId] ?? categoryId // Use mapping if display name was passed, else assume raw ID
-
-        return allItems.filter { $0.category_id == targetCatId }
-    }
-}
-
-
 struct MenuItemView: View {
-    let category: Category
+    let category: Category // Canonical Category model
     let orderId: String
-    let table: Table
+    let table: Table     // Canonical Table model
 
     @EnvironmentObject var orderManager: OrderManager
-    // @EnvironmentObject var supabaseManager: SupabaseManager // If needed for direct item fetching
+    @EnvironmentObject var supabaseManager: SupabaseManager
 
-    @State private var menuItems: [MenuItem] = []
+    @State private var menuItems: [MenuItem] = [] // Canonical MenuItem
     @State private var isLoading = false
     @State private var draftOrderItemsCount: Int = 0
 
     // For placeholder navigation
-    @State private var navigateToAddItemDetail: MenuItem? = nil
+    @State private var navigateToAddItemDetail: MenuItem? = nil // Canonical MenuItem
     @State private var navigateToDraftOrder = false
 
+    @State private var errorMessage: String? = nil
+    @State private var showingErrorAlert: Bool = false
     var body: some View {
         Group {
             if isLoading {
@@ -141,6 +72,12 @@ struct MenuItemView: View {
         } message: {
             Text("Would navigate to Draft Order View for order \(orderId). Items: \(draftOrderItemsCount)")
         }
+        // Alert for data fetching errors
+        .alert("Error", isPresented: $showingErrorAlert) {
+            Button("OK") {}
+        } message: {
+            Text(errorMessage ?? "An unknown error occurred.")
+        }
     }
 
     @ViewBuilder
@@ -179,12 +116,27 @@ struct MenuItemView: View {
     @MainActor
     private func loadInitialData() async {
         isLoading = true
-        // Fetch menu items (mocked for now)
-        // In a real app: self.menuItems = try? await supabaseManager.fetchMenuItems(categoryId: category.id, forRestaurant: restaurantId)
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
-        self.menuItems = MenuItem.mockItems(categoryId: category.name_en) // Using name_en as a key for mock categories
+        errorMessage = nil
 
-        // Fetch draft order summary
+        do {
+            // Ensure SupabaseManager has a valid restaurant ID before fetching
+            // (fetchMenuItems in SupabaseManager already checks this, but good practice)
+            guard supabaseManager.currentRestaurantId != nil else {
+                self.errorMessage = "Restaurant not identified for fetching menu items."
+                self.showingErrorAlert = true
+                self.isLoading = false
+                self.menuItems = []
+                return
+            }
+            self.menuItems = try await supabaseManager.fetchMenuItems(categoryId: category.id)
+        } catch {
+            print("Error fetching menu items for category \(category.id): \(error.localizedDescription)")
+            self.errorMessage = "Failed to load menu items: \(error.localizedDescription)"
+            self.showingErrorAlert = true
+            self.menuItems = [] // Clear items on error
+        }
+
+        // Fetch draft order summary (should run regardless of menu item fetch outcome)
         await updateDraftOrderSummary()
 
         isLoading = false
@@ -208,13 +160,37 @@ struct MenuItemView: View {
 struct MenuItemView_Previews: PreviewProvider {
     static var previews: some View {
         let mockOrderManager = OrderManager()
-        let mockCategory = Category.mockCategories().first! // Take the first mock category
-        let mockTable = Table(id: "previewTable1", name: "P1", status: "available", capacity: 2)
+        let mockSupabaseManager = SupabaseManager.shared
+
+        // Create a mock Category instance (canonical model)
+        let mockCategory = Category(
+            id: "catPrev1",
+            name_en: "Preview Appetizers",
+            name_ja: "プレビュー前菜",
+            name_vi: "Khai vị Xem trước",
+            position: 1
+        )
+
+        // Create a mock Table instance (canonical model)
+        let mockTable = Table(
+            id: "previewTableMIV",
+            restaurant_id: "previewRestoMIV",
+            name: "MIV Table",
+            status: .available,
+            capacity: 4,
+            is_outdoor: false,
+            is_accessible: true,
+            notes: nil,
+            qr_code: nil,
+            created_at: ISO8601DateFormatter().string(from: Date()),
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
         let mockOrderId = "previewOrderMenuItemView"
 
-        NavigationView { // For toolbar and title
+        return NavigationView { // For toolbar and title
             MenuItemView(category: mockCategory, orderId: mockOrderId, table: mockTable)
                 .environmentObject(mockOrderManager)
+                .environmentObject(mockSupabaseManager)
         }
     }
 }

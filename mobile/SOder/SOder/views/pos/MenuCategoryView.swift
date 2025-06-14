@@ -1,51 +1,24 @@
 import SwiftUI
 
-// Basic Category model for this view's purpose
-// In a real app, this would come from the shared models directory
-struct Category: Identifiable, Codable, Hashable {
-    let id: String
-    let name_en: String
-    let name_ja: String? // Optional for simplicity if not all languages are always present
-    let name_vi: String? // Optional
-
-    // Computed property for display name based on current localization (placeholder)
-    var displayName: String {
-        // TODO: Integrate with LocalizationManager.shared.currentLanguage or similar
-        return name_en // Defaulting to English
-    }
-
-    // Mock data
-    static func mockCategories() -> [Category] {
-        return [
-            Category(id: UUID().uuidString, name_en: "Appetizers", name_ja: "前菜", name_vi: "Khai vị"),
-            Category(id: UUID().uuidString, name_en: "Soups & Salads", name_ja: "スープ＆サラダ", name_vi: "Súp và Salad"),
-            Category(id: UUID().uuidString, name_en: "Main Courses - Meat", name_ja: "メイン（肉料理）", name_vi: "Món chính - Thịt"),
-            Category(id: UUID().uuidString, name_en: "Main Courses - Fish", name_ja: "メイン（魚料理）", name_vi: "Món chính - Cá"),
-            Category(id: UUID().uuidString, name_en: "Pasta & Pizza", name_ja: "パスタ＆ピザ", name_vi: "Mì Ý và Pizza"),
-            Category(id: UUID().uuidString, name_en: "Vegetarian Options", name_ja: "ベジタリアン", name_vi: "Món chay"),
-            Category(id: UUID().uuidString, name_en: "Side Dishes", name_ja: "サイドディッシュ", name_vi: "Món ăn kèm"),
-            Category(id: UUID().uuidString, name_en: "Desserts", name_ja: "デザート", name_vi: "Tráng miệng"),
-            Category(id: UUID().uuidString, name_en: "Hot Drinks", name_ja: "温かい飲み物", name_vi: "Đồ uống nóng"),
-            Category(id: UUID().uuidString, name_en: "Cold Drinks", name_ja: "冷たい飲み物", name_vi: "Đồ uống lạnh"),
-            Category(id: UUID().uuidString, name_en: "Alcoholic Beverages", name_ja: "アルコール飲料", name_vi: "Đồ uống có cồn")
-        ]
-    }
-}
+// Local Category stub removed, will use canonical Category from Models.swift
 
 struct MenuCategoryView: View {
     let orderId: String
-    let table: Table // The selected table
+    let table: Table // This should be the canonical Table model from Models.swift
 
     @EnvironmentObject var orderManager: OrderManager
-    // @EnvironmentObject var supabaseManager: SupabaseManager // If needed for direct category fetching
+    @EnvironmentObject var supabaseManager: SupabaseManager
 
-    @State private var categories: [Category] = []
+    @State private var categories: [Category] = [] // Canonical Category
     @State private var isLoading = false
     @State private var draftOrderItemsCount: Int = 0
 
     // For placeholder navigation
-    @State private var navigateToCategory: Category? = nil
+    @State private var navigateToCategory: Category? = nil // Canonical Category
     @State private var navigateToDraftOrder = false
+
+    @State private var errorMessage: String? = nil
+    @State private var showingErrorAlert: Bool = false
 
     var body: some View {
         // NavigationStack { // Assuming this view is already part of a NavigationStack from SelectTableView
@@ -115,18 +88,38 @@ struct MenuCategoryView: View {
             } message: {
                 Text("Would navigate to Draft Order View for order \(orderId). Items: \(draftOrderItemsCount)")
             }
+            // Alert for data fetching errors
+            .alert("Error", isPresented: $showingErrorAlert) {
+                Button("OK") {}
+            } message: {
+                Text(errorMessage ?? "An unknown error occurred.")
+            }
         // }
     }
 
     @MainActor
     private func loadInitialData() async {
         isLoading = true
-        // Fetch categories (mocked for now)
-        // In a real app: self.categories = try? await supabaseManager.fetchAllCategories(forRestaurant: restaurantId)
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
-        self.categories = Category.mockCategories()
+        errorMessage = nil
 
-        // Fetch draft order summary
+        do {
+            // Ensure SupabaseManager has a valid restaurant ID before fetching
+            guard supabaseManager.currentRestaurantId != nil else {
+                self.errorMessage = "Restaurant not identified for fetching categories."
+                self.showingErrorAlert = true
+                self.isLoading = false
+                self.categories = []
+                return
+            }
+            self.categories = try await supabaseManager.fetchAllCategories()
+        } catch {
+            print("Error fetching categories: \(error.localizedDescription)")
+            self.errorMessage = "Failed to load categories: \(error.localizedDescription)"
+            self.showingErrorAlert = true
+            self.categories = [] // Clear categories on error
+        }
+
+        // Fetch draft order summary (should run regardless of category fetch outcome)
         await updateDraftOrderSummary()
 
         isLoading = false
@@ -149,19 +142,35 @@ struct MenuCategoryView: View {
 
 struct MenuCategoryView_Previews: PreviewProvider {
     static var previews: some View {
-        // Create mock data for preview
+        // Create mock data for preview using canonical models
         let mockOrderManager = OrderManager()
-        let mockTable = Table(id: "previewTable1", name: "P1", status: "available", capacity: 2)
+        let mockSupabaseManager = SupabaseManager.shared // Use shared for convenience or a mock
+
+        // Ensure currentRestaurant is set on SupabaseManager for previews if fetchCategories relies on it
+        // For example:
+        // mockSupabaseManager.currentRestaurant = Restaurant(id: "previewResto", name: "Preview Cafe", ...)
+        // This step might be more involved if currentRestaurant is not easily settable or if using a pure mock.
+
+        // Create a mock Table instance (canonical model)
+        let mockTable = Table(
+            id: "previewTable1",
+            restaurant_id: "previewResto", // Ensure this matches what SupabaseManager might expect
+            name: "P1",
+            status: .available,
+            capacity: 2,
+            is_outdoor: false,
+            is_accessible: true,
+            notes: nil,
+            qr_code: nil,
+            created_at: ISO8601DateFormatter().string(from: Date()),
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
         let mockOrderId = "previewOrder123"
 
-        // For the preview, we can manually add a mock order to the OrderManager
-        // or ensure its getDraftOrder returns something.
-        // The current getDraftOrder in OrderManager already returns a mock order.
-
-        NavigationView { // NavigationView for toolbar and title to show up correctly
+        return NavigationView { // NavigationView for toolbar and title to show up correctly
             MenuCategoryView(orderId: mockOrderId, table: mockTable)
                 .environmentObject(mockOrderManager)
-                // .environmentObject(SupabaseManager.shared) // If SupabaseManager is used directly
+                .environmentObject(mockSupabaseManager)
         }
     }
 }
