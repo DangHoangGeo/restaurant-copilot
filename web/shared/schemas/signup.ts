@@ -9,6 +9,7 @@ export const signupSchema = z.object({
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
   confirmPassword: z.string().min(8).optional(),
   defaultLanguage: z.enum(["ja","en","vi"]),
+  selectedPlan: z.enum(["starter", "growth", "enterprise"]).optional(),
   captchaToken: z.string().min(1).optional(),
   policyAgreement: z.boolean().refine(val => val === true, {
     message: "You must agree to the Terms of Service and Privacy Policy",

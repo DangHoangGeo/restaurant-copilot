@@ -257,6 +257,58 @@
         "a": "We offer comprehensive online support, tutorials, and a dedicated support team ready to assist you with any questions or issues."
       }
     },
+    "pricing": {
+      "title": "Choose Your Plan",
+      "subtitle": "Select the perfect plan for your restaurant's needs. Start with a free trial and upgrade when you're ready.",
+      "popular": "Most Popular",
+      "billing": {
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "per_month": "per month",
+        "billed_yearly": "billed yearly",
+        "save_20": "Save 20%"
+      },
+      "plans": {
+        "starter": {
+          "title": "Starter Plan",
+          "description": "Perfect for small establishments serving up to 100 customers per day"
+        },
+        "growth": {
+          "title": "Growth Plan",
+          "description": "Ideal for regular-sized establishments serving 100-500 customers per day"
+        },
+        "enterprise": {
+          "title": "Enterprise Plan",
+          "description": "For business owners managing multiple locations"
+        }
+      },
+      "features": {
+        "basic_order_management": "Basic order management",
+        "ai_analytics_basic": "AI analytics (basic insights)",
+        "basic_customer_support": "Basic customer support",
+        "advanced_order_management": "Advanced order management",
+        "enhanced_ai_analytics": "Enhanced AI analytics and insights",
+        "priority_customer_support": "Priority customer support",
+        "external_platform_integrations": "External platform integrations",
+        "full_feature_access": "Full access to all features",
+        "comprehensive_ai_optimization": "Comprehensive AI-driven business optimization",
+        "dedicated_ai_support": "Dedicated AI-enabled customer & technical support",
+        "multi_location_management": "Multi-location management capabilities"
+      },
+      "cta": {
+        "start_free_trial": "Start Free Trial",
+        "choose_plan": "Choose Plan",
+        "contact_sales": "Contact Sales"
+      },
+      "up_to_customers": "Up to {count} customers per day",
+      "trial_info": "{days}-day free trial included",
+      "bottom_cta": {
+        "title": "Not sure which plan is right for you?",
+        "start_free": "Start Free Trial",
+        "or": "or",
+        "contact_sales": "Talk to Sales"
+      }
+    },
     "cta_section": {
       "title": "Ready to Transform Your Restaurant?",
       "subtitle": "Join hundreds of restaurants simplifying their operations and boosting profits with CoOrder.",

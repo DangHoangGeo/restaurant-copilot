@@ -7,21 +7,25 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AuthCard, FormField, PasswordInput, PolicyAgreement } from "@/components/auth";
+import { PRICING_PLANS } from "@/config/pricing";
 
 type SignupFormInputs = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const t = useTranslations('auth');
   const tCommon = useTranslations('Common');
+  const tHome = useTranslations('HomePage');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [subdomainAvailability, setSubdomainAvailability] = useState<"checking" | "available" | "not-available" | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const {
     register,
@@ -40,6 +44,7 @@ export default function SignupPage() {
       password: "",
       confirmPassword: "",
       defaultLanguage: "en",
+      selectedPlan: undefined,
       captchaToken: "",
       policyAgreement: false,
     },
@@ -93,6 +98,22 @@ export default function SignupPage() {
     };
   }, [subdomainValue, checkSubdomainAvailability]);
 
+  // Detect plan from URL parameters or localStorage
+  useEffect(() => {
+    const planFromUrl = searchParams.get('plan');
+    const planFromStorage = localStorage.getItem('selectedPlan');
+    
+    if (planFromUrl && ['starter', 'growth', 'enterprise'].includes(planFromUrl)) {
+      setSelectedPlan(planFromUrl);
+      setValue('selectedPlan', planFromUrl as 'starter' | 'growth' | 'enterprise');
+      // Save to localStorage for persistence
+      localStorage.setItem('selectedPlan', planFromUrl);
+    } else if (planFromStorage && ['starter', 'growth', 'enterprise'].includes(planFromStorage)) {
+      setSelectedPlan(planFromStorage);
+      setValue('selectedPlan', planFromStorage as 'starter' | 'growth' | 'enterprise');
+    }
+  }, [searchParams, setValue, setSelectedPlan]);
+
   const onSubmit = async (data: SignupFormInputs) => {
     setServerError(null);
     if (!captchaToken) {
@@ -136,6 +157,7 @@ export default function SignupPage() {
           email: data.email,
           password: data.password,
           defaultLanguage: data.defaultLanguage,
+          selectedPlan: data.selectedPlan,
         }),
       });
 
@@ -253,6 +275,38 @@ export default function SignupPage() {
             <p className="text-sm text-red-600">{errors.defaultLanguage.message}</p>
           )}
         </div>
+
+        {/* Selected Plan Display */}
+        {selectedPlan && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Selected Plan
+            </label>
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                    {tHome(`pricing.plans.${selectedPlan}.title`)}
+                  </h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    ${PRICING_PLANS.find(plan => plan.id === selectedPlan)?.price.monthly}/month
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPlan(null);
+                    setValue('selectedPlan', undefined);
+                    localStorage.removeItem('selectedPlan');
+                  }}
+                  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-sm"
+                >
+                  Change Plan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Policy Agreement */}
         <PolicyAgreement

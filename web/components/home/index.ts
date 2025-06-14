@@ -11,6 +11,7 @@ export { SocialProofSection } from './SocialProofSection';
 export { FeaturesSection } from './FeaturesSection';
 export { HowItWorksSection } from './HowItWorksSection';
 export { BenefitsSection } from './BenefitsSection';
+export { PricingSection } from './PricingSection';
 export { FaqSection } from './FaqSection';
 export { CallToActionSection } from './CallToActionSection';
 export { FooterSection } from './FooterSection';

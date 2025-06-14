@@ -1444,6 +1444,58 @@
           "dpo": "Nhân viên Bảo vệ Dữ liệu: dpo@coorder.com"
         }
       }
+    },
+    "pricing": {
+      "title": "Chọn Gói Dịch Vụ",
+      "subtitle": "Chọn gói hoàn hảo cho nhu cầu nhà hàng của bạn. Bắt đầu với bản dùng thử miễn phí và nâng cấp khi bạn sẵn sàng.",
+      "popular": "Phổ Biến Nhất",
+      "billing": {
+        "monthly": "Hàng Tháng",
+        "yearly": "Hàng Năm",
+        "per_month": "mỗi tháng",
+        "billed_yearly": "thanh toán hàng năm",
+        "save_20": "Tiết kiệm 20%"
+      },
+      "plans": {
+        "starter": {
+          "title": "Gói Khởi Động",
+          "description": "Hoàn hảo cho các cơ sở nhỏ phục vụ tối đa 100 khách hàng mỗi ngày"
+        },
+        "growth": {
+          "title": "Gói Phát Triển",
+          "description": "Lý tưởng cho các cơ sở quy mô vừa phục vụ 100-500 khách hàng mỗi ngày"
+        },
+        "enterprise": {
+          "title": "Gói Doanh Nghiệp",
+          "description": "Dành cho chủ doanh nghiệp quản lý nhiều địa điểm"
+        }
+      },
+      "features": {
+        "basic_order_management": "Quản lý đơn hàng cơ bản",
+        "ai_analytics_basic": "Phân tích AI (thông tin cơ bản)",
+        "basic_customer_support": "Hỗ trợ khách hàng cơ bản",
+        "advanced_order_management": "Quản lý đơn hàng nâng cao",
+        "enhanced_ai_analytics": "Phân tích và thông tin AI nâng cao",
+        "priority_customer_support": "Hỗ trợ khách hàng ưu tiên",
+        "external_platform_integrations": "Tích hợp nền tảng bên ngoài",
+        "full_feature_access": "Truy cập đầy đủ tất cả tính năng",
+        "comprehensive_ai_optimization": "Tối ưu hóa doanh nghiệp toàn diện bằng AI",
+        "dedicated_ai_support": "Hỗ trợ khách hàng & kỹ thuật chuyên dụng có AI",
+        "multi_location_management": "Khả năng quản lý nhiều địa điểm"
+      },
+      "cta": {
+        "start_free_trial": "Bắt Đầu Dùng Thử Miễn Phí",
+        "choose_plan": "Chọn Gói",
+        "contact_sales": "Liên Hệ Bán Hàng"
+      },
+      "up_to_customers": "Tối đa {count} khách hàng mỗi ngày",
+      "trial_info": "Bao gồm {days} ngày dùng thử miễn phí",
+      "bottom_cta": {
+        "title": "Không chắc gói nào phù hợp với bạn?",
+        "start_free": "Bắt Đầu Dùng Thử Miễn Phí",
+        "or": "hoặc",
+        "contact_sales": "Nói Chuyện Với Bán Hàng"
+      }
     }
   }
 }

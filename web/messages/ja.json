@@ -241,6 +241,58 @@
         "a": "私たちは包括的なオンラインサポート、チュートリアル、そして質問や問題に対応する専任のサポートチームを提供しています。"
       }
     },
+    "pricing": {
+      "title": "プランを選択",
+      "subtitle": "レストランのニーズに合った最適なプランをお選びください。無料トライアルから始めて、準備ができたらアップグレードできます。",
+      "popular": "最も人気",
+      "billing": {
+        "monthly": "月払い",
+        "yearly": "年払い",
+        "per_month": "月額",
+        "billed_yearly": "年間一括払い",
+        "save_20": "20%節約"
+      },
+      "plans": {
+        "starter": {
+          "title": "スタータープラン",
+          "description": "1日100人未満のお客様をもてなす小規模店舗向け"
+        },
+        "growth": {
+          "title": "グロースプラン",
+          "description": "1日100〜500人のお客様をもてなす通常規模の店舗向け"
+        },
+        "enterprise": {
+          "title": "エンタープライズプラン",
+          "description": "複数店舗を管理するオーナー向け"
+        }
+      },
+      "features": {
+        "basic_order_management": "基本的な注文管理",
+        "ai_analytics_basic": "AI分析（基本的な洞察）",
+        "basic_customer_support": "基本的なカスタマーサポート",
+        "advanced_order_management": "高度な注文管理",
+        "enhanced_ai_analytics": "強化されたAI分析と洞察",
+        "priority_customer_support": "優先カスタマーサポート",
+        "external_platform_integrations": "外部プラットフォームとの連携",
+        "full_feature_access": "すべての機能への完全アクセス",
+        "comprehensive_ai_optimization": "包括的なAI駆動ビジネス最適化",
+        "dedicated_ai_support": "専用のAI対応カスタマー・技術サポート",
+        "multi_location_management": "複数拠点管理機能"
+      },
+      "cta": {
+        "start_free_trial": "無料トライアル開始",
+        "choose_plan": "プランを選択",
+        "contact_sales": "営業に連絡"
+      },
+      "up_to_customers": "1日最大{count}人のお客様",
+      "trial_info": "{days}日間の無料トライアル付き",
+      "bottom_cta": {
+        "title": "どのプランが適しているかわからない場合",
+        "start_free": "無料トライアル開始",
+        "or": "または",
+        "contact_sales": "営業担当者と話す"
+      }
+    },
     "cta_section": {
       "title": "あなたのレストランを変革する準備はできましたか？",
       "subtitle": "何百ものレストランがCoOrderで業務を簡素化し、利益を上げています。あなたも参加しませんか。",
