@@ -3,8 +3,9 @@ import React from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
+import Link from 'next/link';
 
-export const FooterSection = () => {
+export const FooterSection = ({ locale }: { locale: string }) => {
   const t = useTranslations('LandingPage');
   const footerLinks = {
     product: [ 
@@ -36,12 +37,21 @@ export const FooterSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           <div className="col-span-2 lg:col-span-2">
-            <a href="#" className="flex items-center" aria-label={t('header.logo_aria_label')}>
-              <Image src="/coorder-ai.png" alt="coorder.ai" width={32} height={32} className="w-8 h-8" />
-              <span className="ml-2 text-xl font-bold text-slate-800 dark:text-slate-100">
-                coorder<span className="text-[--brand-color-landing]">.ai</span>
+            <Link href={`/${locale}`} className="flex items-center group">
+              <div className="relative">
+                <Image
+                  src="/coorder-ai.png"
+                  alt="CoOrder.ai"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-200"
+                />
+                <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-lg group-hover:bg-blue-500/30 transition-colors duration-200" />
+              </div>
+              <span className="ml-3 text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                coorder<span className="text-blue-600 dark:text-blue-400">.ai</span>
               </span>
-            </a>
+            </Link>
             <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-sm">
               {t('footer.description')}
             </p>

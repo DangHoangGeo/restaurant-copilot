@@ -53,7 +53,7 @@ export default function Page() {
           <FaqSection />
           <CallToActionSection />
         </main>
-        <FooterSection />
+        <FooterSection locale={locale} />
       </div>
     </ThemeProviderLanding>
   );

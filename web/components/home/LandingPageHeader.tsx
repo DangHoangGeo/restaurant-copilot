@@ -7,6 +7,7 @@ import { Button } from './Button';
 import { Icon } from './Icon';
 import { LanguageSwitcherLanding } from './LanguageSwitcherLanding';
 import { useThemeLanding } from './ThemeProvider';
+import Link from 'next/link';
 
 interface LandingPageHeaderProps {
   locale: string;
@@ -22,12 +23,21 @@ export const LandingPageHeader = ({ locale }: LandingPageHeaderProps) => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="#" className="flex items-center" aria-label={t('header.logo_aria_label')}>
-            <Image src="/coorder-ai.png" alt="coorder.ai" width={32} height={32} className="w-8 h-8 sm:w-10 sm:h-10" />
-            <span className="ml-2 text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
-              coorder<span className="text-[--brand-color-landing]">.ai</span>
-            </span>
-          </a>
+            <Link href={`/${locale}`} className="flex items-center group">
+              <div className="relative">
+                <Image
+                  src="/coorder-ai.png"
+                  alt="CoOrder.ai"
+                  width={40}
+                  height={40}
+                  className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-200"
+                />
+                <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-lg group-hover:bg-blue-500/30 transition-colors duration-200" />
+              </div>
+              <span className="ml-3 text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                coorder<span className="text-blue-600 dark:text-blue-400">.ai</span>
+              </span>
+            </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3">
