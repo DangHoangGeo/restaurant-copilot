@@ -68,12 +68,12 @@ export async function POST(req: NextRequest) {
       domain:
         process.env.NEXT_PRIVATE_DEVELOPMENT === "true"
           ? "localhost"
-          : "." + process.env.NEXT_PRIVATE_PRODUCTION_URL,
+          : "." + process.env.NEXT_PUBLIC_PRODUCTION_URL,
       maxAge: 60 * 60 * 24 * 7,
     });
 
     const isDev = process.env.NEXT_PRIVATE_DEVELOPMENT!;
-    const productionUrl = process.env.NEXT_PRIVATE_PRODUCTION_URL || "baoan.jp";
+    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
     let redirectUrl = `https://${restaurant.subdomain}.${productionUrl}/${restaurant.default_language}/dashboard`;
     if (isDev) {
       redirectUrl = `http://${restaurant.subdomain}.localhost:3000/${restaurant.default_language}/dashboard`;

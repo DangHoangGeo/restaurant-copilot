@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
     // 7. Return { success: true, redirect: "https://{subdomain}.coorder.ai/en/login" }.
 
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
-    const productionUrl = process.env.NEXT_PRIVATE_PRODUCTION_URL || "coorder.ai";
+    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
     let redirectUrl = `https://${subdomain}.${productionUrl}/${defaultLanguage}/login`;
     if (isDevelopment) {
       redirectUrl = `http://${subdomain}.localhost:3000/${defaultLanguage}/login`;

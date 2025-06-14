@@ -27,7 +27,10 @@ export default function Page() {
   
   useEffect(() => {
     const host = window.location.hostname;
+    console.log('Current host:', host);
+    console.log('Full window.location:', window.location);
     const detectedSubdomain = getSubdomainFromHost(host);
+    console.log("Detected subdomain:", detectedSubdomain);
     setSubdomain(detectedSubdomain);
   }, []);
 
