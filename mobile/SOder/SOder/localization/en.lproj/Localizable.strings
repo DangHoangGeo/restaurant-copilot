@@ -447,3 +447,14 @@
 
 // MARK: - POS Flow Tab
 "tab_new_order" = "New Order";
+
+// MARK: - New Keys Added by AI Assistant
+"loading_items_for_%@..." = "Loading items for %@...";
+"no_menu_items_found_in_%@." = "No menu items found in %@.";
+"view_draft_order_,_%%d_items" = "View draft order, %d items";
+"view_draft_order,_empty" = "View draft order, empty";
+"add/customize_item" = "Add/Customize Item";
+"would_navigate_to_details/customization_for_item:_%@" = "Would navigate to details/customization for item: %@";
+"navigate_to_draft_order" = "Navigate to Draft Order";
+"would_navigate_to_draft_order_view_for_order_%%@._items:_%%d" = "Would navigate to Draft Order View for order %@. Items: %d";
+"add_%%@_to_order" = "Add %@ to order";
