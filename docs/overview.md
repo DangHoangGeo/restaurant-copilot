@@ -51,6 +51,25 @@ CoOrder is a mobile-first, AI-augmented SaaS platform that empowers small restau
 
 ---
 
+## Expected UI, UX
+
+* Conduct a deep dive into the existing restaurant workflow to produce a comprehensive feature map.
+* Identify opportunities to simplify and streamline every step, reducing the owner’s operational burden by providing default setup
+* Automate repetitive tasks, including:
+
+  * Generating daily/weekly/monthly reports
+  * AI-assisted context generation (e.g. summarizing sales, customer feedback)
+  * Multilingual translation of menus, notifications, and reports
+  * Data analysis and visualization
+  * Intelligent, AI-driven suggestions (e.g. inventory restocking, menu recommendations)
+* Simplify the user interface and improve UX while preserving access to rich, detailed functionality.
+* Implement a flexible database schema that can:
+
+  * Accommodate owners who want fine-grained control over every setting
+  * Offer sensible default configurations for those who prefer “out-of-the-box” use
+  * Enable the AI assistant to auto-configure key parameters based on each restaurant’s profile and needs.
+
+
 ## Technology Stack
 
 **Web (Admin Dashboard & Customer Site)**
