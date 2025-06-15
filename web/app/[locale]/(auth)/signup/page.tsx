@@ -158,6 +158,7 @@ export default function SignupPage() {
           password: data.password,
           defaultLanguage: data.defaultLanguage,
           selectedPlan: data.selectedPlan,
+          policyAgreement: data.policyAgreement,
         }),
       });
 

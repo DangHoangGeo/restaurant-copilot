@@ -13,23 +13,42 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     return null;
   }
 
-  // Fetch user record and restaurant data in a single optimized query
-  const { data: userRecord, error: userRecordError } = await supabase
-    .from('users')
-    .select(`
-      restaurant_id,
-      role,
-      restaurants!inner(
-        id,
-        subdomain,
-        name
-      )
-    `)
-    .eq('id', supabaseUser.id)
-    .single();
+  try {
+    // Fetch user record first, then get restaurant data separately for more reliable querying
+    const { data: userRecord, error: userRecordError } = await supabase
+      .from('users')
+      .select('restaurant_id, role')
+      .eq('id', supabaseUser.id)
+      .single();
 
-  if (userRecordError || !userRecord) {
-    // Fallback to user metadata if record not found
+    if (userRecordError || !userRecord || !userRecord.restaurant_id) {
+      // Fallback to user metadata if record not found
+      return {
+        userId: supabaseUser.id,
+        email: supabaseUser.email,
+        restaurantId: supabaseUser.user_metadata?.restaurant_id || null,
+        subdomain: null,
+        role: supabaseUser.user_metadata?.role || null,
+      };
+    }
+
+    // Get restaurant data separately to ensure we get the subdomain
+    const { data: restaurant } = await supabase
+      .from('restaurants')
+      .select('id, subdomain, name')
+      .eq('id', userRecord.restaurant_id)
+      .single();
+
+    return {
+      userId: supabaseUser.id,
+      email: supabaseUser.email,
+      restaurantId: userRecord.restaurant_id,
+      subdomain: restaurant?.subdomain || null,
+      role: userRecord.role,
+    };
+  } catch (error) {
+    // Log error but don't fail - return basic user info
+    console.error('Error in getCachedUser:', error);
     return {
       userId: supabaseUser.id,
       email: supabaseUser.email,
@@ -38,14 +57,6 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       role: supabaseUser.user_metadata?.role || null,
     };
   }
-
-  return {
-    userId: supabaseUser.id,
-    email: supabaseUser.email,
-    restaurantId: userRecord.restaurant_id,
-    subdomain: userRecord.restaurants[0].subdomain,
-    role: userRecord.role,
-  };
 });
 
 // Cache restaurant context for the request
