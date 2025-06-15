@@ -40,7 +40,18 @@ export async function POST(req: NextRequest) {
     }
 
     body = await req.json(); // Assign to the outer-scoped body
-    const { name, subdomain, email, password, defaultLanguage } = signupSchema.parse(body);
+    const { name, subdomain, email, password, defaultLanguage, policyAgreement } = signupSchema.parse(body);
+
+    // Ensure user has agreed to the policy (this is already validated by the schema, but explicit check for clarity)
+    if (!policyAgreement) {
+      await logEvent({
+        level: "WARN",
+        endpoint: "/api/v1/register",
+        message: "Registration attempted without policy agreement",
+        metadata: { email, subdomain },
+      });
+      return NextResponse.json({ error: "You must agree to the Terms of Service and Privacy Policy" }, { status: 400 });
+    }
 
     // 2. Recheck subdomain in restaurants; if taken, return 409.
     const { data: existingRestaurant, error: checkError } = await supabaseAdmin
@@ -61,7 +72,6 @@ export async function POST(req: NextRequest) {
     if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows found
       throw checkError;
     }
-    console.log("user data", body);
     // 3. Create Supabase Auth user
     const { data: userData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
