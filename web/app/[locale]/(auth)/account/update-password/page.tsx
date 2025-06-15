@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { clientLogger } from "@/lib/client-logger";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,10 @@ export default function UpdatePasswordPage() {
       try {
         const { data: { session }, error: sessionError } = await createClient().auth.getSession();
         if (sessionError) {
-          console.error("Error checking session:", sessionError.message);
+          // Log session check error for debugging
+          await clientLogger.error('update-password', 'Error checking session', {
+            error: sessionError.message
+          });
           setError(t("error.sessionCheck"));
           setUserAuthenticated(false);
         } else if (!session) {

@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSubdomainFromHost } from '@/lib/utils'; // Make sure this utility exists and works
 import { supabaseAdmin } from '@/lib/supabaseAdmin'; // Make sure this admin client is configured
+import { logger } from '@/lib/logger';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -42,21 +43,26 @@ export async function updateSession(request: NextRequest) {
         .single();
 
       if (restaurantError) {
-        console.warn(`Middleware: Error fetching restaurant ID for subdomain ${subdomain}: ${restaurantError.message}`);
+        await logger.warn('middleware', 'Error fetching restaurant ID for subdomain', {
+          subdomain,
+          error: restaurantError.message
+        });
       } else if (restaurant && restaurant.id) {
         const { error: rpcError } = await supabase.rpc('set_current_restaurant_id_for_session', {
           restaurant_id_value: restaurant.id,
         });
         if (rpcError) {
-          console.error(`Middleware: Error setting app.current_restaurant_id for ${restaurant.id} via RPC: ${rpcError.message}`);
-        } else {
-          // console.log(`Middleware: app.current_restaurant_id set to ${restaurant.id} for subdomain ${subdomain}`);
+          await logger.error('middleware', 'Error setting app.current_restaurant_id via RPC', {
+            restaurantId: restaurant.id,
+            error: rpcError.message
+          });
         }
-      } else {
-        // console.warn(`Middleware: No restaurant found for subdomain ${subdomain}`);
       }
     } catch (error) {
-      console.error('Middleware: Exception while setting restaurant context:', error);
+      await logger.error('middleware', 'Exception while setting restaurant context', {
+        subdomain,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
   // --- END: Set restaurant context for RLS ---
@@ -80,7 +86,6 @@ export async function updateSession(request: NextRequest) {
     if (!isLikelyPublicPage || request.nextUrl.pathname.startsWith('/dashboard')) { // Always protect dashboard
         const url = request.nextUrl.clone();
         url.pathname = '/login';
-        // console.log('Redirecting to login from:', request.nextUrl.pathname);
         return NextResponse.redirect(url);
     }
   }

@@ -4,6 +4,7 @@ import { routing } from './i18n/routing'; // Provides locales, defaultLocale, et
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { getSubdomainFromHost } from '@/lib/utils';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { logger } from '@/lib/logger';
 
 const nextIntl = createNextIntlMiddleware(routing);
 
@@ -52,18 +53,25 @@ async function handleSupabaseAndRls(
         .single();
 
       if (restaurantError) {
-        console.warn(`Middleware: Error fetching restaurant ID for RLS (subdomain ${subdomainForRls}): ${restaurantError.message}`);
+        logger.warn('middleware', `Error fetching restaurant ID for RLS (subdomain ${subdomainForRls})`, { error: restaurantError.message });
       } else if (restaurant && restaurant.id) {
         // Use the regular 'supabase' client (with user's context or anon context) to call the RPC
         const { error: rpcError } = await supabase.rpc('set_current_restaurant_id_for_session', {
           restaurant_id_value: restaurant.id,
         });
         if (rpcError) {
-          console.error(`Middleware: Error setting app.current_restaurant_id for ${restaurant.id} via RPC: ${rpcError.message}`);
+          logger.error('middleware', `Error setting app.current_restaurant_id for ${restaurant.id} via RPC`, { 
+            error: rpcError.message, 
+            restaurantId: restaurant.id,
+            subdomain: subdomainForRls 
+          });
         }
       }
     } catch (error) {
-      console.error('Middleware: Exception while setting RLS restaurant context:', error);
+      logger.error('middleware', 'Exception while setting RLS restaurant context', { 
+        error: error instanceof Error ? error.message : String(error),
+        subdomain: subdomainForRls 
+      });
     }
   }
   return { user, response }; // response is modified with cookies

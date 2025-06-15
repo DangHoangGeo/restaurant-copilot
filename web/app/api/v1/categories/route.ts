@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { logger } from '@/lib/logger';
 
 // Schema for validating the request body when creating/updating a category
 const categorySchema = z.object({
@@ -13,7 +14,6 @@ const categorySchema = z.object({
 
 export async function GET(req: NextRequest) {
   const restaurantId = req.nextUrl.searchParams.get("restaurantId") || "";
-  console.log('GET categories for restaurantId:', restaurantId);
   
   // Validate restaurantId parameter
   if (!restaurantId || restaurantId.trim() === '') {
@@ -76,14 +76,20 @@ export async function GET(req: NextRequest) {
       .order('position', { foreignTable: 'menu_items.menu_item_sizes', ascending: true });
       
     if (error) {
-      console.error('Error fetching categories:', error);
+      await logger.error('categories-api-get', 'Error fetching categories', {
+        error: error.message,
+        restaurantId
+      });
       return NextResponse.json({ message: 'Error fetching categories', details: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ categories }, { status: 200 });
 
   } catch (error) {
-    console.error('API Error in GET categories:', error);
+    await logger.error('categories-api-get', 'API Error in GET categories', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId
+    });
     return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknown error!" }, { status: 500 });
   }
 }
@@ -140,7 +146,11 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error('Error creating category:', error);
+      await logger.error('categories-api-post', 'Error creating category', {
+        error: error.message,
+        restaurantId: user.restaurantId,
+        categoryData
+      }, user.restaurantId, user.userId);
       // Check for specific errors, e.g., unique constraint violation if a category with the same name already exists
       if (error.code === '23505') { // Postgres unique violation
         return NextResponse.json({ message: 'Error creating category: A category with this name may already exist.', details: error.message }, { status: 409 }); // 409 Conflict
@@ -151,7 +161,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Category created successfully', category: data }, { status: 201 });
 
   } catch (error) {
-    console.error('API Error in POST categories:', error);
+    await logger.error('categories-api-post', 'API Error in POST categories', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId: user?.restaurantId
+    }, user?.restaurantId, user?.userId);
     if (error instanceof z.ZodError) { // Should be caught by safeParse, but as a fallback
         return NextResponse.json({ message: 'Validation error', errors: error.flatten().fieldErrors }, { status: 400 });
     }

@@ -8,6 +8,7 @@ import { headers } from 'next/headers';
 import { getSubdomainFromHost } from "@/lib/utils";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { Restaurant } from "@/shared/types";
+import { logger } from "@/lib/logger";
 
 // TODO: The restaurant logo can be stored in Supabase Storage for now.
 // Consider using api/v1/restaurant/settings/route.ts for API interactions
@@ -45,7 +46,10 @@ export default async function SettingsPage({
         .single();
 
       if (error) {
-        console.error(`Error fetching restaurant settings for ID "${user.restaurantId}":`, error);
+        await logger.error('dashboard-settings', 'Error fetching restaurant settings for ID', {
+          restaurantId: user.restaurantId,
+          error: error.message
+        }, user.restaurantId, user.userId);
         throw error;
       }
       initialSettings = data as Restaurant; // Type assertion
@@ -53,7 +57,9 @@ export default async function SettingsPage({
         fetchError = t("errors.noSettingsFoundMessage"); // No data returned for a valid ID
       }
     } catch (error) {
-      console.error("Error fetching restaurant settings:", error);
+      await logger.error('dashboard-settings', 'Error fetching restaurant settings', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, user?.restaurantId, user?.userId);
       fetchError = (error instanceof Error ? error.message : t("errors.fetchErrorMessage"));
     }
   }

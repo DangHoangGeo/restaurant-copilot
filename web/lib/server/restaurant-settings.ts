@@ -1,6 +1,7 @@
 import 'server-only';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
   if (!subdomain) return null;
@@ -13,7 +14,10 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
       .single();
 
     if (error) {
-      console.error(`Error fetching restaurant by subdomain ${subdomain}:`, error.message);
+      await logger.error('getRestaurantSettingsFromSubdomain', 'Error fetching restaurant by subdomain', {
+        subdomain,
+        error: error.message
+      });
       return null;
     }
     if (!restaurant) {
@@ -28,7 +32,10 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
       defaultLocale: restaurant.default_language || 'en',
     };
   } catch (e) {
-    console.error(`Exception fetching restaurant by subdomain ${subdomain}:`, e);
+    await logger.error('getRestaurantSettingsFromSubdomain', 'Exception fetching restaurant by subdomain', {
+      subdomain,
+      error: e instanceof Error ? e.message : 'Unknown error'
+    });
     return null;
   }
 }
@@ -45,12 +52,18 @@ export async function getRestaurantIdFromSubdomain(subdomain: string): Promise<s
       .single();
     
     if (error) {
-      console.error(`Error fetching restaurant ID for subdomain ${subdomain}:`, error.message);
+      await logger.error('getRestaurantIdFromSubdomain', 'Error fetching restaurant ID for subdomain', {
+        subdomain,
+        error: error.message
+      });
       return null;
     }
     return data?.id || null;
   } catch (e) {
-    console.error(`Exception fetching restaurant ID for subdomain ${subdomain}:`, e);
+    await logger.error('getRestaurantIdFromSubdomain', 'Exception fetching restaurant ID for subdomain', {
+      subdomain,
+      error: e instanceof Error ? e.message : 'Unknown error'
+    });
     return null;
   }
 }
