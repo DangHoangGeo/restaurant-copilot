@@ -7,24 +7,25 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { AlertCircle, CheckCircle, Eye, EyeOff, Lock } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AuthCard, FormField, PasswordInput, PolicyAgreement } from "@/components/auth";
+import { PRICING_PLANS } from "@/config/pricing";
 
 type SignupFormInputs = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const t = useTranslations('auth');
   const tCommon = useTranslations('Common');
+  const tHome = useTranslations('HomePage');
   const router = useRouter();
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const searchParams = useSearchParams();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [subdomainAvailability, setSubdomainAvailability] = useState<"checking" | "available" | "not-available" | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const {
     register,
@@ -43,11 +44,16 @@ export default function SignupPage() {
       password: "",
       confirmPassword: "",
       defaultLanguage: "en",
+      selectedPlan: undefined,
       captchaToken: "",
+      policyAgreement: false,
     },
   });
 
   const subdomainValue = watch("subdomain");
+  const passwordValue = watch("password");
+  const confirmPasswordValue = watch("confirmPassword");
+  const policyAgreementValue = watch("policyAgreement");
 
   const checkSubdomainAvailability = useCallback(
     async (subdomain: string) => {
@@ -92,6 +98,22 @@ export default function SignupPage() {
     };
   }, [subdomainValue, checkSubdomainAvailability]);
 
+  // Detect plan from URL parameters or localStorage
+  useEffect(() => {
+    const planFromUrl = searchParams.get('plan');
+    const planFromStorage = localStorage.getItem('selectedPlan');
+    
+    if (planFromUrl && ['starter', 'growth', 'enterprise'].includes(planFromUrl)) {
+      setSelectedPlan(planFromUrl);
+      setValue('selectedPlan', planFromUrl as 'starter' | 'growth' | 'enterprise');
+      // Save to localStorage for persistence
+      localStorage.setItem('selectedPlan', planFromUrl);
+    } else if (planFromStorage && ['starter', 'growth', 'enterprise'].includes(planFromStorage)) {
+      setSelectedPlan(planFromStorage);
+      setValue('selectedPlan', planFromStorage as 'starter' | 'growth' | 'enterprise');
+    }
+  }, [searchParams, setValue, setSelectedPlan]);
+
   const onSubmit = async (data: SignupFormInputs) => {
     setServerError(null);
     if (!captchaToken) {
@@ -135,6 +157,7 @@ export default function SignupPage() {
           email: data.email,
           password: data.password,
           defaultLanguage: data.defaultLanguage,
+          selectedPlan: data.selectedPlan,
         }),
       });
 
@@ -153,243 +176,193 @@ export default function SignupPage() {
     }
   };
 
-  const getPasswordStrength = (password: string) => {
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-    return strength;
-  };
-
-  const passwordStrength = getPasswordStrength(newPassword);
-  const strengthLabels = ["veryWeak", "weak", "medium", "strong", "veryStrong"];
-  const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-blue-500", "bg-green-500"];
-
-
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">{t('title.signup')}</h1>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-foreground">
-              {t('nameLabel')}
-            </label>
-            <input
-              id="name"
-              type="text"
-              {...register("name")}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
-          </div>
+    <AuthCard 
+      title={t('title.signup')}
+      description={t('subtitle.signup')}
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Restaurant Name */}
+        <FormField
+          label={t('nameLabel')}
+          {...register("name")}
+          error={errors.name?.message}
+          placeholder={t('namePlaceholder')}
+        />
 
-          <div>
-            <label htmlFor="subdomain" className="block text-sm font-medium text-foreground">
-              {t('subdomainLabel')}
-            </label>
-            <input
-              id="subdomain"
-              type="text"
-              {...register("subdomain")}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            {subdomainValue && subdomainAvailability === "checking" && (
-              <p className="mt-1 text-sm text-gray-500">{t('subdomainChecking')}</p>
-            )}
-            {subdomainValue && subdomainAvailability === "available" && (
-              <p className="mt-1 text-sm text-green-600">{t('subdomainAvailable')}</p>
-            )}
-            {subdomainValue && subdomainAvailability === "not-available" && (
-              <p className="mt-1 text-sm text-red-600">{t('subdomainNotAvailable')}</p>
-            )}
-            {errors.subdomain && <p className="mt-1 text-sm text-red-600">{errors.subdomain.message}</p>}
-          </div>
+        {/* Subdomain */}
+        <FormField
+          label={t('subdomainLabel')}
+          {...register("subdomain")}
+          error={errors.subdomain?.message}
+          placeholder={t('subdomainPlaceholder')}
+          loading={subdomainAvailability === "checking"}
+          success={subdomainAvailability === "available" ? t('subdomainAvailable') : undefined}
+          helpText={subdomainAvailability === "not-available" ? t('subdomainNotAvailable') : undefined}
+          rightIcon={
+            subdomainAvailability === "checking" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : subdomainAvailability === "available" ? (
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            ) : subdomainAvailability === "not-available" ? (
+              <AlertCircle className="h-4 w-4 text-red-500" />
+            ) : undefined
+          }
+        />
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground">
-              {t('emailLabel')}
-            </label>
-            <input
-              id="email"
-              type="email"
-              {...register("email")}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
-          </div>
+        {/* Email */}
+        <FormField
+          label={t('emailLabel')}
+          type="email"
+          {...register("email")}
+          error={errors.email?.message}
+          placeholder={t('emailPlaceholder')}
+        />
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
-                {t("password.newPassword") || "Password"}
-              </Label>
-              <div className="relative mt-1">
-                <Input
-                  type={showNewPassword ? "text" : "password"}
-                  id="password"
-                  {...register("password", {
-                    onChange: (e) => setNewPassword(e.target.value)
-                  })}
-                  required
-                  minLength={6}
-                  placeholder={t("password.newPasswordPlaceholder") || "Enter your new password"}
-                  className="pl-10 pr-10 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                />
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                >
-                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
-              
-              {/* Password Strength Indicator */}
-              {newPassword && (
-                <div className="mt-2 space-y-1">
-                  <div className="flex space-x-1">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <div
-                        key={level}
-                        className={`h-1 flex-1 rounded-full ${
-                          level <= passwordStrength ? strengthColors[passwordStrength - 1] : "bg-slate-200 dark:bg-slate-600"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {t("password.passwordStrength") || "Password Strength: "}{t(`password.strength.${strengthLabels[passwordStrength - 1]}`) || "Very Weak"}
+        {/* Password */}
+        <div className="space-y-2">
+          <PasswordInput
+            label={t("password.newPassword") || "Password"}
+            {...register("password")}
+            value={passwordValue}
+            showStrengthIndicator={true}
+            showRequirements={true}
+            confirmPassword={confirmPasswordValue}
+            placeholder={t("password.newPasswordPlaceholder") || "Enter your password"}
+            onPasswordChange={(password) => setValue("password", password)}
+          />
+          {errors.password && (
+            <p className="text-sm text-red-600">{errors.password.message}</p>
+          )}
+        </div>
+
+        {/* Confirm Password */}
+        <div className="space-y-2">
+          <PasswordInput
+            label={t("password.confirmPassword") || "Confirm Password"}
+            {...register("confirmPassword")}
+            value={confirmPasswordValue}
+            showStrengthIndicator={false}
+            showRequirements={false}
+            confirmPassword={passwordValue}
+            placeholder={t("password.confirmPasswordPlaceholder") || "Confirm your password"}
+            onPasswordChange={(password) => setValue("confirmPassword", password)}
+          />
+          {errors.confirmPassword && (
+            <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+          )}
+        </div>
+
+        {/* Default Language */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {tCommon('defaultLanguageLabel')}
+          </label>
+          <Select 
+            value={watch("defaultLanguage")}
+            onValueChange={(value) => setValue("defaultLanguage", value as "en" | "ja" | "vi")}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={tCommon('defaultLanguagePlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">{tCommon('languageOption.en')}</SelectItem>
+              <SelectItem value="ja">{tCommon('languageOption.ja')}</SelectItem>
+              <SelectItem value="vi">{tCommon('languageOption.vi')}</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.defaultLanguage && (
+            <p className="text-sm text-red-600">{errors.defaultLanguage.message}</p>
+          )}
+        </div>
+
+        {/* Selected Plan Display */}
+        {selectedPlan && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Selected Plan
+            </label>
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                    {tHome(`pricing.plans.${selectedPlan}.title`)}
+                  </h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    ${PRICING_PLANS.find(plan => plan.id === selectedPlan)?.price.monthly}/month
                   </p>
                 </div>
-              )}
-            </div>
-            
-            <div>
-              <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">
-                {t("password.confirmPassword") || "Confirm Password"}
-              </Label>
-              <div className="relative mt-1">
-                <Input
-                  type={showConfirmPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  {...register("confirmPassword", {
-                    onChange: (e) => setConfirmPassword(e.target.value)
-                  })}
-                  required
-                  minLength={6}
-                  placeholder={t("password.confirmPasswordPlaceholder") || "Confirm your new password"}
-                  className="pl-10 pr-10 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                />
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                  onClick={() => {
+                    setSelectedPlan(null);
+                    setValue('selectedPlan', undefined);
+                    localStorage.removeItem('selectedPlan');
+                  }}
+                  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-sm"
                 >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  Change Plan
                 </button>
               </div>
-              {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>}
-              {/* Password Match Indicator */}
-              {confirmPassword && (
-                <div className="mt-1">
-                  {newPassword === confirmPassword ? (
-                    <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      {t("password.passwordMatch") || "Passwords match!"}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-red-600 dark:text-red-400 flex items-center">
-                      <AlertCircle className="w-3 h-3 mr-1" />
-                      {t("password.passwordMismatch") || "Passwords do not match"}
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
           </div>
+        )}
 
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              {t("password.requirements") || "Password Requirements:"}
-            </h4>
-            <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-              <li className="flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-2 ${newPassword.length >= 8 ? 'bg-green-500' : 'bg-slate-300'}`} />
-                {t("password.minLength") || "At least 8 characters long"}
-              </li>
-              <li className="flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-2 ${/[A-Z]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
-                {t("password.uppercase") || "Contains uppercase letter"}
-              </li>
-              <li className="flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-2 ${/[a-z]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
-                {t("password.lowercase") || "Contains lowercase letter"}
-              </li>
-              <li className="flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-2 ${/[0-9]/.test(newPassword) ? 'bg-green-500' : 'bg-slate-300'}`} />
-                {t("password.number") || "Contains number"}
-              </li>
-            </ul>
-          </div>
+        {/* Policy Agreement */}
+        <PolicyAgreement
+          checked={policyAgreementValue}
+          onCheckedChange={(checked) => setValue("policyAgreement", checked)}
+          error={errors.policyAgreement?.message}
+        />
 
-          <div>
-            <label htmlFor="defaultLanguage" className="block text-sm font-medium text-foreground">
-              {tCommon('defaultLanguageLabel')}
-            </label>
-            <select
-              id="defaultLanguage"
-              {...register("defaultLanguage")}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="en">{tCommon('languageOption.en')}</option>
-              <option value="ja">{tCommon('languageOption.ja')}</option>
-              <option value="vi">{tCommon('languageOption.vi')}</option>
-            </select>
-            {errors.defaultLanguage && <p className="mt-1 text-sm text-red-600">{errors.defaultLanguage.message}</p>}
-          </div>
-
-          <div className="flex flex-col items-center">
-            <ReCAPTCHA
-              sitekey={process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY!}
-              onChange={(token) => {
-                setCaptchaToken(token);
-                if (token) {
-                  clearErrors("captchaToken");
-                  // Add this line:
-                  setValue("captchaToken", token);
-                }
-              }}
-              onExpired={() => {
-                setCaptchaToken(null);
-                setError("captchaToken", {
-                  type: "manual",
-                  message: t("captchaExpired"),
-                });
-                setValue("captchaToken", "");
-              }}
-            />
-            {errors.captchaToken && <p className="mt-1 text-sm text-red-600">{errors.captchaToken.message}</p>}
-          </div>
-
-          {serverError && (
-            <p className="mt-4 text-sm text-red-600 text-center">{serverError}</p>
+        {/* CAPTCHA */}
+        <div className="flex flex-col items-center space-y-2">
+          <ReCAPTCHA
+            sitekey={process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY!}
+            onChange={(token) => {
+              setCaptchaToken(token);
+              if (token) {
+                clearErrors("captchaToken");
+                setValue("captchaToken", token);
+              }
+            }}
+            onExpired={() => {
+              setCaptchaToken(null);
+              setError("captchaToken", {
+                type: "manual",
+                message: t("captchaExpired"),
+              });
+              setValue("captchaToken", "");
+            }}
+          />
+          {errors.captchaToken && (
+            <p className="text-sm text-red-600">{errors.captchaToken.message}</p>
           )}
+        </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            {isSubmitting ? t('registering') : t('registerButton')}
-          </button>
-        </form>
-      </div>
-    </div>
+        {/* Server Error */}
+        {serverError && (
+          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <p className="text-sm text-red-600 dark:text-red-400 text-center">{serverError}</p>
+          </div>
+        )}
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {t('registering')}
+            </>
+          ) : (
+            t('registerButton')
+          )}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }

@@ -10,6 +10,7 @@ import {
   FeaturesSection,
   HowItWorksSection,
   BenefitsSection,
+  PricingSection,
   FaqSection,
   CallToActionSection,
   FooterSection,
@@ -50,6 +51,7 @@ export default function Page() {
           <FeaturesSection />
           <HowItWorksSection />
           <BenefitsSection />
+          <PricingSection />
           <FaqSection />
           <CallToActionSection />
         </main>

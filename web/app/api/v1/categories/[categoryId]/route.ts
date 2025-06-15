@@ -2,6 +2,7 @@ import {  NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { logger } from '@/lib/logger';
 
 // Schema for validating the request body when updating a category
 const categoryUpdateSchema = z.object({
@@ -54,14 +55,22 @@ export async function PUT(req: Request,{ params }: { params: Promise<{ categoryI
       .single();
 
     if (error) {
-      console.error('Error updating category:', error);
+      await logger.error('categories-api-put', 'Error updating category', {
+        error: error.message,
+        categoryId,
+        restaurantId: user.restaurantId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Error updating category', details: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Category updated successfully', category: data }, { status: 200 });
 
   } catch (error) {
-    console.error('API Error in PUT category:', error);
+    await logger.error('categories-api-put', 'API Error in PUT category', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      categoryId,
+      restaurantId: user?.restaurantId
+    }, user?.restaurantId, user?.userId);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: 'Validation error', errors: error.flatten().fieldErrors }, { status: 400 });
     }
@@ -73,7 +82,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
-	console.log("req", req);
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 

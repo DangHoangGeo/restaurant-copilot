@@ -8,6 +8,7 @@
  */
 
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
+import { logger } from './logger';
 
 // Types for the library
 export interface TranslationResult {
@@ -118,7 +119,10 @@ Text: "${text}"
 
       return translations as TranslationResult;
     } catch (error) {
-      console.error('Gemini translation error:', error);
+      await logger.error('gemini-translation', 'Gemini translation error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        text
+      });
       
       // Fallback to basic translation pattern
       return {
@@ -147,7 +151,9 @@ Please provide a helpful, professional response in plain text.
       const response = await result.response;
       return response.text();
     } catch (error) {
-      console.error('Gemini content generation error:', error);
+      await logger.error('gemini-content-generation', 'Gemini content generation error', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
       throw new Error('Failed to generate content');
     }
   }

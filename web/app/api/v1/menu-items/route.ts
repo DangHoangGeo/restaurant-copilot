@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { invalidateMenuCache } from '@/lib/server/request-context';
 
 // Schema for toppings
 const toppingSchema = z.object({
@@ -268,6 +269,9 @@ export async function POST(req: Request) {
       console.error('Error fetching complete menu item:', fetchError);
       return NextResponse.json({ message: 'Menu item created but error fetching complete data', details: fetchError.message }, { status: 500 });
     }
+
+    // Invalidate menu cache since we created a new menu item
+    invalidateMenuCache(user.restaurantId);
 
     return NextResponse.json({ message: 'Menu item created successfully', menuItem: completeMenuItem }, { status: 201 });
 

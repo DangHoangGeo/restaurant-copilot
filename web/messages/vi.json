@@ -12,12 +12,20 @@
       "updatePassword": "Cập nhật mật khẩu",
       "resetPassword": "Đặt lại mật khẩu",
       "twoFactor": "Xác thực hai yếu tố",
-      "verifyEmail": "Xác minh email của bạn"
+      "verifyEmail": "Xác minh email của bạn",
+      "verifyingEmail": "Đang xác minh Email",
+      "emailVerified": "Email đã được xác minh",
+      "linkExpired": "Liên kết đã hết hạn",
+      "verificationFailed": "Xác minh thất bại"
     },
     "subtitle":{
       "login": "Chào mừng trở lại! Vui lòng nhập thông tin xác thực của bạn để truy cập bảng điều khiển nhà hàng.",
       "signup": "Tạo tài khoản nhà hàng của bạn để bắt đầu quản lý hoạt động.",
-      "forgotPassword": "Nhập email của bạn để đặt lại mật khẩu."
+      "forgotPassword": "Nhập email của bạn để đặt lại mật khẩu.",
+      "verifyingEmail": "Vui lòng đợi trong khi chúng tôi xác minh địa chỉ email của bạn...",
+      "emailVerified": "Email của bạn đã được xác minh thành công. Bây giờ bạn có thể đăng nhập vào tài khoản của mình.",
+      "linkExpired": "Liên kết xác minh của bạn đã hết hạn. Vui lòng yêu cầu liên kết mới.",
+      "verificationFailed": "Chúng tôi không thể xác minh địa chỉ email của bạn. Vui lòng thử lại hoặc liên hệ hỗ trợ."
     },
     "navigation": {
       "login": "Bạn đã có tài khoản? Đăng nhập",
@@ -36,7 +44,15 @@
     "error": {
       "login": "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu của bạn.",
       "signup": "Đăng ký thất bại. Vui lòng thử lại sau.",
-      "forgotPassword": "Gửi liên kết đặt lại thất bại. Vui lòng thử lại."
+      "forgotPassword": "Gửi liên kết đặt lại thất bại. Vui lòng thử lại.",
+      "emailRequired": "Email là bắt buộc.",
+      "captchaRequired": "Vui lòng hoàn thành CAPTCHA.",
+      "passwordsDoNotMatch": "Mật khẩu không khớp.",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "sessionCheck": "Lỗi kiểm tra phiên.",
+      "notAuthenticatedUpdate": "Bạn phải đăng nhập để cập nhật mật khẩu.",
+      "notAuthenticatedReset": "Bạn phải đăng nhập để đặt lại mật khẩu.",
+      "anErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại."
     },
     "password":{
       "reset": "Đặt lại mật khẩu của bạn",
@@ -74,6 +90,12 @@
     "noAccount": "Chưa có tài khoản?",
     "signUp": "Đăng ký",
     "sendResetLink": "Gửi link đặt lại",
+    "continueToLogin": "Tiếp tục đến trang đăng nhập",
+    "resendVerification": "Gửi lại email xác minh",
+    "backToSignup": "Quay lại đăng ký",
+    "resendIn": "Gửi lại sau",
+    "resending": "Đang gửi lại...",
+    "home": "Trang chủ",
     "loginFailed": "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
     "subdomainNotFound": "Không tìm thấy tên miền phụ.",
     "anErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại.",
@@ -105,7 +127,60 @@
     "twoFactorTitle": "Xác minh hai yếu tố",
     "otpLabel": "Mã xác thực",
     "verifyOtpButton": "Xác minh Mã",
-    "otpInvalid": "Mã không hợp lệ. Vui lòng thử lại."
+    "otpInvalid": "Mã không hợp lệ. Vui lòng thử lại.",
+    "verifying": "Đang xác minh...",
+    "otpPlaceholder": "Nhập mã 6 chữ số",
+    "otpHelp": "Nhập mã 6 chữ số từ ứng dụng xác thực của bạn",
+    "error": {
+      "login": "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu của bạn.",
+      "signup": "Đăng ký thất bại. Vui lòng thử lại sau.",
+      "forgotPassword": "Gửi liên kết đặt lại thất bại. Vui lòng thử lại.",
+      "emailRequired": "Email là bắt buộc.",
+      "captchaRequired": "Vui lòng hoàn thành CAPTCHA.",
+      "passwordsDoNotMatch": "Mật khẩu không khớp.",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "sessionCheck": "Lỗi kiểm tra phiên.",
+      "notAuthenticatedUpdate": "Bạn phải đăng nhập để cập nhật mật khẩu.",
+      "notAuthenticatedReset": "Bạn phải đăng nhập để đặt lại mật khẩu.",
+      "anErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại.",
+      "emailVerificationFailed": "Xác minh email thất bại.",
+      "emailVerificationExpired": "Liên kết xác minh đã hết hạn.",
+      "emailVerificationInvalid": "Liên kết xác minh không hợp lệ.",
+      "emailAlreadyVerified": "Email này đã được xác minh.",
+      "emailNotFound": "Không tìm thấy email này.",
+      "resendCooldown": "Có thể gửi lại sau {seconds} giây."
+    },
+    "info": {
+      "signInToUpdatePassword": "Đăng nhập để cập nhật mật khẩu của bạn.",
+      "emailVerification": "Vui lòng xác minh địa chỉ email của bạn để hoàn tất đăng ký.",
+      "emailVerificationSent": "Một liên kết xác minh đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến của bạn.",
+      "emailAlreadyVerified": "Email của bạn đã được xác minh. Bạn có thể đăng nhập ngay bây giờ.",
+      "redirectingToLogin": "Đang chuyển hướng đến trang đăng nhập...",
+      "pleaseWait": "Điều này có thể mất vài phút..."
+    },
+    "emailVerification": {
+      "title": "Xác minh Email",
+      "subtitle": "Vui lòng xác minh email của bạn để kích hoạt tài khoản",
+      "verifying": "Đang xác minh...",
+      "success": "Xác minh thành công!",
+      "successMessage": "Địa chỉ email của bạn đã được xác minh thành công.",
+      "error": "Lỗi xác minh",
+      "expired": "Liên kết đã hết hạn",
+      "expiredMessage": "Liên kết xác minh đã hết hạn. Vui lòng yêu cầu liên kết mới.",
+      "invalid": "Liên kết không hợp lệ",
+      "invalidMessage": "Liên kết xác minh không hợp lệ. Vui lòng yêu cầu liên kết mới.",
+      "alreadyVerified": "Đã được xác minh",
+      "alreadyVerifiedMessage": "Địa chỉ email này đã được xác minh.",
+      "notFound": "Không tìm thấy email",
+      "notFoundMessage": "Không tìm thấy địa chỉ email này.",
+      "resendButton": "Gửi lại email xác minh",
+      "resending": "Đang gửi lại...",
+      "resentSuccess": "Email xác minh đã được gửi lại!",
+      "resentError": "Gửi lại thất bại. Vui lòng thử lại.",
+      "cooldownMessage": "Có thể gửi lại sau {seconds} giây.",
+      "loginButton": "Đến trang đăng nhập",
+      "goToDashboard": "Đi đến bảng điều khiển"
+    }
   },
   "LandingPage": {
     "header": {
@@ -1226,5 +1301,276 @@
   },
   "ai_chat": {
     "toggle_label": "Chuyển đổi Trò chuyện AI"
+  },
+  "legal": {
+    "terms": {
+      "metadata": {
+        "title": "Điều khoản Dịch vụ",
+        "description": "Đọc các điều khoản và điều kiện sử dụng dịch vụ quản lý nhà hàng CoOrder của chúng tôi."
+      },
+      "title": "Điều khoản Dịch vụ",
+      "lastUpdated": "Cập nhật lần cuối: {date}",
+      "printButton": "In trang này",
+      "navigation": {
+        "acceptance": "1. Chấp nhận Điều khoản",
+        "description": "2. Mô tả Dịch vụ",
+        "registration": "3. Đăng ký Tài khoản",
+        "subscriptions": "4. Đăng ký và Thanh toán",
+        "usage": "5. Sử dụng Chấp nhận được",
+        "intellectual": "6. Sở hữu Trí tuệ",
+        "privacy": "7. Quyền riêng tư và Dữ liệu",
+        "termination": "8. Chấm dứt",
+        "liability": "9. Tuyên bố từ chối Trách nhiệm",
+        "governing": "10. Luật điều chỉnh",
+        "changes": "11. Thay đổi Điều khoản",
+        "contact": "12. Thông tin Liên hệ"
+      },
+      "sections": {
+        "acceptance": {
+          "title": "1. Chấp nhận Điều khoản",
+          "content": "Bằng cách truy cập và sử dụng dịch vụ quản lý nhà hàng CoOrder (\"Dịch vụ\"), bạn đồng ý bị ràng buộc bởi các Điều khoản Dịch vụ này. Nếu bạn không đồng ý với bất kỳ phần nào của các điều khoản này, bạn không được sử dụng Dịch vụ của chúng tôi."
+        },
+        "description": {
+          "title": "2. Mô tả Dịch vụ",
+          "content": "CoOrder cung cấp một nền tảng quản lý nhà hàng toàn diện bao gồm quản lý thực đơn, xử lý đơn hàng, hệ thống đặt bàn, công cụ quản lý nhân viên và phân tích. Dịch vụ được thiết kế để giúp các nhà hàng hợp lý hóa hoạt động của họ và cải thiện trải nghiệm khách hàng."
+        },
+        "registration": {
+          "title": "3. Đăng ký Tài khoản",
+          "content": "Để sử dụng Dịch vụ, bạn phải tạo một tài khoản. Bạn đồng ý cung cấp thông tin chính xác, hiện tại và đầy đủ trong quá trình đăng ký và cập nhật thông tin này để duy trì tính chính xác. Bạn có trách nhiệm bảo mật mật khẩu tài khoản của mình và cho tất cả các hoạt động diễn ra dưới tài khoản của bạn."
+        },
+        "subscriptions": {
+          "title": "4. Đăng ký và Thanh toán",
+          "subtitle": "Gói Đăng ký",
+          "plans": {
+            "description": "Chúng tôi cung cấp nhiều gói đăng ký khác nhau:",
+            "free": "**Gói Miễn phí**: Chức năng cơ bản với các tính năng hạn chế",
+            "basic": "**Gói Cơ bản**: Truy cập đầy đủ các tính năng cốt lõi với mức giá hàng tháng",
+            "premium": "**Gói Cao cấp**: Tất cả các tính năng cộng với phân tích nâng cao và hỗ trợ ưu tiên"
+          },
+          "billing": {
+            "title": "Thanh toán",
+            "content": "Gói trả phí được thanh toán hàng tháng hoặc hàng năm trước. Tất cả các khoản phí không được hoàn lại trừ khi có quy định khác trong các điều khoản này. Giá có thể thay đổi với thông báo 30 ngày."
+          },
+          "cancellation": {
+            "title": "Hủy bỏ",
+            "content": "Bạn có thể hủy đăng ký bất kỳ lúc nào. Việc hủy sẽ có hiệu lực vào cuối chu kỳ thanh toán hiện tại."
+          }
+        },
+        "usage": {
+          "title": "5. Sử dụng Chấp nhận được",
+          "content": "Bạn đồng ý sử dụng Dịch vụ chỉ cho các mục đích hợp pháp và theo cách không vi phạm quyền của bất kỳ bên thứ ba nào. Bạn không được:",
+          "restrictions": {
+            "0": "Sử dụng Dịch vụ cho bất kỳ hoạt động bất hợp pháp nào",
+            "1": "Tải lên hoặc phân phối virus hoặc mã độc hại khác",
+            "2": "Cố gắng có quyền truy cập trái phép vào hệ thống của chúng tôi",
+            "3": "Can thiệp vào hoạt động bình thường của Dịch vụ",
+            "4": "Vi phạm bất kỳ luật hoặc quy định hiện hành nào"
+          }
+        },
+        "intellectual": {
+          "title": "6. Sở hữu Trí tuệ",
+          "content": "Dịch vụ và nội dung gốc, tính năng và chức năng của nó là và sẽ vẫn là tài sản độc quyền của CoOrder và các bên cấp phép. Dịch vụ được bảo vệ bởi bản quyền, thương hiệu và các luật khác. Bạn không được sao chép, sửa đổi, phân phối, bán hoặc cho thuê bất kỳ phần nào của Dịch vụ."
+        },
+        "privacy": {
+          "title": "7. Quyền riêng tư và Dữ liệu",
+          "content": "Quyền riêng tư của bạn quan trọng đối với chúng tôi. Việc thu thập và sử dụng thông tin của bạn được điều chỉnh bởi Chính sách Quyền riêng tư của chúng tôi. Bằng cách sử dụng Dịch vụ, bạn đồng ý với việc thu thập và sử dụng thông tin theo Chính sách Quyền riêng tư."
+        },
+        "termination": {
+          "title": "8. Chấm dứt",
+          "content": "Chúng tôi có thể chấm dứt hoặc đình chỉ tài khoản của bạn ngay lập tức, mà không cần thông báo trước hoặc chịu trách nhiệm, vì bất kỳ lý do nào, bao gồm cả việc vi phạm Điều khoản Dịch vụ. Khi chấm dứt, quyền sử dụng Dịch vụ của bạn sẽ chấm dứt ngay lập tức."
+        },
+        "liability": {
+          "title": "9. Tuyên bố từ chối Trách nhiệm",
+          "content": "Dịch vụ được cung cấp trên cơ sở \"như hiện tại\" và \"như có sẵn\". CoOrder từ chối tất cả các bảo đảm, dù rõ ràng hay ngụ ý, bao gồm nhưng không giới hạn ở các bảo đảm ngụ ý về khả năng bán được, phù hợp cho một mục đích cụ thể và không vi phạm. Trong mọi trường hợp, CoOrder sẽ không chịu trách nhiệm cho bất kỳ thiệt hại gián tiếp, ngẫu nhiên, đặc biệt, hậu quả hoặc trừng phạt nào."
+        },
+        "governing": {
+          "title": "10. Luật điều chỉnh",
+          "content": "Các Điều khoản này sẽ được diễn giải và điều chỉnh theo luật pháp của [Khu vực pháp lý], mà không ảnh hưởng đến các quy định xung đột luật pháp. Việc không thực thi bất kỳ quyền hoặc điều khoản nào của các Điều khoản này sẽ không được coi là từ bỏ các quyền đó."
+        },
+        "changes": {
+          "title": "11. Thay đổi Điều khoản",
+          "content": "Chúng tôi có quyền sửa đổi hoặc thay thế các Điều khoản này bất kỳ lúc nào. Nếu một sửa đổi là quan trọng, chúng tôi sẽ thông báo ít nhất 30 ngày trước khi các điều khoản mới có hiệu lực. Những gì cấu thành một thay đổi quan trọng sẽ được quyết định theo quyết định riêng của chúng tôi."
+        },
+        "contact": {
+          "title": "12. Thông tin Liên hệ",
+          "content": "Nếu bạn có bất kỳ câu hỏi nào về các Điều khoản Dịch vụ này, vui lòng liên hệ với chúng tôi tại:",
+          "email": "Email: legal@coorder.com",
+          "address": "Địa chỉ: [Địa chỉ công ty của bạn]",
+          "phone": "Điện thoại: [Số điện thoại của bạn]"
+        }
+      }
+    },
+    "privacy": {
+      "metadata": {
+        "title": "Chính sách Quyền riêng tư",
+        "description": "Tìm hiểu cách CoOrder thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn trong dịch vụ quản lý nhà hàng của chúng tôi."
+      },
+      "title": "Chính sách Quyền riêng tư",
+      "lastUpdated": "Cập nhật lần cuối: {date}",
+      "printButton": "In trang này",
+      "navigation": {
+        "overview": "1. Tổng quan",
+        "collection": "2. Thông tin Chúng tôi Thu thập",
+        "usage": "3. Cách Chúng tôi Sử dụng Thông tin",
+        "sharing": "4. Chia sẻ Thông tin",
+        "security": "5. Bảo mật Dữ liệu",
+        "retention": "6. Lưu trữ Dữ liệu",
+        "rights": "7. Quyền của Bạn",
+        "cookies": "8. Cookie và Công nghệ Theo dõi",
+        "international": "9. Chuyển giao Quốc tế",
+        "children": "10. Quyền riêng tư Trẻ em",
+        "changes": "11. Thay đổi Chính sách này",
+        "contact": "12. Liên hệ với Chúng tôi"
+      },
+      "sections": {
+        "overview": {
+          "title": "1. Tổng quan",
+          "content": "CoOrder (\"chúng tôi\", \"của chúng tôi\", hoặc \"chúng ta\") cam kết bảo vệ quyền riêng tư của bạn. Chính sách Quyền riêng tư này giải thích cách chúng tôi thu thập, sử dụng, tiết lộ và bảo vệ thông tin của bạn khi bạn sử dụng dịch vụ quản lý nhà hàng CoOrder (\"Dịch vụ\")."
+        },
+        "collection": {
+          "title": "2. Thông tin Chúng tôi Thu thập",
+          "subtitle": "Chúng tôi thu thập thông tin bạn cung cấp trực tiếp cho chúng tôi:",
+          "direct": {
+            "account": "**Thông tin Tài khoản**: Tên, địa chỉ email, mật khẩu và thông tin liên hệ",
+            "restaurant": "**Thông tin Nhà hàng**: Tên nhà hàng, địa chỉ, số điện thoại và chi tiết hoạt động",
+            "payment": "**Thông tin Thanh toán**: Chi tiết thanh toán và thông tin thanh toán (được xử lý an toàn)",
+            "content": "**Nội dung**: Thông tin thực đơn, mô tả món ăn, hình ảnh và dữ liệu nhà hàng khác"
+          },
+          "automatic": {
+            "title": "Chúng tôi cũng thu thập thông tin tự động:",
+            "usage": "**Dữ liệu Sử dụng**: Cách bạn tương tác với Dịch vụ của chúng tôi",
+            "device": "**Thông tin Thiết bị**: Địa chỉ IP, loại trình duyệt, hệ điều hành",
+            "location": "**Dữ liệu Vị trí**: Thông tin vị trí chung dựa trên địa chỉ IP",
+            "cookies": "**Cookie và Dữ liệu Theo dõi**: Như được mô tả trong phần Cookie bên dưới"
+          }
+        },
+        "usage": {
+          "title": "3. Cách Chúng tôi Sử dụng Thông tin",
+          "content": "Chúng tôi sử dụng thông tin chúng tôi thu thập để:",
+          "purposes": {
+            "0": "Cung cấp, duy trì và cải thiện Dịch vụ của chúng tôi",
+            "1": "Xử lý giao dịch và gửi thông báo liên quan",
+            "2": "Gửi thông tin kỹ thuật, cập nhật và thông báo bảo mật",
+            "3": "Cung cấp hỗ trợ khách hàng và phản hồi yêu cầu",
+            "4": "Phân tích sử dụng để cải thiện Dịch vụ",
+            "5": "Cá nhân hóa trải nghiệm người dùng",
+            "6": "Tuân thủ các nghĩa vụ pháp lý"
+          }
+        },
+        "sharing": {
+          "title": "4. Chia sẻ Thông tin",
+          "content": "Chúng tôi không bán thông tin cá nhân của bạn. Chúng tôi có thể chia sẻ thông tin của bạn trong các trường hợp sau:",
+          "circumstances": {
+            "0": "**Nhà cung cấp Dịch vụ**: Với các nhà thầu đáng tin cậy cung cấp dịch vụ thay mặt chúng tôi",
+            "1": "**Yêu cầu Pháp lý**: Khi được yêu cầu bởi luật pháp hoặc để bảo vệ quyền của chúng tôi",
+            "2": "**Giao dịch Kinh doanh**: Trong trường hợp sáp nhập, mua lại hoặc bán tài sản",
+            "3": "**Đồng ý**: Với sự đồng ý rõ ràng của bạn cho các mục đích cụ thể"
+          }
+        },
+        "security": {
+          "title": "5. Bảo mật Dữ liệu",
+          "content": "Chúng tôi thực hiện các biện pháp bảo mật thích hợp để bảo vệ thông tin cá nhân của bạn khỏi truy cập, thay đổi, tiết lộ hoặc phá hủy trái phép. Các biện pháp này bao gồm:",
+          "measures": {
+            "0": "Mã hóa dữ liệu trong quá trình truyền và lưu trữ",
+            "1": "Kiểm soát truy cập thường xuyên và giám sát hệ thống",
+            "2": "Đào tạo nhân viên về các thông lệ bảo mật",
+            "3": "Đánh giá bảo mật thường xuyên"
+          }
+        },
+        "retention": {
+          "title": "6. Lưu trữ Dữ liệu",
+          "content": "Chúng tôi lưu trữ thông tin cá nhân của bạn chỉ khi cần thiết để cung cấp Dịch vụ và tuân thủ các nghĩa vụ pháp lý. Khi thông tin không còn cần thiết, chúng tôi sẽ xóa hoặc ẩn danh nó một cách an toàn."
+        },
+        "rights": {
+          "title": "7. Quyền của Bạn",
+          "content": "Tùy thuộc vào vị trí của bạn, bạn có thể có các quyền sau đối với thông tin cá nhân của mình:",
+          "list": {
+            "0": "**Truy cập**: Yêu cầu bản sao thông tin cá nhân chúng tôi có về bạn",
+            "1": "**Sửa chữa**: Yêu cầu chúng tôi sửa chữa thông tin không chính xác",
+            "2": "**Xóa**: Yêu cầu chúng tôi xóa thông tin cá nhân của bạn",
+            "3": "**Hạn chế**: Yêu cầu chúng tôi hạn chế xử lý thông tin của bạn",
+            "4": "**Tính di động**: Yêu cầu chuyển dữ liệu của bạn sang tổ chức khác",
+            "5": "**Phản đối**: Phản đối xử lý thông tin cá nhân của bạn"
+          },
+          "exercise": "Để thực hiện các quyền này, vui lòng liên hệ với chúng tôi bằng thông tin liên hệ được cung cấp bên dưới."
+        },
+        "cookies": {
+          "title": "8. Cookie và Công nghệ Theo dõi",
+          "content": "Chúng tôi sử dụng cookie và các công nghệ theo dõi tương tự để thu thập và sử dụng thông tin cá nhân về bạn. Cookie là các tệp nhỏ được lưu trữ trên thiết bị của bạn. Bạn có thể kiểm soát cookie thông qua cài đặt trình duyệt của mình."
+        },
+        "international": {
+          "title": "9. Chuyển giao Quốc tế",
+          "content": "Thông tin của bạn có thể được chuyển đến và duy trì trên các máy tính nằm ngoài tiểu bang, tỉnh, quốc gia hoặc khu vực pháp lý chính phủ khác nơi luật bảo vệ dữ liệu có thể khác với luật ở khu vực pháp lý của bạn."
+        },
+        "children": {
+          "title": "10. Quyền riêng tư Trẻ em",
+          "content": "Dịch vụ của chúng tôi không nhắm đến trẻ em dưới 13 tuổi. Chúng tôi không cố ý thu thập thông tin cá nhân có thể nhận dạng từ trẻ em dưới 13 tuổi."
+        },
+        "changes": {
+          "title": "11. Thay đổi Chính sách này",
+          "content": "Chúng tôi có thể cập nhật Chính sách Quyền riêng tư này theo thời gian. Chúng tôi sẽ thông báo cho bạn về bất kỳ thay đổi nào bằng cách đăng Chính sách Quyền riêng tư mới trên trang này và cập nhật ngày \"cập nhật lần cuối\"."
+        },
+        "contact": {
+          "title": "12. Liên hệ với Chúng tôi",
+          "content": "Nếu bạn có bất kỳ câu hỏi nào về Chính sách Quyền riêng tư này, vui lòng liên hệ với chúng tôi tại:",
+          "email": "Email: privacy@coorder.com",
+          "address": "Địa chỉ: [Địa chỉ công ty của bạn]",
+          "phone": "Điện thoại: [Số điện thoại của bạn]",
+          "dpo": "Nhân viên Bảo vệ Dữ liệu: dpo@coorder.com"
+        }
+      }
+    },
+    "pricing": {
+      "title": "Chọn Gói Dịch Vụ",
+      "subtitle": "Chọn gói hoàn hảo cho nhu cầu nhà hàng của bạn. Bắt đầu với bản dùng thử miễn phí và nâng cấp khi bạn sẵn sàng.",
+      "popular": "Phổ Biến Nhất",
+      "billing": {
+        "monthly": "Hàng Tháng",
+        "yearly": "Hàng Năm",
+        "per_month": "mỗi tháng",
+        "billed_yearly": "thanh toán hàng năm",
+        "save_20": "Tiết kiệm 20%"
+      },
+      "plans": {
+        "starter": {
+          "title": "Gói Khởi Động",
+          "description": "Hoàn hảo cho các cơ sở nhỏ phục vụ tối đa 100 khách hàng mỗi ngày"
+        },
+        "growth": {
+          "title": "Gói Phát Triển",
+          "description": "Lý tưởng cho các cơ sở quy mô vừa phục vụ 100-500 khách hàng mỗi ngày"
+        },
+        "enterprise": {
+          "title": "Gói Doanh Nghiệp",
+          "description": "Dành cho chủ doanh nghiệp quản lý nhiều địa điểm"
+        }
+      },
+      "features": {
+        "basic_order_management": "Quản lý đơn hàng cơ bản",
+        "ai_analytics_basic": "Phân tích AI (thông tin cơ bản)",
+        "basic_customer_support": "Hỗ trợ khách hàng cơ bản",
+        "advanced_order_management": "Quản lý đơn hàng nâng cao",
+        "enhanced_ai_analytics": "Phân tích và thông tin AI nâng cao",
+        "priority_customer_support": "Hỗ trợ khách hàng ưu tiên",
+        "external_platform_integrations": "Tích hợp nền tảng bên ngoài",
+        "full_feature_access": "Truy cập đầy đủ tất cả tính năng",
+        "comprehensive_ai_optimization": "Tối ưu hóa doanh nghiệp toàn diện bằng AI",
+        "dedicated_ai_support": "Hỗ trợ khách hàng & kỹ thuật chuyên dụng có AI",
+        "multi_location_management": "Khả năng quản lý nhiều địa điểm"
+      },
+      "cta": {
+        "start_free_trial": "Bắt Đầu Dùng Thử Miễn Phí",
+        "choose_plan": "Chọn Gói",
+        "contact_sales": "Liên Hệ Bán Hàng"
+      },
+      "up_to_customers": "Tối đa {count} khách hàng mỗi ngày",
+      "trial_info": "Bao gồm {days} ngày dùng thử miễn phí",
+      "bottom_cta": {
+        "title": "Không chắc gói nào phù hợp với bạn?",
+        "start_free": "Bắt Đầu Dùng Thử Miễn Phí",
+        "or": "hoặc",
+        "contact_sales": "Nói Chuyện Với Bán Hàng"
+      }
+    }
   }
 }

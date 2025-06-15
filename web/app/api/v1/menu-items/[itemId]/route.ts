@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { invalidateMenuCache } from '@/lib/server/request-context';
+import { logger } from '@/lib/logger';
 
 // Schema for toppings
 const toppingSchema = z.object({
@@ -58,17 +60,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
 
   try {
     const body = await req.json();
-	console.log('Update body:', body);
-    const validatedData = menuItemUpdateSchema.safeParse(body);
+  const validatedData = menuItemUpdateSchema.safeParse(body);
 
-    if (!validatedData.success) {
-	  console.error('Validation error:', validatedData.error);
-      return NextResponse.json({ errors: validatedData.error.flatten().fieldErrors }, { status: 400 });
-    }
+  if (!validatedData.success) {
+    await logger.error('menu-items-update', 'Validation error', {
+      error: validatedData.error.flatten().fieldErrors,
+      itemId
+    }, user.restaurantId, user.userId);
+    return NextResponse.json({ errors: validatedData.error.flatten().fieldErrors }, { status: 400 });
+  }
 
     const updateData = validatedData.data;
-    const { toppings, sizes, ...menuItemUpdateData } = updateData;
-	console.log('Update data:', updateData);
+  const { toppings, sizes, ...menuItemUpdateData } = updateData;
     // If category_id is being updated, verify it belongs to the user's restaurant
     if (menuItemUpdateData.category_id) {
       const { data: category, error: categoryError } = await supabaseAdmin
@@ -194,14 +197,23 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
       .single();
 
     if (completeError) {
-      console.error('Error fetching complete menu item:', completeError);
+      await logger.error('menu-items-update', 'Error fetching complete menu item', {
+        error: completeError.message,
+        itemId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Menu item updated but error fetching complete data', details: completeError.message }, { status: 500 });
     }
+
+    // Invalidate menu cache since we updated a menu item
+    invalidateMenuCache(user.restaurantId);
 
     return NextResponse.json({ message: 'Menu item updated successfully', menuItem: completeMenuItem }, { status: 200 });
 
   } catch (error) {
-    console.error('API Error in PUT menu item:', error);
+    await logger.error('menu-items-update', 'API Error in PUT menu item', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      itemId
+    }, user?.restaurantId, user?.userId);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: 'Validation error', errors: error.flatten().fieldErrors }, { status: 400 });
     }
@@ -244,14 +256,23 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ itemI
       .eq('restaurant_id', user.restaurantId);
 
     if (error) {
-      console.error('Error deleting menu item:', error);
+      await logger.error('menu-items-delete', 'Error deleting menu item', {
+        error: error.message,
+        itemId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Error deleting menu item', details: error.message }, { status: 500 });
     }
+
+    // Invalidate menu cache since we deleted a menu item
+    invalidateMenuCache(user.restaurantId);
 
     return NextResponse.json({ message: 'Menu item deleted successfully' }, { status: 200 });
 
   } catch (error) {
-    console.error('API Error in DELETE menu item:', error);
+    await logger.error('menu-items-delete', 'API Error in DELETE menu item', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      itemId
+    }, user?.restaurantId, user?.userId);
     return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknown error!" }, { status: 500 });
   }
 }

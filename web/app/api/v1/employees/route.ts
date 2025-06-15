@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserFromRequest, AuthUser } from "@/lib/server/getUserFromRequest";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { logger } from "@/lib/logger";
 
 const createEmployeeSchema = z.object({
   user_id: z.string().uuid(),
@@ -33,7 +34,10 @@ export async function GET(req: NextRequest) {
       .eq("restaurant_id", restaurantId);
 
     if (error) {
-      console.error("Error fetching employees:", error);
+      await logger.error('employees-api-get', 'Error fetching employees', {
+        error: error.message,
+        restaurantId
+      }, restaurantId);
       return NextResponse.json(
         { message: "Error fetching employees", details: error.message },
         { status: 500 },
@@ -41,7 +45,10 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json({ employees: data }, { status: 200 });
   } catch (error) {
-    console.error("API Error in GET employees:", error);
+    await logger.error('employees-api-get', 'API Error in GET employees', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId: restaurantId
+    }, restaurantId, error instanceof Error ? error.stack : undefined);
     return NextResponse.json(
       {
         message: "Internal server error",
@@ -95,7 +102,12 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Error creating employee:", error);
+      await logger.error('employees-api-post', 'Error creating employee', {
+        error: error.message,
+        restaurantId: user.restaurantId,
+        user_id,
+        role
+      }, user.restaurantId, user.userId);
       return NextResponse.json(
         { message: "Error creating employee", details: error.message },
         { status: 500 },
@@ -103,7 +115,10 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ employee: created }, { status: 201 });
   } catch (error) {
-    console.error("API Error in POST employee:", error);
+    await logger.error('employees-api-post', 'API Error in POST employee', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId: user?.restaurantId
+    }, user?.restaurantId, user?.userId);
     return NextResponse.json(
       {
         message: "Internal server error",
