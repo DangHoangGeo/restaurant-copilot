@@ -124,3 +124,106 @@ export const getCachedRestaurantSettings = cache(async (restaurantId: string) =>
 
   return settings;
 });
+
+// Cache configuration from environment variables
+const CACHE_MENU_DURATION = parseInt(process.env.CACHE_MENU_DURATION || '300') * 1000; // 5 minutes default
+const CACHE_RESTAURANT_DURATION = parseInt(process.env.CACHE_RESTAURANT_DURATION || '3600') * 1000; // 1 hour default
+const CACHE_USER_DURATION = parseInt(process.env.CACHE_USER_DURATION || '1800') * 1000; // 30 minutes default
+
+// In-memory cache for cross-request caching (for production optimization)
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+}
+
+class MemoryCache {
+  private cache = new Map<string, CacheEntry<unknown>>();
+
+  set<T>(key: string, data: T, ttl: number = CACHE_MENU_DURATION): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
+    });
+  }
+
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+
+    if (Date.now() - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return entry.data as T;
+  }
+
+  invalidate(pattern: string): void {
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+const memoryCache = new MemoryCache();
+
+// Cache invalidation functions
+export function invalidateMenuCache(restaurantId: string): void {
+  memoryCache.invalidate(`menu:${restaurantId}`);
+  memoryCache.invalidate(`tables:${restaurantId}`);
+  memoryCache.invalidate(`restaurant:${restaurantId}`);
+}
+
+export function invalidateRestaurantCache(restaurantId: string): void {
+  memoryCache.invalidate(`restaurant:${restaurantId}`);
+}
+
+export function invalidateUserCache(userId: string): void {
+  memoryCache.invalidate(`user:${userId}`);
+}
+
+export function clearAllCache(): void {
+  memoryCache.clear();
+}
+
+// Enhanced cache functions with cross-request caching (for future use)
+export function getCachedWithMemory<T>(
+  key: string, 
+  fetchFn: () => Promise<T>, 
+  ttl: number = CACHE_MENU_DURATION
+): Promise<T> {
+  // Try memory cache first
+  const cached = memoryCache.get<T>(key);
+  if (cached) {
+    return Promise.resolve(cached);
+  }
+
+  // Use React cache for request-scoped caching and update memory cache
+  return cache(async () => {
+    const result = await fetchFn();
+    memoryCache.set(key, result, ttl);
+    return result;
+  })();
+}
+
+// Helper to get appropriate TTL for different data types
+export function getCacheTTL(type: 'user' | 'restaurant' | 'menu'): number {
+  switch (type) {
+    case 'user':
+      return CACHE_USER_DURATION;
+    case 'restaurant':
+      return CACHE_RESTAURANT_DURATION;
+    case 'menu':
+      return CACHE_MENU_DURATION;
+    default:
+      return CACHE_MENU_DURATION;
+  }
+}

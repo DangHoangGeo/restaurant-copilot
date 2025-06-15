@@ -20,9 +20,9 @@ export function formatCurrency(
       // minimumFractionDigits: 0, // Optional: for currencies like JPY that don't use decimals
       // maximumFractionDigits: 0,
     }).format(amount);
-  } catch (error) {
-    console.error("Currency formatting error:", error);
-    return `${currency} ${amount.toFixed(2)}`; // Fallback
+  } catch {
+    // Fallback formatting if Intl fails
+    return `${currency} ${amount.toFixed(2)}`;
   }
 }
 

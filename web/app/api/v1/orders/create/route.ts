@@ -3,6 +3,7 @@ import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
 import { z } from "zod";
 import { getRestaurantIdFromSubdomain } from "../../../../../lib/server/restaurant-settings";
 import { getSubdomainFromHost } from "../../../../../lib/utils";
+import { logger, startPerformanceTimer, endPerformanceTimer } from "../../../../../lib/logger";
 
 const orderSchema = z.object({
   sessionId: z.string().uuid(),
@@ -18,10 +19,16 @@ const orderSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const requestId = `order-create-${Date.now()}-${Math.random()}`;
+  startPerformanceTimer(requestId);
+  
   const body = await req.json();
   const parse = orderSchema.safeParse(body);
   if (!parse.success) {
-    console.error("Order validation failed:", parse.error);
+    await logger.error('orders-create-api', 'Order validation failed', {
+      error: parse.error.errors,
+      body
+    });
     return NextResponse.json({ success: false, errors: parse.error.errors }, { status: 400 });
   }
   const { sessionId, items } = parse.data;
@@ -137,7 +144,11 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (orderUpdateError || !updatedOrder) {
-    console.error("Order update failed:", orderUpdateError);
+    await logger.error('orders-create-api', 'Order update failed', {
+      error: orderUpdateError?.message,
+      orderId: orderRow.id,
+      restaurantId
+    }, restaurantId);
     return NextResponse.json({ success: false, error: "Order update failed" }, { status: 500 });
   }
   const orderId = updatedOrder.id;
@@ -149,11 +160,17 @@ export async function POST(req: NextRequest) {
     .insert(itemsToInsert);
 
   if (insertItemsError) {
-    console.error("Failed to insert order items:", insertItemsError);
+    await logger.error('orders-create-api', 'Failed to insert order items', {
+      error: insertItemsError.message,
+      orderId,
+      itemCount: itemsToInsert.length,
+      restaurantId
+    }, restaurantId);
     // Potentially roll back order update or handle inconsistency
     return NextResponse.json({ success: false, error: "Failed to save order items" }, { status: 500 });
   }
 
   // Update order status to 'preparing' after items are added - This is now part of the main order update
+  await endPerformanceTimer(requestId, 'orders-create-api', restaurantId);
   return NextResponse.json({ success: true, orderId });
 }
