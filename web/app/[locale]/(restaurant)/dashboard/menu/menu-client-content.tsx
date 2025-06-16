@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle, Loader2 } from 'lucide-react';
+import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle } from 'lucide-react';
+import { MenuSkeleton } from '@/components/ui/skeletons';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
@@ -727,18 +728,7 @@ export function MenuClientContent() {
   
   // Show loading skeleton during initial load
   if (isInitialLoading) {
-    return (
-      <>
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-            {t("title")}
-          </h1>
-        </header>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-12 w-12 text-slate-400 animate-spin" />
-        </div>
-      </>
-    );
+    return <MenuSkeleton />;
   }
 
   // Show error state
