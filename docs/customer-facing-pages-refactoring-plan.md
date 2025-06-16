@@ -51,8 +51,7 @@ This document outlines a comprehensive plan to refactor the customer-facing page
 web/app/[locale]/(restaurant)/(customer)/
 ├── layout.tsx                 # Shared layout with header/footer
 ├── menu/
-│   ├── page.tsx              # Simplified smart menu browsing
-│   └── [itemId]/page.tsx     # Item details & customization
+│   └── page.tsx              # Smart menu browsing with item detail modal
 ├── cart/
 │   └── page.tsx              # Cart review & checkout
 ├── order/
@@ -119,23 +118,26 @@ web/app/[locale]/(restaurant)/(customer)/
 - Smart menu grid with AI recommendations
 - Category quick-filters
 - Search with instant results
-- Add to cart directly from grid
+- Add to cart directly from grid for simple items
+- Click item for detailed modal with customization
 - Floating cart indicator
+
+**Modal Features:**
+- Full item information display
+- Size selection (if available)
+- Topping customization (if available)
+- Quantity selector
+- Special notes/instructions
+- Dynamic price calculation
+- Add to cart with configurations
+- Close modal to return to menu
 
 **API Integration:**
 - Use `GET /api/v1/customer/menu` for menu data
 - Use `GET /api/v1/customer/restaurant` for branding
+- Fetch detailed item data (sizes/toppings) when modal opens
 
-#### 3.2 Item Details (`/menu/[itemId]`)
-**Features:**
-- Full item information
-- Size selection (if available)
-- Topping customization (if available)
-- Dynamic price calculation
-- Add to cart with configurations
-- Quick back to menu
-
-#### 3.3 Cart & Checkout (`/cart`)
+#### 3.2 Cart & Checkout (`/cart`)
 **Features:**
 - Review all cart items
 - Quantity adjustments
@@ -148,7 +150,7 @@ web/app/[locale]/(restaurant)/(customer)/
 - Use `POST /api/v1/customer/orders/create` for order submission
 - Handle size/topping selections properly
 
-#### 3.4 Order Confirmation (`/order/[orderId]`)
+#### 3.3 Order Confirmation (`/order/[orderId]`)
 **Features:**
 - Order confirmation details
 - Real-time status updates
@@ -156,7 +158,7 @@ web/app/[locale]/(restaurant)/(customer)/
 - Add more items link back to menu
 - Contact staff button
 
-#### 3.5 Order History (`/history`)
+#### 3.4 Order History (`/history`)
 **Features:**
 - Current session order status
 - Previous orders (if any)
@@ -176,6 +178,7 @@ web/components/features/customer/
 │   └── AIAssistant.tsx      # NEW
 ├── menu/
 │   ├── SmartMenu.tsx        # NEW (replaces MenuList + SmartDiscoveryMenu)
+│   ├── ItemDetailModal.tsx  # NEW (modal for item customization)
 │   ├── FoodCard.tsx ✓
 │   ├── QuickSearch.tsx      # NEW
 │   └── SmartCategories.tsx  # NEW
@@ -187,7 +190,8 @@ web/components/features/customer/
 ├── order/
 │   ├── OrderStatus.tsx      # NEW
 │   ├── SessionInfo.tsx      # NEW
-│   └── ItemCustomization.tsx # NEW
+│   ├── SizeSelector.tsx     # NEW (moved from ItemCustomization)
+│   └── ToppingSelector.tsx  # NEW (moved from ItemCustomization)
 └── common/
     ├── LoadingStates.tsx    # NEW
     ├── ErrorBoundary.tsx    # NEW
@@ -260,7 +264,7 @@ const responses = {
 
 #### Step 3: Implement Core Pages (Week 2-3)
 1. 🆕 Create menu browsing page (`/menu`)
-2. 🆕 Implement item detail page (`/menu/[itemId]`)
+2. 🆕 Implement item detail modal with customization (sizes, toppings, quantity, notes)
 3. 🆕 Create cart page (`/cart`)
 4. 🆕 Add order confirmation page (`/order/[orderId]`)
 

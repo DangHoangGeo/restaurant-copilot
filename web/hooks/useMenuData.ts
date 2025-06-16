@@ -39,8 +39,6 @@ const trimMenuItems = (categories: Category[]): Category[] => {
     menu_items: category.menu_items.map(item => ({
       ...item,
       // Keep only essential fields, remove heavy ones
-      sizes: [], // Load on detail view
-      toppings: [], // Load on detail view
       description_en: item.description_en ? item.description_en.substring(0, 100) + '...' : undefined,
       description_ja: item.description_ja ? item.description_ja.substring(0, 100) + '...' : undefined,
       description_vi: item.description_vi ? item.description_vi.substring(0, 100) + '...' : undefined,
@@ -141,6 +139,10 @@ export function useMenuData(params: MenuDataParams) {
     if (!data?.categories) return [];
     return trimMenuItems(data.categories);
   }, [data?.categories]);
+
+  console.log('Menu data loaded:', {
+	categories: optimizedCategories,
+  });
 
   return {
     categories: optimizedCategories,

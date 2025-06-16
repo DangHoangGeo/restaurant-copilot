@@ -30,6 +30,7 @@ interface FoodCardProps {
   sessionId?: string;
   tableNumber?: string;
   viewMode?: "grid" | "list";
+  onItemClick?: (item: FoodItem) => void; // New prop for modal handling
 }
 
 export function FoodCard({
@@ -46,6 +47,7 @@ export function FoodCard({
   sessionId,
   tableNumber,
   viewMode = "grid",
+  onItemClick,
 }: FoodCardProps) {
   const t = useTranslations("Customer");
   const [isAdding, setIsAdding] = useState(false);
@@ -80,13 +82,18 @@ export function FoodCard({
   };
 
   const handleCardClick = () => {
-    setView("menuitemdetail", {
-      item,
-      tableId,
-      sessionId,
-      tableNumber,
-      canAddItems
-    });
+    if (onItemClick) {
+      onItemClick(item);
+    } else {
+      // Fallback to old navigation for backward compatibility
+      setView("menuitemdetail", {
+        item,
+        tableId,
+        sessionId,
+        tableNumber,
+        canAddItems
+      });
+    }
   };
 
   const itemName = getLocalizedText(

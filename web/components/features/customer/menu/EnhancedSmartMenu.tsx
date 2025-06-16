@@ -20,15 +20,17 @@ import {
 import { getLocalizedText } from '@/lib/customerUtils';
 import { generateContextualInfo } from '@/components/common/ContextualGreeting';
 import { FoodCard } from '@/components/features/customer/FoodCard';
+import { ItemDetailModal } from '@/components/features/customer/menu/ItemDetailModal';
 import { SmartMenuSkeleton, MenuCardSkeleton } from '@/components/ui/enhanced-skeleton';
 import { useCart } from '@/components/features/customer/CartContext';
 import { AIAssistant } from '@/components/features/customer/layout/AIAssistant';
 import { useMenuData } from '@/hooks/useMenuData';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useSessionData } from '@/hooks/useSessionData';
-import type { Category } from '@/shared/types/menu';
+import type { Category, MenuItemSize, Topping } from '@/shared/types/menu';
 import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
 import type { FoodItem } from '@/components/features/customer/FoodCard';
+
 
 // Enhanced interfaces for smart features
 interface SmartMenuItem extends FoodItem {
@@ -99,7 +101,6 @@ const transformToSmartMenuItems = (
       )
       .map((item): SmartMenuItem => {
         const isRecommended = recommendedItems.includes(item.id);
-        
         return {
           ...item,
           categoryId: category.id,
@@ -147,6 +148,8 @@ export function EnhancedSmartMenu({
   const [activeSmartCategory, setActiveSmartCategory] = useState<string>('all');
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<SmartMenuItem | null>(null);
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   
   // Search input ref for focus management
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -306,6 +309,39 @@ export function EnhancedSmartMenu({
   }, [allMenuItems, debouncedSearchTerm, activeSmartCategory, smartCategories]);
 
   // Optimized event handlers
+  const handleItemClick = useCallback((item: FoodItem) => {
+    // Convert FoodItem to SmartMenuItem for modal
+	console.log('Handling item click:', item);
+    const smartItem = item as SmartMenuItem;
+    setSelectedItem(smartItem);
+    setIsItemModalOpen(true);
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setIsItemModalOpen(false);
+    setSelectedItem(null);
+  }, []);
+
+  const handleModalAddToCart = useCallback((
+    item: FoodItem, 
+    quantity: number, 
+    selectedSize?: MenuItemSize, 
+    selectedToppings?: Topping[], 
+    notes?: string
+  ) => {
+    // For now, use the existing add to cart logic
+    // TODO: Enhance to handle size, toppings, and notes properly
+    console.log('Adding to cart:', { item: item.id, quantity, selectedSize, selectedToppings, notes });
+    
+    if (onAddToCart) {
+      onAddToCart(item as SmartMenuItem);
+    } else {
+      for (let i = 0; i < quantity; i++) {
+        addToCart(item as SmartMenuItem, 1);
+      }
+    }
+  }, [onAddToCart, addToCart]);
+
   const handleItemHover = useCallback(async (itemId: string) => {
     // Prefetch item details for faster loading
     await prefetchItemDetails(itemId);
@@ -513,6 +549,7 @@ export function EnhancedSmartMenu({
                     sessionId={sessionId}
                     tableNumber={tableNumber}
                     viewMode="grid"
+                    onItemClick={handleItemClick}
                   />
                   
                   {/* Enhanced item indicators */}
@@ -591,6 +628,17 @@ export function EnhancedSmartMenu({
         onToggle={() => setIsAIAssistantOpen(!isAIAssistantOpen)}
         restaurantName={restaurantName}
         currentContext="menu"
+      />
+
+      {/* Item Detail Modal */}
+      <ItemDetailModal
+        isOpen={isItemModalOpen}
+        onClose={handleModalClose}
+        item={selectedItem}
+        locale={locale}
+        brandColor={brandColor}
+        onAddToCart={handleModalAddToCart}
+        canAddItems={canAddItems}
       />
     </div>
   );
