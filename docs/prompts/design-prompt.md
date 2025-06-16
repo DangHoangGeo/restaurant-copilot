@@ -73,7 +73,7 @@ You are an expert UX/UI designer tasked with creating a modern, mobile-first web
    * **Thank You & Reviews**:
 
      * `/[locale]/customer/thank-you?orderId={id}` shows order summary (table number, items, quantities, total) and “Rate this Dish” links.
-     * `/[locale]/customer/review/{menuItemId}`: form with star rating (1–5) and optional comment; on submit, POST `/api/v1/reviews/create`, then show “Thank you for your feedback.”
+     * `/[locale]/customer/review/{menuItemId}`: form with star rating (1–5) and optional comment; on submit, POST `/api/v1/customer/reviews/create`, then show “Thank you for your feedback.”
 
    * **Persistent Language Switcher** in header that preserves query params (sessionId, tableId, etc.) when switching locales.
 
@@ -161,12 +161,12 @@ You are a senior UX/UI designer. Design a complete, mobile-first web interface f
    • Reports & Analytics (Dashboard cards; Sales Report tab with date-range selector and charts; Items Report tab with sortable table; Feedback Report tab with review list and resolve buttons; Recommendations widget listing top 3 sellers and “Apply to Next Week”)
 
 4. A public, localized Customer Ordering site under `/[locale]/customer` that supports:
-   • QR-driven session creation (via `/api/v1/sessions/create`) and “Session Expired” handling
+   • QR-driven session creation (via `/api/v1/customer/reviews/create`) and “Session Expired” handling
    • Category-based menu browsing of today’s available items (localized name/description, price, image, star rating, quantity controls)
    • Filters/sorting (Top Seller, Price, Rating)
    • Floating Cart with “Checkout (Cash Only)” button driving `/api/v1/orders/create`, then redirect to Thank You page
    • “Book a Table” flow (if enabled): table selector, customer info, date/time, party size, optional preorder items, POST to `/api/v1/bookings/create`
-   • Thank You page showing order summary and “Rate this Dish” links; review form that posts `/api/v1/reviews/create`
+   • Thank You page showing order summary and “Rate this Dish” links; review form that posts `/api/v1/customer/reviews/create`
 
 5. Global UI guidelines:
    • Tailwind styling with brand-color theming, rounded 2xl corners, soft shadows, responsive grids

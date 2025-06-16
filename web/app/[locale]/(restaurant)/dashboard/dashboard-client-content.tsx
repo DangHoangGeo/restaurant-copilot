@@ -36,8 +36,8 @@ export function DashboardClientContent() {
     
     try {
       const [metricsRes, ordersRes] = await Promise.all([
-        fetch('/api/v1/dashboard/metrics', { credentials: 'include' }),
-        fetch('/api/v1/dashboard/recent-orders', { credentials: 'include' })
+        fetch('/api/v1/owner/dashboard/metrics', { credentials: 'include' }),
+        fetch('/api/v1/owner/dashboard/recent-orders', { credentials: 'include' })
       ]);
 
       if (!metricsRes.ok || !ordersRes.ok) {

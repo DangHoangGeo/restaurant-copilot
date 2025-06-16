@@ -24,11 +24,11 @@ The customer-facing menu and ordering system is a single-page application (SPA)-
     -   **Session Dialogs**:
         -   If a `tableId` is resolved (typically from QR code scan) and no active session ID is immediately available (or it's a new session context):
             -   Prompts for guest count (`showGuestDialog`).
-            -   Calls `GET /api/v1/sessions/create` with `tableId` and guest count. This API creates a new order record (status: "new") and returns a `sessionId` and a short `passcode`.
+            -   Calls `GET /api/v1/customer/reviews/create` with `tableId` and guest count. This API creates a new order record (status: "new") and returns a `sessionId` and a short `passcode`.
             -   The first user creating the session is shown this `passcode` to share with others at the table.
         -   If joining an existing session (e.g., `sessionData.sessionStatus === 'join'`):
             -   Prompts for the `passcode` (`showJoinDialog`).
-            -   Calls `GET /api/v1/sessions/join` with the pending session ID and passcode to validate and join.
+            -   Calls `GET /api/v1/customer/reviews/join` with the pending session ID and passcode to validate and join.
     -   Stores/retrieves `sessionId`, `tableId`, `tableNumber` from `localStorage` to maintain session across page reloads/visits and attempts to sync/validate this with server data.
     -   Renders different screen components based on the current `view` state.
     -   Wraps screen components with `CartProvider` and `CustomerLayout`.
@@ -42,7 +42,7 @@ The customer-facing menu and ordering system is a single-page application (SPA)-
     -   **`CustomerMenuItemDetailScreen.tsx`**: Shown when a user clicks on a `FoodCard`. Allows selection of available `MenuItemSize` and multiple `Topping` options. Calculates the dynamic price based on these selections. Adds the configured item (with its unique ID based on selections) to the cart.
     -   **`CategoryTabs.tsx`**: Sticky or scrollable tabs for quick navigation between menu categories.
     -   **`FloatingCart.tsx`**: A persistent UI element showing cart item count and total. Can be expanded to show a summary and allow quick quantity adjustments or item removal. Navigates to the "checkout" (review order) screen.
-    -   **`ReviewOrderScreen.tsx`**: Displays all items in the cart with their selected sizes/toppings and prices. Allows final quantity adjustments, adding item-specific notes, and overall special instructions for the order. Submits the order to `/api/v1/orders/create`.
+    -   **`ReviewOrderScreen.tsx`**: Displays all items in the cart with their selected sizes/toppings and prices. Allows final quantity adjustments, adding item-specific notes, and overall special instructions for the order. Submits the order to `/api/v1/customer/orders/create`.
     -   **`OrderPlacedScreen.tsx` & `ThankYouScreen.tsx`**: Confirmation screens shown after a successful order submission.
 
 -   **Restaurant Context (`web/hooks/useRestaurantContext.ts`):**
@@ -56,23 +56,23 @@ Backend logic is handled by Next.js API routes and Supabase PostgreSQL functions
     -   File: `web/app/api/v1/restaurant/data/route.ts`
     -   Input: `subdomain` (query parameter).
     -   Output: Full restaurant details (from `restaurants` table) and its complete menu, structured with categories containing their respective menu items (including sizes and toppings if these are nested in `menu_items` select).
--   **Session Creation (`GET /api/v1/sessions/create`):**
-    -   File: `web/app/api/v1/sessions/create/route.ts`
+-   **Session Creation (`GET /api/v1/customer/reviews/create`):**
+    -   File: `web/app/api/v1/customer/reviews/create/route.ts`
     -   Input: `tableId`, `guests` (query parameters), `subdomain` (for restaurant ID).
     -   Logic: Verifies table belongs to restaurant. Checks for existing active order/session for the table. If none, creates a new `orders` record (status "new", total 0) with a new `sessionId` (UUID).
     -   Output: `sessionId`, `tableNumber`, `isNewSession` (boolean), `orderId`, `guestCount`, and a short `passcode` for new sessions.
--   **Get Session by Code (`GET /api/v1/orders/session-by-code`):**
-    -   File: `web/app/api/v1/orders/session-by-code/route.ts`
+-   **Get Session by Code (`GET /api/v1/customer/orders/session-by-code`):**
+    -   File: `web/app/api/v1/customer/orders/session-by-code/route.ts`
     -   Input: `code`, `subdomain`.
     -   Logic: Calls RPC `get_table_session_by_code` with `input_code` and `input_restaurant_id`.
     -   Output: `tableId`, `restaurantId`, `activeSessionId` (if any), `requirePasscode`.
--   **Get Session Info (`GET /api/v1/orders/session-info`):**
-    -   File: `web/app/api/v1/orders/session-info/route.ts`
+-   **Get Session Info (`GET /api/v1/customer/orders/session-info`):**
+    -   File: `web/app/api/v1/customer/orders/session-info/route.ts`
     -   Input: `sessionId`, `restaurantId`.
     -   Logic: Calls RPC `get_order_session_info`.
     -   Output: Order session details.
--   **Order Creation (`POST /api/v1/orders/create`):**
-    -   File: `web/app/api/v1/orders/create/route.ts`
+-   **Order Creation (`POST /api/v1/customer/orders/create`):**
+    -   File: `web/app/api/v1/customer/orders/create/route.ts`
     -   Input: `sessionId` and an array of `items`. Each item includes `menuItemId`, `quantity`, optional `notes`, `menu_item_size_id`, and `topping_ids` array.
     -   Logic:
         -   Validates `sessionId` and `restaurantId` (derived from subdomain).
@@ -92,7 +92,7 @@ Backend logic is handled by Next.js API routes and Supabase PostgreSQL functions
 -   **`Topping` (`web/shared/types/customer.ts`):** Contains `id`, multilingual names, and its additional `price`.
 -   **`Category` (`web/shared/types/customer.ts`):** Defines menu categories with multilingual names and an array of `MenuItem`.
 -   **`CartItem` (`web/components/features/customer/CartContext.tsx`):** Represents an item in the cart. Includes `uniqueId` (derived from item ID, selected size ID, and sorted topping IDs), `itemId`, multilingual names, final calculated `price`, `qty`, `selectedSize` (object), and `selectedToppings` (array of objects).
--   **Order Payload (to `/api/v1/orders/create`):** An array of items, each specifying `menuItemId`, `quantity`, `notes`, `menu_item_size_id`, and `topping_ids`.
+-   **Order Payload (to `/api/v1/customer/orders/create`):** An array of items, each specifying `menuItemId`, `quantity`, `notes`, `menu_item_size_id`, and `topping_ids`.
 
 ### Database Tables (Deduced)
 
@@ -156,9 +156,9 @@ Backend logic is handled by Next.js API routes and Supabase PostgreSQL functions
 
 1.  **Entry**: Typically scans a QR code at a table. The URL derived from the QR code includes a `code` parameter and `locale`.
 2.  **Session Initialization**:
-    -   The backend (`/api/v1/orders/session-by-code`) resolves the `code` to a `tableId` and checks for an active session.
-    -   If no active session, or if it's the first user for a new session, `CustomerClientContent` calls `/api/v1/sessions/create`. This might prompt for guest count. A new order (status "new") and session are created. The first user gets a short `passcode` to share.
-    -   If an active session exists, other users might be prompted for the `passcode` to join (handled by `CustomerClientContent` and `/api/v1/sessions/join`).
+    -   The backend (`/api/v1/customer/orders/session-by-code`) resolves the `code` to a `tableId` and checks for an active session.
+    -   If no active session, or if it's the first user for a new session, `CustomerClientContent` calls `/api/v1/customer/reviews/create`. This might prompt for guest count. A new order (status "new") and session are created. The first user gets a short `passcode` to share.
+    -   If an active session exists, other users might be prompted for the `passcode` to join (handled by `CustomerClientContent` and `/api/v1/customer/reviews/join`).
     -   The `sessionId` is stored in `localStorage` to maintain the session.
 3.  **Menu Browsing (`CustomerMenuScreen.tsx`):**
     -   Displays categories and menu items (`MenuList.tsx`, `FoodCard.tsx`).
@@ -176,7 +176,7 @@ Backend logic is handled by Next.js API routes and Supabase PostgreSQL functions
     -   Allows adding overall "Special Instructions" for the order and item-specific notes.
     -   Customer confirms the order.
 7.  **Place Order**:
-    -   Clicking "Place Order" calls `POST /api/v1/orders/create`.
+    -   Clicking "Place Order" calls `POST /api/v1/customer/orders/create`.
     -   The payload includes the `sessionId` and all cart items with their `menuItemId`, `quantity`, `notes`, selected `menu_item_size_id`, and `topping_ids`.
 8.  **Order Confirmation (`OrderPlacedScreen.tsx`, `ThankYouScreen.tsx`):**
     -   Displays a confirmation message with the order ID.

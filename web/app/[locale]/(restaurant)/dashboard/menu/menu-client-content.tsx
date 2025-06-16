@@ -334,7 +334,7 @@ export function MenuClientContent() {
         setIsInitialLoading(true);
         setError(null);
         
-        const response = await fetch('/api/v1/categories', {
+        const response = await fetch('/api/v1/owner/categories', {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -362,7 +362,7 @@ export function MenuClientContent() {
   // Reload data after mutations
   const reloadData = async () => {
     try {
-      const response = await fetch('/api/v1/categories', {
+      const response = await fetch('/api/v1/owner/categories', {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
@@ -482,7 +482,7 @@ export function MenuClientContent() {
     setIsLoading(true);
     try {
       const method = data.id ? 'PUT' : 'POST';
-      const url = data.id ? `/api/v1/categories/${data.id}` : '/api/v1/categories';
+      const url = data.id ? `/api/v1/owner/categories/${data.id}` : '/api/v1/owner/categories';
       
       // Ensure position is a number if not already
       const payload = { ...data };
@@ -516,7 +516,7 @@ export function MenuClientContent() {
   const handleDeleteCategory = async (categoryId: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/v1/categories/${categoryId}`, {
+      const response = await fetch(`/api/v1/owner/categories/${categoryId}`, {
         method: 'DELETE',
       });
 
@@ -564,7 +564,7 @@ export function MenuClientContent() {
       }
       
       const method = data.id ? 'PUT' : 'POST';
-      const url = data.id ? `/api/v1/menu-items/${data.id}` : '/api/v1/menu-items';
+      const url = data.id ? `/api/v1/owner/menu/menu-items/${data.id}` : '/api/v1/owner/menu/menu-items';
 
       //const { imageFile, ...itemPayloadDb } = data; // Exclude imageFile from DB payload
       const {...itemPayloadDb } = data;
@@ -613,7 +613,7 @@ export function MenuClientContent() {
   const handleDeleteItem = async (itemId: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/v1/menu-items/${itemId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/v1/owner/menu/menu-items/${itemId}`, { method: 'DELETE' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete menu item');
@@ -646,7 +646,7 @@ export function MenuClientContent() {
         for (let i = 0; i < reorderedCategories.length; i++) {
           const category = reorderedCategories[i];
           if (category.position !== i) { // Only update if position actually changed
-            await fetch(`/api/v1/categories/${category.id}`, {
+            await fetch(`/api/v1/owner/categories/${category.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ position: i }),
@@ -691,7 +691,7 @@ export function MenuClientContent() {
       setIsLoading(true);
       try {
         const itemToUpdate = destCategory.menu_items[destination.index];
-         await fetch(`/api/v1/menu-items/${itemToUpdate.id}`, {
+         await fetch(`/api/v1/owner/menu/menu-items/${itemToUpdate.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

@@ -103,7 +103,7 @@ export function CustomerClientContent({
         
         // Validate the local session ID with server
         try {
-          const response = await fetch(`/api/v1/sessions/check?sessionId=${localSessionId}`);
+          const response = await fetch(`/api/v1/customer/reviews/check?sessionId=${localSessionId}`);
           const data = await response.json();
           
           if (data.success && data.sessionStatus === "active") {
@@ -157,7 +157,7 @@ export function CustomerClientContent({
       const params = new URLSearchParams({ tableId });
       params.append('guests', String(guestCount));
       if (subdomain) params.append('subdomain', subdomain);
-      const res = await fetch(`/api/v1/sessions/create?${params.toString()}`);
+      const res = await fetch(`/api/v1/customer/reviews/create?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         localStorage.setItem("sessionId", data.sessionId);
@@ -205,7 +205,7 @@ export function CustomerClientContent({
       const subdomain = getSubdomainFromHost(window.location.host);
       const params = new URLSearchParams({ sessionId: sessionData.pendingSessionId, passcode });
       if (subdomain) params.append('subdomain', subdomain);
-      const res = await fetch(`/api/v1/sessions/join?${params.toString()}`);
+      const res = await fetch(`/api/v1/customer/reviews/join?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         localStorage.setItem('sessionId', data.sessionId);

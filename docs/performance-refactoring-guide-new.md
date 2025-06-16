@@ -87,7 +87,7 @@ export function ClientComponent() {
         setError(null);
         
         // Non-blocking API call with auth
-        const response = await fetch('/api/v1/categories', {
+        const response = await fetch('/api/v1/owner/categories', {
           credentials: 'include',
         });
         
@@ -235,12 +235,12 @@ const useApiData = <T>(endpoint: string) => {
 ```tsx
 export function EnhancedClientComponent() {
   const t = useTranslations('AdminMenu');
-  const { data, loading, error, reload } = useApiData('/api/v1/categories');
+  const { data, loading, error, reload } = useApiData('/api/v1/owner/categories');
   
   // Replace router.refresh() with local reload
   const handleMutation = async (mutationData) => {
     try {
-      const response = await fetch('/api/v1/categories', {
+      const response = await fetch('/api/v1/owner/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -667,8 +667,8 @@ export default async function OrdersPage({ params }) {
   
   // Blocking data fetches
   const ordersResponse = await fetch(`/api/v1/orders?restaurantId=${user.restaurantId}`);
-  const tablesResponse = await fetch(`/api/v1/tables?restaurantId=${user.restaurantId}`);
-  const menuResponse = await fetch(`/api/v1/categories?restaurantId=${user.restaurantId}`);
+  const tablesResponse = await fetch(`/api/v1/owner/tables?restaurantId=${user.restaurantId}`);
+  const menuResponse = await fetch(`/api/v1/owner/categories?restaurantId=${user.restaurantId}`);
   
   const orders = await ordersResponse.json();
   const tables = await tablesResponse.json();
@@ -720,8 +720,8 @@ export function OrdersClientContent() {
         // Parallel API calls
         const [ordersRes, tablesRes, menuRes] = await Promise.all([
           fetch('/api/v1/orders', { credentials: 'include' }),
-          fetch('/api/v1/tables', { credentials: 'include' }),
-          fetch('/api/v1/categories', { credentials: 'include' }),
+          fetch('/api/v1/owner/tables', { credentials: 'include' }),
+          fetch('/api/v1/owner/categories', { credentials: 'include' }),
         ]);
         
         if (!ordersRes.ok || !tablesRes.ok || !menuRes.ok) {

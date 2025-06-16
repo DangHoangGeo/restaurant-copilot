@@ -67,7 +67,7 @@ export function EmployeesClientContent() {
     setError(null);
     
     try {
-      const response = await fetch('/api/v1/employees', {
+      const response = await fetch('/api/v1/owner/employees', {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });

@@ -136,7 +136,7 @@ export async function GET() {
 # Create these API routes:
 /app/api/v1/orders/route.ts           # GET today's orders
 /app/api/v1/orders/active/route.ts    # GET active orders only
-/app/api/v1/tables/route.ts           # GET available tables
+/app/api/v1/owner/tables/route.ts           # GET available tables
 /app/api/v1/menu-for-orders/route.ts  # GET menu for order creation
 ```
 
@@ -187,7 +187,7 @@ export function OrdersClientContent() {
       // Parallel API calls for better performance
       const [ordersRes, tablesRes, menuRes, settingsRes] = await Promise.all([
         fetch('/api/v1/orders', { credentials: 'include' }),
-        fetch('/api/v1/tables', { credentials: 'include' }),
+        fetch('/api/v1/owner/tables', { credentials: 'include' }),
         fetch('/api/v1/menu-for-orders', { credentials: 'include' }),
         fetch('/api/v1/restaurant/settings', { credentials: 'include' })
       ]);
@@ -330,7 +330,7 @@ export function DashboardClientContent() {
 
 #### Step 1: API Endpoints
 ```bash
-/app/api/v1/tables/route.ts              # GET, POST, PUT, DELETE tables
+/app/api/v1/owner/tables/route.ts              # GET, POST, PUT, DELETE tables
 /app/api/v1/restaurant/settings/route.ts # GET restaurant info
 ```
 
@@ -352,7 +352,7 @@ export function TablesClientContent() {
     
     try {
       const [tablesRes, settingsRes] = await Promise.all([
-        fetch('/api/v1/tables', { credentials: 'include' }),
+        fetch('/api/v1/owner/tables', { credentials: 'include' }),
         fetch('/api/v1/restaurant/settings', { credentials: 'include' })
       ]);
 
