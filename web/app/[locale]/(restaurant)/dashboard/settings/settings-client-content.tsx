@@ -74,13 +74,12 @@ export function SettingsClientContent({ locale }: SettingsClientContentProps) {
       setError(null)
       
       const response = await fetch('/api/v1/restaurant/settings')
-      
+      console.log(response)
       if (!response.ok) {
         throw new Error(`Failed to fetch settings: ${response.status}`)
       }
-
       const data = await response.json()
-      setRestaurantSettings(data.settings)
+      setRestaurantSettings(data)
     } catch (err) {
       console.error('Error fetching restaurant settings:', err)
       setError(err instanceof Error ? err.message : 'Failed to load settings')

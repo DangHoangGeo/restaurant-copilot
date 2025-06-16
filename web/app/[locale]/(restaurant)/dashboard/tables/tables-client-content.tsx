@@ -99,6 +99,153 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
   )
 }
 
+// TableModal component for adding/editing tables
+function TableModal({
+  isOpen,
+  onClose,
+  editingTable,
+  form,
+  onSubmit,
+  isSaving,
+  t,
+  tCommon
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  editingTable: Table | null;
+  form: ReturnType<typeof useForm<TableFormData>>;
+  onSubmit: (data: TableFormData) => Promise<void>;
+  isSaving: boolean;
+  t: ReturnType<typeof useTranslations>;
+  tCommon: ReturnType<typeof useTranslations>;
+}) {
+  const { control, handleSubmit } = form;
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={(isOpen) => { 
+      if (!isOpen) {
+        form.reset(); 
+        onClose();
+      }
+    }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{editingTable ? t('AdminTables.edit_table') : t('AdminTables.add_table')}</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('AdminTables.table_name_label')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('AdminTables.table_name_placeholder')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={control}
+                name="capacity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('AdminTables.capacity_label')}</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="1" placeholder={t('AdminTables.capacity_placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('AdminTables.status_label')}</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('AdminTables.select_status_placeholder')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="available">{t('AdminTables.status_options.available')}</SelectItem>
+                        <SelectItem value="occupied">{t('AdminTables.status_options.occupied')}</SelectItem>
+                        <SelectItem value="reserved">{t('AdminTables.status_options.reserved')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <FormField
+                control={control}
+                name="isOutdoor"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>{t('AdminTables.is_outdoor_label')}</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="isAccessible"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>{t('AdminTables.is_accessible_label')}</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('AdminTables.notes_label')}</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder={t('AdminTables.notes_placeholder')} {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <p className="text-xs text-slate-500 dark:text-slate-400">{tCommon('zod_form_hint')}</p>
+            <DialogFooter className="flex justify-end space-x-2 mt-6">
+              <Button type="button" variant="secondary" onClick={onClose}>{tCommon('cancel')}</Button>
+              <Button type="submit" variant="primary" disabled={isSaving}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isSaving ? tCommon('saving') : tCommon('save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 interface RestaurantSettings {
   name: string
   logoUrl: string | null
@@ -124,7 +271,7 @@ export function TablesClientContent() {
       setError(null)
       
       const [tablesRes, settingsRes] = await Promise.all([
-        fetch('/api/v1/tables'),
+        fetch('/api/v1/owner/tables'),
         fetch('/api/v1/restaurant/settings')
       ])
 
@@ -228,7 +375,7 @@ export function TablesClientContent() {
 
   const saveTable = async (data: TableFormData) => {
     setIsSaving(true);
-    const url = editingTable ? `/api/v1/tables/${editingTable.id}` : '/api/v1/tables'
+    const url = editingTable ? `/api/v1/owner/tables/${editingTable.id}` : '/api/v1/owner/tables'
     const method = editingTable ? 'PATCH' : 'POST'
 
     try {
@@ -271,7 +418,7 @@ export function TablesClientContent() {
     setSelectedTableForQr(table)
     setIsQrModalOpen(true)
   }
-  const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'SOder.ai';
+  const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'coorder.ai';
   const qrCodeUrl = selectedTableForQr && restaurantSettings
     ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/menu?code=${selectedTableForQr.qr_code}`
     : ''
@@ -310,7 +457,7 @@ export function TablesClientContent() {
       };
 
       try {
-        const res = await fetch('/api/v1/tables', {
+        const res = await fetch('/api/v1/owner/tables', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(tablePayload),
@@ -395,6 +542,18 @@ export function TablesClientContent() {
               {t('AdminTables.empty_state.bulk_add_button')}
             </Button>
           </div>
+          <div className="mt-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t('AdminTables.empty_state.additional_info')}</p>
+          </div>
+          <TableModal isOpen={isTableModalOpen}
+  onClose={() => setIsTableModalOpen(false)}
+  editingTable={editingTable}
+  form={formMethodsSingle}
+  onSubmit={saveTable}
+  isSaving={isSaving}
+  t={t}
+  tCommon={tCommon}/>
+
         </div>
       )}
 
@@ -439,115 +598,115 @@ export function TablesClientContent() {
               <DialogHeader>
                 <DialogTitle>{editingTable ? t('AdminTables.edit_table') : t('AdminTables.add_table')}</DialogTitle>
               </DialogHeader>
-          <Form {...formMethodsSingle}>
-              <form onSubmit={handleSubmitSingle(saveTable)} className="space-y-4">
-                <FormField
-                  control={controlSingle}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('AdminTables.table_name_label')}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t('AdminTables.table_name_placeholder')} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={controlSingle}
-                    name="capacity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('AdminTables.capacity_label')}</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="1" placeholder={t('AdminTables.capacity_placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={controlSingle}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('AdminTables.status_label')}</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Form {...formMethodsSingle}>
+                  <form onSubmit={handleSubmitSingle(saveTable)} className="space-y-4">
+                    <FormField
+                      control={controlSingle}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('AdminTables.table_name_label')}</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('AdminTables.select_status_placeholder')} />
-                            </SelectTrigger>
+                            <Input placeholder={t('AdminTables.table_name_placeholder')} {...field} />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="available">{t('AdminTables.status_options.available')}</SelectItem>
-                            <SelectItem value="occupied">{t('AdminTables.status_options.occupied')}</SelectItem>
-                            <SelectItem value="reserved">{t('AdminTables.status_options.reserved')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <div className="flex items-center space-x-4">
-                  <FormField
-                    control={controlSingle}
-                    name="isOutdoor"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>{t('AdminTables.is_outdoor_label')}</FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={controlSingle}
-                    name="isAccessible"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>{t('AdminTables.is_accessible_label')}</FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={controlSingle}
+                        name="capacity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('AdminTables.capacity_label')}</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="1" placeholder={t('AdminTables.capacity_placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={controlSingle}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('AdminTables.status_label')}</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={t('AdminTables.select_status_placeholder')} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="available">{t('AdminTables.status_options.available')}</SelectItem>
+                                <SelectItem value="occupied">{t('AdminTables.status_options.occupied')}</SelectItem>
+                                <SelectItem value="reserved">{t('AdminTables.status_options.reserved')}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                <FormField
-                  control={controlSingle}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('AdminTables.notes_label')}</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder={t('AdminTables.notes_placeholder')} {...field} value={field.value ?? ''} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <div className="flex items-center space-x-4">
+                      <FormField
+                        control={controlSingle}
+                        name="isOutdoor"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>{t('AdminTables.is_outdoor_label')}</FormLabel>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={controlSingle}
+                        name="isAccessible"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>{t('AdminTables.is_accessible_label')}</FormLabel>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                <p className="text-xs text-slate-500 dark:text-slate-400">{tCommon('zod_form_hint')}</p>
-                <DialogFooter className="flex justify-end space-x-2 mt-6">
-                  <Button type="button" variant="secondary" onClick={() => setIsTableModalOpen(false)}>{tCommon('cancel')}</Button>
-                  <Button type="submit" variant="primary" disabled={isSaving}>
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {isSaving ? tCommon('saving') : tCommon('save')}
-                  </Button>
-                </DialogFooter>
-              </form>
-          </Form>
+                    <FormField
+                      control={controlSingle}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('AdminTables.notes_label')}</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder={t('AdminTables.notes_placeholder')} {...field} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{tCommon('zod_form_hint')}</p>
+                    <DialogFooter className="flex justify-end space-x-2 mt-6">
+                      <Button type="button" variant="secondary" onClick={() => setIsTableModalOpen(false)}>{tCommon('cancel')}</Button>
+                      <Button type="submit" variant="primary" disabled={isSaving}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        {isSaving ? tCommon('saving') : tCommon('save')}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
             </DialogContent>
           </Dialog>
           <Dialog open={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
@@ -569,7 +728,7 @@ export function TablesClientContent() {
                       setIsDownloadingQr(true);
                       try {
                         // Save QR code URL to DB
-                        const res = await fetch(`/api/v1/tables/${selectedTableForQr.id}`, {
+                        const res = await fetch(`/api/v1/owner/tables/${selectedTableForQr.id}`, {
                           method: 'PATCH',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ qr_code: qrCodeUrl }), // Ensure field name matches DB

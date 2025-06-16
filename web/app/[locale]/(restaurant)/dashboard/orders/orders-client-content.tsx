@@ -96,7 +96,7 @@ export function OrdersClientContent() {
   
   // Only keep the create order mutation since we handle the others directly
   const createOrder = useMutation<unknown, unknown>({
-    endpoint: '/api/v1/orders',
+    endpoint: '/api/v1/owner/orders',
     method: 'POST',
     onSuccess: () => {
       logInteraction('order_created');
@@ -116,7 +116,7 @@ export function OrdersClientContent() {
     logInteraction('item_status_update_initiated');
     
     try {
-      const response = await fetch(`/api/v1/order-items/${itemId}/status`, {
+      const response = await fetch(`/api/v1/owner/orders/order-items/${itemId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

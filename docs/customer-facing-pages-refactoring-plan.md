@@ -7,8 +7,7 @@ This document outlines a comprehensive plan to refactor the customer-facing page
 ## Current State Analysis
 
 ### Issues Identified
-1. **Monolithic Architecture**: `menu-client-content-old.tsx` handles multiple responsibilities
-2. **Missing Core Functionality**: Current `menu-client-content.tsx` lacks ordering, cart, and checkout capabilities
+1. **Monolithic Architecture**: `menu-client-content.tsx` handles multiple responsibilities
 3. **Incomplete Routing**: Customer folder structure exists but pages are incomplete
 4. **Complex Menu Components**: MenuList and SmartDiscoveryMenu are overcomplicated
 5. **Inconsistent API Usage**: Not utilizing existing customer APIs effectively
@@ -18,9 +17,9 @@ This document outlines a comprehensive plan to refactor the customer-facing page
 - ✅ `GET /api/v1/customer/session/check` - Session validation and auto-refresh
 - ✅ `GET /api/v1/customer/menu` - Menu data with categories, items, sizes, toppings
 - ✅ `GET /api/v1/customer/tables` - Available tables for booking
-- ✅ `GET /api/v1/sessions/create` - Create new dining session
-- ✅ `GET /api/v1/sessions/join` - Join existing session
-- ✅ `POST /api/v1/orders/create` - Submit order
+- ✅ `GET /api/v1/customer/reviews/create` - Create new dining session
+- ✅ `GET /api/v1/customer/reviews/join` - Join existing session
+- ✅ `POST /api/v1/customer/orders/create` - Submit order
 
 ## Architecture Overview
 
@@ -125,7 +124,7 @@ web/app/[locale]/(restaurant)/(customer)/
 - Session validation
 
 **API Integration:**
-- Use `POST /api/v1/orders/create` for order submission
+- Use `POST /api/v1/customer/orders/create` for order submission
 - Handle size/topping selections properly
 
 #### 3.4 Order Confirmation (`/order/[orderId]`)

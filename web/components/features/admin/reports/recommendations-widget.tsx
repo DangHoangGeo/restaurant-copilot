@@ -73,7 +73,7 @@ const RecommendationsWidget: React.FC<RecommendationsWidgetProps> = ({ restauran
     setApplySuccess(false);
 
     try {
-      const response = await fetch('/api/v1/recommendations/apply', {
+      const response = await fetch('/api/v1/owner/recommendations/apply', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

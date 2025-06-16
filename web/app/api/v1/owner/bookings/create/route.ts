@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       await logEvent({
         restaurantId: table.restaurant_id,
         level: 'ERROR',
-        endpoint: '/api/v1/bookings/create',
+        endpoint: '/api/v1/owner/bookings/create',
         message: error.message,
       });
       return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, bookingId: data.id });
   } catch (error) {
     console.error('Booking creation error:', error);
-    await logEvent({ level: 'ERROR', endpoint: '/api/v1/bookings/create', message: String(error) });
+    await logEvent({ level: 'ERROR', endpoint: '/api/v1/owner/bookings/create', message: String(error) });
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

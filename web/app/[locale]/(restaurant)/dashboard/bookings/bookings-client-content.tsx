@@ -58,9 +58,8 @@ export function BookingsClientContent() {
 
   const loadBookings = useCallback(async () => {
     setError(null);
-    
     try {
-      const response = await fetch('/api/v1/bookings', {
+      const response = await fetch('/api/v1/owner/bookings', {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -122,7 +121,7 @@ export function BookingsClientContent() {
   const handleUpdateStatus = async (bookingId: string, status: 'confirmed' | 'canceled') => {
     setIsUpdatingStatus(true);
     try {
-      const res = await fetch(`/api/v1/bookings/${bookingId}?bookingId=${bookingId}`, {
+      const res = await fetch(`/api/v1/owner/bookings/${bookingId}?bookingId=${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

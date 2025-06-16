@@ -179,7 +179,7 @@ Below is a comprehensive, sectioned checklist covering **every requirement** for
 
 * [ ] **Subdomain Availability Check**
 
-  * [ ] API: `GET /api/v1/subdomain/check?subdomain=…` returns `{ available: true/false, reason? }`.
+  * [ ] API: `GET /api/v1/restaurant/check-subdomain?subdomain=…` returns `{ available: true/false, reason? }`.
   * [ ] Client uses debounce to show real-time feedback.
 
 * [ ] **Register Endpoint (`/api/v1/register`)**
@@ -331,8 +331,8 @@ Below is a comprehensive, sectioned checklist covering **every requirement** for
 
 * [ ] **Session Creation via QR Scan API**
   * [x] Basic session creation endpoint structure
-  * [ ] ⚠️ **TODO**: Implement complete `/api/v1/sessions/check` endpoint for validation
-  * [ ] ⚠️ **TODO**: Implement `/api/v1/sessions/join` endpoint
+  * [ ] ⚠️ **TODO**: Implement complete `/api/v1/customer/reviews/check` endpoint for validation
+  * [ ] ⚠️ **TODO**: Implement `/api/v1/customer/reviews/join` endpoint
   * [ ] ⚠️ **TODO**: Proper error handling instead of alert() calls
 
 * [ ] **Order Page** (`/order?sessionId={UUID}`)
@@ -351,10 +351,10 @@ Below is a comprehensive, sectioned checklist covering **every requirement** for
 ### ❌ Not Implemented Yet
 
 * [ ] **Missing API Endpoints**
-  * [ ] 🔴 **CRITICAL**: `GET /api/v1/sessions/check` - session validation
-  * [ ] 🔴 **CRITICAL**: `POST /api/v1/sessions/join` - join existing session
+  * [ ] 🔴 **CRITICAL**: `GET /api/v1/customer/reviews/check` - session validation
+  * [ ] 🔴 **CRITICAL**: `POST /api/v1/customer/reviews/join` - join existing session
   * [ ] 🔴 **CRITICAL**: `POST /api/v1/orders/create` - complete order creation
-  * [ ] 🔴 **CRITICAL**: `POST /api/v1/reviews/create` - review submission
+  * [ ] 🔴 **CRITICAL**: `POST /api/v1/customer/reviews/create` - review submission
 
 * [ ] **Cart & Checkout (Cash Only)**
   * [ ] 🔴 **CRITICAL**: Complete order creation API integration

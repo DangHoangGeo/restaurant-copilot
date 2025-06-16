@@ -115,7 +115,7 @@ export function ReviewOrderScreen({
         })),
       };
 
-      const res = await fetch("/api/v1/orders/create", {
+      const res = await fetch("/api/v1/customer/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

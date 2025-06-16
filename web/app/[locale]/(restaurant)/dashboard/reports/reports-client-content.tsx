@@ -54,11 +54,11 @@ export function ReportsClientContent() {
     
     try {
       const [metricsRes, ordersRes] = await Promise.all([
-        fetch('/api/v1/reports', {
+        fetch('/api/v1/owner/reports', {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
         }),
-        fetch('/api/v1/reports/recent-orders', {
+        fetch('/api/v1/owner/reports/recent-orders', {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
         })

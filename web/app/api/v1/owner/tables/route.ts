@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
@@ -13,19 +13,23 @@ const tableSchema = z.object({
   qrCode: z.string().optional(),
 });
 
-export async function GET(req: NextRequest) {
-  const restaurantId = req.nextUrl.searchParams.get("restaurantId") || "";
-  console.log('GET menu items for restaurantId:', restaurantId);
-  
-  // Validate restaurantId parameter
-  if (!restaurantId || restaurantId.trim() === '') {
-    return NextResponse.json({ message: 'restaurantId parameter is required' }, { status: 400 });
+export async function GET() {
+  const user = await getUserFromRequest();
+    
+    if (!user?.restaurantId) {
+      return NextResponse.json(
+        { error: "Restaurant ID not found" },
+        { status: 401 }
+      );
+    }
+  const restaurantId = user.restaurantId;
+  if (!restaurantId) {
+    return NextResponse.json({ error: 'Unauthorized: Missing restaurant ID' }, { status: 401 });
   }
-
   try {
     const { data: tables, error } = await supabaseAdmin
       .from('tables')
-      .select('id, name, position_x, position_y, status, capacity, is_outdoor, is_accessible, notes, qr_code')
+      .select('id, name , status, capacity, is_outdoor, is_accessible, notes, qr_code')
       .eq('restaurant_id', restaurantId)
       .order('name');
 

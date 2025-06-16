@@ -13,7 +13,7 @@ Frontend authentication is handled by client components for each flow, typically
 -   **Signup (`web/app/[locale]/signup/page.tsx`):**
     -   A client component using `react-hook-form` with `zodResolver` for input validation against `web/shared/schemas/signup.ts`.
     -   Fields: Name, Subdomain, Email, Password, Confirm Password, Default Language.
-    -   **Subdomain Check**: Includes a debounced check for subdomain availability by calling `GET /api/v1/subdomain/check` as the user types.
+    -   **Subdomain Check**: Includes a debounced check for subdomain availability by calling `GET /api/v1/restaurant/check-subdomain` as the user types.
     -   **CAPTCHA**: Uses `ReCAPTCHA`. The token is verified by calling `POST /api/v1/verify-captcha` before attempting registration.
     -   **Submission**: Calls `POST /api/v1/auth/register` with user details. On success, redirects the user to the login page on their new subdomain.
 -   **Login (`web/app/[locale]/login/page.tsx`):**
@@ -120,7 +120,7 @@ Backend authentication logic resides in API routes under `web/app/api/v1/auth/` 
 -   `register/route.ts`
 -   `session/route.ts`
 -   `two-factor/verify/route.ts`
--   (Implicitly: `web/app/api/v1/verify-captcha/route.ts` and `web/app/api/v1/subdomain/check/route.ts`)
+-   (Implicitly: `web/app/api/v1/verify-captcha/route.ts` and `web/app/api/v1/restaurant/check-subdomain/route.ts`)
 
 **Supabase Helpers (`web/lib/supabase/`):**
 -   `client.ts`

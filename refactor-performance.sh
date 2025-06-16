@@ -466,7 +466,7 @@ generate_checklist() {
 ## Page Refactoring (Priority Order)
 
 ### 1. Orders Page ⭐⭐⭐
-- [ ] Create API endpoints (/api/v1/orders, /api/v1/tables, /api/v1/menu-for-orders)
+- [ ] Create API endpoints (/api/v1/orders, /api/v1/owner/tables, /api/v1/menu-for-orders)
 - [ ] Implement API logic with restaurant authentication
 - [ ] Create OrdersSkeleton component
 - [ ] Build OrdersClientContent with progressive loading
@@ -474,8 +474,8 @@ generate_checklist() {
 - [ ] Test navigation speed (target: <200ms)
 - [ ] Test error handling and retry functionality
 
-### 2. Dashboard Page ⭐⭐⭐  
-- [ ] Create API endpoints (/api/v1/dashboard/metrics, /api/v1/dashboard/recent-orders)
+### 2. Dashboard Page ⭐⭐⭐
+- [ ] Create API endpoints (/api/v1/owner/dashboard/metrics, /api/v1/owner/dashboard/recent-orders)
 - [ ] Implement real-time metrics calculation
 - [ ] Create DashboardSkeleton component
 - [ ] Build DashboardClientContent with auto-refresh
@@ -483,7 +483,7 @@ generate_checklist() {
 - [ ] Test performance with multiple metrics
 
 ### 3. Tables Page ⭐⭐
-- [ ] Create API endpoints (/api/v1/tables, /api/v1/restaurant/settings)
+- [ ] Create API endpoints (/api/v1/owner/tables, /api/v1/restaurant/settings)
 - [ ] Create TablesSkeleton component  
 - [ ] Build TablesClientContent
 - [ ] Implement CRUD operations

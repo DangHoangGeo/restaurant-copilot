@@ -213,7 +213,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
 
      * Imports `signupSchema` from `/shared/schemas/signup.ts`.
      * Embeds a reCAPTCHA widget.
-     * Debounces calls to `/api/v1/subdomain/check?subdomain=…` and displays “Available” or “Not available” in real time.
+     * Debounces calls to `/api/v1/restaurant/check-subdomain?subdomain=…` and displays “Available” or “Not available” in real time.
    * Do not allow form submission until:
 
      1. Zod validation passes.
@@ -222,7 +222,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
 
 2. **Subdomain Provisioning API**
 
-   * **GET /api/v1/subdomain/check**
+   * **GET /api/v1/restaurant/check-subdomain**
 
      * Validate `subdomain` format server-side (regex `/^[a-z0-9-]{3,30}$/`) and return `{ available: true/false }`.
      * If invalid format, respond with 400 and a `reason` field.
@@ -358,7 +358,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
 
      * Server fetch existing `schedules` for that employee. Pass to `<ScheduleCalendar>`.
      * In `<ScheduleCalendar>`, render a weekly grid (Mon–Sun, 06:00–23:00). Show existing shifts as colored blocks. Provide UI (either form or drag-and-drop) to create new shifts.
-     * Use Zod to validate `weekday ∈ [1..7]`, `start_time < end_time`. On change, call `/api/v1/schedules` POST (for create), PATCH (for update), or DELETE. All API routes must check RLS.
+     * Use Zod to validate `weekday ∈ [1..7]`, `start_time < end_time`. On change, call `/api/v1/owner/schedules` POST (for create), PATCH (for update), or DELETE. All API routes must check RLS.
 
 6. **Reports & Analytics**
 
@@ -371,7 +371,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
    * Pass these to `<DashboardCards>`.
    * **Sales Report Tab**: allow selecting “Last 7 Days” or “Last 30 Days”. Use `analytics_snapshots` or an RPC to fetch revenue per day and category breakdown. Render with Recharts (bar + pie). Provide CSV export.
    * **Items Report Tab**: call RPC `get_items_report(restaurantId)` to get `(item, total_sold, revenue, avg_rating)`. Render a sortable table with CSV/PDF export.
-   * **Feedback Report Tab**: fetch latest 50 `reviews` joined with `menu_items` (for name), display rating, comment, date, resolved status. Provide a “Resolve” button that calls `/api/v1/reviews/resolve` to mark `resolved = true`.
+   * **Feedback Report Tab**: fetch latest 50 `reviews` joined with `menu_items` (for name), display rating, comment, date, resolved status. Provide a “Resolve” button that calls `/api/v1/customer/reviews/resolve` to mark `resolved = true`.
    * **Recommendations Widget**: call `get_top_sellers_7days(restaurantId, 3)`, join with `menu_items` for names, display top 3. “Apply to Next Week” button calls `/api/v1/recommendations/apply`, which invokes the RPC `apply_recommendations(restaurantId)`.
 
 ---
@@ -393,7 +393,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
      ```
      https://{subdomain}.coorder/{locale}/customer/order?tableId={tableId}
      ```
-   * `/web/app/api/v1/sessions/create`:
+   * `/web/app/api/v1/customer/reviews/create`:
 
      * Validate `tableId` belongs to this `restaurant_id`.
      * Insert into `orders` with `(restaurant_id, table_id, session_id = uuid_generate_v4(), status = "new")`.
@@ -495,7 +495,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
      });
      ```
 
-     On submit: POST to `/api/v1/reviews/create`. On success, redirect back or show “Thank you for your feedback.” If `FEATURE_FLAGS.onlineReviews = false`, hide review links entirely.
+     On submit: POST to `/api/v1/customer/reviews/create`. On success, redirect back or show “Thank you for your feedback.” If `FEATURE_FLAGS.onlineReviews = false`, hide review links entirely.
 
 ---
 
@@ -664,7 +664,7 @@ Below are the implementation guidelines that any AI agent (or developer) should 
 4. **Feedback Moderation UI**
 
    * In Admin Dashboard, the “Feedback Report” tab must fetch latest 50 reviews for that tenant, joined with `menu_items` to get localized names.
-   * For each review row, show rating (stars), comment, date, resolved status. Provide a “Resolve” button that calls `/api/v1/reviews/resolve` with `{ reviewId }`. On success, update the table row to “Resolved.”
+   * For each review row, show rating (stars), comment, date, resolved status. Provide a “Resolve” button that calls `/api/v1/customer/reviews/resolve` with `{ reviewId }`. On success, update the table row to “Resolved.”
 
 ---
 
