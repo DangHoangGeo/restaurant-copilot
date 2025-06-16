@@ -630,10 +630,10 @@ export function useMutation<T, P = any>(options: UseMutationOptions<T>) {
   - [x] Add auto-refresh functionality
 
 ### Step 3: Medium-Priority Pages
-- [ ] **Booking Page** - Complete refactoring
-- [ ] **Tables Page** - Complete refactoring
-- [ ] **Settings Page** - Complete refactoring
-- [ ] Performance testing and optimization
+- [x] **Booking Page** - Complete refactoring
+- [x] **Tables Page** - Complete refactoring
+- [x] **Settings Page** - Complete refactoring
+- [x] Performance testing and optimization
 
 ### Step 4: Remaining Pages & Polish
 - [ ] **Reports Page** - Complete refactoring
