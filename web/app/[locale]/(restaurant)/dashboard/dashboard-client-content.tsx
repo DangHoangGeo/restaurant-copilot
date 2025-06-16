@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState, useEffect, useCallback } from 'react';
 import { StatCard } from '@/components/features/admin/dashboard/StatCard';
 import { QuickActions } from '@/components/features/admin/dashboard/QuickActions';
 import { RecentOrdersTable, RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable';
@@ -9,55 +10,111 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ComingSoon } from '@/components/common/coming-soon';
 import { useTranslations } from 'next-intl';
 import { formatCurrency } from '@/lib/utils';
+import { DashboardSkeleton } from '@/components/ui/skeletons/dashboard-skeleton';
+import { ErrorState } from '@/components/ui/states/error-state';
 
-// Define a type for the initial data passed from the server component
+// Define the dashboard metrics interface
 export interface DashboardData {
   todaySales: number;
   activeOrdersCount: number;
-  topSellerToday: { name: string; metricValue: string | number; } | null;
+  topSellerToday: { name: string; metricValue: string } | null;
   lowStockItemsCount: number;
 }
 
-interface DashboardClientContentProps {
-  initialData: DashboardData | null;
-  recentOrders: RecentOrder[];
-  isLoading: boolean;
-  error?: string | null;
-}
-
-export function DashboardClientContent({ initialData, recentOrders, isLoading, error }: DashboardClientContentProps) {
+export function DashboardClientContent() {
+  const [metrics, setMetrics] = useState<DashboardData | null>(null);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const t = useTranslations('AdminDashboard');
   const tCommon = useTranslations('Common');
 
-  // Use FEATURE_FLAGS directly
-  const lowStockAlertsEnabled = FEATURE_FLAGS.lowStockAlerts;
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const [metricsRes, ordersRes] = await Promise.all([
+        fetch('/api/v1/dashboard/metrics', { credentials: 'include' }),
+        fetch('/api/v1/dashboard/recent-orders', { credentials: 'include' })
+      ]);
 
-  if (error) {
-    return <div className="text-destructive p-4 border border-destructive bg-destructive/10 rounded-md">{error}</div>;
+      if (!metricsRes.ok || !ordersRes.ok) {
+        throw new Error('Failed to load dashboard data');
+      }
+
+      const [metricsData, ordersData] = await Promise.all([
+        metricsRes.json(),
+        ordersRes.json()
+      ]);
+
+      setMetrics(metricsData);
+      setRecentOrders(ordersData);
+    } catch (err) {
+      console.error('Error loading dashboard data:', err);
+      setError(err instanceof Error ? err.message : t('errors.fetch_failed'));
+    } finally {
+      setIsLoading(false);
+      setIsInitialLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    loadData();
+    
+    // Auto-refresh every 30 seconds for live data
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, [loadData]);
+
+  // Show loading skeleton during initial load
+  if (isInitialLoading) {
+    return <DashboardSkeleton />;
   }
 
-  const topSellerName = initialData?.topSellerToday?.name ?? t('cards.top_seller_unavailable');
-  const topSellerMetric = initialData?.topSellerToday?.metricValue ?? '';
+  // Show error state
+  if (error) {
+    return (
+      <ErrorState 
+        error={error} 
+        onRetry={loadData}
+        title={t('errors.dashboard_load_failed')}
+      />
+    );
+  }
+
+  // Use FEATURE_FLAGS directly
+  const lowStockAlertsEnabled = FEATURE_FLAGS.lowStockAlerts;
+  const topSellerName = metrics?.topSellerToday?.name ?? t('cards.top_seller_unavailable');
+  const topSellerMetric = metrics?.topSellerToday?.metricValue ?? '';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Page Header */}
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+          {t('title')}
+        </h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          {t('subtitle')}
+        </p>
+      </header>
+
+      {/* Dashboard Metrics */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           titleKey="cards.todays_sales"
-          value={initialData ? formatCurrency(initialData.todaySales, 'JPY') : 'N/A'}
+          value={metrics ? formatCurrency(metrics.todaySales, 'JPY') : 'N/A'}
           icon={DollarSign}
-          // trend="+5.2% vs yesterday" // Example, fetch or calculate if needed
-          // trendDirection="up"
           colorClass="text-blue-600 dark:text-blue-400"
           bgColorClass="bg-blue-100 dark:bg-blue-900/30"
           isLoading={isLoading}
         />
         <StatCard
           titleKey="cards.active_orders"
-          value={initialData ? initialData.activeOrdersCount : 'N/A'}
+          value={metrics ? metrics.activeOrdersCount : 'N/A'}
           icon={ShoppingCart}
-          // trend="-2 vs last hour"
-          // trendDirection="down"
           colorClass="text-indigo-600 dark:text-indigo-400"
           bgColorClass="bg-indigo-100 dark:bg-indigo-900/30"
           isLoading={isLoading}
@@ -74,12 +131,12 @@ export function DashboardClientContent({ initialData, recentOrders, isLoading, e
         {lowStockAlertsEnabled ? (
           <StatCard
             titleKey="cards.low_stock_alerts"
-            value={initialData ? initialData.lowStockItemsCount : 'N/A'}
+            value={metrics ? metrics.lowStockItemsCount : 'N/A'}
             icon={AlertTriangle}
-            trend={initialData && initialData.lowStockItemsCount > 0 ? tCommon('needs_attention') : tCommon('all_good')}
+            trend={metrics && metrics.lowStockItemsCount > 0 ? tCommon('needs_attention') : tCommon('all_good')}
             colorClass="text-amber-600 dark:text-amber-400"
             bgColorClass="bg-amber-100 dark:bg-amber-900/30"
-            isAlert={initialData ? initialData.lowStockItemsCount > 0 : false}
+            isAlert={metrics ? metrics.lowStockItemsCount > 0 : false}
             isLoading={isLoading}
           />
         ) : (
@@ -91,9 +148,14 @@ export function DashboardClientContent({ initialData, recentOrders, isLoading, e
         )}
       </div>
 
+      {/* Recent Orders and Quick Actions */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <RecentOrdersTable orders={recentOrders || []} isLoading={isLoading} />
-        <QuickActions />
+        <div className="lg:col-span-2">
+          <RecentOrdersTable orders={recentOrders} isLoading={isLoading} />
+        </div>
+        <div>
+          <QuickActions />
+        </div>
       </div>
       
       {/* Placeholder for more charts/reports */}
