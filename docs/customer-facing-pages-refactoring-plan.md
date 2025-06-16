@@ -4,6 +4,27 @@
 
 This document outlines a comprehensive plan to refactor the customer-facing pages from a monolithic component-based system to a modern, page-based architecture with improved performance, maintainability, and user experience.
 
+## Key Improvements
+
+### UI / UX Improvements
+- Use a responsive, touch-friendly grid for `SmartMenu` with image-focused cards, hover/focus states, and smooth add-to-cart micro-animations.
+- Add skeleton/loading placeholders (e.g., category title bars, card frames) so the UI feels instantly responsive.
+- Keep the header sticky with quick access to language switcher and session status, and make the floating cart slide in/out.
+- Ensure the AI Assistant toggle is keyboard-accessible and has ARIA labels.
+
+### Performance Optimizations
+- On the menu list page, fetch only the minimal fields for each item (`id`, `name`, `price`, `imageURL`, `availability`) and defer sizes/toppings until the detail page.
+- Lazy-load images with low-res placeholders or `next/image` built-in blur.
+- Code-split each page route (`/menu`, `/menu/[itemId]`, `/cart`, etc.) so users download only what they need.
+- Use React Suspense or SWR/React-Query with stale-while-revalidate for menu data caching, and prefetch item details on hover or when the user starts typing that item in search.
+
+### Maintainability / Extensibility
+- Follow an atomic or container/presentational component pattern in `components/features/customer`: small, focused units (e.g., `FoodCard`, `SearchBar`, `CategorySection`).
+- Centralize theme tokens (colors, typography, spacing) so you can tweak the look in one place.
+- Keep business logic (session, cart, AI suggestions) in hooks or context providers (`useSession`, `useCart`, `useRecommendations`) separate from UI.
+- Define clear TypeScript interfaces for API data and use codegen or Zod schemas to validate responses.
+- Write lightweight unit tests for each component and an end-to-end smoke test for the full ordering flow.
+
 ## Current State Analysis
 
 ### Issues Identified
@@ -256,162 +277,35 @@ const responses = {
 4. 🆕 Cross-browser testing
 5. 🆕 Performance optimization
 
-### Phase 6: API Integration Strategy
-
-#### 6.1 Optimize API Usage
-```typescript
-// Use existing customer APIs efficiently
-const useCustomerData = () => {
-  const { restaurant } = useCustomerAPI('/api/v1/customer/restaurant');
-  const { categories } = useCustomerAPI('/api/v1/customer/menu');
-  const { session } = useCustomerAPI('/api/v1/customer/session/check');
-  
-  return { restaurant, categories, session };
-};
-```
-
-#### 6.2 Session Flow Optimization
-1. **URL Parameters**: `?code=`, `?sessionId=`, `?tableId=`
-2. **localStorage**: Persist sessionId across pages
-3. **Auto-validation**: Check session on each page load
-4. **Graceful fallbacks**: Handle expired/invalid sessions
-
-### Phase 7: UX/UI Improvements
-
-#### 7.1 Mobile-First Design
-- **Touch-friendly interfaces**: Large buttons, easy scrolling
-- **Optimized for restaurant environment**: Good visibility in various lighting
-- **Quick actions**: Minimize taps to complete common tasks
-- **Offline-ready**: Handle poor network conditions
-
-#### 7.2 Performance Optimizations
-- **Code splitting**: Load pages on demand
-- **Image optimization**: WebP format, lazy loading
-- **Caching**: Smart caching for menu data
-- **Bundle size**: Keep initial load under 100KB
-
-#### 7.3 Accessibility
-- **ARIA labels**: Proper screen reader support
-- **Keyboard navigation**: Full keyboard accessibility
-- **High contrast**: Good visibility for all users
-- **Multiple languages**: Seamless language switching
-
-### Phase 8: AI Assistant Implementation
-
-#### 8.1 Phase 1: Rule-Based Assistant
-**Quick Implementation:**
-- Pre-defined response templates
-- Context-aware suggestions based on current page
-- Menu item recommendations based on time/popularity
-- Simple FAQ responses
-
-#### 8.2 Phase 2: Enhanced AI Integration
-**Future Enhancement:**
-- Integration with OpenAI/Claude for natural conversations
-- Personalized recommendations
-- Order history analysis
-- Dietary preference learning
-
-### Phase 9: Testing & Quality Assurance
-
-#### 9.1 Automated Testing
-```typescript
-// Example test structure
-describe('Customer Menu Flow', () => {
-  test('Can browse menu and add items to cart', () => {
-    // Test menu browsing
-    // Test item selection
-    // Test cart addition
-    // Test checkout flow
-  });
-  
-  test('AI Assistant provides helpful responses', () => {
-    // Test assistant activation
-    // Test response accuracy
-    // Test context awareness
-  });
-});
-```
-
-#### 9.2 User Acceptance Testing
-- **Real restaurant environment testing**
-- **Mobile device testing across different sizes**
-- **Network condition testing (slow/unreliable connections)**
-- **Accessibility testing with screen readers**
-
-### Phase 10: Migration Strategy
-
-#### 10.1 Gradual Migration
-1. **Keep existing system running** during development
-2. **Feature flag approach** for gradual rollout
-3. **A/B testing** to ensure feature parity
-4. **Rollback plan** for any issues
-
-#### 10.2 Data Migration
-- **Session data compatibility**
-- **Cart data preservation**
-- **URL structure migration**
-- **Bookmark handling**
-
-## Expected Benefits
-
-### 🚀 Performance Improvements
-- **50% faster initial load** with code splitting
-- **30% smaller bundle size** with simplified components
-- **Better Core Web Vitals** scores
-
-### 👥 User Experience Enhancements
-- **Simplified ordering process** - fewer taps to order
-- **Smart recommendations** - AI-powered suggestions
-- **Better mobile experience** - optimized for touch
-- **Consistent navigation** - proper page-based routing
-
-### 🛠️ Developer Experience
-- **Better maintainability** - smaller, focused components
-- **Easier testing** - isolated page components
-- **Clearer architecture** - standard Next.js patterns
-- **Improved debugging** - better error boundaries
-
-### 📈 Business Impact
-- **Higher conversion rates** - streamlined ordering
-- **Reduced support tickets** - better UX and AI assistance
-- **Faster feature development** - modular architecture
-- **Better analytics** - page-based tracking
-
-## Risk Mitigation
-
-### Technical Risks
-- **API compatibility issues**: Thorough testing with existing APIs
-- **Performance regression**: Continuous monitoring and optimization
-- **Mobile compatibility**: Extensive device testing
-
-### Business Risks
-- **User confusion during migration**: Gradual rollout with user education
-- **Lost orders during transition**: Robust testing and rollback plan
-- **Staff training needed**: Comprehensive documentation and training
-
 ## Timeline & Resources
 
-### Week 1: Foundation
-- Set up customer layout structure
-- Create AI Assistant component
-- Begin SmartMenu component development
+### Phase 1: Foundation
+- Set up shared layout structure, header/footer, and session management context
+- Implement `CartProvider` and `FloatingCart` with skeleton/loading placeholders
+- Define theme tokens (colors, typography, spacing) and establish design system
+- Scaffold AI Assistant component with ARIA labels and keyboard support
 
-### Week 2: Core Features
-- Complete SmartMenu component
-- Implement menu and item detail pages
-- Add cart functionality
+### Phase 2: Core Features
+- Develop `SmartMenu` with:
+  - Touch-friendly, image-focused grid and card micro-animations
+  - Skeleton loaders and lazy-loaded images (`next/image` blur)
+  - SWR/React-Query data fetching with Suspense, code-splitting, and caching
+  - Quick search with instant results and prefetch item details on hover
+- Isolate business logic into hooks (`useSession`, `useCart`, `useRecommendations`)
+- Centralize API calls to trim fields (defer sizes/toppings until detail view)
 
-### Week 3: Order Management
-- Create order confirmation and history pages
-- Implement session management
-- Add real-time updates
+### Phase 3: Order & Management
+- Build Cart & Checkout pages with real-time state updates and validation
+- Create Order Confirmation and History pages with live status updates
+- Code-split detail views and defer heavy data until needed (sizes, toppings)
+- Apply theme tokens and ensure accessibility (ARIA, keyboard nav) across pages
 
-### Week 4: Polish & Launch
-- Mobile optimization
-- Testing and bug fixes
-- Performance optimization
-- Production deployment
+### Phase 4: Polish & Launch
+- Mobile-first adjustments: responsive layouts, large tap targets, offline fallbacks
+- Add micro-animations, sticky header, and sliding floating cart transitions
+- Cross-browser testing and performance audits (LCP, TTI, Lighthouse)
+- Write unit tests for components and end-to-end smoke tests for flows
+- Optimize bundle size, implement smart caching strategies, conduct Lighthouse scoring
 
 ### Resources Needed
 - **2 Frontend Developers** (full-time)
