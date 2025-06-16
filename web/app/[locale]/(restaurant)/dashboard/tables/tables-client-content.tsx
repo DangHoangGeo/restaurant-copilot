@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { PlusCircle, SquarePen, QrCode, FileDown, Loader2, Layers } from 'lucide-react'
+import { PlusCircle, SquarePen, QrCode, FileDown, Loader2, Layers, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -48,24 +48,111 @@ const getBulkAddTableSchema = (t: ReturnType<typeof useTranslations<'AdminTables
 });
 type BulkAddTableFormData = z.infer<ReturnType<typeof getBulkAddTableSchema>>;
 
+// Loading skeleton component
+function TablesSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
+        <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        <div className="flex gap-2">
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {Array.from({ length: 8 }, (_, i) => (
+          <div key={i} className="p-4 border rounded-lg space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+            <div className="flex gap-2">
+              <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Error state component
+function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
+  const t = useTranslations()
+  
+  return (
+    <div className="p-8 text-center">
+      <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md">
+        <h3 className="font-semibold text-lg mb-2">{t('Common.alert.error.title')}</h3>
+        <p className="mb-4">{error}</p>
+        <Button onClick={onRetry} variant="outline" className="gap-2">
+          <RotateCcw className="h-4 w-4" />
+          {t('Common.retry')}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 interface RestaurantSettings {
   name: string
   logoUrl: string | null
 }
 
-
-interface TablesClientContentProps {
-  restaurantSettings: RestaurantSettings
-  initialData: Table[]
-  error: string | null
-}
-
-export function TablesClientContent({ restaurantSettings, initialData, error }: TablesClientContentProps) {
+export function TablesClientContent() {
   const t = useTranslations();
   const tVal = useTranslations('AdminTables.validation');
   const tCommon = useTranslations('Common');
   const params = useParams();
   const locale = (params.locale as string) || 'en';
+
+  // Progressive loading state
+  const [tablesData, setTablesData] = useState<Table[]>([])
+  const [restaurantSettings, setRestaurantSettings] = useState<RestaurantSettings | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Data fetching
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      const [tablesRes, settingsRes] = await Promise.all([
+        fetch('/api/v1/tables'),
+        fetch('/api/v1/restaurant/settings')
+      ])
+
+      if (!tablesRes.ok) {
+        throw new Error(`Failed to fetch tables: ${tablesRes.status}`)
+      }
+      if (!settingsRes.ok) {
+        throw new Error(`Failed to fetch settings: ${settingsRes.status}`)
+      }
+
+      const [tablesData, settingsData] = await Promise.all([
+        tablesRes.json(),
+        settingsRes.json()
+      ])
+
+      setTablesData(tablesData.tables || [])
+      setRestaurantSettings(settingsData.settings || null)
+    } catch (err) {
+      console.error('Error fetching data:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load data')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   // Moved hook declarations to the top
   const tableSchema = getTableSchema(tVal);
@@ -103,7 +190,7 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     }
   });
 
-  const [tablesData, setTablesData] = useState<Table[]>(initialData)
+  // UI state
   const [isTableModalOpen, setIsTableModalOpen] = useState(false)
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
   const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false); // Kept for now
@@ -185,7 +272,7 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     setIsQrModalOpen(true)
   }
   const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'SOder.ai';
-  const qrCodeUrl = selectedTableForQr
+  const qrCodeUrl = selectedTableForQr && restaurantSettings
     ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/menu?code=${selectedTableForQr.qr_code}`
     : ''
 
@@ -261,18 +348,15 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
     }
   }
 
-  // Early return for error state
-  if (error) {
-    return (
-      <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md text-center">
-        <h3 className="font-semibold text-lg mb-2">{t('Common.alert.error.title')}</h3>
-        <p>{error}</p>
-      </div>
-    );
+  // Early return for loading state
+  if (isLoading) {
+    return <TablesSkeleton />
   }
 
-  // Loading state - since initialData is always an array, no loading state needed
-  const isInitialLoading = false;
+  // Early return for error state
+  if (error) {
+    return <ErrorState error={error} onRetry={fetchData} />
+  }
 
   return (
     <div>
@@ -290,13 +374,13 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
         </div>
       </div>
 
-      {isInitialLoading && (
+      {isLoading && (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-12 w-12 text-slate-400 animate-spin" />
         </div>
       )}
 
-      {!isInitialLoading && !error && tablesData.length === 0 && (
+      {!isLoading && !error && tablesData.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
           <QrCode className="mx-auto h-12 w-12 text-slate-400" /> {/* Using QrCode icon as a placeholder for tables */}
           <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('AdminTables.empty_state.title')}</h3>
@@ -314,7 +398,7 @@ export function TablesClientContent({ restaurantSettings, initialData, error }: 
         </div>
       )}
 
-      {!isInitialLoading && tablesData.length > 0 && (
+      {!isLoading && tablesData.length > 0 && (
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {tablesData.map(table => (

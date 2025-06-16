@@ -18,9 +18,6 @@ import {
 } from '../../components/home';
 import { getSubdomainFromHost } from '@/lib/utils';
 
-
-
-
 // Main Landing Page Component
 export default function Page() {
   const [subdomain, setSubdomain] = useState<string | null>(null);
@@ -28,10 +25,7 @@ export default function Page() {
   
   useEffect(() => {
     const host = window.location.hostname;
-    console.log('Current host:', host);
-    console.log('Full window.location:', window.location);
     const detectedSubdomain = getSubdomainFromHost(host);
-    console.log("Detected subdomain:", detectedSubdomain);
     setSubdomain(detectedSubdomain);
   }, []);
 
