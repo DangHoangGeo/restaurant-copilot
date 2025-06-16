@@ -27,42 +27,7 @@ interface Booking {
   preOrderItems: PreOrderItem[]
 }
 
-// Skeleton component for loading state
-function BookingsSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse" />
-      </div>
-      <Card className="p-2">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
-              <tr>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <th key={i} className="px-4 py-3">
-                    <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: 4 }).map((_, i) => (
-                <tr key={i} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-                  {Array.from({ length: 6 }).map((_, j) => (
-                    <td key={j} className="px-4 py-3">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </div>
-  )
-}
+import { BookingsSkeleton } from '@/components/ui/skeletons';
 
 // Error state component
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
