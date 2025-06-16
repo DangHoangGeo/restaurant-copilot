@@ -619,17 +619,18 @@ export function useMutation<T, P = any>(options: UseMutationOptions<T>) {
 - [x] Create shared types and interfaces
 
 ### Step 2: High-Priority Pages
-- [ ] **Orders Page** - Complete refactoring
-  - [ ] Create API endpoints
-  - [ ] Refactor server component
-  - [ ] Build client component with progressive loading
-  - [ ] Test and validate performance
-- [ ] **Dashboard Landing Page** - Complete refactoring
-  - [ ] Create metrics API endpoints
-  - [ ] Implement real-time data updates
-  - [ ] Add auto-refresh functionality
+- [x] **Orders Page** - Complete refactoring
+  - [x] Create API endpoints
+  - [x] Refactor server component
+  - [x] Build client component with progressive loading
+  - [x] Test and validate performance
+- [x] **Dashboard Landing Page** - Complete refactoring
+  - [x] Create metrics API endpoints
+  - [x] Implement real-time data updates
+  - [x] Add auto-refresh functionality
 
 ### Step 3: Medium-Priority Pages
+- [ ] **Booking Page** - Complete refactoring
 - [ ] **Tables Page** - Complete refactoring
 - [ ] **Settings Page** - Complete refactoring
 - [ ] Performance testing and optimization
