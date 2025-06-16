@@ -19,14 +19,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert } from "@/components/ui/alert";
 import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import { AnimatedRestaurantHeader } from "@/components/common/AnimatedRestaurantHeader";
-import type { RestaurantSettings, Category, TableInfo, MenuItem } from "@/shared/types/customer";
+import { useCustomerPageData } from "@/hooks/useCustomerData";
+import { BookingPageSkeleton } from "@/components/customer/loading/CustomerSkeletons";
+import { CustomerError, RestaurantNotFoundError } from "@/components/customer/error/CustomerError";
 import Link from "next/link";
-
-interface BookingClientContentProps {
-  restaurantSettings: RestaurantSettings;
-  categories: Category[];
-  tables: TableInfo[];
-}
 
 interface BookingFormData {
   tableId: string;
@@ -38,15 +34,14 @@ interface BookingFormData {
   preOrderItems: { itemId: string; quantity: number }[];
 }
 
-export function BookingClientContent({
-  restaurantSettings,
-  categories,
-  tables,
-}: BookingClientContentProps) {
+export function BookingClientContent() {
   const t = useTranslations("Customer");
   const tCommon = useTranslations("Common");
   const locale = useGetCurrentLocale();
   const router = useRouter();
+  
+  // Progressive data loading
+  const { restaurant, categories, tables, loading, error, reload } = useCustomerPageData();
   
   const [formData, setFormData] = useState<BookingFormData>({
     tableId: "",
@@ -58,12 +53,17 @@ export function BookingClientContent({
     preOrderItems: [],
   });
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const primaryColor = restaurantSettings.primaryColor || '#3B82F6';
+  // Early returns for loading and error states
+  if (loading) return <BookingPageSkeleton />;
+  if (error) return <CustomerError error={error} onRetry={reload} />;
+  if (!restaurant) return <RestaurantNotFoundError />;
+
+  const primaryColor = restaurant.primaryColor || '#3B82F6';
   
-  const menuItems: MenuItem[] = categories
+  const menuItems = categories
     .flatMap((cat) => cat.menu_items)
     .filter((item) => item.available);
 
@@ -104,19 +104,35 @@ export function BookingClientContent({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setFormError("");
+    
     if (!formData.tableId || !formData.customerName || !formData.contact || !formData.date || !formData.time || formData.partySize < 1) {
-      setError(t("booking.form.validation_error_fill_fields"));
+      setFormError(t("booking.form.validation_error_fill_fields"));
       return;
     }
+    
     setIsSubmitting(true);
     console.log("Submitting booking:", formData);
-    // Mock API Call
-    setTimeout(() => {
-        setSubmitted(true);
-        setIsSubmitting(false);
-    }, 1000);
-    // TODO: Replace with actual API call
+    
+    // Mock API Call - replace with actual booking API
+    try {
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (Math.random() > 0.2) { // 80% success rate for demo
+            resolve("Success");
+          } else {
+            reject(new Error("Booking failed"));
+          }
+        }, 2000);
+      });
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Booking submission error:", err);
+      setFormError("Failed to submit booking. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBackToMenu = () => {
@@ -127,7 +143,7 @@ export function BookingClientContent({
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 relative" style={{ '--brand-color': primaryColor } as React.CSSProperties}>
       {/* Enhanced Header with Animations */}
       <AnimatedRestaurantHeader 
-        restaurantSettings={restaurantSettings}
+        restaurantSettings={restaurant}
         badgeText="Table Booking"
         badgeIcon={CalendarDays}
       />
@@ -174,7 +190,7 @@ export function BookingClientContent({
               <Button
                 onClick={handleBackToMenu}
                 size="lg"
-                style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
+                style={{ backgroundColor: restaurant.primaryColor || "#0ea5e9" }}
                 className="text-white hover:opacity-90"
               >
                 {tCommon("back_to_menu")}
@@ -203,12 +219,12 @@ export function BookingClientContent({
               {t("booking.title")}
             </motion.h2>
             
-            {error && (
+            {formError && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
               >
-                <Alert variant="destructive" className="mb-4">{error}</Alert>
+                <Alert variant="destructive" className="mb-4 max-w-lg mx-auto">{formError}</Alert>
               </motion.div>
             )}
             
@@ -231,29 +247,99 @@ export function BookingClientContent({
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input name="customerName" value={formData.customerName} onChange={handleInputChange} required placeholder={t("booking.form.name_placeholder")} />
-                  <Input name="contact" value={formData.contact} onChange={handleInputChange} required placeholder={t("booking.form.contact_placeholder")} />
+                  
+                  <Input 
+                    name="customerName" 
+                    value={formData.customerName} 
+                    onChange={handleInputChange} 
+                    required 
+                    placeholder={t("booking.form.name_placeholder")} 
+                  />
+                  
+                  <Input 
+                    name="contact" 
+                    value={formData.contact} 
+                    onChange={handleInputChange} 
+                    required 
+                    placeholder={t("booking.form.contact_placeholder")} 
+                  />
+                  
                   <div className="grid grid-cols-2 gap-4">
-                    <Input name="date" type="date" value={formData.date} onChange={handleInputChange} required min={new Date().toISOString().split("T")[0]} />
-                    <Input name="time" type="time" value={formData.time} onChange={handleInputChange} required />
+                    <Input 
+                      name="date" 
+                      type="date" 
+                      value={formData.date} 
+                      onChange={handleInputChange} 
+                      required 
+                      min={new Date().toISOString().split("T")[0]} 
+                    />
+                    <Input 
+                      name="time" 
+                      type="time" 
+                      value={formData.time} 
+                      onChange={handleInputChange} 
+                      required 
+                    />
                   </div>
-                  <Input name="partySize" type="number" value={formData.partySize} onChange={handleInputChange} required min="1" placeholder={t("booking.form.party_size_placeholder")} />
-                  <h4 className="text-md font-semibold pt-4 border-t dark:border-slate-700">{t("booking.form.preorder_optional_title")}</h4>
+                  
+                  <Input 
+                    name="partySize" 
+                    type="number" 
+                    value={formData.partySize} 
+                    onChange={handleInputChange} 
+                    required 
+                    min="1" 
+                    placeholder={t("booking.form.party_size_placeholder")} 
+                  />
+                  
+                  <h4 className="text-md font-semibold pt-4 border-t dark:border-slate-700">
+                    {t("booking.form.preorder_optional_title")}
+                  </h4>
+                  
                   <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                     {menuItems.map((item) => {
                       const preOrderedItem = formData.preOrderItems.find((pi) => pi.itemId === item.id);
                       return (
                         <div key={item.id} className="p-3 border rounded-lg dark:border-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                           <label className="flex items-center space-x-3 cursor-pointer flex-grow">
-                            <input type="checkbox" name="preOrderItems" value={item.id} checked={!!preOrderedItem} onChange={handleInputChange} className="form-checkbox h-4 w-4 rounded accent-[--brand-color]" style={{'--brand-color': restaurantSettings.primaryColor || "#0ea5e9"} as React.CSSProperties} />
-                            <span className="text-sm">{getLocalizedText({"name_en":item.name_en,"name_vi":item.name_vi || "","name_jp":item.name_ja || ""}, locale)} (¥{item.price.toFixed(0)})</span>
+                            <input 
+                              type="checkbox" 
+                              name="preOrderItems" 
+                              value={item.id} 
+                              checked={!!preOrderedItem} 
+                              onChange={handleInputChange} 
+                              className="form-checkbox h-4 w-4 rounded accent-[--brand-color]" 
+                              style={{'--brand-color': restaurant.primaryColor || "#0ea5e9"} as React.CSSProperties} 
+                            />
+                            <span className="text-sm">
+                              {getLocalizedText({
+                                "name_en": item.name_en,
+                                "name_vi": item.name_vi || "",
+                                "name_jp": item.name_ja || ""
+                              }, locale)} (¥{item.price.toFixed(0)})
+                            </span>
                           </label>
-                          {preOrderedItem && <Input type="number" value={preOrderedItem.quantity} min="1" onChange={(e) => handlePreOrderItemQuantityChange(item.id, e.target.value)} className="w-20 text-sm py-1 h-8" />}
+                          {preOrderedItem && (
+                            <Input 
+                              type="number" 
+                              value={preOrderedItem.quantity} 
+                              min="1" 
+                              onChange={(e) => handlePreOrderItemQuantityChange(item.id, e.target.value)} 
+                              className="w-20 text-sm py-1 h-8" 
+                            />
+                          )}
                         </div>
                       );
                     })}
                   </div>
-                  <Button type="submit" size="lg" className="w-full mt-6 text-white hover:opacity-90" style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }} disabled={isSubmitting}>
+                  
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="w-full mt-6 text-white hover:opacity-90" 
+                    style={{ backgroundColor: restaurant.primaryColor || "#0ea5e9" }} 
+                    disabled={isSubmitting}
+                  >
                     {isSubmitting ? (t("booking.form.submitting_button") || "Submitting...") : t("booking.form.submit_button")}
                   </Button>
                 </form>
@@ -311,14 +397,14 @@ export function BookingClientContent({
                 className="flex items-center space-x-4"
                 whileHover={{ scale: 1.05 }}
               >
-                {restaurantSettings.logoUrl && (
+                {restaurant.logoUrl && (
                   <motion.div
                     whileHover={{ rotate: 360 }}
                     transition={{ duration: 0.8 }}
                   >
                     <Image
-                      src={restaurantSettings.logoUrl}
-                      alt={restaurantSettings.name}
+                      src={restaurant.logoUrl}
+                      alt={restaurant.name}
                       width={32}
                       height={32}
                       className="rounded"
@@ -326,7 +412,7 @@ export function BookingClientContent({
                   </motion.div>
                 )}
                 <span className="text-xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                  {restaurantSettings.name}
+                  {restaurant.name}
                 </span>
               </motion.div>
             </div>
@@ -364,7 +450,7 @@ export function BookingClientContent({
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 1.8 }}
             >
-              © {new Date().getFullYear()} {restaurantSettings.name}. All rights reserved.
+              © {new Date().getFullYear()} {restaurant.name}. All rights reserved.
             </motion.p>
             <motion.p
               initial={{ y: 10, opacity: 0 }}
