@@ -28,6 +28,10 @@ interface ItemDetailModalProps {
   onAddToCart: (item: FoodItem, quantity: number, selectedSize?: MenuItemSize, selectedToppings?: Topping[], notes?: string) => void;
   canAddItems?: boolean;
   initialQuantity?: number;
+  initialSelectedSize?: MenuItemSize | null;
+  initialSelectedToppings?: Topping[];
+  initialNotes?: string;
+  isEditMode?: boolean;
 }
 
 export function ItemDetailModal({
@@ -38,26 +42,31 @@ export function ItemDetailModal({
   brandColor,
   onAddToCart,
   canAddItems = true,
-  initialQuantity = 1
+  initialQuantity = 1,
+  initialSelectedSize = null,
+  initialSelectedToppings = [],
+  initialNotes = "",
+  isEditMode = false
 }: ItemDetailModalProps) {
   // State for customization
   const [quantity, setQuantity] = useState(initialQuantity);
-  const [selectedSize, setSelectedSize] = useState<MenuItemSize | null>(null);
-  const [selectedToppings, setSelectedToppings] = useState<Topping[]>([]);
-  const [notes, setNotes] = useState('');
+  const [selectedSize, setSelectedSize] = useState<MenuItemSize | null>(initialSelectedSize);
+  const [selectedToppings, setSelectedToppings] = useState<Topping[]>(initialSelectedToppings);
+  const [notes, setNotes] = useState(initialNotes);
   const [isAdding, setIsAdding] = useState(false);
 
-  // Reset state when item changes
+  // Reset state when modal opens with fresh props
   React.useEffect(() => {
-    if (item) {
+    if (isOpen && item) {
       setQuantity(initialQuantity);
-      // Set default size if available
-      const defaultSize = item.menu_item_sizes?.[0];
+      // Set initial size (prioritize passed initial size, then default size)
+      const defaultSize = initialSelectedSize || (item.menu_item_sizes?.[0]);
       setSelectedSize(defaultSize && defaultSize.id ? defaultSize : null);
-      setSelectedToppings([]);
-      setNotes('');
+      setSelectedToppings([...initialSelectedToppings]);
+      setNotes(initialNotes);
     }
-  }, [item, initialQuantity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, item?.id]); // Only depend on isOpen and item.id to avoid infinite loops
 
   // Memoized values
   const itemName = useMemo(() => {
@@ -364,7 +373,7 @@ export function ItemDetailModal({
                   className="flex items-center gap-2"
                 >
                   <ShoppingCart className="h-4 w-4" />
-                  Add to Cart
+                  {isEditMode ? 'Update' : 'Add to Cart'}
                 </motion.div>
               )}
             </AnimatePresence>

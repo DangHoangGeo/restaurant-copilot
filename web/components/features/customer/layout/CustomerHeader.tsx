@@ -11,9 +11,9 @@ import Image from "next/image";
 
 interface CustomerHeaderProps {
   restaurantSettings: RestaurantSettings;
-  onCartClick: () => void;
-  onOrderHistoryClick: () => void;
-  cartItemCount: number;
+  onCartClick?: () => void;
+  onOrderHistoryClick?: () => void;
+  cartItemCount?: number;
   showOrderHistory?: boolean;
 }
 
@@ -21,8 +21,6 @@ export function CustomerHeader({
   restaurantSettings,
   showOrderHistory = false,
   onOrderHistoryClick,
-  onCartClick,
-  cartItemCount,
 }: CustomerHeaderProps) {
   const t = useTranslations("Common");
   //const params = useParams();
@@ -92,19 +90,6 @@ export function CustomerHeader({
               {t("order_history")}
             </Button>
           )}
-          
-          <Button 
-            className="relative"
-            onClick={onCartClick}
-            variant="outline"
-          >
-            {t("cart")}
-            {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                {cartItemCount}
-              </span>
-            )}
-          </Button>
         </div>
       </div>
     </header>

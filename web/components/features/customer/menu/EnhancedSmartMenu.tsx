@@ -329,16 +329,16 @@ export function EnhancedSmartMenu({
     selectedToppings?: Topping[], 
     notes?: string
   ) => {
-    // For now, use the existing add to cart logic
-    // TODO: Enhance to handle size, toppings, and notes properly
     console.log('Adding to cart:', { item: item.id, quantity, selectedSize, selectedToppings, notes });
     
     if (onAddToCart) {
-      onAddToCart(item as SmartMenuItem);
-    } else {
+      // If there's an external onAddToCart handler, use it for each quantity
       for (let i = 0; i < quantity; i++) {
-        addToCart(item as SmartMenuItem, 1);
+        onAddToCart(item as SmartMenuItem);
       }
+    } else {
+      // Use the cart context's addToCart with all customization options
+      addToCart(item as SmartMenuItem, quantity, selectedSize, selectedToppings, notes);
     }
   }, [onAddToCart, addToCart]);
 
@@ -350,12 +350,22 @@ export function EnhancedSmartMenu({
   const handleAddToCart = useCallback((item: SmartMenuItem) => {
     if (!canAddItems) return;
     
+    // Check if item has sizes or toppings - if so, open detail modal instead
+    const hasSizes = item.menu_item_sizes && item.menu_item_sizes.length > 0;
+    const hasToppings = item.toppings && item.toppings.length > 0;
+    
+    if (hasSizes || hasToppings) {
+      // Redirect to item detail modal for customization
+      handleItemClick(item);
+      return;
+    }
+    
     if (onAddToCart) {
       onAddToCart(item);
     } else {
       addToCart(item, 1);
     }
-  }, [canAddItems, onAddToCart, addToCart]);
+  }, [canAddItems, onAddToCart, addToCart, handleItemClick]);
 
   const handleUpdateQuantity = useCallback((itemId: string, newQty: number) => {
     if (!canAddItems) return;

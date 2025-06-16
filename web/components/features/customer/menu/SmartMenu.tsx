@@ -255,12 +255,22 @@ export function SmartMenu({
   const handleAddToCart = useCallback((item: SmartMenuItem) => {
     if (!canAddItems) return;
     
+    // Check if item has sizes or toppings - if so, redirect to detail view instead
+    const hasSizes = item.menu_item_sizes && item.menu_item_sizes.length > 0;
+    const hasToppings = item.toppings && item.toppings.length > 0;
+    
+    if (hasSizes || hasToppings) {
+      // Redirect to item detail view for customization
+      setView('menuitemdetail', { item, tableId, sessionId, tableNumber });
+      return;
+    }
+    
     if (onAddToCart) {
       onAddToCart(item);
     } else {
       addToCart(item, 1);
     }
-  }, [canAddItems, onAddToCart, addToCart]);
+  }, [canAddItems, onAddToCart, addToCart, setView, tableId, sessionId, tableNumber]);
 
   // Handle quantity updates for existing cart items
   const handleUpdateQuantity = useCallback((itemId: string, newQty: number) => {

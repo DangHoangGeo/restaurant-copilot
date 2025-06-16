@@ -109,12 +109,30 @@ export const EnhancedFoodCard = memo(function EnhancedFoodCard({
   }, [item.menu_item_sizes, item.price, t]);
 
   // Optimized event handlers
+  const handleCardClick = useCallback(() => {
+    setView("menuitemdetail", {
+      item,
+      tableId,
+      sessionId,
+      tableNumber,
+      canAddItems
+    });
+  }, [setView, item, tableId, sessionId, tableNumber, canAddItems]);
+
   const handleAdd = useCallback(() => {
     if (!canAddItems) return;
+    
+    // If item has sizes or toppings, open detail view instead of adding directly
+    if ((item.menu_item_sizes && item.menu_item_sizes.length > 0) || 
+        (item.toppings && item.toppings.length > 0)) {
+      handleCardClick();
+      return;
+    }
+    
     setIsAdding(true);
     onAdd();
     setTimeout(() => setIsAdding(false), 300);
-  }, [canAddItems, onAdd]);
+  }, [canAddItems, onAdd, item.menu_item_sizes, item.toppings, handleCardClick]);
 
   const handleDecrease = useCallback(() => {
     if (!canAddItems) return;
@@ -125,16 +143,6 @@ export const EnhancedFoodCard = memo(function EnhancedFoodCard({
     if (!canAddItems) return;
     onIncrease();
   }, [canAddItems, onIncrease]);
-
-  const handleCardClick = useCallback(() => {
-    setView("menuitemdetail", {
-      item,
-      tableId,
-      sessionId,
-      tableNumber,
-      canAddItems
-    });
-  }, [setView, item, tableId, sessionId, tableNumber, canAddItems]);
 
   const handleMouseEnter = useCallback(() => {
     if (onHover) {
@@ -194,7 +202,7 @@ export const EnhancedFoodCard = memo(function EnhancedFoodCard({
       onMouseEnter={handleMouseEnter}
       className="h-full"
     >
-      <Card className={`group h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl ${!canAddItems ? 'opacity-75' : ''} border-0 shadow-md relative`}>
+      <Card className={`group h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl ${!canAddItems ? 'opacity-75' : ''} border-0 shadow-md relative p-0`}>
         
         {/* Enhanced Badges */}
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">

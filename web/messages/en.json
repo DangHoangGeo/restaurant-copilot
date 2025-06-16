@@ -4,52 +4,6 @@
     "heroSubtitle": "All-in-one, mobile-first platform for menus, orders, bookings, staff, and analytics. Delight customers and empower your team—anywhere, anytime.",
     "cta": "Get Started Free"
   },
-  "Customer": {
-    "meta": {
-      "title": "Menu & Ordering",
-      "description": "Browse our menu and place your order easily"
-    },
-    "restaurant_not_found": "Restaurant Not Found",
-    "restaurant_not_found_message": "We couldn't find the restaurant you're looking for. Please check the URL and try again.",
-    "ai_assistant": {
-      "title": "Restaurant Assistant",
-      "open": "Open virtual assistant",
-      "close": "Close virtual assistant",
-      "placeholder": "Ask me anything about the menu...",
-      "input": "Type your message",
-      "send": "Send",
-      "suggest_popular": "What's popular here?",
-      "suggest_dietary": "Any vegetarian options?",
-      "suggest_recommendation": "What do you recommend?",
-      "suggest_recommendations": "Can you recommend something?",
-      "suggest_cart_help": "Help with my order",
-      "suggest_special_requests": "Special dietary needs",
-      "suggest_eta": "How long until my food arrives?",
-      "suggest_add_more": "I want to add more items",
-      "suggest_payment": "How do I pay?",
-      "suggest_help": "I need help"
-    },
-    "session_created": "Session Created",
-    "session_code_created": "Your session code is: {code}",
-    "session_create_error": "Error Creating Session",
-    "session_joined": "Session Joined",
-    "session_joined_success": "You've successfully joined the dining session",
-    "session_join_error": "Error Joining Session",
-    "invalid_session_code": "Invalid session code. Please try again.",
-    "try_again_later": "Please try again later",
-    "create_new_session": "Create New Session",
-    "join_existing_session": "Join Existing Session",
-    "guest_count": "Number of Guests",
-    "guest_count_description": "How many people are in your party?",
-    "cancel": "Cancel",
-    "creating": "Creating...",
-    "create_session": "Create Session",
-    "session_code": "Session Code",
-    "enter_session_code": "Enter the 6-digit code",
-    "session_code_description": "Ask your host for the 6-digit session code",
-    "joining": "Joining...",
-    "join_session": "Join Session"
-  },
   "auth": {
     "title": {
       "login": "Login",
@@ -413,6 +367,7 @@
   "Common": {
     "loading": "Loading...",
     "all_rights_reserved": "All rights reserved.",
+    "go_to_homepage": "Go to Homepage",
     "powered_by": "Powered by",
     "save": "Save",
     "cancel": "Cancel",
@@ -468,6 +423,7 @@
       "ready": "Ready",
       "served": "Served"
     },
+    "cart":"Cart",
     "view_cart_label": "View Cart",
     "order_history_label": "Order History",
     "weekdays": {
@@ -1335,10 +1291,25 @@
     }
   },
   "CustomerHome": {
-    "welcome": "Welcome to {restaurantName}",
+    "welcome_to": "Welcome to ",
     "menu_title": "Menu",
     "add_to_cart": "Add",
-    "no_menu_items": "No menu items available"
+    "no_menu_items": "No menu items available",
+    "restaurant_not_found_description": "The restaurant you are trying to access does not exist or is currently unavailable.",
+    "view_menu": "View Menu",
+    "contact_information": "Contact Information",
+    "visit_website": "Visit Website",
+    "opening_hours": "Opening Hours",
+    "quick_actions": "Quick Actions",
+    "scan_qr_code": "Scan QR Code",
+    "book_table": "Book a Table",
+    "popular":"Most Popular",
+    "view_full_menu": "View Full Menu",
+    "ai_assistant": "AI Assistant",
+    "ai_assistant_description": "Get personalized recommendations and assistance with your order",
+    "smart_recommendations": "Smart Recommendations",
+    "interactive_chat": "Interactive Chat",
+    "got_it": "Got it"
   },
   "Customer": {
     "admin_panel": {
@@ -1442,6 +1413,13 @@
       "confirm": "Confirm",
       "add_note": "Add Note",
       "edit_note": "Edit Note",
+      "note": "Note",
+      "general_instructions": "General Instructions",
+      "general_instructions_placeholder": "Any general notes for your order...",
+      "note_placeholder": "Add a note for this item...",
+      "order_info": "Order Information",
+      "order_placement_note": "Your order will be sent to the kitchen and prepared fresh for your table.",
+      "item": "Item",
       "price_each": "¥{price} each",
       "add_note_for":"Add a note for {itemName}",
       "save_note":"Save Note",
@@ -1558,12 +1536,7 @@
     "ordering_for_table": "Ordering for Table {tableId}",
     "serving_today": "Serving Today: {day}",
     "item_added_to_cart_msg": "{item} added to cart!",
-    "admin_panel_button": "Admin Panel"
-  },
-  "ai_chat": {
-    "toggle_label": "Toggle AI Chat"
-  },
-  "Customer": {
+    "admin_panel_button": "Admin Panel",
     "ai_assistant": {
       "title": "Restaurant Assistant",
       "open": "Open virtual assistant",
@@ -1608,6 +1581,9 @@
       "title": "Menu & Ordering",
       "description": "Browse our menu and place your order easily"
     }
+  },
+  "ai_chat": {
+    "toggle_label": "Toggle AI Chat"
   },
   "legal": {
     "terms": {

@@ -79,6 +79,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const tCustomer = useTranslations('CustomerHome');
   const tCommon = useTranslations('common');
   // Contextual information using the reusable helper
   const contextualInfo = useMemo(() => {
@@ -129,9 +130,9 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center p-8">
-          <h1 className="text-3xl font-bold mb-4 text-slate-800 dark:text-slate-100">{tCommon("restaurant_not_found")}</h1>
+          <h1 className="text-3xl font-bold mb-4 text-slate-800 dark:text-slate-100">{tCustomer("restaurant_not_found")}</h1>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
-            {tCommon("restaurant_not_found_description", { subdomain })}
+            {tCustomer("restaurant_not_found_description", { subdomain })}
           </p>
           <Button href="/" variant="primary" onClick={() => {}} iconLeft={null} iconRight={null}>
             {tCommon("go_to_homepage")}
@@ -319,7 +320,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
           >
-            {tCommon("welcome_to")} <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{restaurant.name}</span>
+            {tCustomer("welcome_to")} <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{restaurant.name}</span>
           </motion.h2>
 
           {/* Restaurant Description with Stagger Animation */}
@@ -355,7 +356,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                 iconLeft={MenuIcon}
                 iconRight={null}
               >
-                <span className="group-hover:mr-2 transition-all">{tCommon("view_menu")}</span>
+                <span className="group-hover:mr-2 transition-all">{tCustomer("view_menu")}</span>
                 <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all" />
               </Button>
             </motion.div>
@@ -413,7 +414,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
               whileHover={{ y: -4, scale: 1.02 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Card className="h-full bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-2 hover:border-[var(--brand-color)]/20 transition-all shadow-lg hover:shadow-xl">
+              <Card className="h-full bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 hover:border-2 hover:border-[var(--brand-color)]/20 transition-all shadow-lg hover:shadow-xl">
                 <div className="p-6">
                   <motion.h3 
                     className="text-lg font-semibold mb-4 flex items-center"
@@ -427,7 +428,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                     >
                       <Icon name={MapPin} size={20} className="mr-2 text-[var(--brand-color)]" />
                     </motion.div>
-                    {tCommon("contact_information")}
+                    {tCustomer("contact_information")}
                   </motion.h3>
                   <div className="space-y-3">
                     {restaurant.address && (
@@ -476,7 +477,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                           rel="noopener noreferrer"
                           className="text-sm hover:text-[var(--brand-color)] transition-colors"
                         >
-                          {tCommon("visit_website")}
+                          {tCustomer("visit_website")}
                         </a>
                       </motion.div>
                     )}
@@ -506,7 +507,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                     >
                       <Icon name={Clock} size={20} className="mr-2 text-[var(--brand-color)]" />
                     </motion.div>
-                    {tCommon("opening_hours")}
+                    {tCustomer("opening_hours")}
                   </motion.h3>
                   <div className="space-y-2">
                     {Object.entries(getOpeningHours() || {}).map(([day, hours]: [string, OpeningHours[string]], index) => (
@@ -552,7 +553,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                   >
                     <Icon name={QrCode} size={20} className="mr-2 text-[var(--brand-color)]" />
                   </motion.div>
-                  {tCommon("quick_actions")}
+                  {tCustomer("quick_actions")}
                 </motion.h3>
                 <div className="space-y-3">
                   <motion.div
@@ -568,7 +569,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                       iconLeft={QrCode}
                       iconRight={null}
                     >
-                      <span className="group-hover:mr-2 transition-all">{tCommon("scan_qr_code")}</span>
+                      <span className="group-hover:mr-2 transition-all">{tCustomer("scan_qr_code")}</span>
                       <Zap className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
                     </Button>
                   </motion.div>
@@ -604,7 +605,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                       iconLeft={CalendarDays}
                       iconRight={null}
                     >
-                      <span className="group-hover:mr-2 transition-all">{tCommon("book_table")}</span>
+                      <span className="group-hover:mr-2 transition-all">{tCustomer("book_table")}</span>
                       <Heart className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
                     </Button>
                   </motion.div>
@@ -686,7 +687,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                             >
                               <div className="inline-flex items-center space-x-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full text-xs">
                                 <Award className="h-3 w-3" />
-                                <span>{tCommon("popular")}</span>
+                                <span>{tCustomer("popular")}</span>
                               </div>
                             </motion.div>
                           )}
@@ -730,7 +731,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                     whileHover={{ x: '100%' }}
                     transition={{ duration: 0.6 }}
                   />
-                  <span className="relative group-hover:mr-2 transition-all">{tCommon("view_full_menu")}</span>
+                  <span className="relative group-hover:mr-2 transition-all">{tCustomer("view_full_menu")}</span>
                   <Users className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all relative" />
                 </Button>
               </motion.div>
@@ -764,23 +765,23 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
                 >
                   <Bot className="h-8 w-8 text-white" />
                 </motion.div>
-                <h3 className="text-xl font-bold">{tCommon("ai_assistant")}</h3>
+                <h3 className="text-xl font-bold">{tCustomer("ai_assistant")}</h3>
                 <p className="text-slate-600 dark:text-slate-400">
-                  {tCommon("ai_assistant_description")}
+                  {tCustomer("ai_assistant_description")}
                 </p>
                 <div className="flex items-center justify-center space-x-2 text-sm text-slate-500">
                   <Sparkles className="h-4 w-4" />
-                  <span>{tCommon("smart_recommendations")}</span>
+                  <span>{tCustomer("smart_recommendations")}</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2 text-sm text-slate-500">
                   <MessageCircle className="h-4 w-4" />
-                  <span>{tCommon("interactive_chat")}</span>
+                  <span>{tCustomer("interactive_chat")}</span>
                 </div>
                 <Button
                   onClick={() => setShowAIAssistant(false)}
                   className="w-full"
                 >
-                  {tCommon("got_it")}
+                  {tCustomer("got_it")}
                 </Button>
               </div>
             </motion.div>

@@ -89,6 +89,20 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
     router.push(`/${params.locale}/history`);
   };
 
+  // Handle order placement
+  const handlePlaceOrder = async () => {
+    try {
+      // TODO: Implement actual order placement API call
+      console.log('Placing order:', { totalCartItems, totalCartPrice });
+      
+      // For now, redirect to a success page or show confirmation
+      router.push(`/${params.locale}/order-success`);
+    } catch (error) {
+      console.error('Error placing order:', error);
+      // Handle error (show toast notification, etc.)
+    }
+  };
+
   // Show loading skeleton if restaurant settings not loaded yet
   if (isLoading) {
     return (
@@ -156,7 +170,7 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
         <FloatingCart
           count={totalCartItems}
           total={totalCartPrice}
-          onCheckout={handleCartClick}
+          onPlaceOrder={handlePlaceOrder}
           brandColor={restaurantSettings.primaryColor || "#4f46e5"}
         />
       )}

@@ -1,7 +1,7 @@
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { cn } from "@/lib/utils";
-import "../customer-theme.css";
+//import "../customer-theme.css";
 import { Providers } from "../providers"; // Assuming Providers is in web/app/providers.tsx
 import { Toaster } from "@/components/ui/toaster"; // Use our custom toaster
 import { NextIntlClientProvider } from 'next-intl';
