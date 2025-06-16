@@ -1,4 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse }    // Transform data to match frontend expectations
+    const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const employees = data?.map((emp: {
+      id: string;
+      role: string;
+      users: Array<{ id: string; email: string; name: string }>;
+      schedules: Array<{ weekday: number | null; start_time: string | null; end_time: string | null }>;
+    }) => {om "next/server";
 import { z } from "zod";
 import { getUserFromRequest, AuthUser } from "@/lib/server/getUserFromRequest";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
@@ -10,9 +17,8 @@ const createEmployeeSchema = z.object({
 });
 
 export async function GET() {
-  let user;
   try {
-    user = await getUserFromRequest();
+    const user = await getUserFromRequest();
     if (!user?.restaurantId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -37,12 +43,7 @@ export async function GET() {
 
     // Transform data to match frontend expectations
     const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const employees = data?.map((emp: {
-      id: string;
-      role: string;
-      users: Array<{ id: string; email: string; name: string }>;
-      schedules: Array<{ id: string; weekday: number | null; start_time: string | null; end_time: string | null }>;
-    }) => {
+    const employees = data?.map((emp) => {
       const shifts: Record<string, string | null> = {
         Mon: null,
         Tue: null,
@@ -53,7 +54,7 @@ export async function GET() {
         Sun: null,
       };
       
-      emp.schedules?.forEach((s) => {
+      (emp.schedules as any[])?.forEach((s: any) => {
         const day = dayMap[(s.weekday ?? 1) - 1] as keyof typeof shifts;
         if (day) {
           shifts[day] = `${s.start_time?.slice(0, 5)}-${s.end_time?.slice(0, 5)}`;
@@ -72,9 +73,8 @@ export async function GET() {
     return NextResponse.json({ employees }, { status: 200 });
   } catch (error) {
     await logger.error('employees-api-get', 'API Error in GET employees', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      restaurantId: user?.restaurantId || 'unknown'
-    }, user?.restaurantId || undefined, error instanceof Error ? error.stack : undefined);
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, undefined, error instanceof Error ? error.stack : undefined);
     return NextResponse.json(
       {
         message: "Internal server error",
