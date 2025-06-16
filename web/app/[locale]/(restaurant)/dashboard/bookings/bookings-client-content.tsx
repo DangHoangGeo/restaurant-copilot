@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Eye, CalendarX, Loader2 } from 'lucide-react' // Added CalendarX for empty state, Loader2
+import { Eye, CalendarX, Loader2, AlertTriangle } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { FEATURE_FLAGS } from '@/config/feature-flags'
-import { ComingSoon } from '@/components/common/coming-soon' // Import ComingSoon
-import { toast } from 'sonner'; // Import toast
-
+import { ComingSoon } from '@/components/common/coming-soon'
+import { toast } from 'sonner'
 
 interface PreOrderItem {
   itemId: string
@@ -27,21 +27,91 @@ interface Booking {
   preOrderItems: PreOrderItem[]
 }
 
-interface BookingsClientContentProps {
-  initialBookings: Booking[];
+import { BookingsSkeleton } from '@/components/ui/skeletons';
+
+// Error state component
+function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
+  const t = useTranslations("AdminBookings");
+  
+  return (
+    <Alert variant="destructive" className="mb-6">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertDescription className="flex items-center justify-between">
+        <span>{error}</span>
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          {t('retry')}
+        </Button>
+      </AlertDescription>
+    </Alert>
+  )
 }
 
-export function BookingsClientContent({ initialBookings }: BookingsClientContentProps) {
+export function BookingsClientContent() {
   const t = useTranslations("AdminBookings");
   const tCommon = useTranslations("Common");
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings)
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
+  const loadBookings = useCallback(async () => {
+    setError(null);
+    try {
+      const response = await fetch('/api/v1/owner/bookings', {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      // Transform the data to match our interface
+      const transformedBookings = data.bookings?.map((b: {
+        id: string;
+        customer_name: string;
+        customer_contact?: string;
+        contact_info?: string;
+        booking_date: string;
+        booking_time: string;
+        party_size: number;
+        status: string;
+        preorder_items?: PreOrderItem[];
+        pre_order_items?: PreOrderItem[];
+      }) => ({
+        id: b.id,
+        customerName: b.customer_name,
+        contact: b.customer_contact || b.contact_info,
+        date: new Date(b.booking_date).toLocaleDateString(),
+        time: b.booking_time,
+        partySize: b.party_size,
+        status: b.status,
+        preOrderItems: b.preorder_items || b.pre_order_items || []
+      })) || [];
+      
+      setBookings(transformedBookings);
+    } catch (err) {
+      console.error('Error fetching bookings:', err);
+      setError(err instanceof Error ? err.message : t('errors.fetch_failed'));
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    loadBookings();
+  }, [loadBookings]);
+
   if (!FEATURE_FLAGS.tableBooking) {
     return <ComingSoon featureName="title" />;
   }
+
+  if (isInitialLoading) return <BookingsSkeleton />;
+  if (error) return <ErrorState error={error} onRetry={loadBookings} />;
 
   const handleViewDetails = (booking: Booking) => {
     setSelectedBooking(booking)
@@ -51,13 +121,13 @@ export function BookingsClientContent({ initialBookings }: BookingsClientContent
   const handleUpdateStatus = async (bookingId: string, status: 'confirmed' | 'canceled') => {
     setIsUpdatingStatus(true);
     try {
-      const res = await fetch(`/api/v1/bookings/${bookingId}?bookingId=${bookingId}`, {
+      const res = await fetch(`/api/v1/owner/bookings/${bookingId}?bookingId=${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
       });
       if (res.ok) {
-        const updatedBooking = await res.json(); // Assuming API returns updated booking
+        const updatedBooking = await res.json();
         setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: updatedBooking.booking.status } : b));
         if (selectedBooking?.id === bookingId) setSelectedBooking({ ...selectedBooking, status: updatedBooking.booking.status });
         toast.success(t('notifications.update_success'));
@@ -84,6 +154,12 @@ export function BookingsClientContent({ initialBookings }: BookingsClientContent
 
   return (
     <div>
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+          {t("title")}
+        </h1>
+      </header>
+
       {bookings.length === 0 ? (
         <Card className="p-8 text-center">
           <CalendarX className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500" />
@@ -138,9 +214,7 @@ export function BookingsClientContent({ initialBookings }: BookingsClientContent
               <p><strong>{t('table.date_time')}:</strong> {selectedBooking.date} @ {selectedBooking.time}</p>
               <p><strong>{t('table.party_size')}:</strong> {selectedBooking.partySize}</p>
               <p><strong>{t('table.status')}:</strong> {statusBadge(selectedBooking.status)}</p>
-              {/* TODO: Display preOrderItems if available and structure is known */}
               {selectedBooking.preOrderItems?.length === 0 && <p className="text-sm mt-2 text-slate-500">{t('no_preorder_items')}</p>}
-
             </div>
           )}
            <DialogFooter className="mt-6">

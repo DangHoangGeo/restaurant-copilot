@@ -50,10 +50,10 @@ The frontend is built using Next.js and React, with Zustand for state management
 The backend API is built using Next.js API routes. It uses Supabase for database interactions, with `supabaseAdmin` client for direct database access, bypassing RLS where necessary for administrative tasks. User authentication and restaurant ownership are checked for relevant operations.
 
 - **Categories:**
-    - `POST /api/v1/categories` (`web/app/api/v1/categories/route.ts`): Creates a new category. Requires authenticated user with a `restaurantId`. Validates input using Zod schema.
-    - `GET /api/v1/categories?restaurantId={id}` (`web/app/api/v1/categories/route.ts`): Fetches all categories for a given `restaurantId`, including their menu items, toppings, and sizes, ordered by position.
-    - `PUT /api/v1/categories/{categoryId}` (`web/app/api/v1/categories/[categoryId]/route.ts`): Updates an existing category (name, position). Checks if category belongs to user's restaurant.
-    - `DELETE /api/v1/categories/{categoryId}` (`web/app/api/v1/categories/[categoryId]/route.ts`): Deletes a category. Checks if category belongs to user's restaurant and if it contains any menu items (prevents deletion if not empty).
+    - `POST /api/v1/owner/categories` (`web/app/api/v1/owner/categories/route.ts`): Creates a new category. Requires authenticated user with a `restaurantId`. Validates input using Zod schema.
+    - `GET /api/v1/owner/categories?restaurantId={id}` (`web/app/api/v1/owner/categories/route.ts`): Fetches all categories for a given `restaurantId`, including their menu items, toppings, and sizes, ordered by position.
+    - `PUT /api/v1/owner/categories/{categoryId}` (`web/app/api/v1/owner/categories/[categoryId]/route.ts`): Updates an existing category (name, position). Checks if category belongs to user's restaurant.
+    - `DELETE /api/v1/owner/categories/{categoryId}` (`web/app/api/v1/owner/categories/[categoryId]/route.ts`): Deletes a category. Checks if category belongs to user's restaurant and if it contains any menu items (prevents deletion if not empty).
 - **Menu Items:**
     - `POST /api/v1/menu-items` (`web/app/api/v1/menu-items/route.ts`): Creates a new menu item. Requires authenticated user with `restaurantId`. Validates input (including toppings and sizes) using Zod schema. Verifies category ownership. Inserts item, toppings, and sizes in a transaction-like manner.
     - `GET /api/v1/menu-items?restaurantId={id}` (`web/app/api/v1/menu-items/route.ts`): Fetches all menu items for a restaurant. (Note: The client seems to fetch categories which then include items, this endpoint might be for a different view or admin purpose).
@@ -110,8 +110,8 @@ Based on the API route handlers and data structures, the following Supabase tabl
 - `web/components/features/admin/menu/CategoryForm.tsx` (Note: an older/alternative version, primary logic is in `menu-client-content.tsx`)
 
 **API Routes:**
-- `web/app/api/v1/categories/route.ts`
-- `web/app/api/v1/categories/[categoryId]/route.ts`
+- `web/app/api/v1/owner/categories/route.ts`
+- `web/app/api/v1/owner/categories/[categoryId]/route.ts`
 - `web/app/api/v1/menu-items/route.ts`
 - `web/app/api/v1/menu-items/[itemId]/route.ts`
 - `web/app/api/v1/menu/reorder/route.ts`
@@ -182,7 +182,7 @@ Let's say we want to add a "spice_level" field (e.g., an integer from 0 to 5).
 5.  **Update API Route - Update (`web/app/api/v1/menu-items/[itemId]/route.ts` - PUT):**
     -   **Zod Schema**: Add `spice_level: z.number().int().min(0).max(5).optional(),` to `menuItemUpdateSchema`.
     -   **Data Handling**: The existing structure `...menuItemUpdateData` should pick up `spice_level` if it's present in `validatedData.data` and pass it to the Supabase update.
-6.  **Update API Route - Get/List (e.g., `web/app/api/v1/categories/route.ts` - GET, which fetches items):**
+6.  **Update API Route - Get/List (e.g., `web/app/api/v1/owner/categories/route.ts` - GET, which fetches items):**
     -   Ensure `spice_level` is included in the `select` query for `menu_items` if it's not already covered by `*`.
         ```sql
         menu_items (

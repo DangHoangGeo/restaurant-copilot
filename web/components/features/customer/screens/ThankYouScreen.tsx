@@ -82,7 +82,7 @@ export function ThankYouScreen({
           params.append('sessionId', sessionId);
         }
   
-        const response = await fetch(`/api/v1/orders/session-info?${params.toString()}`); // Ensure params is stringified
+        const response = await fetch(`/api/v1/customer/orders/session-info?${params.toString()}`); // Ensure params is stringified
         const data = await response.json();
         if (data.success) {
           const fetchedOrder = data.orders || null;

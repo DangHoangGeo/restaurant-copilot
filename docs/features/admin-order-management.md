@@ -47,8 +47,8 @@ The backend API is built with Next.js API routes and interacts with a Supabase d
     -   `PATCH /api/v1/orders/[orderId]/status` (`web/app/api/v1/orders/[orderId]/status/route.ts`): Updates the status of an entire order (e.g., "new", "serving", "completed", "canceled").
     -   `POST /api/v1/orders/create` (`web/app/api/v1/orders/create/route.ts`): An alternative endpoint for creating/adding items to an order, seemingly based on a `sessionId`. It handles more complex item validation including sizes and toppings. This might be intended for customer-facing order creation rather than admin panel usage.
 -   **Order Items:**
-    -   `PATCH /api/v1/order-items/[itemId]/notes` (`web/app/api/v1/order-items/[itemId]/notes/route.ts`): Updates the notes for a specific order item.
-    -   `PATCH /api/v1/order-items/[itemId]/status` (`web/app/api/v1/order-items/[itemId]/status/route.ts`): Updates the status of a specific order item (e.g., "ordered", "preparing", "ready", "served").
+    -   `PATCH /api/v1/owner/orders/order-items/[itemId]/notes` (`web/app/api/v1/owner/orders/order-items/[itemId]/notes/route.ts`): Updates the notes for a specific order item.
+    -   `PATCH /api/v1/owner/orders/order-items/[itemId]/status` (`web/app/api/v1/owner/orders/order-items/[itemId]/status/route.ts`): Updates the status of a specific order item (e.g., "ordered", "preparing", "ready", "served").
 
 ### Data Structures & Types
 
@@ -107,8 +107,8 @@ The backend API is built with Next.js API routes and interacts with a Supabase d
 -   `web/app/api/v1/orders/[orderId]/checkout/route.ts`
 -   `web/app/api/v1/orders/[orderId]/items/route.ts`
 -   `web/app/api/v1/orders/[orderId]/status/route.ts`
--   `web/app/api/v1/order-items/[itemId]/notes/route.ts`
--   `web/app/api/v1/order-items/[itemId]/status/route.ts`
+-   `web/app/api/v1/owner/orders/order-items/[itemId]/notes/route.ts`
+-   `web/app/api/v1/owner/orders/order-items/[itemId]/status/route.ts`
 
 **Shared Types/Interfaces:**
 -   Types are primarily defined within `web/app/[locale]/dashboard/orders/page.tsx`.

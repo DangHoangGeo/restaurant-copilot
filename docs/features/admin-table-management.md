@@ -22,15 +22,15 @@ The frontend is built using Next.js and React, with a server component for initi
     -   **Add/Edit Table**:
         -   Uses `react-hook-form` and `zodResolver` with a Zod schema (`getTableSchema`) for validating table data (name, capacity, status, isOutdoor, isAccessible, notes, qrCode URL).
         -   A modal is used for both creating new tables and editing existing ones.
-        -   API calls (`POST /api/v1/tables` for create, `PATCH /api/v1/tables/{tableId}` for update) are made to persist changes.
+        -   API calls (`POST /api/v1/owner/tables` for create, `PATCH /api/v1/owner/tables/{tableId}` for update) are made to persist changes.
     -   **Bulk Add Tables**:
         -   Provides a modal and form (validated by `getBulkAddTableSchema`) for adding multiple tables at once (specifying count, name prefix, start index, and common properties like capacity and status).
-        -   The actual bulk creation logic (`handleBulkAddSubmit`) involves iterating and calling the single table creation API endpoint (`POST /api/v1/tables`) for each table. (Note: This function was noted as commented out in the source, suggesting it might be pending full implementation or review).
+        -   The actual bulk creation logic (`handleBulkAddSubmit`) involves iterating and calling the single table creation API endpoint (`POST /api/v1/owner/tables`) for each table. (Note: This function was noted as commented out in the source, suggesting it might be pending full implementation or review).
     -   **QR Code Generation**:
         -   For each table, an admin can generate/view a QR code.
         -   The QR code URL is constructed dynamically: `https://{restaurant_name_slug}.{NEXT_PUBLIC_ROOT_DOMAIN}/{locale}/menu?code={table.qr_code_value}`.
         -   When an admin clicks to generate/download the QR code:
-            1.  The constructed URL is first saved to the `qr_code` field of the specific table via a `PATCH` request to `/api/v1/tables/{tableId}`.
+            1.  The constructed URL is first saved to the `qr_code` field of the specific table via a `PATCH` request to `/api/v1/owner/tables/{tableId}`.
             2.  The QR code is displayed in a modal using the `<QRCodeDisplay />` component.
             3.  The `html-to-image` library is used to convert the displayed QR code (a `div` element) into a PNG image, which is then triggered for download by the admin.
     -   Uses `toast` notifications from `sonner` for user feedback.
@@ -39,21 +39,21 @@ The frontend is built using Next.js and React, with a server component for initi
 
 The backend API is built with Next.js API routes and uses Supabase for database operations. Authentication (`getUserFromRequest`) is used to ensure operations are tied to the admin's `restaurantId`.
 
--   **Get All Tables (`GET /api/v1/tables`):**
-    -   File: `web/app/api/v1/tables/route.ts`
+-   **Get All Tables (`GET /api/v1/owner/tables`):**
+    -   File: `web/app/api/v1/owner/tables/route.ts`
     -   Fetches all tables for a given `restaurantId` (passed as a query parameter).
     -   Returns fields including `id, name, position_x, position_y, status, capacity, is_outdoor, is_accessible, notes, qr_code`.
--   **Create Table (`POST /api/v1/tables`):**
-    -   File: `web/app/api/v1/tables/route.ts`
+-   **Create Table (`POST /api/v1/owner/tables`):**
+    -   File: `web/app/api/v1/owner/tables/route.ts`
     -   Creates a new table record associated with the admin's `restaurantId`.
     -   Validates input against `tableSchema` (name, capacity, status, isOutdoor, isAccessible, notes, qrCode).
--   **Update Table (`PATCH /api/v1/tables/{tableId}`):**
-    -   File: `web/app/api/v1/tables/[tableId]/route.ts`
+-   **Update Table (`PATCH /api/v1/owner/tables/{tableId}`):**
+    -   File: `web/app/api/v1/owner/tables/[tableId]/route.ts`
     -   Updates specified fields of an existing table.
     -   Validates input against `tableSchema` (all fields optional for update).
     -   Ensures the table belongs to the admin's `restaurantId`.
--   **Delete Table (`DELETE /api/v1/tables/{tableId}`):**
-    -   File: `web/app/api/v1/tables/[tableId]/route.ts`
+-   **Delete Table (`DELETE /api/v1/owner/tables/{tableId}`):**
+    -   File: `web/app/api/v1/owner/tables/[tableId]/route.ts`
     -   Deletes a table by its `tableId`.
     -   Ensures the table belongs to the admin's `restaurantId`.
 
@@ -102,8 +102,8 @@ The backend API is built with Next.js API routes and uses Supabase for database 
 -   `web/components/ui/qr-code-display.tsx` (assumed path for the QR code rendering component)
 
 **API Routes:**
--   `web/app/api/v1/tables/route.ts` (GET all, POST new table)
--   `web/app/api/v1/tables/[tableId]/route.ts` (PATCH update, DELETE table)
+-   `web/app/api/v1/owner/tables/route.ts` (GET all, POST new table)
+-   `web/app/api/v1/owner/tables/[tableId]/route.ts` (PATCH update, DELETE table)
 
 **Shared Types:**
 -   `Table` type defined in `web/app/[locale]/dashboard/tables/page.tsx`.
@@ -145,7 +145,7 @@ Suppose we want to add a "section" property (e.g., "Patio", "Main Dining", "Bar"
 4.  **Update Zod Schema (Frontend: `web/app/[locale]/dashboard/tables/tables-client-content.tsx`):**
     -   Add `section: z.string().max(50, t('section_max_length', { maxLength: 50 })).optional().nullable(),` to `getTableSchema`.
     -   Add translations for `section_max_length`.
-5.  **Update Zod Schema (Backend API: `web/app/api/v1/tables/route.ts` and `web/app/api/v1/tables/[tableId]/route.ts`):**
+5.  **Update Zod Schema (Backend API: `web/app/api/v1/owner/tables/route.ts` and `web/app/api/v1/owner/tables/[tableId]/route.ts`):**
     -   Add `section: z.string().max(50).optional().nullable(),` to the `tableSchema` in both route files (for POST and PATCH).
 6.  **Update Frontend Form (`web/app/[locale]/dashboard/tables/tables-client-content.tsx`):**
     -   **Default Value**: Add `section: table?.section ?? null,` in `handleOpenTableModal` when resetting the form for editing, and `section: null,` for new tables.
@@ -166,13 +166,13 @@ Suppose we want to add a "section" property (e.g., "Patio", "Main Dining", "Bar"
         />
         ```
     -   **Localization**: Add translations for `AdminTables.section_label` and `AdminTables.section_placeholder`.
-7.  **Update API - Create (`web/app/api/v1/tables/route.ts` - POST):**
+7.  **Update API - Create (`web/app/api/v1/owner/tables/route.ts` - POST):**
     -   Destructure `section` from `validated.data`.
     -   Add `if (section !== undefined) insertData.section = section;` before inserting.
-8.  **Update API - Update (`web/app/api/v1/tables/[tableId]/route.ts` - PATCH):**
+8.  **Update API - Update (`web/app/api/v1/owner/tables/[tableId]/route.ts` - PATCH):**
     -   Destructure `section` from `validated.data`.
     -   Add `if (section !== undefined) updateData.section = section;` to the `updateData` object.
-9.  **Update API - Get (`web/app/api/v1/tables/route.ts` - GET):**
+9.  **Update API - Get (`web/app/api/v1/owner/tables/route.ts` - GET):**
     -   Ensure `section` is included in the `select` statement (e.g., `select('..., section')`).
 10. **Display Section (Frontend: `web/app/[locale]/dashboard/tables/tables-client-content.tsx`):**
     -   In the table card display, add `<p>Section: {table.section}</p>` if `table.section` exists.

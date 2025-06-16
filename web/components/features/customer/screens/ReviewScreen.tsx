@@ -51,7 +51,7 @@ export function ReviewScreen({
       // Simulate API call
       console.log("Submitting review:", { orderId, rating, comment });
       await new Promise(resolve => setTimeout(resolve, 1000));
-      // const response = await fetch('/api/v1/reviews/submit', {
+      // const response = await fetch('/api/v1/customer/reviews/submit', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify({ orderId, rating, comment, items: viewProps?.items }),

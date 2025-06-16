@@ -45,7 +45,7 @@ export function CategoryForm({ initialData, locale }: CategoryFormProps) {
     try {
       let response;
       if (initialData?.id) { // Editing
-        response = await fetch(`/api/v1/categories/${initialData.id}`, {
+        response = await fetch(`/api/v1/owner/categories/${initialData.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export function CategoryForm({ initialData, locale }: CategoryFormProps) {
           body: JSON.stringify(data),
         });
       } else { // Creating
-        response = await fetch('/api/v1/categories', {
+        response = await fetch('/api/v1/owner/categories', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

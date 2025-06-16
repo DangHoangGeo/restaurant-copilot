@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle } from 'lucide-react';
+import { MenuSkeleton } from '@/components/ui/skeletons';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
@@ -15,10 +16,10 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { StarRating } from '@/components/ui/star-rating';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 import { getLocalizedText } from '@/lib/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,10 +39,8 @@ interface LocalizedText {
   name_vi?: string;
 }*/
 
-interface MenuClientContentProps {
-  initialData: Category[];
-  error: string | null;
-}
+// Remove props interface - component will be self-contained
+// interface MenuClientContentProps removed
 
 // Zod Schemas for validation
 const toppingSchema = z.object({
@@ -306,9 +305,9 @@ function CategoryModal({ isOpen, onClose, categoryForm, onSubmit, isLoading, t, 
 }
 
 
-export function MenuClientContent({ initialData, error }: MenuClientContentProps) {
+export function MenuClientContent() {
   const t = useTranslations('AdminMenu');
-  // const tCommon = useTranslations('Common'); // Removed
+  const tCommon = useTranslations('Common');
   const tValidation = useTranslations('AdminMenu.validation');
   const params = useParams();
   const locale = (params.locale as string) || 'en';
@@ -319,18 +318,63 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   const [menuData, setMenuData] = useState<Category[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  // const [editingCategory, setEditingCategory] = useState<CategoryFormData | null>(null); // Removed
-  // const [editingItem, setEditingItem] = useState<Partial<MenuItemFormData> | null>(null); // Removed
-  // const [selectedCategoryIdForItem, setSelectedCategoryIdForItem] = useState<string | null>(null); // Removed
-  // const [imageFile, setImageFile] = useState<File | null>(null); // Removed
-  // const [imagePreview, setImagePreview] = useState<string | null>(null); // Not used with MenuItemForm
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const router = useRouter();
   const supabase = createClient();
 
   // Get owner's preferred language from locale
   const ownerLanguage = (locale === 'ja' ? 'ja' : locale === 'vi' ? 'vi' : 'en') as 'en' | 'ja' | 'vi';
+
+  // Load data on component mount
+  useEffect(() => {
+    const loadMenuData = async () => {
+      try {
+        setIsInitialLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/v1/owner/categories', {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Include cookies for authentication
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to fetch categories');
+        }
+
+        const { categories } = await response.json();
+        setMenuData(categories || []);
+      } catch (error) {
+        console.error('Error loading menu data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load menu data');
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    loadMenuData();
+  }, []);
+
+  // Reload data after mutations
+  const reloadData = async () => {
+    try {
+      const response = await fetch('/api/v1/owner/categories', {
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const { categories } = await response.json();
+        setMenuData(categories || []);
+      }
+    } catch (error) {
+      console.error('Error reloading data:', error);
+    }
+  };
 
   // Translation function
   const handleTranslate = async (text: string, field: string, context: 'item' | 'topping' | 'category') => {
@@ -395,8 +439,8 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   });
 
   useEffect(() => {
-    setMenuData(initialData || []);
-  }, [initialData]);
+    // Remove this effect since we're now loading data on mount
+  }, []);
 
   const handleOpenCategoryModal = (categoryData: CategoryFormData | null = null) => {
     if (categoryData) {
@@ -438,7 +482,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
     setIsLoading(true);
     try {
       const method = data.id ? 'PUT' : 'POST';
-      const url = data.id ? `/api/v1/categories/${data.id}` : '/api/v1/categories';
+      const url = data.id ? `/api/v1/owner/categories/${data.id}` : '/api/v1/owner/categories';
       
       // Ensure position is a number if not already
       const payload = { ...data };
@@ -460,7 +504,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
 
       toast.success(data.id ? t('category.update_success') : t('category.create_success'));
       setIsCategoryModalOpen(false);
-      router.refresh();
+      await reloadData();
     } catch (error) {
       console.error('Error saving category:', error);
       toast.error(t('category.save_error'));
@@ -472,7 +516,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   const handleDeleteCategory = async (categoryId: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/v1/categories/${categoryId}`, {
+      const response = await fetch(`/api/v1/owner/categories/${categoryId}`, {
         method: 'DELETE',
       });
 
@@ -481,7 +525,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         throw new Error(errorData.message || t('category.delete_error_fallback'));
       }
       toast.success(t('category.delete_success'));
-      router.refresh();
+      await reloadData();
     } catch (error) {
       console.error('Error deleting category:', error);
       toast.error(error instanceof Error ? error.message : t('category.delete_error'));
@@ -520,7 +564,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       }
       
       const method = data.id ? 'PUT' : 'POST';
-      const url = data.id ? `/api/v1/menu-items/${data.id}` : '/api/v1/menu-items';
+      const url = data.id ? `/api/v1/owner/menu/menu-items/${data.id}` : '/api/v1/owner/menu/menu-items';
 
       //const { imageFile, ...itemPayloadDb } = data; // Exclude imageFile from DB payload
       const {...itemPayloadDb } = data;
@@ -557,7 +601,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       toast.success(data.id ? t('item.update_success') : t('item.create_success'));
       setIsItemModalOpen(false);
       itemForm.reset(); 
-      router.refresh();
+      await reloadData();
     } catch (error) {
       console.error('Error saving menu item:', error);
       toast.error(error instanceof Error ? error.message : t('item.save_error'));
@@ -569,13 +613,13 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   const handleDeleteItem = async (itemId: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/v1/menu-items/${itemId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/v1/owner/menu/menu-items/${itemId}`, { method: 'DELETE' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete menu item');
       }
       toast.success(t('item.delete_success'));
-      router.refresh();
+      await reloadData();
     } catch (error) {
       console.error('Error deleting menu item:', error);
       toast.error(t('item.delete_error'));
@@ -602,20 +646,20 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         for (let i = 0; i < reorderedCategories.length; i++) {
           const category = reorderedCategories[i];
           if (category.position !== i) { // Only update if position actually changed
-            await fetch(`/api/v1/categories/${category.id}`, {
+            await fetch(`/api/v1/owner/categories/${category.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ position: i }),
             });
           }
         }
-        toast.success(t('category.reorder_success')); // Add this translation key
-        router.refresh(); // Refresh to confirm, though local state is updated
+        toast.success(t('category.reorder_success'));
+        await reloadData(); // Refresh to confirm, though local state is updated
       } catch (error) {
         console.error('Error reordering categories:', error);
         toast.error(t('category.reorder_error')); // Add this translation key
-        // Potentially revert state or rely on router.refresh()
-        setMenuData(initialData || []); // Revert to initial on error
+        // Potentially revert state or rely on reloadData()
+        setMenuData([]); // Revert to empty on error
       } finally {
         setIsLoading(false);
       }
@@ -647,7 +691,7 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
       setIsLoading(true);
       try {
         const itemToUpdate = destCategory.menu_items[destination.index];
-         await fetch(`/api/v1/menu-items/${itemToUpdate.id}`, {
+         await fetch(`/api/v1/owner/menu/menu-items/${itemToUpdate.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -660,12 +704,12 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         // This simplified version only updates the moved item. A full solution might re-update all items in affected categories.
         // For now, we rely on router.refresh() to get fully consistent positions from backend if needed.
 
-        toast.success(t('item.reorder_success')); // Add this translation key
-        router.refresh();
+        toast.success(t('item.reorder_success'));
+        await reloadData();
       } catch (error) {
         console.error('Error reordering menu item:', error);
         toast.error(t('item.reorder_error')); // Add this translation key
-        setMenuData(initialData || []); // Revert
+        setMenuData([]); // Revert on error
       } finally {
         setIsLoading(false);
       }
@@ -682,6 +726,29 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
     );
   }
   
+  // Show loading skeleton during initial load
+  if (isInitialLoading) {
+    return <MenuSkeleton />;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <>
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+            {t("title")}
+          </h1>
+        </header>
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{tCommon("errors.fetchErrorTitle")}</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </>
+    );
+  }
+
   // TODO: Add a proper loading state UI, perhaps a spinner overlay or skeleton loaders.
   if (isLoading && menuData.length === 0) {
       return (
@@ -697,6 +764,11 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   if (!error && menuData.length === 0) {
     return (
       <>
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+            {t("title")}
+          </h1>
+        </header>
         <div className="text-center py-12">
           <MenuIcon className="mx-auto h-12 w-12 text-slate-400" />
           <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('empty_state.no_categories_title')}</h3>
@@ -725,17 +797,23 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
   }
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div>
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
-          <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
-            {t('title')}
-          </h2>
-          <Button onClick={() => handleOpenCategoryModal()}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {t('add_category')}
-          </Button>
-        </div>
+    <>
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+          {t("title")}
+        </h1>
+      </header>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div>
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
+            <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
+              {t('title')}
+            </h2>
+            <Button onClick={() => handleOpenCategoryModal()}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('add_category')}
+            </Button>
+          </div>
 
         <Droppable droppableId="all-categories" type="CATEGORY">
           {(provided) => (
@@ -955,5 +1033,6 @@ export function MenuClientContent({ initialData, error }: MenuClientContentProps
         </DialogContent>
       </Dialog>
     </DragDropContext>
+    </>
   );
 }
