@@ -76,7 +76,7 @@ export function MenuPageClient({
     <EnhancedSmartMenu
       locale={locale}
       brandColor="#3b82f6" // Default brand color, can be customized
-      canAddItems={true}
+      canAddItems={true}   // Todo: Implement logic to determine if items can be added
       setView={handleSetView}
       tableId={tableId}
       sessionId={sessionId}

@@ -265,8 +265,8 @@ const responses = {
 #### Step 3: Implement Core Pages (Week 2-3)
 1. ✅ Create menu browsing page (`/menu`)
 2. ✅ Implement item detail modal with customization (sizes, toppings, quantity, notes)
-3. 🆕 Create cart page (`/cart`)
-4. 🆕 Add order confirmation page (`/order/[orderId]`)
+3. ✅ Create cart
+4. Implement placing order
 
 #### Step 4: Order Management (Week 3-4)
 1. 🆕 Create order history page (`/history`)
@@ -299,8 +299,8 @@ const responses = {
 - Centralize API calls to trim fields (defer sizes/toppings until detail view)
 
 ### Phase 3: Order & Management
-- Build Cart & Checkout pages with real-time state updates and validation
-- Create Order Confirmation and History pages with live status updates
+- Build Cart & Checkout pages with real-time state updates and validation and Order Confirmation
+- Create  History pages with live status updates
 - Code-split detail views and defer heavy data until needed (sizes, toppings)
 - Apply theme tokens and ensure accessibility (ARIA, keyboard nav) across pages
 

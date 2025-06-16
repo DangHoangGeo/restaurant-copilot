@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CartProvider, useCart } from "../CartContext";
+import type { CartItem } from "../CartContext";
 import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";
 import { FloatingCart } from "../FloatingCart";
@@ -19,7 +20,7 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { totalCartItems, totalCartPrice } = useCart();
+  const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();
 
   const [restaurantSettings, setRestaurantSettings] = useState<RestaurantSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,15 +92,52 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
 
   // Handle order placement
   const handlePlaceOrder = async () => {
+    if (!sessionId) {
+      console.error('No session ID available for order placement');
+      // TODO: Show error toast or redirect to session creation
+      return;
+    }
+
     try {
-      // TODO: Implement actual order placement API call
-      console.log('Placing order:', { totalCartItems, totalCartPrice });
-      
-      // For now, redirect to a success page or show confirmation
-      router.push(`/${params.locale}/order-success`);
+      // Convert cart items to API format
+      const orderItems = cart.map((cartItem: CartItem) => ({
+        menuItemId: cartItem.itemId,
+        quantity: cartItem.qty,
+        notes: cartItem.notes || undefined,
+        menu_item_size_id: cartItem.selectedSize?.id || undefined,
+        topping_ids: cartItem.selectedToppings?.map((t) => t.id) || undefined,
+      }));
+
+      const response = await fetch('/api/v1/customer/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId,
+          items: orderItems,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to place order');
+      }
+
+      if (data.success) {
+        // Clear the cart after successful order
+        clearCart();
+        
+        // Redirect to order confirmation page
+        router.push(`/${params.locale}/order/${data.orderId}`);
+      } else {
+        throw new Error(data.error || 'Order placement failed');
+      }
     } catch (error) {
       console.error('Error placing order:', error);
-      // Handle error (show toast notification, etc.)
+      // TODO: Show error toast notification
+      // For now, just log the error
     }
   };
 
