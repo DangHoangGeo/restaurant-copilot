@@ -122,7 +122,7 @@ On the web side (Next.js), you typically determine “which restaurant” by rea
    Whenever your server-side code (API route or page) needs the UUID, call a helper:
 
    ```ts
-   import { supabaseAdmin } from "../lib/supabaseAdmin";
+   import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
    export async function getCurrentRestaurantId(req) {
      const subdomain = req.nextUrl.searchParams.get("restaurant");

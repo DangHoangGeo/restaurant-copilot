@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
-import { getRestaurantIdFromSubdomain } from "../../../../../lib/server/restaurant-settings";
-import { getSubdomainFromHost } from "../../../../../lib/utils";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getRestaurantIdFromSubdomain } from "@/lib/server/restaurant-settings";
+import { getSubdomainFromHost } from "@/lib/utils";
 import { z } from "zod";
 
 const reviewSchema = z.object({
