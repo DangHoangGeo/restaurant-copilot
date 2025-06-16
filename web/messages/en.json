@@ -4,6 +4,52 @@
     "heroSubtitle": "All-in-one, mobile-first platform for menus, orders, bookings, staff, and analytics. Delight customers and empower your team—anywhere, anytime.",
     "cta": "Get Started Free"
   },
+  "Customer": {
+    "meta": {
+      "title": "Menu & Ordering",
+      "description": "Browse our menu and place your order easily"
+    },
+    "restaurant_not_found": "Restaurant Not Found",
+    "restaurant_not_found_message": "We couldn't find the restaurant you're looking for. Please check the URL and try again.",
+    "ai_assistant": {
+      "title": "Restaurant Assistant",
+      "open": "Open virtual assistant",
+      "close": "Close virtual assistant",
+      "placeholder": "Ask me anything about the menu...",
+      "input": "Type your message",
+      "send": "Send",
+      "suggest_popular": "What's popular here?",
+      "suggest_dietary": "Any vegetarian options?",
+      "suggest_recommendation": "What do you recommend?",
+      "suggest_recommendations": "Can you recommend something?",
+      "suggest_cart_help": "Help with my order",
+      "suggest_special_requests": "Special dietary needs",
+      "suggest_eta": "How long until my food arrives?",
+      "suggest_add_more": "I want to add more items",
+      "suggest_payment": "How do I pay?",
+      "suggest_help": "I need help"
+    },
+    "session_created": "Session Created",
+    "session_code_created": "Your session code is: {code}",
+    "session_create_error": "Error Creating Session",
+    "session_joined": "Session Joined",
+    "session_joined_success": "You've successfully joined the dining session",
+    "session_join_error": "Error Joining Session",
+    "invalid_session_code": "Invalid session code. Please try again.",
+    "try_again_later": "Please try again later",
+    "create_new_session": "Create New Session",
+    "join_existing_session": "Join Existing Session",
+    "guest_count": "Number of Guests",
+    "guest_count_description": "How many people are in your party?",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create_session": "Create Session",
+    "session_code": "Session Code",
+    "enter_session_code": "Enter the 6-digit code",
+    "session_code_description": "Ask your host for the 6-digit session code",
+    "joining": "Joining...",
+    "join_session": "Join Session"
+  },
   "auth": {
     "title": {
       "login": "Login",
@@ -1516,6 +1562,52 @@
   },
   "ai_chat": {
     "toggle_label": "Toggle AI Chat"
+  },
+  "Customer": {
+    "ai_assistant": {
+      "title": "Restaurant Assistant",
+      "open": "Open virtual assistant",
+      "close": "Close virtual assistant",
+      "placeholder": "Ask me anything about the menu...",
+      "input": "Type your message",
+      "send": "Send",
+      "suggest_popular": "What's popular here?",
+      "suggest_dietary": "Any vegetarian options?",
+      "suggest_recommendation": "What do you recommend?",
+      "suggest_recommendations": "Can you recommend something?",
+      "suggest_cart_help": "Help with my order",
+      "suggest_special_requests": "Special dietary needs",
+      "suggest_eta": "How long until my food arrives?",
+      "suggest_add_more": "I want to add more items",
+      "suggest_payment": "How do I pay?",
+      "suggest_help": "I need help"
+    },
+    "session_created": "Session Created",
+    "session_code_created": "Your session code is: {code}",
+    "session_create_error": "Error Creating Session",
+    "session_joined": "Session Joined",
+    "session_joined_success": "You've successfully joined the dining session",
+    "session_join_error": "Error Joining Session",
+    "invalid_session_code": "Invalid session code. Please try again.",
+    "try_again_later": "Please try again later",
+    "create_new_session": "Create New Session",
+    "join_existing_session": "Join Existing Session",
+    "guest_count": "Number of Guests",
+    "guest_count_description": "How many people are in your party?",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create_session": "Create Session",
+    "session_code": "Session Code",
+    "enter_session_code": "Enter the 6-digit code",
+    "session_code_description": "Ask your host for the 6-digit session code",
+    "joining": "Joining...",
+    "join_session": "Join Session",
+    "restaurant_not_found": "Restaurant Not Found",
+    "restaurant_not_found_message": "We couldn't find the restaurant you're looking for. Please check the URL and try again.",
+    "meta": {
+      "title": "Menu & Ordering",
+      "description": "Browse our menu and place your order easily"
+    }
   },
   "legal": {
     "terms": {

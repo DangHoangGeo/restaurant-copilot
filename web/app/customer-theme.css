@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
+
+:root {
+  /* Customer Theme Tokens - Light Mode */
+  --customer-primary-light: oklch(0.6 0.118 184.704);      /* Teal-ish Blue */
+  --customer-secondary-light: oklch(0.828 0.189 84.429);   /* Bright Green */
+  --customer-accent-light: oklch(0.577 0.245 27.325);     /* Orange/Red */
+  --customer-background-light: oklch(0.985 0 0);          /* Light Gray / Off-white */
+  --customer-foreground-light: oklch(0.145 0 0);          /* Dark Gray / Near Black */
+  --customer-card-background-light: oklch(1 0 0);         /* White */
+  --customer-card-foreground-light: oklch(0.145 0 0);
+  --customer-muted-foreground-light: oklch(0.556 0 0);
+  --customer-border-light: oklch(0.922 0 0);
+
+  --customer-font-sans: 'Inter', sans-serif;
+  --customer-font-display: 'Poppins', sans-serif;
+
+  --customer-spacing-xs: 0.25rem; /* 4px */
+  --customer-spacing-sm: 0.5rem;  /* 8px */
+  --customer-spacing-md: 1rem;    /* 16px */
+  --customer-spacing-lg: 1.5rem;  /* 24px */
+  --customer-spacing-xl: 2rem;    /* 32px */
+  --customer-spacing-2xl: 3rem;   /* 48px */
+
+  --customer-radius-sm: 0.25rem;
+  --customer-radius-md: 0.5rem;
+  --customer-radius-lg: 0.75rem;
+
+  /* Apply light mode customer tokens by default */
+  --customer-primary: var(--customer-primary-light);
+  --customer-secondary: var(--customer-secondary-light);
+  --customer-accent: var(--customer-accent-light);
+  --customer-background: var(--customer-background-light);
+  --customer-foreground: var(--customer-foreground-light);
+  --customer-card-background: var(--customer-card-background-light);
+  --customer-card-foreground: var(--customer-card-foreground-light);
+  --customer-muted-foreground: var(--customer-muted-foreground-light);
+  --customer-border: var(--customer-border-light);
+}
+
+.dark {
+  /* Customer Theme Tokens - Dark Mode */
+  --customer-primary-dark: oklch(0.696 0.17 162.48);       /* Lighter Teal-ish Blue */
+  --customer-secondary-dark: oklch(0.627 0.265 303.9);    /* Lighter Purple/Pink */
+  --customer-accent-dark: oklch(0.704 0.191 22.216);      /* Lighter Orange/Red */
+  --customer-background-dark: oklch(0.100 0 0);           /* Darker Gray */
+  --customer-foreground-dark: oklch(0.95 0 0);            /* Lighter Gray / Off-white */
+  --customer-card-background-dark: oklch(0.145 0 0);      /* Dark Gray */
+  --customer-card-foreground-dark: oklch(0.95 0 0);
+  --customer-muted-foreground-dark: oklch(0.708 0 0);
+  --customer-border-dark: oklch(1 0 0 / 20%);
+
+  /* Apply dark mode customer tokens */
+  --customer-primary: var(--customer-primary-dark);
+  --customer-secondary: var(--customer-secondary-dark);
+  --customer-accent: var(--customer-accent-dark);
+  --customer-background: var(--customer-background-dark);
+  --customer-foreground: var(--customer-foreground-dark);
+  --customer-card-background: var(--customer-card-background-dark);
+  --customer-card-foreground: var(--customer-card-foreground-dark);
+  --customer-muted-foreground: var(--customer-muted-foreground-dark);
+  --customer-border: var(--customer-border-dark);
+}
+
+/* Base styles for customer-facing pages */
+/* Applied via a class on the body or a main wrapper */
+.customer-theme-active {
+  background-color: var(--customer-background);
+  color: var(--customer-foreground);
+  font-family: var(--customer-font-sans);
+}
+
+.customer-theme-active h1,
+.customer-theme-active h2,
+.customer-theme-active h3,
+.customer-theme-active h4,
+.customer-theme-active h5,
+.customer-theme-active h6 {
+  font-family: var(--customer-font-display);
+}
+
+/* Utility classes for customer theme */
+/* Spacing - Padding */
+.customer-p-xs { padding: var(--customer-spacing-xs); }
+.customer-px-xs { padding-left: var(--customer-spacing-xs); padding-right: var(--customer-spacing-xs); }
+.customer-py-xs { padding-top: var(--customer-spacing-xs); padding-bottom: var(--customer-spacing-xs); }
+.customer-pt-xs { padding-top: var(--customer-spacing-xs); }
+.customer-pb-xs { padding-bottom: var(--customer-spacing-xs); }
+.customer-pl-xs { padding-left: var(--customer-spacing-xs); }
+.customer-pr-xs { padding-right: var(--customer-spacing-xs); }
+
+.customer-p-sm { padding: var(--customer-spacing-sm); }
+.customer-px-sm { padding-left: var(--customer-spacing-sm); padding-right: var(--customer-spacing-sm); }
+.customer-py-sm { padding-top: var(--customer-spacing-sm); padding-bottom: var(--customer-spacing-sm); }
+.customer-pt-sm { padding-top: var(--customer-spacing-sm); }
+.customer-pb-sm { padding-bottom: var(--customer-spacing-sm); }
+.customer-pl-sm { padding-left: var(--customer-spacing-sm); }
+.customer-pr-sm { padding-right: var(--customer-spacing-sm); }
+
+.customer-p-md { padding: var(--customer-spacing-md); }
+.customer-px-md { padding-left: var(--customer-spacing-md); padding-right: var(--customer-spacing-md); }
+.customer-py-md { padding-top: var(--customer-spacing-md); padding-bottom: var(--customer-spacing-md); }
+.customer-pt-md { padding-top: var(--customer-spacing-md); }
+.customer-pb-md { padding-bottom: var(--customer-spacing-md); }
+.customer-pl-md { padding-left: var(--customer-spacing-md); }
+.customer-pr-md { padding-right: var(--customer-spacing-md); }
+
+.customer-p-lg { padding: var(--customer-spacing-lg); }
+.customer-px-lg { padding-left: var(--customer-spacing-lg); padding-right: var(--customer-spacing-lg); }
+.customer-py-lg { padding-top: var(--customer-spacing-lg); padding-bottom: var(--customer-spacing-lg); }
+.customer-pt-lg { padding-top: var(--customer-spacing-lg); }
+.customer-pb-lg { padding-bottom: var(--customer-spacing-lg); }
+.customer-pl-lg { padding-left: var(--customer-spacing-lg); }
+.customer-pr-lg { padding-right: var(--customer-spacing-lg); }
+
+.customer-p-xl { padding: var(--customer-spacing-xl); }
+.customer-px-xl { padding-left: var(--customer-spacing-xl); padding-right: var(--customer-spacing-xl); }
+.customer-py-xl { padding-top: var(--customer-spacing-xl); padding-bottom: var(--customer-spacing-xl); }
+.customer-pt-xl { padding-top: var(--customer-spacing-xl); }
+.customer-pb-xl { padding-bottom: var(--customer-spacing-xl); }
+.customer-pl-xl { padding-left: var(--customer-spacing-xl); }
+.customer-pr-xl { padding-right: var(--customer-spacing-xl); }
+
+.customer-p-2xl { padding: var(--customer-spacing-2xl); }
+.customer-px-2xl { padding-left: var(--customer-spacing-2xl); padding-right: var(--customer-spacing-2xl); }
+.customer-py-2xl { padding-top: var(--customer-spacing-2xl); padding-bottom: var(--customer-spacing-2xl); }
+.customer-pt-2xl { padding-top: var(--customer-spacing-2xl); }
+.customer-pb-2xl { padding-bottom: var(--customer-spacing-2xl); }
+.customer-pl-2xl { padding-left: var(--customer-spacing-2xl); }
+.customer-pr-2xl { padding-right: var(--customer-spacing-2xl); }
+
+
+/* Spacing - Margin */
+.customer-m-xs { margin: var(--customer-spacing-xs); }
+.customer-mx-xs { margin-left: var(--customer-spacing-xs); margin-right: var(--customer-spacing-xs); }
+.customer-my-xs { margin-top: var(--customer-spacing-xs); margin-bottom: var(--customer-spacing-xs); }
+.customer-mt-xs { margin-top: var(--customer-spacing-xs); }
+.customer-mb-xs { margin-bottom: var(--customer-spacing-xs); }
+.customer-ml-xs { margin-left: var(--customer-spacing-xs); }
+.customer-mr-xs { margin-right: var(--customer-spacing-xs); }
+
+.customer-m-sm { margin: var(--customer-spacing-sm); }
+.customer-mx-sm { margin-left: var(--customer-spacing-sm); margin-right: var(--customer-spacing-sm); }
+.customer-my-sm { margin-top: var(--customer-spacing-sm); margin-bottom: var(--customer-spacing-sm); }
+.customer-mt-sm { margin-top: var(--customer-spacing-sm); }
+.customer-mb-sm { margin-bottom: var(--customer-spacing-sm); }
+.customer-ml-sm { margin-left: var(--customer-spacing-sm); }
+.customer-mr-sm { margin-right: var(--customer-spacing-sm); }
+
+.customer-m-md { margin: var(--customer-spacing-md); }
+.customer-mx-md { margin-left: var(--customer-spacing-md); margin-right: var(--customer-spacing-md); }
+.customer-my-md { margin-top: var(--customer-spacing-md); margin-bottom: var(--customer-spacing-md); }
+.customer-mt-md { margin-top: var(--customer-spacing-md); }
+.customer-mb-md { margin-bottom: var(--customer-spacing-md); }
+.customer-ml-md { margin-left: var(--customer-spacing-md); }
+.customer-mr-md { margin-right: var(--customer-spacing-md); }
+
+.customer-m-lg { margin: var(--customer-spacing-lg); }
+.customer-mx-lg { margin-left: var(--customer-spacing-lg); margin-right: var(--customer-spacing-lg); }
+.customer-my-lg { margin-top: var(--customer-spacing-lg); margin-bottom: var(--customer-spacing-lg); }
+.customer-mt-lg { margin-top: var(--customer-spacing-lg); }
+.customer-mb-lg { margin-bottom: var(--customer-spacing-lg); }
+.customer-ml-lg { margin-left: var(--customer-spacing-lg); }
+.customer-mr-lg { margin-right: var(--customer-spacing-lg); }
+
+.customer-m-xl { margin: var(--customer-spacing-xl); }
+.customer-mx-xl { margin-left: var(--customer-spacing-xl); margin-right: var(--customer-spacing-xl); }
+.customer-my-xl { margin-top: var(--customer-spacing-xl); margin-bottom: var(--customer-spacing-xl); }
+.customer-mt-xl { margin-top: var(--customer-spacing-xl); }
+.customer-mb-xl { margin-bottom: var(--customer-spacing-xl); }
+.customer-ml-xl { margin-left: var(--customer-spacing-xl); }
+.customer-mr-xl { margin-right: var(--customer-spacing-xl); }
+
+.customer-m-2xl { margin: var(--customer-spacing-2xl); }
+.customer-mx-2xl { margin-left: var(--customer-spacing-2xl); margin-right: var(--customer-spacing-2xl); }
+.customer-my-2xl { margin-top: var(--customer-spacing-2xl); margin-bottom: var(--customer-spacing-2xl); }
+.customer-mt-2xl { margin-top: var(--customer-spacing-2xl); }
+.customer-mb-2xl { margin-bottom: var(--customer-spacing-2xl); }
+.customer-ml-2xl { margin-left: var(--customer-spacing-2xl); }
+.customer-mr-2xl { margin-right: var(--customer-spacing-2xl); }
+
+/* Rounded corners */
+.customer-rounded-sm { border-radius: var(--customer-radius-sm); }
+.customer-rounded-md { border-radius: var(--customer-radius-md); }
+.customer-rounded-lg { border-radius: var(--customer-radius-lg); }
