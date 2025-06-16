@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logEvent } from "../../../../../lib/logger";
+import { logEvent } from "@/lib/logger";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
 import { ZodError } from "zod"; // Import ZodError explicitly

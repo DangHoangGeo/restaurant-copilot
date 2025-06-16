@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRestaurantIdFromSubdomain } from "../../../../../lib/server/restaurant-settings";
-import { getSubdomainFromHost } from "../../../../../lib/utils";
+import { getRestaurantIdFromSubdomain } from "@/lib/server/restaurant-settings";
+import { getSubdomainFromHost } from "@/lib/utils";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(req: NextRequest) {

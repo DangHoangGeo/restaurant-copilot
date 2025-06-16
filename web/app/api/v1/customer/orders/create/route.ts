@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { z } from "zod";
-import { getRestaurantIdFromSubdomain } from "../../../../../lib/server/restaurant-settings";
-import { getSubdomainFromHost } from "../../../../../lib/utils";
-import { logger, startPerformanceTimer, endPerformanceTimer } from "../../../../../lib/logger";
+import { getRestaurantIdFromSubdomain } from "@/lib/server/restaurant-settings";
+import { getSubdomainFromHost } from "@/lib/utils";
+import { logger, startPerformanceTimer, endPerformanceTimer } from "@/lib/logger";
 
 const orderSchema = z.object({
   sessionId: z.string().uuid(),

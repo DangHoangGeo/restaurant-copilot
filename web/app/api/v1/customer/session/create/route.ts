@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
-import { getRestaurantIdFromSubdomain } from "../../../../../lib/server/restaurant-settings";
-import { getSubdomainFromHost } from "../../../../../lib/utils";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getRestaurantIdFromSubdomain } from "@/lib/server/restaurant-settings";
+import { getSubdomainFromHost } from "@/lib/utils";
 import { randomUUID } from "crypto";
 
 export async function GET(req: NextRequest) {

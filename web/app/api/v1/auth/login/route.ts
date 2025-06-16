@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logEvent } from "../../../../../lib/logger";
+import { logEvent } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 
 const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
