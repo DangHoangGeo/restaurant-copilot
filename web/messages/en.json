@@ -1352,6 +1352,7 @@
       "invalid_table_instruction": "Please scan a valid QR code from a table at this restaurant.",
       "view_menu_only": "View Menu Only"
     },
+    "redirecting_to_history": "Redirecting to order history...",
     "menu": {
       "title": "Menu",
       "serving_today": "Serving Today",
@@ -1493,6 +1494,44 @@
     "orderhistory": {
       "checkout_button": "Checkout",
       "price_per_person": "Per Person: {value}"
+    },
+    "history": {
+      "title": "Order History",
+      "passcode": "Passcode",
+      "back_to_menu": "Back to Menu",
+      "current_session": "Current Session",
+      "guests": "{count, plural, =1 {1 guest} other {# guests}}",
+      "started_at": "Started on {date} at {time}",
+      "session_code": "Session Code",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "session_total": "Session Total",
+      "total_items": "Total Items",
+      "orders_title": "Your Orders",
+      "no_orders": "No orders placed yet",
+      "start_ordering": "Start Ordering",
+      "order_title": "Order at {time} on {date}",
+      "size": "Size",
+      "toppings": "Toppings",
+      "notes": "Notes",
+      "add_more_items": "Add More Items",
+      "share_session": "Share Session",
+      "error_title": "Unable to Load History",
+      "error_message": "We couldn't load your order history. Please try again.",
+      "status": {
+        "new": "New",
+        "serving": "Serving",
+        "completed": "Completed",
+        "canceled": "Cancelled"
+      },
+      "item_status": {
+        "new": "New",
+        "ordered": "Ordered",
+        "preparing": "Preparing",
+        "ready": "Ready",
+        "served": "Served",
+        "cancelled": "Cancelled"
+      }
     },
     "booking": {
       "title": "Table Booking",

@@ -1,15 +1,15 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CartProvider, useCart } from "../CartContext";
+import { CustomerDataProvider, useCustomerData } from "./CustomerDataContext";
 import type { CartItem } from "../CartContext";
 import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";
 import { FloatingCart } from "../FloatingCart";
 import { AIAssistant } from "./AIAssistant";
 import { Skeleton } from "@/components/ui/skeletons/skeleton";
-import type { RestaurantSettings } from "@/shared/types/customer";
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
@@ -21,65 +21,15 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();
+  const { restaurantSettings, sessionData, isLoading, error } = useCustomerData();
 
-  const [restaurantSettings, setRestaurantSettings] = useState<RestaurantSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAIOpen, setIsAIOpen] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Determine current context for AI Assistant
   const currentContext = pathname.includes('/menu') 
-    ? 'menu' 
-    : pathname.includes('/cart') 
-      ? 'cart' 
-      : pathname.includes('/order') 
+    ? 'menu': pathname.includes('/order') 
         ? 'order' 
         : 'menu';
-
-  // Fetch restaurant settings
-  useEffect(() => {
-    const fetchRestaurantSettings = async () => {
-      try {
-        const subdomain = window.location.hostname.split('.')[0];
-        const response = await fetch(`/api/v1/customer/restaurant?subdomain=${subdomain}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch restaurant data');
-        }
-        
-        const data = await response.json();
-        setRestaurantSettings(data);
-      } catch (error) {
-        console.error('Error fetching restaurant settings:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRestaurantSettings();
-  }, []);
-
-  // Check and restore session
-  useEffect(() => {
-    const storedSessionId = localStorage.getItem('coorder_session_id');
-    
-    if (storedSessionId) {
-      // Validate session
-      fetch(`/api/v1/customer/session/check?sessionId=${storedSessionId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.valid) {
-            setSessionId(storedSessionId);
-          } else {
-            localStorage.removeItem('coorder_session_id');
-          }
-        })
-        .catch(err => {
-          console.error('Error checking session:', err);
-          localStorage.removeItem('coorder_session_id');
-        });
-    }
-  }, []);
 
   // Handle navigation
   const handleCartClick = () => {
@@ -92,9 +42,14 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
 
   // Handle order placement
   const handlePlaceOrder = async () => {
-    if (!sessionId) {
+    if (!sessionData.sessionId) {
       console.error('No session ID available for order placement');
       // TODO: Show error toast or redirect to session creation
+      return;
+    }
+    if (!restaurantSettings) {
+      console.error('No restaurant settings available for order placement');
+      // TODO: Show error toast or redirect to restaurant selection
       return;
     }
 
@@ -114,7 +69,8 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          sessionId,
+          sessionId: sessionData.sessionId,
+          restaurantId: restaurantSettings?.id,
           items: orderItems,
         }),
       });
@@ -129,8 +85,8 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
         // Clear the cart after successful order
         clearCart();
         
-        // Redirect to order confirmation page
-        router.push(`/${params.locale}/order/${data.orderId}`);
+        // Redirect to order history page
+        router.push(`/${params.locale}/history?sessionId=${sessionData.sessionId}`);
       } else {
         throw new Error(data.error || 'Order placement failed');
       }
@@ -173,7 +129,7 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
     );
   }
 
-  if (!restaurantSettings) {
+  if (error || !restaurantSettings) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center p-8">
@@ -181,7 +137,7 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
             {t("restaurant_not_found")}
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
-            {t("restaurant_not_found_message")}
+            {error || t("restaurant_not_found_message")}
           </p>
         </div>
       </div>
@@ -195,7 +151,7 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
         onCartClick={handleCartClick}
         onOrderHistoryClick={handleOrderHistoryClick}
         cartItemCount={totalCartItems}
-        showOrderHistory={!!sessionId}
+        showOrderHistory={!!sessionData.sessionId}
       />
       
       <main className="flex-1">
@@ -225,10 +181,12 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
 
 export function CustomerLayout({ children }: CustomerLayoutProps) {
   return (
-    <CartProvider>
-      <CustomerLayoutContent>
-        {children}
-      </CustomerLayoutContent>
-    </CartProvider>
+    <CustomerDataProvider>
+      <CartProvider>
+        <CustomerLayoutContent>
+          {children}
+        </CustomerLayoutContent>
+      </CartProvider>
+    </CustomerDataProvider>
   );
 }

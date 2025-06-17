@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { getRestaurantIdFromSubdomain } from "@/lib/server/restaurant-settings";
-import { getSubdomainFromHost } from "@/lib/utils";
 
 // Types for Supabase query results
 interface TableData {
@@ -81,19 +79,14 @@ export async function GET(
   { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId } = await params;
-
+    const { orderId} = await params;
+    const restaurantId = req.nextUrl.searchParams.get("restaurantId");
     if (!orderId) {
       return NextResponse.json({
         success: false,
         error: "Order ID is required"
       }, { status: 400 });
     }
-
-    // Get restaurant ID from subdomain
-    const host = req.headers.get("host") || "";
-    const subdomain = getSubdomainFromHost(host) || req.nextUrl.searchParams.get("subdomain");
-    const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
 
     if (!restaurantId) {
       return NextResponse.json({

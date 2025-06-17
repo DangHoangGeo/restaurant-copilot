@@ -60,10 +60,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (selectedToppings) {
         itemPrice += selectedToppings.reduce((sum, t) => sum + t.price, 0);
       }
-      console.log(
-        `Adding to cart: ${item.name_en} (ID: ${item.id}), Quantity: ${quantity}, Unique ID: ${uniqueId}, Price: ${itemPrice}`,
-      );
-
       const existing = prev.find((ci) => ci.uniqueId === uniqueId);
       if (existing) {
         return prev.map((ci) =>

@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { setRequestLocale } from 'next-intl/server'
 import { MenuPageClient } from './MenuPageClient';
 import { SmartMenuSkeleton } from '@/components/ui/enhanced-skeleton';
 
@@ -10,21 +11,18 @@ interface MenuPageProps {
     tableId?: string;
     sessionId?: string;
     tableNumber?: string;
+    code?: string;
   }>;
 }
 
-export default async function MenuPage({ params, searchParams }: MenuPageProps) {
+export default async function MenuPage({ params }: MenuPageProps) {
   const { locale } = await params;
-  const { tableId, sessionId, tableNumber } = await searchParams;
+  
+  setRequestLocale(locale);
 
   return (
     <Suspense fallback={<SmartMenuSkeleton />}>
-      <MenuPageClient
-        locale={locale}
-        tableId={tableId}
-        sessionId={sessionId}
-        tableNumber={tableNumber}
-      />
+      <MenuPageClient locale={locale} />
     </Suspense>
   );
 }

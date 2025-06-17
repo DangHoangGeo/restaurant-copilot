@@ -1,29 +1,24 @@
 // File: app/api/public/session-info/route.ts
-
-import { getRestaurantIdFromSubdomain } from '@/lib/server/restaurant-settings';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { getSubdomainFromHost } from '@/lib/utils';
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-  const sessionId    = req.nextUrl.searchParams.get('sessionId')
-  if (!sessionId) {
-	return NextResponse.json(
-	  { success: false, error: 'sessionId is required' },
-	  { status: 400 }
-	)
-  }
-// Get restaurant ID from subdomain
-  const host = req.headers.get("host") || "";
-  const subdomain = getSubdomainFromHost(host) || req.nextUrl.searchParams.get("subdomain");
-  const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
+   const sessionId = req.nextUrl.searchParams.get("sessionId");
+    const restaurantId = req.nextUrl.searchParams.get("restaurantId");
 
-  if (!sessionId || !restaurantId) {
-    return NextResponse.json(
-      { success: false, error: 'sessionId and restaurantId are required' },
-      { status: 400 }
-    )
-  }
+    if (!sessionId) {
+      return NextResponse.json(
+        { success: false, error: "Session ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!restaurantId) {
+      return NextResponse.json(
+        { success: false, error: "Restaurant ID is required" },
+        { status: 400 }
+      );
+    }
 
   try {
     const { data, error } = await supabaseAdmin
@@ -41,7 +36,7 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true, orders: data })
+    return NextResponse.json({ success: true, order: data })
   } catch (err) {
     console.error('RPC error:', err)
     return NextResponse.json(

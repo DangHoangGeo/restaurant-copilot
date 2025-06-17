@@ -6,6 +6,7 @@ import { getSubdomainFromHost } from "@/lib/utils";
 import { logger, startPerformanceTimer, endPerformanceTimer } from "@/lib/logger";
 
 const orderSchema = z.object({
+  restaurantId: z.string().uuid().optional(), // Optional for validation, but will be derived from session
   sessionId: z.string().uuid(),
   items: z.array(
     z.object({
@@ -31,10 +32,11 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ success: false, errors: parse.error.errors }, { status: 400 });
   }
+
   const { sessionId, items } = parse.data;
   const host = req.headers.get("host") || "";
   const subdomain = getSubdomainFromHost(host);
-  const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
+  const restaurantId = parse.data.restaurantId ? parse.data.restaurantId :  subdomain? await getRestaurantIdFromSubdomain(subdomain) : null;
   if (!restaurantId) {
     return NextResponse.json({ success: false, error: "Invalid restaurant" }, { status: 400 });
   }

@@ -1,116 +1,145 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
-
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
 :root {
-  /* Existing root variables (if any, keep them) */
-  --radius: 0.625rem; /* Example existing variable */
-  --background: oklch(1 0 0); /* Example existing variable */
-  --foreground: oklch(0.145 0 0); /* Example existing variable */
-  /* ... other existing root variables ... */
-
-  /* Customer Theme Tokens - Base (Light Mode Default) */
-  --customer-primary-light: oklch(0.6 0.118 184.704);      /* Teal-ish Blue */
-  --customer-secondary-light: oklch(0.828 0.189 84.429);   /* Bright Green */
-  --customer-accent-light: oklch(0.577 0.245 27.325);     /* Orange/Red */
-  --customer-background-light: oklch(0.985 0 0);          /* Light Gray / Off-white */
-  --customer-foreground-light: oklch(0.145 0 0);          /* Dark Gray / Near Black */
-  --customer-card-background-light: oklch(1 0 0);         /* White */
-  --customer-card-foreground-light: oklch(0.145 0 0);
-  --customer-muted-foreground-light: oklch(0.556 0 0);
-  --customer-border-light: oklch(0.922 0 0);
-
-  --customer-font-sans: 'Inter', sans-serif;
-  --customer-font-display: 'Poppins', sans-serif;
-
-  --customer-spacing-xs: 0.25rem; /* 4px */
-  --customer-spacing-sm: 0.5rem;  /* 8px */
-  --customer-spacing-md: 1rem;    /* 16px */
-  --customer-spacing-lg: 1.5rem;  /* 24px */
-  --customer-spacing-xl: 2rem;    /* 32px */
-  --customer-spacing-2xl: 3rem;   /* 48px */
-
-  --customer-radius-sm: 0.25rem;
-  --customer-radius-md: 0.5rem;
-  --customer-radius-lg: 0.75rem;
-
-  /* Apply light mode customer tokens by default */
-  --customer-primary: var(--customer-primary-light);
-  --customer-secondary: var(--customer-secondary-light);
-  --customer-accent: var(--customer-accent-light);
-  --customer-background: var(--customer-background-light);
-  --customer-foreground: var(--customer-foreground-light);
-  --customer-card-background: var(--customer-card-background-light);
-  --customer-card-foreground: var(--customer-card-foreground-light);
-  --customer-muted-foreground: var(--customer-muted-foreground-light);
-  --customer-border: var(--customer-border-light);
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
-  /* Existing dark mode variables (if any, keep them) */
-  --background: oklch(0.145 0 0); /* Example existing dark variable */
-  --foreground: oklch(0.985 0 0); /* Example existing dark variable */
-  /* ... other existing dark variables ... */
-
-  /* Customer Theme Tokens - Dark Mode */
-  --customer-primary-dark: oklch(0.696 0.17 162.48);       /* Lighter Teal-ish Blue */
-  --customer-secondary-dark: oklch(0.627 0.265 303.9);    /* Lighter Purple/Pink */
-  --customer-accent-dark: oklch(0.704 0.191 22.216);      /* Lighter Orange/Red */
-  --customer-background-dark: oklch(0.100 0 0);           /* Darker Gray */
-  --customer-foreground-dark: oklch(0.95 0 0);            /* Lighter Gray / Off-white */
-  --customer-card-background-dark: oklch(0.145 0 0);      /* Dark Gray */
-  --customer-card-foreground-dark: oklch(0.95 0 0);
-  --customer-muted-foreground-dark: oklch(0.708 0 0);
-  --customer-border-dark: oklch(1 0 0 / 20%);
-
-  /* Apply dark mode customer tokens */
-  --customer-primary: var(--customer-primary-dark);
-  --customer-secondary: var(--customer-secondary-dark);
-  --customer-accent: var(--customer-accent-dark);
-  --customer-background: var(--customer-background-dark);
-  --customer-foreground: var(--customer-foreground-dark);
-  --customer-card-background: var(--customer-card-background-dark);
-  --customer-card-foreground: var(--customer-card-foreground-dark);
-  --customer-muted-foreground: var(--customer-muted-foreground-dark);
-  --customer-border: var(--customer-border-dark);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* CoOrder.ai Brand Colors (ensure these don't conflict or are merged as needed) */
-/* These might be part of the general theme or specific to other sections */
+/* CoOrder.ai Brand Colors */
 :root {
-  /* ... existing brand colors ... */
+  --brand-color-landing: #2563eb; /* Blue-600 */
+  --brand-color-primary: #3b82f6; /* Blue-500 */
+  --brand-color-secondary: #60a5fa; /* Blue-400 */
+  --brand-color-accent: #1e40af; /* Blue-800 */
+  --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
 }
 
 .dark {
-  /* ... existing dark brand colors ... */
+  --brand-color-landing: #60a5fa; /* Blue-400 for dark mode */
+  --brand-color-primary: #3b82f6; /* Blue-500 */
+  --brand-color-secondary: #93c5fd; /* Blue-300 */
+  --brand-color-accent: #1d4ed8; /* Blue-700 */
 }
 
-/* @layer base { */ /* Assuming Tailwind handles layers */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
   body {
-    /* Default body styles, Tailwind utilities like bg-background, text-foreground usually handle this */
-    /* font-family: var(--font-sans); */ /* This might be set by Tailwind config */
+    @apply bg-background text-foreground;
   }
-  
-  .customer-facing-page {
-    background-color: var(--customer-background);
-    color: var(--customer-foreground);
-    font-family: var(--customer-font-sans);
-  }
+}
 
-  .customer-facing-page h1, 
-  .customer-facing-page h2, 
-  .customer-facing-page h3, 
-  .customer-facing-page h4, 
-  .customer-facing-page h5, 
-  .customer-facing-page h6 {
-    font-family: var(--customer-font-display);
-    /* Example: Add default heading color if needed */
-    /* color: var(--customer-primary); */
-  }
-/* } */
+@tailwind utilities;
 
-/* @layer utilities { */ /* Assuming Tailwind handles layers */
+@layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -140,7 +169,6 @@
   .line-clamp-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
-    line-clamp: 1; /* Standard property */
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -148,130 +176,32 @@
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
-    line-clamp: 2; /* Standard property */
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
 
-  /* Customer Spacing Utilities */
-  .customer-space-x-xs > * + * { margin-left: var(--customer-spacing-xs); }
-  .customer-space-y-xs > * + * { margin-top: var(--customer-spacing-xs); }
-  .customer-space-x-sm > * + * { margin-left: var(--customer-spacing-sm); }
-  .customer-space-y-sm > * + * { margin-top: var(--customer-spacing-sm); }
-  .customer-space-x-md > * + * { margin-left: var(--customer-spacing-md); }
-  .customer-space-y-md > * + * { margin-top: var(--customer-spacing-md); }
-  .customer-space-x-lg > * + * { margin-left: var(--customer-spacing-lg); }
-  .customer-space-y-lg > * + * { margin-top: var(--customer-spacing-lg); }
-  .customer-space-x-xl > * + * { margin-left: var(--customer-spacing-xl); }
-  .customer-space-y-xl > * + * { margin-top: var(--customer-spacing-xl); }
-  .customer-space-x-2xl > * + * { margin-left: var(--customer-spacing-2xl); }
-  .customer-space-y-2xl > * + * { margin-top: var(--customer-spacing-2xl); }
-
-  /* Customer Padding Utilities */
-  .customer-p-xs { padding: var(--customer-spacing-xs); }
-  .customer-py-xs { padding-top: var(--customer-spacing-xs); padding-bottom: var(--customer-spacing-xs); }
-  .customer-px-xs { padding-left: var(--customer-spacing-xs); padding-right: var(--customer-spacing-xs); }
-  .customer-pt-xs { padding-top: var(--customer-spacing-xs); }
-  .customer-pb-xs { padding-bottom: var(--customer-spacing-xs); }
-  .customer-pl-xs { padding-left: var(--customer-spacing-xs); }
-  .customer-pr-xs { padding-right: var(--customer-spacing-xs); }
-
-  .customer-p-sm { padding: var(--customer-spacing-sm); }
-  .customer-py-sm { padding-top: var(--customer-spacing-sm); padding-bottom: var(--customer-spacing-sm); }
-  .customer-px-sm { padding-left: var(--customer-spacing-sm); padding-right: var(--customer-spacing-sm); }
-  .customer-pt-sm { padding-top: var(--customer-spacing-sm); }
-  .customer-pb-sm { padding-bottom: var(--customer-spacing-sm); }
-  .customer-pl-sm { padding-left: var(--customer-spacing-sm); padding-right: var(--customer-spacing-sm); }
-  .customer-pr-sm { padding-right: var(--customer-spacing-sm); }
-  
-  .customer-p-md { padding: var(--customer-spacing-md); }
-  .customer-py-md { padding-top: var(--customer-spacing-md); padding-bottom: var(--customer-spacing-md); }
-  .customer-px-md { padding-left: var(--customer-spacing-md); padding-right: var(--customer-spacing-md); }
-  .customer-pt-md { padding-top: var(--customer-spacing-md); }
-  .customer-pb-md { padding-bottom: var(--customer-spacing-md); }
-  .customer-pl-md { padding-left: var(--customer-spacing-md); }
-  .customer-pr-md { padding-right: var(--customer-spacing-md); }
-
-  .customer-p-lg { padding: var(--customer-spacing-lg); }
-  .customer-py-lg { padding-top: var(--customer-spacing-lg); padding-bottom: var(--customer-spacing-lg); }
-  .customer-px-lg { padding-left: var(--customer-spacing-lg); padding-right: var(--customer-spacing-lg); }
-  .customer-pt-lg { padding-top: var(--customer-spacing-lg); }
-  .customer-pb-lg { padding-bottom: var(--customer-spacing-lg); }
-  .customer-pl-lg { padding-left: var(--customer-spacing-lg); padding-right: var(--customer-spacing-lg); }
-  .customer-pr-lg { padding-right: var(--customer-spacing-lg); }
-
-  .customer-p-xl { padding: var(--customer-spacing-xl); }
-  .customer-py-xl { padding-top: var(--customer-spacing-xl); padding-bottom: var(--customer-spacing-xl); }
-  .customer-px-xl { padding-left: var(--customer-spacing-xl); padding-right: var(--customer-spacing-xl); }
-  .customer-pt-xl { padding-top: var(--customer-spacing-xl); }
-  .customer-pb-xl { padding-bottom: var(--customer-spacing-xl); }
-  .customer-pl-xl { padding-left: var(--customer-spacing-xl); padding-right: var(--customer-spacing-xl); }
-  .customer-pr-xl { padding-right: var(--customer-spacing-xl); }
-
-  .customer-p-2xl { padding: var(--customer-spacing-2xl); }
-  .customer-py-2xl { padding-top: var(--customer-spacing-2xl); padding-bottom: var(--customer-spacing-2xl); }
-  .customer-px-2xl { padding-left: var(--customer-spacing-2xl); padding-right: var(--customer-spacing-2xl); }
-  .customer-pt-2xl { padding-top: var(--customer-spacing-2xl); }
-  .customer-pb-2xl { padding-bottom: var(--customer-spacing-2xl); }
-  .customer-pl-2xl { padding-left: var(--customer-spacing-2xl); padding-right: var(--customer-spacing-2xl); }
-  .customer-pr-2xl { padding-right: var(--customer-spacing-2xl); }
-
-  /* Customer Margin Utilities */
-  .customer-m-xs { margin: var(--customer-spacing-xs); }
-  .customer-my-xs { margin-top: var(--customer-spacing-xs); margin-bottom: var(--customer-spacing-xs); }
-  .customer-mx-xs { margin-left: var(--customer-spacing-xs); margin-right: var(--customer-spacing-xs); }
-  .customer-mt-xs { margin-top: var(--customer-spacing-xs); }
-  .customer-mb-xs { margin-bottom: var(--customer-spacing-xs); }
-  .customer-ml-xs { margin-left: var(--customer-spacing-xs); }
-  .customer-mr-xs { margin-right: var(--customer-spacing-xs); }
-
-  .customer-m-sm { margin: var(--customer-spacing-sm); }
-  .customer-my-sm { margin-top: var(--customer-spacing-sm); margin-bottom: var(--customer-spacing-sm); }
-  .customer-mx-sm { margin-left: var(--customer-spacing-sm); margin-right: var(--customer-spacing-sm); }
-  .customer-mt-sm { margin-top: var(--customer-spacing-sm); }
-  .customer-mb-sm { margin-bottom: var(--customer-spacing-sm); }
-  .customer-ml-sm { margin-left: var(--customer-spacing-sm); }
-  .customer-mr-sm { margin-right: var(--customer-spacing-sm); }
-  
-  .customer-m-md { margin: var(--customer-spacing-md); }
-  .customer-my-md { margin-top: var(--customer-spacing-md); margin-bottom: var(--customer-spacing-md); }
-  .customer-mx-md { margin-left: var(--customer-spacing-md); margin-right: var(--customer-spacing-md); }
-  .customer-mt-md { margin-top: var(--customer-spacing-md); }
-  .customer-mb-md { margin-bottom: var(--customer-spacing-md); }
-  .customer-ml-md { margin-left: var(--customer-spacing-md); }
-  .customer-mr-md { margin-right: var(--customer-spacing-md); }
-
-  .customer-m-lg { margin: var(--customer-spacing-lg); }
-  .customer-my-lg { margin-top: var(--customer-spacing-lg); margin-bottom: var(--customer-spacing-lg); }
-  .customer-mx-lg { margin-left: var(--customer-spacing-lg); margin-right: var(--customer-spacing-lg); }
-  .customer-mt-lg { margin-top: var(--customer-spacing-lg); }
-  .customer-mb-lg { margin-bottom: var(--customer-spacing-lg); }
-  .customer-ml-lg { margin-left: var(--customer-spacing-lg); }
-  .customer-mr-lg { margin-right: var(--customer-spacing-lg); }
-
-  .customer-m-xl { margin: var(--customer-spacing-xl); }
-  .customer-my-xl { margin-top: var(--customer-spacing-xl); margin-bottom: var(--customer-spacing-xl); }
-  .customer-mx-xl { margin-left: var(--customer-spacing-xl); margin-right: var(--customer-spacing-xl); }
-  .customer-mt-xl { margin-top: var(--customer-spacing-xl); }
-  .customer-mb-xl { margin-bottom: var(--customer-spacing-xl); }
-  .customer-ml-xl { margin-left: var(--customer-spacing-xl); }
-  .customer-mr-xl { margin-right: var(--customer-spacing-xl); }
-
-  .customer-m-2xl { margin: var(--customer-spacing-2xl); }
-  .customer-my-2xl { margin-top: var(--customer-spacing-2xl); margin-bottom: var(--customer-spacing-2xl); }
-  .customer-mx-2xl { margin-left: var(--customer-spacing-2xl); margin-right: var(--customer-spacing-2xl); }
-  .customer-mt-2xl { margin-top: var(--customer-spacing-2xl); }
-  .customer-mb-2xl { margin-bottom: var(--customer-spacing-2xl); }
-  .customer-ml-2xl { margin-left: var(--customer-spacing-2xl); }
-  .customer-mr-2xl { margin-right: var(--customer-spacing-2xl); }
-
-  /* Customer Rounded Utilities */
-  .customer-rounded-sm { border-radius: var(--customer-radius-sm); }
-  .customer-rounded-md { border-radius: var(--customer-radius-md); }
-  .customer-rounded-lg { border-radius: var(--customer-radius-lg); }
-/* } */
-
-/* Print styles for legal pages (keep existing) */
+/* Print styles for legal pages */
 @media print {
-  /* ... existing print styles ... */
+  body {
+    background: white !important;
+  }
+  
+  .print\:min-h-auto {
+    min-height: auto !important;
+  }
+  
+  .print\:bg-white {
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .print\:no-rounded {
+    border-radius: 0 !important;
+  }
+  
+  .print\:no-shadow {
+    box-shadow: none !important;
+  }
 }

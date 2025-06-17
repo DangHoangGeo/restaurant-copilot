@@ -1256,6 +1256,43 @@
       "checkout_button": "Thanh toán",
       "price_per_person": "Mỗi người: {value}"
     },
+    "history": {
+      "title": "Lịch sử đặt món",
+      "back_to_menu": "Quay lại Menu",
+      "current_session": "Phiên hiện tại",
+      "guests": "{count} khách",
+      "started_at": "Bắt đầu lúc {time} ngày {date}",
+      "session_code": "Mã phiên",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép!",
+      "session_total": "Tổng phiên",
+      "total_items": "Tổng món",
+      "orders_title": "Đơn hàng của bạn",
+      "no_orders": "Chưa có đơn hàng nào",
+      "start_ordering": "Bắt đầu đặt món",
+      "order_title": "Đơn hàng lúc {time} ngày {date}",
+      "size": "Kích cỡ",
+      "toppings": "Topping",
+      "notes": "Ghi chú",
+      "add_more_items": "Thêm món",
+      "share_session": "Chia sẻ phiên",
+      "error_title": "Không thể tải lịch sử",
+      "error_message": "Chúng tôi không thể tải lịch sử đặt món của bạn. Vui lòng thử lại.",
+      "status": {
+        "new": "Mới",
+        "preparing": "Đang chuẩn bị",
+        "ready": "Sẵn sàng",
+        "completed": "Hoàn thành",
+        "canceled": "Đã hủy"
+      },
+      "item_status": {
+        "ordered": "Đã đặt",
+        "preparing": "Đang chuẩn bị",
+        "ready": "Sẵn sàng",
+        "served": "Đã phục vụ",
+        "cancelled": "Đã hủy"
+      }
+    },
     "booking": {
       "title": "Đặt bàn",
       "submission_thank_you_title": "Đặt bàn thành công!",
@@ -1284,6 +1321,7 @@
       "error_loading_order_summary": "Lỗi tải tóm tắt đơn hàng. Vui lòng thử lại sau.",
       "error_loading_review_form": "Lỗi tải biểu mẫu đánh giá. Vui lòng thử lại sau."
     },
+    "redirecting_to_history": "Đang chuyển hướng đến lịch sử đơn hàng...",
     "weekdays": {
       "mon": "Thứ Hai",
       "tue": "Thứ Ba",

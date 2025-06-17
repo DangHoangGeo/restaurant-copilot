@@ -28,6 +28,8 @@ export function CustomerHeader({
   //const router = useRouter();
   const { theme, setTheme } = useTheme();
 
+  const is_opening = true;
+
   return (
     <header className="sticky top-0 z-40 w-full bg-white dark:bg-slate-900 shadow-sm">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -56,7 +58,7 @@ export function CustomerHeader({
             <div className="flex items-center text-xs text-slate-500">
               <Clock size={12} className="mr-1" />
               <span>
-                Open Daily • 9:00 AM - 10:00 PM
+                {is_opening?" Open Now" : "Closed"}
               </span>
             </div>
           </div>
@@ -87,7 +89,7 @@ export function CustomerHeader({
               className="text-slate-600 dark:text-slate-300" 
               onClick={onOrderHistoryClick}
             >
-              {t("order_history")}
+              {t("order_history_label")}
             </Button>
           )}
         </div>

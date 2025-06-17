@@ -57,7 +57,7 @@ const fetchMenuData = async (params: MenuDataParams): Promise<MenuDataResponse> 
     if (restaurantId) {
       // If we have restaurantId, use it directly as subdomain for now
       // In real scenarios, you'd need to map restaurantId to subdomain
-      searchParams.set('subdomain', restaurantId);
+      searchParams.set('restaurantId', restaurantId);
     }
     
     // Use the existing customer menu API
@@ -139,10 +139,6 @@ export function useMenuData(params: MenuDataParams) {
     if (!data?.categories) return [];
     return trimMenuItems(data.categories);
   }, [data?.categories]);
-
-  console.log('Menu data loaded:', {
-	categories: optimizedCategories,
-  });
 
   return {
     categories: optimizedCategories,

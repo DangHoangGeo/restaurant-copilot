@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { getRestaurantIdFromSubdomain } from "@/lib/server/restaurant-settings";
-import { getSubdomainFromHost } from "@/lib/utils";
 import { randomUUID } from "crypto";
 
 export async function GET(req: NextRequest) {
   try {
     const tableId = req.nextUrl.searchParams.get("tableId");
     const guestsParam = req.nextUrl.searchParams.get("guests");
+    const restaurantId = req.nextUrl.searchParams.get("restaurantId");
+
     const parsedGuests = guestsParam ? parseInt(guestsParam, 10) : NaN;
     const guestCount = Number.isFinite(parsedGuests) && parsedGuests > 0 ? parsedGuests : 1;
-    console.log('GET create session for tableId:', tableId);
+    
     if (!tableId) {
       return NextResponse.json({ success: false, error: "Table ID is required" }, { status: 400 });
     }
 
     // Get restaurant ID from subdomain
-    const host = req.headers.get("host") || "";
-    const subdomain = getSubdomainFromHost(host) || req.nextUrl.searchParams.get("subdomain");
-    const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
+    //const host = req.headers.get("host") || "";
+    //const subdomain = getSubdomainFromHost(host) || req.nextUrl.searchParams.get("subdomain");
+    //const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
 
     if (!restaurantId) {
       return NextResponse.json({ success: false, error: "Invalid restaurant" }, { status: 400 });
@@ -84,9 +84,9 @@ export async function GET(req: NextRequest) {
       console.error("Failed to create order:", orderError);
       return NextResponse.json({ success: false, error: "Failed to create session" }, { status: 500 });
     }
-    
-    // Generate 4-character passcode from orderId
-    const passcode = newOrder.id.substring(0, 4);
+
+    // Generate passcode from the last 4 characters of the order ID
+    const passcode = newOrder.id.substring(newOrder.id.length - 4);
     
     return NextResponse.json({ 
       success: true, 

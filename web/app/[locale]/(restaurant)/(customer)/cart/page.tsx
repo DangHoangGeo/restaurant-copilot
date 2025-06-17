@@ -125,7 +125,8 @@ export default function CartPage() {
         menu_item_size_id: item.selectedSize?.id || undefined,
         topping_ids: item.selectedToppings?.map(t => t.id) || undefined,
       }));
-
+      console.log('Order items:', orderItems);
+      console.log('Session ID:', sessionId);
       // Submit order to API
       const response = await fetch('/api/v1/customer/orders/create', {
         method: 'POST',

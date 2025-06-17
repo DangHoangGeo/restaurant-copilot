@@ -311,7 +311,6 @@ export function EnhancedSmartMenu({
   // Optimized event handlers
   const handleItemClick = useCallback((item: FoodItem) => {
     // Convert FoodItem to SmartMenuItem for modal
-	console.log('Handling item click:', item);
     const smartItem = item as SmartMenuItem;
     setSelectedItem(smartItem);
     setIsItemModalOpen(true);
@@ -329,16 +328,16 @@ export function EnhancedSmartMenu({
     selectedToppings?: Topping[], 
     notes?: string
   ) => {
+    // For now, use the existing add to cart logic
+    // TODO: Enhance to handle size, toppings, and notes properly
     console.log('Adding to cart:', { item: item.id, quantity, selectedSize, selectedToppings, notes });
     
     if (onAddToCart) {
-      // If there's an external onAddToCart handler, use it for each quantity
-      for (let i = 0; i < quantity; i++) {
-        onAddToCart(item as SmartMenuItem);
-      }
+      onAddToCart(item as SmartMenuItem);
     } else {
-      // Use the cart context's addToCart with all customization options
-      addToCart(item as SmartMenuItem, quantity, selectedSize, selectedToppings, notes);
+      for (let i = 0; i < quantity; i++) {
+        addToCart(item as SmartMenuItem, 1);
+      }
     }
   }, [onAddToCart, addToCart]);
 
