@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Clock, Users, MapPin, Receipt, ArrowLeft, Share2, Copy, Printer } from 'lucide-react';
 import { useCustomerData } from '@/components/features/customer/layout/CustomerDataContext';
 import { QRCodeDialog } from '@/components/features/customer/QRCodeDialog';
-import type { OrderHistoryResponse, OrderItem, OrderStatus, OrderItemStatus, Topping } from './types';
+import type { OrderHistoryResponse, OrderItem, OrderStatus, Topping } from './types';
 
 interface HistoryPageClientProps {
   locale: string;
@@ -73,7 +73,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   // Helper function to get passcode from orderId
   const getPasscode = () => {
     if (historyData?.order?.id) {
-      return historyData.order.id.slice(-8);
+      return historyData.order.id.slice(-4);
     }
     return sessionId?.slice(-8) || '';
   };
@@ -103,39 +103,69 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
         <!DOCTYPE html>
         <html>
         <head>
+          <meta charset="UTF-8">
+          <title>${t('history.receipt_title', { orderId: historyData.order.id.slice(-8) })}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
             .header { text-align: center; margin-bottom: 20px; }
             .order-info { margin-bottom: 20px; }
             .items { margin-bottom: 20px; }
-            .item { margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #eee; }
-            .total { font-weight: bold; font-size: 18px; margin-top: 20px; text-align: right; }
+            .item { margin-bottom: 6px; padding: 4px 0; border-bottom: 1px solid #eee; }
+            .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+            .item-name { font-weight: bold; }
+            .item-price { font-weight: bold; }
+            .item-details { font-size: 0.9em; color: #666; margin: 2px 0; }
+            .quantity-size { display: flex; align-items: center; gap: 8px; }
+            .total { font-weight: bold; font-size: 18px; margin-top: 20px; text-align: right; border-top: 2px solid #333; padding-top: 10px; }
             @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <div class="header">
-            <h2>${restaurantSettings?.name || 'Restaurant'}</h2>
-            <p>${t('history.receipt_title', { orderId: getPasscode() })}</p>
+            <h1>${restaurantSettings?.name || 'Restaurant'}</h1>
+            <p>${restaurantSettings?.address || 'Address not available'}</p>
+            <p>${restaurantSettings?.phone || 'Phone not available'}</p>
+            <p>${t('history.receipt_title', { orderId: historyData.order.id.slice(-8) })}</p>
           </div>
           <div class="order-info">
-            <p><strong>${t('history.table')}:</strong> ${historyData.order.table_name}</p>
-            <p><strong>${t('history.date')}:</strong> ${formatDate(historyData.order.created_at)} ${formatTime(historyData.order.created_at)}</p>
+            <p><strong>${t('history.table')}</strong> ${historyData.order.table_name}</p>
+            <p><strong>${t('history.date')}</strong> ${formatDate(historyData.order.created_at)} ${formatTime(historyData.order.created_at)}</p>
           </div>
           <div class="items">
             <h3>${t('history.items')}</h3>
-            ${(historyData.order.items || []).map(item => `
-              <div class="item">
-                <p><strong>${getMenuItemName(item)}</strong> × ${item.quantity}</p>
-                ${item.menu_item_sizes ? `<p>${t('history.size')}: ${getSizeName(item)}</p>` : ''}
-                ${item.toppings && item.toppings.length > 0 ? `<p>${t('history.toppings')}: ${item.toppings.map(getToppingName).join(', ')}</p>` : ''}
-                ${item.notes ? `<p>${t('history.notes')}: ${item.notes}</p>` : ''}
-                <p style="text-align: right;">¥${item.total || (item.price_at_order || item.unit_price) * item.quantity}</p>
-              </div>
-            `).join('')}
+            ${(historyData.order.items || []).map(item => {
+              const sizeName = getSizeName(item);
+              const quantityDisplay = sizeName ? `× ${item.quantity} (${sizeName})` : `× ${item.quantity}`;
+              
+              return `
+                <div class="item">
+                  <div class="item-header">
+                    <div class="item-name">${getMenuItemName(item)}</div>
+                    <div class="item-price">¥${item.total || (item.price_at_order || item.unit_price) * item.quantity}</div>
+                  </div>
+                  <div class="quantity-size">
+                    <span>${quantityDisplay}</span>
+                  </div>
+                  ${item.toppings && item.toppings.length > 0 ? `
+                    <div class="item-details">${t('history.toppings')}: ${item.toppings.map(getToppingName).join(', ')}</div>
+                  ` : ''}
+                  ${item.notes ? `
+                    <div class="item-details">${t('history.notes')}: ${item.notes}</div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
           </div>
           <div class="total">
-            <p>${t('checkout.total')}: ¥${historyData.order.total_amount}</p>
+            <div style="margin-bottom: 8px;">
+              <span>${t('history.subtotal')}: ¥${Math.round((historyData.order.total_amount || 0) / 1.1)}</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <span>${t('history.tax')} (10%): ¥${Math.round((historyData.order.total_amount || 0) * 0.1 / 1.1)}</span>
+            </div>
+            <div style="border-top: 1px solid #333; padding-top: 8px; font-size: 20px;">
+              <span>${t('history.total')}: ¥${historyData.order.total_amount}</span>
+            </div>
           </div>
         </body>
         </html>
@@ -175,17 +205,6 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
       case 'ready': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
       case 'completed': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
       case 'canceled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-    }
-  };
-
-  const getItemStatusColor = (status: OrderItemStatus): string => {
-    switch (status) {
-      case 'ordered': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'preparing': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'ready': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'served': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
@@ -272,6 +291,32 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             {t('history.back_to_menu')}
           </Button>
         </div>
+        
+        {/* Action Buttons in Header */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowQRDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Share2 className="h-4 w-4" />
+            {t('history.share_session')}
+          </Button>
+
+          {historyData?.order?.status === 'completed' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrintReceipt}
+              disabled={isPrinting}
+              className="flex items-center gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              {isPrinting ? t('history.printing_receipt') : t('history.print_receipt')}
+            </Button>
+          )}
+        </div>
       </div>
 
       <h1 className="text-2xl font-bold mb-6">{t('history.title')}</h1>
@@ -280,10 +325,19 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
       {historyData.order && (
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
-              {t('history.current_session')}
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="h-5 w-5" />
+                {historyData.order.status === 'completed' 
+                  ? `${t('history.order')} #${historyData.order.id.slice(-6)}`
+                  : t('history.current_session')
+                }
+              </CardTitle>
+              {/* Show order status in header */}
+              <Badge className={getStatusColor(historyData.order.status as OrderStatus)}>
+                {t(`history.status.${historyData.order.status}`)}
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -324,18 +378,22 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('history.session_total')}</p>
-                    <p className="font-bold text-lg">
-                      ¥{historyData.order?.total_amount || 0}
-                    </p>
+                {/* Financial Breakdown */}
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">{t('history.subtotal')}</span>
+                    <span>¥{Math.round((historyData.order?.total_amount || 0) / 1.1)}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('history.total_items')}</p>
-                    <p className="font-semibold">
-                      {historyData.order?.items?.length || 0}
-                    </p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">{t('history.tax')} (10%)</span>
+                    <span>¥{Math.round((historyData.order?.total_amount || 0) * 0.1 / 1.1)}</span>
+                  </div>
+                  <div className="border-t pt-2 flex justify-between font-semibold">
+                    <span>{t('history.total')}</span>
+                    <span>¥{historyData.order?.total_amount || 0}</span>
+                  </div>
+                  <div className="text-right text-xs text-gray-500 dark:text-gray-400">
+                    {historyData.order?.items?.length || 0} {t('history.items_count')}
                   </div>
                 </div>
               </div>
@@ -344,9 +402,9 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
         </Card>
       )}
 
-      {/* Orders History */}
+      {/* Order Items */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">{t('history.orders_title')}</h2>
+        <h2 className="text-xl font-semibold">{t('history.your_order')}</h2>
 
         {!historyData.order ? (
           <Card>
@@ -363,63 +421,34 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             </CardContent>
           </Card>
         ) : (
-            <Card key={historyData.order.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
-                    {t('history.order_title', { 
-                      time: formatTime(historyData.order.created_at),
-                      date: formatDate(historyData.order.created_at)
-                    })}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getStatusColor(historyData.order.status as OrderStatus)}>
-                      {t(`history.status.${historyData.order.status}`)}
-                    </Badge>
-                    <span className="font-semibold">¥{historyData.order.total_amount}</span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
+            <Card>
+              <CardContent className="pt-6">
                 <div className="space-y-4">
                   {(historyData.order.items || []).map((item, index) => (
                     <div key={item.id}>
                       {index > 0 && <Separator className="my-3" />}
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <div className="flex items-start gap-3">
-                            <div className="flex-1">
-                              <h4 className="font-medium">{getMenuItemName(item)}</h4>
-                              
-                              {/* Size and Toppings */}
-                              {(item.menu_item_sizes || (item.toppings && item.toppings.length > 0)) && (
-                                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                  {item.menu_item_sizes && (
-                                    <p>{t('history.size')}: {getSizeName(item)}</p>
-                                  )}
-                                  {item.toppings && item.toppings.length > 0 && (
-                                    <p>{t('history.toppings')}: {item.toppings.map(getToppingName).join(', ')}</p>
-                                  )}
-                                </div>
+                          <h4 className="font-medium">{getMenuItemName(item)}</h4>
+                          
+                          {/* Size and Toppings */}
+                          {(item.menu_item_sizes || (item.toppings && item.toppings.length > 0)) && (
+                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              {item.menu_item_sizes && (
+                                <p>{t('history.size')}: {getSizeName(item)}</p>
                               )}
-                              
-                              {/* Notes */}
-                              {item.notes && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                  {t('history.notes')}: {item.notes}
-                                </p>
+                              {item.toppings && item.toppings.length > 0 && (
+                                <p>{t('history.toppings')}: {item.toppings.map(getToppingName).join(', ')}</p>
                               )}
-                              
-                              <div className="flex items-center gap-2 mt-2">
-                                <Badge className={getItemStatusColor(item.status as OrderItemStatus)}>
-                                  {t(`history.item_status.${item.status}`)}
-                                </Badge>
-                                <span className="text-sm text-gray-500">
-                                  {formatTime(item.created_at)}
-                                </span>
-                              </div>
                             </div>
-                          </div>
+                          )}
+                          
+                          {/* Notes */}
+                          {item.notes && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              {t('history.notes')}: {item.notes}
+                            </p>
+                          )}
                         </div>
                         
                         <div className="text-right">
@@ -436,36 +465,17 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/${locale}/menu${sessionId ? `?sessionId=${sessionId}` : ''}`)}
-          className="flex items-center gap-2"
-        >
-          {t('history.add_more_items')}
-        </Button>
-        
-        <Button
-          variant="outline"
-          onClick={() => setShowQRDialog(true)}
-          className="flex items-center gap-2"
-        >
-          <Share2 className="h-4 w-4" />
-          {t('history.share_session')}
-        </Button>
-
-        {historyData?.order?.status === 'completed' && (
+      {historyData?.order?.status !== 'completed' && (
+        <div className="mt-8 flex justify-center">
           <Button
             variant="outline"
-            onClick={handlePrintReceipt}
-            disabled={isPrinting}
+            onClick={() => router.push(`/${locale}/menu${sessionId ? `?sessionId=${sessionId}` : ''}`)}
             className="flex items-center gap-2"
           >
-            <Printer className="h-4 w-4" />
-            {isPrinting ? t('history.printing_receipt') : t('history.print_receipt')}
+            {t('history.add_more_items')}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* QR Code Dialog */}
       {sessionId && (
