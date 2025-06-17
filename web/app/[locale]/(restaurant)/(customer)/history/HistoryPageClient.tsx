@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Clock, Users, MapPin, Receipt, ArrowLeft, Share2, Copy } from 'lucide-react';
+import { Clock, Users, MapPin, Receipt, ArrowLeft, Share2, Copy, Printer } from 'lucide-react';
 import { useCustomerData } from '@/components/features/customer/layout/CustomerDataContext';
+import { QRCodeDialog } from '@/components/features/customer/QRCodeDialog';
 import type { OrderHistoryResponse, OrderItem, OrderStatus, OrderItemStatus, Topping } from './types';
 
 interface HistoryPageClientProps {
@@ -24,6 +25,8 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   const [historyData, setHistoryData] = useState<OrderHistoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   // Get sessionId from URL params or context
   const sessionId = searchParams.get('sessionId') || sessionData.sessionId;
@@ -67,16 +70,86 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     fetchOrderHistory();
   }, [sessionId, restaurantSettings?.id]);
 
+  // Helper function to get passcode from orderId
+  const getPasscode = () => {
+    if (historyData?.order?.id) {
+      return historyData.order.id.slice(-8);
+    }
+    return sessionId?.slice(-8) || '';
+  };
+
   const copyPasscode = async () => {
-    // Since the session-info API doesn't return session details,
-    // we'll copy the sessionId instead
-    if (sessionId) {
+    const passcode = getPasscode();
+    if (passcode) {
       try {
-        await navigator.clipboard.writeText(sessionId);
-        setTimeout(() => {}, 2000); // placeholder for future implementation
+        await navigator.clipboard.writeText(passcode);
+        // Could add toast notification here in the future
       } catch (err) {
-        console.error('Failed to copy session ID:', err);
+        console.error('Failed to copy passcode:', err);
       }
+    }
+  };
+
+  const handlePrintReceipt = async () => {
+    if (!historyData?.order) return;
+    
+    setIsPrinting(true);
+    try {
+      // Create a print-friendly version of the receipt
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) return;
+
+      const receiptHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .order-info { margin-bottom: 20px; }
+            .items { margin-bottom: 20px; }
+            .item { margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #eee; }
+            .total { font-weight: bold; font-size: 18px; margin-top: 20px; text-align: right; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>${restaurantSettings?.name || 'Restaurant'}</h2>
+            <p>${t('history.receipt_title', { orderId: getPasscode() })}</p>
+          </div>
+          <div class="order-info">
+            <p><strong>${t('history.table')}:</strong> ${historyData.order.table_name}</p>
+            <p><strong>${t('history.date')}:</strong> ${formatDate(historyData.order.created_at)} ${formatTime(historyData.order.created_at)}</p>
+          </div>
+          <div class="items">
+            <h3>${t('history.items')}</h3>
+            ${(historyData.order.items || []).map(item => `
+              <div class="item">
+                <p><strong>${getMenuItemName(item)}</strong> × ${item.quantity}</p>
+                ${item.menu_item_sizes ? `<p>${t('history.size')}: ${getSizeName(item)}</p>` : ''}
+                ${item.toppings && item.toppings.length > 0 ? `<p>${t('history.toppings')}: ${item.toppings.map(getToppingName).join(', ')}</p>` : ''}
+                ${item.notes ? `<p>${t('history.notes')}: ${item.notes}</p>` : ''}
+                <p style="text-align: right;">¥${item.total || (item.price_at_order || item.unit_price) * item.quantity}</p>
+              </div>
+            `).join('')}
+          </div>
+          <div class="total">
+            <p>${t('checkout.total')}: ¥${historyData.order.total_amount}</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.write(receiptHtml);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    } catch (err) {
+      console.error('Failed to print receipt:', err);
+    } finally {
+      setIsPrinting(false);
     }
   };
 
@@ -237,8 +310,8 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">{t('history.session_id')}</p>
-                    <p className="font-mono font-bold text-lg">{sessionId}</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">{t('history.passcode')}</p>
+                    <p className="font-mono font-bold text-lg">{getPasscode()}</p>
                   </div>
                   <Button
                     variant="ghost"
@@ -247,7 +320,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                     className="flex items-center gap-2"
                   >
                     <Copy className="h-4 w-4" />
-                    {t('history.copy')}
+                    {t('history.copy_passcode')}
                   </Button>
                 </div>
 
@@ -374,13 +447,35 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
         
         <Button
           variant="outline"
-          onClick={copyPasscode}
+          onClick={() => setShowQRDialog(true)}
           className="flex items-center gap-2"
         >
           <Share2 className="h-4 w-4" />
           {t('history.share_session')}
         </Button>
+
+        {historyData?.order?.status === 'completed' && (
+          <Button
+            variant="outline"
+            onClick={handlePrintReceipt}
+            disabled={isPrinting}
+            className="flex items-center gap-2"
+          >
+            <Printer className="h-4 w-4" />
+            {isPrinting ? t('history.printing_receipt') : t('history.print_receipt')}
+          </Button>
+        )}
       </div>
+
+      {/* QR Code Dialog */}
+      {sessionId && (
+        <QRCodeDialog
+          isOpen={showQRDialog}
+          onClose={() => setShowQRDialog(false)}
+          sessionId={sessionId}
+          restaurantSubdomain={restaurantSettings?.subdomain || 'restaurant'}
+        />
+      )}
     </div>
   );
 }

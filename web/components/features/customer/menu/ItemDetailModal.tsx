@@ -245,7 +245,7 @@ export function ItemDetailModal({
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
                   {availableToppings
-                    .sort((a, b) => a.position - b.position)
+                    .sort((a, b) => (a.position || 0) - (b.position || 0))
                     .map((topping) => {
                       const toppingName = getLocalizedText(
                         { name_en: topping.name_en, name_vi: topping.name_vi || '', name_ja: topping.name_ja || '' },
