@@ -6,10 +6,11 @@ import { ErrorBoundary } from '@/components/features/customer/common/ErrorBounda
 
 interface LayoutProps {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   const t = await getTranslations(locale);
   
   return {
@@ -18,7 +19,8 @@ export async function generateMetadata({ params: { locale } }: { params: { local
   };
 }
 
-export default async function CustomerLayoutWrapper({ children, params: { locale } }: LayoutProps) {
+export default async function CustomerLayoutWrapper({ children, params }: LayoutProps) {
+  const { locale } = await params;
   const messages = await getMessages();
   
   return (
