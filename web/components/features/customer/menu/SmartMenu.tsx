@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, Suspense, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDebounce } from 'use-debounce';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,15 +14,23 @@ import {
   ChefHat,
   ArrowRight,
   Heart,
-  Bot
+  Bot,
+  RefreshCw
 } from 'lucide-react';
 import { getLocalizedText } from '@/lib/customerUtils';
-import { generateContextualInfo } from '@/components/common/ContextualGreeting';
-import { FoodCard, FoodItem } from '@/components/features/customer/FoodCard';
+import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
+import { FoodCard } from '@/components/features/customer/FoodCard';
+import { ItemDetailModal } from '@/components/features/customer/menu/ItemDetailModal';
+import { SmartMenuSkeleton, MenuCardSkeleton } from '@/components/ui/enhanced-skeleton';
 import { useCart } from '@/components/features/customer/CartContext';
 import { AIAssistant } from '@/components/features/customer/layout/AIAssistant';
-import type { Category } from '@/shared/types/menu';
+import { useMenuData } from '@/hooks/useMenuData';
+import { useRecommendations } from '@/hooks/useRecommendations';
+import { useSessionData } from '@/hooks/useSessionData';
+import type { Category, MenuItemSize, Topping } from '@/shared/types/menu';
 import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
+import type { FoodItem } from '@/components/features/customer/FoodCard';
+
 
 // Enhanced interfaces for smart features
 interface SmartMenuItem extends FoodItem {
@@ -34,6 +43,10 @@ interface SmartMenuItem extends FoodItem {
   isNew?: boolean;
   tags?: string[];
   contextScore?: number;
+  estimatedPrepTime?: number;
+  calories?: number;
+  isRecommended?: boolean;
+  recommendationReason?: string;
 }
 
 interface SmartCategory {
@@ -47,7 +60,7 @@ interface SmartCategory {
 }
 
 interface SmartMenuProps {
-  categories: Category[];
+  categories?: Category[]; // Optional fallback data
   onAddToCart?: (item: SmartMenuItem) => void;
   searchPlaceholder?: string;
   locale: string;
@@ -58,9 +71,10 @@ interface SmartMenuProps {
   sessionId?: string;
   tableNumber?: string;
   restaurantName?: string;
+  restaurantId?: string;
 }
 
-// Helper function to get time of day classification for menu items
+// Helper function to get time of day classification
 const getTimeOfDay = (): string => {
   const hour = new Date().getHours();
   if (hour >= 6 && hour < 11) return 'breakfast';
@@ -70,92 +84,24 @@ const getTimeOfDay = (): string => {
   return 'late';
 };
 
-// Helper function to get popular items (mock implementation)
-const getPopularItems = (items: SmartMenuItem[]): SmartMenuItem[] => {
-  return items
-    .filter(item => item.reviewCount && item.reviewCount > 5)
-    .sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
-    .slice(0, 6);
-};
-
-// Helper function to get AI recommendations (mock implementation)
-const getAIRecommendations = (items: SmartMenuItem[], timeOfDay: string): SmartMenuItem[] => {
-  const timeBasedKeywords = {
-    breakfast: ['coffee', 'tea', 'pastry', 'egg', 'toast', 'pancake', 'cereal', 'morning'],
-    lunch: ['sandwich', 'salad', 'soup', 'bowl', 'wrap', 'burger', 'quick'],
-    afternoon: ['snack', 'light', 'tea', 'coffee', 'sweet'],
-    dinner: ['main', 'pasta', 'rice', 'meat', 'fish', 'steak', 'dinner'],
-    late: ['snack', 'light', 'drink', 'dessert', 'simple']
-  };
-
-  const keywords = timeBasedKeywords[timeOfDay as keyof typeof timeBasedKeywords] || [];
+// Transform categories into enhanced smart menu items
+const transformToSmartMenuItems = (
+  categories: Category[], 
+  locale: string, 
+  recommendedItems: string[] = [],
+  recommendationReasons: Record<string, string> = {}
+): SmartMenuItem[] => {
+  const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
   
-  return items
-    .filter(item => 
-      keywords.some(keyword => 
-        item.searchText.toLowerCase().includes(keyword.toLowerCase())
+  return categories.flatMap((category) =>
+    category.menu_items
+      .filter((item) => 
+        item.available && 
+        item.weekday_visibility.includes(today)
       )
-    )
-    .slice(0, 6);
-};
-
-// Helper function to get items by time-based categories
-const getCategoryItemsByTime = (items: SmartMenuItem[], timeOfDay: string): SmartMenuItem[] => {
-  return getAIRecommendations(items, timeOfDay);
-};
-
-export function SmartMenu({
-  categories,
-  onAddToCart,
-  searchPlaceholder = "Search menu items...",
-  locale,
-  brandColor,
-  canAddItems,
-  setView,
-  tableId,
-  sessionId,
-  tableNumber,
-  restaurantName = "Our Restaurant"
-}: SmartMenuProps) {
-  const { addToCart, getQuantityByItemId } = useCart();
-  
-  // State management
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeSmartCategory, setActiveSmartCategory] = useState<string>('recommended');
-  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
-  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
-  const [prefetchedItems, setPrefetchedItems] = useState<Set<string>>(new Set());
-  
-  // Search input ref for focus management
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  
-  // Debounced search effect
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Generate contextual information
-  const contextualInfo = useMemo(() => {
-    return generateContextualInfo(restaurantName, locale);
-  }, [restaurantName, locale]);
-
-  // Transform categories into smart menu items
-  const allMenuItems = useMemo((): SmartMenuItem[] => {
-    const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
-    
-    return categories.flatMap((category) =>
-      category.menu_items
-        .filter((item) => 
-          item.available && 
-          item.weekday_visibility.includes(today)
-        )
-        .map((item): SmartMenuItem => ({
+      .map((item): SmartMenuItem => {
+        const isRecommended = recommendedItems.includes(item.id);
+        return {
           ...item,
           categoryId: category.id,
           categoryName: getLocalizedText(
@@ -170,27 +116,154 @@ export function SmartMenu({
           reviewCount: Math.floor(Math.random() * 50) + 5, // Mock review count 5-55
           isPopular: Math.random() > 0.7,
           isNew: Math.random() > 0.9,
-          tags: item.tags || []
+          tags: item.tags || [],
+          estimatedPrepTime: Math.floor(Math.random() * 20) + 5, // 5-25 minutes
+          calories: Math.floor(Math.random() * 400) + 200, // 200-600 calories
+          isRecommended,
+          recommendationReason: isRecommended ? recommendationReasons[item.id] : undefined
+        };
+      })
+  );
+};
+
+export function SmartMenu({
+  categories: fallbackCategories = [],
+  onAddToCart,
+  searchPlaceholder = "Search menu items...",
+  locale,
+  brandColor,
+  canAddItems,
+  setView,
+  tableId,
+  sessionId,
+  tableNumber,
+  restaurantName = "Our Restaurant",
+  restaurantId
+}: SmartMenuProps) {
+  const { addToCart, getQuantityByItemId, cart } = useCart();
+  
+  // State management
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  const [activeSmartCategory, setActiveSmartCategory] = useState<string>('all');
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<SmartMenuItem | null>(null);
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+  
+  // Search input ref for focus management
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Data fetching hooks
+  const { 
+    categories: fetchedCategories, 
+    isLoading: menuLoading, 
+    isError: menuError,
+    prefetchItemDetails,
+    refetch: refetchMenu
+  } = useMenuData({
+    restaurantId,
+    locale,
+    sessionId,
+    tableId
+  });
+
+  const { sessionData } = useSessionData({
+    sessionId,
+    tableId,
+    restaurantId
+  });
+
+  const timeOfDay = useMemo(() => getTimeOfDay(), []);
+  const cartItems = useMemo(() => cart.map((item: { itemId: string }) => item.itemId), [cart]);
+
+  // Use fetched data or fallback
+  const activeCategories = fetchedCategories.length > 0 ? fetchedCategories : fallbackCategories;
+
+  // Prepare menu items for recommendations
+  const availableMenuItems = useMemo(() => {
+    return activeCategories.flatMap(category => 
+      category.menu_items
+        .filter(item => item.available)
+        .map(item => ({
+          id: item.id,
+          name_en: item.name_en,
+          name_ja: item.name_ja,
+          name_vi: item.name_vi,
+          description_en: item.description_en || undefined,
+          description_ja: item.description_ja || undefined,
+          description_vi: item.description_vi || undefined,
+          categoryId: category.id
         }))
     );
-  }, [categories, locale]);
+  }, [activeCategories]);
 
-  // Smart categorization logic
+  const { 
+    recommendedItems, 
+    recommendationReasons,
+    isLoading: recommendationsLoading 
+  } = useRecommendations({
+    sessionId,
+    tableId,
+    timeOfDay,
+    currentCartItems: cartItems,
+    previousOrders: sessionData?.orderHistory || [],
+    restaurantId,
+    availableMenuItems
+  });
+
+  // Generate contextual information
+  const contextualInfo = useMemo(() => {
+    return generateContextualInfo(restaurantName, locale);
+  }, [restaurantName, locale]);
+
+  // Transform categories into smart menu items
+  const allMenuItems = useMemo((): SmartMenuItem[] => {
+    return transformToSmartMenuItems(
+      activeCategories, 
+      locale, 
+      recommendedItems, 
+      recommendationReasons
+    );
+  }, [activeCategories, locale, recommendedItems, recommendationReasons]);
+
+  // Smart categorization logic with enhanced algorithms
   const smartCategories = useMemo((): Record<string, SmartCategory> => {
-    const timeOfDay = getTimeOfDay();
-    const popularItems = getPopularItems(allMenuItems);
-    const recommendedItems = getAIRecommendations(allMenuItems, timeOfDay);
-    const timeBasedItems = getCategoryItemsByTime(allMenuItems, timeOfDay);
+    const popularItems = allMenuItems
+      .filter(item => item.reviewCount && item.reviewCount > 10)
+      .sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
+      .slice(0, 8);
+
+    const recommendedItemsData = allMenuItems
+      .filter(item => item.isRecommended)
+      .slice(0, 8);
+
+    const timeBasedKeywords = {
+      breakfast: ['coffee', 'tea', 'pastry', 'egg', 'toast', 'pancake', 'cereal', 'morning'],
+      lunch: ['sandwich', 'salad', 'soup', 'bowl', 'wrap', 'burger', 'quick'],
+      afternoon: ['snack', 'light', 'tea', 'coffee', 'sweet'],
+      dinner: ['main', 'pasta', 'rice', 'meat', 'fish', 'steak', 'dinner'],
+      late: ['snack', 'light', 'drink', 'dessert', 'simple']
+    };
+
+    const keywords = timeBasedKeywords[timeOfDay as keyof typeof timeBasedKeywords] || [];
+    const timeBasedItems = allMenuItems
+      .filter(item => 
+        keywords.some(keyword => 
+          item.searchText.toLowerCase().includes(keyword.toLowerCase())
+        )
+      )
+      .slice(0, 8);
 
     return {
       recommended: {
         id: 'recommended',
         name: 'Perfect for You',
-        items: recommendedItems,
+        items: recommendedItemsData,
         icon: Sparkles,
         color: 'from-purple-500 to-pink-500',
         description: `AI-curated picks for ${contextualInfo.timeContext.toLowerCase()}`,
-        count: recommendedItems.length
+        count: recommendedItemsData.length
       },
       popular: {
         id: 'popular',
@@ -213,7 +286,7 @@ export function SmartMenu({
         count: timeBasedItems.length
       }
     };
-  }, [allMenuItems, contextualInfo.timeContext]);
+  }, [allMenuItems, contextualInfo.timeContext, timeOfDay]);
 
   // Filtered items based on search and active category
   const filteredItems = useMemo(() => {
@@ -235,33 +308,54 @@ export function SmartMenu({
     return items;
   }, [allMenuItems, debouncedSearchTerm, activeSmartCategory, smartCategories]);
 
-  // Prefetch item details on hover
-  const handleItemHover = useCallback(async (itemId: string) => {
-    if (prefetchedItems.has(itemId)) return;
-    
-    setHoveredItemId(itemId);
-    
-    // Simulate prefetching item details
-    try {
-      // Replace with actual API call
-      // await fetch(`/api/v1/customer/menu/items/${itemId}`);
-      setPrefetchedItems(prev => new Set([...prev, itemId]));
-    } catch {
-      console.log('Prefetch failed for item:', itemId);
-    }
-  }, [prefetchedItems]);
+  // Optimized event handlers
+  const handleItemClick = useCallback((item: FoodItem) => {
+    // Convert FoodItem to SmartMenuItem for modal
+    const smartItem = item as SmartMenuItem;
+    setSelectedItem(smartItem);
+    setIsItemModalOpen(true);
+  }, []);
 
-  // Handle add to cart with animation feedback
+  const handleModalClose = useCallback(() => {
+    setIsItemModalOpen(false);
+    setSelectedItem(null);
+  }, []);
+
+  const handleModalAddToCart = useCallback((
+    item: FoodItem, 
+    quantity: number, 
+    selectedSize?: MenuItemSize, 
+    selectedToppings?: Topping[], 
+    notes?: string
+  ) => {
+    // For now, use the existing add to cart logic
+    // TODO: Enhance to handle size, toppings, and notes properly
+    console.log('Adding to cart:', { item: item.id, quantity, selectedSize, selectedToppings, notes });
+    
+    if (onAddToCart) {
+      onAddToCart(item as SmartMenuItem);
+    } else {
+      for (let i = 0; i < quantity; i++) {
+        addToCart(item as SmartMenuItem, 1);
+      }
+    }
+  }, [onAddToCart, addToCart]);
+
+  const handleItemHover = useCallback(async (itemId: string) => {
+    // Prefetch item details for faster loading
+    await prefetchItemDetails(itemId);
+  }, [prefetchItemDetails]);
+
   const handleAddToCart = useCallback((item: SmartMenuItem) => {
     if (!canAddItems) return;
     
-    // Check if item has sizes or toppings - if so, redirect to detail view instead
+    // Check if item has sizes or toppings - if so, open detail modal instead
     const hasSizes = item.menu_item_sizes && item.menu_item_sizes.length > 0;
     const hasToppings = item.toppings && item.toppings.length > 0;
     
     if (hasSizes || hasToppings) {
-      // Redirect to item detail view for customization
-      setView('menuitemdetail', { item, tableId, sessionId, tableNumber });
+      // Redirect to item detail modal for customization
+      handleItemClick(item);
       return;
     }
     
@@ -270,58 +364,78 @@ export function SmartMenu({
     } else {
       addToCart(item, 1);
     }
-  }, [canAddItems, onAddToCart, addToCart, setView, tableId, sessionId, tableNumber]);
+  }, [canAddItems, onAddToCart, addToCart, handleItemClick]);
 
-  // Handle quantity updates for existing cart items
   const handleUpdateQuantity = useCallback((itemId: string, newQty: number) => {
     if (!canAddItems) return;
     
-    // Find all cart items for this itemId
     const currentQty = getQuantityByItemId(itemId);
     
-    if (newQty <= 0) {
-      // Remove item completely - this would need more sophisticated logic for variations
-      // For now, just do nothing as this gets complex with size/topping variations
-      return;
-    }
+    if (newQty <= 0) return;
     
     if (newQty > currentQty) {
-      // Add more - find the item and add another simple version
       const item = allMenuItems.find(i => i.id === itemId);
       if (item) {
         addToCart(item, newQty - currentQty);
       }
     }
-    // Decreasing is more complex due to variations, skip for now
   }, [canAddItems, getQuantityByItemId, addToCart, allMenuItems]);
 
   // Get smart category display order
   const smartCategoryOrder = useMemo(() => {
-    const timeOfDay = getTimeOfDay();
     return ['recommended', 'popular', timeOfDay].filter(key => 
       smartCategories[key] && smartCategories[key].count > 0
     );
-  }, [smartCategories]);
+  }, [smartCategories, timeOfDay]);
+
+  // Apply restaurant brand color
+  useEffect(() => {
+    if (brandColor) {
+      document.documentElement.style.setProperty('--brand-color', brandColor);
+    }
+  }, [brandColor]);
+
+  // Auto-switch to recommended when recommendations load (only if user hasn't interacted)
+  useEffect(() => {
+    if (!hasUserInteracted && 
+        !recommendationsLoading && 
+        recommendedItems.length > 0 && 
+        activeSmartCategory === 'all') {
+      setActiveSmartCategory('recommended');
+    }
+  }, [recommendationsLoading, recommendedItems.length, hasUserInteracted, activeSmartCategory]);
+
+  // Loading states
+  const isLoading = menuLoading || recommendationsLoading;
+
+  if (isLoading) {
+    return <SmartMenuSkeleton />;
+  }
+
+  if (menuError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-red-500 text-xl">Failed to load menu</div>
+          <Button onClick={() => refetchMenu()} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Header with contextual greeting */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <h1 className="text-3xl font-bold mb-2">
-              {contextualInfo.greeting}
-            </h1>
-            <p className="text-white/80 max-w-md mx-auto">
-              {contextualInfo.weatherSuggestion}
-            </p>
-          </motion.div>
-        </div>
-      </div>
+      <ContextualGreeting 
+        contextualInfo={contextualInfo}
+        variant="compact"
+        className="bg-white dark:bg-slate-900 shadow-md"
+        showWeather={true}
+        showTimeInfo={true}
+      />
 
       {/* Search and Smart Categories */}
       <div className="container mx-auto px-4 py-6">
@@ -335,7 +449,7 @@ export function SmartMenu({
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full h-12 text-lg rounded-full border-2 border-gray-200 focus:border-purple-500 transition-colors"
+              className="pl-10 w-full h-12 text-lg rounded-full border-2 border-gray-200 focus:border-[var(--brand-color)] transition-colors"
             />
             {searchTerm && (
               <motion.div
@@ -361,29 +475,57 @@ export function SmartMenu({
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             <Button
               variant={activeSmartCategory === 'all' ? 'default' : 'outline'}
-              onClick={() => setActiveSmartCategory('all')}
-              className="whitespace-nowrap"
+              onClick={() => {
+                setActiveSmartCategory('all');
+                setHasUserInteracted(true);
+              }}
+              className={`flex-shrink-0 ${
+                activeSmartCategory === 'all' ? 'text-white font-medium border-0' : ''
+              }`}
+              style={{
+                whiteSpace: 'nowrap',
+                ...(activeSmartCategory === 'all' ? {
+                  backgroundColor: 'var(--brand-color)',
+                  color: 'white',
+                  borderColor: 'var(--brand-color)'
+                } : {})
+              }}
             >
               All Items
             </Button>
             {smartCategoryOrder.map((categoryKey) => {
               const category = smartCategories[categoryKey];
               const IconComponent = category.icon || Sparkles;
+              const isActive = activeSmartCategory === categoryKey;
               
               return (
                 <Button
                   key={categoryKey}
-                  variant={activeSmartCategory === categoryKey ? 'default' : 'outline'}
-                  onClick={() => setActiveSmartCategory(categoryKey)}
-                  className="whitespace-nowrap flex items-center gap-2"
-                  style={activeSmartCategory === categoryKey ? {
-                    background: `linear-gradient(135deg, var(--tw-gradient-stops))`,
-                    backgroundImage: category.color
-                  } : undefined}
+                  variant={isActive ? 'default' : 'outline'}
+                  onClick={() => {
+                    setActiveSmartCategory(categoryKey);
+                    setHasUserInteracted(true);
+                  }}
+                  className={`flex-shrink-0 flex items-center gap-2 ${
+                    isActive ? 'text-white font-medium border-0' : ''
+                  }`}
+                  style={{
+                    whiteSpace: 'nowrap',
+                    ...(isActive ? {
+                      backgroundColor: 'var(--brand-color)',
+                      color: 'white',
+                      borderColor: 'var(--brand-color)'
+                    } : {})
+                  }}
                 >
-                  <IconComponent className="h-4 w-4" />
+                  <IconComponent className={`h-4 w-4 ${isActive ? 'text-white' : ''}`} />
                   {category.name}
-                  <Badge variant="secondary" className="ml-1 text-xs">
+                  <Badge 
+                    variant={isActive ? 'outline' : 'secondary'} 
+                    className={`ml-1 text-xs ${
+                      isActive ? 'bg-white/20 text-white border-white/30' : ''
+                    }`}
+                  >
                     {category.count}
                   </Badge>
                 </Button>
@@ -403,17 +545,17 @@ export function SmartMenu({
           )}
         </div>
 
-        {/* Menu Items Grid */}
-        <AnimatePresence mode="wait">
-          {filteredItems.length > 0 ? (
-            <motion.div
-              key={`${activeSmartCategory}-${debouncedSearchTerm}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {filteredItems.map((item, index) => (
+        {/* Menu Items Grid with Suspense */}
+        <Suspense fallback={<MenuCardSkeleton count={9} />}>
+          <AnimatePresence mode="wait">
+            {filteredItems.length > 0 ? (
+              <motion.div
+                key={`${activeSmartCategory}-${debouncedSearchTerm}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              >              {filteredItems.map((item, index) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -436,6 +578,7 @@ export function SmartMenu({
                     sessionId={sessionId}
                     tableNumber={tableNumber}
                     viewMode="grid"
+                    onItemClick={handleItemClick}
                   />
                   
                   {/* Enhanced item indicators */}
@@ -451,40 +594,42 @@ export function SmartMenu({
                         Popular
                       </Badge>
                     )}
-                    {hoveredItemId === item.id && prefetchedItems.has(item.id) && (
-                      <Badge className="bg-blue-500 text-white text-xs">
-                        ✓ Ready
+                    {item.isRecommended && (
+                      <Badge className="bg-purple-500 text-white text-xs flex items-center gap-1">
+                        <Sparkles className="h-3 w-3" />
+                        AI Pick
                       </Badge>
                     )}
                   </div>
                 </motion.div>
               ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-16"
-            >
-              <div className="text-gray-400 mb-4">
-                <Search className="h-16 w-16 mx-auto" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No items found</h3>
-              <p className="text-gray-600 mb-4">
-                Try adjusting your search or browse different categories
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm('');
-                  setActiveSmartCategory('recommended');
-                }}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-16"
               >
-                Clear Filters
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <div className="text-gray-400 mb-4">
+                  <Search className="h-16 w-16 mx-auto" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">No items found</h3>
+                <p className="text-gray-600 mb-4">
+                  Try adjusting your search or browse different categories
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setActiveSmartCategory('recommended');
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Suspense>
 
         {/* Quick Access Actions */}
         <div className="mt-12 flex justify-center gap-4">
@@ -500,7 +645,7 @@ export function SmartMenu({
             variant="outline"
             onClick={() => setView('checkout', { tableId, sessionId, tableNumber })}
           >
-            View Cart
+            View History
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
@@ -513,8 +658,17 @@ export function SmartMenu({
         restaurantName={restaurantName}
         currentContext="menu"
       />
+
+      {/* Item Detail Modal */}
+      <ItemDetailModal
+        isOpen={isItemModalOpen}
+        onClose={handleModalClose}
+        item={selectedItem}
+        locale={locale}
+        brandColor={brandColor}
+        onAddToCart={handleModalAddToCart}
+        canAddItems={canAddItems}
+      />
     </div>
   );
 }
-
-export default SmartMenu;

@@ -14,9 +14,9 @@ import {
   FaqSection,
   CallToActionSection,
   FooterSection,
-  RestaurantHomepage
-} from '../../components/home';
+} from '@/components/home';
 import { getSubdomainFromHost } from '@/lib/utils';
+import { RestaurantHomepage } from '@/components/features/customer/screens/RestaurantHomepage';
 
 // Main Landing Page Component
 export default function Page() {
