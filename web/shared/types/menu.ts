@@ -17,7 +17,7 @@ export interface Topping {
   name_ja?: string;
   name_vi?: string;
   price: number; // Additional price for this topping
-  position: number; // For ordering
+  position?: number; // For ordering
 }
 
 export interface MenuItem {

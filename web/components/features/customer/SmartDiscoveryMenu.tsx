@@ -455,6 +455,16 @@ export function SmartDiscoveryMenu({
 
   const handleAddToCart = (item: FoodItem) => {
     if (canAddItems) {
+      // Check if item has sizes or toppings - if so, redirect to detail view instead
+      const hasSizes = item.menu_item_sizes && item.menu_item_sizes.length > 0;
+      const hasToppings = item.toppings && item.toppings.length > 0;
+      
+      if (hasSizes || hasToppings) {
+        // Redirect to item detail view for customization
+        setView('menuitemdetail', { item, tableId, sessionId, tableNumber });
+        return;
+      }
+      
       addToCart(item);
     }
   };

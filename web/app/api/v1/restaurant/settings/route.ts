@@ -58,6 +58,7 @@ export async function GET() {
     const { data: restaurant, error: restaurantError } = await supabaseAdmin
       .from("restaurants")
       .select(`
+        id,
         name,
         subdomain,
         logo_url,
@@ -117,8 +118,9 @@ export async function GET() {
       console.warn('Failed to parse social_links JSON:', error);
       parsedSocialLinks = restaurant.social_links;
     }
-
+    console.log("Restaurant settings fetched successfully:", restaurant);
     return NextResponse.json({
+      id: restaurant.id,
       name: restaurant.name,
       subdomain: restaurant.subdomain,
       logoUrl: restaurant.logo_url,

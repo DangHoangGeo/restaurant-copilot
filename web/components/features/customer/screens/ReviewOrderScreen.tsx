@@ -327,17 +327,6 @@ export function ReviewOrderScreen({
             <h3 className="text-xl font-bold mb-4">
               {t("checkout.add_note_for", { itemName: cart.find(c => c.uniqueId === editingNoteForItem) ? getCartItemName(cart.find(c => c.uniqueId === editingNoteForItem)!) : t("checkout.item") })}
             </h3>
-            <Textarea
-              value={tempNote}
-              onChange={(e) => setTempNote(e.target.value)}
-              placeholder="Any special requests for this item..."
-              rows={3}
-              maxLength={150}
-              className="mb-2"
-            />
-            <p className="text-xs text-gray-500 mb-4">
-              {tempNote.length}/150 {t("checkout.characters")}
-            </p>
             <div className="flex space-x-3">
               <Button
                 variant="outline"

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { List, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MenuList } from "../MenuList";
-import { SmartDiscoveryMenu } from "../SmartDiscoveryMenu";
+import { SmartMenu } from "../menu/SmartMenu";
 import { useCart } from "../CartContext";
 import type { ViewType, ViewProps, MenuViewProps } from "./types";
 import { MenuItem, Category } from "@/shared/types/menu";
@@ -101,7 +101,7 @@ export function CustomerMenuScreen({
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
         <div className="px-4 py-3 flex items-center justify-between">
           <h2 className="text-lg font-medium text-slate-700 dark:text-slate-300">
-            {useSmartDiscovery ? t("menu.smart_discovery") : t("menu.browse_categories")}
+            {useSmartDiscovery ? t("menu.smart_menu") : t("menu.browse_categories")}
           </h2>
           <Button
             variant="outline"
@@ -125,19 +125,16 @@ export function CustomerMenuScreen({
       </div>
 
       {useSmartDiscovery ? (
-        <SmartDiscoveryMenu
+        <SmartMenu
           categories={categories}
-          locale="en" // You may want to get this from props or context
-          addToCart={addToCartSimple}
-          updateQty={updateQtySimple}
-          getQty={getQtySimple}
+          locale={locale}
           brandColor={restaurantSettings.primaryColor || '#0ea5e9'}
           canAddItems={canAddItems}
           setView={setView}
           tableId={viewProps.tableId}
           sessionId={viewProps.sessionId}
           tableNumber={viewProps.tableNumber}
-          restaurantSettings={restaurantSettings}
+          restaurantName={restaurantSettings?.name}
         />
       ) : (
         <MenuList
