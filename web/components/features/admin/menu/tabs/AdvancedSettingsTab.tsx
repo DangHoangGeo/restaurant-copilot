@@ -1,14 +1,15 @@
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { StreamlinedMenuItemFormData } from '../ItemModal';
+import { MenuItemCategory } from '@/shared/types/menu';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { WeekdaySelector } from '@/components/features/admin/menu/WeekdaySelector';
-import { Calendar, Settings, Tag } from 'lucide-react';
-import type { StreamlinedMenuItemFormData } from '../ItemModal';
-import type { MenuItemCategory } from '@/shared/types/menu';
+import { Tag, Settings, Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { WeekdaySelector } from '../WeekdaySelector';
 
 interface AdvancedSettingsTabProps {
   form: UseFormReturn<StreamlinedMenuItemFormData>;
@@ -21,13 +22,15 @@ export function AdvancedSettingsTab({
   categories,
   isEditing
 }: AdvancedSettingsTabProps) {
+  const t = useTranslations('AdminMenu.itemModal.advanced');
+
   return (
     <div className="space-y-6 pb-6">
       {/* Header */}
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold mb-2">Advanced Settings</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Configure category, availability, and scheduling. Default values are already set for quick setup.
+          {t('description')}
         </p>
       </div>
 
@@ -37,7 +40,7 @@ export function AdvancedSettingsTab({
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Tag className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">Category & Organization</CardTitle>
+              <CardTitle className="text-base">{t('category_title')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -46,11 +49,11 @@ export function AdvancedSettingsTab({
               name="category_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Menu Category</FormLabel>
+                  <FormLabel>{t('category_label')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value} disabled={isEditing}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder={t('select_category_placeholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -63,7 +66,7 @@ export function AdvancedSettingsTab({
                   </Select>
                   {isEditing && (
                     <p className="text-xs text-muted-foreground">
-                      Category cannot be changed when editing. Create a new item to move categories.
+                      {t('category_edit_note')}
                     </p>
                   )}
                   <FormMessage />
@@ -78,7 +81,7 @@ export function AdvancedSettingsTab({
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Settings className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">Availability Settings</CardTitle>
+              <CardTitle className="text-base">{t('availability_title')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -91,9 +94,9 @@ export function AdvancedSettingsTab({
                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel className="font-medium">Item is available for ordering</FormLabel>
+                    <FormLabel className="font-medium">{t('availability_label')}</FormLabel>
                     <p className="text-xs text-muted-foreground">
-                      Customers can see and order this item when checked
+                      {t('availability_description')}
                     </p>
                   </div>
                 </FormItem>
@@ -107,7 +110,7 @@ export function AdvancedSettingsTab({
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">Weekly Schedule</CardTitle>
+              <CardTitle className="text-base">{t('schedule_title')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -116,14 +119,14 @@ export function AdvancedSettingsTab({
               name="weekday_visibility"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Available Days</FormLabel>
+                  <FormLabel>{t('schedule_label')}</FormLabel>
                   <div className="space-y-2">
                     <WeekdaySelector 
                       selectedDays={field.value || []} 
                       onChange={field.onChange} 
                     />
                     <p className="text-xs text-muted-foreground">
-                      Select which days of the week this item should be available to customers
+                      {t('schedule_description')}
                     </p>
                   </div>
                   <FormMessage />
@@ -136,25 +139,25 @@ export function AdvancedSettingsTab({
         {/* Current Settings Summary */}
         <Card className="bg-muted/30">
           <CardContent className="p-4">
-            <h4 className="font-medium mb-3">Current Configuration</h4>
+            <h4 className="font-medium mb-3">{t('summary_title')}</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Category:</span>
+                <span className="text-muted-foreground">{t('category')}:</span>
                 <span className="font-medium">
-                  {categories.find(c => c.id === form.watch('category_id'))?.name || 'Not selected'}
+                  {categories.find(c => c.id === form.watch('category_id'))?.name || t('not_selected')}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Status:</span>
+                <span className="text-muted-foreground">{t('status')}:</span>
                 <span className={`font-medium ${form.watch('available') ? 'text-green-600' : 'text-red-600'}`}>
-                  {form.watch('available') ? 'Available' : 'Unavailable'}
+                  {form.watch('available') ? t('available') : t('unavailable')}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Schedule:</span>
+                <span className="text-muted-foreground">{t('schedule')}:</span>
                 <span className="font-medium">
-                  {form.watch('weekday_visibility')?.length === 7 ? 'All days' : 
-                   `${form.watch('weekday_visibility')?.length || 0} day${form.watch('weekday_visibility')?.length !== 1 ? 's' : ''}`}
+                  {form.watch('weekday_visibility')?.length === 7 ? t('all_days') : 
+                   `${form.watch('weekday_visibility')?.length || 0} ${t('day', { count: form.watch('weekday_visibility')?.length })}`}
                 </span>
               </div>
             </div>
@@ -164,11 +167,11 @@ export function AdvancedSettingsTab({
         {/* Quick Tips */}
         <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/50">
           <CardContent className="p-4">
-            <h4 className="font-medium mb-2 text-blue-900 dark:text-blue-100">💡 Quick Tips</h4>
+            <h4 className="font-medium mb-2 text-blue-900 dark:text-blue-100">{t('tips_title')}</h4>
             <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-              <li>• Keep items available unless temporarily out of stock</li>
-              <li>• Use weekday scheduling for special items (e.g., weekend brunch)</li>
-              <li>• Categories help organize your menu for customers</li>
+              <li>{t('tip1')}</li>
+              <li>{t('tip2')}</li>
+              <li>{t('tip3')}</li>
             </ul>
           </CardContent>
         </Card>

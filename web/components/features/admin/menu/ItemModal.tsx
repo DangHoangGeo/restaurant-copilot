@@ -13,6 +13,7 @@ import type { MenuItem, MenuItemCategory } from '@/shared/types/menu';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 
 // Simplified schema for the streamlined form
 const streamlinedMenuItemSchema = z.object({
@@ -119,7 +120,7 @@ export function ItemModal({
 }: ItemModalProps) {
   const [activeTab, setActiveTab] = useState("basic");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const t = useTranslations('AdminMenu.itemModal.tabs');
   // Set sensible defaults for hidden fields
   const form = useForm<StreamlinedMenuItemFormData>({
     resolver: zodResolver(streamlinedMenuItemSchema),
@@ -208,7 +209,7 @@ export function ItemModal({
           <TabsList className="grid w-full grid-cols-3 mx-auto sm:mx-4 mt-0">
             <TabsTrigger value="basic" className="relative text-xs sm:text-sm flex items-center">
               <Info className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Basic Info</span>
+              <span className="hidden sm:inline">{t("basic")}</span>
               {basicInfoComplete && (
                 <Badge variant="secondary" className="ml-1 sm:ml-2 h-4 w-4 p-0 text-xs">
                   ✓
@@ -217,7 +218,7 @@ export function ItemModal({
             </TabsTrigger>
             <TabsTrigger value="variants" className="text-xs sm:text-sm flex items-center">
               <Package className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Variants & Options</span>
+              <span className="hidden sm:inline">{t("variants")}</span>
               {variantsComplete && (
                 <Badge variant="secondary" className="ml-1 sm:ml-2 h-4 w-4 p-0 text-xs">
                   ✓
@@ -226,7 +227,7 @@ export function ItemModal({
             </TabsTrigger>
             <TabsTrigger value="advanced" className="text-xs sm:text-sm flex items-center">
               <Settings className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Advanced Settings</span>
+              <span className="hidden sm:inline">{t("advanced")}</span>
             </TabsTrigger>
           </TabsList>
 

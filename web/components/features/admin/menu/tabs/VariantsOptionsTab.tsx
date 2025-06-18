@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { UseFormReturn, useFieldArray } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { useFieldArray, UseFormReturn } from 'react-hook-form';
+import { StreamlinedMenuItemFormData } from '../ItemModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { PlusCircle, Trash2, ChevronDown, Package, Sparkles } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import type { StreamlinedMenuItemFormData } from '../ItemModal';
+import { useTranslations } from 'next-intl';
+import { ChevronDown, Package, PlusCircle, Sparkles, Trash2, Ruler, Plus } from 'lucide-react';
 
 interface VariantsOptionsTabProps {
   form: UseFormReturn<StreamlinedMenuItemFormData>;
@@ -29,6 +30,7 @@ export function VariantsOptionsTab({
   ownerLanguage,
   onTranslate
 }: VariantsOptionsTabProps) {
+  const t = useTranslations('AdminMenu.itemModal.variants');
   const [isToppingsOpen, setIsToppingsOpen] = useState(false);
   const [isSizesOpen, setIsSizesOpen] = useState(false);
   const [isStockOpen, setIsStockOpen] = useState(false);
@@ -83,10 +85,10 @@ export function VariantsOptionsTab({
       form.setValue(`toppings.${index}.name_ja`, translations.ja);
       form.setValue(`toppings.${index}.name_vi`, translations.vi);
       
-      toast.success('Topping translations generated successfully!');
+      toast.success(t('translate_success'));
     } catch (error) {
       console.error('Translation failed:', error);
-      toast.error('Translation failed. Please try again.');
+      toast.error(t('translate_error'));
     }
   };
 
@@ -94,9 +96,9 @@ export function VariantsOptionsTab({
     <div className="space-y-6 pb-6">
       {/* Header */}
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold mb-2">Variants & Options</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Add sizes, toppings, and manage stock levels. These are optional but help provide more choices for customers.
+          {t('description')}
         </p>
       </div>
 
@@ -109,11 +111,11 @@ export function VariantsOptionsTab({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Package className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-base">Stock Management</CardTitle>
+                    <CardTitle className="text-base">{t('stock_title')}</CardTitle>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
-                      Current: {form.watch('stock_level') || 'Unlimited'}
+                      {t('stock_current', { stock_level: form.watch('stock_level') || t('stock_unlimited') })}
                     </span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${isStockOpen ? 'rotate-180' : ''}`} />
                   </div>
@@ -127,18 +129,18 @@ export function VariantsOptionsTab({
                   name="stock_level"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Stock Level</FormLabel>
+                      <FormLabel>{t('stock_label')}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           {...field} 
                           value={field.value ?? ''} 
                           onChange={e => field.onChange(e.target.value === '' ? null : parseInt(e.target.value))}
-                          placeholder="Leave empty for unlimited stock"
+                          placeholder={t('stock_placeholder')}
                         />
                       </FormControl>
                       <p className="text-xs text-muted-foreground">
-                        Set a number to track inventory, or leave empty for unlimited stock
+                        {t('stock_description')}
                       </p>
                       <FormMessage />
                     </FormItem>
@@ -155,123 +157,85 @@ export function VariantsOptionsTab({
             <CollapsibleTrigger asChild>
               <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Size Variants</CardTitle>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      {sizeFields.length} size{sizeFields.length !== 1 ? 's' : ''}
-                    </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isSizesOpen ? 'rotate-180' : ''}`} />
+                    <Ruler className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-base">{t('sizes_title')}</CardTitle>
                   </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isSizesOpen ? 'rotate-180' : ''}`} />
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="pt-0 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-					className='order-2 sm:order-1'
-                    onClick={addPredefinedSizes}
-                    disabled={!form.getValues('price')}
-                  >
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" onClick={addPredefinedSizes}>
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Standard Sizes (S, M, L)
+                    {t('sizes_add_predefined')}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-					className='order-1 sm:order-1'
-                    onClick={() => appendSize({ 
-                      size_key: '', 
-                      name_en: '', 
-                      name_ja: '', 
-                      name_vi: '', 
-                      price: 0, 
-                      position: sizeFields.length 
-                    })}
-                  >
+                  <Button type="button" variant="outline" onClick={() => appendSize({ size_key: '', name_en: '', name_ja: '', name_vi: '', price: form.getValues('price') || 0, position: sizeFields.length })}>
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Custom Size
+                    {t('sizes_add_custom')}
                   </Button>
                 </div>
-                
-                {!form.getValues('price') && (
-                  <p className="text-sm text-amber-600">
-                    Set a base price first to auto-calculate size prices
-                  </p>
-                )}
-
-                {sizeFields.map((field, index) => (
-                  <Card key={field.id} className="bg-muted/30">
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium">Size {index + 1}</h4>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeSize(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-4">
+                  {sizeFields.map((field, index) => (
+                    <div key={field.id} className="flex items-end gap-2 p-3 border rounded-lg">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-grow">
                         <FormField
                           control={form.control}
                           name={`sizes.${index}.size_key`}
                           render={({ field: f }) => (
                             <FormItem>
-                              <FormLabel>Size Code</FormLabel>
+                              <FormLabel>{t('sizes_code_label')}</FormLabel>
                               <FormControl>
-                                <Input placeholder="S, M, L, XL..." {...f} />
+                                <Input placeholder={t('sizes_code_placeholder')} {...f} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        
                         <FormField
                           control={form.control}
                           name={`sizes.${index}.price`}
                           render={({ field: f }) => (
                             <FormItem>
-                              <FormLabel>Price</FormLabel>
+                              <FormLabel>{t('sizes_price_label')}</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
-                                  step="0.01" 
-                                  placeholder="0.00" 
-                                  {...f} 
-                                  onChange={e => f.onChange(parseFloat(e.target.value) || 0)} 
+                                <Input
+                                  type="number"
+                                  {...f}
+                                  onChange={e => f.onChange(parseFloat(e.target.value) || 0)}
                                 />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name={`sizes.${index}.name_en`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel>{t('sizes_name_label')}</FormLabel>
+                              <FormControl>
+                                <Input placeholder={t('sizes_name_placeholder')} {...f} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name={`sizes.${index}.${primaryNameField}`}
-                        render={({ field: f }) => (
-                          <FormItem>
-                            <FormLabel>Size Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Small, Medium, Large..." {...f} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  </Card>
-                ))}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeSize(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
@@ -283,157 +247,121 @@ export function VariantsOptionsTab({
             <CollapsibleTrigger asChild>
               <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Add-on Toppings</CardTitle>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      {toppingFields.length} topping{toppingFields.length !== 1 ? 's' : ''}
-                    </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isToppingsOpen ? 'rotate-180' : ''}`} />
+                    <Plus className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-base">{t('toppings_title')}</CardTitle>
                   </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isToppingsOpen ? 'rotate-180' : ''}`} />
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="pt-0 space-y-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => appendTopping({ 
-                    name_en: '', 
-                    name_ja: '', 
-                    name_vi: '', 
-                    price: 0, 
-                    position: toppingFields.length 
-                  })}
-                >
+                <Button type="button" variant="outline" onClick={() => appendTopping({ name_en: '', name_ja: '', name_vi: '', price: 0, position: toppingFields.length })}>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Topping
+                  {t('toppings_add')}
                 </Button>
-
-                {toppingFields.map((field, index) => (
-                  <Card key={field.id} className="bg-muted/30">
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium">Topping {index + 1}</h4>
+                <div className="space-y-4">
+                  {toppingFields.map((field, index) => (
+                    <div key={field.id} className="p-3 border rounded-lg space-y-3">
+                      <div className="flex items-end gap-2">
+                        <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <FormField
+                            control={form.control}
+                            name={`toppings.${index}.${primaryNameField}`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel>{t('toppings_name_label', { language: ownerLanguage.toUpperCase() })}</FormLabel>
+                                <FormControl>
+                                  <Input placeholder={t('toppings_name_placeholder')} {...f} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`toppings.${index}.price`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel>{t('toppings_price_label')}</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    {...f}
+                                    onChange={e => f.onChange(parseFloat(e.target.value) || 0)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                         <Button
                           type="button"
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => removeTopping(index)}
-                          className="text-red-500 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                      
-                      {/* Primary Language Field */}
-                      <FormField
-                        control={form.control}
-                        name={`toppings.${index}.${primaryNameField}`}
-                        render={({ field: f }) => (
-                          <FormItem>
-                            <FormLabel>Topping Name ({ownerLanguage.toUpperCase()})</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Extra cheese, bacon..." {...f} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Translation Button */}
-                      {onTranslate && (
+                      <div className="space-y-2">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="link"
                           size="sm"
-                          onClick={() => {
-                            const sourceText = form.getValues(`toppings.${index}.${primaryNameField}`);
-                            if (sourceText) {
-                              handleTranslateTopping(index, sourceText);
-                            }
-                          }}
-                          disabled={!form.watch(`toppings.${index}.${primaryNameField}`)}
-                          className="w-full border-dashed"
+                          onClick={() => handleTranslateTopping(index, form.getValues(`toppings.${index}.${primaryNameField}`) || '')}
+                          disabled={!onTranslate}
                         >
                           <Sparkles className="mr-2 h-4 w-4 text-primary" />
-                          Translate to All Languages
+                          {t('toppings_translate_button')}
                         </Button>
-                      )}
-
-                      {/* Other Language Fields - Editable */}
-                      <div className="grid grid-cols-1 gap-3">
-                        {ownerLanguage !== 'en' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                           <FormField
                             control={form.control}
                             name={`toppings.${index}.name_en`}
                             render={({ field: f }) => (
                               <FormItem>
-                                <FormLabel>English Name</FormLabel>
+                                <FormLabel>{t('toppings_en_name_label')}</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="English topping name..." {...f} />
+                                  <Input placeholder={t('toppings_en_name_placeholder')} {...f} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                        )}
-                        {ownerLanguage !== 'ja' && (
                           <FormField
                             control={form.control}
                             name={`toppings.${index}.name_ja`}
                             render={({ field: f }) => (
                               <FormItem>
-                                <FormLabel>Japanese Name</FormLabel>
+                                <FormLabel>{t('toppings_ja_name_label')}</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Japanese topping name..." {...f} />
+                                  <Input placeholder={t('toppings_ja_name_placeholder')} {...f} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                        )}
-                        {ownerLanguage !== 'vi' && (
                           <FormField
                             control={form.control}
                             name={`toppings.${index}.name_vi`}
                             render={({ field: f }) => (
                               <FormItem>
-                                <FormLabel>Vietnamese Name</FormLabel>
+                                <FormLabel>{t('toppings_vi_name_label')}</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Vietnamese topping name..." {...f} />
+                                  <Input placeholder={t('toppings_vi_name_placeholder')} {...f} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                        )}
+                        </div>
                       </div>
-                      
-                      {/* Price Field */}
-                      <FormField
-                        control={form.control}
-                        name={`toppings.${index}.price`}
-                        render={({ field: f }) => (
-                          <FormItem>
-                            <FormLabel>Additional Price</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                step="0.01" 
-                                placeholder="0.00" 
-                                {...f} 
-                                onChange={e => f.onChange(parseFloat(e.target.value) || 0)} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  </Card>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
@@ -444,18 +372,7 @@ export function VariantsOptionsTab({
       {(sizeFields.length > 0 || toppingFields.length > 0 || form.watch('stock_level')) && (
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="p-4">
-            <h4 className="font-medium mb-2">Summary</h4>
-            <div className="text-sm text-muted-foreground space-y-1">
-              {sizeFields.length > 0 && (
-                <p>• {sizeFields.length} size variant{sizeFields.length !== 1 ? 's' : ''} configured</p>
-              )}
-              {toppingFields.length > 0 && (
-                <p>• {toppingFields.length} add-on topping{toppingFields.length !== 1 ? 's' : ''} available</p>
-              )}
-              {form.watch('stock_level') && (
-                <p>• Stock tracking enabled ({form.watch('stock_level')} units)</p>
-              )}
-            </div>
+            <h4 className="font-medium mb-2">{t('summary_title')}</h4>
           </CardContent>
         </Card>
       )}
