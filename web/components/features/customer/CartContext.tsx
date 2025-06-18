@@ -17,11 +17,12 @@ export interface CartItem {
   description_vi?: string;
   selectedSize?: MenuItemSize;
   selectedToppings?: Topping[];
+  notes?: string;
 }
 
 export interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: MenuItem, quantity?: number, selectedSize?: MenuItemSize, selectedToppings?: Topping[]) => void;
+  addToCart: (item: MenuItem, quantity?: number, selectedSize?: MenuItemSize, selectedToppings?: Topping[], notes?: string) => void;
   updateQuantity: (uniqueId: string, qty: number) => void;
   getQuantityInCart: (uniqueId: string) => number; // Added
   getQuantityByItemId: (itemId: string) => number; // Helper for simple cart interface
@@ -41,6 +42,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     quantity = 1,
     selectedSize?: MenuItemSize,
     selectedToppings?: Topping[],
+    notes?: string,
   ) => {
     setCart((prev) => {
       const toppingIds = selectedToppings
@@ -49,7 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .join("_");
       const uniqueId = `${item.id}${selectedSize ? `_${selectedSize.id}` : ""}${
         toppingIds ? `_${toppingIds}` : ""
-      }`;
+      }${notes ? `_${notes.substring(0, 10)}` : ""}`;
 
       let itemPrice = item.price;
       if (selectedSize) {
@@ -58,7 +60,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (selectedToppings) {
         itemPrice += selectedToppings.reduce((sum, t) => sum + t.price, 0);
       }
-
       const existing = prev.find((ci) => ci.uniqueId === uniqueId);
       if (existing) {
         return prev.map((ci) =>
@@ -83,6 +84,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           description_vi: item.description_vi || undefined,
           selectedSize,
           selectedToppings,
+          notes,
         },
       ];
     });

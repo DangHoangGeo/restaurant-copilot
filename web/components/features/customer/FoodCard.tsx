@@ -30,6 +30,7 @@ interface FoodCardProps {
   sessionId?: string;
   tableNumber?: string;
   viewMode?: "grid" | "list";
+  onItemClick?: (item: FoodItem) => void; // New prop for modal handling
 }
 
 export function FoodCard({
@@ -46,6 +47,7 @@ export function FoodCard({
   sessionId,
   tableNumber,
   viewMode = "grid",
+  onItemClick,
 }: FoodCardProps) {
   const t = useTranslations("Customer");
   const [isAdding, setIsAdding] = useState(false);
@@ -64,6 +66,14 @@ export function FoodCard({
 
   const handleAdd = () => {
     if (!canAddItems) return;
+    
+    // If item has sizes or toppings, open detail view instead of adding directly
+    if ((item.menu_item_sizes && item.menu_item_sizes.length > 0) || 
+        (item.toppings && item.toppings.length > 0)) {
+      handleCardClick();
+      return;
+    }
+    
     setIsAdding(true);
     onAdd();
     setTimeout(() => setIsAdding(false), 300);
@@ -80,13 +90,18 @@ export function FoodCard({
   };
 
   const handleCardClick = () => {
-    setView("menuitemdetail", {
-      item,
-      tableId,
-      sessionId,
-      tableNumber,
-      canAddItems
-    });
+    if (onItemClick) {
+      onItemClick(item);
+    } else {
+      // Fallback to old navigation for backward compatibility
+      setView("menuitemdetail", {
+        item,
+        tableId,
+        sessionId,
+        tableNumber,
+        canAddItems
+      });
+    }
   };
 
   const itemName = getLocalizedText(
@@ -111,7 +126,7 @@ export function FoodCard({
         transition={{ duration: 0.2 }}
         className="h-full"
       >
-        <Card className={`group h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${!canAddItems ? 'opacity-75' : ''} border-0 shadow-md`}>
+        <Card className={`p-0 group h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${!canAddItems ? 'opacity-75' : ''} border-0 shadow-md`}>
           <div
             className="cursor-pointer flex-1"
             onClick={handleCardClick}
@@ -150,11 +165,6 @@ export function FoodCard({
                 {itemName}
               </h4>
 
-              {itemDescription && (
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 line-clamp-2 flex-1">
-                  {itemDescription}
-                </p>
-              )}
               {( (item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
                  (item.toppings && item.toppings.length > 0) ) && (
                 <p className="text-xs text-sky-600 dark:text-sky-400 mt-1 font-medium">
@@ -170,7 +180,7 @@ export function FoodCard({
             </div>
           </div>
 
-          <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 mt-auto">
+          <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0">
             <div className="flex justify-between items-center gap-2">
               <p className="text-base sm:text-lg font-bold truncate" style={{ color: brandColor }}>
                 {getPriceDisplayString(item)}
@@ -230,7 +240,7 @@ export function FoodCard({
       <Card className={`p-0 group overflow-hidden transition-all duration-300 hover:shadow-lg ${!canAddItems ? 'opacity-75' : ''} border-0 shadow-sm`}>
         <div
         >
-          <div className="flex gap-3 sm:gap-4 p-3 sm:p-2 cursor-pointe"
+          <div className="flex gap-3 sm:gap-4 px-3 sm:px-2 cursor-pointe"
             onClick={handleCardClick}>
 
             <div className="relative flex-shrink-0 overflow-hidden rounded-lg">

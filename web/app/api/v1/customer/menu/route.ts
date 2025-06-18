@@ -8,31 +8,43 @@ import { getSubdomainFromHost } from "@/lib/utils";
  */
 export async function GET(req: NextRequest) {
   try {
-    // Get subdomain from host header or query param
-    const hostHeader = req.headers.get('host') || '';
-    const subdomainFromHost = getSubdomainFromHost(hostHeader);
-    const subdomainFromQuery = req.nextUrl.searchParams.get("subdomain");
+    // Check if restaurantId is provided directly (preferred method)
+    const restaurantIdParam = req.nextUrl.searchParams.get("restaurantId");
     
-    const subdomain = subdomainFromQuery || subdomainFromHost;
+    let restaurantId: string;
+    
+    if (restaurantIdParam) {
+      // Use provided restaurant ID directly (avoids subdomain lookup)
+      restaurantId = restaurantIdParam;
+    } else {
+      // Fallback: Get subdomain from host header or query param
+      const hostHeader = req.headers.get('host') || '';
+      const subdomainFromHost = getSubdomainFromHost(hostHeader);
+      const subdomainFromQuery = req.nextUrl.searchParams.get("subdomain");
+      
+      const subdomain = subdomainFromQuery || subdomainFromHost;
 
-    if (!subdomain) {
-      return NextResponse.json({ 
-        error: "No subdomain provided" 
-      }, { status: 400 });
-    }
+      if (!subdomain) {
+        return NextResponse.json({ 
+          error: "No subdomain or restaurantId provided" 
+        }, { status: 400 });
+      }
 
-    // Get restaurant ID from subdomain
-    const { data: restaurant, error: restaurantError } = await supabaseAdmin
-      .from("restaurants")
-      .select("id")
-      .eq("subdomain", subdomain)
-      .single();
+      // Get restaurant ID from subdomain
+      const { data: restaurant, error: restaurantError } = await supabaseAdmin
+        .from("restaurants")
+        .select("id")
+        .eq("subdomain", subdomain)
+        .single();
 
-    if (restaurantError || !restaurant) {
-      return NextResponse.json({
-        error: "Restaurant not found",
-        details: restaurantError?.message
-      }, { status: 404 });
+      if (restaurantError || !restaurant) {
+        return NextResponse.json({
+          error: "Restaurant not found",
+          details: restaurantError?.message
+        }, { status: 404 });
+      }
+      
+      restaurantId = restaurant.id;
     }
 
     // Fetch menu categories with items, sizes, and toppings
@@ -80,7 +92,7 @@ export async function GET(req: NextRequest) {
           )
         )
       `)
-      .eq("restaurant_id", restaurant.id)
+      .eq("restaurant_id", restaurantId)
       .order("position", { ascending: true })
       .order("position", { foreignTable: "menu_items", ascending: true })
       .order("position", { foreignTable: "menu_items.menu_item_sizes", ascending: true })
@@ -95,6 +107,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({
+      success: true,
       categories: categories || []
     });
 

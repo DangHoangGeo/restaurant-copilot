@@ -67,6 +67,7 @@ export type ViewType =
   | "checkout"
   | "orderplaced"
   | "thankyou"
+  | "history"
   | "review"
   | "booking"
   | "admin"

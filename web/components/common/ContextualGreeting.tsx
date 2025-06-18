@@ -61,7 +61,7 @@ export function ContextualGreeting({
       className={cn("mb-6", className)}
     >
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--brand-color)] via-[var(--brand-color)]/90 to-[var(--brand-color)]/80 rounded-2xl" />
         <div className={cn("relative text-center", currentVariant.container)}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

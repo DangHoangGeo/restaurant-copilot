@@ -39,7 +39,7 @@ const CustomerMenuItemDetailScreen: React.FC<CustomerMenuItemDetailScreenProps> 
   }, [item.menu_item_sizes]);
 
   const availableToppings = useMemo(() => {
-    return item.toppings?.sort((a, b) => a.position - b.position) || [];
+    return item.toppings?.sort((a, b) => (a.position || 0) - (b.position || 0)) || [];
   }, [item.toppings]);
 
   // Set default size if available

@@ -212,7 +212,7 @@ BEGIN
     SELECT session_id
     FROM orders
     WHERE orders.table_id = t.id
-      AND orders.status IN ('new', 'preparing', 'ready')
+      AND orders.status IN ('new', 'serving', 'ready')
     ORDER BY created_at DESC
     LIMIT 1
   ) o ON true
