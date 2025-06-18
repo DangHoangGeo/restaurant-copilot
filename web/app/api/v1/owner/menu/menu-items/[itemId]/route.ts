@@ -36,6 +36,7 @@ const menuItemUpdateSchema = z.object({
   price: z.number().min(0).optional(),
   image_url: z.string().url().optional().nullable(),
   available: z.boolean().optional(),
+  tags: z.array(z.string()).optional(), 
   weekday_visibility: z.array(z.number().min(1).max(7)).optional(),
   stock_level: z.number().min(0).optional(),
   position: z.number().optional(),

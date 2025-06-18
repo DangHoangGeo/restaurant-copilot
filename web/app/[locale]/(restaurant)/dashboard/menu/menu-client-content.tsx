@@ -26,7 +26,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { MenuItemForm } from '@/components/features/admin/menu/MenuItemForm';
+import { ItemModal } from '@/components/features/admin/menu/ItemModal';
 import Image from 'next/image';
 import { Category } from '@/shared/types/menu';
 // import { Switch } from "@/components/ui/switch"; // For availability toggle if preferred
@@ -86,7 +86,7 @@ const getMenuItemSchema = (t: ReturnType<typeof useTranslations<'AdminMenu.valid
   weekday_visibility: z.array(z.number()).optional().nullable(),
   stock_level: z.number().min(0, t('stock_level_min', {min: 0})).optional().nullable(),
   position: z.number({ required_error: t('position_required') }),
-  tags: z.array(z.string()).optional(), // Tags are optional, not part of DB schema directly
+  tags: z.array(z.string()).optional(),
   // For image file handling, not part of DB schema directly for menu_item
   imageFile: z.instanceof(File)
     .refine(file => file.size <= 0.5 * 1024 * 1024, t('imageFile.maxSize', { maxSize: 0.5 }))
@@ -419,7 +419,61 @@ export function MenuClientContent() {
       console.error('Description generation error:', error);
       throw error;
     }
-  }
+  };
+
+  // Combined AI generation function for names, descriptions, and tags
+  const handleGenerateAI = async (itemName: string) => {
+    try {
+      const response = await fetch('/api/v1/ai/generate-menu-item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          itemName, 
+          language: ownerLanguage,
+          restaurantType: 'restaurant' // You can make this dynamic based on restaurant settings
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('AI generation failed');
+      }
+
+      const result = await response.json();
+      return {
+        name_en: result.name_en || itemName,
+        name_ja: result.name_ja || '',
+        name_vi: result.name_vi || '',
+        description_en: result.description_en || '',
+        description_ja: result.description_ja || '',
+        description_vi: result.description_vi || '',
+        tags: result.tags || []
+      };
+    } catch (error) {
+      console.error('AI generation error:', error);
+      // Fallback to individual generation if combined endpoint fails
+      try {
+        const [translations, descriptions] = await Promise.all([
+          handleTranslate(itemName, 'name', 'item'),
+          handleGenerateDescription(itemName, '')
+        ]);
+        
+        return {
+          name_en: translations.en || itemName,
+          name_ja: translations.ja || '',
+          name_vi: translations.vi || '',
+          description_en: descriptions.en || '',
+          description_ja: descriptions.ja || '',
+          description_vi: descriptions.vi || '',
+          tags: [] // Basic tags fallback
+        };
+      } catch (fallbackError) {
+        console.error('Fallback AI generation error:', fallbackError);
+        throw error;
+      }
+    }
+  };
 
   const categoryForm = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
@@ -566,8 +620,9 @@ export function MenuClientContent() {
       const method = data.id ? 'PUT' : 'POST';
       const url = data.id ? `/api/v1/owner/menu/menu-items/${data.id}` : '/api/v1/owner/menu/menu-items';
 
-      //const { imageFile, ...itemPayloadDb } = data; // Exclude imageFile from DB payload
-      const {...itemPayloadDb } = data;
+      // Exclude imageFile from DB payload
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { imageFile, ...itemPayloadDb } = data;
       const finalPayload = {
         ...itemPayloadDb,
         image_url: imageUrl && imageUrl.trim() !== '' ? imageUrl : null,
@@ -962,76 +1017,66 @@ export function MenuClientContent() {
       />
 
       {/* Item Modal */}
-      <Dialog open={isItemModalOpen} onOpenChange={(isOpen) => { 
-        if (!isOpen) { 
-          itemForm.reset(); 
-        } 
-        setIsItemModalOpen(isOpen); 
-      }}>
-        <DialogContent className="w-full sm:max-w-5xl max-h-[90vh] overflow-y-auto">
-          <MenuItemForm
-            initialData={ {
-              id: itemForm.getValues().id || '',
-              name_en: itemForm.getValues().name_en || '',
-              name_ja: itemForm.getValues().name_ja || '',
-              name_vi: itemForm.getValues().name_vi || '',
-              description_en: itemForm.getValues().description_en || '',
-              description_ja: itemForm.getValues().description_ja || '',
-              description_vi: itemForm.getValues().description_vi || '',
-              price: itemForm.getValues().price || 0,
-              tags: itemForm.getValues().tags || [],
-              position: itemForm.getValues().position || 0,
-              image_url: itemForm.getValues().image_url || '',
-              available: itemForm.getValues().available ?? true,
-              category_id: itemForm.getValues().category_id || '',
-              weekday_visibility: itemForm.getValues().weekday_visibility || [],
-              stock_level: itemForm.getValues().stock_level ?? 20,
-              toppings: itemForm.getValues().toppings || [],
-              menu_item_sizes: itemForm.getValues().sizes || [],
-            } }
-            categories={menuData.map(cat => ({
-              id: cat.id,
-              name: getLocalizedText({ 
-                name_en: cat.name_en, 
-                name_ja: cat.name_ja, 
-                name_vi: cat.name_vi 
-              }, locale),
-              name_en: cat.name_en,
-              name_ja: cat.name_ja,
-              name_vi: cat.name_vi,
-              position: cat.position,
-              restaurant_id: cat.restaurant_id,
-            }))}
-            ownerLanguage={ownerLanguage}
-            onTranslate={handleTranslate}
-            onGenerateDescription={handleGenerateDescription}
-            onSave={async (data, menuItemId) => {
-              // Transform MenuItemForm data to match onItemSubmit expected format
-              const transformedData: MenuItemFormData = {
-                ...data,
-                id: menuItemId,
-                weekday_visibility: data.weekdayVisibility,
-                position: itemForm.getValues().position || 0,
-                category_id: data.category_id,
-                toppings: data.toppings,
-                sizes: data.sizes,
-              };
-              await onItemSubmit(transformedData);
-            }}
-            onCancel={() => {
-              itemForm.reset();
-              setIsItemModalOpen(false);
-            }}
-            texts={{
-              saveButton: isLoading ? t('buttons.saving') : t('save'),
-              cancelButton: t('cancel'),
-              title: itemForm.getValues("id") ? t('edit_item') : t('add_item'),
-              successMessage: itemForm.getValues("id") ? t('item.update_success') : t('item.create_success'),
-              errorMessage: t('item.save_error'),
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+      <ItemModal
+        isOpen={isItemModalOpen}
+        onClose={() => setIsItemModalOpen(false)}
+        initialData={{
+          id: itemForm.getValues().id || '',
+          name_en: itemForm.getValues().name_en || '',
+          name_ja: itemForm.getValues().name_ja || '',
+          name_vi: itemForm.getValues().name_vi || '',
+          description_en: itemForm.getValues().description_en || '',
+          description_ja: itemForm.getValues().description_ja || '',
+          description_vi: itemForm.getValues().description_vi || '',
+          price: itemForm.getValues().price || 0,
+          tags: itemForm.getValues().tags || [],
+          position: itemForm.getValues().position || 0,
+          image_url: itemForm.getValues().image_url || '',
+          available: itemForm.getValues().available ?? true,
+          category_id: itemForm.getValues().category_id || '',
+          weekday_visibility: itemForm.getValues().weekday_visibility || [],
+          stock_level: itemForm.getValues().stock_level ?? 20,
+          toppings: itemForm.getValues().toppings || [],
+          menu_item_sizes: itemForm.getValues().sizes || [],
+        }}
+        categories={menuData.map(cat => ({
+          id: cat.id,
+          name: getLocalizedText({ 
+            name_en: cat.name_en, 
+            name_ja: cat.name_ja, 
+            name_vi: cat.name_vi 
+          }, locale),
+          name_en: cat.name_en,
+          name_ja: cat.name_ja,
+          name_vi: cat.name_vi,
+          position: cat.position,
+          restaurant_id: cat.restaurant_id,
+        }))}
+        ownerLanguage={ownerLanguage}
+        onTranslate={handleTranslate}
+        onGenerateDescription={handleGenerateDescription}
+        onGenerateAI={handleGenerateAI}
+        onSave={async (data, menuItemId) => {
+          // Transform ItemModal data to match onItemSubmit expected format
+          const transformedData: MenuItemFormData = {
+            ...data,
+            id: menuItemId,
+            weekday_visibility: data.weekday_visibility,
+            position: itemForm.getValues().position || 0,
+            category_id: data.category_id,
+            toppings: data.toppings,
+            sizes: data.sizes,
+          };
+          await onItemSubmit(transformedData);
+        }}
+        texts={{
+          saveButton: isLoading ? t('buttons.saving') : t('save'),
+          cancelButton: t('cancel'),
+          title: itemForm.getValues("id") ? t('edit_item') : t('add_item'),
+          successMessage: itemForm.getValues("id") ? t('item.update_success') : t('item.create_success'),
+          errorMessage: t('item.save_error'),
+        }}
+      />
     </DragDropContext>
     </>
   );
