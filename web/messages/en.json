@@ -14,7 +14,7 @@
       "twoFactor": "Two-Factor Authentication",
       "verifyEmail": "Verify Your Email"
     },
-    "subtitle":{
+    "subtitle": {
       "login": "Welcome back! Please enter your credentials to access your restaurant dashboard.",
       "signup": "Create your restaurant's account to start managing your operations.",
       "forgotPassword": "Enter your email to reset your password.",
@@ -50,7 +50,7 @@
       "redirectingToLogin": "Redirecting to login page...",
       "pleaseWait": "This may take a few moments..."
     },
-    "password":{
+    "password": {
       "reset": "Reset your password",
       "update": "Update password",
       "updating": "Updating password...",
@@ -399,7 +399,7 @@
     "back_to_home": "Back to Home",
     "days": {
       "monday": "Monday",
-      "tuesday": "Tuesday", 
+      "tuesday": "Tuesday",
       "wednesday": "Wednesday",
       "thursday": "Thursday",
       "friday": "Friday",
@@ -426,7 +426,7 @@
       "ready": "Ready",
       "served": "Served"
     },
-    "cart":"Cart",
+    "cart": "Cart",
     "view_cart_label": "View Cart",
     "order_history_label": "Order History",
     "weekdays": {
@@ -465,34 +465,42 @@
       "no_reviews": "No reviews yet"
     },
     "alert": {
-      "info": { "title": "Information" },
-      "success": { "title": "Success" },
-      "warning": { "title": "Warning" },
-      "error": { "title": "Error" }
+      "info": {
+        "title": "Information"
+      },
+      "success": {
+        "title": "Success"
+      },
+      "warning": {
+        "title": "Warning"
+      },
+      "error": {
+        "title": "Error"
+      }
     },
     "errors": {
-        "noSubdomainDetected": "No subdomain could be detected for the restaurant.",
-        "noRestaurantIdForSubdomain": "Could not find a restaurant ID for the provided subdomain.",
-        "noRestaurantIdTitle": "Restaurant Not Identified",
-        "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
-        "fetchErrorTitle": "Error Loading Settings",
-        "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
-        "noSettingsFoundTitle": "Settings Not Found",
-        "noSettingsFoundMessage": "No settings data found for this restaurant."
-      },
-      "validation": {
-        "nameRequired": "Restaurant name is required.",
-        "nameMaxLength": "Restaurant name must be {maxLength} characters or less.",
-        "defaultLanguageRequired": "Default language is required.",
-        "brandColorInvalidFormat": "Invalid brand color format. Use #RRGGBB.",
-        "contactInfoMaxLength": "Contact information must be {maxLength} characters or less.",
-        "addressMaxLength": "Address must be {maxLength} characters or less.",
-        "openingHoursMaxLength": "Operating hours must be {maxLength} characters or less.",
-        "descriptionMaxLength": "Description must be {maxLength} characters or less.",
-        "logoFileMaxSize": "Logo image must be {maxSize}MB or less.",
-        "logoFileInvalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
-        "logoUrlinvalidFormat": "Invalid logo URL format."
-      },
+      "noSubdomainDetected": "No subdomain could be detected for the restaurant.",
+      "noRestaurantIdForSubdomain": "Could not find a restaurant ID for the provided subdomain.",
+      "noRestaurantIdTitle": "Restaurant Not Identified",
+      "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
+      "fetchErrorTitle": "Error Loading Settings",
+      "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
+      "noSettingsFoundTitle": "Settings Not Found",
+      "noSettingsFoundMessage": "No settings data found for this restaurant."
+    },
+    "validation": {
+      "nameRequired": "Restaurant name is required.",
+      "nameMaxLength": "Restaurant name must be {maxLength} characters or less.",
+      "defaultLanguageRequired": "Default language is required.",
+      "brandColorInvalidFormat": "Invalid brand color format. Use #RRGGBB.",
+      "contactInfoMaxLength": "Contact information must be {maxLength} characters or less.",
+      "addressMaxLength": "Address must be {maxLength} characters or less.",
+      "openingHoursMaxLength": "Operating hours must be {maxLength} characters or less.",
+      "descriptionMaxLength": "Description must be {maxLength} characters or less.",
+      "logoFileMaxSize": "Logo image must be {maxSize}MB or less.",
+      "logoFileInvalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
+      "logoUrlinvalidFormat": "Invalid logo URL format."
+    },
     "coming_soon": {
       "title": "Feature Coming Soon",
       "description": "This feature is currently in development and will be available soon. Stay tuned!"
@@ -500,7 +508,6 @@
     "mark_resolved": "Mark Resolved",
     "mark_unresolved": "Mark Unresolved",
     "defaultUnnamedRestaurant": "Unnamed Restaurant",
-    "saving": "Saving...",
     "processing": "Processing..."
   },
   "AdminLayout": {
@@ -669,12 +676,12 @@
       "weekday_visibility": "Visible on Weekdays",
       "reorder_success": "Menu items reordered successfully.",
       "reorder_error": "Failed to reorder menu items.",
-      "auto_translate_name_en_placeholder":"Auto-translation",
-      "auto_translate_name_ja_placeholder":"Auto-translation",
-      "auto_translate_name_vi_placeholder":"Auto-translation",
-      "auto_translate_description_en_placeholder":"Auto-translation",
-      "auto_translate_description_ja_placeholder":"Auto-translation",
-      "auto_translate_description_vi_placeholder":"Auto-translation"
+      "auto_translate_name_en_placeholder": "Auto-translation",
+      "auto_translate_name_ja_placeholder": "Auto-translation",
+      "auto_translate_name_vi_placeholder": "Auto-translation",
+      "auto_translate_description_en_placeholder": "Auto-translation",
+      "auto_translate_description_ja_placeholder": "Auto-translation",
+      "auto_translate_description_vi_placeholder": "Auto-translation"
     },
     "errors": {
       "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
@@ -713,7 +720,158 @@
       "no_items_title": "No Items in This Category",
       "no_items_description": "This category is empty. Add a new menu item to get started."
     },
-    "currency_format": "{value, number, ::currency/JPY}"
+    "currency_format": "{value, number, ::currency/JPY}",
+    "itemModal": {
+      "title": "Menu Item",
+      "tabs": {
+        "basic": "Basic Info",
+        "variants": "Variants & Options",
+        "advanced": "Advanced Settings"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "previous": "← Previous",
+        "next": "Next →"
+      },
+      "saving": "Saving...",
+      "basic": {
+        "title": "Basic Information",
+        "description": "Provide the essential details for your menu item. The name and price are required.",
+        "itemNameLabel": "Item Name",
+        "itemNamePlaceholder": "e.g., Classic Burger, Iced Latte",
+        "translateButton": "Auto-translate Name & Description",
+        "translating": "Translating...",
+        "ingredientsLabel": "Ingredients / Description",
+        "ingredientsPlaceholder": "e.g., Beef patty, lettuce, tomato, cheese, special sauce",
+        "generateDescriptionButton": "Generate with AI",
+        "generating": "Generating...",
+        "generateAllButton": "Generate All with AI",
+        "generatingContent": "Generating Content...",
+        "priceLabel": "Price",
+        "pricePlaceholder": "e.g., 12.99",
+        "itemPhotoLabel": "Item Photo",
+        "removeButton": "Remove",
+        "replaceButton": "Replace",
+        "uploadTitle": "Click or drag file to this area to upload",
+        "uploadHint": "Recommended: 600x400px, max 5MB",
+        "chooseFileButton": "Choose File",
+        "aiContentTitle": "AI-Generated Content",
+        "englishLabel": "English",
+        "englishNamePlaceholder": "English item name",
+        "englishDescriptionPlaceholder": "English item description",
+        "japaneseLabel": "Japanese",
+        "japaneseNamePlaceholder": "Japanese item name",
+        "japaneseDescriptionPlaceholder": "Japanese item description",
+        "vietnameseLabel": "Vietnamese",
+        "vietnameseNamePlaceholder": "Vietnamese item name",
+        "vietnameseDescriptionPlaceholder": "Vietnamese item description",
+        "aiTagsLabel": "AI-Generated Tags",
+        "aiTagsDescription": "These tags help with search and recommendations. You can edit them if needed.",
+        "imageUploadSuccess": "Image uploaded and compressed successfully!",
+        "imageCompressError": "Error compressing image. Please try a different one.",
+        "translationsGeneratedSuccess": "Translations generated successfully!",
+        "translationFailed": "Translation failed. Please try again.",
+        "itemNameRequired": "Item name is required to generate translations.",
+        "descriptionGeneratedSuccess": "Description generated successfully!",
+        "descriptionGenerationFailed": "Description generation failed. Please try again.",
+        "aiContentGeneratedSuccess": "AI content generated successfully!",
+        "aiGenerationFailed": "AI generation failed. Please try again."
+      },
+      "advanced": {
+        "title": "Advanced Settings",
+        "description": "Configure category, availability, and scheduling. Default values are already set for quick setup.",
+        "category_title": "Category & Organization",
+        "category": "Category",
+        "status":"Status",
+        "schedule":"Schedule",
+        "available": "Available",
+        "all_days": "All Days",
+        "category_label": "Menu Category",
+        "category_edit_note": "Category cannot be changed when editing. Create a new item to move categories.",
+        "availability_title": "Availability Settings",
+        "availability_label": "Available for purchase",
+        "availability_description": "When unchecked, this item will be hidden from the menu.",
+        "schedule_title": "Scheduled Visibility",
+        "schedule_label": "Visible on specific days",
+        "schedule_description": "Select the days of the week this item should be visible on the menu.",
+        "summary_title": "Current Configuration",
+        "tips_title": "💡 Quick Tips",
+        "tip1": "• Keep items available unless temporarily out of stock",
+        "tip2": "• Use weekday scheduling for special items (e.g., weekend brunch)",
+        "tip3": "• Categories help organize your menu for customers"
+      },
+      "variants": {
+        "title": "Variants & Options",
+        "description": "Add sizes, toppings, and manage stock levels. These are optional but help provide more choices for customers.",
+        "translate_success": "Topping translations generated successfully!",
+        "translate_error": "Translation failed. Please try again.",
+        "summary_title": "Summary",
+        "stock_title": "Stock Management",
+        "stock_current": "Current: {stock_level}",
+        "stock_unlimited": "Unlimited",
+        "stock_label": "Stock Level",
+        "stock_placeholder": "Leave empty for unlimited stock",
+        "stock_description": "Set a number to track inventory, or leave empty for unlimited stock",
+        "sizes_title": "Size Variants",
+        "sizes_add_predefined": "Add S, M, L Sizes",
+        "sizes_add_custom": "Add Custom Size",
+        "sizes_code_label": "Size Code",
+        "sizes_code_placeholder": "S, M, L, XL...",
+        "sizes_name_label": "Size Name",
+        "sizes_name_placeholder": "Small, Medium, Large...",
+        "sizes_price_label": "Price",
+        "toppings_title": "Add-on Toppings",
+        "toppings_add": "Add Topping",
+        "toppings_name_label": "Topping Name ({language})",
+        "toppings_name_placeholder": "Extra cheese, bacon...",
+        "toppings_translate_button": "Auto-translate All",
+        "toppings_en_name_label": "English Name",
+        "toppings_en_name_placeholder": "English topping name...",
+        "toppings_ja_name_label": "Japanese Name",
+        "toppings_ja_name_placeholder": "Japanese topping name...",
+        "toppings_vi_name_label": "Vietnamese Name",
+        "toppings_vi_name_placeholder": "Vietnamese topping name...",
+        "toppings_price_label": "Additional Price"
+      },
+      "errors": {
+        "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
+        "data_fetch_error": "Failed to load menu data. Please try again later.",
+        "no_categories_found": "No menu categories found. Please add a category to get started."
+      },
+      "validation": {
+        "name_en_required": "English name is required.",
+        "name_en_max_length": "English name must be {maxLength} characters or less.",
+        "name_ja_max_length": "Japanese name must be {maxLength} characters or less.",
+        "name_vi_max_length": "Vietnamese name must be {maxLength} characters or less.",
+        "position_required": "Position is required.",
+        "category_id_required": "Category is required.",
+        "logoFile": {
+          "required": "Image file is required.",
+          "maxSize": "Image file must be {maxSize} MB or less.",
+          "invalidType": "Invalid image file type. Please upload a PNG, JPG, or WEBP image."
+        },
+        "imageFile": {
+          "maxSize": "Image must be less than {maxSize}MB."
+        },
+        "compressionError": "Error compressing menu item image. Please try a different image.",
+        "description_en_max_length": "English description must be {maxLength} characters or less.",
+        "description_ja_max_length": "Japanese description must be {maxLength} characters or less.",
+        "description_vi_max_length": "Vietnamese description must be {maxLength} characters or less.",
+        "price_required": "Price is required.",
+        "price_min": "Price must be at least {min}.",
+        "image_url_invalid": "Invalid image URL format.",
+        "stock_level_min": "Stock level must be at least {min}.",
+        "weekday_visibility_array_error": "Invalid day selection.",
+        "logoFile_maxSize": "Image file must be {maxSize}MB or less."
+      },
+      "empty_state": {
+        "no_categories_title": "No Menu Categories Yet",
+        "no_categories_description": "Get started by creating your first menu category. Organize your dishes and make them available to your customers.",
+        "no_items_title": "No Items in This Category",
+        "no_items_description": "This category is empty. Add a new menu item to get started."
+      }
+    }
   },
   "AdminDashboard": {
     "title": "Dashboard",
@@ -816,7 +974,7 @@
         "description": "Set your restaurant's daily operating hours.",
         "presets": {
           "standard": "9-21",
-          "restaurant": "11-22", 
+          "restaurant": "11-22",
           "cafe": "7-17",
           "closed": "Closed"
         },
@@ -1312,7 +1470,6 @@
     "error_adding_items": "Failed to add items to order",
     "checkout_processed": "Checkout processed successfully",
     "error_processing_checkout": "Failed to process checkout",
-    
     "details_title": "Order Details",
     "selected_items": "Selected Items",
     "no_order_items": "No items in this order.",
@@ -1404,7 +1561,7 @@
     "quick_actions": "Quick Actions",
     "scan_qr_code": "Scan QR Code",
     "book_table": "Book a Table",
-    "popular":"Most Popular",
+    "popular": "Most Popular",
     "view_full_menu": "View Full Menu",
     "ai_assistant": "AI Assistant",
     "ai_assistant_description": "Get personalized recommendations and assistance with your order",
@@ -1426,7 +1583,7 @@
     "current_session": "Current Ordering Session",
     "active": "Active",
     "inactive": "Inactive",
-    "session_active_more":"You can still add more items!",
+    "session_active_more": "You can still add more items!",
     "menu_item_detail_back_to_menu": "Back to Menu",
     "menu_item_detail_add_to_cart": "Add to Cart",
     "decrease_quantity": "Decrease quantity by one",
@@ -1523,9 +1680,9 @@
       "order_placement_note": "Your order will be sent to the kitchen and prepared fresh for your table.",
       "item": "Item",
       "price_each": "¥{price} each",
-      "add_note_for":"Add a note for {itemName}",
-      "save_note":"Save Note",
-      "note_saved":"Note saved successfully!",
+      "add_note_for": "Add a note for {itemName}",
+      "save_note": "Save Note",
+      "note_saved": "Note saved successfully!",
       "confirming": "Confirming...",
       "empty_cart_title": "Your cart is empty",
       "empty_cart_message": "Add some delicious items to your cart to continue.",

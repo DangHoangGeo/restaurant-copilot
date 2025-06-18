@@ -16,9 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FoodCard, FoodItem } from "./FoodCard";
-import { getLocalizedText } from "./utils";
-import type { ViewType, ViewProps } from "./screens/types";
+import { FoodCard, FoodItem } from "../FoodCard";
+import { getLocalizedText } from "../utils";
+import type { ViewType, ViewProps } from "../screens/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added for sort
 import { Checkbox } from "@/components/ui/checkbox"; // Added for dietary filters
 import { Label } from "@/components/ui/label"; // Added for checkbox labels

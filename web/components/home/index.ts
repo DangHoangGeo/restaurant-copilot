@@ -1,5 +1,4 @@
 // Export all components from the home directory
-export { RestaurantHomepage } from './RestaurantHomepage';
 export { ThemeProviderLanding, useThemeLanding } from './ThemeProvider';
 export { Icon } from './Icon';
 export { Button } from './Button';
