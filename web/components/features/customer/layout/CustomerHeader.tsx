@@ -8,6 +8,7 @@ import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { useTheme } from "next-themes";
 import type { RestaurantSettings } from "@/shared/types/customer";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CustomerHeaderProps {
   restaurantSettings: RestaurantSettings;
@@ -34,23 +35,25 @@ export function CustomerHeader({
     <header className="sticky top-0 z-40 w-full bg-white dark:bg-slate-900 shadow-sm">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {restaurantSettings.logoUrl ? (
-            <div className="h-10 w-10 relative overflow-hidden rounded-md">
-              <Image
-                src={restaurantSettings.logoUrl}
-                alt={restaurantSettings.name || "Restaurant logo"}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div 
-              className="h-10 w-10 rounded-md flex items-center justify-center text-white text-lg font-bold"
-              style={{backgroundColor: restaurantSettings.primaryColor || "#4f46e5"}}
-            >
-              {restaurantSettings.name?.charAt(0) || "R"}
-            </div>
-          )}
+          <Link href="/" className="flex items-center space-x-2">
+            {restaurantSettings.logoUrl ? (
+              <div className="h-10 w-10 relative overflow-hidden rounded-md">
+                <Image
+                  src={restaurantSettings.logoUrl}
+                  alt={restaurantSettings.name || "Restaurant logo"}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div 
+                className="h-10 w-10 rounded-md flex items-center justify-center text-white text-lg font-bold"
+                style={{backgroundColor: restaurantSettings.primaryColor || "#4f46e5"}}
+              >
+                {restaurantSettings.name?.charAt(0) || "R"}
+              </div>
+            )}
+          </Link>
           <div>
             <h1 className="font-bold text-slate-900 dark:text-white">
               {restaurantSettings.name}
@@ -89,7 +92,8 @@ export function CustomerHeader({
               className="text-slate-600 dark:text-slate-300" 
               onClick={onOrderHistoryClick}
             >
-              {t("order_history_label")}
+              <Clock className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">{t("order_history_label")}</span>
             </Button>
           )}
         </div>

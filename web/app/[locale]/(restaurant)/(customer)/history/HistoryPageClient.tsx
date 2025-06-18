@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import {  useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +19,7 @@ interface HistoryPageClientProps {
 export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { restaurantSettings, sessionData } = useCustomerData();
+  const { restaurantSettings, sessionData, isLoading: contextLoading } = useCustomerData();
   const t = useTranslations('Customer');
   
   const [historyData, setHistoryData] = useState<OrderHistoryResponse | null>(null);
@@ -33,8 +33,19 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
   useEffect(() => {
     const fetchOrderHistory = async () => {
-      if (!sessionId || !restaurantSettings?.id) {
-        setError('Session or restaurant information not found');
+      // Wait for context to finish loading before checking for missing data
+      if (contextLoading) {
+        return;
+      }
+
+      if (!sessionId) {
+        setError('Session information not found');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!restaurantSettings?.id) {
+        setError('Restaurant information not found');
         setIsLoading(false);
         return;
       }
@@ -68,7 +79,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     };
 
     fetchOrderHistory();
-  }, [sessionId, restaurantSettings?.id]);
+  }, [sessionId, restaurantSettings?.id, contextLoading]);
 
   // Helper function to get passcode from orderId
   const getPasscode = () => {
@@ -235,7 +246,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || contextLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-64">
@@ -260,8 +271,14 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               {error || t('history.error_message')}
             </p>
             <Button onClick={() => {
+              // Only include sessionId if the session is still active (not completed)
+              // When in error state, check session status from context instead of historyData
               const menuUrl = new URLSearchParams();
-              if (sessionId) menuUrl.set('sessionId', sessionId);
+              // Only include sessionId if the session is still active (not completed)
+              console.log('sessionData:', sessionData);
+              if (sessionId && sessionData.sessionStatus === 'active') {
+                menuUrl.set('sessionId', sessionId);
+              }
               router.push(`/${locale}/menu?${menuUrl.toString()}`);
             }}>
               {t('history.back_to_menu')}
@@ -282,7 +299,11 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             size="sm"
             onClick={() => {
               const menuUrl = new URLSearchParams();
-              if (sessionId) menuUrl.set('sessionId', sessionId);
+              // Only include sessionId if the session is still active (not completed)
+              console.log('sessionData:', sessionData);
+              if (sessionId && sessionData.sessionStatus === 'active') {
+                menuUrl.set('sessionId', sessionId);
+              }
               router.push(`/${locale}/menu?${menuUrl.toString()}`);
             }}
             className="flex items-center gap-2"
@@ -411,9 +432,16 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             <CardContent className="py-8">
               <div className="text-center text-gray-500">
                 <p>{t('history.no_orders')}</p>
-                <Button 
+                <Button
                   className="mt-4"
-                  onClick={() => router.push(`/${locale}/menu${sessionId ? `?sessionId=${sessionId}` : ''}`)}
+                  onClick={() => {
+                    const menuUrl = new URLSearchParams();
+                    // Only include sessionId if the session is still active (not completed)
+                    if (sessionId && sessionData.sessionStatus === 'active') {
+                      menuUrl.set('sessionId', sessionId);
+                    }
+                    router.push(`/${locale}/menu?${menuUrl.toString()}`);
+                  }}
                 >
                   {t('history.start_ordering')}
                 </Button>
@@ -469,7 +497,14 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
         <div className="mt-8 flex justify-center">
           <Button
             variant="outline"
-            onClick={() => router.push(`/${locale}/menu${sessionId ? `?sessionId=${sessionId}` : ''}`)}
+            onClick={() => {
+              const menuUrl = new URLSearchParams();
+              // Only include sessionId if the session is still active (not completed)
+              if (sessionId && sessionData.sessionStatus === 'active') {
+                menuUrl.set('sessionId', sessionId);
+              }
+              router.push(`/${locale}/menu?${menuUrl.toString()}`);
+            }}
             className="flex items-center gap-2"
           >
             {t('history.add_more_items')}

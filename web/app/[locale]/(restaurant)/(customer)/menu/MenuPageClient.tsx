@@ -239,7 +239,9 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   }
 
   // Redirect to history page for expired/completed sessions
-  if (sessionData.sessionStatus === 'expired') {
+  // Only redirect if there's a sessionId in the URL - if user navigates to menu without sessionId, 
+  // they want a fresh start regardless of stored session status
+  if (sessionData.sessionStatus === 'expired' && sessionParams.sessionId) {
     const historyUrl = new URLSearchParams();
     if (sessionData.sessionId) historyUrl.set('sessionId', sessionData.sessionId);
     router.push(`/${locale}/history?${historyUrl.toString()}`);

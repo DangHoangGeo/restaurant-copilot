@@ -18,7 +18,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { getLocalizedText } from '@/lib/customerUtils';
-import { generateContextualInfo } from '@/components/common/ContextualGreeting';
+import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
 import { FoodCard } from '@/components/features/customer/FoodCard';
 import { ItemDetailModal } from '@/components/features/customer/menu/ItemDetailModal';
 import { SmartMenuSkeleton, MenuCardSkeleton } from '@/components/ui/enhanced-skeleton';
@@ -388,6 +388,13 @@ export function EnhancedSmartMenu({
     );
   }, [smartCategories, timeOfDay]);
 
+  // Apply restaurant brand color
+  useEffect(() => {
+    if (brandColor) {
+      document.documentElement.style.setProperty('--brand-color', brandColor);
+    }
+  }, [brandColor]);
+
   // Auto-switch to recommended when recommendations load (only if user hasn't interacted)
   useEffect(() => {
     if (!hasUserInteracted && 
@@ -422,22 +429,13 @@ export function EnhancedSmartMenu({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Header with contextual greeting */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <h1 className="text-3xl font-bold mb-2">
-              {contextualInfo.greeting}
-            </h1>
-            <p className="text-white/80 max-w-md mx-auto">
-              {contextualInfo.weatherSuggestion}
-            </p>
-          </motion.div>
-        </div>
-      </div>
+      <ContextualGreeting 
+        contextualInfo={contextualInfo}
+        variant="compact"
+        className="bg-white dark:bg-slate-900 shadow-md"
+        showWeather={true}
+        showTimeInfo={true}
+      />
 
       {/* Search and Smart Categories */}
       <div className="container mx-auto px-4 py-6">
@@ -451,7 +449,7 @@ export function EnhancedSmartMenu({
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full h-12 text-lg rounded-full border-2 border-gray-200 focus:border-purple-500 transition-colors"
+              className="pl-10 w-full h-12 text-lg rounded-full border-2 border-gray-200 focus:border-[var(--brand-color)] transition-colors"
             />
             {searchTerm && (
               <motion.div
@@ -481,31 +479,53 @@ export function EnhancedSmartMenu({
                 setActiveSmartCategory('all');
                 setHasUserInteracted(true);
               }}
-              className="whitespace-nowrap"
+              className={`flex-shrink-0 ${
+                activeSmartCategory === 'all' ? 'text-white font-medium border-0' : ''
+              }`}
+              style={{
+                whiteSpace: 'nowrap',
+                ...(activeSmartCategory === 'all' ? {
+                  backgroundColor: 'var(--brand-color)',
+                  color: 'white',
+                  borderColor: 'var(--brand-color)'
+                } : {})
+              }}
             >
               All Items
             </Button>
             {smartCategoryOrder.map((categoryKey) => {
               const category = smartCategories[categoryKey];
               const IconComponent = category.icon || Sparkles;
+              const isActive = activeSmartCategory === categoryKey;
               
               return (
                 <Button
                   key={categoryKey}
-                  variant={activeSmartCategory === categoryKey ? 'default' : 'outline'}
+                  variant={isActive ? 'default' : 'outline'}
                   onClick={() => {
                     setActiveSmartCategory(categoryKey);
                     setHasUserInteracted(true);
                   }}
-                  className="whitespace-nowrap flex items-center gap-2"
-                  style={activeSmartCategory === categoryKey ? {
-                    background: `linear-gradient(135deg, var(--tw-gradient-stops))`,
-                    backgroundImage: category.color
-                  } : undefined}
+                  className={`flex-shrink-0 flex items-center gap-2 ${
+                    isActive ? 'text-white font-medium border-0' : ''
+                  }`}
+                  style={{
+                    whiteSpace: 'nowrap',
+                    ...(isActive ? {
+                      backgroundColor: 'var(--brand-color)',
+                      color: 'white',
+                      borderColor: 'var(--brand-color)'
+                    } : {})
+                  }}
                 >
-                  <IconComponent className="h-4 w-4" />
+                  <IconComponent className={`h-4 w-4 ${isActive ? 'text-white' : ''}`} />
                   {category.name}
-                  <Badge variant="secondary" className="ml-1 text-xs">
+                  <Badge 
+                    variant={isActive ? 'outline' : 'secondary'} 
+                    className={`ml-1 text-xs ${
+                      isActive ? 'bg-white/20 text-white border-white/30' : ''
+                    }`}
+                  >
                     {category.count}
                   </Badge>
                 </Button>
@@ -625,7 +645,7 @@ export function EnhancedSmartMenu({
             variant="outline"
             onClick={() => setView('checkout', { tableId, sessionId, tableNumber })}
           >
-            View Cart
+            View History
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>

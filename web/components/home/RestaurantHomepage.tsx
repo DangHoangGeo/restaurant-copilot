@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -24,7 +24,6 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Button, Card, Icon } from '.';
-import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
@@ -81,10 +80,6 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const tCustomer = useTranslations('CustomerHome');
   const tCommon = useTranslations('common');
-  // Contextual information using the reusable helper
-  const contextualInfo = useMemo(() => {
-    return generateContextualInfo(restaurantData?.restaurant?.name, locale);
-  }, [restaurantData?.restaurant?.name, locale]);
 
   useEffect(() => {
     const fetchRestaurantData = async () => {
@@ -305,14 +300,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
         </div>
 
         <div className="container mx-auto px-4 text-center relative z-10">
-          {/* Reusable Contextual Greeting Component */}
-          <ContextualGreeting 
-            contextualInfo={contextualInfo}
-            variant="default"
-            showWeather={true}
-            showTimeInfo={true}
-          />
-
+  
           {/* Main Restaurant Title with Animation */}
           <motion.h2 
             className="text-5xl md:text-7xl font-bold mb-6"

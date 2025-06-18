@@ -30,6 +30,7 @@ interface CustomerDataContextType {
   error: string | null;
   // Session management functions
   checkStoredSession: () => Promise<void>;
+  checkStoredSessionForDirectAccess: () => Promise<void>;
   setSessionId: (sessionId: string) => void;
   clearSession: () => void;
 }
@@ -130,6 +131,47 @@ export function CustomerDataProvider({ children }: CustomerDataProviderProps) {
     });
   };
 
+  // Check stored session when user accesses menu directly (no sessionId in URL)
+  // If session is expired, clear it instead of keeping it for auto-redirect
+  const checkStoredSessionForDirectAccess = async () => {
+    const storedSessionId = localStorage.getItem('coorder_session_id');
+    
+    if (storedSessionId) {
+      try {
+        const response = await fetch(`/api/v1/customer/session/check?sessionId=${storedSessionId}`);
+        const result = await response.json();
+        
+        if (result.success && result.sessionStatus === 'active') {
+          // Only keep active sessions for direct access
+          setSessionData({
+            sessionId: storedSessionId,
+            sessionStatus: 'active',
+            canAddItems: result.canAddItems,
+            orderId: result.sessionData?.orderId,
+            tableNumber: result.sessionData?.tableNumber,
+            guestCount: result.sessionData?.guestCount,
+          });
+        } else {
+          // For expired or invalid sessions, clear them when accessing menu directly
+          localStorage.removeItem('coorder_session_id');
+          setSessionData({
+            sessionId: null,
+            sessionStatus: 'new',
+            canAddItems: false,
+          });
+        }
+      } catch (error) {
+        console.error('Error checking stored session for direct access:', error);
+        localStorage.removeItem('coorder_session_id');
+        setSessionData({
+          sessionId: null,
+          sessionStatus: 'new',
+          canAddItems: false,
+        });
+      }
+    }
+  };
+
   // Fetch restaurant settings
   useEffect(() => {
     const fetchRestaurantSettings = async () => {
@@ -178,7 +220,9 @@ export function CustomerDataProvider({ children }: CustomerDataProviderProps) {
         validateSessionFromUrl(sessionParams.sessionId);
       } else {
         // Check for stored session if no URL parameter
-        checkStoredSession();
+        // If user is accessing menu page directly without sessionId, 
+        // check if stored session is active, if expired clear it
+        checkStoredSessionForDirectAccess();
       }
     }
   }, [sessionParams.sessionId]);
@@ -235,6 +279,7 @@ export function CustomerDataProvider({ children }: CustomerDataProviderProps) {
     isLoading,
     error,
     checkStoredSession,
+    checkStoredSessionForDirectAccess,
     setSessionId,
     clearSession,
   };
