@@ -23,7 +23,7 @@ import {
   Zap,
   ArrowRight
 } from 'lucide-react';
-import { Button, Card, Icon } from '.';
+import { Button, Card, Icon } from '../../../home';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 

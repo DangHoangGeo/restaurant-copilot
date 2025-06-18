@@ -1,6 +1,6 @@
 'use client';
 
-import { EnhancedSmartMenu } from '@/components/features/customer/menu/EnhancedSmartMenu';
+import { SmartMenu } from '@/components/features/customer/menu/SmartMenu';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
@@ -258,7 +258,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
 
   return (
     <>
-      <EnhancedSmartMenu
+      <SmartMenu
         categories={categories}
         locale={locale}
         sessionId={sessionData.sessionId || ''}

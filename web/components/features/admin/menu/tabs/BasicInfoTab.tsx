@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ export function BasicInfoTab({
   onGenerateDescription,
   onGenerateAI
 }: BasicInfoTabProps) {
+  const t = useTranslations('AdminMenu.itemModal.basic');
   const [isTranslating, setIsTranslating] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -82,9 +84,9 @@ export function BasicInfoTab({
       // Clear any existing image_url since we have a new file
       form.setValue("image_url", "");
       
-      toast.success('Image uploaded successfully!');
+      toast.success(t('imageUploadSuccess'));
     } catch (error) {
-      toast.error('Error compressing image');
+      toast.error(t('imageCompressError'));
       console.error(error);
     }
   };
@@ -113,10 +115,10 @@ export function BasicInfoTab({
         form.setValue('description_vi', translations.vi);
       }
       
-      toast.success('Translations generated successfully!');
+      toast.success(t('translationsGeneratedSuccess'));
     } catch (error) {
       console.error('Translation failed:', error);
-      toast.error('Translation failed. Please try again.');
+      toast.error(t('translationFailed'));
     } finally {
       setIsTranslating(false);
     }
@@ -132,7 +134,7 @@ export function BasicInfoTab({
     );
     
     if (!itemName?.trim()) {
-      toast.error('Please enter an item name first');
+      toast.error(t('itemNameRequired'));
       return;
     }
     
@@ -145,10 +147,10 @@ export function BasicInfoTab({
       form.setValue('description_ja', descriptions.ja);
       form.setValue('description_vi', descriptions.vi);
       
-      toast.success('Description generated successfully!');
+      toast.success(t('descriptionGeneratedSuccess'));
     } catch (error) {
       console.error('Description generation failed:', error);
-      toast.error('Description generation failed. Please try again.');
+      toast.error(t('descriptionGenerationFailed'));
     } finally {
       setIsGeneratingDescription(false);
     }
@@ -164,7 +166,7 @@ export function BasicInfoTab({
     );
     
     if (!itemName?.trim()) {
-      toast.error('Please enter an item name first');
+      toast.error(t('itemNameRequired'));
       return;
     }
     
@@ -181,10 +183,10 @@ export function BasicInfoTab({
       form.setValue('description_vi', aiResult.description_vi);
       form.setValue('tags', aiResult.tags);
       
-      toast.success('AI content generated successfully!');
+      toast.success(t('aiContentGeneratedSuccess'));
     } catch (error) {
       console.error('AI generation failed:', error);
-      toast.error('AI generation failed. Please try again.');
+      toast.error(t('aiGenerationFailed'));
     } finally {
       setIsGeneratingAI(false);
     }
@@ -200,9 +202,9 @@ export function BasicInfoTab({
     <div className="space-y-6 pb-6">
       {/* Header */}
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold mb-2">Essential Information</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Fill in the basic details to get started. Use AI assist to speed up the process.
+          {t('description')}
         </p>
       </div>
 
@@ -216,12 +218,12 @@ export function BasicInfoTab({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm sm:text-base font-medium">
-                  Item Name *
+                  {t('itemNameLabel')} *
                 </FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="Enter the item name..."
+                    placeholder={t('itemNamePlaceholder')}
                     className="text-sm sm:text-base"
                     value={field.value ?? ''}
                   />
@@ -247,7 +249,7 @@ export function BasicInfoTab({
               className="w-full border-2 border-dashed border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all duration-200"
             >
               <Sparkles className="mr-2 h-4 w-4 text-primary" />
-              {isTranslating ? 'Translating...' : 'Translate to All Languages'}
+              {isTranslating ? t('translating') : t('translateButton')}
             </Button>
           )}
 
@@ -258,12 +260,12 @@ export function BasicInfoTab({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm sm:text-base font-medium">
-                  Ingredients & Description
+                  {t('ingredientsLabel')}
                 </FormLabel>
                 <FormControl>
                   <Textarea 
                     {...field} 
-                    placeholder="Describe the ingredients and preparation..."
+                    placeholder={t('ingredientsPlaceholder')}
                     className="min-h-[100px] text-sm sm:text-base resize-none"
                     value={field.value ?? ''}
                   />
@@ -284,7 +286,7 @@ export function BasicInfoTab({
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Sparkles className="mr-2 h-5 w-5" />
-              {isGeneratingDescription ? 'Generating...' : 'Generate Description with AI'}
+              {isGeneratingDescription ? t('generating') : t('generateDescriptionButton')}
             </Button>
           )}
 
@@ -299,7 +301,7 @@ export function BasicInfoTab({
               className="w-full text-sm sm:text-base border-2 border-dashed border-primary/30 hover:border-primary/60 transition-all duration-200"
             >
               <Sparkles className="mr-2 h-4 w-4 text-primary" />
-              {isGeneratingAI ? 'Generating Content...' : 'Generate (Name, Description, Tags)'}
+              {isGeneratingAI ? t('generatingContent') : t('generateAllButton')}
             </Button>
           )}
 
@@ -310,7 +312,7 @@ export function BasicInfoTab({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm sm:text-base font-medium">
-                  Price *
+                  {t('priceLabel')} *
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -323,7 +325,7 @@ export function BasicInfoTab({
                       {...field} 
                       onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
                       className="pl-8 text-base"
-                      placeholder="0.00"
+                      placeholder={t('pricePlaceholder')}
                     />
                   </div>
                 </FormControl>
@@ -341,7 +343,7 @@ export function BasicInfoTab({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm sm:text-base font-medium">
-                  Item Photo
+                  {t('itemPhotoLabel')}
                 </FormLabel>
                 <FormControl>
                   <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors">
@@ -364,7 +366,7 @@ export function BasicInfoTab({
                               onClick={() => handleRemoveImage(field)}
                               className="flex-1"
                             >
-                              Remove
+                              {t('removeButton')}
                             </Button>
                             <label className="flex-1">
                               <input
@@ -385,7 +387,7 @@ export function BasicInfoTab({
                                 className="w-full"
                               >
                                 <Upload className="mr-2 h-4 w-4" />
-                                Replace
+                                {t('replaceButton')}
                               </Button>
                             </label>
                           </div>
@@ -405,13 +407,13 @@ export function BasicInfoTab({
                           />
                           <div className="flex flex-col items-center justify-center py-8 text-center">
                             <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                            <p className="text-sm font-medium mb-1">Upload a photo</p>
+                            <p className="text-sm font-medium mb-1">{t('uploadTitle')}</p>
                             <p className="text-xs text-muted-foreground mb-4">
-                              JPG, PNG up to 500KB
+                              {t('uploadHint')}
                             </p>
                             <Button type="button" variant="outline" size="sm">
                               <Upload className="mr-2 h-4 w-4" />
-                              Choose File
+                              {t('chooseFileButton')}
                             </Button>
                           </div>
                         </label>
@@ -430,11 +432,11 @@ export function BasicInfoTab({
       {(onTranslate || onGenerateAI) && (
         <Card className="bg-muted/30">
           <CardContent className="p-4">
-            <h4 className="font-medium mb-3 text-sm">AI-Generated Content (Editable)</h4>
+            <h4 className="font-medium mb-3 text-sm">{t('aiContentTitle')}</h4>
             <div className="space-y-4">
               {ownerLanguage !== 'en' && (
                 <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground">English</label>
+                  <label className="text-xs text-muted-foreground">{t('englishLabel')}</label>
                   <FormField
                     control={form.control}
                     name="name_en"
@@ -443,7 +445,7 @@ export function BasicInfoTab({
                         <FormControl>
                           <Input 
                             {...field} 
-                            placeholder="English name..."
+                            placeholder={t('englishNamePlaceholder')}
                             className="text-sm"
                             value={field.value ?? ''}
                           />
@@ -459,7 +461,7 @@ export function BasicInfoTab({
                         <FormControl>
                           <Textarea 
                             {...field} 
-                            placeholder="English description..."
+                            placeholder={t('englishDescriptionPlaceholder')}
                             className="text-xs resize-none min-h-[100px]"
                             value={field.value ?? ''}
                           />
@@ -471,7 +473,7 @@ export function BasicInfoTab({
               )}
               {ownerLanguage !== 'ja' && (
                 <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground">Japanese</label>
+                  <label className="text-xs text-muted-foreground">{t('japaneseLabel')}</label>
                   <FormField
                     control={form.control}
                     name="name_ja"
@@ -480,7 +482,7 @@ export function BasicInfoTab({
                         <FormControl>
                           <Input 
                             {...field} 
-                            placeholder="Japanese name..."
+                            placeholder={t('japaneseNamePlaceholder')}
                             className="text-sm"
                             value={field.value ?? ''}
                           />
@@ -496,7 +498,7 @@ export function BasicInfoTab({
                         <FormControl>
                           <Textarea 
                             {...field} 
-                            placeholder="Japanese description..."
+                            placeholder={t('japaneseDescriptionPlaceholder')}
                             className="text-xs resize-none min-h-[100px]"
                             value={field.value ?? ''}
                           />
@@ -508,7 +510,7 @@ export function BasicInfoTab({
               )}
               {ownerLanguage !== 'vi' && (
                 <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground">Vietnamese</label>
+                  <label className="text-xs text-muted-foreground">{t('vietnameseLabel')}</label>
                   <FormField
                     control={form.control}
                     name="name_vi"
@@ -517,7 +519,7 @@ export function BasicInfoTab({
                         <FormControl>
                           <Input 
                             {...field} 
-                            placeholder="Vietnamese name..."
+                            placeholder={t('vietnameseNamePlaceholder')}
                             className="text-sm"
                             value={field.value ?? ''}
                           />
@@ -533,7 +535,7 @@ export function BasicInfoTab({
                         <FormControl>
                           <Textarea 
                             {...field} 
-                            placeholder="Vietnamese description..."
+                            placeholder={t('vietnameseDescriptionPlaceholder')}
                             className="text-xs resize-none min-h-[100px]"
                             value={field.value ?? ''}
                           />
@@ -548,7 +550,7 @@ export function BasicInfoTab({
             {/* AI-Generated Tags */}
             {onGenerateAI && form.watch('tags') && (form.watch('tags') || []).length > 0 && (
               <div className="mt-4 pt-4 border-t">
-                <label className="text-xs text-muted-foreground mb-2 block">AI-Generated Food Tags</label>
+                <label className="text-xs text-muted-foreground mb-2 block">{t('aiTagsLabel')}</label>
                 <div className="flex flex-wrap gap-2">
                   {(form.watch('tags') || []).map((tag: string, index: number) => (
                     <span
@@ -560,7 +562,7 @@ export function BasicInfoTab({
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  These tags help AI suggest this item to customers based on their preferences.
+                  {t('aiTagsDescription')}
                 </p>
               </div>
             )}
