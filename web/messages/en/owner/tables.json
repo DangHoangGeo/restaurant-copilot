@@ -71,5 +71,6 @@
     "submit_button": "Add Tables",
     "notification_success": "{count} tables added successfully.",
     "notification_error": "Failed to add {count} tables. Errors: {errors}"
-  }
+  },
+  "qr_code_generate_message": "Generating QR Code..."
 }

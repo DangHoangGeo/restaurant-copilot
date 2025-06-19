@@ -252,8 +252,8 @@ interface RestaurantSettings {
 }
 
 export function TablesClientContent() {
-  const t = useTranslations();
-  const tVal = useTranslations('AdminTables.validation');
+  const t = useTranslations("owner.tables");
+  const tVal = useTranslations('owner.tables.validation');
   const tCommon = useTranslations('Common');
   const params = useParams();
   const locale = (params.locale as string) || 'en';

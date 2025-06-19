@@ -8,7 +8,7 @@ interface WeekdaySelectorProps {
 }
 
 export function WeekdaySelector({ selectedDays, onChange }: WeekdaySelectorProps) {
-  const t = useTranslations('AdminMenu');
+  const t = useTranslations("common");
   const days = [
     { value: 1, label: 'Mon' },
     { value: 2, label: 'Tue' },

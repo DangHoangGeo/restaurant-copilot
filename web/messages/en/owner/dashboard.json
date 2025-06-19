@@ -45,5 +45,24 @@
   },
   "metadata": {
     "admin_dashboard_title": "Admin Dashboard - CoOrder.ai"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "menu": "Menu Management",
+    "orders": "Orders",
+    "tables": "Table Management",
+    "employees": "Staff",
+    "bookings": "Reservations",
+    "reports": "Analytics",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "header": {
+    "welcome": "Welcome back",
+    "user_menu": "User Menu",
+    "notifications": "Notifications",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings"
   }
 }

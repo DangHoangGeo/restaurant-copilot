@@ -64,5 +64,6 @@
     "new_order": "New Order Received!",
     "order_updated": "Order Updated",
     "auto_refresh": "Auto-refreshing every 30 seconds"
-  }
+  },
+  "real_time_update_pending": "Order status updating..."
 }

@@ -287,5 +287,35 @@
       "toppings_vi_name_placeholder": "Vietnamese topping name...",
       "toppings_price_label": "Additional Price"
     }
+  },
+  "drag_drop": {
+    "reorder_categories": "Reorder Categories",
+    "reorder_items": "Reorder Menu Items",
+    "drag_to_reorder": "Drag to reorder",
+    "reorder_success": "Order updated successfully",
+    "reorder_error": "Failed to update order"
+  },
+  "translation": {
+    "translating": "Translating...",
+    "translate_success": "Translation completed",
+    "translate_error": "Translation failed"
+  },
+  "basic_info": {
+    "translating": "Translating...",
+    "translateButton": "Translate",
+    "translate_success": "Translation completed",
+    "translate_error": "Translation failed",
+    "generate_ai": "Generate with AI",
+    "generating_ai": "Generating...",
+    "ai_success": "AI generation completed",
+    "ai_error": "AI generation failed"
+  },
+  "toppings": {
+    "translate_success": "Topping translated successfully",
+    "translate_error": "Failed to translate topping",
+    "add_topping": "Add Topping",
+    "remove_topping": "Remove Topping",
+    "topping_name": "Topping Name",
+    "topping_price": "Price"
   }
 }
