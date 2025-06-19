@@ -31,6 +31,7 @@
   "current_session": "Current Ordering Session",
   "active": "Active",
   "inactive": "Inactive",
+  "close": "Close",
   "session_active_more": "You can still add more items!",
   "menu_item_detail_back_to_menu": "Back to Menu",
   "menu_item_detail_add_to_cart": "Add to Cart",
@@ -73,6 +74,13 @@
   "meta": {
     "title": "Menu & Ordering",
     "description": "Browse our menu and place your order easily"
+  },
+  "qr_dialog": {
+    "title": "Scan QR Code",
+    "description": "Scan the QR code on your table to start ordering",
+    "scan_qr_code": "Scan QR Code",
+    "qr_code_scanned": "QR Code Scanned",
+    "qr_code_error": "Error scanning QR code. Please try again."
   },
   "common": {
     "total": "Total",

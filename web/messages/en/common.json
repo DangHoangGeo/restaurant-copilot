@@ -95,6 +95,8 @@
     "toggle_aria_label": "Toggle light/dark theme",
     "toggle_label": "Toggle Theme"
   },
+  "switch_to_light_mode": "Switch to Light Mode",
+  "switch_to_dark_mode": "Switch to Dark Mode",
   "rating": {
     "set_stars": "Set {count} star rating",
     "current_stars": "Current rating: {count} stars",

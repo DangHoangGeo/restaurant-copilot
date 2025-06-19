@@ -26,6 +26,7 @@ const NAMESPACES = [
   // customer
   'customer/home',
   'customer/menu',
+  'customer/session',
   'customer/cart',
   'customer/checkout',
   'customer/orderHistory',

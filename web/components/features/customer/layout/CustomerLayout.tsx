@@ -16,7 +16,7 @@ interface CustomerLayoutProps {
 }
 
 function CustomerLayoutContent({ children }: CustomerLayoutProps) {
-  const t = useTranslations("Customer");
+  const t = useTranslations("customer");
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();

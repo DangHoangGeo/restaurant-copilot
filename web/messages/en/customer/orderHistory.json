@@ -1,6 +1,7 @@
 {
   "title": "Order History",
   "checkout_button": "Checkout",
+  "loading": "Loading...",
   "price_per_person": "Per Person: {value}",
   "passcode": "Passcode",
   "back_to_menu": "Back to Menu",

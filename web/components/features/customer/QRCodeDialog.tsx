@@ -69,7 +69,7 @@ export function QRCodeDialog({ isOpen, onClose, sessionId, restaurantSubdomain }
               )}
             </Button>
             <Button variant="ghost" onClick={onClose} className="w-full">
-              {t('qr_dialog.close')}
+              {t('close')}
             </Button>
           </div>
         </div>

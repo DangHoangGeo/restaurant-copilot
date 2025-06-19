@@ -48,6 +48,17 @@
       "over_2000": "Over ¥2,000"
     }
   },
+  "food_card":{
+    "view_details": "View Details",
+    "add_to_cart": "Add to Cart",
+    "out_of_stock": "Out of Stock",
+    "price_from" : "From ¥{price}",
+    "price": "Price",
+    "rating": "Rating",
+    "reviews_count": "{count} Reviews",
+    "popular": "Popular",
+    "recommended": "Recommended"
+  },
   "item_detail": {
     "ingredients": "Ingredients",
     "allergens": "Allergens",

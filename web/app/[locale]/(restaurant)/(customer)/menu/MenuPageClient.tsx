@@ -19,8 +19,8 @@ interface MenuPageClientProps {
 export function MenuPageClient({ locale }: MenuPageClientProps) {
   const router = useRouter();
   const { restaurantSettings, sessionParams, sessionData, setSessionId, isLoading: contextLoading } = useCustomerData();
-  const t = useTranslations('Customer');
-  
+  const t = useTranslations('customer.session');
+
   // Local state
   const [tableId, setTableId] = useState<string | null>(sessionParams.tableId || null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -225,13 +225,13 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center max-w-md">
           <h2 className="text-xl font-semibold text-red-600 mb-2">
-            {t('session.invalid_session')}
+            {t('invalid_session')}
           </h2>
           <p className="text-slate-600 dark:text-slate-400 mb-4">
-            {t('session.invalid_session_message')}
+            {t('invalid_session_message')}
           </p>
           <Button onClick={() => router.push(`/${locale}/`)}>
-            {t('session.scan_qr_again')}
+            {t('scan_qr_again')}
           </Button>
         </div>
       </div>
@@ -273,11 +273,11 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('session.guest_count_title')}</DialogTitle>
+            <DialogTitle>{t('guest_count_title')}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-600 mb-4">
-              {t('session.guest_count_description')}
+              {t('guest_count_description')}
             </p>
             <Input
               type="number"
@@ -293,7 +293,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               {t('cancel')}
             </Button>
             <Button onClick={startSession}>
-              {t('session.start_session')}
+              {t('start_session')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -303,16 +303,16 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('session.join_session_title')}</DialogTitle>
+            <DialogTitle>{t('join_session_title')}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-600 mb-4">
-              {t('session.join_session_description')}
+              {t('join_session_description')}
             </p>
             {requirePasscode && (
               <Input
                 type="text"
-                placeholder={t('session.enter_passcode')}
+                placeholder={t('enter_passcode')}
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
                 className="w-full"
@@ -324,7 +324,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               {t('cancel')}
             </Button>
             <Button onClick={joinSession}>
-              {t('session.join')}
+              {t('join')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -334,22 +334,22 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       <Dialog open={showPasscodeDisplay} onOpenChange={setShowPasscodeDisplay}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('session.session_created_title')}</DialogTitle>
+            <DialogTitle>{t('session_created_title')}</DialogTitle>
           </DialogHeader>
           <div className="py-4 text-center">
             <p className="text-sm text-gray-600 mb-4">
-              {t('session.passcode_share_message')}
+              {t('passcode_share_message')}
             </p>
             <div className="text-3xl font-bold text-blue-600 mb-4 p-4 bg-blue-50 rounded-lg">
               {sessionPasscode}
             </div>
             <p className="text-xs text-gray-500">
-              {t('session.passcode_instructions')}
+              {t('passcode_instructions')}
             </p>
           </div>
           <DialogFooter>
             <Button onClick={() => setShowPasscodeDisplay(false)} className="w-full">
-              {t('session.continue_to_menu')}
+              {t('continue_to_menu')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -36,7 +36,7 @@ interface BookingFormData {
 
 export function BookingClientContent() {
   const t = useTranslations("customer.booking");
-  const tCommon = useTranslations("Common");
+  const tCommon = useTranslations("common");
   const locale = useGetCurrentLocale();
   const router = useRouter();
   

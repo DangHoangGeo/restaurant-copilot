@@ -16,7 +16,7 @@ interface AuthPageLayoutProps {
 
 export default function AuthPageLayout({ children }: AuthPageLayoutProps) {
   const t = useTranslations("auth");
-  const tCommon = useTranslations("Common");
+  const tCommon = useTranslations("common");
   const params = useParams();
   const locale = (params.locale as string) || "en";
   const { theme, setTheme } = useTheme();

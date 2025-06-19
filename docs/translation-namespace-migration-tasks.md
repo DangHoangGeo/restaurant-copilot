@@ -64,7 +64,7 @@ const t = useTranslations("owner.settings");
 **Current Issue:**
 ```tsx
 const t = useTranslations("Dashboard.Profile");
-const tCommon = useTranslations("Common");
+const tCommon = useTranslations("common");
 ```
 
 **Required Changes:**
@@ -212,7 +212,7 @@ const t = useTranslations("customer.orderHistory");
 ##### **File 2.1c:** `web/components/features/customer/QRCodeDialog.tsx`
 **Current Issue:**
 ```tsx
-const t = useTranslations('Customer');
+const t = useTranslations('customer');
 ```
 
 **Required Changes:**
@@ -279,7 +279,7 @@ const tCommon = useTranslations('common');
 ##### **File 2.1f:** `web/components/features/customer/layout/CustomerFooter.tsx`
 **Current Issue:**
 ```tsx
-const t = useTranslations("Common");
+const t = useTranslations("common");
 ```
 
 **Required Changes:**
@@ -341,7 +341,7 @@ const t = useTranslations("customer.booking");
 **Current Issue:**
 ```tsx
 const t = useTranslations("AdminOrders");
-const tCommon = useTranslations("Common");
+const tCommon = useTranslations("common");
 ```
 
 **Required Changes:**

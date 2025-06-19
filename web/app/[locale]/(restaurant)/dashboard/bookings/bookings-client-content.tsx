@@ -48,7 +48,7 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
 
 export function BookingsClientContent() {
   const t = useTranslations("AdminBookings");
-  const tCommon = useTranslations("Common");
+  const tCommon = useTranslations("common");
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -82,7 +82,7 @@
     "sunday": "Sunday"
   },
   "language_switcher": {
-    "toggle_label": "Change language"
+    "toggle_label": "Change Language"
   },
   "defaultLanguageLabel": "Default Language",
   "defaultLanguagePlaceholder": "Select default language",
@@ -95,6 +95,8 @@
     "toggle_aria_label": "Toggle light/dark theme",
     "toggle_label": "Toggle Theme"
   },
+  "switch_to_light_mode": "Switch to Light Mode",
+  "switch_to_dark_mode": "Switch to Dark Mode",
   "rating": {
     "set_stars": "Set {count} star rating",
     "current_stars": "Current rating: {count} stars",
@@ -143,8 +145,9 @@
     "logoUrlinvalidFormat": "Invalid logo URL format."
   },
   "coming_soon": {
-    "title": "Feature Coming Soon",
-    "description": "This feature is currently in development and will be available soon. Stay tuned!"
+    "title": "Coming Soon",
+    "description": "{feature} is coming soon!",
+    "generic_description": "This feature is under development."
   },
   "mark_resolved": "Mark Resolved",
   "mark_unresolved": "Mark Unresolved",

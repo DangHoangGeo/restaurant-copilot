@@ -20,7 +20,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { restaurantSettings, sessionData, isLoading: contextLoading } = useCustomerData();
-  const t = useTranslations('Customer');
+  const t = useTranslations('customer.orderHistory');
   
   const [historyData, setHistoryData] = useState<OrderHistoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,7 +115,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
         <html>
         <head>
           <meta charset="UTF-8">
-          <title>${t('history.receipt_title', { orderId: historyData.order.id.slice(-8) })}</title>
+          <title>${t('receipt_title', { orderId: historyData.order.id.slice(-8) })}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
             .header { text-align: center; margin-bottom: 20px; }
@@ -136,14 +136,14 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             <h1>${restaurantSettings?.name || 'Restaurant'}</h1>
             <p>${restaurantSettings?.address || 'Address not available'}</p>
             <p>${restaurantSettings?.phone || 'Phone not available'}</p>
-            <p>${t('history.receipt_title', { orderId: historyData.order.id.slice(-8) })}</p>
+            <p>${t('receipt_title', { orderId: historyData.order.id.slice(-8) })}</p>
           </div>
           <div class="order-info">
-            <p><strong>${t('history.table')}</strong> ${historyData.order.table_name}</p>
-            <p><strong>${t('history.date')}</strong> ${formatDate(historyData.order.created_at)} ${formatTime(historyData.order.created_at)}</p>
+            <p><strong>${t('table')}</strong> ${historyData.order.table_name}</p>
+            <p><strong>${t('date')}</strong> ${formatDate(historyData.order.created_at)} ${formatTime(historyData.order.created_at)}</p>
           </div>
           <div class="items">
-            <h3>${t('history.items')}</h3>
+            <h3>${t('items')}</h3>
             ${(historyData.order.items || []).map(item => {
               const sizeName = getSizeName(item);
               const quantityDisplay = sizeName ? `× ${item.quantity} (${sizeName})` : `× ${item.quantity}`;
@@ -158,10 +158,10 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                     <span>${quantityDisplay}</span>
                   </div>
                   ${item.toppings && item.toppings.length > 0 ? `
-                    <div class="item-details">${t('history.toppings')}: ${item.toppings.map(getToppingName).join(', ')}</div>
+                    <div class="item-details">${t('toppings')}: ${item.toppings.map(getToppingName).join(', ')}</div>
                   ` : ''}
                   ${item.notes ? `
-                    <div class="item-details">${t('history.notes')}: ${item.notes}</div>
+                    <div class="item-details">${t('notes')}: ${item.notes}</div>
                   ` : ''}
                 </div>
               `;
@@ -169,13 +169,13 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
           </div>
           <div class="total">
             <div style="margin-bottom: 8px;">
-              <span>${t('history.subtotal')}: ¥${Math.round((historyData.order.total_amount || 0) / 1.1)}</span>
+              <span>${t('subtotal')}: ¥${Math.round((historyData.order.total_amount || 0) / 1.1)}</span>
             </div>
             <div style="margin-bottom: 8px;">
-              <span>${t('history.tax')} (10%): ¥${Math.round((historyData.order.total_amount || 0) * 0.1 / 1.1)}</span>
+              <span>${t('tax')} (10%): ¥${Math.round((historyData.order.total_amount || 0) * 0.1 / 1.1)}</span>
             </div>
             <div style="border-top: 1px solid #333; padding-top: 8px; font-size: 20px;">
-              <span>${t('history.total')}: ¥${historyData.order.total_amount}</span>
+              <span>${t('total')}: ¥${historyData.order.total_amount}</span>
             </div>
           </div>
         </body>
@@ -265,10 +265,10 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-red-600 mb-2">
-              {t('history.error_title')}
+              {t('error_title')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {error || t('history.error_message')}
+              {error || t('error_message')}
             </p>
             <Button onClick={() => {
               // Only include sessionId if the session is still active (not completed)
@@ -281,7 +281,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               }
               router.push(`/${locale}/menu?${menuUrl.toString()}`);
             }}>
-              {t('history.back_to_menu')}
+              {t('back_to_menu')}
             </Button>
           </div>
         </div>
@@ -309,7 +309,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            {t('history.back_to_menu')}
+            {t('back_to_menu')}
           </Button>
         </div>
         
@@ -322,7 +322,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             className="flex items-center gap-2"
           >
             <Share2 className="h-4 w-4" />
-            {t('history.share_session')}
+            {t('share_session')}
           </Button>
 
           {historyData?.order?.status === 'completed' && (
@@ -334,13 +334,13 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               className="flex items-center gap-2"
             >
               <Printer className="h-4 w-4" />
-              {isPrinting ? t('history.printing_receipt') : t('history.print_receipt')}
+              {isPrinting ? t('printing_receipt') : t('print_receipt')}
             </Button>
           )}
         </div>
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">{t('history.title')}</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
 
       {/* Session Information */}
       {historyData.order && (
@@ -350,13 +350,13 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               <CardTitle className="flex items-center gap-2">
                 <Receipt className="h-5 w-5" />
                 {historyData.order.status === 'completed' 
-                  ? `${t('history.order')} #${historyData.order.id.slice(-6)}`
-                  : t('history.current_session')
+                  ? `${t('order')} #${historyData.order.id.slice(-6)}`
+                  : t('current_session')
                 }
               </CardTitle>
               {/* Show order status in header */}
               <Badge className={getStatusColor(historyData.order.status as OrderStatus)}>
-                {t(`history.status.${historyData.order.status}`)}
+                {t(`status.${historyData.order.status}`)}
               </Badge>
             </div>
           </CardHeader>
@@ -371,11 +371,11 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-gray-500" />
-                  <span>{t('history.guests', { count: historyData.order?.guest_count || 1 })}</span>
+                  <span>{t('guests', { count: historyData.order?.guest_count || 1 })}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-500" />
-                  <span>{t('history.started_at', { 
+                  <span>{t('started_at', { 
                     date: formatDate(historyData.order?.created_at || new Date().toISOString()),
                     time: formatTime(historyData.order?.created_at || new Date().toISOString())
                   })}</span>
@@ -385,7 +385,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">{t('history.passcode')}</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">{t('passcode')}</p>
                     <p className="font-mono font-bold text-lg">{getPasscode()}</p>
                   </div>
                   <Button
@@ -395,26 +395,26 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                     className="flex items-center gap-2"
                   >
                     <Copy className="h-4 w-4" />
-                    {t('history.copy_passcode')}
+                    {t('copy_passcode')}
                   </Button>
                 </div>
 
                 {/* Financial Breakdown */}
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">{t('history.subtotal')}</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('subtotal')}</span>
                     <span>¥{Math.round((historyData.order?.total_amount || 0) / 1.1)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">{t('history.tax')} (10%)</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('tax')} (10%)</span>
                     <span>¥{Math.round((historyData.order?.total_amount || 0) * 0.1 / 1.1)}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between font-semibold">
-                    <span>{t('history.total')}</span>
+                    <span>{t('total')}</span>
                     <span>¥{historyData.order?.total_amount || 0}</span>
                   </div>
                   <div className="text-right text-xs text-gray-500 dark:text-gray-400">
-                    {historyData.order?.items?.length || 0} {t('history.items_count')}
+                    {historyData.order?.items?.length || 0} {t('items_count')}
                   </div>
                 </div>
               </div>
@@ -425,13 +425,13 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
       {/* Order Items */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">{t('history.your_order')}</h2>
+        <h2 className="text-xl font-semibold">{t('your_order')}</h2>
 
         {!historyData.order ? (
           <Card>
             <CardContent className="py-8">
               <div className="text-center text-gray-500">
-                <p>{t('history.no_orders')}</p>
+                <p>{t('no_orders')}</p>
                 <Button
                   className="mt-4"
                   onClick={() => {
@@ -443,7 +443,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                     router.push(`/${locale}/menu?${menuUrl.toString()}`);
                   }}
                 >
-                  {t('history.start_ordering')}
+                  {t('start_ordering')}
                 </Button>
               </div>
             </CardContent>
@@ -463,10 +463,10 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                           {(item.menu_item_sizes || (item.toppings && item.toppings.length > 0)) && (
                             <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                               {item.menu_item_sizes && (
-                                <p>{t('history.size')}: {getSizeName(item)}</p>
+                                <p>{t('size')}: {getSizeName(item)}</p>
                               )}
                               {item.toppings && item.toppings.length > 0 && (
-                                <p>{t('history.toppings')}: {item.toppings.map(getToppingName).join(', ')}</p>
+                                <p>{t('toppings')}: {item.toppings.map(getToppingName).join(', ')}</p>
                               )}
                             </div>
                           )}
@@ -474,7 +474,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                           {/* Notes */}
                           {item.notes && (
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              {t('history.notes')}: {item.notes}
+                              {t('notes')}: {item.notes}
                             </p>
                           )}
                         </div>
@@ -507,7 +507,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             }}
             className="flex items-center gap-2"
           >
-            {t('history.add_more_items')}
+            {t('add_more_items')}
           </Button>
         </div>
       )}
