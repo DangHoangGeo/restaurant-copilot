@@ -1,0 +1,91 @@
+{
+  "title": "Menu",
+  "serving_today": "Serving Today",
+  "view_menu": "View Menu",
+  "item_details": "Item Details",
+  "add_to_cart": "Add",
+  "out_of_stock": "Out of Stock",
+  "quantity": "Quantity",
+  "item_quantity": "Qty: {quantity}",
+  "item_notes": "Notes: {notes}",
+  "total_price": "Total Price",
+  "search_placeholder": "Search menu...",
+  "popular_now": "Popular Now",
+  "recommended": "Recommended",
+  "add_to_cart_success": "{itemName} added to your cart.",
+  "add_to_cart_error": "Failed to add {itemName} to cart. Please try again.",
+  "view_only": "View Only",
+  "decrease_quantity": "Decrease quantity",
+  "increase_quantity": "Increase quantity",
+  "item_added_to_cart_msg": "{item} added to cart!",
+  "select_size": "Select Size",
+  "select_toppings": "Select Toppings",
+  "selected_toppings": "Selected Toppings:",
+  "base_price": "Base Price",
+  "toppings_price": "Toppings",
+  "view_smart": "View Smart Menu",
+  "view_classic": "View Classic Menu",
+  "browse_categories": "Browse Categories",
+  "no_items_found": "No items found in this category.",
+  "categories": {
+    "all": "All Items",
+    "featured": "Featured",
+    "appetizers": "Appetizers",
+    "mains": "Main Courses",
+    "desserts": "Desserts",
+    "beverages": "Beverages"
+  },
+  "filters": {
+    "dietary": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "gluten_free": "Gluten Free",
+      "dairy_free": "Dairy Free"
+    },
+    "price_range": {
+      "under_1000": "Under ¥1,000",
+      "1000_2000": "¥1,000 - ¥2,000",
+      "over_2000": "Over ¥2,000"
+    }
+  },
+  "item_detail": {
+    "ingredients": "Ingredients",
+    "allergens": "Allergens",
+    "nutrition": "Nutrition Info",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "description": "Description"
+  },
+  "ai_assistant": {
+    "title": "Restaurant Assistant",
+    "open": "Open virtual assistant",
+    "close": "Close virtual assistant",
+    "placeholder": "Ask me about ingredients, allergies, or recommendations...",
+    "input": "Type your message",
+    "send": "Send",
+    "suggest_popular": "What's popular here?",
+    "suggest_dietary": "Any vegetarian options?",
+    "suggest_recommendation": "What do you recommend?",
+    "suggest_recommendations": "Can you recommend something?",
+    "suggest_cart_help": "Help with my order",
+    "suggest_special_requests": "Special dietary needs",
+    "suggest_eta": "How long until my food arrives?",
+    "suggest_add_more": "I want to add more items",
+    "suggest_payment": "How do I pay?",
+    "suggest_help": "I need help",
+    "thinking": "Thinking...",
+    "help_text": "I can help you with ingredient questions, dietary restrictions, and personalized recommendations!"
+  },
+  "ai_chat": {
+    "toggle_label": "Toggle AI Chat"
+  },
+  "food_card": {
+    "add_to_cart": "Add to Cart",
+    "out_of_stock": "Out of Stock",
+    "price_from": "From {price}",
+    "popular": "Popular",
+    "spicy": "Spicy",
+    "vegetarian": "Vegetarian",
+    "view_details": "View Details"
+  }
+}

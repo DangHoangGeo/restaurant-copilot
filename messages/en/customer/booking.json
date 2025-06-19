@@ -1,0 +1,18 @@
+{
+  "booking": {
+    "title": "Book Your Table",
+    "submission_thank_you_title": "Booking Submitted!",
+    "submission_thank_you_message": "Thank you, {name}! Your booking request has been received. We will contact you shortly to confirm.",
+    "form": {
+      "validation_error_fill_fields": "Please fill in all required fields.",
+      "table_select_placeholder": "Select a table",
+      "table_capacity": "Capacity: {count}",
+      "name_placeholder": "Your Name",
+      "contact_placeholder": "Phone or Email",
+      "party_size_placeholder": "Number of Guests",
+      "preorder_optional_title": "Pre-order (Optional)",
+      "submitting_button": "Submitting...",
+      "submit_button": "Request Booking"
+    }
+  }
+}
