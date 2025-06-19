@@ -1,29 +1,29 @@
 {
-  "title": "Platform Orders",
-  "subtitle": "Monitor orders across all restaurants on the platform",
+  "title": "Đơn hàng trên nền tảng",
+  "subtitle": "Theo dõi đơn hàng từ tất cả các nhà hàng trên nền tảng",
   "filters": {
-    "all_restaurants": "All Restaurants",
-    "today": "Today",
-    "this_week": "This Week",
-    "this_month": "This Month"
+    "all_restaurants": "Tất cả nhà hàng",
+    "today": "Hôm nay",
+    "this_week": "Tuần này",
+    "this_month": "Tháng này"
   },
   "table": {
-    "order_id": "Order ID",
-    "restaurant": "Restaurant",
-    "customer": "Customer",
-    "items": "Items",
-    "total": "Total",
-    "status": "Status",
-    "created": "Created"
+    "order_id": "Mã đơn hàng",
+    "restaurant": "Nhà hàng",
+    "customer": "Khách hàng",
+    "items": "Món ăn",
+    "total": "Tổng cộng",
+    "status": "Trạng thái",
+    "created": "Ngày tạo"
   },
   "metrics": {
-    "total_orders": "Total Orders",
-    "total_revenue": "Total Revenue",
-    "average_order": "Average Order Value",
-    "completion_rate": "Completion Rate"
+    "total_orders": "Tổng số đơn hàng",
+    "total_revenue": "Tổng doanh thu",
+    "average_order": "Giá trị trung bình của đơn hàng",
+    "completion_rate": "Tỷ lệ hoàn thành"
   },
   "empty_state": {
-    "title": "No Orders Found",
-    "description": "No orders match your current filters."
+    "title": "Không tìm thấy đơn hàng",
+    "description": "Không có đơn hàng nào phù hợp với bộ lọc hiện tại của bạn."
   }
 }

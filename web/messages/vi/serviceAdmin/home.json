@@ -1,23 +1,23 @@
 {
-  "title": "Service Admin Dashboard",
-  "subtitle": "Manage the CoOrder platform and all restaurant tenants",
+  "title": "Bảng điều khiển quản trị dịch vụ",
+  "subtitle": "Quản lý nền tảng CoOrder và tất cả các nhà hàng",
   "cards": {
-    "total_restaurants": "Total Restaurants",
-    "active_users": "Active Users",
-    "monthly_revenue": "Monthly Revenue",
-    "system_health": "System Health"
+    "total_restaurants": "Tổng số nhà hàng",
+    "active_users": "Người dùng đang hoạt động",
+    "monthly_revenue": "Doanh thu hàng tháng",
+    "system_health": "Tình trạng hệ thống"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "add_restaurant": "Add Restaurant",
-    "view_analytics": "View Platform Analytics",
-    "system_settings": "System Settings"
+    "title": "Hành động nhanh",
+    "add_restaurant": "Thêm nhà hàng",
+    "view_analytics": "Xem phân tích nền tảng",
+    "system_settings": "Cài đặt hệ thống"
   },
   "recent_activity": {
-    "title": "Recent Platform Activity",
-    "no_activity": "No recent activity to display."
+    "title": "Hoạt động gần đây trên nền tảng",
+    "no_activity": "Không có hoạt động gần đây để hiển thị."
   },
   "metadata": {
-    "title": "Service Admin Dashboard - CoOrder Platform"
+    "title": "Bảng điều khiển quản trị dịch vụ - Nền tảng CoOrder"
   }
 }

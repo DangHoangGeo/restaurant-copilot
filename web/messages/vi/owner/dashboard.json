@@ -1,97 +1,96 @@
 {
-  "title": "Dashboard",
-  "subtitle": "Monitor your restaurant's performance and key metrics",
+  "title": "Bảng Điều Khiển",
+  "subtitle": "Theo dõi hiệu suất và các chỉ số chính của nhà hàng",
   "cards": {
-    "todays_sales": "Today's Sales",
-    "active_orders": "Active Orders",
-    "top_seller_today": "Top Seller Today",
-    "top_seller_unavailable": "N/A",
-    "low_stock_alerts": "Low Stock Alerts",
-    "needs_attention": "Needs Attention!",
-    "all_good": "All Good",
-    "sold_units": "sold"
+    "todays_sales": "Doanh Thu Hôm Nay",
+    "active_orders": "Đơn Hàng Đang Hoạt Động",
+    "top_seller_today": "Món Bán Chạy Nhất Hôm Nay",
+    "top_seller_unavailable": "Không Có",
+    "low_stock_alerts": "Cảnh Báo Tồn Kho Thấp",
+    "needs_attention": "Cần Chú Ý!",
+    "all_good": "Mọi Thứ Ổn",
+    "sold_units": "đã bán"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "add_menu_item": "Add New Menu Item",
-    "generate_qr": "Generate Table QR Code",
-    "add_employee": "Add New Employee"
+    "title": "Hành Động Nhanh",
+    "add_menu_item": "Thêm Món Mới",
+    "generate_qr": "Tạo Mã QR Bàn",
+    "add_employee": "Thêm Nhân Viên Mới"
   },
   "recent_orders": {
-    "title": "Recent Orders",
-    "no_recent_orders": "No recent orders to display.",
-    "table_header_order": "Order / Table",
-    "table_header_items": "Items",
-    "table_header_total": "Total",
-    "table_header_status": "Status",
-    "table_prefix": "Table"
+    "title": "Đơn Hàng Gần Đây",
+    "no_recent_orders": "Không có đơn hàng gần đây để hiển thị.",
+    "table_header_order": "Đơn Hàng / Bàn",
+    "table_header_items": "Món",
+    "table_header_total": "Tổng Cộng",
+    "table_header_status": "Trạng Thái",
+    "table_prefix": "Bàn"
   },
   "charts": {
-    "sales_over_time_placeholder": "Sales Over Time Chart - Coming Soon",
-    "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
+    "sales_over_time_placeholder": "Biểu Đồ Doanh Thu Theo Thời Gian - Sắp Ra Mắt",
+    "popular_items_report_placeholder": "Báo Cáo Món Phổ Biến - Sắp Ra Mắt"
   },
   "errors": {
-    "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
-    "data_fetch_error": "Failed to load dashboard data. Please try again later.",
-    "unauthorized_access": "Access Denied: You are not authorized to view this page.",
-    "mismatched_restaurant_access": "Access Denied: You are not authorized to view this restaurant's data.",
-    "dashboard_load_failed": "Failed to load dashboard",
-    "fetch_failed": "Failed to fetch data"
+    "restaurant_not_found": "Không thể xác định bối cảnh nhà hàng. Vui lòng đảm bảo bạn đang truy cập qua một tên miền phụ nhà hàng hợp lệ.",
+    "data_fetch_error": "Không thể tải dữ liệu bảng điều khiển. Vui lòng thử lại sau.",
+    "unauthorized_access": "Truy Cập Bị Từ Chối: Bạn không được phép xem trang này.",
+    "mismatched_restaurant_access": "Truy Cập Bị Từ Chối: Bạn không được phép xem dữ liệu của nhà hàng này.",
+    "dashboard_load_failed": "Không thể tải bảng điều khiển",
+    "fetch_failed": "Không thể lấy dữ liệu"
   },
   "metadata": {
-    "admin_dashboard_title": "Admin Dashboard - CoOrder.ai"
+    "admin_dashboard_title": "Bảng Điều Khiển Quản Trị - CoOrder.ai"
   },
   "navigation": {
-    "dashboard": "Dashboard",
-    "menu": "Menu Management",
-    "orders": "Orders",
-    "tables": "Table Management",
-    "employees": "Staff",
-    "bookings": "Reservations",
-    "reports": "Analytics",
-    "settings": "Settings",
-    "profile": "Profile"
+    "dashboard": "Bảng Điều Khiển",
+    "menu": "Quản Lý Thực Đơn",
+    "orders": "Đơn Hàng",
+    "tables": "Quản Lý Bàn",
+    "employees": "Nhân Viên",
+    "bookings": "Đặt Bàn",
+    "reports": "Phân Tích",
+    "settings": "Cài Đặt",
+    "profile": "Hồ Sơ"
   },
   "header": {
-    "welcome": "Welcome back",
-    "user_menu": "User Menu",
-    "notifications": "Notifications",
-    "logout": "Logout",
-    "profile": "Profile",
-    "settings": "Settings"
+    "welcome": "Chào mừng trở lại",
+    "user_menu": "Menu Người Dùng",
+    "notifications": "Thông Báo",
+    "logout": "Đăng Xuất",
+    "profile": "Hồ Sơ",
+    "settings": "Cài Đặt"
   },
-  "admin_sidebar_dashboard": "Dashboard",
-  "admin_sidebar_restaurant_settings": "Restaurant Settings",
-  "admin_sidebar_menu_management": "Menu Management",
-  "admin_sidebar_orders": "Orders",
-  "admin_sidebar_table_qr_management": "Tables & QR Codes",
-  "admin_sidebar_employees_schedules": "Employees & Schedules",
-  "admin_sidebar_bookings_preorders": "Bookings & Preorders",
-  "admin_sidebar_reports_analytics": "Reports & Analytics",
-  "admin_sidebar_design_system": "Design System Guide",
-  "admin_sidebar_view_customer_site": "View Customer Site",
-  "admin_sidebar_logout": "Logout",
-  "admin_dashboard_title": "Dashboard Overview",
-  "admin_settings_title": "Restaurant Settings",
-  "admin_menu_title": "Menu Management",
-  "admin_tables_title": "Table & QR Management",
-  "admin_employees_title": "Employee & Schedule Management",
-  "admin_bookings_title": "Booking Management",
-  "admin_reports_title": "Reports & Analytics",
-  "sidebar_close_aria_label": "Close sidebar",
-  "admin_sidebar_profile": "Profile",
-  "admin_sidebar_settings": "Settings",
+  "admin_sidebar_dashboard": "Bảng Điều Khiển",
+  "admin_sidebar_restaurant_settings": "Cài Đặt Nhà Hàng",
+  "admin_sidebar_menu_management": "Quản Lý Thực Đơn",
+  "admin_sidebar_orders": "Đơn Hàng",
+  "admin_sidebar_table_qr_management": "Bàn & Mã QR",
+  "admin_sidebar_employees_schedules": "Nhân Viên & Lịch Trình",
+  "admin_sidebar_bookings_preorders": "Đặt Bàn & Đặt Trước",
+  "admin_sidebar_reports_analytics": "Báo Cáo & Phân Tích",
+  "admin_sidebar_design_system": "Hướng Dẫn Hệ Thống Thiết Kế",
+  "admin_sidebar_view_customer_site": "Xem Trang Khách Hàng",
+  "admin_sidebar_logout": "Đăng Xuất",
+  "admin_dashboard_title": "Tổng Quan Bảng Điều Khiển",
+  "admin_settings_title": "Cài Đặt Nhà Hàng",
+  "admin_menu_title": "Quản Lý Thực Đơn",
+  "admin_tables_title": "Quản Lý Bàn & Mã QR",
+  "admin_employees_title": "Quản Lý Nhân Viên & Lịch Trình",
+  "admin_bookings_title": "Quản Lý Đặt Bàn",
+  "admin_reports_title": "Báo Cáo & Phân Tích",
+  "sidebar_close_aria_label": "Đóng thanh bên",
+  "admin_sidebar_profile": "Hồ Sơ",
+  "admin_sidebar_settings": "Cài Đặt",
   "sidebar": {
-      "toggle_aria_label": "Toggle sidebar navigation",
-      "close_aria_label": "Close sidebar"
-    },
-    "user_menu": {
-      "admin_user_placeholder": "Admin User",
-      "my_account_label": "My Account",
-      "profile_link": "Profile",
-      "settings_link": "Restaurant Settings",
-      "logout_button": "Logout"
-    },
-    "default_restaurant_name": "CoOrder"
-    
+    "toggle_aria_label": "Bật/tắt thanh điều hướng bên",
+    "close_aria_label": "Đóng thanh bên"
+  },
+  "user_menu": {
+    "admin_user_placeholder": "Người Dùng Quản Trị",
+    "my_account_label": "Tài Khoản Của Tôi",
+    "profile_link": "Hồ Sơ",
+    "settings_link": "Cài Đặt Nhà Hàng",
+    "logout_button": "Đăng Xuất"
+  },
+  "default_restaurant_name": "CoOrder"
 }

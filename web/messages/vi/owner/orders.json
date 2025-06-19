@@ -1,73 +1,73 @@
 {
-  "title": "Order Management",
-  "subtitle": "Monitor and manage incoming orders in real-time",
-  "no_orders": "No orders to display.",
-  "search_placeholder": "Search orders by customer name, items, or order ID...",
-  "filter_by_status": "Filter by Status",
-  "createFirstOrder": "Create your first order to get started!",
-  "createNewOrder": "Create New Order",
-  "selectTable": "Select Table",
-  "viewAllOrders": "View All Orders",
-  "all_statuses": "All Statuses",
-  "new": "New",
-  "preparing": "Preparing",
-  "ready": "Ready",
-  "completed": "Completed",
-  "canceled": "Canceled",
+  "title": "Quản lý Đơn hàng",
+  "subtitle": "Giám sát và quản lý các đơn hàng đến theo thời gian thực",
+  "no_orders": "Không có đơn hàng để hiển thị.",
+  "search_placeholder": "Tìm kiếm đơn theo tên khách, món ăn hoặc mã đơn...",
+  "filter_by_status": "Lọc theo trạng thái",
+  "createFirstOrder": "Tạo đơn hàng đầu tiên để bắt đầu!",
+  "createNewOrder": "Tạo Đơn hàng Mới",
+  "selectTable": "Chọn Bàn",
+  "viewAllOrders": "Xem Tất cả Đơn hàng",
+  "all_statuses": "Tất cả trạng thái",
+  "new": "Mới",
+  "preparing": "Đang chuẩn bị",
+  "ready": "Sẵn sàng",
+  "completed": "Hoàn thành",
+  "canceled": "Đã hủy",
   "table": {
-    "order_id": "Order ID",
-    "customer": "Customer",
-    "items": "Items",
-    "total": "Total",
-    "status": "Status",
-    "time": "Time",
-    "actions": "Actions"
+    "order_id": "Mã Đơn hàng",
+    "customer": "Khách hàng",
+    "items": "Món ăn",
+    "total": "Tổng cộng",
+    "status": "Trạng thái",
+    "time": "Thời gian",
+    "actions": "Hành động"
   },
   "status_buttons": {
-    "mark_preparing": "Mark Preparing",
-    "mark_ready": "Mark Ready",
-    "mark_completed": "Mark Completed",
-    "cancel_order": "Cancel Order"
+    "mark_preparing": "Chuyển sang Chuẩn bị",
+    "mark_ready": "Chuyển sang Sẵn sàng",
+    "mark_completed": "Đánh dấu Hoàn thành",
+    "cancel_order": "Hủy Đơn hàng"
   },
   "order_details": {
-    "title": "Order Details",
-    "order_info": "Order Information",
-    "customer_info": "Customer Information",
-    "items_ordered": "Items Ordered",
-    "special_notes": "Special Notes",
-    "no_notes": "No special notes for this order",
-    "total_amount": "Total Amount",
-    "order_time": "Order Time",
-    "table_number": "Table Number",
-    "guest_count": "Guest Count"
+    "title": "Chi tiết Đơn hàng",
+    "order_info": "Thông tin Đơn hàng",
+    "customer_info": "Thông tin Khách hàng",
+    "items_ordered": "Món đã đặt",
+    "special_notes": "Ghi chú đặc biệt",
+    "no_notes": "Không có ghi chú đặc biệt cho đơn này",
+    "total_amount": "Tổng số tiền",
+    "order_time": "Thời gian đặt",
+    "table_number": "Số Bàn",
+    "guest_count": "Số Khách"
   },
   "item_status": {
-    "ordered": "Ordered",
-    "preparing": "Preparing",
-    "ready": "Ready",
-    "served": "Served"
+    "ordered": "Đã đặt",
+    "preparing": "Đang chuẩn bị",
+    "ready": "Sẵn sàng",
+    "served": "Đã phục vụ"
   },
   "actions": {
-    "view_details": "View Details",
-    "update_status": "Update Status",
-    "print_receipt": "Print Receipt",
-    "contact_customer": "Contact Customer"
+    "view_details": "Xem Chi tiết",
+    "update_status": "Cập nhật Trạng thái",
+    "print_receipt": "In Hóa đơn",
+    "contact_customer": "Liên hệ Khách hàng"
   },
   "notifications": {
-    "status_updated": "Order status updated successfully",
-    "status_update_failed": "Failed to update order status",
-    "order_canceled": "Order canceled successfully",
-    "cancel_failed": "Failed to cancel order"
+    "status_updated": "Cập nhật trạng thái đơn hàng thành công",
+    "status_update_failed": "Cập nhật trạng thái đơn hàng thất bại",
+    "order_canceled": "Hủy đơn hàng thành công",
+    "cancel_failed": "Hủy đơn hàng thất bại"
   },
   "empty_state": {
-    "title": "No Orders Found",
-    "description": "No orders match your current filters.",
-    "all_caught_up": "All caught up! No new orders at the moment."
+    "title": "Không tìm thấy Đơn hàng",
+    "description": "Không có đơn hàng nào khớp với bộ lọc hiện tại.",
+    "all_caught_up": "Đã xử lý hết! Hiện không có đơn hàng mới."
   },
   "real_time": {
-    "new_order": "New Order Received!",
-    "order_updated": "Order Updated",
-    "auto_refresh": "Auto-refreshing every 30 seconds"
+    "new_order": "Có Đơn hàng Mới!",
+    "order_updated": "Đơn hàng đã được cập nhật",
+    "auto_refresh": "Tự động làm mới mỗi 30 giây"
   },
-  "real_time_update_pending": "Order status updating..."
+  "real_time_update_pending": "Đang cập nhật trạng thái đơn hàng..."
 }

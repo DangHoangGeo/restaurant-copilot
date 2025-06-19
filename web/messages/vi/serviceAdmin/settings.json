@@ -1,33 +1,33 @@
 {
-  "title": "Platform Settings",
-  "subtitle": "Configure global platform settings and features",
+  "title": "Cài đặt nền tảng",
+  "subtitle": "Cấu hình các cài đặt và tính năng toàn cầu của nền tảng",
   "sections": {
     "general": {
-      "title": "General Settings",
-      "platform_name": "Platform Name",
-      "maintenance_mode": "Maintenance Mode",
-      "maintenance_message": "Maintenance Message"
+      "title": "Cài đặt chung",
+      "platform_name": "Tên nền tảng",
+      "maintenance_mode": "Chế độ bảo trì",
+      "maintenance_message": "Thông báo bảo trì"
     },
     "features": {
-      "title": "Feature Flags",
-      "enable_new_registrations": "Enable New Registrations",
-      "enable_ai_features": "Enable AI Features",
-      "enable_analytics": "Enable Analytics"
+      "title": "Cờ tính năng",
+      "enable_new_registrations": "Cho phép đăng ký mới",
+      "enable_ai_features": "Cho phép tính năng AI",
+      "enable_analytics": "Cho phép phân tích"
     },
     "limits": {
-      "title": "Platform Limits",
-      "max_restaurants_per_user": "Max Restaurants per User",
-      "max_menu_items": "Max Menu Items per Restaurant",
-      "storage_limit": "Storage Limit per Restaurant (MB)"
+      "title": "Giới hạn nền tảng",
+      "max_restaurants_per_user": "Số lượng nhà hàng tối đa mỗi người dùng",
+      "max_menu_items": "Số lượng món ăn tối đa mỗi nhà hàng",
+      "storage_limit": "Giới hạn lưu trữ mỗi nhà hàng (MB)"
     },
     "notifications": {
-      "title": "Platform Notifications",
-      "system_alerts": "System Alerts",
-      "maintenance_notifications": "Maintenance Notifications"
+      "title": "Thông báo nền tảng",
+      "system_alerts": "Cảnh báo hệ thống",
+      "maintenance_notifications": "Thông báo bảo trì"
     }
   },
   "buttons": {
-    "save_settings": "Save Settings",
-    "reset_defaults": "Reset to Defaults"
+    "save_settings": "Lưu cài đặt",
+    "reset_defaults": "Đặt lại mặc định"
   }
 }

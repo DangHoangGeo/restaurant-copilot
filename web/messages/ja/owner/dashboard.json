@@ -1,0 +1,97 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Monitor your restaurant's performance and key metrics",
+  "cards": {
+    "todays_sales": "Today's Sales",
+    "active_orders": "Active Orders",
+    "top_seller_today": "Top Seller Today",
+    "top_seller_unavailable": "N/A",
+    "low_stock_alerts": "Low Stock Alerts",
+    "needs_attention": "Needs Attention!",
+    "all_good": "All Good",
+    "sold_units": "sold"
+  },
+  "quick_actions": {
+    "title": "Quick Actions",
+    "add_menu_item": "Add New Menu Item",
+    "generate_qr": "Generate Table QR Code",
+    "add_employee": "Add New Employee"
+  },
+  "recent_orders": {
+    "title": "Recent Orders",
+    "no_recent_orders": "No recent orders to display.",
+    "table_header_order": "Order / Table",
+    "table_header_items": "Items",
+    "table_header_total": "Total",
+    "table_header_status": "Status",
+    "table_prefix": "Table"
+  },
+  "charts": {
+    "sales_over_time_placeholder": "Sales Over Time Chart - Coming Soon",
+    "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
+  },
+  "errors": {
+    "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
+    "data_fetch_error": "Failed to load dashboard data. Please try again later.",
+    "unauthorized_access": "Access Denied: You are not authorized to view this page.",
+    "mismatched_restaurant_access": "Access Denied: You are not authorized to view this restaurant's data.",
+    "dashboard_load_failed": "Failed to load dashboard",
+    "fetch_failed": "Failed to fetch data"
+  },
+  "metadata": {
+    "admin_dashboard_title": "Admin Dashboard - CoOrder.ai"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "menu": "Menu Management",
+    "orders": "Orders",
+    "tables": "Table Management",
+    "employees": "Staff",
+    "bookings": "Reservations",
+    "reports": "Analytics",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "header": {
+    "welcome": "Welcome back",
+    "user_menu": "User Menu",
+    "notifications": "Notifications",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "admin_sidebar_dashboard": "Dashboard",
+  "admin_sidebar_restaurant_settings": "Restaurant Settings",
+  "admin_sidebar_menu_management": "Menu Management",
+  "admin_sidebar_orders": "Orders",
+  "admin_sidebar_table_qr_management": "Tables & QR Codes",
+  "admin_sidebar_employees_schedules": "Employees & Schedules",
+  "admin_sidebar_bookings_preorders": "Bookings & Preorders",
+  "admin_sidebar_reports_analytics": "Reports & Analytics",
+  "admin_sidebar_design_system": "Design System Guide",
+  "admin_sidebar_view_customer_site": "View Customer Site",
+  "admin_sidebar_logout": "Logout",
+  "admin_dashboard_title": "Dashboard Overview",
+  "admin_settings_title": "Restaurant Settings",
+  "admin_menu_title": "Menu Management",
+  "admin_tables_title": "Table & QR Management",
+  "admin_employees_title": "Employee & Schedule Management",
+  "admin_bookings_title": "Booking Management",
+  "admin_reports_title": "Reports & Analytics",
+  "sidebar_close_aria_label": "Close sidebar",
+  "admin_sidebar_profile": "Profile",
+  "admin_sidebar_settings": "Settings",
+  "sidebar": {
+      "toggle_aria_label": "Toggle sidebar navigation",
+      "close_aria_label": "Close sidebar"
+    },
+    "user_menu": {
+      "admin_user_placeholder": "Admin User",
+      "my_account_label": "My Account",
+      "profile_link": "Profile",
+      "settings_link": "Restaurant Settings",
+      "logout_button": "Logout"
+    },
+    "default_restaurant_name": "CoOrder"
+    
+}

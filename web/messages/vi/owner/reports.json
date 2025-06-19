@@ -1,82 +1,82 @@
 {
-  "title": "Reports & Analytics",
-  "description": "View sales reports, item performance, and customer feedback",
+  "title": "Báo cáo & Phân tích",
+  "description": "Xem báo cáo doanh thu, hiệu suất món và phản hồi khách hàng",
   "tabs": {
-    "sales": "Sales",
-    "items": "Items",
-    "feedback": "Feedback"
+    "sales": "Doanh thu",
+    "items": "Món ăn",
+    "feedback": "Phản hồi"
   },
   "summary": {
-    "total_sales_today": "Total Sales Today",
-    "active_orders_count": "Active Orders",
-    "top_selling_item_today": "Top Selling Item Today",
-    "low_stock_alerts_count": "Low Stock Alerts"
+    "total_sales_today": "Doanh thu hôm nay",
+    "active_orders_count": "Đơn hàng đang hoạt động",
+    "top_selling_item_today": "Món bán chạy nhất hôm nay",
+    "low_stock_alerts_count": "Cảnh báo hết hàng"
   },
   "recommendations": {
-    "title": "Top Selling Menu Items (Last 7 Days)",
-    "loading": "Loading recommendations...",
-    "errorFetching": "Error fetching recommendations: {error}",
-    "noData": "No top sellers found for the last 7 days.",
-    "soldLabel": "Sold:",
-    "applyButton": "Apply to Next Week",
-    "applyingButton": "Applying...",
-    "applySuccess": "Recommendations applied successfully!",
-    "applyError": "Error applying recommendations: {error}",
-    "missingRestaurantId": "Please select a restaurant to see recommendations.",
-    "missingRestaurantIdApply": "Cannot apply recommendations without a restaurant ID.",
-    "description_7_days": "Based on the last 7 days",
-    "apply_button": "Apply Recommendations"
+    "title": "Món bán chạy nhất (7 ngày qua)",
+    "loading": "Đang tải gợi ý...",
+    "errorFetching": "Lỗi khi lấy gợi ý: {error}",
+    "noData": "Không có món bán chạy nào trong 7 ngày qua.",
+    "soldLabel": "Đã bán:",
+    "applyButton": "Áp dụng cho tuần tới",
+    "applyingButton": "Đang áp dụng...",
+    "applySuccess": "Áp dụng gợi ý thành công!",
+    "applyError": "Lỗi khi áp dụng gợi ý: {error}",
+    "missingRestaurantId": "Vui lòng chọn nhà hàng để xem gợi ý.",
+    "missingRestaurantIdApply": "Không thể áp dụng gợi ý khi chưa có mã nhà hàng.",
+    "description_7_days": "Dựa trên dữ liệu 7 ngày gần nhất",
+    "apply_button": "Áp dụng Gợi ý"
   },
   "sales": {
-    "title": "Sales Report",
-    "daily_revenue_chart_placeholder": "Daily revenue chart placeholder",
-    "category_breakdown_chart_placeholder": "Category breakdown placeholder"
+    "title": "Báo cáo doanh thu",
+    "daily_revenue_chart_placeholder": "Biểu đồ doanh thu hàng ngày",
+    "category_breakdown_chart_placeholder": "Biểu đồ phân loại theo danh mục"
   },
   "daterange": {
-    "last_7_days": "Last 7 Days",
-    "last_30_days": "Last 30 Days"
+    "last_7_days": "7 ngày qua",
+    "last_30_days": "30 ngày qua"
   },
   "items": {
-    "title": "Items Report",
+    "title": "Báo cáo món ăn",
     "table": {
-      "item_name": "Item Name",
-      "total_sold": "Total Sold",
-      "total_revenue": "Total Revenue",
-      "avg_rating": "Avg Rating"
+      "item_name": "Tên món",
+      "total_sold": "Số lượng bán",
+      "total_revenue": "Tổng doanh thu",
+      "avg_rating": "Đánh giá TB"
     }
   },
   "metrics": {
-    "total_sales": "Total Sales",
-    "total_items_sold": "Total Items Sold",
-    "average_order_value": "Average Order Value",
-    "top_item": "Top Item",
-    "low_stock_items": "Low Stock Items",
-    "todaySales": "Today's Sales",
-    "todayOrders": "Today's Orders",
-    "todayRevenue": "Today's Revenue",
-    "totalOrders": "Total Orders",
-    "activeOrders": "Active Orders",
-    "topSeller": "Top Seller",
-    "lowStock": "Low Stock",
-    "noData": "No data available for this period.",
-    "loading": "Loading metrics...",
-    "itemsNeedAttention": "Items that need attention"
+    "total_sales": "Tổng doanh thu",
+    "total_items_sold": "Tổng số món bán ra",
+    "average_order_value": "Giá trị đơn trung bình",
+    "top_item": "Món bán chạy",
+    "low_stock_items": "Món gần hết hàng",
+    "todaySales": "Doanh thu hôm nay",
+    "todayOrders": "Đơn hàng hôm nay",
+    "todayRevenue": "Doanh thu hôm nay",
+    "totalOrders": "Tổng đơn hàng",
+    "activeOrders": "Đơn đang hoạt động",
+    "topSeller": "Bán chạy nhất",
+    "lowStock": "Sắp hết hàng",
+    "noData": "Không có dữ liệu cho giai đoạn này.",
+    "loading": "Đang tải dữ liệu...",
+    "itemsNeedAttention": "Món cần chú ý"
   },
   "recentOrders": {
-    "title": "Recent Orders",
-    "noOrders": "No recent orders found.",
-    "orderId": "Order ID",
-    "customerName": "Customer Name",
-    "totalAmount": "Total Amount",
-    "orderTime": "Order Time",
-    "status": "Status"
+    "title": "Đơn hàng gần đây",
+    "noOrders": "Không có đơn hàng nào gần đây.",
+    "orderId": "Mã Đơn",
+    "customerName": "Tên khách hàng",
+    "totalAmount": "Tổng tiền",
+    "orderTime": "Thời gian đặt",
+    "status": "Trạng thái"
   },
   "feedback": {
-    "title": "Feedback",
-    "description_last_50": "Last 50 reviews"
+    "title": "Phản hồi",
+    "description_last_50": "50 đánh giá gần nhất"
   },
   "coming_soon": {
-    "title": "Reports & Analytics",
-    "message": "Advanced reporting features are coming soon! You'll be able to view detailed sales analytics, item performance metrics, and customer feedback analysis here."
+    "title": "Báo cáo & Phân tích",
+    "message": "Các tính năng báo cáo nâng cao sắp ra mắt! Bạn sẽ có thể xem phân tích doanh số, hiệu suất món ăn và phân tích phản hồi khách hàng chi tiết tại đây."
   }
 }

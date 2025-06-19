@@ -1,0 +1,93 @@
+{
+  "title": "Employee Management",
+  "subtitle": "Manage your restaurant staff and schedules",
+  "views": {
+    "list": "List",
+    "schedule": "Schedule"
+  },
+  "employee": "Employee",
+  "select_role": "Select Role",
+  "role": "Role",
+  "enter_name": "Enter Employee Name",
+  "enter_email": "Enter Employee Email",
+  "add_employee": "Add Employee",
+  "edit_employee": "Edit Employee",
+  "delete_employee": "Delete Employee",
+  "edit_schedule": "Edit Schedule",
+  "save_changes": "Save Changes",
+  "cancel": "Cancel",
+  "search_placeholder": "Search employees...",
+  "no_employees": "No employees found",
+  "employee_details": "Employee Details",
+  "actions": {
+    "add_employee": "Add Employee",
+    "edit_employee": "Edit Employee",
+    "delete_employee": "Delete Employee",
+    "edit_schedule": "Edit Schedule",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "table": {
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "shifts": "Shifts",
+    "actions": "Actions"
+  },
+  "roles": {
+    "manager": "Manager",
+    "chef": "Chef",
+    "server": "Server",
+    "cashier": "Cashier"
+  },
+  "form": {
+    "name_label": "Full Name",
+    "name_placeholder": "Enter employee's full name",
+    "email_label": "Email Address",
+    "email_placeholder": "Enter employee's email",
+    "role_label": "Role",
+    "role_placeholder": "Select a role"
+  },
+  "schedule": {
+    "title": "Employee Schedules",
+    "edit_title": "Edit Schedule for {name}",
+    "weekdays": {
+      "monday": "Monday",
+      "tuesday": "Tuesday", 
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "time_format": "{start} - {end}",
+    "no_shift": "Off",
+    "start_time": "Start Time",
+    "end_time": "End Time"
+  },
+  "notifications": {
+    "employee_added": "Employee added successfully",
+    "employee_updated": "Employee updated successfully",
+    "employee_deleted": "Employee deleted successfully",
+    "schedule_updated": "Schedule updated successfully",
+    "add_failed": "Failed to add employee",
+    "update_failed": "Failed to update employee",
+    "delete_failed": "Failed to delete employee",
+    "schedule_failed": "Failed to update schedule"
+  },
+  "confirmations": {
+    "delete_title": "Delete Employee",
+    "delete_message": "Are you sure you want to delete {name}? This action cannot be undone."
+  },
+  "empty_state": {
+    "no_employees": "No employees found",
+    "add_first": "Add your first employee to get started"
+  },
+  "validation": {
+    "name_required": "Name is required",
+    "email_required": "Email is required",
+    "email_invalid": "Please enter a valid email",
+    "role_required": "Role is required",
+    "time_invalid": "Start time must be before end time"
+  }
+}

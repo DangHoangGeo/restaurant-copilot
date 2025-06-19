@@ -1,0 +1,48 @@
+{
+  "title": "Booking Management",
+  "subtitle": "Manage table reservations and customer bookings",
+  "table": {
+    "customer_name": "Customer Name",
+    "contact": "Contact",
+    "date_time": "Date & Time",
+    "party_size": "Party Size",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "status": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "canceled": "Canceled"
+  },
+  "actions": {
+    "view_details": "View Details",
+    "confirm_booking": "Confirm Booking",
+    "cancel_booking": "Cancel Booking",
+    "confirming": "Confirming...",
+    "canceling": "Canceling..."
+  },
+  "details_title": "Booking Details",
+  "notifications": {
+    "update_success": "Booking status updated successfully",
+    "update_failed": "Failed to update booking status: {error}",
+    "fetch_error": "Failed to load bookings"
+  },
+  "empty_state": {
+    "title": "No Bookings Yet",
+    "description": "Start managing your bookings here",
+    "no_bookings": "No bookings found",
+    "message": "Bookings will appear here when customers make reservations"
+  },
+  "preorder": {
+    "title": "Pre-ordered Items",
+    "no_preorder_items": "No pre-ordered items"
+  },
+  "errors": {
+    "no_bookings_found": "No bookings found.",
+    "fetchErrorTitle": "Error Fetching Bookings"
+  },
+  "coming_soon": {
+    "title": "Table Booking Management",
+    "message": "This feature is coming soon! You'll be able to manage customer table reservations and bookings here."
+  }
+}

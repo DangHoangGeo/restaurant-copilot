@@ -1,29 +1,29 @@
 {
-  "title": "User Management",
-  "subtitle": "Manage all restaurant owners and users across the platform",
+  "title": "Quản lý người dùng",
+  "subtitle": "Quản lý tất cả chủ nhà hàng và người dùng trên nền tảng",
   "table": {
-    "name": "Name",
+    "name": "Tên",
     "email": "Email",
-    "restaurant": "Restaurant",
-    "role": "Role",
-    "status": "Status",
-    "created": "Created",
-    "actions": "Actions"
+    "restaurant": "Nhà hàng",
+    "role": "Vai trò",
+    "status": "Trạng thái",
+    "created": "Ngày tạo",
+    "actions": "Hành động"
   },
   "filters": {
-    "all_users": "All Users",
-    "active": "Active",
-    "inactive": "Inactive",
-    "pending": "Pending Verification"
+    "all_users": "Tất cả người dùng",
+    "active": "Đang hoạt động",
+    "inactive": "Không hoạt động",
+    "pending": "Đang chờ xác minh"
   },
   "actions": {
-    "view_details": "View Details",
-    "suspend_user": "Suspend User",
-    "activate_user": "Activate User",
-    "reset_password": "Reset Password"
+    "view_details": "Xem chi tiết",
+    "suspend_user": "Đình chỉ người dùng",
+    "activate_user": "Kích hoạt người dùng",
+    "reset_password": "Đặt lại mật khẩu"
   },
   "empty_state": {
-    "title": "No Users Found",
-    "description": "No users match your current filters."
+    "title": "Không tìm thấy người dùng",
+    "description": "Không có người dùng nào phù hợp với bộ lọc hiện tại của bạn."
   }
 }

@@ -1,93 +1,93 @@
 {
-  "title": "Employee Management",
-  "subtitle": "Manage your restaurant staff and schedules",
+  "title": "Quản Lý Nhân Viên",
+  "subtitle": "Quản lý nhân viên và lịch trình của nhà hàng",
   "views": {
-    "list": "List",
-    "schedule": "Schedule"
+    "list": "Danh Sách",
+    "schedule": "Lịch Trình"
   },
-  "employee": "Employee",
-  "select_role": "Select Role",
-  "role": "Role",
-  "enter_name": "Enter Employee Name",
-  "enter_email": "Enter Employee Email",
-  "add_employee": "Add Employee",
-  "edit_employee": "Edit Employee",
-  "delete_employee": "Delete Employee",
-  "edit_schedule": "Edit Schedule",
-  "save_changes": "Save Changes",
-  "cancel": "Cancel",
-  "search_placeholder": "Search employees...",
-  "no_employees": "No employees found",
-  "employee_details": "Employee Details",
+  "employee": "Nhân Viên",
+  "select_role": "Chọn Vai Trò",
+  "role": "Vai Trò",
+  "enter_name": "Nhập Tên Nhân Viên",
+  "enter_email": "Nhập Email Nhân Viên",
+  "add_employee": "Thêm Nhân Viên",
+  "edit_employee": "Sửa Nhân Viên",
+  "delete_employee": "Xóa Nhân Viên",
+  "edit_schedule": "Sửa Lịch Trình",
+  "save_changes": "Lưu Thay Đổi",
+  "cancel": "Hủy",
+  "search_placeholder": "Tìm kiếm nhân viên...",
+  "no_employees": "Không tìm thấy nhân viên nào",
+  "employee_details": "Chi Tiết Nhân Viên",
   "actions": {
-    "add_employee": "Add Employee",
-    "edit_employee": "Edit Employee",
-    "delete_employee": "Delete Employee",
-    "edit_schedule": "Edit Schedule",
-    "save": "Save",
-    "cancel": "Cancel"
+    "add_employee": "Thêm Nhân Viên",
+    "edit_employee": "Sửa Nhân Viên",
+    "delete_employee": "Xóa Nhân Viên",
+    "edit_schedule": "Sửa Lịch Trình",
+    "save": "Lưu",
+    "cancel": "Hủy"
   },
   "table": {
-    "name": "Name",
+    "name": "Tên",
     "email": "Email",
-    "role": "Role",
-    "shifts": "Shifts",
-    "actions": "Actions"
+    "role": "Vai Trò",
+    "shifts": "Ca Làm",
+    "actions": "Hành Động"
   },
   "roles": {
-    "manager": "Manager",
-    "chef": "Chef",
-    "server": "Server",
-    "cashier": "Cashier"
+    "manager": "Quản Lý",
+    "chef": "Đầu Bếp",
+    "server": "Phục Vụ",
+    "cashier": "Thu Ngân"
   },
   "form": {
-    "name_label": "Full Name",
-    "name_placeholder": "Enter employee's full name",
-    "email_label": "Email Address",
-    "email_placeholder": "Enter employee's email",
-    "role_label": "Role",
-    "role_placeholder": "Select a role"
+    "name_label": "Họ và Tên",
+    "name_placeholder": "Nhập họ và tên nhân viên",
+    "email_label": "Địa Chỉ Email",
+    "email_placeholder": "Nhập email nhân viên",
+    "role_label": "Vai Trò",
+    "role_placeholder": "Chọn vai trò"
   },
   "schedule": {
-    "title": "Employee Schedules",
-    "edit_title": "Edit Schedule for {name}",
+    "title": "Lịch Trình Nhân Viên",
+    "edit_title": "Sửa Lịch Trình cho {name}",
     "weekdays": {
-      "monday": "Monday",
-      "tuesday": "Tuesday", 
-      "wednesday": "Wednesday",
-      "thursday": "Thursday",
-      "friday": "Friday",
-      "saturday": "Saturday",
-      "sunday": "Sunday"
+      "monday": "Thứ Hai",
+      "tuesday": "Thứ Ba",
+      "wednesday": "Thứ Tư",
+      "thursday": "Thứ Năm",
+      "friday": "Thứ Sáu",
+      "saturday": "Thứ Bảy",
+      "sunday": "Chủ Nhật"
     },
     "time_format": "{start} - {end}",
-    "no_shift": "Off",
-    "start_time": "Start Time",
-    "end_time": "End Time"
+    "no_shift": "Nghỉ",
+    "start_time": "Giờ Bắt Đầu",
+    "end_time": "Giờ Kết Thúc"
   },
   "notifications": {
-    "employee_added": "Employee added successfully",
-    "employee_updated": "Employee updated successfully",
-    "employee_deleted": "Employee deleted successfully",
-    "schedule_updated": "Schedule updated successfully",
-    "add_failed": "Failed to add employee",
-    "update_failed": "Failed to update employee",
-    "delete_failed": "Failed to delete employee",
-    "schedule_failed": "Failed to update schedule"
+    "employee_added": "Thêm nhân viên thành công",
+    "employee_updated": "Cập nhật nhân viên thành công",
+    "employee_deleted": "Xóa nhân viên thành công",
+    "schedule_updated": "Cập nhật lịch trình thành công",
+    "add_failed": "Không thể thêm nhân viên",
+    "update_failed": "Không thể cập nhật nhân viên",
+    "delete_failed": "Không thể xóa nhân viên",
+    "schedule_failed": "Không thể cập nhật lịch trình"
   },
   "confirmations": {
-    "delete_title": "Delete Employee",
-    "delete_message": "Are you sure you want to delete {name}? This action cannot be undone."
+    "delete_title": "Xóa Nhân Viên",
+    "delete_message": "Bạn có chắc muốn xóa {name}? Hành động này không thể hoàn tác."
   },
   "empty_state": {
-    "no_employees": "No employees found",
-    "add_first": "Add your first employee to get started"
+    "no_employees": "Không tìm thấy nhân viên nào",
+    "add_first": "Thêm nhân viên đầu tiên để bắt đầu"
   },
   "validation": {
-    "name_required": "Name is required",
-    "email_required": "Email is required",
-    "email_invalid": "Please enter a valid email",
-    "role_required": "Role is required",
-    "time_invalid": "Start time must be before end time"
+    "name_required": "Tên là bắt buộc",
+    "email_required": "Email là bắt buộc",
+    "email_invalid": "Vui lòng nhập email hợp lệ",
+    "role_required": "Vai trò là bắt buộc",
+    "time_invalid": "Giờ bắt đầu phải trước giờ kết thúc"
   }
 }
