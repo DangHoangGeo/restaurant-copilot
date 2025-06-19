@@ -24,7 +24,7 @@ export function DescriptionGenerator({
   onGenerated, 
   disabled = false 
 }: DescriptionGeneratorProps) {
-  const t = useTranslations("Dashboard.Settings");
+  const t = useTranslations("owner.settings");
   const [isGenerating, setIsGenerating] = useState(false);
   const [cuisine, setCuisine] = useState("");
   const [atmosphere, setAtmosphere] = useState("");

@@ -8,7 +8,7 @@ interface ComingSoonProps {
 }
 
 export function ComingSoon({ featureName }: ComingSoonProps) {
-  const t = useTranslations('Common'); // Assuming 'Common' namespace for general messages
+  const t = useTranslations('common'); // Assuming 'common' namespace for general messages
 
   return (
     <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-4">

@@ -47,8 +47,8 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export function ProfileForm({ userProfile, restaurant, onUpdate }: ProfileFormProps) {
-  const t = useTranslations("Dashboard.Profile");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations("owner.profile");
+  const tCommon = useTranslations("common");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 

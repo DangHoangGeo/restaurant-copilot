@@ -37,6 +37,8 @@
   "sold": "sold",
   "cancel_booking": "Cancel Booking",
   "confirm_booking": "Confirm Booking",
+  "selectedPlanLabel": "Selected Plan",
+  "changePlan": "Change Plan",
   "order_status": {
     "new": "New",
     "ordered": "Ordered",

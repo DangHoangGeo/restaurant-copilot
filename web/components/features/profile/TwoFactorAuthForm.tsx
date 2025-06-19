@@ -34,7 +34,7 @@ interface TwoFactorAuthFormProps {
 }
 
 export function TwoFactorAuthForm({ currentStatus, onStatusChanged }: TwoFactorAuthFormProps) {
-  const t = useTranslations("Dashboard.Profile");
+  const t = useTranslations("owner.profile");
   const [isLoading, setIsLoading] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);

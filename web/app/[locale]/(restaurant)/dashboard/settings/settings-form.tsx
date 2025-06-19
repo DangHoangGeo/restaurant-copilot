@@ -93,9 +93,9 @@ const getSettingsSchema = (t: ReturnType<typeof useTranslations<'Dashboard.Setti
 });
 
 export default function SettingsForm({ initialSettings, locale }: SettingsFormProps) {
-  const t = useTranslations("Dashboard.Settings");
-  const tCommon = useTranslations("Common");
-  const tValidation = useTranslations("Dashboard.Settings.validation");
+  const t = useTranslations("owner.settings");
+  const tCommon = useTranslations("common");
+  const tValidation = useTranslations("owner.settings.validation");
 
   const settingsSchema = getSettingsSchema(tValidation);
   type SettingsFormData = z.infer<typeof settingsSchema>;
