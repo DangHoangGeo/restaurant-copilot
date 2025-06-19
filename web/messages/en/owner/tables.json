@@ -89,5 +89,42 @@
   },
   "downloading": "Downloading...",
   "download_qr": "Download QR Code",
-  "qr_code_generate_message": "Generating QR Code..."
+  "qr_code_generate_message": "Generating QR Code...",
+  "search_placeholder": "Search by table name...",
+  "filter_status": "Filter status",
+  "all_status": "All Status",
+  "clear_filters": "Clear",
+  "clear_filters_button": "Clear filters",
+  "view_mode": {
+    "grid": "Grid View",
+    "list": "List View"
+  },
+  "stats": {
+    "available": "Available",
+    "occupied": "Occupied", 
+    "reserved": "Reserved",
+    "qr_codes": "QR Codes"
+  },
+  "pagination": {
+    "showing": "Showing {start}-{end} of {total} tables",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}"
+  },
+  "table_info": {
+    "capacity_with_icon": "{count} seats",
+    "outdoor_badge": "Outdoor",
+    "accessible_badge": "Accessible",
+    "qr_old_warning": "QR code is old - consider refreshing"
+  },
+  "actions": {
+    "edit": "Edit",
+    "qr_code": "QR Code",
+    "view_qr_code": "View QR Code"
+  },
+  "search_results": {
+    "no_tables_found": "No tables found",
+    "adjust_search": "Try adjusting your search or filter criteria"
+  },
+  "status_count": "{count} of {total} tables"
 }

@@ -10,14 +10,14 @@ interface BrandedQRDisplayProps {
 
 export function BrandedQRDisplay({ 
   value, 
-  size = 400, 
+  size = 200, 
   restaurantName, 
   tableName 
 }: BrandedQRDisplayProps) {
-  const padding = 40;
+  const padding = 30;
   const qrSize = Math.max(200, size - (padding * 2));
   const headerHeight = 120;
-  const footerHeight = 60;
+  const footerHeight = 120;
   const totalHeight = size + headerHeight + footerHeight;
 
   if (!value) {
@@ -34,7 +34,7 @@ export function BrandedQRDisplay({
   return (
     <div 
       className="flex flex-col items-center bg-white border-2 border-gray-200 rounded-lg overflow-hidden shadow-lg"
-      style={{ width: size, height: totalHeight }}
+      style={{ width: size + padding * 2, height: totalHeight }}
     >
       {/* Header with Restaurant and Table Name */}
       <div className="w-full bg-gradient-to-br from-cyan-500 to-cyan-700 text-white p-6 text-center">

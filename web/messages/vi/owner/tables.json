@@ -81,5 +81,42 @@
     "notification_success": "Đã thêm {count} bàn thành công.",
     "notification_error": "Không thể thêm {count} bàn. Lỗi: {errors}"
   },
-  "qr_code_generate_message": "Đang Tạo Mã QR..."
+  "qr_code_generate_message": "Đang Tạo Mã QR...",
+  "search_placeholder": "Tìm kiếm theo tên bàn...",
+  "filter_status": "Lọc theo trạng thái",
+  "all_status": "Tất cả trạng thái",
+  "clear_filters": "Xóa",
+  "clear_filters_button": "Xóa bộ lọc",
+  "view_mode": {
+    "grid": "Chế độ lưới",
+    "list": "Chế độ danh sách"
+  },
+  "stats": {
+    "available": "Còn trống",
+    "occupied": "Đã có khách",
+    "reserved": "Đã đặt",
+    "qr_codes": "Mã QR"
+  },
+  "pagination": {
+    "showing": "Hiển thị {start}-{end} trong {total} bàn",
+    "previous": "Trước",
+    "next": "Tiếp theo",
+    "page": "Trang {page}"
+  },
+  "table_info": {
+    "capacity_with_icon": "{count} ghế",
+    "outdoor_badge": "Ngoài trời",
+    "accessible_badge": "Phù hợp xe lăn",
+    "qr_old_warning": "Mã QR đã cũ - hãy xem xét làm mới"
+  },
+  "actions": {
+    "edit": "Sửa",
+    "qr_code": "Mã QR",
+    "view_qr_code": "Xem Mã QR"
+  },
+  "search_results": {
+    "no_tables_found": "Không tìm thấy bàn nào",
+    "adjust_search": "Hãy thử điều chỉnh tìm kiếm hoặc tiêu chí lọc của bạn"
+  },
+  "status_count": "{count} trong {total} bàn"
 }
