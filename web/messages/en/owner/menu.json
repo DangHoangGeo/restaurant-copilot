@@ -318,5 +318,37 @@
     "remove_topping": "Remove Topping",
     "topping_name": "Topping Name",
     "topping_price": "Price"
+  },
+  "stats": {
+    "total_items": "Total Items",
+    "available_items": "Available",
+    "unavailable_items": "Unavailable", 
+    "low_stock": "Low Stock",
+    "top_categories": "Top Categories"
+  },
+  "filters": {
+    "search_placeholder": "Search menu items...",
+    "all_categories": "All Categories",
+    "filters": "Filters",
+    "clear_all": "Clear All",
+    "advanced_filters": "Advanced Filters",
+    "availability": "Availability",
+    "all_items": "All Items",
+    "available_only": "Available Only", 
+    "unavailable_only": "Unavailable Only",
+    "stock_status": "Stock Status",
+    "all_stock_levels": "All Stock Levels",
+    "low_stock": "Low Stock (<10)",
+    "in_stock": "In Stock (≥10)"
+  },
+  "view_modes": {
+    "list": "List View",
+    "grid": "Grid View", 
+    "table": "Table View"
+  },
+  "table_headers": {
+    "image": "Image",
+    "item_details": "Item Details",
+    "actions": "Actions"
   }
 }
