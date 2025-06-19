@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { PlusCircle, SquarePen, QrCode, FileDown, Loader2, Layers, RotateCcw, Copy, Check } from 'lucide-react'
+import { PlusCircle, SquarePen, QrCode, FileDown, Loader2, Layers, RotateCcw, Copy, Check, Search, X, ChevronLeft, ChevronRight, RefreshCw, Users, Trees, AlertTriangle, Filter, Calendar, User, Grid, List, Accessibility } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -33,6 +33,7 @@ const getTableSchema = (t: ReturnType<typeof useTranslations<'validation'>>) => 
   isAccessible: z.boolean(),
   notes: z.string().max(255, t('notes_max_length', { maxLength: 255 })).optional().nullable(), // allow nullable for notes
   qrCode: z.string().url(t('qrCode_invalid_url')).optional().nullable(),
+  qrCodeCreatedAt: z.string().optional().nullable(),
 });
 type TableFormData = z.infer<ReturnType<typeof getTableSchema>>;
 
@@ -314,15 +315,12 @@ export function TablesClientContent() {
       isOutdoor: false,
       isAccessible: false,
       notes: '',
-      qrCode: undefined
+      qrCode: undefined,
+      qrCodeCreatedAt: undefined
     },
   });
 
-  const {
-    handleSubmit: handleSubmitSingle,
-    reset: resetSingle,
-    control: controlSingle
-  } = formMethodsSingle;
+  const { reset: resetSingle } = formMethodsSingle;
 
   const bulkAddForm = useForm<BulkAddTableFormData>({
     resolver: zodResolver(bulkAddTableSchema),
@@ -340,12 +338,17 @@ export function TablesClientContent() {
   // UI state
   const [isTableModalOpen, setIsTableModalOpen] = useState(false)
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
-  const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false); // Kept for now
+  const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false)
   const [editingTable, setEditingTable] = useState<Table | null>(null)
   const [selectedTableForQr, setSelectedTableForQr] = useState<Table | null>(null)
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloadingQr, setIsDownloadingQr] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(12); // Responsive grid
   const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const handleOpenTableModal = (table: Table | null = null) => {
@@ -358,7 +361,8 @@ export function TablesClientContent() {
         isOutdoor: table.is_outdoor ?? false,
         isAccessible: table.is_accessible ?? false,
         notes: table.notes ?? null, // Ensure null for optional text
-        qrCode: table.qr_code ?? undefined
+        qrCode: table.qr_code ?? undefined,
+        qrCodeCreatedAt: table.qr_code_created_at ?? undefined
       })
     } else {
       resetSingle({
@@ -368,7 +372,8 @@ export function TablesClientContent() {
         isOutdoor: false,
         isAccessible: false,
         notes: null,
-        qrCode: undefined
+        qrCode: undefined,
+        qrCodeCreatedAt: undefined
       })
     }
     setIsTableModalOpen(true)
@@ -406,20 +411,23 @@ export function TablesClientContent() {
     }
   }
 
-  const handleGenerateQr = async (table: Table) => {
+  const handleGenerateQr = async (table: Table, forceRefresh: boolean = false) => {
     console.log('handleGenerateQr called with table:', table);
     
-    // If table doesn't have a QR code, generate one
-    if (!table.qr_code) {
+    // If table doesn't have a QR code or we're forcing a refresh, generate one
+    if (!table.qr_code || forceRefresh) {
       try {
         // Generate a unique QR code for this table
         const uniqueCode = `${table.name.toLowerCase().replace(/\s+/g, '')}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
-        // Update the table with the new QR code
+        // Update the table with the new QR code and creation timestamp
         const res = await fetch(`/api/v1/owner/tables/${table.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ qrCode: uniqueCode }),
+          body: JSON.stringify({ 
+            qrCode: uniqueCode,
+            qrCodeCreatedAt: new Date().toISOString()
+          }),
         });
         
         if (!res.ok) {
@@ -433,7 +441,7 @@ export function TablesClientContent() {
         
         // Use the updated table for QR generation
         setSelectedTableForQr(updatedTable.table);
-        toast.success(t('notifications.qr_generated'));
+        toast.success(forceRefresh ? t('notifications.qr_refreshed') : t('notifications.qr_generated'));
       } catch (error) {
         console.error('Error generating QR code:', error);
         toast.error(t('errors.qr_generation_failed'));
@@ -476,54 +484,34 @@ export function TablesClientContent() {
     console.log('Opening bulk add modal',isBulkAddModalOpen);
     setIsBulkAddModalOpen(true);
   };
-  /**
-   * handleBulkAddSubmit is kept for now, but you can remove it if you don't need bulk add functionality.
-   * It currently loops through the count and creates tables with the specified prefix and index.
-  const handleBulkAddSubmit = async (data: BulkAddTableFormData) => { // Kept for now
-    setIsSaving(true);
-    let successCount = 0;
-    const errorMessages: string[] = [];
+  
 
-    for (let i = 0; i < data.count; i++) {
-      const tableName = `${data.namePrefix}${data.startIndex + i}`;
-      // Construct payload for the single table API endpoint
-      const tablePayload: Omit<TableFormData, 'qrCode' | 'positionX' | 'positionY' | 'notes'> & { notes?: string | null } = {
-        name: tableName,
-        capacity: data.capacity,
-        status: data.status,
-        isOutdoor: data.isOutdoor,
-        isAccessible: data.isAccessible,
-        notes: null, // Default notes to null for bulk add
-      };
+  // Utility function to check if QR code needs refresh (older than 2 weeks)
+  const isQrCodeOld = (qrCreatedAt: string | null): boolean => {
+    if (!qrCreatedAt) return false;
+    
+    const createdDate = new Date(qrCreatedAt);
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    
+    return createdDate < twoWeeksAgo;
+  };
 
-      try {
-        const res = await fetch('/api/v1/owner/tables', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(tablePayload),
-        });
-        if (!res.ok) {
-          const errorData = await res.json();
-          errorMessages.push(`${tableName}: ${errorData.message || 'Failed'}`);
-          continue;
-        }
-        successCount++;
-      } catch (error) {
-        errorMessages.push(`${tableName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
-    setIsSaving(false);
-    if (successCount > 0) {
-      toast.success(t('bulk_add.notification_success', { count: successCount }));
-      router.refresh();
-    }
-    if (errorMessages.length > 0) {
-      toast.error(t('bulk_add.notification_error', { count: errorMessages.length, errors: errorMessages.join(', ') }));
-    }
-    if (successCount > 0 && errorMessages.length === 0) {
-      setIsBulkAddModalOpen(false);
-    }
-  }; */
+  // Filter and pagination logic
+  const filteredTables = tablesData.filter(table => {
+    const matchesSearch = table.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || table.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredTables.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTables = filteredTables.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
 
   // Helper for status badge color
   const getStatusBadgeColor = (status: string) => {
@@ -546,295 +534,752 @@ export function TablesClientContent() {
   }
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('title')}</h2>
-        <div className="flex gap-2">
-          <Button onClick={handleOpenBulkAddModal}>
-            <Layers className="mr-2 h-4 w-4" />
-            {t('bulk_add.button_text')}
-          </Button>
-          <Button onClick={() => handleOpenTableModal()}>
-            <PlusCircle className="mr-2" />
-            {t('add_table')}
-          </Button>
+    <div className="space-y-6">
+      {/* Enhanced Header with Stats */}
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('title')}</h2>
+            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <span className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                {filteredTables.length} of {tablesData.length} tables
+              </span>
+              {searchQuery && (
+                <span className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-xs">
+                  <Search className="h-3 w-3" />
+                  &ldquo;{searchQuery}&rdquo;
+                </span>
+              )}
+              {statusFilter !== 'all' && (
+                <span className="flex items-center gap-1 px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-full text-xs">
+                  <Filter className="h-3 w-3" />
+                  {statusFilter}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button onClick={handleOpenBulkAddModal} variant="outline" size="sm">
+              <Layers className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">{t('bulk_add.button_text')}</span>
+              <span className="sm:hidden">Bulk</span>
+            </Button>
+            <Button onClick={() => handleOpenTableModal()}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">{t('add_table')}</span>
+              <span className="sm:hidden">Add</span>
+            </Button>
+          </div>
         </div>
+
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Card className="p-3 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <Users className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">Available</p>
+                <p className="text-lg font-bold text-green-800 dark:text-green-200">
+                  {tablesData.filter(t => t.status === 'available').length}
+                </p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-3 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">Occupied</p>
+                <p className="text-lg font-bold text-red-800 dark:text-red-200">
+                  {tablesData.filter(t => t.status === 'occupied').length}
+                </p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-3 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Reserved</p>
+                <p className="text-lg font-bold text-amber-800 dark:text-amber-200">
+                  {tablesData.filter(t => t.status === 'reserved').length}
+                </p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-3 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-slate-500 rounded-full flex items-center justify-center">
+                <QrCode className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">QR Codes</p>
+                <p className="text-lg font-bold text-slate-800 dark:text-slate-200">
+                  {tablesData.filter(t => t.qr_code).length}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Enhanced Search and Filter Bar */}
+        <Card className="p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+              <Input
+                placeholder="Search by table name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-10"
+              />
+            </div>
+            <div className="flex gap-2 items-center flex-wrap">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] h-10">
+                  <SelectValue placeholder="Filter status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="occupied">Occupied</SelectItem>
+                  <SelectItem value="reserved">Reserved</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* View Mode Toggle */}
+              <div className="flex border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-none border-none"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-none border-none border-l border-slate-200 dark:border-slate-700"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {(searchQuery || statusFilter !== 'all') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setStatusFilter('all');
+                  }}
+                  className="px-2 h-10 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  <X className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1">Clear</span>
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
       </div>
 
+      {/* Loading State */}
       {isLoading && (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-12 w-12 text-slate-400 animate-spin" />
         </div>
       )}
 
+      {/* Empty States */}
       {!isLoading && !error && tablesData.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
-          <QrCode className="mx-auto h-12 w-12 text-slate-400" /> {/* Using QrCode icon as a placeholder for tables */}
+          <QrCode className="mx-auto h-12 w-12 text-slate-400" />
           <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('empty_state.title')}</h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('empty_state.description')}</p>
-          <div className="mt-6 space-x-2">
+          <div className="mt-6">
             <Button onClick={() => handleOpenTableModal()}>
               <PlusCircle className="mr-2 h-4 w-4" />
               {t('empty_state.add_table_button')}
-            </Button>
-            <Button variant="outline" onClick={handleOpenBulkAddModal}>
-              <Layers className="mr-2 h-4 w-4" />
-              {t('empty_state.bulk_add_button')}
             </Button>
           </div>
           <div className="mt-6">
             <p className="text-sm text-slate-500 dark:text-slate-400">{t('empty_state.additional_info')}</p>
           </div>
-          <TableModal isOpen={isTableModalOpen}
-            onClose={() => setIsTableModalOpen(false)}
-            editingTable={editingTable}
-            form={formMethodsSingle}
-            onSubmit={saveTable}
-            isSaving={isSaving}
-            t={t}
-            tCommon={tCommon} />
-
         </div>
       )}
 
-      {!isLoading && tablesData.length > 0 && (
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {tablesData.map(table => (
-              <Card key={table.id} className="p-4 space-y-2">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{table.name}</h3>
-                  <Badge className={getStatusBadgeColor(table.status)}>
-                    {table.status.charAt(0).toUpperCase() + table.status.slice(1)}
-                  </Badge>
-                </div>
-
-                <div className="text-sm text-slate-500 dark:text-slate-400">
-                  <p>
-                    {t('capacity')}: {table.capacity || 1}
-                    {table.is_outdoor && <span className="ml-2">{t('outdoor')}</span>}
-                    {table.is_accessible && <span className="ml-2">{t('accessible')}</span>}
-                  </p>
-
-
-                  {table.notes && (
-                    <p className="mt-2 italic">{table.notes}</p>
-                  )}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => handleOpenTableModal(table)}>
-                    <SquarePen className="mr-1" />
-                    {tCommon('edit')}</Button>
-                  <Button size="sm" variant="primary" onClick={() => handleGenerateQr(table)}>
-                    <QrCode className="mr-1" />
-                    {t('generate_qr')}</Button>
-                </div>
-              </Card>
-            ))}
+      {!isLoading && !error && tablesData.length > 0 && filteredTables.length === 0 && (
+        <div className="text-center py-12 border border-slate-200 dark:border-slate-700 rounded-lg">
+          <Search className="mx-auto h-12 w-12 text-slate-400" />
+          <h3 className="mt-2 text-lg font-semibold text-slate-800 dark:text-slate-100">No tables found</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Try adjusting your search or filter criteria
+          </p>
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+              }}
+            >
+              Clear filters
+            </Button>
           </div>
-          <Dialog open={isTableModalOpen} onOpenChange={setIsTableModalOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editingTable ? t('edit_table') : t('add_table')}</DialogTitle>
-              </DialogHeader>
-                <Form {...formMethodsSingle}>
-                  <form onSubmit={handleSubmitSingle(saveTable)} className="space-y-4">
-                    <FormField
-                      control={controlSingle}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('table_name_label')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('table_name_placeholder')} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={controlSingle}
-                        name="capacity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('capacity_label')}</FormLabel>
-                            <FormControl>
-                              <Input type="number" min="1" placeholder={t('capacity_placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={controlSingle}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('status_label')}</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={t('select_status_placeholder')} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="available">{t('status_options.available')}</SelectItem>
-                                <SelectItem value="occupied">{t('status_options.occupied')}</SelectItem>
-                                <SelectItem value="reserved">{t('status_options.reserved')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                      <FormField
-                        control={controlSingle}
-                        name="isOutdoor"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>{t('is_outdoor_label')}</FormLabel>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={controlSingle}
-                        name="isAccessible"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
-                            <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>{t('is_accessible_label')}</FormLabel>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={controlSingle}
-                      name="notes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('notes_label')}</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder={t('notes_placeholder')} {...field} value={field.value ?? ''} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{tCommon('zod_form_hint')}</p>
-                    <DialogFooter className="flex justify-end space-x-2 mt-6">
-                      <Button type="button" variant="secondary" onClick={() => setIsTableModalOpen(false)}>{tCommon('cancel')}</Button>
-                      <Button type="submit" variant="primary" disabled={isSaving}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        {isSaving ? tCommon('saving') : tCommon('save')}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-            </DialogContent>
-          </Dialog>
-          <Dialog open={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>{t('qr_for_table')} {selectedTableForQr?.name || ''}</DialogTitle>
-              </DialogHeader>
-              
-              {selectedTableForQr && restaurantSettings && qrCodeUrl && (
-                <div className="space-y-6">
-                  {/* Branded QR Code for display and download */}
-                  <div className="flex justify-center">
-                    <div ref={qrCodeRef} className="inline-block"> {/* Wrapper for html-to-image */}
-                      <BrandedQRDisplay 
-                        value={qrCodeUrl} 
-                        size={320}
-                        restaurantName={restaurantSettings.name}
-                        tableName={selectedTableForQr.name}
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Action buttons */}
-                  <div className="space-y-3">
-                    {/* Copy Link Button */}
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={copyToClipboard}
-                      disabled={!qrCodeUrl}
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="mr-2 h-4 w-4 text-green-600" />
-                          {t('link_copied')}
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="mr-2 h-4 w-4" />
-                          {t('copy_link')}
-                        </>
-                      )}
-                    </Button>
-                    
-                    {/* Download PNG Button */}
-                    <Button
-                      variant="primary"
-                      className="w-full"
-                      disabled={isDownloadingQr}
-                      onClick={async () => {
-                        if (!selectedTableForQr || !qrCodeRef.current) return;
-                        setIsDownloadingQr(true);
-                        try {
-                          // Download as PNG with higher quality
-                          const dataUrl = await htmlToImage.toPng(qrCodeRef.current, {
-                            quality: 1.0,
-                            pixelRatio: 2
-                          });
-                          const link = document.createElement('a');
-                          link.download = `${restaurantSettings.name.replace(/\s+/g, '_')}_${selectedTableForQr.name.replace(/\s+/g, '_')}_QR.png`;
-                          link.href = dataUrl;
-                          link.click();
-                          toast.success(t('notifications.qr_downloaded'));
-                        } catch (error) {
-                          console.error('Error processing QR code:', error);
-                          toast.error(error instanceof Error ? error.message : t('errors.qr_download_failed'));
-                        } finally {
-                          setIsDownloadingQr(false);
-                        }
-                      }}>
-                      {isDownloadingQr ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
-                      {isDownloadingQr ? t('downloading_qr') : t('download_png')}
-                    </Button>
-                  </div>
-                </div>
-              )}
-              
-              {/* Show loading or error states */}
-              {(!selectedTableForQr || !restaurantSettings || !qrCodeUrl) && (
-                <div className="p-4 text-center text-gray-500">
-                  <p>Loading QR code...</p>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
         </div>
-      )
-      }
+      )}
+
+      {/* Tables Display */}
+      {!isLoading && paginatedTables.length > 0 && (
+        <div className="space-y-6">
+          {viewMode === 'grid' ? (
+            /* Grid View */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              {paginatedTables.map(table => (
+                <Card key={table.id} className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600">
+                  <div className="p-4 space-y-3">
+                    {/* Header */}
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate pr-2">
+                        {table.name}
+                      </h3>
+                      <Badge 
+                        className={`${getStatusBadgeColor(table.status)} text-white shrink-0 text-xs`}
+                        variant="secondary"
+                      >
+                        {table.status.charAt(0).toUpperCase() + table.status.slice(1)}
+                      </Badge>
+                    </div>
+
+                    {/* Table Info */}
+                    <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          <span>{table.capacity || 1}</span>
+                        </div>
+                        {table.is_outdoor && (
+                          <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                            <Trees className="h-3 w-3" />
+                            <span className="text-xs">Outdoor</span>
+                          </div>
+                        )}
+                        {table.is_accessible && (
+                          <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                            <Accessibility className="h-3 w-3" />
+                            <span className="text-xs">Accessible</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* QR Code Age Warning */}
+                      {table.qr_code && table.qr_code_created_at && isQrCodeOld(table.qr_code_created_at) && (
+                        <div className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-amber-700 dark:text-amber-300 text-xs">
+                          <AlertTriangle className="h-3 w-3 shrink-0" />
+                          <span>QR code is old - consider refreshing</span>
+                        </div>
+                      )}
+
+                      {/* Notes */}
+                      {table.notes && (
+                        <p className="text-xs italic text-slate-500 dark:text-slate-400 line-clamp-2">
+                          {table.notes}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => handleOpenTableModal(table)}
+                        className="flex-1 text-xs hover:bg-slate-100 dark:hover:bg-slate-700"
+                      >
+                        <SquarePen className="mr-1 h-3 w-3" />
+                        Edit
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        onClick={() => handleGenerateQr(table)}
+                        className="flex-1 text-xs"
+                      >
+                        <QrCode className="mr-1 h-3 w-3" />
+                        {t('view_qr')}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            /* List View */
+            <Card className="overflow-hidden">
+              <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                {paginatedTables.map(table => (
+                  <div key={table.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">
+                              {table.name}
+                            </h3>
+                            <Badge 
+                              className={`${getStatusBadgeColor(table.status)} text-white text-xs`}
+                              variant="secondary"
+                            >
+                              {table.status.charAt(0).toUpperCase() + table.status.slice(1)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              <span>Capacity: {table.capacity || 1}</span>
+                            </div>
+                            {table.is_outdoor && (
+                              <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                <Trees className="h-3 w-3" />
+                                <span>Outdoor</span>
+                              </div>
+                            )}
+                            {table.is_accessible && (
+                              <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                                <Accessibility className="h-3 w-3" />
+                                <span>Accessible</span>
+                              </div>
+                            )}
+                            {table.qr_code && (
+                              <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                                <QrCode className="h-3 w-3" />
+                                <span>QR Created</span>
+                                {table.qr_code_created_at && isQrCodeOld(table.qr_code_created_at) && (
+                                  <AlertTriangle className="h-3 w-3 text-amber-500" />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {table.notes && (
+                            <p className="text-xs italic text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                              {table.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => handleOpenTableModal(table)}
+                          className="text-xs"
+                        >
+                          <SquarePen className="mr-1 h-3 w-3" />
+                          Edit
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="default" 
+                          onClick={() => handleGenerateQr(table)}
+                          className="text-xs"
+                        >
+                          <QrCode className="mr-1 h-3 w-3" />
+                          {t('view_qr')}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredTables.length)} of {filteredTables.length} tables
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1">Previous</span>
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="w-8 h-8 p-0"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <span className="hidden sm:inline mr-1">Next</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Enhanced QR Code Modal */}
+      <Dialog open={isQrModalOpen} onOpenChange={(open) => {
+        setIsQrModalOpen(open);
+        if (!open) {
+          setSelectedTableForQr(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="h-5 w-5" />
+              QR Code for {selectedTableForQr?.name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* QR Code Age Warning */}
+            {selectedTableForQr?.qr_code_created_at && isQrCodeOld(selectedTableForQr.qr_code_created_at) && (
+              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-300">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{t('qr_refresh_reminder')}</p>
+                  <p className="text-xs opacity-75">QR code is older than 2 weeks</p>
+                </div>
+              </div>
+            )}
+            
+            {/* QR Code Display */}
+            <div ref={qrCodeRef} className="flex justify-center">
+              {qrCodeUrl && restaurantSettings && (
+                <BrandedQRDisplay
+                  value={qrCodeUrl}
+                  restaurantName={restaurantSettings.name}
+                  tableName={selectedTableForQr?.name || ''}
+                  size={200}
+                />
+              )}
+            </div>
+            
+            {/* URL Display */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Menu URL:</label>
+              <div className="flex gap-2">
+                <Input 
+                  value={qrCodeUrl} 
+                  readOnly 
+                  className="flex-1 text-sm bg-slate-50 dark:bg-slate-800"
+                />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={copyToClipboard}
+                  className="shrink-0"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {selectedTableForQr?.qr_code_created_at && isQrCodeOld(selectedTableForQr.qr_code_created_at) && (
+              <Button 
+                onClick={() => selectedTableForQr && handleGenerateQr(selectedTableForQr, true)}
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {t('refresh_qr')}
+              </Button>
+            )}
+            <Button 
+              onClick={async () => {
+                if (!qrCodeRef.current) return;
+                setIsDownloadingQr(true);
+                try {
+                  const dataUrl = await htmlToImage.toPng(qrCodeRef.current);
+                  const link = document.createElement('a');
+                  link.download = `qr-${selectedTableForQr?.name || 'table'}.png`;
+                  link.href = dataUrl;
+                  link.click();
+                  toast.success(t('notifications.qr_downloaded'));
+                } catch (error) {
+                  console.error('Error downloading QR code:', error);
+                  toast.error(t('errors.download_failed'));
+                } finally {
+                  setIsDownloadingQr(false);
+                }
+              }}
+              disabled={isDownloadingQr}
+              className="w-full sm:w-auto"
+            >
+              {isDownloadingQr ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <FileDown className="mr-2 h-4 w-4" />
+              )}
+              {isDownloadingQr ? t('downloading') : t('download_qr')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Table Modal */}
+      <TableModal
+        isOpen={isTableModalOpen}
+        onClose={() => {
+          setIsTableModalOpen(false);
+          setEditingTable(null);
+        }}
+        editingTable={editingTable}
+        form={formMethodsSingle}
+        onSubmit={saveTable}
+        isSaving={isSaving}
+        t={t}
+        tCommon={tCommon}
+      />
+
+      {/* Enhanced Bulk Add Modal */}
+      <Dialog open={isBulkAddModalOpen} onOpenChange={(open) => {
+        setIsBulkAddModalOpen(open);
+        if (!open) {
+          bulkAddForm.reset();
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5" />
+              {t('bulk_add.title')}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <Form {...bulkAddForm}>
+            <form
+              onSubmit={bulkAddForm.handleSubmit(async (data) => {
+                setIsSaving(true);
+                try {
+                  const tables = Array.from({ length: data.count }, (_, i) => ({
+                    name: `${data.namePrefix}${data.startIndex + i}`,
+                    capacity: data.capacity,
+                    status: data.status,
+                    is_outdoor: data.isOutdoor,
+                    is_accessible: data.isAccessible,
+                  }));
+
+                  const res = await fetch('/api/v1/owner/tables/bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tables }),
+                  });
+
+                  if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || t('errors.bulk_create_failed'));
+                  }
+
+                  const resJson = await res.json();
+                  setTablesData([...tablesData, ...resJson.tables]);
+                  toast.success(t('notifications.bulk_create_success', { count: data.count }));
+                  setIsBulkAddModalOpen(false);
+                } catch (error) {
+                  console.error('Failed to create tables:', error);
+                  toast.error(error instanceof Error ? error.message : t('errors.bulk_create_failed'));
+                } finally {
+                  setIsSaving(false);
+                }
+              })}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={bulkAddForm.control}
+                  name="count"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('bulk_add.count_label')}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          max="20" 
+                          {...field} 
+                          onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={bulkAddForm.control}
+                  name="startIndex"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('bulk_add.start_index_label')}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          {...field} 
+                          onChange={e => field.onChange(parseInt(e.target.value, 10) || 1)} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={bulkAddForm.control}
+                name="namePrefix"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('bulk_add.name_prefix_label')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={t('bulk_add.name_prefix_placeholder')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={bulkAddForm.control}
+                  name="capacity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('capacity_label')}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          {...field} 
+                          onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={bulkAddForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('status_label')}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="available">{t('status_options.available')}</SelectItem>
+                          <SelectItem value="occupied">{t('status_options.occupied')}</SelectItem>
+                          <SelectItem value="reserved">{t('status_options.reserved')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <FormField
+                  control={bulkAddForm.control}
+                  name="isOutdoor"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>{t('is_outdoor_label')}</FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={bulkAddForm.control}
+                  name="isAccessible"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>{t('is_accessible_label')}</FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="secondary" onClick={() => setIsBulkAddModalOpen(false)}>
+                  {tCommon('cancel')}
+                </Button>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  {isSaving ? tCommon('saving') : t('bulk_add.create_button')}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -16,7 +16,7 @@ export const CallToActionSection = () => {
           {t('cta_section.subtitle')}
         </p>
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-          <Button href="#signup" variant="primary" size="xl" >
+          <Button href="/signup" variant="primary" size="xl" >
             {t('cta_section.cta.signup')}
           </Button>
           <Button href="#contact-sales" variant="outline" size="xl" >

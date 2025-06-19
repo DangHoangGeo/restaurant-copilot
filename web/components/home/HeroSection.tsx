@@ -55,7 +55,7 @@ export const HeroSection = () => {
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button 
-                href="#signup" 
+                href="/signup" 
                 variant="primary" 
                 size="xl" 
                 iconRight={ArrowRight}
@@ -63,7 +63,7 @@ export const HeroSection = () => {
                 {t('hero.cta.signup')}
               </Button>
               <Button 
-                href="#demo" 
+                href="/demo" 
                 variant="outline" 
                 size="xl" 
                 iconLeft={PlayCircle}

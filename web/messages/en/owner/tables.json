@@ -23,8 +23,10 @@
   "status": "Status",
   "capacity": "Capacity",
   "position": "Position",
-  "generate_qr": "Generate QR",
+  "view_qr": "View QR Code",
   "qr_for_table": "QR Code for Table",
+  "qr_refresh_reminder": "QR code is over 2 weeks old. Consider refreshing for better security.",
+  "refresh_qr": "Refresh QR Code",
   "download_png": "Download PNG",
   "downloading_qr": "Downloading QR...",
   "copy_link": "Copy Link",
@@ -49,15 +51,19 @@
   "notifications": {
     "update_success": "Table updated successfully.",
     "create_success": "Table created successfully.",
+    "bulk_create_success": "{count} tables created successfully.",
     "qr_saved_success": "QR code saved and ready for download.",
     "link_copied": "Link copied to clipboard!",
     "qr_downloaded": "QR code downloaded successfully!",
-    "qr_generated": "QR code generated successfully!"
+    "qr_generated": "QR code generated successfully!",
+    "qr_refreshed": "QR code refreshed successfully!"
   },
   "errors": {
     "save_failed": "Failed to save table. Please try again.",
+    "bulk_create_failed": "Failed to create tables. Please try again.",
     "qr_save_failed": "Failed to save QR code to table. Please try again.",
     "qr_download_failed": "Failed to download QR code image.",
+    "download_failed": "Failed to download QR code image.",
     "copy_failed": "Failed to copy link to clipboard.",
     "qr_code_not_set": "QR code is not set for this table.",
     "qr_generation_failed": "Failed to generate QR code. Please try again."
@@ -76,9 +82,12 @@
     "name_prefix_placeholder": "e.g., Table, Area A - ",
     "start_index_label": "Starting Number",
     "default_name_prefix": "Table ",
+    "create_button": "Create Tables",
     "submit_button": "Add Tables",
     "notification_success": "{count} tables added successfully.",
     "notification_error": "Failed to add {count} tables. Errors: {errors}"
   },
+  "downloading": "Downloading...",
+  "download_qr": "Download QR Code",
   "qr_code_generate_message": "Generating QR Code..."
 }

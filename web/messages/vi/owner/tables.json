@@ -23,8 +23,10 @@
   "status": "Trạng Thái",
   "capacity": "Sức Chứa",
   "position": "Vị Trí",
-  "generate_qr": "Tạo Mã QR",
-  "qr_for_table": "Mã QR cho Bàn",
+  "view_qr": "Xem Mã QR",
+  "qr_for_table": "Mã QR",
+  "qr_refresh_reminder": "Mã QR đã hơn 2 tuần tuổi. Hãy xem xét làm mới để bảo mật tốt hơn.",
+  "refresh_qr": "Làm Mới Mã QR",
   "download_png": "Tải PNG",
   "downloading_qr": "Đang Tải Mã QR...",
   "copy_link": "Sao chép liên kết",
@@ -51,7 +53,8 @@
     "create_success": "Tạo bàn thành công.",
     "qr_saved_success": "Mã QR đã được lưu và sẵn sàng để tải xuống.",
     "link_copied": "Đã sao chép liên kết!",
-    "qr_downloaded": "Đã tải mã QR thành công!"
+    "qr_downloaded": "Đã tải mã QR thành công!",
+    "qr_refreshed": "Đã làm mới mã QR thành công!"
   },
   "errors": {
     "save_failed": "Không thể lưu bàn. Vui lòng thử lại.",
