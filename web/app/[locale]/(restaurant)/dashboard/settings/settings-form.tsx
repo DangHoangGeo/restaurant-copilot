@@ -43,6 +43,7 @@ import { OperatingHoursEditor } from "@/components/features/admin/dashboard/Oper
 import { SocialLinksEditor } from "@/components/features/admin/dashboard/SocialLinksEditor";
 import { DescriptionGenerator } from "@/components/features/admin/dashboard/DescriptionGenerator";
 import { Restaurant } from "@/shared/types";
+import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 
 interface SettingsFormProps {
   initialSettings: Restaurant;
@@ -96,6 +97,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
   const t = useTranslations("owner.settings");
   const tCommon = useTranslations("common");
   const tValidation = useTranslations("owner.settings.validation");
+  const { updateSettings } = useRestaurantSettings();
 
   const settingsSchema = getSettingsSchema(tValidation);
   type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -337,6 +339,9 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       }
 
       const updatedSettings = await response.json();
+
+      // Update the context with the new settings
+      updateSettings(updatedSettings);
 
       toast.success(t("notifications.settingsSaved"));
       if (data.brandColor !== currentBrandColor) {

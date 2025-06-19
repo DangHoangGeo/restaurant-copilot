@@ -35,20 +35,17 @@ const getTableSchema = (t: ReturnType<typeof useTranslations<'validation'>>) => 
 
 type ViewMode = 'grid' | 'list'
 
-interface RestaurantSettings {
-  name: string
-  logoUrl: string | null
-}
+import { useRestaurantSettings } from '@/contexts/RestaurantContext';
 
 export function TablesClientContent() {
   const t = useTranslations("owner.tables");
   const tVal = useTranslations('owner.tables.validation');
   const params = useParams();
   const locale = (params.locale as string) || 'en';
+  const { restaurantSettings } = useRestaurantSettings();
 
   // Data state
   const [tablesData, setTablesData] = useState<Table[]>([])
-  const [restaurantSettings, setRestaurantSettings] = useState<RestaurantSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -86,25 +83,14 @@ export function TablesClientContent() {
       setIsLoading(true)
       setError(null)
       
-      const [tablesRes, settingsRes] = await Promise.all([
-        fetch('/api/v1/owner/tables'),
-        fetch('/api/v1/restaurant/settings')
-      ])
+      const tablesRes = await fetch('/api/v1/owner/tables')
 
       if (!tablesRes.ok) {
         throw new Error(`Failed to fetch tables: ${tablesRes.status}`)
       }
-      if (!settingsRes.ok) {
-        throw new Error(`Failed to fetch settings: ${settingsRes.status}`)
-      }
 
-      const [tablesData, settingsData] = await Promise.all([
-        tablesRes.json(),
-        settingsRes.json()
-      ])
-
+      const tablesData = await tablesRes.json()
       setTablesData(tablesData.tables || [])
-      setRestaurantSettings(settingsData || null)
     } catch (err) {
       console.error('Error fetching data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -250,7 +236,7 @@ export function TablesClientContent() {
 
   // QR Code URL generation
   const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'coorder.ai';
-  const qrCodeUrl = selectedTableForQr && restaurantSettings
+  const qrCodeUrl = selectedTableForQr && restaurantSettings?.name
     ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/menu?code=${selectedTableForQr.qr_code}`
     : ''
 
