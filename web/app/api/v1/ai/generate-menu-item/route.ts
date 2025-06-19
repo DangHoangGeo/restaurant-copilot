@@ -28,7 +28,6 @@ export async function POST(request: NextRequest) {
       Restaurant Name: ${restaurantName}
       Restaurant Description: ${restaurantDescription || 'No restaurant description provided.'}
     `;
-    console.log('Context Info:', contextInfo);
 
     const gemini = createGeminiHelper();
     const data = await gemini.generateMenuItemNameDescTags(itemName, contextInfo, language);
