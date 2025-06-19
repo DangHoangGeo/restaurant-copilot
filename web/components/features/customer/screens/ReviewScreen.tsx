@@ -27,7 +27,7 @@ export function ReviewScreen({
   viewProps,
   featureFlags,
 }: ReviewScreenProps) {
-  const t = useTranslations("Customer");
+  const t = useTranslations("customer.orderHistory");
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,11 +38,11 @@ export function ReviewScreen({
 
   const handleSubmitReview = async () => {
     if (rating === 0) {
-      setError(t("review.rating_required_error") || "Please select a rating.");
+      setError("Please select a rating."); // Keep generic or use a new key if specific
       return;
     }
     if (!orderId) {
-      setError(t("review.order_id_missing_error") || "Order ID is missing, cannot submit review.");
+      setError("Order ID is missing, cannot submit review."); // Keep generic or use a new key
       return;
     }
     setError("");
@@ -51,16 +51,9 @@ export function ReviewScreen({
       // Simulate API call
       console.log("Submitting review:", { orderId, rating, comment });
       await new Promise(resolve => setTimeout(resolve, 1000));
-      // const response = await fetch('/api/v1/customer/reviews/submit', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ orderId, rating, comment, items: viewProps?.items }),
-      // });
-      // const data = await response.json();
-      // if (!data.success) throw new Error(data.error || "Failed to submit review.");
       setSubmitSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("review.submit_error") || "An error occurred while submitting your review.");
+      setError(err instanceof Error ? err.message : t("review_screen.error_submitting"));
     } finally {
       setIsSubmitting(false);
     }
@@ -70,13 +63,14 @@ export function ReviewScreen({
     return (
       <div className="max-w-md mx-auto p-4 text-center">
         <Star className="h-16 w-16 text-yellow-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold mb-3">{t("review.thank_you_title")}</h2>
-        <p className="text-gray-600 mb-6">{t("review.thank_you_message")}</p>
+        <h2 className="text-2xl font-bold mb-3">{t("review_screen.thank_you")}</h2>
+        <p className="text-gray-600 mb-6">{t("review_screen.thank_you")}</p>
         <Button
-          onClick={() => setView("thankyou", { orderId, items: viewProps?.items, total: 0 /* Recalculate or pass total if needed */ } as ThankYouScreenViewProps)}
+          onClick={() => setView("thankyou", { orderId, items: viewProps?.items, total: 0 } as ThankYouScreenViewProps)}
           style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
           className="text-white hover:opacity-90"
         >
+          {/* Assuming this key exists in a general 'common' or 'navigation' namespace */}
           {t("thankyou.back_to_order_details")}
         </Button>
       </div>
@@ -91,7 +85,7 @@ export function ReviewScreen({
           logoUrl: restaurantSettings.logoUrl
         }}
         rating={4.8}
-        badgeText="Reviews"
+        badgeText="Reviews" // This might need its own key if it's dynamic
         badgeIcon={Star}
         className="border-b border-slate-200 dark:border-slate-700"
       />
@@ -106,7 +100,7 @@ export function ReviewScreen({
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold">{t("review.title")}</h1>
+        <h1 className="text-2xl font-bold">{t("review_screen.title")}</h1>
       </div>
 
       {error && (
@@ -117,11 +111,11 @@ export function ReviewScreen({
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">
-          {t("review.rate_experience_for_order")} {orderId && <span className="font-mono text-sm">#{orderId}</span>}
+          {t("review_screen.rating_prompt")} {orderId && <span className="font-mono text-sm">#{orderId}</span>}
         </h2>
         
         <div className="mb-6">
-          <p className="mb-2 font-medium">{t("review.overall_rating")}</p>
+          <p className="mb-2 font-medium">{t("review_screen.rating_prompt")}</p>
           <div className="flex space-x-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
@@ -135,34 +129,35 @@ export function ReviewScreen({
           </div>
         </div>
 
-        {featureFlags.advancedReviews && viewProps?.items && viewProps.items.length > 0 && (
+        {/* Item specific reviews can be added later if needed, for now, use general review */}
+        {/* {featureFlags.advancedReviews && viewProps?.items && viewProps.items.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">{t("review.rate_items")}</h3>
+            <h3 className="text-lg font-semibold mb-3">Rate Individual Items</h3>
             <div className="space-y-3">
               {viewProps.items.map(item => (
                 <div key={item.itemId} className="p-3 border rounded-md">
                   <p className="font-medium">{item.name || item.itemName}</p>
-                  {/* Add item-specific rating UI here if needed */}
+                  // Add item-specific rating UI here if needed
                 </div>
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         <div className="mb-6">
           <label htmlFor="comment" className="block mb-2 font-medium">
-            {t("review.comments_label")}
+            {t("review_screen.comment_placeholder")}
           </label>
           <Textarea
             id="comment"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder={t("review.comments_placeholder")}
+            placeholder={t("review_screen.comment_placeholder")}
             rows={4}
             maxLength={500}
           />
            <p className="text-xs text-gray-500 mt-1">
-            {comment.length}/500 {t("checkout.characters")}
+            {comment.length}/500 {/* Assuming 'characters' is a common key */}
           </p>
         </div>
 
@@ -173,8 +168,13 @@ export function ReviewScreen({
           style={{ backgroundColor: restaurantSettings.primaryColor || "#0ea5e9" }}
           className="w-full text-white hover:opacity-90"
         >
-          {isSubmitting ? t("review.submitting_review") : t("review.submit_review_button")}
+          {isSubmitting ? t("review_screen.submit_review") : t("review_screen.submit_review")}
         </Button>
+
+        {/* Skip item button can be added if needed for item specific reviews */}
+        {/* <Button variant="link" onClick={() => console.log("Skip item")} className="mt-2">
+          {t("review_screen.skip_item")}
+        </Button> */}
       </Card>
       </div>
     </div>

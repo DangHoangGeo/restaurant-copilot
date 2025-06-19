@@ -24,7 +24,7 @@ interface Props {
 }
 
 export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) {
-  const t = useTranslations("Customer");
+  const t = useTranslations("customer.cart");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
@@ -266,7 +266,7 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
               <Card className="p-4 shadow-2xl bg-white dark:bg-slate-800 border-2 max-h-[500px] overflow-hidden">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                    Your Order
+                    {t("floating_cart.title")}
                   </h3>
                   <Button
                     variant="ghost"
@@ -289,7 +289,7 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                 <div className="border-t border-slate-200 dark:border-slate-600 pt-3">
                   <div className="flex justify-between items-center mb-3">
                     <span className="font-semibold text-slate-800 dark:text-slate-100">
-                      Total:
+                      {t("floating_cart.total", { amount: total.toFixed(0) })}
                     </span>
                     <span className="font-bold text-lg" style={{ color: brandColor }}>
                       ¥{total.toFixed(0)}
@@ -310,11 +310,11 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                         >
                           <ShoppingCart className="h-4 w-4" />
                         </motion.div>
-                        Placing Order...
+                        {t("floating_cart.checkout")}...
                       </>
                     ) : (
                       <>
-                        Place Order
+                        {t("floating_cart.checkout")}
                         <ChevronRight className="h-4 w-4 ml-2" />
                       </>
                     )}
@@ -359,10 +359,10 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
 
                   <div className="flex-1">
                     <p className="font-semibold text-sm">
-                      {t("cart.items_in_cart_plural", { count })}
+                      {t("floating_cart.items_count", { count })}
                     </p>
                     <p className="text-xs opacity-90">
-                      {t("common.total")}: ¥{total.toFixed(0)}
+                      {t("floating_cart.total", { amount: total.toFixed(0) })}: ¥{total.toFixed(0)}
                     </p>
                   </div>
                 </button>

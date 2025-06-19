@@ -9,7 +9,7 @@ interface CustomerFooterProps {
 }
 
 export function CustomerFooter({ restaurantSettings }: CustomerFooterProps) {
-  const t = useTranslations("Common");
+  const t = useTranslations("common");
   return (
     <footer className="bg-slate-100 dark:bg-slate-800 py-8 text-center">
       <p className="text-slate-600 dark:text-slate-400 text-sm">
