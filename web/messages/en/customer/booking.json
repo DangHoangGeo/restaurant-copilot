@@ -1,95 +1,95 @@
 {
-  "title": "Table Booking",
-  "submission_thank_you_title": "Booking Confirmed!",
-  "book_table_button": "Book a Table",
-  "submission_thank_you_message": "Your table booking has been successfully confirmed. We look forward to seeing you!",
+  "title": "Đặt Bàn",
+  "submission_thank_you_title": "Đặt Bàn Thành Công!",
+  "book_table_button": "Đặt Bàn",
+  "submission_thank_you_message": "Việc đặt bàn của bạn đã được xác nhận thành công. Chúng tôi mong được đón tiếp bạn!",
   "form": {
-    "validation_error_fill_fields": "Please fill in all required fields.",
-    "table_select_placeholder": "Select a Table",
-    "table_capacity": "{count} people",
-    "name_placeholder": "Your Full Name",
-    "contact_placeholder": "Your Phone or Email",
-    "preorder_optional_title": "Pre-order (Optional)",
-    "submit_button": "Confirm Booking",
-    "party_size_placeholder": "Party Size",
-    "date_label": "Booking Date",
-    "time_label": "Booking Time",
-    "special_requests_label": "Special Requests",
-    "special_requests_placeholder": "Any special dietary requirements or seating preferences..."
+    "validation_error_fill_fields": "Vui lòng điền đầy đủ các trường bắt buộc.",
+    "table_select_placeholder": "Chọn Bàn",
+    "table_capacity": "{count} người",
+    "name_placeholder": "Họ và Tên",
+    "contact_placeholder": "Số Điện Thoại hoặc Email",
+    "preorder_optional_title": "Đặt Món Trước (Tùy Chọn)",
+    "submit_button": "Xác Nhận Đặt Bàn",
+    "party_size_placeholder": "Số Lượng Người",
+    "date_label": "Ngày Đặt",
+    "time_label": "Giờ Đặt",
+    "special_requests_label": "Yêu Cầu Đặc Biệt",
+    "special_requests_placeholder": "Bất kỳ yêu cầu về chế độ ăn uống hoặc vị trí ngồi đặc biệt..."
   },
   "booking_details": {
-    "customer_name": "Customer Name",
-    "contact_info": "Contact Information", 
-    "party_size": "Party Size",
-    "booking_date": "Date",
-    "booking_time": "Time",
-    "table_info": "Table Information",
-    "special_requests": "Special Requests",
-    "preorder_items": "Pre-ordered Items"
+    "customer_name": "Tên Khách Hàng",
+    "contact_info": "Thông Tin Liên Hệ",
+    "party_size": "Số Lượng Người",
+    "booking_date": "Ngày",
+    "booking_time": "Giờ",
+    "table_info": "Thông Tin Bàn",
+    "special_requests": "Yêu Cầu Đặc Biệt",
+    "preorder_items": "Món Đặt Trước"
   },
   "table_selection": {
-    "available": "Available",
-    "occupied": "Occupied",
-    "reserved": "Reserved",
-    "capacity": "Seats {count}",
-    "outdoor": "Outdoor Seating",
-    "accessible": "Wheelchair Accessible",
-    "window": "Window View",
-    "private": "Private Dining"
+    "available": "Còn Trống",
+    "occupied": "Đã Có Khách",
+    "reserved": "Đã Đặt",
+    "capacity": "Sức Chứa {count}",
+    "outdoor": "Ghế Ngoài Trời",
+    "accessible": "Phù Hợp Xe Lăn",
+    "window": "Cạnh Cửa Sổ",
+    "private": "Phòng Riêng"
   },
   "preorder": {
-    "title": "Pre-order Menu Items",
-    "description": "Select items you'd like to pre-order for your table",
-    "add_item": "Add to Pre-order",
-    "remove_item": "Remove from Pre-order",
-    "total": "Pre-order Total",
-    "no_items": "No items pre-ordered"
+    "title": "Đặt Món Trước",
+    "description": "Chọn các món bạn muốn đặt trước cho bàn của mình",
+    "add_item": "Thêm Vào Đơn Đặt Trước",
+    "remove_item": "Xóa Khỏi Đơn Đặt Trước",
+    "total": "Tổng Đơn Đặt Trước",
+    "no_items": "Chưa Có Món Đặt Trước"
   },
   "time_slots": {
-    "morning": "Morning",
-    "afternoon": "Afternoon", 
-    "evening": "Evening",
-    "available": "Available",
-    "fully_booked": "Fully Booked",
-    "closed": "Closed"
+    "morning": "Buổi Sáng",
+    "afternoon": "Buổi Chiều",
+    "evening": "Buổi Tối",
+    "available": "Còn Trống",
+    "fully_booked": "Đã Đặt Hết",
+    "closed": "Đóng Cửa"
   },
   "validation": {
-    "name_required": "Name is required",
-    "contact_required": "Contact information is required",
-    "party_size_required": "Party size is required",
-    "party_size_min": "Party size must be at least 1",
-    "party_size_max": "Party size cannot exceed table capacity",
-    "date_required": "Booking date is required",
-    "date_future": "Booking date must be in the future",
-    "time_required": "Booking time is required",
-    "table_required": "Please select a table",
-    "email_or_phone": "Please provide either email or phone number"
+    "name_required": "Tên là bắt buộc",
+    "contact_required": "Thông tin liên hệ là bắt buộc",
+    "party_size_required": "Số lượng người là bắt buộc",
+    "party_size_min": "Số lượng người phải ít nhất là 1",
+    "party_size_max": "Số lượng người không được vượt quá sức chứa của bàn",
+    "date_required": "Ngày đặt là bắt buộc",
+    "date_future": "Ngày đặt phải là trong tương lai",
+    "time_required": "Giờ đặt là bắt buộc",
+    "table_required": "Vui lòng chọn một bàn",
+    "email_or_phone": "Vui lòng cung cấp email hoặc số điện thoại"
   },
   "notifications": {
-    "booking_success": "Booking confirmed successfully!",
-    "booking_failed": "Failed to create booking. Please try again.",
-    "table_unavailable": "Selected table is no longer available for this time",
-    "restaurant_closed": "Restaurant is closed at the selected time"
+    "booking_success": "Đặt bàn thành công!",
+    "booking_failed": "Không thể tạo đặt bàn. Vui lòng thử lại.",
+    "table_unavailable": "Bàn đã chọn không còn trống vào thời điểm này",
+    "restaurant_closed": "Nhà hàng đóng cửa vào thời điểm đã chọn"
   },
   "status": {
-    "pending": "Pending Confirmation",
-    "confirmed": "Confirmed", 
-    "cancelled": "Cancelled",
-    "completed": "Completed"
+    "pending": "Đang Chờ Xác Nhận",
+    "confirmed": "Đã Xác Nhận",
+    "cancelled": "Đã Hủy",
+    "completed": "Đã Hoàn Thành"
   },
   "actions": {
-    "modify_booking": "Modify Booking",
-    "cancel_booking": "Cancel Booking",
-    "confirm_booking": "Confirm Booking"
+    "modify_booking": "Sửa Đặt Bàn",
+    "cancel_booking": "Hủy Đặt Bàn",
+    "confirm_booking": "Xác Nhận Đặt Bàn"
   },
   "additional_form": {
-    "validation_error_fill_fields": "Please fill in all required fields.",
-    "table_select_placeholder": "Select a Table",
-    "table_capacity": "{count} people",
-    "name_placeholder": "Your Full Name",
-    "contact_placeholder": "Your Phone or Email",
-    "preorder_optional_title": "Pre-order (Optional)",
-    "submit_button": "Confirm Booking",
-    "party_size_placeholder": "Party Size"
+    "validation_error_fill_fields": "Vui lòng điền đầy đủ các trường bắt buộc.",
+    "table_select_placeholder": "Chọn Bàn",
+    "table_capacity": "{count} người",
+    "name_placeholder": "Họ và Tên",
+    "contact_placeholder": "Số Điện Thoại hoặc Email",
+    "preorder_optional_title": "Đặt Món Trước (Tùy Chọn)",
+    "submit_button": "Xác Nhận Đặt Bàn",
+    "party_size_placeholder": "Số Lượng Người"
   }
 }

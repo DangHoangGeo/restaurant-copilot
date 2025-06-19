@@ -61,7 +61,7 @@ export function EmployeesClientContent() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   
   const roles = ["manager", "chef", "server", "cashier"];
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
   const loadEmployees = useCallback(async () => {
     setIsLoading(true);
@@ -177,7 +177,7 @@ export function EmployeesClientContent() {
                 <div>
                   <h3 className="font-semibold text-lg">{employee.name}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t(`Roles.${employee.role}`)}
+                    {t(`roles.${employee.role}`)}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {employee.email}
@@ -214,7 +214,7 @@ export function EmployeesClientContent() {
                 </th>
                 {daysOfWeek.map((day) => (
                   <th key={day} className="p-3 border border-slate-300 dark:border-slate-600 text-center font-medium">
-                    {tCommon(`Days.${day}`)}
+                    {tCommon(`days.${day}`)}
                   </th>
                 ))}
                 <th className="p-3 border border-slate-300 dark:border-slate-600 text-center font-medium">
@@ -229,7 +229,7 @@ export function EmployeesClientContent() {
                     {emp.name}
                     <br />
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {t(`Roles.${emp.role}`)}
+                      {t(`roles.${emp.role}`)}
                     </span>
                   </td>
                   {daysOfWeek.map((day) => (

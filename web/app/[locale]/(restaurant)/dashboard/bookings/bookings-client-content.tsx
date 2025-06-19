@@ -31,7 +31,7 @@ import { BookingsSkeleton } from '@/components/ui/skeletons';
 
 // Error state component
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
-  const t = useTranslations("AdminBookings");
+  const t = useTranslations("owner.bookings");
   
   return (
     <Alert variant="destructive" className="mb-6">
@@ -47,7 +47,7 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
 }
 
 export function BookingsClientContent() {
-  const t = useTranslations("AdminBookings");
+  const t = useTranslations("owner.bookings");
   const tCommon = useTranslations("common");
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isInitialLoading, setIsInitialLoading] = useState(true)

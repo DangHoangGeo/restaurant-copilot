@@ -25,7 +25,6 @@ export function ReviewScreen({
   setView,
   restaurantSettings,
   viewProps,
-  featureFlags,
 }: ReviewScreenProps) {
   const t = useTranslations("customer.orderHistory");
   const [rating, setRating] = useState(0);
