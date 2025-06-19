@@ -26,71 +26,79 @@
       "contact": "16. Contact Information"
     },
     "sections": {
-      "acceptance": {
-        "title": "1. Acceptance of Terms",
-        "content": "By accessing and using CoOrder (\"Service\"), you accept and agree to be bound by the terms and provision of this agreement."
-      },
-      "description": {
-        "title": "2. Description of Service",
-        "content": "CoOrder is a restaurant management platform that provides menu management, order processing, table booking, staff management, and analytics tools for restaurants."
-      },
-      "eligibility": {
-        "title": "3. Eligibility",
-        "content": "You must be at least 18 years old and have the legal authority to enter into this agreement on behalf of your restaurant business."
-      },
-      "account": {
-        "title": "4. Account Registration",
-        "content": "You must provide accurate and complete information when creating your account. You are responsible for maintaining the confidentiality of your account credentials."
-      },
-      "payment": {
-        "title": "5. Payment Terms",
-        "content": "Subscription fees are billed in advance on a monthly or annual basis. All fees are non-refundable except as required by law."
-      },
-      "use": {
-        "title": "6. Acceptable Use",
-        "content": "You agree to use the Service only for lawful purposes and in accordance with these Terms. You may not use the Service to violate any applicable laws or regulations."
-      },
-      "content": {
-        "title": "7. Content and Data",
-        "content": "You retain ownership of all content and data you submit to the Service. You grant us a license to use this content to provide the Service to you."
-      },
-      "intellectual": {
-        "title": "8. Intellectual Property",
-        "content": "The Service and its original content, features, and functionality are owned by CoOrder and are protected by international copyright, trademark, and other intellectual property laws."
-      },
-      "privacy": {
-        "title": "9. Privacy",
-        "content": "Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Service."
-      },
-      "termination": {
-        "title": "10. Termination",
-        "content": "We may terminate or suspend your account and access to the Service immediately, without prior notice, for conduct that we believe violates these Terms."
-      },
-      "disclaimers": {
-        "title": "11. Disclaimers",
-        "content": "The Service is provided on an \"AS IS\" and \"AS AVAILABLE\" basis. We disclaim all warranties, whether express or implied."
-      },
-      "limitation": {
-        "title": "12. Limitation of Liability",
-        "content": "In no event shall CoOrder be liable for any indirect, incidental, special, consequential, or punitive damages."
-      },
-      "indemnification": {
-        "title": "13. Indemnification",
-        "content": "You agree to defend, indemnify, and hold harmless CoOrder from and against any claims, damages, obligations, losses, liabilities, costs, or debt."
-      },
-      "governing": {
-        "title": "14. Governing Law",
-        "content": "These Terms shall be governed and construed in accordance with the laws of [Your Jurisdiction], without regard to its conflict of law provisions."
-      },
-      "changes": {
-        "title": "15. Changes to Terms",
-        "content": "We reserve the right to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days notice."
-      },
-      "contact": {
-        "title": "16. Contact Information",
-        "content": "If you have any questions about these Terms, please contact us at legal@coorder.com."
+        "acceptance": {
+          "title": "1. Acceptance of Terms",
+          "content": "By accessing and using the CoOrder restaurant management service (\"Service\"), you agree to be bound by these Terms of Service. If you do not agree to any part of these terms, you may not use our Service."
+        },
+        "description": {
+          "title": "2. Description of Service",
+          "content": "CoOrder provides a comprehensive restaurant management platform including menu management, order processing, booking system, staff management tools, and analytics. The Service is designed to help restaurants streamline their operations and improve customer experience."
+        },
+        "registration": {
+          "title": "3. Account Registration",
+          "content": "To use the Service, you must create an account. You agree to provide accurate, current, and complete information during registration and to update such information to keep it accurate. You are responsible for safeguarding your account password and for all activities under your account."
+        },
+        "subscriptions": {
+          "title": "4. Subscriptions and Payment",
+          "subtitle": "Subscription Plans",
+          "plans": {
+            "description": "We offer several subscription plans:",
+            "free": "**Free Plan**: Basic functionality with limited features",
+            "basic": "**Basic Plan**: Full access to core features with monthly pricing",
+            "premium": "**Premium Plan**: All features plus advanced analytics and priority support"
+          },
+          "billing": {
+            "title": "Billing",
+            "content": "Paid plans are billed monthly or annually in advance. All fees are non-refundable except as required by law. Pricing may change with 30 days notice."
+          },
+          "cancellation": {
+            "title": "Cancellation",
+            "content": "You may cancel your subscription at any time. Cancellation will be effective at the end of the current billing cycle."
+          }
+        },
+        "usage": {
+          "title": "5. Acceptable Use",
+          "content": "You agree to use the Service only for lawful purposes and in a way that does not infringe the rights of any third party. You must not:",
+          "restrictions": {
+            "0": "Use the Service for any illegal activities",
+            "1": "Upload or distribute viruses or other malicious code",
+            "2": "Attempt unauthorized access to our systems",
+            "3": "Interfere with the normal operation of the Service",
+            "4": "Violate any applicable laws or regulations"
+          }
+        },
+        "intellectual": {
+          "title": "6. Intellectual Property",
+          "content": "The Service and its original content, features and functionality are and will remain the exclusive property of CoOrder and its licensors. The Service is protected by copyright, trademark, and other laws. You may not copy, modify, distribute, sell, or lease any part of our Service."
+        },
+        "privacy": {
+          "title": "7. Privacy and Data",
+          "content": "Your privacy is important to us. Our collection and use of your information is governed by our Privacy Policy. By using the Service, you consent to the collection and use of information in accordance with our Privacy Policy."
+        },
+        "termination": {
+          "title": "8. Termination",
+          "content": "We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms of Service. Upon termination, your right to use the Service will cease immediately."
+        },
+        "liability": {
+          "title": "9. Disclaimer of Warranties",
+          "content": "The Service is provided on an \"as is\" and \"as available\" basis. CoOrder disclaims all warranties, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall CoOrder be liable for any indirect, incidental, special, consequential, or punitive damages."
+        },
+        "governing": {
+          "title": "10. Governing Law",
+          "content": "These Terms shall be interpreted and governed by the laws of [Your Jurisdiction], without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights."
+        },
+        "changes": {
+          "title": "11. Changes to Terms",
+          "content": "We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion."
+        },
+        "contact": {
+          "title": "12. Contact Information",
+          "content": "If you have any questions about these Terms of Service, please contact us at:",
+          "email": "Email: legal@coorder.com",
+          "address": "Address: Tokyo, Japan",
+          "phone": "Phone: 080-9344-7200"
+        }
       }
-    }
   },
   "privacy": {
     "metadata": {
@@ -206,8 +214,8 @@
         "title": "12. Contact Us",
         "content": "If you have any questions about this Privacy Policy, please contact us at:",
         "email": "Email: privacy@coorder.com",
-        "address": "Address: [Your Company Address]",
-        "phone": "Phone: [Your Phone Number]",
+        "address": "Address: Tokyo, Japan",
+        "phone": "Phone: 080-9344-7200",
         "dpo": "Data Protection Officer: dpo@coorder.com"
       }
     }
