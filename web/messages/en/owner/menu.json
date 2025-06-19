@@ -242,6 +242,7 @@
       "all_days": "All Days",
       "category_label": "Menu Category",
       "category_edit_note": "Category cannot be changed when editing. Create a new item to move categories.",
+      "select_category_placeholder": "Select a category",
       "availability_title": "Availability Settings",
       "availability_label": "Available for purchase",
       "availability_description": "When unchecked, this item will be hidden from the menu.",

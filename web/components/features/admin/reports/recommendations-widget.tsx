@@ -16,7 +16,7 @@ interface TopSeller {
 }
 
 const RecommendationsWidget: React.FC<RecommendationsWidgetProps> = ({ restaurantId }) => {
-  const t = useTranslations('AdminReports.Recommendations');
+  const t = useTranslations('owner.reports.recommendations');
 
   const [topSellers, setTopSellers] = useState<TopSeller[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);

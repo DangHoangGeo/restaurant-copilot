@@ -42,6 +42,7 @@
   "order_status": {
     "new": "New",
     "ordered": "Ordered",
+    "serving": "Serving",
     "preparing": "Preparing",
     "ready": "Ready",
     "completed": "Completed",
@@ -148,6 +149,11 @@
     "title": "Coming Soon",
     "description": "{feature} is coming soon!",
     "generic_description": "This feature is under development."
+  },
+  "feature": {
+    "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard",
+    "sales_over_time_chart": "Sales Over Time Chart",
+    "popular_items_report": "Popular Items Report"
   },
   "mark_resolved": "Mark Resolved",
   "mark_unresolved": "Mark Unresolved",

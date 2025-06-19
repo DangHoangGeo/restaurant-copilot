@@ -38,11 +38,6 @@
     "dashboard_load_failed": "Failed to load dashboard",
     "fetch_failed": "Failed to fetch data"
   },
-  "feature": {
-    "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard",
-    "sales_over_time_chart": "Sales Over Time Chart",
-    "popular_items_report": "Popular Items Report"
-  },
   "metadata": {
     "admin_dashboard_title": "Admin Dashboard - CoOrder.ai"
   },
@@ -64,5 +59,37 @@
     "logout": "Logout",
     "profile": "Profile",
     "settings": "Settings"
-  }
+  },
+  "admin_sidebar_dashboard": "Dashboard",
+  "admin_sidebar_restaurant_settings": "Restaurant Settings",
+  "admin_sidebar_menu_management": "Menu Management",
+  "admin_sidebar_orders": "Orders",
+  "admin_sidebar_table_qr_management": "Tables & QR Codes",
+  "admin_sidebar_employees_schedules": "Employees & Schedules",
+  "admin_sidebar_bookings_preorders": "Bookings & Preorders",
+  "admin_sidebar_reports_analytics": "Reports & Analytics",
+  "admin_sidebar_design_system": "Design System Guide",
+  "admin_sidebar_view_customer_site": "View Customer Site",
+  "admin_sidebar_logout": "Logout",
+  "admin_dashboard_title": "Dashboard Overview",
+  "admin_settings_title": "Restaurant Settings",
+  "admin_menu_title": "Menu Management",
+  "admin_tables_title": "Table & QR Management",
+  "admin_employees_title": "Employee & Schedule Management",
+  "admin_bookings_title": "Booking Management",
+  "admin_reports_title": "Reports & Analytics",
+  "sidebar_close_aria_label": "Close sidebar",
+  "sidebar": {
+      "toggle_aria_label": "Toggle sidebar navigation",
+      "close_aria_label": "Close sidebar"
+    },
+    "user_menu": {
+      "admin_user_placeholder": "Admin User",
+      "my_account_label": "My Account",
+      "profile_link": "Profile",
+      "settings_link": "Restaurant Settings",
+      "logout_button": "Logout"
+    },
+    "default_restaurant_name": "CoOrder"
+    
 }

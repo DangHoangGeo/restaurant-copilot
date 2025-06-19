@@ -120,7 +120,7 @@ export function ItemModal({
 }: ItemModalProps) {
   const [activeTab, setActiveTab] = useState("basic");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const t = useTranslations('AdminMenu.itemModal.tabs');
+  const t = useTranslations('owner.menu.itemModal.tabs');
   // Set sensible defaults for hidden fields
   const form = useForm<StreamlinedMenuItemFormData>({
     resolver: zodResolver(streamlinedMenuItemSchema),

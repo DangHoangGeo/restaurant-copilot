@@ -28,8 +28,8 @@ export function StatCard({
   isAlert = false,
   isLoading = false,
 }: StatCardProps) {
-  const t = useTranslations('AdminDashboard'); // Specific namespace for card titles
-  const tCommon = useTranslations('Common');
+  const t = useTranslations('owner.dashboard'); // Specific namespace for card titles
+  const tCommon = useTranslations('common');
 
   if (isLoading) {
     return (

@@ -307,7 +307,7 @@ function CategoryModal({ isOpen, onClose, categoryForm, onSubmit, isLoading, t, 
 
 export function MenuClientContent() {
   const t = useTranslations('owner.menu');
-  const tCommon = useTranslations('Common');
+  const tCommon = useTranslations('common');
   const tValidation = useTranslations('owner.menu.validation');
   const params = useParams();
   const locale = (params.locale as string) || 'en';

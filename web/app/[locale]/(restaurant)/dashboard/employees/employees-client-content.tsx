@@ -32,8 +32,8 @@ interface Employee {
 
 // Error state component
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
-  const t = useTranslations("AdminEmployees");
-  
+  const t = useTranslations("owner.employees");
+
   return (
     <Alert variant="destructive" className="mb-6">
       <AlertTriangle className="h-4 w-4" />
@@ -48,7 +48,8 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
 }
 
 export function EmployeesClientContent() { 
-  const t = useTranslations("AdminEmployees");
+  const t = useTranslations("owner.employees");
+  const tCommon = useTranslations("common");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -150,7 +151,7 @@ export function EmployeesClientContent() {
               onClick={() => setViewMode("list")}
               className={`rounded-lg ${viewMode === "list" ? "" : "text-slate-600 dark:text-slate-300"}`}
             >
-              <List className="mr-1 sm:mr-2" /> {t("Common.list")}
+              <List className="mr-1 sm:mr-2" /> {t("views.list")}
             </Button>
             <Button
               size="sm"
@@ -158,13 +159,13 @@ export function EmployeesClientContent() {
               onClick={() => setViewMode("schedule")}
               className={`rounded-lg ${viewMode === "schedule" ? "" : "text-slate-600 dark:text-slate-300"}`}
             >
-              <Calendar className="mr-1 sm:mr-2" /> {t("Common.schedule")}
+              <Calendar className="mr-1 sm:mr-2" /> {t("views.schedule")}
             </Button>
           </div>
         </div>
         <Button onClick={() => handleOpenModal()} disabled={isLoading}>
           <UserPlus className="mr-2 h-4 w-4" />
-          {t("add_employee")}
+          {t("actions.add_employee")}
         </Button>
       </div>
 
@@ -213,11 +214,11 @@ export function EmployeesClientContent() {
                 </th>
                 {daysOfWeek.map((day) => (
                   <th key={day} className="p-3 border border-slate-300 dark:border-slate-600 text-center font-medium">
-                    {t(`Days.${day}`)}
+                    {tCommon(`Days.${day}`)}
                   </th>
                 ))}
                 <th className="p-3 border border-slate-300 dark:border-slate-600 text-center font-medium">
-                  {t("actions")}
+                  {tCommon("actions")}
                 </th>
               </tr>
             </thead>
@@ -264,7 +265,7 @@ export function EmployeesClientContent() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">{t("name")}</label>
+              <label className="text-sm font-medium">{t("table.name")}</label>
               <Input
                 value={editingEmployee?.name || ""}
                 onChange={(e) =>
@@ -276,7 +277,7 @@ export function EmployeesClientContent() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">{t("email")}</label>
+              <label className="text-sm font-medium">{t("table.email")}</label>
               <Input
                 type="email"
                 value={editingEmployee?.email || ""}
@@ -289,7 +290,7 @@ export function EmployeesClientContent() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">{t("role")}</label>
+              <label className="text-sm font-medium">{t("table.role")}</label>
               <Select
                 value={editingEmployee?.role || ""}
                 onValueChange={(value) =>
@@ -304,7 +305,7 @@ export function EmployeesClientContent() {
                 <SelectContent>
                   {roles.map((role) => (
                     <SelectItem key={role} value={role}>
-                      {t(`Roles.${role}`)}
+                      {t(`roles.${role}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -313,9 +314,9 @@ export function EmployeesClientContent() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-              {t("Common.cancel")}
+              {tCommon("cancel")}
             </Button>
-            <Button onClick={handleSave}>{t("Common.save")}</Button>
+            <Button onClick={handleSave}>{tCommon("save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -325,14 +326,14 @@ export function EmployeesClientContent() {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {t("edit_schedule_for", { name: scheduleEmployee?.name || '' })}
+              {t("actions.edit_schedule", { name: scheduleEmployee?.name || '' })}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {daysOfWeek.map((day) => (
               <div key={day} className="flex items-center space-x-4">
                 <div className="w-16 text-sm font-medium">
-                  {t(`Days.${day}`)}
+                  {tCommon(`days.${day}`)}
                 </div>
                 <Input
                   type="time"
@@ -384,9 +385,9 @@ export function EmployeesClientContent() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsScheduleModalOpen(false)}>
-              {t("Common.cancel")}
+              {tCommon("cancel")}
             </Button>
-            <Button onClick={handleSaveSchedule}>{t("Common.save")}</Button>
+            <Button onClick={handleSaveSchedule}>{tCommon("save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

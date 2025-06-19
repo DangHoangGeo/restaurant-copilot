@@ -119,7 +119,7 @@ export function SettingsClientContent({ locale }: SettingsClientContentProps) {
     <>
       <header className="mb-8">
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-          {t("Settings.Page.title")}
+          {t("title")}
         </h1>
       </header>
 

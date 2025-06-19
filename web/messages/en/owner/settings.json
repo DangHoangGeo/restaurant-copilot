@@ -1,7 +1,6 @@
 {
-  "Page": {
-    "title": "Restaurant Settings"
-  },
+  "title": "Restaurant Settings",
+  "description": "Manage your restaurant's information, branding, and online presence.",
   "labels": {
     "restaurantName": "Restaurant Name",
     "subdomain": "Domain Name",

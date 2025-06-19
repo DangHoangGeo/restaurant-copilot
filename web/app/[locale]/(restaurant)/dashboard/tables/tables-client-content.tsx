@@ -23,7 +23,7 @@ import * as htmlToImage from 'html-to-image'
 import { Table } from '@/shared/types'
 
 // Define Zod schema for table form validation
-const getTableSchema = (t: ReturnType<typeof useTranslations<'AdminTables.validation'>>) => z.object({
+const getTableSchema = (t: ReturnType<typeof useTranslations<'validation'>>) => z.object({
   name: z.string().min(1, t('name_required')).max(50, t('name_max_length', { maxLength: 50 })),
   positionX: z.number().optional(), // Not used in form currently
   positionY: z.number().optional(), // Not used in form currently
@@ -37,7 +37,7 @@ const getTableSchema = (t: ReturnType<typeof useTranslations<'AdminTables.valida
 type TableFormData = z.infer<ReturnType<typeof getTableSchema>>;
 
 // Schema for Bulk Add Tables form
-const getBulkAddTableSchema = (t: ReturnType<typeof useTranslations<'AdminTables.validation'>>) => z.object({
+const getBulkAddTableSchema = (t: ReturnType<typeof useTranslations<'validation'>>) => z.object({
   count: z.number({ required_error: t('bulk_count_required') }).min(1, t('bulk_count_min', { min: 1 })).max(20, t('bulk_count_max', { max: 20 })), // Max 20 for sanity
   namePrefix: z.string().min(1, t('bulk_name_prefix_required')).max(20, t('bulk_name_prefix_max_length', { maxLength: 20 })),
   startIndex: z.number({ required_error: t('bulk_start_index_required') }).min(1, t('bulk_start_index_min', { min: 1 })).max(1000, t('bulk_start_index_max', { max: 1000 })),
@@ -83,16 +83,16 @@ function TablesSkeleton() {
 
 // Error state component
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
-  const t = useTranslations()
+  const t = useTranslations("common")
   
   return (
     <div className="p-8 text-center">
       <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md">
-        <h3 className="font-semibold text-lg mb-2">{t('Common.alert.error.title')}</h3>
+        <h3 className="font-semibold text-lg mb-2">{t('alert.error.title')}</h3>
         <p className="mb-4">{error}</p>
         <Button onClick={onRetry} variant="outline" className="gap-2">
           <RotateCcw className="h-4 w-4" />
-          {t('Common.retry')}
+          {t('retry')}
         </Button>
       </div>
     </div>
@@ -130,7 +130,7 @@ function TableModal({
     }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{editingTable ? t('AdminTables.edit_table') : t('AdminTables.add_table')}</DialogTitle>
+          <DialogTitle>{editingTable ? t('edit_table') : t('add_table')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -139,9 +139,9 @@ function TableModal({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('AdminTables.table_name_label')}</FormLabel>
+                  <FormLabel>{t('table_name_label')}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('AdminTables.table_name_placeholder')} {...field} />
+                    <Input placeholder={t('table_name_placeholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -154,9 +154,9 @@ function TableModal({
                 name="capacity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('AdminTables.capacity_label')}</FormLabel>
+                    <FormLabel>{t('capacity_label')}</FormLabel>
                     <FormControl>
-                      <Input type="number" min="1" placeholder={t('AdminTables.capacity_placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
+                      <Input type="number" min="1" placeholder={t('capacity_placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -167,17 +167,17 @@ function TableModal({
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('AdminTables.status_label')}</FormLabel>
+                    <FormLabel>{t('status_label')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={t('AdminTables.select_status_placeholder')} />
+                          <SelectValue placeholder={t('select_status_placeholder')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="available">{t('AdminTables.status_options.available')}</SelectItem>
-                        <SelectItem value="occupied">{t('AdminTables.status_options.occupied')}</SelectItem>
-                        <SelectItem value="reserved">{t('AdminTables.status_options.reserved')}</SelectItem>
+                        <SelectItem value="available">{t('status_options.available')}</SelectItem>
+                        <SelectItem value="occupied">{t('status_options.occupied')}</SelectItem>
+                        <SelectItem value="reserved">{t('status_options.reserved')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -196,7 +196,7 @@ function TableModal({
                       <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>{t('AdminTables.is_outdoor_label')}</FormLabel>
+                      <FormLabel>{t('is_outdoor_label')}</FormLabel>
                     </div>
                   </FormItem>
                 )}
@@ -210,7 +210,7 @@ function TableModal({
                       <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>{t('AdminTables.is_accessible_label')}</FormLabel>
+                      <FormLabel>{t('is_accessible_label')}</FormLabel>
                     </div>
                   </FormItem>
                 )}
@@ -222,9 +222,9 @@ function TableModal({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('AdminTables.notes_label')}</FormLabel>
+                  <FormLabel>{t('notes_label')}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder={t('AdminTables.notes_placeholder')} {...field} value={field.value ?? ''} />
+                    <Textarea placeholder={t('notes_placeholder')} {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -254,7 +254,7 @@ interface RestaurantSettings {
 export function TablesClientContent() {
   const t = useTranslations("owner.tables");
   const tVal = useTranslations('owner.tables.validation');
-  const tCommon = useTranslations('Common');
+  const tCommon = useTranslations('common');
   const params = useParams();
   const locale = (params.locale as string) || 'en';
 
@@ -328,7 +328,7 @@ export function TablesClientContent() {
     resolver: zodResolver(bulkAddTableSchema),
     defaultValues: {
       count: 5,
-      namePrefix: t('AdminTables.bulk_add.default_name_prefix') || "Table ",
+      namePrefix: t('bulk_add.default_name_prefix') || "Table ",
       startIndex: 1,
       capacity: 4,
       status: 'available',
@@ -386,20 +386,20 @@ export function TablesClientContent() {
       })
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || t('AdminTables.errors.save_failed'));
+        throw new Error(errorData.message || t('errors.save_failed'));
       }
       const resJson = await res.json()
       if (editingTable) {
         setTablesData(tablesData.map(t => t.id === resJson.table.id ? resJson.table : t))
-        toast.success(t('AdminTables.notifications.update_success'));
+        toast.success(t('notifications.update_success'));
       } else {
         setTablesData([...tablesData, resJson.table])
-        toast.success(t('AdminTables.notifications.create_success'));
+        toast.success(t('notifications.create_success'));
       }
       setIsTableModalOpen(false)
     } catch (error) {
       console.error('Failed to save table:', error);
-      toast.error(error instanceof Error ? error.message : t('AdminTables.errors.save_failed'));
+      toast.error(error instanceof Error ? error.message : t('errors.save_failed'));
     } finally {
       setIsSaving(false);
     }
@@ -412,7 +412,7 @@ export function TablesClientContent() {
       // This is a placeholder, you might want to generate a proper QR code
       // or handle it differently based on your requirements
       // For now, we just show an error
-      toast.error(t('AdminTables.errors.qr_code_not_set'));
+      toast.error(t('errors.qr_code_not_set'));
       return;
     }
     setSelectedTableForQr(table)
@@ -426,7 +426,7 @@ export function TablesClientContent() {
   const handleOpenBulkAddModal = () => {
     bulkAddForm.reset({
       count: 5,
-      namePrefix: t('AdminTables.bulk_add.default_name_prefix') || "Table ",
+      namePrefix: t('bulk_add.default_name_prefix') || "Table ",
       startIndex: 1,
       capacity: 4,
       status: 'available',
@@ -474,11 +474,11 @@ export function TablesClientContent() {
     }
     setIsSaving(false);
     if (successCount > 0) {
-      toast.success(t('AdminTables.bulk_add.notification_success', { count: successCount }));
+      toast.success(t('bulk_add.notification_success', { count: successCount }));
       router.refresh();
     }
     if (errorMessages.length > 0) {
-      toast.error(t('AdminTables.bulk_add.notification_error', { count: errorMessages.length, errors: errorMessages.join(', ') }));
+      toast.error(t('bulk_add.notification_error', { count: errorMessages.length, errors: errorMessages.join(', ') }));
     }
     if (successCount > 0 && errorMessages.length === 0) {
       setIsBulkAddModalOpen(false);
@@ -508,15 +508,15 @@ export function TablesClientContent() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('AdminNav.admin_tables_title')}</h2>
+        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{t('title')}</h2>
         <div className="flex gap-2">
           <Button onClick={handleOpenBulkAddModal}>
             <Layers className="mr-2 h-4 w-4" />
-            {t('AdminTables.bulk_add.button_text')}
+            {t('bulk_add.button_text')}
           </Button>
           <Button onClick={() => handleOpenTableModal()}>
             <PlusCircle className="mr-2" />
-            {t('AdminTables.add_table')}
+            {t('add_table')}
           </Button>
         </div>
       </div>
@@ -530,29 +530,29 @@ export function TablesClientContent() {
       {!isLoading && !error && tablesData.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
           <QrCode className="mx-auto h-12 w-12 text-slate-400" /> {/* Using QrCode icon as a placeholder for tables */}
-          <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('AdminTables.empty_state.title')}</h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('AdminTables.empty_state.description')}</p>
+          <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('empty_state.title')}</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('empty_state.description')}</p>
           <div className="mt-6 space-x-2">
             <Button onClick={() => handleOpenTableModal()}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              {t('AdminTables.empty_state.add_table_button')}
+              {t('empty_state.add_table_button')}
             </Button>
             <Button variant="outline" onClick={handleOpenBulkAddModal}>
               <Layers className="mr-2 h-4 w-4" />
-              {t('AdminTables.empty_state.bulk_add_button')}
+              {t('empty_state.bulk_add_button')}
             </Button>
           </div>
           <div className="mt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">{t('AdminTables.empty_state.additional_info')}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t('empty_state.additional_info')}</p>
           </div>
           <TableModal isOpen={isTableModalOpen}
-  onClose={() => setIsTableModalOpen(false)}
-  editingTable={editingTable}
-  form={formMethodsSingle}
-  onSubmit={saveTable}
-  isSaving={isSaving}
-  t={t}
-  tCommon={tCommon}/>
+            onClose={() => setIsTableModalOpen(false)}
+            editingTable={editingTable}
+            form={formMethodsSingle}
+            onSubmit={saveTable}
+            isSaving={isSaving}
+            t={t}
+            tCommon={tCommon} />
 
         </div>
       )}
@@ -571,9 +571,9 @@ export function TablesClientContent() {
 
                 <div className="text-sm text-slate-500 dark:text-slate-400">
                   <p>
-                    {t('AdminTables.capacity')}: {table.capacity || 1}
-                    {table.is_outdoor && <span className="ml-2">{t('AdminTables.outdoor')}</span>}
-                    {table.is_accessible && <span className="ml-2">{t('AdminTables.accessible')}</span>}
+                    {t('capacity')}: {table.capacity || 1}
+                    {table.is_outdoor && <span className="ml-2">{t('outdoor')}</span>}
+                    {table.is_accessible && <span className="ml-2">{t('accessible')}</span>}
                   </p>
 
 
@@ -585,10 +585,10 @@ export function TablesClientContent() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button size="sm" variant="secondary" onClick={() => handleOpenTableModal(table)}>
                     <SquarePen className="mr-1" />
-                    {t('Common.edit')}</Button>
+                    {tCommon('edit')}</Button>
                   <Button size="sm" variant="primary" onClick={() => handleGenerateQr(table)}>
                     <QrCode className="mr-1" />
-                    {t('AdminTables.generate_qr')}</Button>
+                    {t('generate_qr')}</Button>
                 </div>
               </Card>
             ))}
@@ -596,7 +596,7 @@ export function TablesClientContent() {
           <Dialog open={isTableModalOpen} onOpenChange={setIsTableModalOpen}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editingTable ? t('AdminTables.edit_table') : t('AdminTables.add_table')}</DialogTitle>
+                <DialogTitle>{editingTable ? t('edit_table') : t('add_table')}</DialogTitle>
               </DialogHeader>
                 <Form {...formMethodsSingle}>
                   <form onSubmit={handleSubmitSingle(saveTable)} className="space-y-4">
@@ -605,9 +605,9 @@ export function TablesClientContent() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('AdminTables.table_name_label')}</FormLabel>
+                          <FormLabel>{t('table_name_label')}</FormLabel>
                           <FormControl>
-                            <Input placeholder={t('AdminTables.table_name_placeholder')} {...field} />
+                            <Input placeholder={t('table_name_placeholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -620,9 +620,9 @@ export function TablesClientContent() {
                         name="capacity"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('AdminTables.capacity_label')}</FormLabel>
+                            <FormLabel>{t('capacity_label')}</FormLabel>
                             <FormControl>
-                              <Input type="number" min="1" placeholder={t('AdminTables.capacity_placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
+                              <Input type="number" min="1" placeholder={t('capacity_placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -633,17 +633,17 @@ export function TablesClientContent() {
                         name="status"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('AdminTables.status_label')}</FormLabel>
+                            <FormLabel>{t('status_label')}</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder={t('AdminTables.select_status_placeholder')} />
+                                  <SelectValue placeholder={t('select_status_placeholder')} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="available">{t('AdminTables.status_options.available')}</SelectItem>
-                                <SelectItem value="occupied">{t('AdminTables.status_options.occupied')}</SelectItem>
-                                <SelectItem value="reserved">{t('AdminTables.status_options.reserved')}</SelectItem>
+                                <SelectItem value="available">{t('status_options.available')}</SelectItem>
+                                <SelectItem value="occupied">{t('status_options.occupied')}</SelectItem>
+                                <SelectItem value="reserved">{t('status_options.reserved')}</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -662,7 +662,7 @@ export function TablesClientContent() {
                               <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                              <FormLabel>{t('AdminTables.is_outdoor_label')}</FormLabel>
+                              <FormLabel>{t('is_outdoor_label')}</FormLabel>
                             </div>
                           </FormItem>
                         )}
@@ -676,7 +676,7 @@ export function TablesClientContent() {
                               <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                              <FormLabel>{t('AdminTables.is_accessible_label')}</FormLabel>
+                              <FormLabel>{t('is_accessible_label')}</FormLabel>
                             </div>
                           </FormItem>
                         )}
@@ -688,9 +688,9 @@ export function TablesClientContent() {
                       name="notes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('AdminTables.notes_label')}</FormLabel>
+                          <FormLabel>{t('notes_label')}</FormLabel>
                           <FormControl>
-                            <Textarea placeholder={t('AdminTables.notes_placeholder')} {...field} value={field.value ?? ''} />
+                            <Textarea placeholder={t('notes_placeholder')} {...field} value={field.value ?? ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -712,7 +712,7 @@ export function TablesClientContent() {
           <Dialog open={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{t('AdminTables.qr_for_table')} {selectedTableForQr?.name || ''}</DialogTitle>
+                <DialogTitle>{t('qr_for_table')} {selectedTableForQr?.name || ''}</DialogTitle>
               </DialogHeader>
               {selectedTableForQr && (
                 <div className="text-center">
@@ -735,13 +735,13 @@ export function TablesClientContent() {
                         });
                         if (!res.ok) {
                           const errorData = await res.json();
-                          throw new Error(errorData.message || t('AdminTables.errors.qr_save_failed'));
+                          throw new Error(errorData.message || t('errors.qr_save_failed'));
                         }
                         // Update local state with new QR code URL
                         setTablesData(prevTables => prevTables.map(table =>
                           table.id === selectedTableForQr.id ? { ...table, qr_code: qrCodeUrl } : table
                         ));
-                        toast.success(t('AdminTables.notifications.qr_saved_success'));
+                        toast.success(t('notifications.qr_saved_success'));
 
                         // Download as PNG
                         const dataUrl = await htmlToImage.toPng(qrCodeRef.current);
@@ -751,13 +751,13 @@ export function TablesClientContent() {
                         link.click();
                       } catch (error) {
                         console.error('Error processing QR code:', error);
-                        toast.error(error instanceof Error ? error.message : t('AdminTables.errors.qr_download_failed'));
+                        toast.error(error instanceof Error ? error.message : t('errors.qr_download_failed'));
                       } finally {
                         setIsDownloadingQr(false);
                       }
                     }}>
                     {isDownloadingQr ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2" />}
-                    {isDownloadingQr ? t('AdminTables.downloading_qr') : t('AdminTables.download_png')}
+                    {isDownloadingQr ? t('downloading_qr') : t('download_png')}
                   </Button>
                 </div>
               )}

@@ -187,7 +187,7 @@ export function OrdersClientContent() {
         }
       >
         <EmptyState
-          title={t('noOrders')}
+          title={t('no_orders')}
           actionLabel={t('createFirstOrder')}
           onAction={() => {
             logInteraction('create_first_order_from_empty_state');

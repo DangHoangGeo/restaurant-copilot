@@ -54,13 +54,12 @@ export default async function DashboardLayout({
   const restaurantSettings = subdomain 
     ? await getRestaurantSettingsFromSubdomain(subdomain) 
     : null;
-  
-  const tErrors = await getTranslations({ locale, namespace: 'Dashboard.Layout.errors' });
+  const tCommon = await getTranslations({ locale, namespace: 'common.layout_errors' });
 
   if (!restaurantSettings && subdomain) {
     // console.warn(`No restaurant settings found for subdomain: ${subdomain}`); // Production: use proper logging
     const MOCK_RESTAURANT_INFO_FALLBACK = {
-      name: tErrors('fallbackRestaurantName'), // Use a translated fallback name
+      name: tCommon('fallbackRestaurantName'), // Use a translated fallback name
       logoUrl: null,
       subdomain: subdomain,
       primaryColor: '#3B82F6', // Default Tailwind blue
@@ -69,8 +68,8 @@ export default async function DashboardLayout({
       <ProtectedLayout>
         <AdminLayoutClient locale={locale} restaurantSettings={MOCK_RESTAURANT_INFO_FALLBACK}>
           <div className="p-8 text-center">
-            <h1 className="text-xl font-semibold text-destructive">{tErrors('configurationErrorTitle')}</h1>
-            <p className="text-muted-foreground">{tErrors('configurationErrorDescription', { subdomain: subdomain })}</p>
+            <h1 className="text-xl font-semibold text-destructive">{tCommon('configurationErrorTitle')}</h1>
+            <p className="text-muted-foreground">{tCommon('configurationErrorDescription', { subdomain: subdomain })}</p>
             {/* It might be better to not render children here, or show a more specific error page */}
             {/* {children} */}
           </div>
@@ -82,7 +81,7 @@ export default async function DashboardLayout({
   if (!restaurantSettings && !subdomain) {
      // This case implies accessing dashboard on root domain, which might be invalid for some setups
      const GENERIC_ADMIN_SETTINGS = {
-        name: tErrors('adminPanelTitle'), // Use a translated title
+        name: tCommon('adminPanelTitle'), // Use a translated title
         logoUrl: null,
         subdomain: "admin", // or a generic placeholder
         primaryColor: '#3B82F6',
@@ -91,8 +90,8 @@ export default async function DashboardLayout({
       <ProtectedLayout>
         <AdminLayoutClient locale={locale} restaurantSettings={GENERIC_ADMIN_SETTINGS}>
           <div className="p-8 text-center">
-            <h1 className="text-xl font-semibold text-destructive">{tErrors('noRestaurantContextTitle')}</h1>
-            <p className="text-muted-foreground">{tErrors('noRestaurantContextDescription')}</p>
+            <h1 className="text-xl font-semibold text-destructive">{tCommon('noRestaurantContextTitle')}</h1>
+            <p className="text-muted-foreground">{tCommon('noRestaurantContextDescription')}</p>
              {/* It might be better to not render children here, or show a more specific error page */}
             {/* {children} */}
           </div>
