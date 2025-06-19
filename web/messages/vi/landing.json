@@ -1,223 +1,223 @@
 {
   "Hero": {
-    "title": "Modernize Your Restaurant with CoOrder",
-    "subtitle": "All-in-one, mobile-first platform for menus, orders, bookings, staff, and analytics. Delight customers and empower your team—anywhere, anytime.",
-    "cta": "Get Started Free"
+    "title": "Hiện đại hóa nhà hàng của bạn với CoOrder",
+    "subtitle": "Nền tảng quản lý toàn diện, ưu tiên trên di động cho thực đơn, đơn hàng, đặt bàn, nhân viên và phân tích. Làm hài lòng khách hàng và trao quyền cho đội ngũ của bạn—bất cứ nơi đâu, bất kỳ lúc nào.",
+    "cta": "Bắt đầu miễn phí"
   },
   "header": {
-      "logo_aria_label": "CoOrder logo",
-      "login": "Login",
-      "signup": "Sign Up"
+    "logo_aria_label": "Logo CoOrder",
+    "login": "Đăng nhập",
+    "signup": "Đăng ký"
+  },
+  "theme": {
+    "toggle": "Chuyển đổi giao diện"
+  },
+  "hero": {
+    "headline_part1": "SaaS ưu tiên di động, hỗ trợ AI cho",
+    "headline_part2": "Nhà hàng nhỏ.",
+    "subheadline": "CoOrder trao quyền cho các nhà hàng nhỏ quản lý toàn bộ hoạt động của họ—thực đơn, đơn hàng, đặt bàn, nhân viên và phân tích—hoàn toàn từ điện thoại thông minh hoặc máy tính bảng.",
+    "cta": {
+      "description": "Bắt đầu dùng thử miễn phí",
+      "demo": "Xem bản demo",
+      "subtext": "Không yêu cầu thẻ tín dụng. Dùng thử miễn phí 14 ngày."
     },
-    "theme": {
-      "toggle": "Toggle theme"
+    "image_alt": "Mô hình bảng điều khiển CoOrder"
+  },
+  "social_proof": {
+    "trusted_by": "Được tin cậy bởi các nhà hàng như của bạn",
+    "testim1": {
+      "quote": "CoOrder đã thay đổi hoạt động hàng ngày của chúng tôi. Đơn hàng mượt mà hơn, nhân viên hài lòng hơn, và khách hàng yêu thích đặt hàng qua QR!"
     },
-    "hero": {
-      "headline_part1": "Mobile-First, AI-Augmented SaaS for ",
-      "headline_part2": "Small Restaurants.",
-      "subheadline": "CoOrder empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet.",
-      "cta": {
-        "signup": "Start Free Trial",
-        "demo": "Watch Demo",
-        "subtext": "No credit card required. 14-day free trial."
-      },
-      "image_alt": "CoOrder Dashboard Mockup"
+    "testim2": {
+      "quote": "Bảng điều khiển phân tích thực sự thay đổi cuộc chơi. Giờ đây, chúng tôi có thể đưa ra quyết định dựa trên dữ liệu, thực sự tác động đến lợi nhuận."
     },
-    "social_proof": {
-      "trusted_by": "Powering Success for Restaurants Like Yours",
-      "testimonial1": {
-        "quote": "CoOrder transformed our daily operations. Orders are smoother, staff is happier, and our customers love the QR ordering!"
+    "security_badge1": "Mã hóa SSL",
+    "security_badge2": "Thời gian hoạt động 99.9%",
+    "security_badge3": "Tuân thủ GDPR"
+  },
+  "features": {
+    "title": "Các tính năng mạnh mẽ để tăng tốc doanh nghiệp của bạn",
+    "subtitle": "CoOrder được trang bị các tính năng được thiết kế để đơn giản hóa hoạt động của bạn và làm hài lòng khách hàng.",
+    "menu_management": {
+      "title": "Quản lý thực đơn trực quan",
+      "description": "Dễ dàng tạo, cập nhật và sắp xếp thực đơn số với ảnh, mô tả và giá cả. Hỗ trợ nhiều ngôn ngữ.",
+      "benefit": "Cập nhật thực đơn trong vài phút, không phải vài giờ."
+    },
+    "qr_ordering": {
+      "title": "Đặt hàng qua QR mượt mà",
+      "description": "Khách hàng quét mã QR tại bàn để xem thực đơn, đặt hàng và thậm chí thanh toán trực tiếp từ điện thoại thông minh của họ.",
+      "benefit": "Tăng độ chính xác đơn hàng và luân chuyển bàn."
+    },
+    "booking_preordering": {
+      "title": "Đặt bàn & Đặt hàng trước tiên tiến",
+      "description": "Quản lý đặt bàn và cho phép khách hàng đặt món trước để có trải nghiệm ăn uống mượt mà.",
+      "benefit": "Giảm thời gian chờ và cải thiện luồng khách hàng."
+    },
+    "smart_analytics": {
+      "title": "Phân tích & Báo cáo thông minh",
+      "description": "Thu thập thông tin chi tiết thời gian thực về doanh số, món ăn phổ biến, hiệu suất nhân viên và phản hồi khách hàng để tối ưu hóa doanh nghiệp.",
+      "benefit": "Đưa ra quyết định dựa trên dữ liệu để tăng trưởng."
+    },
+    "staff_management": {
+      "title": "Quản lý nhân viên hiệu quả",
+      "description": "Phân công vai trò, quản lý ca làm việc và theo dõi hiệu suất nhân viên với ứng dụng di động dành riêng cho đội ngũ của bạn.",
+      "benefit": "Trao quyền cho đội ngũ của bạn với các công cụ di động."
+    },
+    "mobile_first": {
+      "title": "Trải nghiệm ưu tiên di động thực sự",
+      "description": "Quản lý toàn bộ nhà hàng từ bất kỳ điện thoại thông minh hoặc máy tính bảng nào. Không cần phần cứng cồng kềnh hay thiết lập phức tạp.",
+      "benefit": "Vận hành doanh nghiệp của bạn từ bất kỳ đâu."
+    }
+  },
+  "howitworks": {
+    "title": "Bắt đầu trong vài phút",
+    "subtitle": "Khởi động nền tảng nhà hàng hiện đại của bạn với vài bước đơn giản.",
+    "step1": {
+      "title": "Đăng ký & Tùy chỉnh",
+      "description": "Tạo tài khoản, thiết lập hồ sơ nhà hàng và tùy chỉnh thực đơn số và thương hiệu của bạn."
+    },
+    "step2": {
+      "title": "Tạo mã QR",
+      "description": "In mã QR độc đáo cho mỗi bàn hoặc khu vực. Khách hàng quét để truy cập thực đơn và đặt hàng."
+    },
+    "step3": {
+      "title": "Bắt đầu phục vụ & Phát triển",
+      "description": "Nhận đơn hàng trực tiếp trên ứng dụng nhân viên, quản lý bàn và theo dõi sự phát triển của doanh nghiệp với thông tin chi tiết thông minh."
+    },
+    "step4": {
+      "title": "Hưởng thụ hỗ trợ 24/7",
+      "description": "Đội ngũ hỗ trợ tận tâm của chúng tôi luôn sẵn sàng giúp đỡ bạn, đảm bảo sự thành công của bạn với CoOrder."
+    }
+  },
+  "benefits": {
+    "title": "Kết quả thực sự cho nhà hàng của bạn",
+    "subtitle": "CoOrder không chỉ là phần mềm; đó là đối tác phát triển. Xem chúng tôi mang lại lợi ích như thế nào:",
+    "item1": "Tăng doanh thu lên tới 20%",
+    "item2": "Tiết kiệm tới 10 giờ/tuần cho công việc hành chính",
+    "item3": "Tăng điểm hài lòng của khách hàng",
+    "item4": "Đơn giản hóa quản lý đơn hàng & bàn",
+    "item5": "Trao quyền cho nhân viên với công cụ di động",
+    "item6": "Thu thập thông tin chi tiết kinh doanh hữu ích"
+  },
+  "faq": {
+    "title": "Câu hỏi thường gặp",
+    "subtitle": "Có thắc mắc? Chúng tôi có câu trả lời! Dưới đây là một số câu hỏi phổ biến từ các chủ nhà hàng như bạn.",
+    "item1": {
+      "q": "CoOrder dành cho loại nhà hàng nào?",
+      "description": "CoOrder được thiết kế cho các nhà hàng, quán cà phê, quán bar và xe bán đồ ăn nhỏ đến vừa, muốn hiện đại hóa hoạt động và cải thiện trải nghiệm khách hàng."
+    },
+    "item2": {
+      "q": "Việc thiết lập có khó không?",
+      "description": "Không hề! Giao diện trực quan và quy trình thiết lập được hướng dẫn giúp bạn bắt đầu trong vài phút. Không cần kiến thức kỹ thuật."
+    },
+    "item3": {
+      "q": "Tôi có cần phần cứng đặc biệt không?",
+      "description": "Không, CoOrder ưu tiên di động. Bạn có thể quản lý mọi thứ từ điện thoại thông minh hoặc máy tính bảng hiện có. Không cần hệ thống POS đắt tiền."
+    },
+    "item4": {
+      "q": "Hỗ trợ khách hàng thì sao?",
+      "description": "Chúng tôi cung cấp hỗ trợ trực tuyến toàn diện, hướng dẫn và đội ngũ hỗ trợ tận tâm sẵn sàng hỗ trợ bạn với bất kỳ câu hỏi hoặc vấn đề nào."
+    }
+  },
+  "pricing": {
+    "title": "Chọn gói của bạn",
+    "subtitle": "Chọn gói dịch vụ hoàn hảo cho nhu cầu của nhà hàng bạn. Bắt đầu với thử miễn phí và nâng cấp khi bạn sẵn sàng.",
+    "popular": "Phổ biến nhất",
+    "billing": {
+      "monthly": "Hàng tháng",
+      "yearly": "Hàng năm",
+      "per_month": "mỗi tháng",
+      "billed_yearly": "thanh toán hàng năm",
+      "save_20": "Tiết kiệm 20%"
+    },
+    "plans": {
+      "starter": {
+        "title": "Gói Starter",
+        "description": "Hoàn hảo cho các cơ sở nhỏ phục vụ lên đến 100 khách hàng mỗi ngày"
       },
-      "testimonial2": {
-        "quote": "The analytics dashboard is a game-changer. We can now make data-driven decisions that truly impact our bottom line."
+      "growth": {
+        "title": "Gói Growth",
+        "description": "Lý tưởng cho các cơ sở quy mô trung bình phục vụ 100-500 khách hàng mỗi ngày"
       },
-      "security_badge1": "SSL Encrypted",
-      "security_badge2": "99.9% Uptime",
-      "security_badge3": "GDPR Compliant"
+      "enterprise": {
+        "title": "Gói Enterprise",
+        "description": "Dành cho chủ doanh nghiệp quản lý nhiều địa điểm"
+      }
     },
     "features": {
-      "title": "Powerful Features to Accelerate Your Business",
-      "subtitle": "CoOrder is packed with features designed to streamline your operations and delight your customers.",
-      "menu_management": {
-        "title": "Intuitive Menu Management",
-        "description": "Easily create, update, and organize your digital menus with photos, descriptions, and pricing. Supports multiple languages.",
-        "benefit": "Update menus in minutes, not hours."
-      },
-      "qr_ordering": {
-        "title": "Seamless QR Ordering",
-        "description": "Customers scan a QR code at their table to view the menu, place orders, and even pay directly from their smartphone.",
-        "benefit": "Increase order accuracy and table turnover."
-      },
-      "booking_preordering": {
-        "title": "Advanced Booking & Pre-ordering",
-        "description": "Manage table reservations and allow customers to pre-order their meals for a smooth dining experience.",
-        "benefit": "Reduce wait times and improve customer flow."
-      },
-      "smart_analytics": {
-        "title": "Smart Analytics & Reporting",
-        "description": "Gain real-time insights into sales, popular dishes, staff performance, and customer feedback to optimize your business.",
-        "benefit": "Make data-driven decisions for growth."
-      },
-      "staff_management": {
-        "title": "Efficient Staff Management",
-        "description": "Assign roles, manage shifts, and track staff performance with a dedicated mobile app for your team.",
-        "benefit": "Empower your team with mobile tools."
-      },
-      "mobile_first": {
-        "title": "True Mobile-First Experience",
-        "description": "Manage your entire restaurant from any smartphone or tablet. No bulky hardware or complex setups required.",
-        "benefit": "Run your business from anywhere."
-      }
+      "basic_order_management": "Quản lý đơn hàng cơ bản",
+      "ai_analytics_basic": "Phân tích AI (thông tin cơ bản)",
+      "basic_customer_support": "Hỗ trợ khách hàng cơ bản",
+      "advanced_order_management": "Quản lý đơn hàng tiên tiến",
+      "enhanced_ai_analytics": "Phân tích AI và thông tin nâng cao",
+      "priority_customer_support": "Hỗ trợ khách hàng ưu tiên",
+      "external_platform_integrations": "Tích hợp nền tảng bên ngoài",
+      "full_feature_access": "Truy cập toàn bộ tính năng",
+      "comprehensive_ai_optimization": "Tối ưu hóa doanh nghiệp dựa trên AI toàn diện",
+      "dedicated_ai_support": "Hỗ trợ khách hàng & kỹ thuật hỗ trợ AI chuyên dụng",
+      "multi_location_management": "Khả năng quản lý nhiều địa điểm"
     },
-    "howitworks": {
-      "title": "Get Started in Minutes",
-      "subtitle": "Launch your modern restaurant platform with a few simple steps.",
-      "step1": {
-        "title": "Sign Up & Customize",
-        "description": "Create your account, set up your restaurant profile, and customize your digital menu and branding."
-      },
-      "step2": {
-        "title": "Generate QR Codes",
-        "description": "Print unique QR codes for each table or section. Customers scan to access your menu and order."
-      },
-      "step3": {
-        "title": "Start Serving & Growing",
-        "description": "Receive orders directly on your staff app, manage tables, and watch your business thrive with smart insights."
-      },
-	  "step4": {
-		"title": "Enjoy 24/7 Support",
-		"description": "Our dedicated support team is here to help you every step of the way, ensuring your success with CoOrder."
-	  }
+    "cta": {
+      "start_free_trial": "Bắt đầu dùng thử miễn phí",
+      "choose_plan": "Chọn gói",
+      "contact_sales": "Liên hệ với đội ngũ bán hàng"
     },
-    "benefits": {
-      "title": "Real Results for Your Restaurant",
-      "subtitle": "CoOrder isn't just software; it's a growth partner. See how we help:",
-      "item1": "Increase Revenue by up to 20%",
-      "item2": "Save up to 10 hours/week on admin tasks",
-      "item3": "Boost Customer Satisfaction Scores",
-      "item4": "Streamline Order & Table Management",
-      "item5": "Empower Your Staff with Mobile Tools",
-      "item6": "Gain Actionable Business Insights"
-    },
-    "faq": {
-      "title": "Frequently Asked Questions",
-	  "subtitle": "Got questions? We have answers! Here are some common queries from restaurant owners like you.",
-      "item1": {
-        "q": "What kind of restaurants is CoOrder for?",
-        "a": "CoOrder is designed for small to medium-sized restaurants, cafes, bars, and food trucks looking to modernize their operations and improve customer experience."
-      },
-      "item2": {
-        "q": "Is it difficult to set up?",
-        "a": "Not at all! Our intuitive interface and guided setup process allow you to get started in minutes. No technical expertise required."
-      },
-      "item3": {
-        "q": "Do I need special hardware?",
-        "a": "No, CoOrder is mobile-first. You can manage everything from your existing smartphones or tablets. No expensive POS systems needed."
-      },
-      "item4": {
-        "q": "What about customer support?",
-        "a": "We offer comprehensive online support, tutorials, and a dedicated support team ready to assist you with any questions or issues."
-      }
-    },
-    "pricing": {
-      "title": "Choose Your Plan",
-      "subtitle": "Select the perfect plan for your restaurant's needs. Start with a free trial and upgrade when you're ready.",
-      "popular": "Most Popular",
-      "billing": {
-        "monthly": "Monthly",
-        "yearly": "Yearly",
-        "per_month": "per month",
-        "billed_yearly": "billed yearly",
-        "save_20": "Save 20%"
-      },
-      "plans": {
-        "starter": {
-          "title": "Starter Plan",
-          "description": "Perfect for small establishments serving up to 100 customers per day"
-        },
-        "growth": {
-          "title": "Growth Plan",
-          "description": "Ideal for regular-sized establishments serving 100-500 customers per day"
-        },
-        "enterprise": {
-          "title": "Enterprise Plan",
-          "description": "For business owners managing multiple locations"
-        }
-      },
-      "features": {
-        "basic_order_management": "Basic order management",
-        "ai_analytics_basic": "AI analytics (basic insights)",
-        "basic_customer_support": "Basic customer support",
-        "advanced_order_management": "Advanced order management",
-        "enhanced_ai_analytics": "Enhanced AI analytics and insights",
-        "priority_customer_support": "Priority customer support",
-        "external_platform_integrations": "External platform integrations",
-        "full_feature_access": "Full access to all features",
-        "comprehensive_ai_optimization": "Comprehensive AI-driven business optimization",
-        "dedicated_ai_support": "Dedicated AI-enabled customer & technical support",
-        "multi_location_management": "Multi-location management capabilities"
-      },
-      "cta": {
-        "start_free_trial": "Start Free Trial",
-        "choose_plan": "Choose Plan",
-        "contact_sales": "Contact Sales"
-      },
-      "up_to_customers": "Up to {count} customers per day",
-      "trial_info": "{days}-day free trial included",
-      "bottom_cta": {
-        "title": "Not sure which plan is right for you?",
-        "start_free": "Start Free Trial",
-        "or": "or",
-        "contact_sales": "Talk to Sales"
-      }
-    },
-    "cta_section": {
-      "title": "Ready to Transform Your Restaurant?",
-      "subtitle": "Join hundreds of restaurants simplifying their operations and boosting profits with CoOrder.",
-      "cta": {
-        "signup": "Get Started For Free",
-        "contact_sales": "Request a Demo"
-      }
-    },
-    "footer": {
-      "tagline": "Modernizing small restaurants, one order at a time.",
-      "links": {
-        "product_title": "Product",
-        "features": "Features",
-        "pricing": "Pricing",
-        "integrations": "Integrations",
-        "company_title": "Company",
-        "about_us": "About Us",
-        "careers": "Careers",
-        "blog": "Blog",
-        "support_title": "Support",
-        "help_center": "Help Center",
-        "contact_us": "Contact Us",
-        "status": "Status"
-      },
-      "categories": {
-		"product": "Product",
-		"company": "Company",
-        "resources_title": "Resources",
-        "case_studies": "Case Studies",
-        "webinars": "Webinars",
-        "documentation": "Documentation",
-        "community": "Community",
-        "developers": "Developers",
-        "support": "Support"
-      },
-      "legal": {
-        "title": "Legal",
-        "terms": "Terms of Service",
-        "privacy": "Privacy Policy",
-        "cookies": "Cookie Policy",
-        "security": "Security"
-      },
-      "copyright": "© 2023 Coorder.ai. All rights reserved.",
-      "privacy_policy": "Privacy Policy",
-      "terms_of_service": "Terms of Service"
-    },
-    "common": {
-      "all_rights_reserved": "All rights reserved."
+    "up_to_customers": "Lên đến {count} khách hàng mỗi ngày",
+    "trial_info": "Bao gồm dùng thử miễn phí {days} ngày",
+    "bottom_cta": {
+      "title": "Không chắc chắn gói nào phù hợp với bạn?",
+      "start_free": "Bắt đầu dùng thử miễn phí",
+      "or": "hoặc",
+      "contact_sales": "Nói chuyện với đội ngũ bán hàng"
     }
+  },
+  "cta_section": {
+    "section_title": "S sẵn sàng để thay đổi nhà hàng của bạn?",
+    "subtitle": "Tham gia hàng trăm nhà hàng đang đơn giản hóa hoạt động và tăng lợi nhuận với CoOrder.",
+    "cta": {
+      "signup": "Bắt đầu miễn phí",
+      "contact_sales": "Yêu cầu bản demo"
+    }
+  },
+  "footer": {
+    "tagline": "Hiện đại hóa các nhà hàng nhỏ, từng đơn hàng một.",
+    "links": {
+      "product_title": "Sản phẩm",
+      "features": "Tính năng",
+      "pricing": "Giá cả",
+      "integrations": "Tích hợp",
+      "company_title": "Công ty",
+      "about_us": "Giới thiệu về chúng tôi",
+      "careers": "Tuyển dụng",
+      "blog": "Blog",
+      "support_title": "Hỗ trợ",
+      "help_center": "Trung tâm hỗ trợ",
+      "contact_us": "Liên hệ với chúng tôi",
+      "status": "Trạng thái"
+    },
+    "categories": {
+      "product": "Sản phẩm",
+      "company": "Công ty",
+      "resources_title": "Tài nguyên",
+      "case_studies": "Nghiên cứu điển hình",
+      "webinars": "Webinar",
+      "documentation": "Tài liệu",
+      "community": "Cộng đồng",
+      "developers": "Nhà phát triển",
+      "support": "Hỗ trợ"
+    },
+    "legal": {
+      "title": "Pháp lý",
+      "terms": "Điều khoản dịch vụ",
+      "privacy": "Chính sách bảo mật",
+      "cookies": "Chính sách Cookie",
+      "security": "Bảo mật"
+    },
+    "copyright": "© 2023 Coorder.ai. Tất cả quyền được bảo lưu.",
+    "privacy_policy": "Chính sách bảo mật",
+    "terms_of_service": "Điều khoản dịch vụ"
+  },
+  "common": {
+    "all_rights": "Tất cả quyền được bảo lưu."
+  }
 }

@@ -1,222 +1,219 @@
 {
   "terms": {
     "metadata": {
-      "title": "Terms of Service",
-      "description": "Terms of Service for CoOrder restaurant management platform. Learn about your rights and responsibilities when using our service."
+      "title": "Điều khoản dịch vụ",
+      "description": "Điều khoản dịch vụ của nền tảng quản lý nhà hàng CoOrder. Tìm hiểu về quyền và trách nhiệm của bạn khi sử dụng dịch vụ của chúng tôi."
     },
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: {date}",
-    "printButton": "Print this page",
+    "title": "Điều khoản của Dịch vụ",
+    "lastUpdated": "Cập nhật lần cuối: {date}",
+    "printButton": "In trang này",
     "navigation": {
-      "acceptance": "1. Acceptance of Terms",
-      "description": "2. Description of Service",
-      "eligibility": "3. Eligibility",
-      "account": "4. Account Registration",
-      "payment": "5. Payment Terms",
-      "use": "6. Acceptable Use",
-      "content": "7. Content and Data",
-      "intellectual": "8. Intellectual Property",
-      "privacy": "9. Privacy",
-      "termination": "10. Termination",
-      "disclaimers": "11. Disclaimers",
-      "limitation": "12. Limitation of Liability",
-      "indemnification": "13. Indemnification",
-      "governing": "14. Governing Law",
-      "changes": "15. Changes to Terms",
-      "contact": "16. Contact Information"
+      "acceptance": "1. Chấp nhận các điều khoản",
+      "description": "2. Mô tả dịch vụ",
+      "eligibility": "3. Điều kiện",
+      "account": "4. Đăng ký tài khoản",
+      "payment": "5. Điều khoản thanh toán",
+      "use": "6. Sử dụng được chấp nhận",
+      "content": "7. Nội dung và dữ liệu",
+      "intellectual_property": "8. Tài sản trí tuệ",
+      "privacy": "9. Bảo mật",
+      "termination": "10. Chấm dứt",
+      "disclaimers": "11. Tuyên bố miễn trừ trách nhiệm",
+      "limitation": "12. Giới hạn trách nhiệm",
+      "indemnification": "13. Bồi thường",
+      "governing": "14. Luật điều chỉnh",
+      "changes": "15. Thay đổi điều khoản",
+      "contact": "16. Thông tin liên hệ"
     },
     "sections": {
-        "acceptance": {
-          "title": "1. Acceptance of Terms",
-          "content": "By accessing and using the CoOrder restaurant management service (\"Service\"), you agree to be bound by these Terms of Service. If you do not agree to any part of these terms, you may not use our Service."
-        },
-        "description": {
-          "title": "2. Description of Service",
-          "content": "CoOrder provides a comprehensive restaurant management platform including menu management, order processing, booking system, staff management tools, and analytics. The Service is designed to help restaurants streamline their operations and improve customer experience."
-        },
-        "registration": {
-          "title": "3. Account Registration",
-          "content": "To use the Service, you must create an account. You agree to provide accurate, current, and complete information during registration and to update such information to keep it accurate. You are responsible for safeguarding your account password and for all activities under your account."
-        },
-        "subscriptions": {
-          "title": "4. Subscriptions and Payment",
-          "subtitle": "Subscription Plans",
-          "plans": {
-            "description": "We offer several subscription plans:",
-            "free": "**Free Plan**: Basic functionality with limited features",
-            "basic": "**Basic Plan**: Full access to core features with monthly pricing",
-            "premium": "**Premium Plan**: All features plus advanced analytics and priority support"
-          },
-          "billing": {
-            "title": "Billing",
-            "content": "Paid plans are billed monthly or annually in advance. All fees are non-refundable except as required by law. Pricing may change with 30 days notice."
-          },
-          "cancellation": {
-            "title": "Cancellation",
-            "content": "You may cancel your subscription at any time. Cancellation will be effective at the end of the current billing cycle."
-          }
-        },
-        "usage": {
-          "title": "5. Acceptable Use",
-          "content": "You agree to use the Service only for lawful purposes and in a way that does not infringe the rights of any third party. You must not:",
-          "restrictions": {
-            "0": "Use the Service for any illegal activities",
-            "1": "Upload or distribute viruses or other malicious code",
-            "2": "Attempt unauthorized access to our systems",
-            "3": "Interfere with the normal operation of the Service",
-            "4": "Violate any applicable laws or regulations"
-          }
-        },
-        "intellectual": {
-          "title": "6. Intellectual Property",
-          "content": "The Service and its original content, features and functionality are and will remain the exclusive property of CoOrder and its licensors. The Service is protected by copyright, trademark, and other laws. You may not copy, modify, distribute, sell, or lease any part of our Service."
-        },
-        "privacy": {
-          "title": "7. Privacy and Data",
-          "content": "Your privacy is important to us. Our collection and use of your information is governed by our Privacy Policy. By using the Service, you consent to the collection and use of information in accordance with our Privacy Policy."
-        },
-        "termination": {
-          "title": "8. Termination",
-          "content": "We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms of Service. Upon termination, your right to use the Service will cease immediately."
-        },
-        "liability": {
-          "title": "9. Disclaimer of Warranties",
-          "content": "The Service is provided on an \"as is\" and \"as available\" basis. CoOrder disclaims all warranties, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall CoOrder be liable for any indirect, incidental, special, consequential, or punitive damages."
-        },
-        "governing": {
-          "title": "10. Governing Law",
-          "content": "These Terms shall be interpreted and governed by the laws of [Your Jurisdiction], without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights."
-        },
-        "changes": {
-          "title": "11. Changes to Terms",
-          "content": "We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion."
-        },
-        "contact": {
-          "title": "12. Contact Information",
-          "content": "If you have any questions about these Terms of Service, please contact us at:",
-          "email": "Email: legal@coorder.com",
-          "address": "Address: Tokyo, Japan",
-          "phone": "Phone: 080-9344-7200"
-        }
-      }
-  },
-  "privacy": {
-    "metadata": {
-      "title": "Privacy Policy",
-      "description": "Learn how CoOrder collects, uses, and protects your personal information in our restaurant management service."
-    },
-    "title": "Privacy Policy",
-    "lastUpdated": "Last updated: {date}",
-    "printButton": "Print this page",
-    "navigation": {
-      "overview": "1. Overview",
-      "collection": "2. Information We Collect",
-      "usage": "3. How We Use Information",
-      "sharing": "4. Information Sharing",
-      "security": "5. Data Security",
-      "retention": "6. Data Retention",
-      "rights": "7. Your Rights",
-      "cookies": "8. Cookies and Tracking",
-      "international": "9. International Transfers",
-      "children": "10. Children's Privacy",
-      "changes": "11. Changes to this Policy",
-      "contact": "12. Contact Us"
-    },
-    "sections": {
-      "overview": {
-        "title": "1. Overview",
-        "content": "CoOrder (\"we\", \"our\", or \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our CoOrder restaurant management service (\"Service\")."
+      "acceptance": {
+        "title": "1. Chấp nhận các điều khoản",
+        "content": "Bằng cách truy cập và sử dụng dịch vụ quản lý nhà hàng CoOrder (\"Dịch vụ\"), bạn đồng ý bị ràng buộc bởi các Điều khoản Dịch vụ này. Nếu bạn không đồng ý với bất kỳ phần nào của các điều khoản này, bạn không được phép sử dụng Dịch vụ của chúng tôi."
       },
-      "collection": {
-        "title": "2. Information We Collect",
-        "subtitle": "We collect information you provide directly to us:",
-        "direct": {
-          "account": "**Account Information**: Name, email address, password, and contact details",
-          "restaurant": "**Restaurant Information**: Restaurant name, address, phone number, and business details",
-          "payment": "**Payment Information**: Billing details and payment information (processed securely)",
-          "content": "**Content**: Menu information, dish descriptions, images, and other restaurant data"
+      "description": {
+        "title": "2. Mô tả Dịch vụ",
+        "content": "CoOrder cung cấp một nền tảng quản lý nhà hàng toàn diện bao gồm quản lý thực đơn, xử lý đơn hàng, hệ thống đặt bàn, công cụ quản lý nhân viên và phân tích. Dịch vụ được thiết kế để giúp các nhà hàng đơn giản hóa hoạt động và cải thiện trải nghiệm khách hàng."
+      },
+      "registration": {
+        "title": "3. Đăng ký tài khoản",
+        "content": "Để sử dụng Dịch vụ, bạn phải tạo một tài khoản. Bạn đồng ý cung cấp thông tin chính xác, hiện tại và đầy đủ trong quá trình đăng ký và cập nhật thông tin này để giữ cho nó chính xác. Bạn chịu trách nhiệm bảo vệ mật khẩu tài khoản của mình và đối với tất cả các hoạt động dưới tài khoản của bạn."
+      },
+      "subscriptions": {
+        "title": "4. Đăng ký và Thanh toán",
+        "subtitle": "Gói đăng ký",
+        "plans": {
+          "description": "Chúng tôi cung cấp một số gói đăng ký:",
+          "free": "**Gói miễn phí**: Chức năng cơ bản với các tính năng giới hạn",
+          "basic": "**Gói cơ bản**: Truy cập đầy đủ vào các tính năng cốt lõi với giá hàng tháng",
+          "premium": "**Gói cao cấp**: Tất cả các tính năng cộng thêm phân tích nâng cao và hỗ trợ ưu tiên"
         },
-        "automatic": {
-          "title": "We also collect information automatically:",
-          "usage": "**Usage Data**: How you interact with our Service",
-          "device": "**Device Information**: IP address, browser type, operating system",
-          "location": "**Location Data**: General location information based on IP address",
-          "cookies": "**Cookies and Tracking Data**: As described in the Cookies section below"
+        "billing": {
+          "title": "Thanh toán",
+          "content": "Các gói trả phí được thanh toán hàng tháng hoặc hàng năm trước. Tất cả các khoản phí đều không được hoàn lại, trừ khi luật pháp yêu cầu. Giá cả có thể thay đổi với thông báo trước 30 ngày."
+        },
+        "cancellation": {
+          "title": "Hủy bỏ",
+          "content": "Bạn có thể hủy đăng ký bất cứ lúc nào. Việc hủy sẽ có hiệu lực vào cuối chu kỳ thanh toán hiện tại."
         }
       },
       "usage": {
-        "title": "3. How We Use Information",
-        "content": "We use the information we collect to:",
+        "title": "5. Sử dụng được chấp nhận",
+        "content": "Bạn đồng ý sử dụng Dịch vụ chỉ cho các mục đích hợp pháp và theo cách không vi phạm quyền của bất kỳ bên thứ ba nào. Bạn không được:",
+        "restrictions": {
+          "0": "Sử dụng Dịch vụ cho bất kỳ hoạt động bất hợp pháp nào",
+          "1": "Tải lên hoặc phân phối virus hoặc mã độc hại khác",
+          "2": "Cố gắng truy cập trái phép vào hệ thống của chúng tôi",
+          "3": "Can thiệp vào hoạt động bình thường của Dịch vụ",
+          "4": "Vi phạm bất kỳ luật hoặc quy định hiện hành nào"
+        }
+      },
+      "intellectual": {
+        "title": "6. Tài sản trí tuệ",
+        "content": "Dịch vụ và nội dung gốc, tính năng và chức năng của nó là và sẽ vẫn là tài sản độc quyền của CoOrder và các bên cấp phép của nó. Dịch vụ được bảo vệ bởi bản quyền, nhãn hiệu và các luật khác. Bạn không được sao chép, sửa đổi, phân phối, bán hoặc cho thuê bất kỳ phần nào của Dịch vụ của chúng tôi."
+      },
+      "privacy": {
+        "title": "7. Bảo mật và Dữ liệu",
+        "content": "Bảo mật của bạn rất quan trọng với chúng tôi. Việc thu thập và sử dụng thông tin của bạn được điều chỉnh bởi Chính sách Bảo mật của chúng tôi. Bằng cách sử dụng Dịch vụ, bạn đồng ý với việc thu thập và sử dụng thông tin theo Chính sách Bảo mật của chúng tôi."
+      },
+      "termination": {
+        "title": "8. Chấm dứt",
+        "content": "Chúng tôi có thể chấm dứt hoặc tạm dừng tài khoản của bạn ngay lập tức, mà không cần thông báo trước hoặc chịu trách nhiệm, vì bất kỳ lý do gì, bao gồm nhưng không giới hạn nếu bạn vi phạm Điều khoản Dịch vụ. Khi chấm dứt, quyền sử dụng Dịch vụ của bạn sẽ ngừng ngay lập tức."
+      },
+      "liability": {
+        "title": "9. Tuyên bố miễn trừ trách nhiệm",
+        "content": "Dịch vụ được cung cấp trên cơ sở \"như là\" và \"như có sẵn\". CoOrder từ chối mọi bảo đảm, dù rõ ràng hay ngụ ý, bao gồm nhưng không giới hạn các bảo đảm ngụ ý về khả năng bán được, phù hợp với một mục đích cụ thể và không vi phạm. Trong mọi trường hợp, CoOrder sẽ không chịu trách nhiệm về bất kỳ thiệt hại gián tiếp, ngẫu nhiên, đặc biệt, hậu quả hoặc trừng phạt nào."
+      },
+      "governing": {
+        "title": "10. Luật điều chỉnh",
+        "content": "Các Điều khoản này sẽ được diễn giải và điều chỉnh bởi luật của [Your Jurisdiction], không phụ thuộc vào các quy định xung đột pháp luật của nó. Việc chúng tôi không thực thi bất kỳ quyền hoặc điều khoản nào của các Điều khoản này sẽ không được coi là từ bỏ các quyền đó."
+      },
+      "changes": {
+        "title": "11. Thay đổi điều khoản",
+        "content": "Chúng tôi có quyền sửa đổi hoặc thay thế các Điều khoản này bất cứ lúc nào. Nếu một sửa đổi là đáng kể, chúng tôi sẽ cung cấp thông báo trước ít nhất 30 ngày trước khi các điều khoản mới có hiệu lực. Việc gì cấu thành thay đổi đáng kể sẽ do chúng tôi tự quyết định."
+      },
+      "contact": {
+        "title": "12. Thông tin liên lạc",
+        "content": "Nếu bạn có bất kỳ câu hỏi nào về các Điều khoản Dịch vụ này, vui lòng liên hệ với chúng tôi tại:",
+        "email": "Email: legal@coorder.com",
+        "address": "Địa chỉ: Tokyo, Nhật Bản",
+        "phone": "Số điện thoại: 080-9344-7200"
+      }
+    }
+  },
+  "privacy": {
+    "metadata": {
+      "title": "Chính sách bảo mật",
+      "description": "Tìm hiểu cách CoOrder thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn trong dịch vụ quản lý nhà hàng của chúng tôi."
+    },
+    "title": "Chính sách bảo mật",
+    "last_updated": "Cập nhật lần cuối ngày: {date}",
+    "print_button": "In trang này",
+    "navigation": {
+      "overview": "1. Tổng quan về",
+      "collection": "2. Thông tin chúng tôi thu thập",
+      "usage": "3. Cách chúng tôi sử dụng thông tin",
+      "sharing": "4. Chia sẻ thông tin",
+      "security": "5. Bảo mật dữ liệu",
+      "retention": "6. Lưu trữ dữ liệu",
+      "rights": "7. Quyền của bạn",
+      "cookies": "8. Cookies và công nghệ theo dõi",
+      "international": "9. Chuyển giao quốc tế",
+      "children": "10. Bảo mật trẻ em",
+      "changes": "11. Thay đổi chính sách này",
+      "contact": "12. Liên hệ với chúng tôi"
+    },
+    "sections": {
+      "overview": {
+        "title": "1. Tổng quan",
+        "content": "CoOrder (\" chúng tôi\", \" của chúng tôi\", \" hoặc \" chúng ta\") cam kết bảo vệ quyền riêng tư của bạn. Chính sách Bảo mật này giải thích cách chúng tôi thu thập, sử dụng, tiết lộ và bảo vệ thông tin của bạn khi bạn sử dụng dịch vụ quản lý nhà hàng CoOrder của chúng tôi (\"Dịch vụ \")."
+      },
+      "collection": {
+        "title": "2. Thông tin chúng tôi thu thập",
+        "subtitle": "Chúng tôi thu thập thông tin bạn cung cấp trực tiếp cho chúng tôi:",
+        "direct": {
+          "account": "**Thông tin tài khoản**: Tên, địa chỉ email, mật khẩu và chi tiết liên hệ",
+          "restaurant": "**Thông tin nhà hàng**: Tên nhà hàng, địa chỉ, số điện thoại và chi tiết doanh nghiệp",
+          "payment": "**Thông tin thanh toán**: Chi tiết thanh toán và thông tin thanh toán (xử lý an toàn)",
+          "content": "**Nội dung**: Thông tin thực đơn, mô tả món ăn, hình ảnh và dữ liệu nhà hàng khác"
+        },
+        "automatic": {
+          "title": "Chúng tôi cũng thu thập thông tin tự động:",
+          "usage": "**Dữ liệu sử dụng**: Cách bạn tương tác với Dịch vụ của chúng tôi",
+          "device": "**Thông tin thiết bị**: Địa chỉ IP, loại trình duyệt, hệ điều hành",
+          "location": "**Dữ liệu vị trí**: Thông tin vị trí chung dựa trên địa chỉ IP",
+          "cookies": "**Cookies và dữ liệu theo dõi**: Như được mô tả trong phần Cookies dưới đây"
+        }
+      },
+      "usage": {
+        "title": "3. Cách chúng tôi sử dụng thông tin",
+        "content": "Chúng tôi sử dụng thông tin chúng tôi thu thập để:",
         "purposes": {
-          "0": "Provide, maintain, and improve our Service",
-          "1": "Process transactions and send related notices",
-          "2": "Send technical notices, updates, and security alerts",
-          "3": "Provide customer support and respond to your requests",
-          "4": "Analyze usage to improve our Service",
-          "5": "Personalize your user experience",
-          "6": "Comply with legal obligations"
+          "0": "Cung cấp, duy trì và cải thiện Dịch vụ của chúng tôi",
+          "1": "Xử lý giao dịch và gửi thông báo liên quan",
+          "2": "Gửi thông báo kỹ thuật, cập nhật và cảnh báo bảo mật",
+          "3": "Cung cấp hỗ trợ khách hàng và trả lời yêu cầu của bạn",
+          "4": "Phân tích sử dụng để cải thiện Dịch vụ của chúng tôi",
+          "5": "Cá nhân hóa trải nghiệm người dùng",
+          "6": "Tuân thủ các nghĩa vụ pháp lý"
         }
       },
       "sharing": {
-        "title": "4. Information Sharing",
-        "content": "We do not sell your personal information. We may share your information in the following circumstances:",
+        "title": "4. Chia sẻ thông tin",
+        "content": "Chúng tôi không bán thông tin cá nhân của bạn. Chúng tôi có thể chia sẻ thông tin của bạn trong các trường hợp sau:",
         "circumstances": {
-          "0": "**Service Providers**: With trusted contractors who provide services on our behalf",
-          "1": "**Legal Requirements**: When required by law or to protect our rights",
-          "2": "**Business Transactions**: In the event of a merger, acquisition, or asset sale",
-          "3": "**Consent**: With your explicit consent for specific purposes"
+          "0": "**Nhà cung cấp dịch vụ**: Với các nhà thầu đáng tin cậy cung cấp dịch vụ thay mặt chúng tôi",
+          "1": "**Yêu cầu pháp lý**: Khi luật pháp yêu cầu hoặc để bảo vệ quyền của chúng tôi",
+          "2": "**Giao dịch kinh doanh**: Trong trường hợp hợp nhất, mua lại hoặc bán tài sản",
+          "3": "**Đồng ý**: Với sự đồng thuận rõ ràng của bạn cho các mục đích cụ thể"
         }
       },
       "security": {
-        "title": "5. Data Security",
-        "content": "We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:",
+        "content": "Chúng tôi triển khai các biện pháp bảo mật phù hợp để bảo vệ thông tin cá nhân của bạn khỏi truy cập trái phép, thay đổi, tiết lộ hoặc phá hủy. Các biện pháp này bao gồm:",
         "measures": {
-          "0": "Encryption of data in transit and at rest",
-          "1": "Regular access controls and system monitoring",
-          "2": "Employee training on security practices",
-          "3": "Regular security assessments"
+          "0": "Mã hóa dữ liệu khi truyền và khi lưu trữ",
+          "1": "Kiểm soát truy cập thường xuyên và giám sát hệ thống",
+          "2": "Đào tạo nhân viên về các thực hành pháp bảo mật",
+          "3": "Đánh giá bảo mật định kỳ"
         }
       },
       "retention": {
-        "title": "6. Data Retention",
-        "content": "We retain your personal information only for as long as necessary to provide the Service and comply with legal obligations. When information is no longer needed, we will securely delete or anonymize it."
+        "title": "6. Lưu trữ dữ liệu",
+        "content": "Chúng tôi chỉ lưu giữ thông tin cá nhân của bạn chỉ khi cần thiết để cung cấp Dịch vụ và tuân thủ các nghĩa vụ pháp lý. Khi thông tin không còn cần thiết, chúng tôi sẽ xóa hoặc ẩn danh nó một cách an toàn."
       },
       "rights": {
-        "title": "7. Your Rights",
-        "content": "Depending on your location, you may have the following rights regarding your personal information:",
+        "title": "7. Quyền của bạn",
+        "content": "Tùy thuộc vào vị trí của bạn, bạn có thể có các quyền sau liên quan đến thông tin cá nhân của bạn:",
         "list": {
-          "0": "**Access**: Request a copy of the personal information we hold about you",
-          "1": "**Rectification**: Request that we correct inaccurate information",
-          "2": "**Erasure**: Request that we delete your personal information",
-          "3": "**Restriction**: Request that we restrict processing of your information",
-          "4": "**Portability**: Request transfer of your data to another organization",
-          "5": "**Objection**: Object to our processing of your personal information"
+          "0": "**Truy cập**: Yêu cầu bản sao thông tin cá nhân chúng tôi nắm giữ về bạn",
+          "1": "**Sửa chữa**: Yêu cầu chúng tôi sửa thông tin không chính xác",
+          "2": "**Xóa**: Yêu cầu chúng tôi xóa thông tin cá nhân của bạn",
+          "3": "**Hạn chế**: Yêu cầu chúng tôi hạn chế xử lý thông tin của bạn",
+          "4": "**Di chuyển**: Yêu cầu chuyển dữ liệu của bạn sang một tổ chức khác",
+          "5": "**Phản đối**: Phản đối việc chúng tôi xử lý thông tin cá nhân của bạn"
         },
-        "exercise": "To exercise these rights, please contact us using the contact information provided below."
+        "exercise": "Để thực hiện các quyền này, vui lòng liên hệ với chúng tôi bằng cách sử dụng thông tin liên hệ với chúng tôi được cung cấp dưới đây."
       },
       "cookies": {
-        "title": "8. Cookies and Tracking Technologies",
-        "content": "We use cookies and similar tracking technologies to collect and use personal information about you. Cookies are small files stored on your device. You can control cookies through your browser settings."
+        "content": "Chúng tôi sử dụng cookies và các công nghệ theo dõi tương tự để thu thập và sử dụng thông tin cá nhân về bạn. Cookies là các tệp nhỏ được lưu trữ trên thiết bị của bạn. Bạn có thể kiểm soát cookies thông qua cài đặt trình duyệt của mình."
       },
       "international": {
-        "title": "9. International Transfers",
-        "content": "Your information may be transferred to and maintained on computers located outside of your state, province, country, or other governmental jurisdiction where data protection laws may differ from those in your jurisdiction."
-      },
-      "children": {
-        "title": "10. Children's Privacy",
-        "content": "Our Service is not intended for children under 13. We do not knowingly collect personally identifiable information from children under 13."
-      },
-      "changes": {
-        "title": "11. Changes to this Policy",
-        "content": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"last updated\" date."
-      },
-      "contact": {
-        "title": "12. Contact Us",
-        "content": "If you have any questions about this Privacy Policy, please contact us at:",
-        "email": "Email: privacy@coorder.com",
-        "address": "Address: Tokyo, Japan",
-        "phone": "Phone: 080-9344-7200",
-        "dpo": "Data Protection Officer: dpo@coorder.com"
+        "title": "9. Chuyển giao quốc tế",
+        "content": "Thông tin của bạn có thể được chuyển đến và duy trì trên các máy tính nằm ngoài tiểu bang, tỉnh, quốc gia hoặc khu vực pháp lý khác nơi luật bảo vệ dữ liệu có thể khác với luật tại khu vực của bạn.",
+        "children": {
+          "title": "10. Bảo mật trẻ em",
+          "content": "Dịch vụ của chúng tôi không dành cho trẻ em dưới 16. Chúng tôi không cố ý thu thập thông tin cá nhân từ trẻ em dưới 16 tuổi."
+        },
+        "changes": {
+          "title": "Chúng tôi có thể cập nhật Chính sách Bảo mật của chúng tôi theo thời gian. Chúng tôi sẽ thông báo cho bạn về bất kỳ thay đổi nào bằng cách đăng Chính sách Bảo mật mới trên trang này và cập nhật ngày \" cập nhật cuối cùng\"."
+        },
+        "contact": {
+          "title": "12. Yêu liên hệ với chúng tôi",
+          "content": "Nếu bạn có bất kỳ câu hỏi nào về Chính sách Bảo mật này, vui lòng liên hệ với chúng tôi tại:",
+          "email": "Email: privacy@coorder.com",
+          "address": "Địa chỉ: Tokyo, Nhật Bản",
+          "phone": "Số điện thoại: 080-9344-7200",
+          "dpo": "Nhân viên bảo vệ dữ liệu: dpo@coorder.com"
+        }
       }
     }
   }

@@ -27,6 +27,8 @@
   "qr_for_table": "QR Code for Table",
   "download_png": "Download PNG",
   "downloading_qr": "Downloading QR...",
+  "copy_link": "Copy Link",
+  "link_copied": "Link Copied!",
   "validation": {
     "name_required": "Table name is required.",
     "name_max_length": "Table name must be {maxLength} characters or less.",
@@ -47,12 +49,18 @@
   "notifications": {
     "update_success": "Table updated successfully.",
     "create_success": "Table created successfully.",
-    "qr_saved_success": "QR code saved and ready for download."
+    "qr_saved_success": "QR code saved and ready for download.",
+    "link_copied": "Link copied to clipboard!",
+    "qr_downloaded": "QR code downloaded successfully!",
+    "qr_generated": "QR code generated successfully!"
   },
   "errors": {
     "save_failed": "Failed to save table. Please try again.",
     "qr_save_failed": "Failed to save QR code to table. Please try again.",
-    "qr_download_failed": "Failed to download QR code image."
+    "qr_download_failed": "Failed to download QR code image.",
+    "copy_failed": "Failed to copy link to clipboard.",
+    "qr_code_not_set": "QR code is not set for this table.",
+    "qr_generation_failed": "Failed to generate QR code. Please try again."
   },
   "empty_state": {
     "title": "No Tables Found",

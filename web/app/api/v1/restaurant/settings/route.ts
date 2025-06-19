@@ -118,7 +118,7 @@ export async function GET() {
       console.warn('Failed to parse social_links JSON:', error);
       parsedSocialLinks = restaurant.social_links;
     }
-    console.log("Restaurant settings fetched successfully:", restaurant);
+    //console.log("Restaurant settings fetched successfully:", restaurant);
     return NextResponse.json({
       id: restaurant.id,
       name: restaurant.name,
