@@ -44,9 +44,9 @@ export function AdminHeader({
   onLocaleChange 
 }: AdminHeaderProps) {
   const { theme, setTheme } = useTheme();
-  const t = useTranslations('AdminLayout');
-  const tNav = useTranslations('AdminNav');
-  const tCommon = useTranslations('Common');
+  const t = useTranslations('owner.dashboard');
+  const tNav = useTranslations('owner.dashboard');
+  const tCommon = useTranslations('common');
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();

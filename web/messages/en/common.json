@@ -173,5 +173,8 @@
     "error_loading_review_form": "Error loading review form. Please try again later."
   },
   "currency_format": "{value, number, ::currency/JPY}",
-  "ordering_for_table": "Ordering for Table {tableId}"
+  "ordering_for_table": "Ordering for Table {tableId}",
+  "item": {
+    "weekday_visibility": "Weekday Visibility"
+  }
 }

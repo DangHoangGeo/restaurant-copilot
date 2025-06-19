@@ -64,8 +64,8 @@ interface OrdersData {
 }
 
 export function OrdersClientContent() {
-  const t = useTranslations("AdminOrders");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations("owner.orders");
+  const tCommon = useTranslations("common");
   const params = useParams();
   const locale = (params.locale as string) || "en";
   const { logInteraction } = usePerformanceMonitor('OrdersPage');
