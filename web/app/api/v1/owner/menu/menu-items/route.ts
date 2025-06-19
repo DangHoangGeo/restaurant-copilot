@@ -32,6 +32,7 @@ const menuItemSchema = z.object({
   description_en: z.string().max(500).optional(),
   description_ja: z.string().max(500).optional(),
   description_vi: z.string().max(500).optional(),
+  tags: z.array(z.string().min(1).max(100)).optional(),
   price: z.number().min(0),
   image_url: z.string().url().optional().nullable(),
   available: z.boolean().optional(),
@@ -125,7 +126,6 @@ export async function POST(req: Request) {
 	  console.error('Validation error in POST menu item:', validatedData.error);
       return NextResponse.json({ errors: validatedData.error.flatten().fieldErrors }, { status: 400 });
     }
-	console.log('Validated data for menu item creation:', validatedData.data);
 
     const {
       category_id,
@@ -135,6 +135,7 @@ export async function POST(req: Request) {
       description_en,
       description_ja,
       description_vi,
+      tags,
       price,
       image_url,
       available,
@@ -156,7 +157,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid category or category does not belong to your restaurant' }, { status: 400 });
     }
 	// Prepare the menu item data
-	console.log('passing data to insert:')
 
     const menuItemData: Record<string, unknown> = {
       restaurant_id: user.restaurantId,
@@ -189,6 +189,9 @@ export async function POST(req: Request) {
     }
     if (stock_level !== undefined) {
       menuItemData.stock_level = stock_level;
+    }
+    if (tags && tags.length > 0) {
+      menuItemData.tags = tags;
     }
 
     // Start a transaction to create menu item and its related data

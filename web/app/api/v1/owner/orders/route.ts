@@ -147,8 +147,8 @@ export async function GET() {
       0
     ).toISOString();
 
-    // Fetch all data in parallel for better performance
-    const [ordersResult, tablesResult, categoriesResult, restaurantResult] = await Promise.all([
+    // Fetch all data in parallel for better performance (restaurant info removed - now provided by context)
+    const [ordersResult, tablesResult, categoriesResult] = await Promise.all([
       // Fetch orders with order items
       supabaseAdmin
         .from("orders")
@@ -181,32 +181,19 @@ export async function GET() {
           menu_items(id, name_en, name_ja, name_vi, price, available)
         `)
         .eq("restaurant_id", user.restaurantId)
-        .order("position"),
-
-      // Fetch restaurant info
-      supabaseAdmin
-        .from("restaurants")
-        .select("id, name, logo_url")
-        .eq("id", user.restaurantId)
-        .single()
+        .order("position")
     ]);
 
     // Check for errors
     if (ordersResult.error) throw ordersResult.error;
     if (tablesResult.error) throw tablesResult.error;
     if (categoriesResult.error) throw categoriesResult.error;
-    if (restaurantResult.error) throw restaurantResult.error;
 
-    // Return structured data
+    // Return structured data (restaurant info no longer included - provided by context)
     return NextResponse.json({
       orders: ordersResult.data || [],
       tables: tablesResult.data || [],
       categories: categoriesResult.data || [],
-      restaurant: {
-        id: restaurantResult.data.id,
-        name: restaurantResult.data.name,
-        logoUrl: restaurantResult.data.logo_url,
-      },
     });
 
   } catch (error) {

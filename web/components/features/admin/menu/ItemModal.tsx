@@ -95,7 +95,7 @@ interface ItemModalProps {
   ownerLanguage?: 'en' | 'ja' | 'vi';
   onTranslate?: (text: string, field: string, context: 'item' | 'topping') => Promise<{ en: string; ja: string; vi: string }>;
   onGenerateDescription?: (text: string, initialData: string) => Promise<{ en: string; ja: string; vi: string }>;
-  onGenerateAI?: (itemName: string) => Promise<{
+  onGenerateAI?: (itemName: string, existingDescription: string) => Promise<{
     name_en: string;
     name_ja: string;
     name_vi: string;
