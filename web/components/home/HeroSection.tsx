@@ -5,7 +5,7 @@ import { ArrowRight, PlayCircle } from 'lucide-react';
 import { Button } from './Button';
 
 export const HeroSection = () => {
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   const [currentFeature, setCurrentFeature] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 

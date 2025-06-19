@@ -31,15 +31,6 @@
   "form_placeholder": "Form fields go here.",
   "back_to_menu": "Back to Menu",
   "back_to_home": "Back to Home",
-  "days": {
-    "monday": "Monday",
-    "tuesday": "Tuesday",
-    "wednesday": "Wednesday",
-    "thursday": "Thursday",
-    "friday": "Friday",
-    "saturday": "Saturday",
-    "sunday": "Sunday"
-  },
   "add_more_items": "Add More Items",
   "recharts_note": "Charts powered by Recharts.",
   "datatable_component_note": "Data table component placeholder.",
@@ -78,6 +69,15 @@
     "fri_short": "Fri",
     "sat_short": "Sat",
     "sun_short": "Sun"
+  },
+  "days": {
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
   },
   "language_switcher": {
     "toggle_label": "Change language"
@@ -121,6 +121,11 @@
     "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
     "noSettingsFoundTitle": "Settings Not Found",
     "noSettingsFoundMessage": "No settings data found for this restaurant."
+  },
+  "404": {
+    "title": "Page Not Found",
+    "description": "Sorry, the page you are looking for doesn't exist or has been moved.",
+    "back_home": "Back to Home"
   },
   "validation": {
     "nameRequired": "Restaurant name is required.",

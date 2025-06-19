@@ -38,17 +38,33 @@ export default getRequestConfig(async ({ requestLocale }) => {
     ? requested
     : routing.defaultLocale;
 
-  // Dynamically import each namespace file
-  const loaded = await Promise.all(
-    NAMESPACES.map(ns =>
-      import(`../messages/${locale}/${ns}.json`)
-        .then(mod => mod.default)
-        .catch(() => ({}))
-    )
-  );
-
-  // Merge all into one flat messages object
-  const messages = Object.assign({}, ...loaded);
+  // Dynamically import each namespace file and create nested structure
+  const messages: Record<string, unknown> = {};
+  
+  for (const ns of NAMESPACES) {
+    try {
+      const moduleImport = await import(`../messages/${locale}/${ns}.json`);
+      const content = moduleImport.default;
+      
+      // Create nested structure based on namespace path
+      const keys = ns.split('/');
+      let current = messages;
+      
+      // Navigate/create nested objects for the namespace path
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
+        current = current[keys[i]] as Record<string, unknown>;
+      }
+      
+      // Set the final content
+      current[keys[keys.length - 1]] = content;
+    } catch (error) {
+      // Skip missing namespace files
+      console.warn(`Missing translation namespace: ${ns} for locale: ${locale}`, error);
+    }
+  }
 
   return { locale, messages };
 });

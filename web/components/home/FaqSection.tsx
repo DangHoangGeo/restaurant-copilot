@@ -5,7 +5,7 @@ import { Plus, Minus } from 'lucide-react';
 import { Icon } from './Icon';
 
 export const FaqSection = () => {
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   const faqs = [
     { q: "faq.item1.q", a: "faq.item1.a" },
     { q: "faq.item2.q", a: "faq.item2.a" },

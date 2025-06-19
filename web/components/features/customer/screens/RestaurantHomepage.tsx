@@ -78,7 +78,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
-  const tCustomer = useTranslations('CustomerHome');
+  const tCustomer = useTranslations('customer.home');
   const tCommon = useTranslations('common');
 
   useEffect(() => {

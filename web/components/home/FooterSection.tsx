@@ -6,7 +6,7 @@ import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 export const FooterSection = ({ locale }: { locale: string }) => {
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   const footerLinks = {
     product: [ 
       {name: "footer.links.features", href: "#features"}, 
@@ -53,7 +53,7 @@ export const FooterSection = ({ locale }: { locale: string }) => {
               </span>
             </Link>
             <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-sm">
-              {t('footer.description')}
+              {t('footer.tagline')}
             </p>
             <div className="flex space-x-4 mt-6">
               {socialLinks.map((social) => (
