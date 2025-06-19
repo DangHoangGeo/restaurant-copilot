@@ -1,0 +1,73 @@
+{
+  "title": "Review Order",
+  "redirecting_empty_cart": "Cart is empty. Redirecting to menu...",
+  "order_summary": "Order Summary",
+  "quantity": "Quantity",
+  "total": "Total",
+  "special_instructions": "Special Instructions",
+  "special_instructions_placeholder": "Any special requests or dietary notes...",
+  "characters": "characters",
+  "payment_method": "Payment Method",
+  "cash_payment": "Pay with Cash",
+  "card_payment": "Pay with Card",
+  "pay_at_table": "Pay when your order is ready",
+  "coming_soon": "Coming Soon",
+  "place_order": "Place Order",
+  "placing_order": "Placing Order...",
+  "confirm_order": "Confirm Order",
+  "confirm_message": "Are you sure you want to place this order with {items} items for {total}?",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "add_note": "Add Note",
+  "edit_note": "Edit Note",
+  "note": "Note",
+  "general_instructions": "General Instructions",
+  "general_instructions_placeholder": "Any general notes for your order...",
+  "note_placeholder": "Add a note for this item...",
+  "order_info": "Order Information",
+  "order_placement_note": "Your order will be sent to the kitchen and prepared fresh for your table.",
+  "item": "Item",
+  "price_each": "¥{price} each",
+  "add_note_for": "Add a note for {itemName}",
+  "save_note": "Save Note",
+  "note_saved": "Note saved successfully!",
+  "confirming": "Confirming...",
+  "empty_cart_title": "Your cart is empty",
+  "empty_cart_message": "Add some delicious items to your cart to continue.",
+  "table_info": "Table {number}",
+  "session_active": "Your ordering session is active",
+  "session_not_found_alert": "Session not found. Please go back to the menu and try again.",
+  "empty_cart_alert": "Your cart is empty.",
+  "order_failed_error": "Failed to place order. Please try again.",
+  "order_failed_error_network": "Network error. Please check your connection and try again.",
+  "payment_instruction_table": "Please proceed to the counter or call a staff member to complete your payment for Table {tableId}.",
+  "payment_instruction_counter": "Please proceed to the counter to complete your payment.",
+  "place_order_button": "Place Order",
+  "confirm_modal_title": "Confirm Order",
+  "confirm_modal_text": "Are you sure you want to confirm your order for {total}?",
+  "order_summary_details": {
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "service_charge": "Service Charge",
+    "total": "Total",
+    "item_count": "{count} item",
+    "item_count_plural": "{count} items"
+  },
+  "item_details": {
+    "size": "Size: {size}",
+    "toppings": "Toppings: {toppings}",
+    "notes": "Notes: {notes}",
+    "allergens": "Allergens: {allergens}"
+  },
+  "payment_options": {
+    "title": "How would you like to pay?",
+    "cash": {
+      "title": "Pay with Cash",
+      "description": "Pay at the counter when your order is ready"
+    },
+    "card": {
+      "title": "Pay with Card",
+      "description": "Online payment (coming soon)"
+    }
+  }
+}

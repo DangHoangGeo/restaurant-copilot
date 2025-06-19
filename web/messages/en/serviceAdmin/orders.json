@@ -1,0 +1,29 @@
+{
+  "title": "Platform Orders",
+  "subtitle": "Monitor orders across all restaurants on the platform",
+  "filters": {
+    "all_restaurants": "All Restaurants",
+    "today": "Today",
+    "this_week": "This Week",
+    "this_month": "This Month"
+  },
+  "table": {
+    "order_id": "Order ID",
+    "restaurant": "Restaurant",
+    "customer": "Customer",
+    "items": "Items",
+    "total": "Total",
+    "status": "Status",
+    "created": "Created"
+  },
+  "metrics": {
+    "total_orders": "Total Orders",
+    "total_revenue": "Total Revenue",
+    "average_order": "Average Order Value",
+    "completion_rate": "Completion Rate"
+  },
+  "empty_state": {
+    "title": "No Orders Found",
+    "description": "No orders match your current filters."
+  }
+}

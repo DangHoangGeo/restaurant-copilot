@@ -1,0 +1,170 @@
+{
+  "loading": "Loading...",
+  "all_rights_reserved": "All rights reserved.",
+  "go_to_homepage": "Go to Homepage",
+  "powered_by": "Powered by",
+  "save": "Save",
+  "saving": "Saving...",
+  "saveChanges": "Save Changes",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "edit": "Edit",
+  "delete": "Delete",
+  "confirm": "Confirm",
+  "view_details": "View Details",
+  "close_modal": "Close modal",
+  "search": "Search...",
+  "available": "Available",
+  "unavailable": "Unavailable",
+  "list": "List",
+  "schedule": "Schedule",
+  "off_duty": "Off Duty",
+  "export_csv": "Export CSV",
+  "export_pdf": "Export PDF",
+  "unknown_item": "Unknown Item",
+  "total": "Total",
+  "admin_panel_button": "Admin Panel",
+  "needs_attention": "Needs Attention",
+  "all_good": "All Good",
+  "zod_form_hint": "Form validation is handled by Zod. Please ensure all required fields are filled correctly.",
+  "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
+  "form_placeholder": "Form fields go here.",
+  "back_to_menu": "Back to Menu",
+  "back_to_home": "Back to Home",
+  "days": {
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
+  "add_more_items": "Add More Items",
+  "recharts_note": "Charts powered by Recharts.",
+  "datatable_component_note": "Data table component placeholder.",
+  "sold": "sold",
+  "cancel_booking": "Cancel Booking",
+  "confirm_booking": "Confirm Booking",
+  "order_status": {
+    "new": "New",
+    "ordered": "Ordered",
+    "preparing": "Preparing",
+    "ready": "Ready",
+    "completed": "Completed",
+    "canceled": "Canceled"
+  },
+  "order_item_status": {
+    "ordered": "Ordered",
+    "preparing": "Preparing",
+    "ready": "Ready",
+    "served": "Served"
+  },
+  "cart": "Cart",
+  "view_cart_label": "View Cart",
+  "order_history_label": "Order History",
+  "weekdays": {
+    "mon": "Monday",
+    "tue": "Tuesday",
+    "wed": "Wednesday",
+    "thu": "Thursday",
+    "fri": "Friday",
+    "sat": "Saturday",
+    "sun": "Sunday",
+    "mon_short": "Mon",
+    "tue_short": "Tue",
+    "wed_short": "Wed",
+    "thu_short": "Thu",
+    "fri_short": "Fri",
+    "sat_short": "Sat",
+    "sun_short": "Sun"
+  },
+  "language_switcher": {
+    "toggle_label": "Change language"
+  },
+  "defaultLanguageLabel": "Default Language",
+  "defaultLanguagePlaceholder": "Select default language",
+  "languageOption": {
+    "en": "English",
+    "ja": "Japanese",
+    "vi": "Vietnamese"
+  },
+  "theme": {
+    "toggle_aria_label": "Toggle light/dark theme",
+    "toggle_label": "Toggle Theme"
+  },
+  "rating": {
+    "set_stars": "Set {count} star rating",
+    "current_stars": "Current rating: {count} stars",
+    "no_reviews": "No reviews yet"
+  },
+  "alert": {
+    "info": {
+      "title": "Information"
+    },
+    "success": {
+      "title": "Success"
+    },
+    "warning": {
+      "title": "Warning"
+    },
+    "error": {
+      "title": "Error"
+    }
+  },
+  "errors": {
+    "noSubdomainDetected": "No subdomain could be detected for the restaurant.",
+    "noRestaurantIdForSubdomain": "Could not find a restaurant ID for the provided subdomain.",
+    "noRestaurantIdTitle": "Restaurant Not Identified",
+    "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
+    "fetchErrorTitle": "Error Loading Settings",
+    "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
+    "noSettingsFoundTitle": "Settings Not Found",
+    "noSettingsFoundMessage": "No settings data found for this restaurant."
+  },
+  "validation": {
+    "nameRequired": "Restaurant name is required.",
+    "nameMaxLength": "Restaurant name must be {maxLength} characters or less.",
+    "defaultLanguageRequired": "Default language is required.",
+    "brandColorInvalidFormat": "Invalid brand color format. Use #RRGGBB.",
+    "contactInfoMaxLength": "Contact information must be {maxLength} characters or less.",
+    "addressMaxLength": "Address must be {maxLength} characters or less.",
+    "openingHoursMaxLength": "Operating hours must be {maxLength} characters or less.",
+    "descriptionMaxLength": "Description must be {maxLength} characters or less.",
+    "logoFileMaxSize": "Logo image must be {maxSize}MB or less.",
+    "logoFileInvalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
+    "logoUrlinvalidFormat": "Invalid logo URL format."
+  },
+  "coming_soon": {
+    "title": "Feature Coming Soon",
+    "description": "This feature is currently in development and will be available soon. Stay tuned!"
+  },
+  "mark_resolved": "Mark Resolved",
+  "mark_unresolved": "Mark Unresolved",
+  "defaultUnnamedRestaurant": "Unnamed Restaurant",
+  "processing": "Processing...",
+  "logout": {
+    "title": "Logging You Out...",
+    "message": "You have been successfully logged out. Redirecting you shortly.",
+    "login_again_button": "Login Again"
+  },
+  "layout_errors": {
+    "fallbackRestaurantName": "Fallback Restaurant",
+    "configurationErrorTitle": "Restaurant Configuration Error",
+    "configurationErrorDescription": "Could not load settings for subdomain: {subdomain}. Displaying with fallback settings.",
+    "adminPanelTitle": "Admin Panel",
+    "noRestaurantContextTitle": "Error: No Restaurant Context",
+    "noRestaurantContextDescription": "This dashboard requires a valid restaurant subdomain to function correctly."
+  },
+  "customer_errors": {
+    "restaurant_not_found": "Restaurant not found. Please check the URL or contact support.",
+    "error_loading_menu": "Error loading menu. Please try again later.",
+    "error_loading_cart": "Error loading cart. Please try again later.",
+    "error_loading_checkout": "Error loading checkout. Please try again later.",
+    "error_loading_booking": "Error loading booking form. Please try again later.",
+    "error_loading_order_summary": "Error loading order summary. Please try again later.",
+    "error_loading_review_form": "Error loading review form. Please try again later."
+  },
+  "currency_format": "{value, number, ::currency/JPY}",
+  "ordering_for_table": "Ordering for Table {tableId}"
+}

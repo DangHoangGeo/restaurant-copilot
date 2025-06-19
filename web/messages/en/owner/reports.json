@@ -1,0 +1,56 @@
+{
+  "title": "Reports & Analytics",
+  "subtitle": "View sales reports, item performance, and customer feedback",
+  "tabs": {
+    "sales": "Sales",
+    "items": "Items",
+    "feedback": "Feedback"
+  },
+  "summary": {
+    "total_sales_today": "Total Sales Today",
+    "active_orders_count": "Active Orders",
+    "top_selling_item_today": "Top Selling Item Today",
+    "low_stock_alerts_count": "Low Stock Alerts"
+  },
+  "recommendations": {
+    "title": "Top Selling Menu Items (Last 7 Days)",
+    "loading": "Loading recommendations...",
+    "errorFetching": "Error fetching recommendations: {error}",
+    "noData": "No top sellers found for the last 7 days.",
+    "soldLabel": "Sold:",
+    "applyButton": "Apply to Next Week",
+    "applyingButton": "Applying...",
+    "applySuccess": "Recommendations applied successfully!",
+    "applyError": "Error applying recommendations: {error}",
+    "missingRestaurantId": "Please select a restaurant to see recommendations.",
+    "missingRestaurantIdApply": "Cannot apply recommendations without a restaurant ID.",
+    "description_7_days": "Based on the last 7 days",
+    "apply_button": "Apply Recommendations"
+  },
+  "sales": {
+    "title": "Sales Report",
+    "daily_revenue_chart_placeholder": "Daily revenue chart placeholder",
+    "category_breakdown_chart_placeholder": "Category breakdown placeholder"
+  },
+  "daterange": {
+    "last_7_days": "Last 7 Days",
+    "last_30_days": "Last 30 Days"
+  },
+  "items": {
+    "title": "Items Report",
+    "table": {
+      "item_name": "Item Name",
+      "total_sold": "Total Sold",
+      "total_revenue": "Total Revenue",
+      "avg_rating": "Avg Rating"
+    }
+  },
+  "feedback": {
+    "title": "Feedback",
+    "description_last_50": "Last 50 reviews"
+  },
+  "coming_soon": {
+    "title": "Reports & Analytics",
+    "message": "Advanced reporting features are coming soon! You'll be able to view detailed sales analytics, item performance metrics, and customer feedback analysis here."
+  }
+}

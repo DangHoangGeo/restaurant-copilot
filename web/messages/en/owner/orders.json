@@ -1,0 +1,68 @@
+{
+  "title": "Order Management",
+  "subtitle": "Monitor and manage incoming orders in real-time",
+  "no_orders": "No orders to display.",
+  "search_placeholder": "Search orders by customer name, items, or order ID...",
+  "filter_by_status": "Filter by Status",
+  "all_statuses": "All Statuses",
+  "new": "New",
+  "preparing": "Preparing",
+  "ready": "Ready",
+  "completed": "Completed",
+  "canceled": "Canceled",
+  "table": {
+    "order_id": "Order ID",
+    "customer": "Customer",
+    "items": "Items",
+    "total": "Total",
+    "status": "Status",
+    "time": "Time",
+    "actions": "Actions"
+  },
+  "status_buttons": {
+    "mark_preparing": "Mark Preparing",
+    "mark_ready": "Mark Ready",
+    "mark_completed": "Mark Completed",
+    "cancel_order": "Cancel Order"
+  },
+  "order_details": {
+    "title": "Order Details",
+    "order_info": "Order Information",
+    "customer_info": "Customer Information",
+    "items_ordered": "Items Ordered",
+    "special_notes": "Special Notes",
+    "no_notes": "No special notes for this order",
+    "total_amount": "Total Amount",
+    "order_time": "Order Time",
+    "table_number": "Table Number",
+    "guest_count": "Guest Count"
+  },
+  "item_status": {
+    "ordered": "Ordered",
+    "preparing": "Preparing",
+    "ready": "Ready",
+    "served": "Served"
+  },
+  "actions": {
+    "view_details": "View Details",
+    "update_status": "Update Status",
+    "print_receipt": "Print Receipt",
+    "contact_customer": "Contact Customer"
+  },
+  "notifications": {
+    "status_updated": "Order status updated successfully",
+    "status_update_failed": "Failed to update order status",
+    "order_canceled": "Order canceled successfully",
+    "cancel_failed": "Failed to cancel order"
+  },
+  "empty_state": {
+    "title": "No Orders Found",
+    "description": "No orders match your current filters.",
+    "all_caught_up": "All caught up! No new orders at the moment."
+  },
+  "real_time": {
+    "new_order": "New Order Received!",
+    "order_updated": "Order Updated",
+    "auto_refresh": "Auto-refreshing every 30 seconds"
+  }
+}
