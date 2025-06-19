@@ -12,6 +12,7 @@ export interface TableInfo {
   is_accessible: boolean;
   notes?: string | null;
   qr_code?: string | null;
+  qr_code_created_at?: string | null;
   capacity: number | null;
 }
 export interface SessionData {

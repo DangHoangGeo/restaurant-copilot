@@ -21,7 +21,7 @@ The page is a client-side rendered React component, structured with several info
     -   **Calls to Action (CTAs)**:
         -   "Sign Up" buttons link to `/[locale]/signup`.
         -   "Login" button links to `/[locale]/login`.
-        -   "View Demo" and other informational links likely point to sections within the page (`#features`, `#demo`) or dedicated informational pages (not detailed in this file).
+        -   "View Demo" and other informational links likely point to sections within the page (`#features`, `/demo`) or dedicated informational pages (not detailed in this file).
 -   **UI Components**:
     -   The page defines its own simple `Icon`, `Button`, and `Card` components, or uses common UI primitives. It does not appear to use specialized components from `web/components/features/customer/` or `web/components/features/admin/`.
 

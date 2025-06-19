@@ -13,6 +13,7 @@ const tableSchema = z.object({
   isAccessible: z.boolean().optional(),
   notes: z.string().optional(),
   qrCode: z.string().optional(),
+  qrCodeCreatedAt: z.string().optional(),
 });
 
 export async function DELETE(req: NextRequest) {
@@ -87,7 +88,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ta
       return NextResponse.json({ errors: validated.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { name,  capacity, status, isOutdoor, isAccessible, notes, qrCode } = validated.data;
+    const { name,  capacity, status, isOutdoor, isAccessible, notes, qrCode, qrCodeCreatedAt } = validated.data;
     const updateData: Record<string, unknown> = {};
     
     if (name !== undefined) updateData.name = name;
@@ -97,6 +98,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ta
     if (isAccessible !== undefined) updateData.is_accessible = isAccessible;
     if (notes !== undefined) updateData.notes = notes;
     if (qrCode !== undefined) updateData.qr_code = qrCode;
+    if (qrCodeCreatedAt !== undefined) updateData.qr_code_created_at = qrCodeCreatedAt;
 
     const { error, data } = await supabaseAdmin
       .from('tables')
