@@ -37,7 +37,7 @@ export function BasicInfoTab({
   onGenerateDescription,
   onGenerateAI
 }: BasicInfoTabProps) {
-  const t = useTranslations('AdminMenu.itemModal.basic');
+  const t = useTranslations('owner.menu.itemModal.basic');
   const [isTranslating, setIsTranslating] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);

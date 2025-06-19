@@ -20,7 +20,7 @@ interface LanguageSwitcherProps {
 export function LanguageSwitcher({ currentLocale, onLocaleChange, preserveQuery = true }: LanguageSwitcherProps) {
   const router = useRouter();
   const currentPathname = usePathname();
-  const t = useTranslations('Common');
+  const t = useTranslations('common');
 
   const switchLocale = (newLocale: string) => {
     const segments = currentPathname.split('/').filter(Boolean);

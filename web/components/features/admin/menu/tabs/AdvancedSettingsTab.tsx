@@ -22,7 +22,7 @@ export function AdvancedSettingsTab({
   categories,
   isEditing
 }: AdvancedSettingsTabProps) {
-  const t = useTranslations('AdminMenu.itemModal.advanced');
+  const t = useTranslations('owner.menu.itemModal.advanced');
 
   return (
     <div className="space-y-6 pb-6">

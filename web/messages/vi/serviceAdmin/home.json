@@ -1,0 +1,23 @@
+{
+  "title": "Bảng điều khiển quản trị dịch vụ",
+  "subtitle": "Quản lý nền tảng CoOrder và tất cả các nhà hàng",
+  "cards": {
+    "total_restaurants": "Tổng số nhà hàng",
+    "active_users": "Người dùng đang hoạt động",
+    "monthly_revenue": "Doanh thu hàng tháng",
+    "system_health": "Tình trạng hệ thống"
+  },
+  "quick_actions": {
+    "title": "Hành động nhanh",
+    "add_restaurant": "Thêm nhà hàng",
+    "view_analytics": "Xem phân tích nền tảng",
+    "system_settings": "Cài đặt hệ thống"
+  },
+  "recent_activity": {
+    "title": "Hoạt động gần đây trên nền tảng",
+    "no_activity": "Không có hoạt động gần đây để hiển thị."
+  },
+  "metadata": {
+    "title": "Bảng điều khiển quản trị dịch vụ - Nền tảng CoOrder"
+  }
+}

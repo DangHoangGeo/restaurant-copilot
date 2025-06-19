@@ -27,8 +27,8 @@ export function DashboardClientContent() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const t = useTranslations('AdminDashboard');
-  const tCommon = useTranslations('Common');
+  const t = useTranslations('owner.dashboard');
+  const tCommon = useTranslations('common');
 
   const loadData = useCallback(async () => {
     setIsLoading(true);

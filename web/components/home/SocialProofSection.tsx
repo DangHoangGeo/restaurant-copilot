@@ -7,7 +7,7 @@ import { Card } from './Card';
 import { Icon } from './Icon';
 
 export const SocialProofSection = () => {
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   const logos = [
     { name: "Foodie Weekly", icon: Coffee },
     { name: "Restaurant Tech Today", icon: Building },

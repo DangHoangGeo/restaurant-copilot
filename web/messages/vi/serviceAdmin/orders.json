@@ -1,0 +1,29 @@
+{
+  "title": "Đơn hàng trên nền tảng",
+  "subtitle": "Theo dõi đơn hàng từ tất cả các nhà hàng trên nền tảng",
+  "filters": {
+    "all_restaurants": "Tất cả nhà hàng",
+    "today": "Hôm nay",
+    "this_week": "Tuần này",
+    "this_month": "Tháng này"
+  },
+  "table": {
+    "order_id": "Mã đơn hàng",
+    "restaurant": "Nhà hàng",
+    "customer": "Khách hàng",
+    "items": "Món ăn",
+    "total": "Tổng cộng",
+    "status": "Trạng thái",
+    "created": "Ngày tạo"
+  },
+  "metrics": {
+    "total_orders": "Tổng số đơn hàng",
+    "total_revenue": "Tổng doanh thu",
+    "average_order": "Giá trị trung bình của đơn hàng",
+    "completion_rate": "Tỷ lệ hoàn thành"
+  },
+  "empty_state": {
+    "title": "Không tìm thấy đơn hàng",
+    "description": "Không có đơn hàng nào phù hợp với bộ lọc hiện tại của bạn."
+  }
+}

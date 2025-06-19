@@ -23,7 +23,7 @@ export function CustomerHeader({
   showOrderHistory = false,
   onOrderHistoryClick,
 }: CustomerHeaderProps) {
-  const t = useTranslations("Common");
+  const t = useTranslations("common");
   //const params = useParams();
   //const locale = (params.locale as string) || "en";
   //const router = useRouter();

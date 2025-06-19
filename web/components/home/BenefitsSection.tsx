@@ -5,7 +5,7 @@ import { DollarSign, Clock, TrendingUp, Smile, Users, Lightbulb } from 'lucide-r
 import { Icon } from './Icon';
 
 export const BenefitsSection = () => {
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   const benefits = [
     { icon: DollarSign, text: "benefits.item1" },
     { icon: Clock, text: "benefits.item2" },

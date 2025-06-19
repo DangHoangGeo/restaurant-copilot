@@ -16,7 +16,7 @@ interface QRCodeDialogProps {
 
 export function QRCodeDialog({ isOpen, onClose, sessionId, restaurantSubdomain }: QRCodeDialogProps) {
   const [copied, setCopied] = useState(false);
-  const t = useTranslations('Customer');
+  const t = useTranslations('customer.home');
 
   // Construct the menu URL with sessionId
   const menuUrl = `https://${restaurantSubdomain}.coorder.ai/menu?sessionId=${sessionId}`;
@@ -35,12 +35,12 @@ export function QRCodeDialog({ isOpen, onClose, sessionId, restaurantSubdomain }
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('history.share_qr_title')}</DialogTitle>
+          <DialogTitle>{t('qr_dialog.title')}</DialogTitle>
         </DialogHeader>
         
         <div className="flex flex-col items-center space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-            {t('history.share_qr_description')}
+            {t('qr_dialog.description')}
           </p>
           
           <div className="bg-white p-4 rounded-lg">
@@ -57,14 +57,19 @@ export function QRCodeDialog({ isOpen, onClose, sessionId, restaurantSubdomain }
               {copied ? (
                 <>
                   <Check className="h-4 w-4 text-green-600" />
-                  {t('history.copied')}
+                  {/* Assuming 'copied' is a common key or create it in home.json */}
+                  Copied
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  {t('history.copy')}
+                  {/* Assuming 'copy' is a common key or create it in home.json */}
+                  Copy Link
                 </>
               )}
+            </Button>
+            <Button variant="ghost" onClick={onClose} className="w-full">
+              {t('close')}
             </Button>
           </div>
         </div>

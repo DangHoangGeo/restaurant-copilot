@@ -15,7 +15,7 @@ interface LandingPageHeaderProps {
 
 export const LandingPageHeader = ({ locale }: LandingPageHeaderProps) => {
   const { theme, toggleTheme } = useThemeLanding();
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (

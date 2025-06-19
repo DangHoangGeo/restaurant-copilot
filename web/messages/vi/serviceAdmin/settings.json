@@ -1,0 +1,33 @@
+{
+  "title": "Cài đặt nền tảng",
+  "subtitle": "Cấu hình các cài đặt và tính năng toàn cầu của nền tảng",
+  "sections": {
+    "general": {
+      "title": "Cài đặt chung",
+      "platform_name": "Tên nền tảng",
+      "maintenance_mode": "Chế độ bảo trì",
+      "maintenance_message": "Thông báo bảo trì"
+    },
+    "features": {
+      "title": "Cờ tính năng",
+      "enable_new_registrations": "Cho phép đăng ký mới",
+      "enable_ai_features": "Cho phép tính năng AI",
+      "enable_analytics": "Cho phép phân tích"
+    },
+    "limits": {
+      "title": "Giới hạn nền tảng",
+      "max_restaurants_per_user": "Số lượng nhà hàng tối đa mỗi người dùng",
+      "max_menu_items": "Số lượng món ăn tối đa mỗi nhà hàng",
+      "storage_limit": "Giới hạn lưu trữ mỗi nhà hàng (MB)"
+    },
+    "notifications": {
+      "title": "Thông báo nền tảng",
+      "system_alerts": "Cảnh báo hệ thống",
+      "maintenance_notifications": "Thông báo bảo trì"
+    }
+  },
+  "buttons": {
+    "save_settings": "Lưu cài đặt",
+    "reset_defaults": "Đặt lại mặc định"
+  }
+}

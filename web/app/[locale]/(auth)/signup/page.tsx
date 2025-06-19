@@ -18,8 +18,8 @@ type SignupFormInputs = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const t = useTranslations('auth');
-  const tCommon = useTranslations('Common');
-  const tHome = useTranslations('HomePage');
+  const tCommon = useTranslations('common');
+  const tHome = useTranslations('landing');
   const router = useRouter();
   const searchParams = useSearchParams();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -280,8 +280,8 @@ export default function SignupPage() {
         {/* Selected Plan Display */}
         {selectedPlan && (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Selected Plan
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">  
+              {tCommon('selectedPlanLabel')}
             </label>
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="flex justify-between items-center">
@@ -302,7 +302,7 @@ export default function SignupPage() {
                   }}
                   className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-sm"
                 >
-                  Change Plan
+                  {tCommon('changePlan')}
                 </button>
               </div>
             </div>

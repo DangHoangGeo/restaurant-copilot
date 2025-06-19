@@ -8,11 +8,11 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'legal.privacy.metadata' });
+  const t = await getTranslations({ locale, namespace: 'legal' });
   
   return {
-    title: t('title'),
-    description: t('description'),
+    title: t('privacy.metadata.title'),
+    description: t('privacy.metadata.description'),
   };
 }
 

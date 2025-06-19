@@ -1,0 +1,48 @@
+{
+  "title": "Quản Lý Đặt Bàn",
+  "subtitle": "Quản lý các đặt bàn và đặt chỗ của khách hàng",
+  "table": {
+    "customer_name": "Tên Khách Hàng",
+    "contact": "Liên Hệ",
+    "date_time": "Ngày & Giờ",
+    "party_size": "Số Lượng Người",
+    "status": "Trạng Thái",
+    "actions": "Hành Động"
+  },
+  "status": {
+    "pending": "Đang Chờ",
+    "confirmed": "Đã Xác Nhận",
+    "canceled": "Đã Hủy"
+  },
+  "actions": {
+    "view_details": "Xem Chi Tiết",
+    "confirm_booking": "Xác Nhận Đặt Bàn",
+    "cancel_booking": "Hủy Đặt Bàn",
+    "confirming": "Đang Xác Nhận...",
+    "canceling": "Đang Hủy..."
+  },
+  "details_title": "Chi Tiết Đặt Bàn",
+  "notifications": {
+    "update_success": "Trạng thái đặt bàn được cập nhật thành công",
+    "update_failed": "Không thể cập nhật trạng thái đặt bàn: {error}",
+    "fetch_error": "Không thể tải danh sách đặt bàn"
+  },
+  "empty_state": {
+    "title": "Chưa Có Đặt Bàn Nào",
+    "description": "Bắt đầu quản lý các đặt bàn tại đây",
+    "no_bookings": "Không tìm thấy đặt bàn nào",
+    "message": "Các đặt bàn sẽ xuất hiện tại đây khi khách hàng thực hiện đặt chỗ"
+  },
+  "preorder": {
+    "title": "Món Đặt Trước",
+    "no_preorder_items": "Không có món đặt trước"
+  },
+  "errors": {
+    "no_bookings_found": "Không tìm thấy đặt bàn nào.",
+    "fetchErrorTitle": "Lỗi Khi Tải Đặt Bàn"
+  },
+  "coming_soon": {
+    "title": "Quản Lý Đặt Bàn",
+    "message": "Tính năng này sẽ sớm ra mắt! Bạn sẽ có thể quản lý các đặt bàn và đặt chỗ của khách hàng tại đây."
+  }
+}

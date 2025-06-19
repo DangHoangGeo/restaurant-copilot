@@ -27,7 +27,7 @@ interface CategoryFormProps {
 }
 
 export function CategoryForm({ initialData, locale }: CategoryFormProps) {
-  const t = useTranslations('AdminMenuPage.category_form');
+  const t = useTranslations('owner.menu.category');
   //const tValidation = useTranslations('Validation');
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

@@ -25,7 +25,7 @@ interface RecentOrder {
 
 // Error state component
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
-  const t = useTranslations('AdminReports');
+  const t = useTranslations('owner.reports');
   
   return (
     <Alert variant="destructive" className="mb-6">
@@ -41,7 +41,7 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
 }
 
 export function ReportsClientContent() {
-  const t = useTranslations('AdminReports');
+  const t = useTranslations('owner.reports');
   const [metrics, setMetrics] = useState<ReportsData | null>(null);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);

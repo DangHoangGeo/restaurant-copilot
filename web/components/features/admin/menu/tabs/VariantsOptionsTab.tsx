@@ -30,7 +30,7 @@ export function VariantsOptionsTab({
   ownerLanguage,
   onTranslate
 }: VariantsOptionsTabProps) {
-  const t = useTranslations('AdminMenu.itemModal.variants');
+  const t = useTranslations('owner.menu.itemModal.variants');
   const [isToppingsOpen, setIsToppingsOpen] = useState(false);
   const [isSizesOpen, setIsSizesOpen] = useState(false);
   const [isStockOpen, setIsStockOpen] = useState(false);

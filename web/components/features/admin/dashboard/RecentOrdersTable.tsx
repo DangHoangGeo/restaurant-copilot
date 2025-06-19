@@ -23,8 +23,8 @@ interface RecentOrdersTableProps {
 }
 
 export function RecentOrdersTable({ orders, isLoading = false }: RecentOrdersTableProps) {
-  const t = useTranslations('AdminDashboard');
-  const tCommon = useTranslations('Common');
+  const t = useTranslations('owner.dashboard');
+  const tCommon = useTranslations('common');
   const { locale = 'en' } = useParams();
 
   const getStatusBadgeVariant = (status: RecentOrder['status']): "default" | "secondary" | "destructive" | "outline" => {

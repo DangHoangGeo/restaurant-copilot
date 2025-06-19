@@ -6,7 +6,7 @@ import { Card } from './Card';
 import { Icon } from './Icon';
 
 export const FeaturesSection = () => {
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   const features = [
     { icon: MenuIcon, title: "features.menu_management.title", description: "features.menu_management.description", benefit: "features.menu_management.benefit" },
     { icon: QrCode, title: "features.qr_ordering.title", description: "features.qr_ordering.description", benefit: "features.qr_ordering.benefit" },

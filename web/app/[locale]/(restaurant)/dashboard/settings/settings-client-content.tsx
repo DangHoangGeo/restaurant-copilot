@@ -37,7 +37,7 @@ function SettingsSkeleton() {
 
 // Error state component
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
-  const tCommon = useTranslations('Common')
+  const tCommon = useTranslations('common')
   
   return (
     <div className="p-8 text-center">
@@ -59,8 +59,8 @@ interface SettingsClientContentProps {
 }
 
 export function SettingsClientContent({ locale }: SettingsClientContentProps) {
-  const t = useTranslations('Dashboard');
-  const tCommon = useTranslations('Common');
+  const t = useTranslations('owner.settings');
+  const tCommon = useTranslations('common');
 
   // Progressive loading state
   const [restaurantSettings, setRestaurantSettings] = useState<Restaurant | null>(null)
@@ -119,7 +119,7 @@ export function SettingsClientContent({ locale }: SettingsClientContentProps) {
     <>
       <header className="mb-8">
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-          {t("Settings.Page.title")}
+          {t("title")}
         </h1>
       </header>
 
