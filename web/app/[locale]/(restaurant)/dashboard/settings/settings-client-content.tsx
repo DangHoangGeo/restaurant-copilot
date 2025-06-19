@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { useTranslations } from "next-intl";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Restaurant } from "@/shared/types";
+import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 import SettingsForm from "./settings-form";
 
 // Loading skeleton component
@@ -62,35 +62,8 @@ export function SettingsClientContent({ locale }: SettingsClientContentProps) {
   const t = useTranslations('owner.settings');
   const tCommon = useTranslations('common');
 
-  // Progressive loading state
-  const [restaurantSettings, setRestaurantSettings] = useState<Restaurant | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // Data fetching
-  const fetchSettings = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      
-      const response = await fetch('/api/v1/restaurant/settings')
-      console.log(response)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch settings: ${response.status}`)
-      }
-      const data = await response.json()
-      setRestaurantSettings(data)
-    } catch (err) {
-      console.error('Error fetching restaurant settings:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load settings')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchSettings()
-  }, [fetchSettings])
+  // Use restaurant settings from context instead of fetching independently
+  const { restaurantSettings, isLoading, error, refetchSettings } = useRestaurantSettings();
 
   // Early return for loading state
   if (isLoading) {
@@ -99,7 +72,7 @@ export function SettingsClientContent({ locale }: SettingsClientContentProps) {
 
   // Early return for error state
   if (error) {
-    return <ErrorState error={error} onRetry={fetchSettings} />
+    return <ErrorState error={error} onRetry={refetchSettings} />
   }
 
   // Early return for no settings found

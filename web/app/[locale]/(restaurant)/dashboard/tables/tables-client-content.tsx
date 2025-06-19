@@ -10,16 +10,16 @@ import { toast } from 'sonner'
 import { Table } from '@/shared/types'
 
 // Components
-import { TableHeader } from '@/components/features/tables/TableHeader'
-import { TableStatsCards } from '@/components/features/tables/TableStatsCards'
-import { TableSearchFilters } from '@/components/features/tables/TableSearchFilters'
-import { TableCard } from '@/components/features/tables/TableCard'
-import { TablePagination } from '@/components/features/tables/TablePagination'
-import { EmptyStates } from '@/components/features/tables/EmptyStates'
-import { QRCodeModal } from '@/components/features/tables/QRCodeModal'
-import { TableModal, TableFormData } from '@/components/features/tables/TableModal'
-import { TablesSkeleton } from '@/components/features/tables/TablesSkeleton'
-import { ErrorState } from '@/components/features/tables/ErrorState'
+import { TableHeader } from '@/components/features/admin/tables/TableHeader'
+import { TableStatsCards } from '@/components/features/admin/tables/TableStatsCards'
+import { TableSearchFilters } from '@/components/features/admin/tables/TableSearchFilters'
+import { TableCard } from '@/components/features/admin/tables/TableCard'
+import { TablePagination } from '@/components/features/admin/tables/TablePagination'
+import { EmptyStates } from '@/components/features/admin/tables/EmptyStates'
+import { QRCodeModal } from '@/components/features/admin/tables/QRCodeModal'
+import { TableModal, TableFormData } from '@/components/features/admin/tables/TableModal'
+import { TablesSkeleton } from '@/components/features/admin/tables/TablesSkeleton'
+import { ErrorState } from '@/components/features/admin/tables/ErrorState'
 
 // Define Zod schema for table form validation
 const getTableSchema = (t: ReturnType<typeof useTranslations<'validation'>>) => z.object({
@@ -35,20 +35,17 @@ const getTableSchema = (t: ReturnType<typeof useTranslations<'validation'>>) => 
 
 type ViewMode = 'grid' | 'list'
 
-interface RestaurantSettings {
-  name: string
-  logoUrl: string | null
-}
+import { useRestaurantSettings } from '@/contexts/RestaurantContext';
 
 export function TablesClientContent() {
   const t = useTranslations("owner.tables");
   const tVal = useTranslations('owner.tables.validation');
   const params = useParams();
   const locale = (params.locale as string) || 'en';
+  const { restaurantSettings } = useRestaurantSettings();
 
   // Data state
   const [tablesData, setTablesData] = useState<Table[]>([])
-  const [restaurantSettings, setRestaurantSettings] = useState<RestaurantSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -86,25 +83,14 @@ export function TablesClientContent() {
       setIsLoading(true)
       setError(null)
       
-      const [tablesRes, settingsRes] = await Promise.all([
-        fetch('/api/v1/owner/tables'),
-        fetch('/api/v1/restaurant/settings')
-      ])
+      const tablesRes = await fetch('/api/v1/owner/tables')
 
       if (!tablesRes.ok) {
         throw new Error(`Failed to fetch tables: ${tablesRes.status}`)
       }
-      if (!settingsRes.ok) {
-        throw new Error(`Failed to fetch settings: ${settingsRes.status}`)
-      }
 
-      const [tablesData, settingsData] = await Promise.all([
-        tablesRes.json(),
-        settingsRes.json()
-      ])
-
+      const tablesData = await tablesRes.json()
       setTablesData(tablesData.tables || [])
-      setRestaurantSettings(settingsData || null)
     } catch (err) {
       console.error('Error fetching data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -250,7 +236,7 @@ export function TablesClientContent() {
 
   // QR Code URL generation
   const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'coorder.ai';
-  const qrCodeUrl = selectedTableForQr && restaurantSettings
+  const qrCodeUrl = selectedTableForQr && restaurantSettings?.name
     ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/menu?code=${selectedTableForQr.qr_code}`
     : ''
 
@@ -307,6 +293,7 @@ export function TablesClientContent() {
                 <TableCard
                   key={table.id}
                   table={table}
+                  isViewList={false}
                   onEdit={handleOpenTableModal}
                   onViewQR={handleGenerateQr}
                   isQrCodeOld={isQrCodeOld}
@@ -319,6 +306,7 @@ export function TablesClientContent() {
                 <TableCard
                   key={table.id}
                   table={table}
+                  isViewList={true}
                   onEdit={handleOpenTableModal}
                   onViewQR={handleGenerateQr}
                   isQrCodeOld={isQrCodeOld}

@@ -14,7 +14,6 @@ import {
   Eye,
   X,
   BookUser,
-  Palette,
   List,
   LucideIcon,
 } from "lucide-react";
@@ -56,11 +55,6 @@ const navItemsConfig: NavItemConfig[] = [
     exact: true,
   },
   {
-    icon: Settings,
-    labelKey: "admin_sidebar_restaurant_settings",
-    href: "/dashboard/settings",
-  },
-  {
     icon: ClipboardList,
     labelKey: "admin_sidebar_menu_management",
     href: "/dashboard/menu",
@@ -91,9 +85,9 @@ const navItemsConfig: NavItemConfig[] = [
 
 const utilityNavItemsConfig: NavItemConfig[] = [
   {
-    icon: Palette,
-    labelKey: "admin_sidebar_design_system",
-    href: "/dashboard/design-system",
+    icon: Settings,
+    labelKey: "admin_sidebar_restaurant_settings",
+    href: "/dashboard/settings",
   },
 ];
 

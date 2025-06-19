@@ -9,6 +9,7 @@ import {
   useMutation, 
   usePerformanceMonitor 
 } from "@/hooks";
+//import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 import { OrdersSkeleton } from "@/components/ui/skeletons";
 import { ErrorState, EmptyState } from "@/components/ui/states";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -56,11 +57,7 @@ interface OrdersData {
   orders: Order[];
   tables: TableType[];
   categories: Category[];
-  restaurant: {
-    id: string;
-    name: string;
-    logoUrl?: string | null;
-  };
+  // Remove restaurant from here since we'll get it from context
 }
 
 export function OrdersClientContent() {
@@ -70,7 +67,10 @@ export function OrdersClientContent() {
   const locale = (params.locale as string) || "en";
   const { logInteraction } = usePerformanceMonitor('OrdersPage');
 
-  // Fetch all orders data with our optimized hook
+  // Get restaurant data from context instead of API
+  //const { restaurantSettings: restaurant } = useRestaurantSettings();
+
+  // Fetch orders data without restaurant info (context provides it)
   const {
     data: ordersData,
     isInitialLoading,

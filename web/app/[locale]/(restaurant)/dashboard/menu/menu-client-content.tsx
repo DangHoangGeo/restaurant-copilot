@@ -9,6 +9,7 @@ import { MenuSkeleton } from '@/components/ui/skeletons';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
+import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { ItemModal } from '@/components/features/admin/menu/ItemModal';
 import Image from 'next/image';
 import { Category } from '@/shared/types/menu';
+
 // import { Switch } from "@/components/ui/switch"; // For availability toggle if preferred
 
 /*
@@ -321,7 +323,7 @@ export function MenuClientContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { restaurantSettings: restaurant } = useRestaurantSettings();
   const supabase = createClient();
 
   // Get owner's preferred language from locale
@@ -422,7 +424,7 @@ export function MenuClientContent() {
   };
 
   // Combined AI generation function for names, descriptions, and tags
-  const handleGenerateAI = async (itemName: string) => {
+  const handleGenerateAI = async (itemName: string, existingDescription: string) => {
     try {
       const response = await fetch('/api/v1/ai/generate-menu-item', {
         method: 'POST',
@@ -431,8 +433,10 @@ export function MenuClientContent() {
         },
         body: JSON.stringify({ 
           itemName, 
-          language: ownerLanguage,
-          restaurantType: 'restaurant' // You can make this dynamic based on restaurant settings
+          existingDescription,
+          language: ownerLanguage || 'en',
+          restaurantName: restaurant?.name,
+          restaurantDescription: ownerLanguage === 'en' ? restaurant?.description_en || '' : ownerLanguage === 'ja' ? restaurant?.description_ja || '' : restaurant?.description_vi || '',
         }),
       });
 
@@ -442,9 +446,9 @@ export function MenuClientContent() {
 
       const result = await response.json();
       return {
-        name_en: result.name_en || itemName,
-        name_ja: result.name_ja || '',
-        name_vi: result.name_vi || '',
+        name_en: ownerLanguage === "en" ? itemName || result.name_en : result.name_en || '',
+        name_ja: ownerLanguage === "ja" ? itemName || result.name_ja : result.name_ja || '',
+        name_vi: ownerLanguage === "vi" ? itemName || result.name_vi : result.name_vi || '',
         description_en: result.description_en || '',
         description_ja: result.description_ja || '',
         description_vi: result.description_vi || '',
