@@ -19,7 +19,7 @@ interface BasicInfoTabProps {
   ownerLanguage: 'en' | 'ja' | 'vi';
   onTranslate?: (text: string, field: string, context: 'item' | 'topping') => Promise<{ en: string; ja: string; vi: string }>;
   onGenerateDescription?: (text: string, initialData: string) => Promise<{ en: string; ja: string; vi: string }>;
-  onGenerateAI?: (itemName: string) => Promise<{ 
+  onGenerateAI?: (itemName: string, existingDescription: string) => Promise<{ 
     name_en: string; 
     name_ja: string; 
     name_vi: string;
@@ -169,10 +169,15 @@ export function BasicInfoTab({
       toast.error(t('itemNameRequired'));
       return;
     }
-    
+
+    const existingDescription = form.getValues(
+      ownerLanguage === 'en' ? 'description_en' :
+      ownerLanguage === 'ja' ? 'description_ja' : 'description_vi'
+    );
+
     setIsGeneratingAI(true);
     try {
-      const aiResult = await onGenerateAI(itemName);
+      const aiResult = await onGenerateAI(itemName, existingDescription || '');
       
       // Auto-fill all language fields
       form.setValue('name_en', aiResult.name_en);
@@ -298,7 +303,7 @@ export function BasicInfoTab({
               size="sm"
               onClick={handleGenerateAI}
               disabled={isGeneratingAI || !form.getValues(primaryNameField)}
-              className="w-full text-sm sm:text-base border-2 border-dashed border-primary/30 hover:border-primary/60 transition-all duration-200"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Sparkles className="mr-2 h-4 w-4 text-primary" />
               {isGeneratingAI ? t('generatingContent') : t('generateAllButton')}

@@ -23,6 +23,16 @@ export interface DescriptionResult {
   vi: string;
 }
 
+export interface MenuItemNameDescTags{
+  name_en: string;
+  name_ja: string;
+  name_vi: string;
+  description_en: string;
+  description_ja: string;
+  description_vi: string;
+  tags: string[];
+}
+
 export interface GeminiConfig {
   apiKey: string;
   model?: string;
@@ -312,6 +322,86 @@ Restaurant: "${restaurantName}"
 		ja: `「${restaurantName}」の説明は現在生成できません。`,
 		vi: `Mô tả cho "${restaurantName}" hiện không thể tạo được.`,
 	  };
+    }
+  }
+
+  /**
+   * Generate restaurant descriptions from restaurant info
+   */
+  async generateMenuItemNameDescTags(itemName: string, contextInfo: string, language: 'en' | 'ja' | 'vi' = 'en'): Promise<MenuItemNameDescTags> {
+    const languagePrompts = {
+      en: 'English',
+      ja: 'Japanese (日本語)',
+      vi: 'Vietnamese (Tiếng Việt)'
+    };
+
+    const prompt = `
+You are a professional menu writer for restaurants.
+You are a professional restaurant marketing writer.
+Use the dish's name and context to write appetizing name and description in 3 languages: English, Japanese, and Vietnamese.
+
+User's original language: ${languagePrompts[language]}
+Dish name: "${itemName}"
+Extra context:
+${contextInfo}
+
+## Guidelines:
+### For Name:
+- For Vietnamese dishes, use proper Vietnamese names with English descriptions where helpful
+- For Japanese dishes, use proper Japanese names with accurate translations
+- Keep culinary terms authentic and appetizing
+- Use proper capitalization for menu items
+- Ensure translations sound natural for restaurant menus
+- If the source is already in one language, improve/refine it if needed
+- Don't add furigana or romanization for Japanese names
+
+### For Description:
+- Keep it concise (2-3 sentences)
+- Make it sound appetizing and descriptive
+- Include key ingredients or cooking methods if obvious from the name
+- Use appropriate culinary language
+- Don't add prices or availability information
+
+### For Tags:
+- Provide 3-4 relevant tags that describe the dish
+- Use keywords that customers might search for
+- Ensure tags are relevant to the dish and restaurant theme
+
+Please provide output in this exact JSON format (no additional text):
+{
+  "name_en": "English menu item name",
+  "name_ja": "Japanese menu item name",
+  "name_vi": "Vietnamese menu item name",
+  "description_en": "English description",
+  "description_ja": "Japanese description",
+  "description_vi": "Vietnamese description",
+  "tags": ["tag1", "tag2", "tag3", "tag4"]
+}
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const textResponse = response.text();
+      // Extract JSON from the response
+      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in response');
+      }
+	  const descriptions = JSON.parse(jsonMatch[0]);
+	  return descriptions;
+    } catch (error) {
+      console.error('Gemini restaurant description generation error:', error);
+      return {
+        name_en: `Name for "${itemName}" could not be generated at this time.`,
+        name_ja: `「${itemName}」の名前は現在生成できません。`,
+        name_vi: `Tên cho "${itemName}" hiện không thể tạo được.`,
+        description_en: `Description for "${itemName}" could not be generated at this time.`,
+        description_ja: `「${itemName}」の説明は現在生成できません。`,
+        description_vi: `Mô tả cho "${itemName}" hiện không thể tạo được.`,
+        tags: ['restaurant', 'menu', 'food', 'cuisine'],
+        // Default tags, can be customized later
+      };
     }
   }
 
