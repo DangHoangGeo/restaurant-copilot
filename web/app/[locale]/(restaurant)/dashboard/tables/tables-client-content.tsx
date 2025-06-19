@@ -10,16 +10,16 @@ import { toast } from 'sonner'
 import { Table } from '@/shared/types'
 
 // Components
-import { TableHeader } from '@/components/features/tables/TableHeader'
-import { TableStatsCards } from '@/components/features/tables/TableStatsCards'
-import { TableSearchFilters } from '@/components/features/tables/TableSearchFilters'
-import { TableCard } from '@/components/features/tables/TableCard'
-import { TablePagination } from '@/components/features/tables/TablePagination'
-import { EmptyStates } from '@/components/features/tables/EmptyStates'
-import { QRCodeModal } from '@/components/features/tables/QRCodeModal'
-import { TableModal, TableFormData } from '@/components/features/tables/TableModal'
-import { TablesSkeleton } from '@/components/features/tables/TablesSkeleton'
-import { ErrorState } from '@/components/features/tables/ErrorState'
+import { TableHeader } from '@/components/features/admin/tables/TableHeader'
+import { TableStatsCards } from '@/components/features/admin/tables/TableStatsCards'
+import { TableSearchFilters } from '@/components/features/admin/tables/TableSearchFilters'
+import { TableCard } from '@/components/features/admin/tables/TableCard'
+import { TablePagination } from '@/components/features/admin/tables/TablePagination'
+import { EmptyStates } from '@/components/features/admin/tables/EmptyStates'
+import { QRCodeModal } from '@/components/features/admin/tables/QRCodeModal'
+import { TableModal, TableFormData } from '@/components/features/admin/tables/TableModal'
+import { TablesSkeleton } from '@/components/features/admin/tables/TablesSkeleton'
+import { ErrorState } from '@/components/features/admin/tables/ErrorState'
 
 // Define Zod schema for table form validation
 const getTableSchema = (t: ReturnType<typeof useTranslations<'validation'>>) => z.object({
