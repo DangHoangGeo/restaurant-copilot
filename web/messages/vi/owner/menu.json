@@ -318,5 +318,42 @@
     "remove_topping": "Xóa Topping",
     "topping_name": "Tên Topping",
     "topping_price": "Giá"
+  },
+  "stats": {
+    "total_items": "Tổng Số Món",
+    "available_items": "Có Sẵn",
+    "unavailable_items": "Không Có Sẵn",
+    "low_stock": "Hết Hàng",
+    "top_categories": "Danh Mục Hàng Đầu"
+  },
+  "filters": {
+    "search_placeholder": "Tìm kiếm món ăn...",
+    "all_categories": "Tất Cả Các Danh Mục",
+    "filters": "Bộ Lọc",
+    "clear_all": "Xóa Tất Cả",
+    "advanced_filters": "Bộ Lọc Nâng Cao",
+    "availability": "Tình Trạng Có Sẵn",
+    "all_items": "Tất Cả Món Ăn",
+    "available_only": "Chỉ Có Sẵn",
+    "unavailable_only": "Chỉ Không Có Sẵn",
+    "stock_status": "Tình Trạng Tồn Kho",
+    "all_stock_levels": "Tất Cả Mức Tồn Kho",
+    "low_stock": "Hết Hàng (<10)",
+    "in_stock": "Còn Hàng (≥10)"
+  },
+  "view_modes": {
+    "list": "Danh Sách",
+    "grid": "Lưới",
+    "table": "Bảng"
+  },
+  "table_headers": {
+    "item": "Món Ăn",
+    "price": "Giá",
+    "image": "Hình Ảnh",
+    "status": "Trạng Thái",
+    "stock": "Tồn Kho",
+    "rating": "Đánh Giá",
+    "actions": "Hành Động",
+    "item_details": "Chi Tiết Món"
   }
 }
