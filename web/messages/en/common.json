@@ -82,7 +82,7 @@
     "sunday": "Sunday"
   },
   "language_switcher": {
-    "toggle_label": "Change language"
+    "toggle_label": "Change Language"
   },
   "defaultLanguageLabel": "Default Language",
   "defaultLanguagePlaceholder": "Select default language",
@@ -143,8 +143,9 @@
     "logoUrlinvalidFormat": "Invalid logo URL format."
   },
   "coming_soon": {
-    "title": "Feature Coming Soon",
-    "description": "This feature is currently in development and will be available soon. Stay tuned!"
+    "title": "Coming Soon",
+    "description": "{feature} is coming soon!",
+    "generic_description": "This feature is under development."
   },
   "mark_resolved": "Mark Resolved",
   "mark_unresolved": "Mark Unresolved",
