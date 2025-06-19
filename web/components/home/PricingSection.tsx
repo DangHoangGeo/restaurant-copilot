@@ -12,7 +12,7 @@ interface PricingSectionProps {
 }
 
 export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }) => {
-  const t = useTranslations('LandingPage.pricing');
+  const t = useTranslations('landing');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
 
   const formatPrice = (price: number) => {
@@ -61,7 +61,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            {t('title')}
+            {t('pricing.title')}
           </motion.h2>
           <motion.p 
             className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-8"
@@ -70,7 +70,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
             transition={{ duration: 0.6, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            {t('subtitle')}
+            {t('pricing.subtitle')}
           </motion.p>
 
           {/* Billing Toggle */}
@@ -89,7 +89,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {t('billing.monthly')}
+              {t('pricing.billing.monthly')}
             </button>
             <button
               onClick={() => setBillingCycle('yearly')}
@@ -99,9 +99,9 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {t('billing.yearly')}
+              {t('pricing.billing.yearly')}
               <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {t('billing.save_20')}
+                {t('pricing.billing.save_20')}
               </span>
             </button>
           </motion.div>
@@ -126,7 +126,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                     <span className="bg-[--brand-color-landing] text-gray-900 dark:text-gray-100 px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
                       <Star className="w-4 h-4 fill-current" />
-                      {t('popular')}
+                      {t('pricing.popular')}
                     </span>
                   </div>
                 )}
@@ -147,10 +147,10 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
                     {/* Plan Header */}
                     <div className="text-center mb-8">
                       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                        {t(`plans.${plan.id}.title`)}
+                        {t(`pricing.plans.${plan.id}.title`)}
                       </h3>
                       <p className="text-slate-600 dark:text-slate-300 text-sm mb-6">
-                        {t(`plans.${plan.id}.description`)}
+                        {t(`pricing.plans.${plan.id}.description`)}
                       </p>
                       
                       {/* Pricing */}
@@ -160,17 +160,17 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
                             {formatPrice(monthlyPrice)}
                           </span>
                           <span className="text-slate-600 dark:text-slate-300 text-sm">
-                            /{t('billing.per_month')}
+                            /{t('pricing.billing.per_month')}
                           </span>
                         </div>
                         {billingCycle === 'yearly' && (
                           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                            {t('billing.billed_yearly')} ({formatPrice(price)})
+                            {t('pricing.billing.billed_yearly')} ({formatPrice(price)})
                           </p>
                         )}
                         {plan.maxCustomersPerDay && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                            {t('up_to_customers', { count: plan.maxCustomersPerDay })}
+                            {t('pricing.up_to_customers', { count: plan.maxCustomersPerDay })}
                           </p>
                         )}
                       </div>
@@ -193,7 +193,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
                             </div>
                           </div>
                           <span className="text-slate-700 dark:text-slate-300 text-sm">
-                            {t(`features.${feature}`)}
+                            {t(`pricing.features.${feature}`)}
                           </span>
                         </motion.div>
                       ))}
@@ -207,13 +207,13 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
                       className="w-full"
                       iconRight={plan.id === 'enterprise' ? undefined : ArrowRight}
                     >
-                      {t(`cta.${plan.buttonText || 'choose_plan'}`)}
+                      {t(`pricing.cta.${plan.buttonText || 'choose_plan'}`)}
                     </Button>
 
                     {/* Trial Info */}
                     {plan.id !== 'enterprise' && (
                       <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-3">
-                        {t('trial_info', { days: PRICING_CONFIG.trialDays })}
+                        {t('pricing.trial_info', { days: PRICING_CONFIG.trialDays })}
                       </p>
                     )}
                   </div>
@@ -232,7 +232,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
           viewport={{ once: true }}
         >
           <p className="text-slate-600 dark:text-slate-300 mb-6">
-            {t('bottom_cta.title')}
+            {t('pricing.bottom_cta.title')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
@@ -240,16 +240,16 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
               variant="outline"
               iconLeft={Star}
             >
-              {t('bottom_cta.start_free')}
+              {t('pricing.bottom_cta.start_free')}
             </Button>
             <span className="text-slate-400 dark:text-slate-500">
-              {t('bottom_cta.or')}
+              {t('pricing.bottom_cta.or')}
             </span>
             <Button 
               href="/contact"
               variant="ghost"
             >
-              {t('bottom_cta.contact_sales')}
+              {t('pricing.bottom_cta.contact_sales')}
             </Button>
           </div>
         </motion.div>

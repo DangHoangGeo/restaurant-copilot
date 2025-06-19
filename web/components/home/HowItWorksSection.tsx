@@ -5,7 +5,7 @@ import { PlusCircle, QrCode, Smartphone, BarChart2 } from 'lucide-react';
 import { Icon } from './Icon';
 
 export const HowItWorksSection = () => {
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   const steps = [
     { number: 1, icon: PlusCircle, title: "howitworks.step1.title", description: "howitworks.step1.description" },
     { number: 2, icon: QrCode, title: "howitworks.step2.title", description: "howitworks.step2.description" },

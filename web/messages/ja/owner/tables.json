@@ -1,0 +1,76 @@
+{
+  "title": "Table & QR Management",
+  "tables_list": "Tables List",
+  "add_table": "Add Table",
+  "edit_table": "Edit Table",
+  "table_name_label": "Table Name",
+  "table_name_placeholder": "e.g., Table 1, Patio 5",
+  "capacity_label": "Capacity (Seats)",
+  "capacity_placeholder": "e.g., 4",
+  "status_label": "Status",
+  "select_status_placeholder": "Select status",
+  "status_options": {
+    "available": "Available",
+    "occupied": "Occupied",
+    "reserved": "Reserved"
+  },
+  "is_outdoor_label": "Outdoor",
+  "is_accessible_label": "Accessible",
+  "notes_label": "Notes",
+  "notes_placeholder": "Any notes about this table...",
+  "outdoor": "Outdoor",
+  "accessible": "Accessible",
+  "status": "Status",
+  "capacity": "Capacity",
+  "position": "Position",
+  "generate_qr": "Generate QR",
+  "qr_for_table": "QR Code for Table",
+  "download_png": "Download PNG",
+  "downloading_qr": "Downloading QR...",
+  "validation": {
+    "name_required": "Table name is required.",
+    "name_max_length": "Table name must be {maxLength} characters or less.",
+    "capacity_required": "Capacity is required.",
+    "capacity_min": "Capacity must be at least {min}.",
+    "status_required": "Status is required.",
+    "notes_max_length": "Notes must be {maxLength} characters or less.",
+    "qrCode_invalid_url": "Invalid QR code URL format.",
+    "bulk_count_required": "Number of tables is required.",
+    "bulk_count_min": "Must add at least {min} table.",
+    "bulk_count_max": "Cannot add more than {max} tables at once.",
+    "bulk_name_prefix_required": "Name prefix is required.",
+    "bulk_name_prefix_max_length": "Name prefix must be {maxLength} characters or less.",
+    "bulk_start_index_required": "Starting number is required.",
+    "bulk_start_index_min": "Starting number must be at least {min}.",
+    "bulk_start_index_max": "Starting number cannot exceed {max}."
+  },
+  "notifications": {
+    "update_success": "Table updated successfully.",
+    "create_success": "Table created successfully.",
+    "qr_saved_success": "QR code saved and ready for download."
+  },
+  "errors": {
+    "save_failed": "Failed to save table. Please try again.",
+    "qr_save_failed": "Failed to save QR code to table. Please try again.",
+    "qr_download_failed": "Failed to download QR code image."
+  },
+  "empty_state": {
+    "title": "No Tables Found",
+    "description": "Get started by adding your first table, or add multiple tables at once.",
+    "add_table_button": "Add Single Table",
+    "bulk_add_button": "Bulk Add Tables"
+  },
+  "bulk_add": {
+    "button_text": "Bulk Add Tables",
+    "title": "Bulk Add Tables",
+    "count_label": "Number of Tables to Add",
+    "name_prefix_label": "Table Name Prefix",
+    "name_prefix_placeholder": "e.g., Table, Area A - ",
+    "start_index_label": "Starting Number",
+    "default_name_prefix": "Table ",
+    "submit_button": "Add Tables",
+    "notification_success": "{count} tables added successfully.",
+    "notification_error": "Failed to add {count} tables. Errors: {errors}"
+  },
+  "qr_code_generate_message": "Generating QR Code..."
+}

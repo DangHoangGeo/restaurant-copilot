@@ -104,7 +104,7 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const params = useParams();
-  const t = useTranslations("AdminNav");
+  const t = useTranslations("owner.dashboard");
   const locale = (params.locale as string) || "en";
 
   const NavItem = ({

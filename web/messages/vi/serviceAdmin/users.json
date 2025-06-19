@@ -1,0 +1,29 @@
+{
+  "title": "Quản lý người dùng",
+  "subtitle": "Quản lý tất cả chủ nhà hàng và người dùng trên nền tảng",
+  "table": {
+    "name": "Tên",
+    "email": "Email",
+    "restaurant": "Nhà hàng",
+    "role": "Vai trò",
+    "status": "Trạng thái",
+    "created": "Ngày tạo",
+    "actions": "Hành động"
+  },
+  "filters": {
+    "all_users": "Tất cả người dùng",
+    "active": "Đang hoạt động",
+    "inactive": "Không hoạt động",
+    "pending": "Đang chờ xác minh"
+  },
+  "actions": {
+    "view_details": "Xem chi tiết",
+    "suspend_user": "Đình chỉ người dùng",
+    "activate_user": "Kích hoạt người dùng",
+    "reset_password": "Đặt lại mật khẩu"
+  },
+  "empty_state": {
+    "title": "Không tìm thấy người dùng",
+    "description": "Không có người dùng nào phù hợp với bộ lọc hiện tại của bạn."
+  }
+}

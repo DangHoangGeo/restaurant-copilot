@@ -9,13 +9,13 @@ interface LayoutProps {
   params: Promise<{ locale: string }>;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  const t = await getTranslations(locale);
+export async function generateMetadata() {
+  
+  const t = await getTranslations("customer.home");
   
   return {
-    title: t('Customer.meta.title'),
-    description: t('Customer.meta.description'),
+    title: t('meta.title'),
+    description: t('meta.description'),
   };
 }
 

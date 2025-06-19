@@ -1,0 +1,86 @@
+{
+  "title": "Giỏ Hàng",
+  "items_in_cart": "{count} món trong giỏ",
+  "items_in_cart_plural": "{count} món trong giỏ",
+  "review_order_button": "Xem Lại Đơn Hàng",
+  "toppings_label": "Topping: {toppings}",
+  "empty_cart": {
+    "title": "Giỏ hàng trống",
+    "message": "Thêm một số món ngon vào giỏ để tiếp tục.",
+    "browse_menu": "Xem Thực Đơn"
+  },
+  "item_card": {
+    "quantity": "Số lượng: {quantity}",
+    "price_each": "{price} VNĐ/món",
+    "total_price": "Tổng: {total} VNĐ",
+    "notes": "Ghi chú: {notes}",
+    "size": "Kích cỡ: {size}",
+    "toppings": "Topping: {toppings}",
+    "edit_item": "Sửa Món",
+    "remove_item": "Xóa Món"
+  },
+  "cart_summary": {
+    "subtotal": "Tạm tính",
+    "tax": "Thuế",
+    "total": "Tổng cộng",
+    "item_count": "{count} món",
+    "item_count_plural": "{count} món"
+  },
+  "actions": {
+    "continue_shopping": "Tiếp Tục Mua Sắm",
+    "clear_cart": "Xóa Giỏ Hàng",
+    "proceed_to_checkout": "Tiến Hành Thanh Toán",
+    "add_more_items": "Thêm Món Khác"
+  },
+  "modals": {
+    "clear_cart": {
+      "title": "Xóa Giỏ Hàng",
+      "message": "Bạn có chắc muốn xóa tất cả món khỏi giỏ hàng?",
+      "confirm": "Xóa Giỏ Hàng",
+      "cancel": "Giữ Món"
+    },
+    "remove_item": {
+      "title": "Xóa Món",
+      "message": "Bạn có chắc muốn xóa {itemName} khỏi giỏ hàng?",
+      "confirm": "Xóa",
+      "cancel": "Giữ"
+    }
+  },
+  "guest_dialog": {
+    "title": "Chào Mừng! Có Bao Nhiêu Khách?",
+    "confirm": "Bắt Đầu Đặt Hàng"
+  },
+  "session": {
+    "created_title": "Phiên Đặt Hàng Đã Tạo!",
+    "share_passcode": "Chia sẻ mã 4 chữ số này với những người khác tại bàn để họ tham gia đơn hàng của bạn:",
+    "passcode_instruction": "Những người khác có thể quét mã QR trên bàn và nhập mã này để tham gia phiên của bạn.",
+    "ask_for_passcode": "Hỏi Mã",
+    "ask_for_passcode_instruction": "Nếu bạn không có mã, vui lòng hỏi người đã bắt đầu đơn hàng.",
+    "start_ordering": "Bắt Đầu Đặt Hàng",
+    "enter_passcode_title": "Nhập Mã",
+    "enter_passcode_placeholder": "Nhập mã 4 chữ số",
+    "join_session": "Tham Gia Phiên",
+    "session_expired": "Phiên Hết Hạn",
+    "session_expired_message": "Phiên đặt hàng của bạn đã hoàn tất hoặc hết hạn. Cảm ơn bạn đã ghé thăm!",
+    "session_expired_instruction": "Để đặt đơn hàng mới, vui lòng quét lại mã QR trên bàn của bạn.",
+    "invalid_table": "Bàn Không Hợp Lệ",
+    "invalid_table_message": "ID bàn không hợp lệ hoặc không thuộc về nhà hàng này.",
+    "invalid_table_instruction": "Vui lòng quét mã QR hợp lệ từ một bàn tại nhà hàng này.",
+    "view_menu_only": "Chỉ Xem Thực Đơn"
+  },
+  "notifications": {
+    "item_added": "{itemName} đã thêm vào giỏ",
+    "item_removed": "{itemName} đã xóa khỏi giỏ",
+    "cart_cleared": "Giỏ hàng đã xóa",
+    "update_failed": "Không thể cập nhật giỏ hàng. Vui lòng thử lại."
+  },
+  "floating_cart": {
+    "title": "Giỏ Hàng",
+    "items_count": "{count} món",
+    "total": "Tổng: {amount}",
+    "view_cart": "Xem Giỏ Hàng",
+    "checkout": "Thanh Toán",
+    "empty_message": "Giỏ hàng trống",
+    "add_items": "Thêm một số món ngon!"
+  }
+}

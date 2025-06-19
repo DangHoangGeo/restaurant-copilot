@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
 export function QuickActions() {
-  const t = useTranslations('AdminDashboard');
+  const t = useTranslations('owner.dashboard');
   const params = useParams();
   const locale = params.locale as string || 'en';
 

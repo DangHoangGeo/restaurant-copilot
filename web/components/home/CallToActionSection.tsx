@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from './Button';
 
 export const CallToActionSection = () => {
-  const t = useTranslations('LandingPage');
+  const t = useTranslations('landing');
   
   return (
     <section className="py-16 sm:py-20 lg:py-28 bg-[--brand-color-landing]">

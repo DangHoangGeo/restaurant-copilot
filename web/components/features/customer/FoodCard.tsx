@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PlusCircle, Star, Minus, Plus } from "lucide-react";
+import { Star, Minus, Plus } from "lucide-react";
 import type { ViewType, ViewProps } from "./screens/types";
 import { MenuItem } from '@/shared/types/menu';
 import { useTranslations } from "next-intl";
@@ -49,7 +49,7 @@ export function FoodCard({
   viewMode = "grid",
   onItemClick,
 }: FoodCardProps) {
-  const t = useTranslations("Customer");
+  const t = useTranslations("customer.menu");
   const [isAdding, setIsAdding] = useState(false);
 
   const getPriceDisplayString = (currentItem: FoodItem) => {
@@ -59,7 +59,7 @@ export function FoodCard({
           return  `¥${(currentItem.price)}`;//`¥${(currentItem.price / 100).toFixed(0)}`;
       }
       const minPrice = Math.min(...prices);
-      return t('common.from_price', { price: `¥${(minPrice)}` });
+      return t('food_card.price_from', { price: `¥${(minPrice)}` });
     }
     return `¥${(currentItem.price)}`;
   };
@@ -154,7 +154,7 @@ export function FoodCard({
               {!item.available && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    Unavailable
+                    {t('food_card.out_of_stock')}
                   </span>
                 </div>
               )}
@@ -194,7 +194,7 @@ export function FoodCard({
                       variant="ghost"
                       onClick={handleDecrease}
                       className="h-8 w-8 rounded-full p-0 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      aria-label={t("menu.decrease_quantity")}
+                      aria-label="Decrease quantity" // Generic label, or add to menu.json
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
@@ -204,7 +204,7 @@ export function FoodCard({
                       variant="ghost"
                       onClick={handleIncrease}
                       className="h-8 w-8 rounded-full p-0 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      aria-label={t("menu.increase_quantity")}
+                      aria-label="Increase quantity" // Generic label, or add to menu.json
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
@@ -216,12 +216,13 @@ export function FoodCard({
                     style={{ backgroundColor: brandColor }}
                     className="text-white hover:opacity-90 rounded-full px-3 py-2 text-xs sm:text-sm font-medium min-h-[36px] shadow-lg"
                   >
-                    <PlusCircle className="h-3 w-3" />
+                    { (item.menu_item_sizes && item.menu_item_sizes.length > 0) || (item.toppings && item.toppings.length > 0) ? t('food_card.view_details') : t('food_card.add_to_cart')}
                   </Button>
                 )
               ) : (
                 <div className="text-xs sm:text-sm text-gray-500 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
-                  {t("menu.view_only")}
+                  {/* Assuming 'view_only' is a common key or create it in menu.json */}
+                  View Only
                 </div>
               )}
             </div>
@@ -298,7 +299,7 @@ export function FoodCard({
                       variant="ghost"
                       onClick={handleDecrease}
                       className="h-7 w-7 rounded-full p-0 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      aria-label={t("menu.decrease_quantity")}
+                      aria-label="Decrease quantity" // Generic label, or add to menu.json
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
@@ -308,7 +309,7 @@ export function FoodCard({
                       variant="ghost"
                       onClick={handleIncrease}
                       className="h-7 w-7 rounded-full p-0 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      aria-label={t("menu.increase_quantity")}
+                      aria-label="Increase quantity" // Generic label, or add to menu.json
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
@@ -320,12 +321,13 @@ export function FoodCard({
                     style={{ backgroundColor: brandColor }}
                     className="text-white hover:opacity-90 rounded-full px-3 py-2 text-xs font-medium min-h-[32px]"
                   >
-                    <PlusCircle className="h-3 w-3" />
+                    { (item.menu_item_sizes && item.menu_item_sizes.length > 0) || (item.toppings && item.toppings.length > 0) ? t('food_card.view_details') : t('food_card.add_to_cart')}
                   </Button>
                 )
               ) : (
                 <div className="text-xs text-gray-500 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
-                  {t("menu.view_only")}
+                   {/* Assuming 'view_only' is a common key or create it in menu.json */}
+                   View Only
                 </div>
               )}
             </div>

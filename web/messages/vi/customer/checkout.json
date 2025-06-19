@@ -1,0 +1,73 @@
+{
+  "title": "Xem Lại Đơn Hàng",
+  "redirecting_empty_cart": "Giỏ hàng trống. Đang chuyển hướng đến thực đơn...",
+  "order_summary": "Tóm Tắt Đơn Hàng",
+  "quantity": "Số Lượng",
+  "total": "Tổng Cộng",
+  "special_instructions": "Hướng Dẫn Đặc Biệt",
+  "special_instructions_placeholder": "Bất kỳ yêu cầu đặc biệt hoặc ghi chú về chế độ ăn uống...",
+  "characters": "ký tự",
+  "payment_method": "Phương Thức Thanh Toán",
+  "cash_payment": "Thanh Toán Bằng Tiền Mặt",
+  "card_payment": "Thanh Toán Bằng Thẻ",
+  "pay_at_table": "Thanh toán khi đơn hàng sẵn sàng",
+  "coming_soon": "Sắp Ra Mắt",
+  "place_order": "Đặt Hàng",
+  "placing_order": "Đang Đặt Hàng...",
+  "confirm_order": "Xác Nhận Đơn Hàng",
+  "confirm_message": "Bạn có chắc muốn đặt đơn hàng này với {items} món với tổng {total}?",
+  "cancel": "Hủy",
+  "confirm": "Xác Nhận",
+  "add_note": "Thêm Ghi Chú",
+  "edit_note": "Sửa Ghi Chú",
+  "note": "Ghi Chú",
+  "general_instructions": "Hướng Dẫn Chung",
+  "general_instructions_placeholder": "Bất kỳ ghi chú chung nào cho đơn hàng của bạn...",
+  "note_placeholder": "Thêm ghi chú cho món này...",
+  "order_info": "Thông Tin Đơn Hàng",
+  "order_placement_note": "Đơn hàng của bạn sẽ được gửi đến bếp và chuẩn bị tươi mới cho bàn của bạn.",
+  "item": "Món",
+  "price_each": "{price} VNĐ/món",
+  "add_note_for": "Thêm ghi chú cho {itemName}",
+  "save_note": "Lưu Ghi Chú",
+  "note_saved": "Ghi chú đã lưu thành công!",
+  "confirming": "Đang Xác Nhận...",
+  "empty_cart_title": "Giỏ hàng trống",
+  "empty_cart_message": "Thêm một số món ngon vào giỏ để tiếp tục.",
+  "table_info": "Bàn {number}",
+  "session_active": "Phiên đặt hàng của bạn đang hoạt động",
+  "session_not_found_alert": "Không tìm thấy phiên. Vui lòng quay lại thực đơn và thử lại.",
+  "empty_cart_alert": "Giỏ hàng trống.",
+  "order_failed_error": "Không thể đặt hàng. Vui lòng thử lại.",
+  "order_failed_error_network": "Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.",
+  "payment_instruction_table": "Vui lòng đến quầy hoặc gọi nhân viên để hoàn tất thanh toán cho Bàn {tableId}.",
+  "payment_instruction_counter": "Vui lòng đến quầy để hoàn tất thanh toán.",
+  "place_order_button": "Đặt Hàng",
+  "confirm_modal_title": "Xác Nhận Đơn Hàng",
+  "confirm_modal_text": "Bạn có chắc muốn xác nhận đơn hàng với tổng {total}?",
+  "order_summary_details": {
+    "subtotal": "Tạm tính",
+    "tax": "Thuế",
+    "service_charge": "Phí Dịch Vụ",
+    "total": "Tổng cộng",
+    "item_count": "{count} món",
+    "item_count_plural": "{count} món"
+  },
+  "item_details": {
+    "size": "Kích cỡ: {size}",
+    "toppings": "Topping: {toppings}",
+    "notes": "Ghi chú: {notes}",
+    "allergens": "Chất gây dị ứng: {allergens}"
+  },
+  "payment_options": {
+    "title": "Bạn muốn thanh toán như thế nào?",
+    "cash": {
+      "title": "Thanh Toán Bằng Tiền Mặt",
+      "description": "Thanh toán tại quầy khi đơn hàng sẵn sàng"
+    },
+    "card": {
+      "title": "Thanh Toán Bằng Thẻ",
+      "description": "Thanh toán trực tuyến (sắp ra mắt)"
+    }
+  }
+}

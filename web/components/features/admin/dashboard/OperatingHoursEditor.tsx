@@ -25,8 +25,8 @@ const DAYS = [
 ];
 
 export function OperatingHoursEditor({ value, onChange, disabled = false }: OperatingHoursProps) {
-  const t = useTranslations("Dashboard.Settings");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations("owner.settings");
+  const tCommon = useTranslations("common");
 
   const updateDay = (day: string, updates: Partial<OperatingHour>) => {
     onChange({

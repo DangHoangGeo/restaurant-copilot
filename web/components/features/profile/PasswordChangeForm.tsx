@@ -30,7 +30,7 @@ const passwordChangeSchema = z.object({
 type PasswordChangeData = z.infer<typeof passwordChangeSchema>;
 
 export function PasswordChangeForm({ onPasswordChanged }: PasswordChangeFormProps) {
-  const t = useTranslations("Dashboard.Profile");
+  const t = useTranslations("owner.profile");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 

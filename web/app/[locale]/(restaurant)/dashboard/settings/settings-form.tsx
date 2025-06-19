@@ -39,9 +39,9 @@ import {
 import { toast } from "sonner";
 import { Image as ImageIcon, Loader2, Globe, Clock, MessageSquare, User, CreditCard, Truck } from "lucide-react";
 import imageCompression from 'browser-image-compression';
-import { OperatingHoursEditor } from "@/components/features/dashboard/OperatingHoursEditor";
-import { SocialLinksEditor } from "@/components/features/dashboard/SocialLinksEditor";
-import { DescriptionGenerator } from "@/components/features/dashboard/DescriptionGenerator";
+import { OperatingHoursEditor } from "@/components/features/admin/dashboard/OperatingHoursEditor";
+import { SocialLinksEditor } from "@/components/features/admin/dashboard/SocialLinksEditor";
+import { DescriptionGenerator } from "@/components/features/admin/dashboard/DescriptionGenerator";
 import { Restaurant } from "@/shared/types";
 
 interface SettingsFormProps {
@@ -93,9 +93,9 @@ const getSettingsSchema = (t: ReturnType<typeof useTranslations<'Dashboard.Setti
 });
 
 export default function SettingsForm({ initialSettings, locale }: SettingsFormProps) {
-  const t = useTranslations("Dashboard.Settings");
-  const tCommon = useTranslations("Common");
-  const tValidation = useTranslations("Dashboard.Settings.validation");
+  const t = useTranslations("owner.settings");
+  const tCommon = useTranslations("common");
+  const tValidation = useTranslations("owner.settings.validation");
 
   const settingsSchema = getSettingsSchema(tValidation);
   type SettingsFormData = z.infer<typeof settingsSchema>;

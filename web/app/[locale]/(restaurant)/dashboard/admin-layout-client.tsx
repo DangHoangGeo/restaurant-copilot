@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, ReactNode } from 'react';
-import { AdminHeader } from '@/components/layout/admin-header';
-import { AdminSidebar } from '@/components/layout/admin-sidebar';
+import { AdminHeader } from '@/components/customer/layout/admin-header';
+import { AdminSidebar } from '@/components/customer/layout/admin-sidebar';
 import { cn } from '@/lib/utils';
 
 interface AdminLayoutClientProps {

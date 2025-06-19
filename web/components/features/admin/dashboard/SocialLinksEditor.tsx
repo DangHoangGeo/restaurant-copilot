@@ -20,7 +20,7 @@ interface SocialLinksEditorProps {
 }
 
 export function SocialLinksEditor({ value, onChange, disabled = false }: SocialLinksEditorProps) {
-  const t = useTranslations("Dashboard.Settings");
+  const t = useTranslations("owner.dashboard");
 
   const updateLink = (platform: keyof SocialLinks, url: string) => {
     onChange({

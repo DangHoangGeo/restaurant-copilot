@@ -1,0 +1,93 @@
+{
+  "title": "Quản Lý Nhân Viên",
+  "subtitle": "Quản lý nhân viên và lịch trình của nhà hàng",
+  "views": {
+    "list": "Danh Sách",
+    "schedule": "Lịch Trình"
+  },
+  "employee": "Nhân Viên",
+  "select_role": "Chọn Vai Trò",
+  "role": "Vai Trò",
+  "enter_name": "Nhập Tên Nhân Viên",
+  "enter_email": "Nhập Email Nhân Viên",
+  "add_employee": "Thêm Nhân Viên",
+  "edit_employee": "Sửa Nhân Viên",
+  "delete_employee": "Xóa Nhân Viên",
+  "edit_schedule": "Sửa Lịch Trình",
+  "save_changes": "Lưu Thay Đổi",
+  "cancel": "Hủy",
+  "search_placeholder": "Tìm kiếm nhân viên...",
+  "no_employees": "Không tìm thấy nhân viên nào",
+  "employee_details": "Chi Tiết Nhân Viên",
+  "actions": {
+    "add_employee": "Thêm Nhân Viên",
+    "edit_employee": "Sửa Nhân Viên",
+    "delete_employee": "Xóa Nhân Viên",
+    "edit_schedule": "Sửa Lịch Trình",
+    "save": "Lưu",
+    "cancel": "Hủy"
+  },
+  "table": {
+    "name": "Tên",
+    "email": "Email",
+    "role": "Vai Trò",
+    "shifts": "Ca Làm",
+    "actions": "Hành Động"
+  },
+  "roles": {
+    "manager": "Quản Lý",
+    "chef": "Đầu Bếp",
+    "server": "Phục Vụ",
+    "cashier": "Thu Ngân"
+  },
+  "form": {
+    "name_label": "Họ và Tên",
+    "name_placeholder": "Nhập họ và tên nhân viên",
+    "email_label": "Địa Chỉ Email",
+    "email_placeholder": "Nhập email nhân viên",
+    "role_label": "Vai Trò",
+    "role_placeholder": "Chọn vai trò"
+  },
+  "schedule": {
+    "title": "Lịch Trình Nhân Viên",
+    "edit_title": "Sửa Lịch Trình cho {name}",
+    "weekdays": {
+      "monday": "Thứ Hai",
+      "tuesday": "Thứ Ba",
+      "wednesday": "Thứ Tư",
+      "thursday": "Thứ Năm",
+      "friday": "Thứ Sáu",
+      "saturday": "Thứ Bảy",
+      "sunday": "Chủ Nhật"
+    },
+    "time_format": "{start} - {end}",
+    "no_shift": "Nghỉ",
+    "start_time": "Giờ Bắt Đầu",
+    "end_time": "Giờ Kết Thúc"
+  },
+  "notifications": {
+    "employee_added": "Thêm nhân viên thành công",
+    "employee_updated": "Cập nhật nhân viên thành công",
+    "employee_deleted": "Xóa nhân viên thành công",
+    "schedule_updated": "Cập nhật lịch trình thành công",
+    "add_failed": "Không thể thêm nhân viên",
+    "update_failed": "Không thể cập nhật nhân viên",
+    "delete_failed": "Không thể xóa nhân viên",
+    "schedule_failed": "Không thể cập nhật lịch trình"
+  },
+  "confirmations": {
+    "delete_title": "Xóa Nhân Viên",
+    "delete_message": "Bạn có chắc muốn xóa {name}? Hành động này không thể hoàn tác."
+  },
+  "empty_state": {
+    "no_employees": "Không tìm thấy nhân viên nào",
+    "add_first": "Thêm nhân viên đầu tiên để bắt đầu"
+  },
+  "validation": {
+    "name_required": "Tên là bắt buộc",
+    "email_required": "Email là bắt buộc",
+    "email_invalid": "Vui lòng nhập email hợp lệ",
+    "role_required": "Vai trò là bắt buộc",
+    "time_invalid": "Giờ bắt đầu phải trước giờ kết thúc"
+  }
+}

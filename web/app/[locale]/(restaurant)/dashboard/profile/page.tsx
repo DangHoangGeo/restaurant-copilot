@@ -34,8 +34,8 @@ interface Restaurant {
 }
 
 export default function ProfilePage() {
-  const t = useTranslations("Dashboard.Profile");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations("owner.profile");
+  const tCommon = useTranslations("common");
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
