@@ -307,6 +307,7 @@ export function TablesClientContent() {
                 <TableCard
                   key={table.id}
                   table={table}
+                  isViewList={false}
                   onEdit={handleOpenTableModal}
                   onViewQR={handleGenerateQr}
                   isQrCodeOld={isQrCodeOld}
@@ -319,6 +320,7 @@ export function TablesClientContent() {
                 <TableCard
                   key={table.id}
                   table={table}
+                  isViewList={true}
                   onEdit={handleOpenTableModal}
                   onViewQR={handleGenerateQr}
                   isQrCodeOld={isQrCodeOld}

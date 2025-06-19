@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Trees, AlertTriangle, SquarePen, QrCode } from 'lucide-react'
+import { Users, Trees, AlertTriangle, SquarePen, QrCode, Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,12 +9,13 @@ import { Table } from '@/shared/types'
 
 interface TableCardProps {
   table: Table
+  isViewList: boolean
   onEdit: (table: Table) => void
   onViewQR: (table: Table) => void
   isQrCodeOld: (qrCreatedAt: string | null) => boolean
 }
 
-export function TableCard({ table, onEdit, onViewQR, isQrCodeOld }: TableCardProps) {
+export function TableCard({ table, isViewList, onEdit, onViewQR, isQrCodeOld }: TableCardProps) {
   const t = useTranslations("owner.tables");
 
   const getStatusBadgeColor = (status: string) => {
@@ -26,6 +27,82 @@ export function TableCard({ table, onEdit, onViewQR, isQrCodeOld }: TableCardPro
     }
   };
 
+  if (isViewList) {
+    return (
+      <Card key={table.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">
+                  {table.name}
+                </h3>
+                <Badge
+                  className={`${getStatusBadgeColor(table.status)} text-white text-xs`}
+                  variant="secondary"
+                >
+                  {table.status.charAt(0).toUpperCase() + table.status.slice(1)}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  <span>{table.capacity || 1}</span>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                {table.is_outdoor && (
+                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                    <Trees className="h-3 w-3" />
+                    <span className="text-xs">{t('table_info.outdoor_badge')}</span>
+                  </div>
+                )}
+                {table.is_accessible && (
+                  <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                    <span className="text-xs">{t('table_info.accessible_badge')}</span>
+                  </div>
+                )}
+                </div>
+                {table.qr_code && (
+                  <div className="hidden sm:flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                    <QrCode className="h-3 w-3" /><Check className="h-3 w-3 text-green-500" />
+                    {table.qr_code_created_at && isQrCodeOld(table.qr_code_created_at) && (
+                      <AlertTriangle className="h-3 w-3 text-amber-500" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {table.notes && (
+                <p className="text-xs italic text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                  {table.notes}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2 ml-4">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onEdit(table)}
+              className="text-xs"
+            >
+              <SquarePen className="mr-1 h-3 w-3" />
+              <span className="hidden sm:inline ml-1">{t('actions.edit')}</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => onViewQR(table)}
+              className="text-xs"
+            >
+              <QrCode className="mr-1 h-3 w-3" />
+              <span className="hidden sm:inline ml-1">{t('actions.view_qr_code')}</span>
+            </Button>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   return (
     <Card className="group hover:shadow-md transition-all duration-200 border-slate-200 dark:border-slate-700 h-full">
       <div className="p-4 space-y-3 h-full flex flex-col">
@@ -34,7 +111,7 @@ export function TableCard({ table, onEdit, onViewQR, isQrCodeOld }: TableCardPro
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate pr-2">
             {table.name}
           </h3>
-          <Badge 
+          <Badge
             className={`${getStatusBadgeColor(table.status)} text-white shrink-0 text-xs`}
             variant="secondary"
           >
@@ -80,18 +157,18 @@ export function TableCard({ table, onEdit, onViewQR, isQrCodeOld }: TableCardPro
 
         {/* Actions */}
         <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <Button 
-            size="sm" 
-            variant="ghost" 
+          <Button
+            size="sm"
+            variant="ghost"
             onClick={() => onEdit(table)}
             className="flex-1 text-xs"
           >
             <SquarePen className="mr-1 h-3 w-3" />
             {t('actions.edit')}
           </Button>
-          <Button 
-            size="sm" 
-            variant="default" 
+          <Button
+            size="sm"
+            variant="default"
             onClick={() => onViewQR(table)}
             className="flex-1 text-xs"
           >
