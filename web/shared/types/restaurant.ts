@@ -11,6 +11,7 @@ export type Table = {
   is_accessible: boolean;
   notes?: string | null;
   qr_code?: string | null;
+  qr_code_created_at?: string | null;
   created_at?: string;
   updated_at?: string;
 };

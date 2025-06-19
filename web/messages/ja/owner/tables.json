@@ -18,15 +18,19 @@
   "is_accessible_label": "Accessible",
   "notes_label": "Notes",
   "notes_placeholder": "Any notes about this table...",
-  "outdoor": "Outdoor",
-  "accessible": "Accessible",
-  "status": "Status",
-  "capacity": "Capacity",
-  "position": "Position",
-  "generate_qr": "Generate QR",
-  "qr_for_table": "QR Code for Table",
-  "download_png": "Download PNG",
-  "downloading_qr": "Downloading QR...",
+  "outdoor": "屋外",
+  "accessible": "アクセシブル",
+  "status": "ステータス",
+  "capacity": "収容人数",
+  "position": "位置",
+  "view_qr": "QRコードを表示",
+  "qr_for_table": "QRコード",
+  "qr_refresh_reminder": "QRコードが2週間以上経過しています。セキュリティのため更新を検討してください。",
+  "refresh_qr": "QRコードを更新",
+  "download_png": "PNG をダウンロード",
+  "downloading_qr": "QRコードをダウンロード中...",
+  "copy_link": "リンクをコピー",
+  "link_copied": "コピーしました!",
   "validation": {
     "name_required": "Table name is required.",
     "name_max_length": "Table name must be {maxLength} characters or less.",
@@ -45,14 +49,19 @@
     "bulk_start_index_max": "Starting number cannot exceed {max}."
   },
   "notifications": {
-    "update_success": "Table updated successfully.",
-    "create_success": "Table created successfully.",
-    "qr_saved_success": "QR code saved and ready for download."
+    "update_success": "テーブルが正常に更新されました。",
+    "create_success": "テーブルが正常に作成されました。",
+    "qr_saved_success": "QRコードが保存され、ダウンロードの準備ができました。",
+    "link_copied": "リンクがコピーされました！",
+    "qr_downloaded": "QRコードが正常にダウンロードされました！",
+    "qr_refreshed": "QRコードが更新されました！"
   },
   "errors": {
-    "save_failed": "Failed to save table. Please try again.",
-    "qr_save_failed": "Failed to save QR code to table. Please try again.",
-    "qr_download_failed": "Failed to download QR code image."
+    "save_failed": "テーブルの保存に失敗しました。もう一度お試しください。",
+    "qr_save_failed": "QRコードのテーブルへの保存に失敗しました。もう一度お試しください。",
+    "qr_download_failed": "QRコード画像のダウンロードに失敗しました。",
+    "copy_failed": "リンクのコピーに失敗しました。",
+    "qr_code_not_set": "このテーブルにはQRコードが設定されていません。"
   },
   "empty_state": {
     "title": "No Tables Found",

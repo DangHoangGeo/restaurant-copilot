@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { randomUUID } from "crypto";
 
 const tableSchema = z.object({
   name: z.string().min(1).max(50),
@@ -9,8 +10,9 @@ const tableSchema = z.object({
   status: z.enum(['available', 'occupied', 'reserved']).optional().default('available'),
   isOutdoor: z.boolean().optional().default(false),
   isAccessible: z.boolean().optional().default(false),
-  notes: z.string().optional(),
-  qrCode: z.string().optional(),
+  notes: z.string().optional().default('').nullable(),
+  qrCode: z.string().optional().default('').nullable(),
+  qrCodeCreatedAt: z.string().optional().nullable(),
 });
 
 export async function GET() {
@@ -29,7 +31,7 @@ export async function GET() {
   try {
     const { data: tables, error } = await supabaseAdmin
       .from('tables')
-      .select('id, name , status, capacity, is_outdoor, is_accessible, notes, qr_code')
+      .select('id, name , status, capacity, is_outdoor, is_accessible, notes, qr_code, qr_code_created_at')
       .eq('restaurant_id', restaurantId)
       .order('name');
 
@@ -57,10 +59,11 @@ export async function POST(req: Request) {
     const validated = tableSchema.safeParse(body);
 
     if (!validated.success) {
+      console.error('Validation error:', validated.error);
       return NextResponse.json({ errors: validated.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { name,  capacity, status, isOutdoor, isAccessible, notes, qrCode } = validated.data;
+    const { name,  capacity, status, isOutdoor, isAccessible, notes, qrCode, qrCodeCreatedAt } = validated.data;
     const insertData: Record<string, unknown> = {
       restaurant_id: user.restaurantId,
       name,
@@ -71,8 +74,18 @@ export async function POST(req: Request) {
     if (isOutdoor !== undefined) insertData.is_outdoor = isOutdoor;
     if (isAccessible !== undefined) insertData.is_accessible = isAccessible;
     if (notes !== undefined) insertData.notes = notes;
-    if (qrCode !== undefined) insertData.qr_code = qrCode;
-
+    
+    // Handle QR code and creation timestamp
+    if (!qrCode || qrCode.trim() === '') {
+      const randomCode = randomUUID();
+      insertData.qr_code = randomCode;
+      insertData.qr_code_created_at = qrCodeCreatedAt || new Date().toISOString();
+    } else if (qrCode && qrCode.trim() !== '') {
+      // If qrCode is provided, use it directly
+      insertData.qr_code = qrCode;
+      insertData.qr_code_created_at = qrCodeCreatedAt || new Date().toISOString();
+    }
+    
     const { data, error } = await supabaseAdmin
       .from('tables')
       .insert([insertData])

@@ -1,189 +1,189 @@
 {
-  "loading": "Loading...",
-  "all_rights_reserved": "All rights reserved.",
-  "go_to_homepage": "Go to Homepage",
-  "powered_by": "Powered by",
-  "save": "Save",
-  "saving": "Saving...",
-  "saveChanges": "Save Changes",
-  "retry": "Retry",
-  "cancel": "Cancel",
-  "edit": "Edit",
-  "delete": "Delete",
-  "confirm": "Confirm",
-  "view_details": "View Details",
-  "close_modal": "Close modal",
-  "search": "Search...",
-  "available": "Available",
-  "unavailable": "Unavailable",
-  "list": "List",
-  "schedule": "Schedule",
-  "off_duty": "Off Duty",
-  "export_csv": "Export CSV",
-  "export_pdf": "Export PDF",
-  "unknown_item": "Unknown Item",
-  "total": "Total",
-  "admin_panel_button": "Admin Panel",
-  "needs_attention": "Needs Attention",
-  "all_good": "All Good",
-  "zod_form_hint": "Form validation is handled by Zod. Please ensure all required fields are filled correctly.",
-  "feature_in_development": "The '{feature}' feature is currently under development and will be available soon.",
-  "form_placeholder": "Form fields go here.",
-  "back_to_menu": "Back to Menu",
-  "back_to_home": "Back to Home",
-  "add_more_items": "Add More Items",
-  "recharts_note": "Charts powered by Recharts.",
-  "datatable_component_note": "Data table component placeholder.",
-  "sold": "sold",
-  "cancel_booking": "Cancel Booking",
-  "confirm_booking": "Confirm Booking",
-  "selectedPlanLabel": "Selected Plan",
-  "changePlan": "Change Plan",
+  "loading": "Đang tải...",
+  "all_rights_reserved": "Tất cả quyền được bảo lưu.",
+  "go_to_homepage": "Đi đến Trang chủ",
+  "powered_by": "Được cung cấp bởi",
+  "save": "Lưu",
+  "saving": "Đang lưu...",
+  "saveChanges": "Lưu thay đổi",
+  "retry": "Thử lại",
+  "cancel": "Hủy",
+  "edit": "Chỉnh sửa",
+  "delete": "Xóa",
+  "confirm": "Xác nhận",
+  "view_details": "Xem chi tiết",
+  "close_modal": "Đóng cửa sổ",
+  "search": "Tìm kiếm...",
+  "available": "Có sẵn",
+  "unavailable": "Không có sẵn",
+  "list": "Danh sách",
+  "schedule": "Lịch trình",
+  "off_duty": "Nghỉ làm",
+  "export_csv": "Xuất CSV",
+  "export_pdf": "Xuất PDF",
+  "unknown_item": "Mục không xác định",
+  "total": "Tổng cộng",
+  "admin_panel_button": "Bảng quản trị",
+  "needs_attention": "Cần chú ý",
+  "all_good": "Tất cả ổn",
+  "zod_form_hint": "Xác thực biểu mẫu được xử lý bởi Zod. Vui lòng đảm bảo tất cả các trường bắt buộc được điền chính xác.",
+  "feature_in_development": "Tính năng '{feature}' hiện đang được phát triển và sẽ sớm có sẵn.",
+  "form_placeholder": "Các trường biểu mẫu ở đây.",
+  "back_to_menu": "Quay lại Menu",
+  "back_to_home": "Quay lại Trang chủ",
+  "add_more_items": "Thêm mục khác",
+  "recharts_note": "Biểu đồ được cung cấp bởi Recharts.",
+  "datatable_component_note": "Trình giữ chỗ thành phần bảng dữ liệu.",
+  "sold": "đã bán",
+  "cancel_booking": "Hủy đặt chỗ",
+  "confirm_booking": "Xác nhận đặt chỗ",
+  "selectedPlanLabel": "Gói đã chọn",
+  "changePlan": "Thay đổi gói",
   "order_status": {
-    "new": "New",
-    "ordered": "Ordered",
-    "serving": "Serving",
-    "preparing": "Preparing",
-    "ready": "Ready",
-    "completed": "Completed",
-    "canceled": "Canceled"
+    "new": "Mới",
+    "ordered": "Đã đặt hàng",
+    "serving": "Đang phục vụ",
+    "preparing": "Đang chuẩn bị",
+    "ready": "Sẵn sàng",
+    "completed": "Hoàn thành",
+    "canceled": "Đã hủy"
   },
   "order_item_status": {
-    "ordered": "Ordered",
-    "preparing": "Preparing",
-    "ready": "Ready",
-    "served": "Served"
+    "ordered": "Đã đặt hàng",
+    "preparing": "Đang chuẩn bị",
+    "ready": "Sẵn sàng",
+    "served": "Đã phục vụ"
   },
-  "cart": "Cart",
-  "view_cart_label": "View Cart",
-  "order_history_label": "Order History",
+  "cart": "Giỏ hàng",
+  "view_cart_label": "Xem giỏ hàng",
+  "order_history_label": "Lịch sử đơn hàng",
   "weekdays": {
-    "mon": "Monday",
-    "tue": "Tuesday",
-    "wed": "Wednesday",
-    "thu": "Thursday",
-    "fri": "Friday",
-    "sat": "Saturday",
-    "sun": "Sunday",
-    "mon_short": "Mon",
-    "tue_short": "Tue",
-    "wed_short": "Wed",
-    "thu_short": "Thu",
-    "fri_short": "Fri",
-    "sat_short": "Sat",
-    "sun_short": "Sun"
+    "mon": "Thứ Hai",
+    "tue": "Thứ Ba",
+    "wed": "Thứ Tư",
+    "thu": "Thứ Năm",
+    "fri": "Thứ Sáu",
+    "sat": "Thứ Bảy",
+    "sun": "Chủ Nhật",
+    "mon_short": "T2",
+    "tue_short": "T3",
+    "wed_short": "T4",
+    "thu_short": "T5",
+    "fri_short": "T6",
+    "sat_short": "T7",
+    "sun_short": "CN"
   },
   "days": {
-    "monday": "Monday",
-    "tuesday": "Tuesday",
-    "wednesday": "Wednesday",
-    "thursday": "Thursday",
-    "friday": "Friday",
-    "saturday": "Saturday",
-    "sunday": "Sunday"
+    "monday": "Thứ Hai",
+    "tuesday": "Thứ Ba",
+    "wednesday": "Thứ Tư",
+    "thursday": "Thứ Năm",
+    "friday": "Thứ Sáu",
+    "saturday": "Thứ Bảy",
+    "sunday": "Chủ Nhật"
   },
   "language_switcher": {
-    "toggle_label": "Change Language"
+    "toggle_label": "Thay đổi ngôn ngữ"
   },
-  "defaultLanguageLabel": "Default Language",
-  "defaultLanguagePlaceholder": "Select default language",
+  "defaultLanguageLabel": "Ngôn ngữ mặc định",
+  "defaultLanguagePlaceholder": "Chọn ngôn ngữ mặc định",
   "languageOption": {
-    "en": "English",
-    "ja": "Japanese",
-    "vi": "Vietnamese"
+    "en": "Tiếng Anh",
+    "ja": "Tiếng Nhật",
+    "vi": "Tiếng Việt"
   },
   "theme": {
-    "toggle_aria_label": "Toggle light/dark theme",
-    "toggle_label": "Toggle Theme"
+    "toggle_aria_label": "Chuyển đổi giao diện sáng/tối",
+    "toggle_label": "Chuyển đổi giao diện"
   },
-  "switch_to_light_mode": "Switch to Light Mode",
-  "switch_to_dark_mode": "Switch to Dark Mode",
+  "switch_to_light_mode": "Chuyển sang chế độ sáng",
+  "switch_to_dark_mode": "Chuyển sang chế độ tối",
   "rating": {
-    "set_stars": "Set {count} star rating",
-    "current_stars": "Current rating: {count} stars",
-    "no_reviews": "No reviews yet"
+    "set_stars": "Đặt xếp hạng {count} sao",
+    "current_stars": "Xếp hạng hiện tại: {count} sao",
+    "no_reviews": "Chưa có đánh giá"
   },
   "alert": {
     "info": {
-      "title": "Information"
+      "title": "Thông tin"
     },
     "success": {
-      "title": "Success"
+      "title": "Thành công"
     },
     "warning": {
-      "title": "Warning"
+      "title": "Cảnh báo"
     },
     "error": {
-      "title": "Error"
+      "title": "Lỗi"
     }
   },
   "errors": {
-    "noSubdomainDetected": "No subdomain could be detected for the restaurant.",
-    "noRestaurantIdForSubdomain": "Could not find a restaurant ID for the provided subdomain.",
-    "noRestaurantIdTitle": "Restaurant Not Identified",
-    "noRestaurantIdMessage": "Could not determine the restaurant ID. Please ensure you are accessing this page correctly.",
-    "fetchErrorTitle": "Error Loading Settings",
-    "fetchErrorMessage": "There was a problem retrieving the restaurant settings. Please try again later.",
-    "noSettingsFoundTitle": "Settings Not Found",
-    "noSettingsFoundMessage": "No settings data found for this restaurant."
+    "noSubdomainDetected": "Không thể phát hiện tên miền phụ cho nhà hàng.",
+    "noRestaurantIdForSubdomain": "Không thể tìm thấy ID nhà hàng cho tên miền phụ được cung cấp.",
+    "noRestaurantIdTitle": "Nhà hàng không được xác định",
+    "noRestaurantIdMessage": "Không thể xác định ID nhà hàng. Vui lòng đảm bảo bạn đang truy cập trang này đúng cách.",
+    "fetchErrorTitle": "Lỗi khi tải cài đặt",
+    "fetchErrorMessage": "Có vấn đề khi truy xuất cài đặt nhà hàng. Vui lòng thử lại sau.",
+    "noSettingsFoundTitle": "Không tìm thấy cài đặt",
+    "noSettingsFoundMessage": "Không tìm thấy dữ liệu cài đặt cho nhà hàng này."
   },
   "404": {
-    "title": "Page Not Found",
-    "description": "Sorry, the page you are looking for doesn't exist or has been moved.",
-    "back_home": "Back to Home"
+    "title": "Trang không tìm thấy",
+    "description": "Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.",
+    "back_home": "Quay lại Trang chủ"
   },
   "validation": {
-    "nameRequired": "Restaurant name is required.",
-    "nameMaxLength": "Restaurant name must be {maxLength} characters or less.",
-    "defaultLanguageRequired": "Default language is required.",
-    "brandColorInvalidFormat": "Invalid brand color format. Use #RRGGBB.",
-    "contactInfoMaxLength": "Contact information must be {maxLength} characters or less.",
-    "addressMaxLength": "Address must be {maxLength} characters or less.",
-    "openingHoursMaxLength": "Operating hours must be {maxLength} characters or less.",
-    "descriptionMaxLength": "Description must be {maxLength} characters or less.",
-    "logoFileMaxSize": "Logo image must be {maxSize}MB or less.",
-    "logoFileInvalidType": "Invalid file type. Please upload a PNG, JPG, or WEBP image.",
-    "logoUrlinvalidFormat": "Invalid logo URL format."
+    "nameRequired": "Tên nhà hàng là bắt buộc.",
+    "nameMaxLength": "Tên nhà hàng phải có tối đa {maxLength} ký tự.",
+    "defaultLanguageRequired": "Ngôn ngữ mặc định là bắt buộc.",
+    "brandColorInvalidFormat": "Định dạng màu thương hiệu không hợp lệ. Sử dụng #RRGGBB.",
+    "contactInfoMaxLength": "Thông tin liên hệ phải có tối đa {maxLength} ký tự.",
+    "addressMaxLength": "Địa chỉ phải có tối đa {maxLength} ký tự.",
+    "openingHoursMaxLength": "Giờ hoạt động phải có tối đa {maxLength} ký tự.",
+    "descriptionMaxLength": "Mô tả phải có tối đa {maxLength} ký tự.",
+    "logoFileMaxSize": "Hình ảnh logo phải có dung lượng tối đa {maxSize}MB.",
+    "logoFileInvalidType": "Loại tệp không hợp lệ. Vui lòng tải lên hình ảnh PNG, JPG hoặc WEBP.",
+    "logoUrlinvalidFormat": "Định dạng URL logo không hợp lệ."
   },
   "coming_soon": {
-    "title": "Coming Soon",
-    "description": "{feature} is coming soon!",
-    "generic_description": "This feature is under development."
+    "title": "Sắp ra mắt",
+    "description": "{feature} sắp ra mắt!",
+    "generic_description": "Tính năng này đang được phát triển."
   },
   "feature": {
-    "low_stock_alerts_dashboard": "Low Stock Alerts on Dashboard",
-    "sales_over_time_chart": "Sales Over Time Chart",
-    "popular_items_report": "Popular Items Report"
+    "low_stock_alerts_dashboard": "Cảnh báo tồn kho thấp trên bảng điều khiển",
+    "sales_over_time_chart": "Biểu đồ doanh số theo thời gian",
+    "popular_items_report": "Báo cáo các món ăn phổ biến"
   },
-  "mark_resolved": "Mark Resolved",
-  "mark_unresolved": "Mark Unresolved",
-  "defaultUnnamedRestaurant": "Unnamed Restaurant",
-  "processing": "Processing...",
+  "mark_resolved": "Đánh dấu đã giải quyết",
+  "mark_unresolved": "Đánh dấu chưa giải quyết",
+  "defaultUnnamedRestaurant": "Nhà hàng không tên",
+  "processing": "Đang xử lý...",
   "logout": {
-    "title": "Logging You Out...",
-    "message": "You have been successfully logged out. Redirecting you shortly.",
-    "login_again_button": "Login Again"
+    "title": "Đang đăng xuất...",
+    "message": "Bạn đã đăng xuất thành công. Sẽ chuyển hướng bạn ngay.",
+    "login_again_button": "Đăng nhập lại"
   },
   "layout_errors": {
-    "fallbackRestaurantName": "Fallback Restaurant",
-    "configurationErrorTitle": "Restaurant Configuration Error",
-    "configurationErrorDescription": "Could not load settings for subdomain: {subdomain}. Displaying with fallback settings.",
-    "adminPanelTitle": "Admin Panel",
-    "noRestaurantContextTitle": "Error: No Restaurant Context",
-    "noRestaurantContextDescription": "This dashboard requires a valid restaurant subdomain to function correctly."
+    "fallbackRestaurantName": "Nhà hàng dự phòng",
+    "configurationErrorTitle": "Lỗi cấu hình nhà hàng",
+    "configurationErrorDescription": "Không thể tải cài đặt cho tên miền phụ: {subdomain}. Hiển thị với cài đặt dự phòng.",
+    "adminPanelTitle": "Bảng quản trị",
+    "noRestaurantContextTitle": "Lỗi: Không có ngữ cảnh nhà hàng",
+    "noRestaurantContextDescription": "Bảng điều khiển này yêu cầu tên miền phụ nhà hàng hợp lệ để hoạt động chính xác."
   },
   "customer_errors": {
-    "restaurant_not_found": "Restaurant not found. Please check the URL or contact support.",
-    "error_loading_menu": "Error loading menu. Please try again later.",
-    "error_loading_cart": "Error loading cart. Please try again later.",
-    "error_loading_checkout": "Error loading checkout. Please try again later.",
-    "error_loading_booking": "Error loading booking form. Please try again later.",
-    "error_loading_order_summary": "Error loading order summary. Please try again later.",
-    "error_loading_review_form": "Error loading review form. Please try again later."
+    "restaurant_not_found": "Không tìm thấy nhà hàng. Vui lòng kiểm tra URL hoặc liên hệ hỗ trợ.",
+    "error_loading_menu": "Lỗi khi tải menu. Vui lòng thử lại sau.",
+    "error_loading_cart": "Lỗi khi tải giỏ hàng. Vui lòng thử lại sau.",
+    "error_loading_checkout": "Lỗi khi tải thanh toán. Vui lòng thử lại sau.",
+    "error_loading_booking": "Lỗi khi tải biểu mẫu đặt chỗ. Vui lòng thử lại sau.",
+    "error_loading_order_summary": "Lỗi khi tải tóm tắt đơn hàng của bạn. Vui lòng thử lại sau.",
+    "error_loading_review_form": "Lỗi khi tải biểu mẫu đánh giá. Hãy thử lại sau."
   },
-  "currency_format": "{value, number, ::currency/JPY}",
-  "ordering_for_table": "Ordering for Table {tableId}",
+  "currency_format": "{value, number, ::currency/VND}",
+  "ordering_for_table": "Đặt hàng cho bàn {tableId}",
   "item": {
-    "weekday_visibility": "Weekday Visibility"
+    "weekday_visibility": "Hiển thị theo ngày trong tuần"
   }
 }
