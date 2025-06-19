@@ -26,8 +26,20 @@ export function formatCurrency(
   }
 }
 
-export const getLocalizedText = (obj: { [key: string]: string | undefined }, locale: string) => {
-  return obj[`name_${locale}`] || obj[`name_en`] || '';
+export const getLocalizedText = (obj: { en?: string; ja?: string; vi?: string; name_en?: string; name_ja?: string; name_vi?: string; [key: string]: string | undefined }, locale: string) => {
+  // First try the direct keys (en, ja, vi)
+  if (obj[locale as keyof typeof obj]) {
+    return obj[locale as keyof typeof obj] || '';
+  }
+  
+  // Then try the name_* keys
+  const nameKey = `name_${locale}` as keyof typeof obj;
+  if (obj[nameKey]) {
+    return obj[nameKey] || '';
+  }
+  
+  // Fallback to English variants
+  return obj.en || obj.name_en || obj.ja || obj.name_ja || obj.vi || obj.name_vi || '';
 };
 
 // Helper to get subdomain, this should be robust

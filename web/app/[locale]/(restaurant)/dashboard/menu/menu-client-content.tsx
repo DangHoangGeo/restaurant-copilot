@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +8,6 @@ import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle } from 'lucide-r
 import { MenuSkeleton } from '@/components/ui/skeletons';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
-import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 import {
   Dialog,
@@ -18,7 +17,6 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { StarRating } from '@/components/ui/star-rating';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { getLocalizedText } from '@/lib/utils';
@@ -28,8 +26,12 @@ import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ItemModal } from '@/components/features/admin/menu/ItemModal';
-import Image from 'next/image';
 import { Category } from '@/shared/types/menu';
+
+// New mobile-friendly components
+import { MenuStatsBar } from '@/components/features/admin/menu/MenuStatsBar';
+import { MenuSearchFilter, FilterState, ViewMode } from '@/components/features/admin/menu/MenuSearchFilter';
+import { MenuItemCard } from '@/components/features/admin/menu/MenuItemCard';
 
 // import { Switch } from "@/components/ui/switch"; // For availability toggle if preferred
 
@@ -323,6 +325,16 @@ export function MenuClientContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // New mobile-friendly state
+  const [filters, setFilters] = useState<FilterState>({
+    searchTerm: '',
+    categoryId: null,
+    availability: 'all',
+    stockStatus: 'all'
+  });
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+
   const { restaurantSettings: restaurant } = useRestaurantSettings();
   const supabase = createClient();
 
@@ -377,6 +389,59 @@ export function MenuClientContent() {
       console.error('Error reloading data:', error);
     }
   };
+
+  // Filter and process menu data
+  const filteredMenuData = useMemo(() => {
+    let filtered = [...menuData];
+
+    // Filter by category if specified
+    if (filters.categoryId) {
+      filtered = filtered.filter(cat => cat.id === filters.categoryId);
+    }
+
+    // Apply filters to menu items within categories
+    return filtered.map(category => ({
+      ...category,
+      menu_items: category.menu_items.filter(item => {
+        // Search term filter
+        if (filters.searchTerm) {
+          const searchLower = filters.searchTerm.toLowerCase();
+          const itemName = getLocalizedText({
+            name_en: item.name_en,
+            name_ja: item.name_ja,
+            name_vi: item.name_vi
+          }, locale).toLowerCase();
+          
+          if (!itemName.includes(searchLower)) {
+            return false;
+          }
+        }
+
+        // Availability filter
+        if (filters.availability === 'available' && !item.available) return false;
+        if (filters.availability === 'unavailable' && item.available) return false;
+
+        // Stock status filter
+        if (filters.stockStatus === 'low_stock' && (item.stock_level === undefined || item.stock_level >= 10)) return false;
+        if (filters.stockStatus === 'in_stock' && (item.stock_level !== undefined && item.stock_level < 10)) return false;
+
+        return true;
+      })
+    })).filter(category => 
+      // Only show categories that have items after filtering (unless showing all categories for structure)
+      !filters.searchTerm || category.menu_items.length > 0
+    );
+  }, [menuData, filters, locale]);
+
+  // Callback for handling filter changes
+  const handleFiltersChange = useCallback((newFilters: FilterState) => {
+    setFilters(newFilters);
+  }, []);
+
+  // Callback for handling view mode changes
+  const handleViewModeChange = useCallback((newViewMode: ViewMode) => {
+    setViewMode(newViewMode);
+  }, []);
 
   // Translation function
   const handleTranslate = async (text: string, field: string, context: 'item' | 'topping' | 'category') => {
@@ -862,6 +927,22 @@ export function MenuClientContent() {
           {t("title")}
         </h1>
       </header>
+
+      {/* Mobile-Friendly Stats Bar */}
+      <MenuStatsBar categories={menuData} isLoading={isInitialLoading} />
+
+      {/* Search and Filter Bar */}
+      <MenuSearchFilter
+        categories={menuData}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+        onRefresh={reloadData}
+        isLoading={isLoading}
+        locale={locale}
+      />
+
       <DragDropContext onDragEnd={onDragEnd}>
         <div>
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
@@ -881,7 +962,7 @@ export function MenuClientContent() {
               ref={provided.innerRef}
               className="space-y-6"
             >
-              {menuData.map((category, index) => (
+              {filteredMenuData.map((category, index) => (
                 <Draggable key={category.id} draggableId={category.id} index={index}>
                   {(providedDraggable) => (
                     <Card
@@ -918,70 +999,72 @@ export function MenuClientContent() {
                             {...providedDroppableItems.droppableProps}
                           >
                             {category.menu_items.length > 0 ? (
-                              <div className="space-y-3">
-                                {category.menu_items.map((item, itemIndex) => (
-                                  <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
-                                    {(providedDraggableItem) => (
-                                      <Card
-                                        ref={providedDraggableItem.innerRef}
-                                        {...providedDraggableItem.draggableProps}
-                                        {...providedDraggableItem.dragHandleProps}
-                                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 hover:shadow-md transition-shadow relative cursor-grab"
-                                      >
-                                        {item.stock_level !== undefined && item.stock_level < 10 && FEATURE_FLAGS.lowStockAlerts && (
-                                          <div className="absolute top-2 right-2 bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-200 text-xs px-2 py-0.5 rounded-full flex items-center">
-                                            <AlertTriangle size={12} className="mr-1" />
-                                            {t('low_stock')} ({item.stock_level})
-                                          </div>
-                                        )}
-                                        <div className="flex items-center mb-2 sm:mb-0 flex-grow">
-                                          {item.image_url ? (
-                                            <Image
-                                              src={item.image_url}
-                                              alt={getLocalizedText({ en: item.name_en, ja: item.name_ja, vi: item.name_vi }, locale)}
-                                              className="w-20 h-16 object-cover rounded-md mr-4 flex-shrink-0"
-                                              width={80}
-                                              height={64}
+                              viewMode === 'table' ? (
+                                <div className="overflow-x-auto">
+                                  <table className="w-full">
+                                    <thead>
+                                      <tr className="border-b">
+                                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                                          {t('table_headers.image')}
+                                        </th>
+                                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                                          {t('table_headers.item_details')}
+                                        </th>
+                                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                                          {t('table_headers.actions')}
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {category.menu_items.map((item, itemIndex) => (
+                                        <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
+                                          {(providedDraggableItem) => (
+                                            <MenuItemCard
+                                              item={item}
+                                              locale={locale}
+                                              viewMode={viewMode}
+                                              isLoading={isLoading}
+                                              onEdit={() => handleOpenItemModal(category, item as MenuItemFormData)}
+                                              onDelete={() => handleDeleteItem(item.id)}
+                                              t={t}
+                                              dragRef={providedDraggableItem.innerRef}
+                                              dragHandleProps={providedDraggableItem.dragHandleProps}
+                                              draggableProps={providedDraggableItem.draggableProps}
                                             />
-                                          ) : (
-                                            <div className="w-20 h-16 rounded-md mr-4 flex-shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                              <MenuIcon className="w-8 h-8 text-slate-400 dark:text-slate-500" />
-                                            </div>
                                           )}
-                                          <div className="flex-grow">
-                                            <h4 className="font-semibold text-slate-800 dark:text-slate-100">
-                                              {getLocalizedText({ en: item.name_en, ja: item.name_ja, vi: item.name_vi }, locale)}
-                                            </h4>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">
-                                              {t('currency_format', { value: item.price })}
-                                            </p>
-                                            <StarRating value={item.averageRating || 0} count={item.reviewCount || 0} size="sm" />
-                                            <div className="mt-1 flex flex-wrap gap-1">
-                                              {item.weekday_visibility.map(day => (
-                                                <span key={day} className="text-xs bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded">
-                                                  {day && t(`weekdays_short.${day}_short`)}
-                                                </span>
-                                              ))}
-                                            </div>
-                                          </div>
+                                        </Draggable>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                  {providedDroppableItems.placeholder}
+                                </div>
+                              ) : (
+                                <div className="space-y-3">
+                                  {category.menu_items.map((item, itemIndex) => (
+                                    <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
+                                      {(providedDraggableItem) => (
+                                        <div
+                                          ref={providedDraggableItem.innerRef}
+                                          {...providedDraggableItem.draggableProps}
+                                          {...providedDraggableItem.dragHandleProps}
+                                          className="cursor-grab"
+                                        >
+                                          <MenuItemCard
+                                            item={item}
+                                            locale={locale}
+                                            viewMode={viewMode}
+                                            isLoading={isLoading}
+                                            onEdit={() => handleOpenItemModal(category, item as MenuItemFormData)}
+                                            onDelete={() => handleDeleteItem(item.id)}
+                                            t={t}
+                                          />
                                         </div>
-                                        <div className="flex space-x-1 sm:space-x-2 mt-2 sm:mt-0 self-end sm:self-center flex-shrink-0">
-                                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${item.available ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-300'}`}>
-                                            {item.available ? t('available') : t('unavailable')}
-                                          </span>
-                                          <Button size="sm" variant="ghost" onClick={() => handleOpenItemModal(category, item as MenuItemFormData)}>
-                                            <SquarePen className="mr-2 h-4 w-4" /> {t('edit')}
-                                          </Button>
-                                          <Button size="sm" variant="ghost" onClick={() => handleDeleteItem(item.id)} className="text-red-500 hover:text-red-600" disabled={isLoading}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> {t('delete')}
-                                          </Button>
-                                        </div>
-                                      </Card>
-                                    )}
-                                  </Draggable>
-                                ))}
-                                {providedDroppableItems.placeholder}
-                              </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {providedDroppableItems.placeholder}
+                                </div>
+                              )
                             ) : (
                               <div className="text-center py-8">
                                 <MenuIcon className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />

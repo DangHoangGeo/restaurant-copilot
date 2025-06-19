@@ -50,7 +50,7 @@
     "total_items_sold": "Tổng số món bán ra",
     "average_order_value": "Giá trị đơn trung bình",
     "top_item": "Món bán chạy",
-    "low_stock_items": "Món gần hết hàng",
+    "low_stock": "Món gần hết hàng",
     "todaySales": "Doanh thu hôm nay",
     "todayOrders": "Đơn hàng hôm nay",
     "todayRevenue": "Doanh thu hôm nay",
