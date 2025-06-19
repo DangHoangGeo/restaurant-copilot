@@ -1,217 +1,217 @@
 {
-  "title": "Restaurant Settings",
-  "description": "Manage your restaurant's information, branding, and online presence.",
+  "title": "Cài Đặt Nhà Hàng",
+  "description": "Quản lý thông tin, thương hiệu và sự hiện diện trực tuyến của nhà hàng.",
   "labels": {
-    "restaurantName": "Restaurant Name",
-    "subdomain": "Domain Name",
-    "defaultLanguage": "Default Language",
-    "brandColor": "Brand Color",
+    "restaurantName": "Tên Nhà Hàng",
+    "subdomain": "Tên Miền",
+    "defaultLanguage": "Ngôn Ngữ Mặc Định",
+    "brandColor": "Màu Thương Hiệu",
     "logo": "Logo",
-    "contactInfo": "Contact Information",
-    "address": "Address",
-    "phone": "Phone Number",
-    "email": "Email Address",
+    "contactInfo": "Thông Tin Liên Hệ",
+    "address": "Địa Chỉ",
+    "phone": "Số Điện Thoại",
+    "email": "Địa Chỉ Email",
     "website": "Website",
-    "operatingHours": "Operating Hours",
-    "description": "Description",
-    "descriptions": "Multi-language Descriptions",
-    "descriptionEn": "Description (English)",
-    "descriptionJa": "Description (Japanese)",
-    "descriptionVi": "Description (Vietnamese)",
-    "socialLinks": "Social Media Links",
-    "currency": "Currency",
-    "paymentMethods": "Payment Methods",
-    "deliveryOptions": "Service Options"
+    "operatingHours": "Giờ Hoạt Động",
+    "description": "Mô Tả",
+    "descriptions": "Mô Tả Đa Ngôn Ngữ",
+    "descriptionEn": "Mô Tả (Tiếng Anh)",
+    "descriptionJa": "Mô Tả (Tiếng Nhật)",
+    "descriptionVi": "Mô Tả (Tiếng Việt)",
+    "socialLinks": "Liên Kết Mạng Xã Hội",
+    "currency": "Tiền Tệ",
+    "paymentMethods": "Phương Thức Thanh Toán",
+    "deliveryOptions": "Tùy Chọn Dịch Vụ"
   },
   "placeholders": {
-    "restaurantName": "Enter your restaurant's name",
-    "subdomain": "yourrestaurant (will become yourrestaurant.coorder.ai)",
+    "restaurantName": "Nhập tên nhà hàng của bạn",
+    "subdomain": "nhahangcuaban (sẽ thành nhahangcuaban.coorder.ai)",
     "brandColor": "#RRGGBB",
-    "contactInfo": "e.g., phone number, email",
-    "address": "Restaurant's full address",
-    "phone": "+1 234 567 8900",
-    "email": "contact@yourrestaurant.com",
-    "website": "https://yourrestaurant.com",
-    "hours": "e.g., Mon-Fri: 9am-10pm, Sat-Sun: 10am-11pm",
-    "description": "A brief description of your restaurant",
-    "descriptionEn": "Describe your restaurant in English",
+    "contactInfo": "ví dụ: số điện thoại, email",
+    "address": "Địa chỉ đầy đủ của nhà hàng",
+    "phone": "+84 123 456 7890",
+    "email": "lienhe@nhahangcuaban.com",
+    "website": "https://nhahangcuaban.com",
+    "hours": "ví dụ: T2-T6: 9h-22h, T7-CN: 10h-23h",
+    "description": "Mô tả ngắn gọn về nhà hàng của bạn",
+    "descriptionEn": "Mô tả nhà hàng của bạn bằng tiếng Anh",
     "descriptionJa": "日本語でレストランを説明してください",
     "descriptionVi": "Mô tả nhà hàng của bạn bằng tiếng Việt"
   },
   "operatingHours": {
-    "title": "Operating Hours",
-    "description": "Set your restaurant's daily operating hours.",
+    "title": "Giờ Hoạt Động",
+    "description": "Thiết lập giờ hoạt động hàng ngày của nhà hàng.",
     "presets": {
       "standard": "9-21",
       "restaurant": "11-22",
       "cafe": "7-17",
-      "closed": "Closed"
+      "closed": "Đóng Cửa"
     },
-    "closed": "Closed",
-    "helpText": "Customers will see these on your restaurant page."
+    "closed": "Đóng Cửa",
+    "helpText": "Khách hàng sẽ thấy thông tin này trên trang nhà hàng của bạn."
   },
   "socialLinks": {
-    "helpText": "Add your social media profiles to help customers connect with you."
+    "helpText": "Thêm các hồ sơ mạng xã hội để giúp khách hàng kết nối với bạn."
   },
   "paymentMethods": {
-    "cash": "Cash",
-    "creditCard": "Credit Card",
-    "mobilePayment": "Mobile Payment",
+    "cash": "Tiền Mặt",
+    "creditCard": "Thẻ Tín Dụng",
+    "mobilePayment": "Thanh Toán Di Động",
     "paypay": "PayPay"
   },
   "deliveryOptions": {
-    "title": "Service Options",
-    "description": "Choose how customers can enjoy your food",
-    "dineIn": "Dine In",
-    "pickup": "Pickup",
-    "delivery": "Delivery"
+    "title": "Tùy Chọn Dịch Vụ",
+    "description": "Chọn cách khách hàng có thể thưởng thức món ăn của bạn",
+    "dineIn": "Ăn Tại Chỗ",
+    "pickup": "Lấy Tại Quầy",
+    "delivery": "Giao Hàng"
   },
   "currency": {
-    "JPY": "Japanese Yen (¥)",
-    "USD": "US Dollar ($)",
-    "VND": "Vietnamese Dong (₫)"
+    "JPY": "Yên Nhật (¥)",
+    "USD": "Đô La Mỹ ($)",
+    "VND": "Đồng Việt Nam (₫)"
   },
   "aiDescription": {
-    "title": "✨ AI-Powered Description Generator",
-    "subtitle": "Let AI create compelling descriptions in all three languages for your restaurant",
-    "cuisine": "Cuisine Type",
-    "atmosphere": "Atmosphere",
-    "specialties": "Specialties",
-    "location": "Location",
-    "additionalInfo": "Additional Information",
-    "cuisinePlaceholder": "e.g., Japanese, Vietnamese, Italian",
-    "atmospherePlaceholder": "e.g., Cozy, Modern, Traditional",
-    "specialtiesPlaceholder": "e.g., Fresh sushi, Authentic pho",
-    "locationPlaceholder": "e.g., Downtown Tokyo, Shibuya",
-    "additionalInfoPlaceholder": "Any unique features, history, or special information about your restaurant...",
-    "generate": "Generate Descriptions",
-    "generating": "Generating...",
-    "success": "Descriptions generated successfully!",
-    "disclaimer": "AI-generated content should be reviewed and edited as needed.",
+    "title": "✨ Trình Tạo Mô Tả Bằng AI",
+    "subtitle": "Để AI tạo ra các mô tả hấp dẫn bằng cả ba ngôn ngữ cho nhà hàng của bạn",
+    "cuisine": "Loại Ẩm Thực",
+    "atmosphere": "Bầu Không Khí",
+    "specialties": "Món Đặc Biệt",
+    "location": "Vị Trí",
+    "additionalInfo": "Thông Tin Bổ Sung",
+    "cuisinePlaceholder": "ví dụ: Nhật Bản, Việt Nam, Ý",
+    "atmospherePlaceholder": "ví dụ: Ấm cúng, Hiện đại, Truyền thống",
+    "specialtiesPlaceholder": "ví dụ: Sushi tươi, Phở chính gốc",
+    "locationPlaceholder": "ví dụ: Trung tâm Hà Nội, Quận 1",
+    "additionalInfoPlaceholder": "Bất kỳ đặc điểm độc đáo, lịch sử hoặc thông tin đặc biệt nào về nhà hàng của bạn...",
+    "generate": "Tạo Mô Tả",
+    "generating": "Đang Tạo...",
+    "success": "Tạo mô tả thành công!",
+    "disclaimer": "Nội dung do AI tạo ra nên được xem xét và chỉnh sửa nếu cần.",
     "errors": {
-      "missingName": "Please enter a restaurant name first",
-      "generationFailed": "Failed to generate descriptions. Please try again."
+      "missingName": "Vui lòng nhập tên nhà hàng trước",
+      "generationFailed": "Không thể tạo mô tả. Vui lòng thử lại."
     }
   },
   "buttons": {
-    "saveChanges": "Save Changes",
-    "uploadingLogo": "Uploading...",
-    "updatingSettings": "Updating...",
-    "checkAvailability": "Check Availability"
+    "saveChanges": "Lưu Thay Đổi",
+    "uploadingLogo": "Đang Tải Lên...",
+    "updatingSettings": "Đang Cập Nhật...",
+    "checkAvailability": "Kiểm Tra Tính Khả Dụng"
   },
   "notifications": {
-    "successTitle": "Settings Updated",
-    "successMessage": "Your restaurant settings have been updated successfully.",
-    "settingsSaved": "Settings saved successfully.",
-    "saveError": "Error saving settings: {error}",
-    "uploadError": "Error uploading logo: {error}",
-    "errorTitle": "Update Failed",
-    "errorMessage": "Could not update settings: {error}",
-    "logoUploadErrorTitle": "Logo Upload Failed",
-    "logoUploadErrorMessage": "Could not upload logo: {error}",
-    "logoRemovedMessage": "Logo removed. Save changes to confirm.",
-    "fileTooLarge": "File is too large. Max 5MB.",
-    "invalidFileType": "Invalid file type. Please upload an image.",
-    "settingsSaveFailedGeneric": "Failed to save settings. Please try again.",
-    "compressionError": "Error compressing image. Please try a different image or check its format.",
-    "subdomainCheckSuccess": "Domain name is available!",
-    "subdomainCheckError": "Domain name is not available or invalid"
+    "successTitle": "Cài Đặt Đã Cập Nhật",
+    "successMessage": "Cài đặt nhà hàng của bạn đã được cập nhật thành công.",
+    "settingsSaved": "Cài đặt đã được lưu thành công.",
+    "saveError": "Lỗi khi lưu cài đặt: {error}",
+    "uploadError": "Lỗi khi tải lên logo: {error}",
+    "errorTitle": "Cập Nhật Thất Bại",
+    "errorMessage": "Không thể cập nhật cài đặt: {error}",
+    "logoUploadErrorTitle": "Tải Lên Logo Thất Bại",
+    "logoUploadErrorMessage": "Không thể tải lên logo: {error}",
+    "logoRemovedMessage": "Logo đã bị xóa. Lưu thay đổi để xác nhận.",
+    "fileTooLarge": "Tệp quá lớn. Tối đa 5MB.",
+    "invalidFileType": "Loại tệp không hợp lệ. Vui lòng tải lên hình ảnh.",
+    "settingsSaveFailedGeneric": "Không thể lưu cài đặt. Vui lòng thử lại.",
+    "compressionError": "Lỗi nén hình ảnh. Vui lòng thử hình ảnh khác hoặc kiểm tra định dạng.",
+    "subdomainCheckSuccess": "Tên miền khả dụng!",
+    "subdomainCheckError": "Tên miền không khả dụng hoặc không hợp lệ"
   },
   "validation": {
     "name": {
-      "required": "Restaurant name is required",
-      "maxLength": "Name must be {maxLength} characters or less"
+      "required": "Tên nhà hàng là bắt buộc",
+      "maxLength": "Tên phải dài tối đa {maxLength} ký tự"
     },
     "subdomain": {
-      "minLength": "Domain must be at least {minLength} characters",
-      "maxLength": "Domain must be {maxLength} characters or less",
-      "invalidFormat": "Domain can only contain lowercase letters, numbers, and hyphens"
+      "minLength": "Tên miền phải có ít nhất {minLength} ký tự",
+      "maxLength": "Tên miền phải dài tối đa {maxLength} ký tự",
+      "invalidFormat": "Tên miền chỉ được chứa chữ cái thường, số và dấu gạch ngang"
     },
     "defaultLanguage": {
-      "required": "Default language is required"
+      "required": "Ngôn ngữ mặc định là bắt buộc"
     },
     "brandColor": {
-      "invalidFormat": "Invalid color format. Use #RRGGBB format"
+      "invalidFormat": "Định dạng màu không hợp lệ. Sử dụng định dạng #RRGGBB"
     },
     "contactInfo": {
-      "maxLength": "Contact info must be {maxLength} characters or less"
+      "maxLength": "Thông tin liên hệ phải dài tối đa {maxLength} ký tự"
     },
     "address": {
-      "maxLength": "Address must be {maxLength} characters or less"
+      "maxLength": "Địa chỉ phải dài tối đa {maxLength} ký tự"
     },
     "phone": {
-      "maxLength": "Phone number must be {maxLength} characters or less"
+      "maxLength": "Số điện thoại phải dài tối đa {maxLength} ký tự"
     },
     "email": {
-      "invalidFormat": "Please enter a valid email address",
-      "maxLength": "Email must be {maxLength} characters or less"
+      "invalidFormat": "Vui lòng nhập địa chỉ email hợp lệ",
+      "maxLength": "Email phải dài tối đa {maxLength} ký tự"
     },
     "website": {
-      "invalidFormat": "Please enter a valid website URL",
-      "maxLength": "Website URL must be {maxLength} characters or less"
+      "invalidFormat": "Vui lòng nhập URL website hợp lệ",
+      "maxLength": "URL website phải dài tối đa {maxLength} ký tự"
     },
     "description": {
-      "maxLength": "Description must be {maxLength} characters or less"
+      "maxLength": "Mô tả phải dài tối đa {maxLength} ký tự"
     },
     "socialLinks": {
-      "invalidUrl": "Please enter a valid URL"
+      "invalidUrl": "Vui lòng nhập URL hợp lệ"
     },
     "currency": {
-      "required": "Currency is required"
+      "required": "Tiền tệ là bắt buộc"
     },
     "logoFile": {
-      "maxSize": "Logo file must be {maxSize}MB or less",
-      "invalidType": "Logo must be PNG, JPEG, or WebP format"
+      "maxSize": "Tệp logo phải nhỏ hơn {maxSize}MB",
+      "invalidType": "Logo phải ở định dạng PNG, JPEG hoặc WebP"
     },
     "logoUrl": {
-      "invalidFormat": "Invalid logo URL format"
+      "invalidFormat": "Định dạng URL logo không hợp lệ"
     }
   },
   "altText": {
-    "logoPreview": "Restaurant logo preview",
+    "logoPreview": "Xem trước logo nhà hàng",
     "logoIconFallback": "Logo"
   },
   "sections": {
-    "basic": "Basic Information",
-    "branding": "Branding & Visual",
-    "contact": "Contact & Location",
-    "operations": "Operations",
-    "descriptions": "Descriptions",
-    "online": "Online Presence",
-    "business": "Business Settings"
+    "basic": "Thông Tin Cơ Bản",
+    "branding": "Thương Hiệu & Hình Ảnh",
+    "contact": "Liên Hệ & Vị Trí",
+    "operations": "Hoạt Động",
+    "descriptions": "Mô Tả",
+    "online": "Sự Hiện Diện Trực Tuyến",
+    "business": "Cài Đặt Kinh Doanh"
   },
   "tabs": {
-    "basic": "Basic",
-    "domain": "Domain",
-    "hours": "Hours",
-    "descriptions": "Descriptions",
-    "business": "Business",
-    "delivery": "Service"
+    "basic": "Cơ Bản",
+    "domain": "Tên Miền",
+    "hours": "Giờ",
+    "descriptions": "Mô Tả",
+    "business": "Kinh Doanh",
+    "delivery": "Dịch Vụ"
   },
   "basicInfo": {
-    "title": "Basic Information",
-    "description": "Essential details about your restaurant"
+    "title": "Thông Tin Cơ Bản",
+    "description": "Thông tin cần thiết về nhà hàng của bạn"
   },
   "domainManagement": {
-    "title": "Domain Management",
-    "description": "Customize your restaurant's web address",
-    "checking": "Checking availability...",
-    "available": "✅ This domain is available!",
-    "unavailable": "❌ This domain is already taken",
-    "infoTitle": "How it works",
-    "infoText": "Your customers will access your menu and ordering system through your custom domain."
+    "title": "Quản Lý Tên Miền",
+    "description": "Tùy chỉnh địa chỉ web của nhà hàng",
+    "checking": "Đang kiểm tra tính khả dụng...",
+    "available": "✅ Tên miền này khả dụng!",
+    "unavailable": "❌ Tên miền này đã được sử dụng",
+    "infoTitle": "Cách hoạt động",
+    "infoText": "Khách hàng sẽ truy cập thực đơn và hệ thống đặt hàng qua tên miền tùy chỉnh của bạn."
   },
   "descriptions": {
-    "title": "Restaurant Descriptions",
-    "description": "Create compelling descriptions in multiple languages"
+    "title": "Mô Tả Nhà Hàng",
+    "description": "Tạo các mô tả hấp dẫn bằng nhiều ngôn ngữ"
   },
   "businessSettings": {
-    "title": "Business Settings",
-    "description": "Configure currency and payment options"
+    "title": "Cài Đặt Kinh Doanh",
+    "description": "Cấu hình tiền tệ và tùy chọn thanh toán"
   },
   "currencyOptions": {
-    "JPY": "Japanese Yen (¥)",
-    "USD": "US Dollar ($)",
-    "VND": "Vietnamese Dong (₫)"
+    "JPY": "Yên Nhật (¥)",
+    "USD": "Đô La Mỹ ($)",
+    "VND": "Đồng Việt Nam (₫)"
   }
 }

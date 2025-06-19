@@ -6,13 +6,13 @@ import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { PlusCircle, SquarePen, QrCode, FileDown, Loader2, Layers, RotateCcw } from 'lucide-react'
+import { PlusCircle, SquarePen, QrCode, FileDown, Loader2, Layers, RotateCcw, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 // Shadcn Form components for Bulk Add
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { QRCodeDisplay } from '@/components/ui/qr-code-display' // Ensure this component renders an element that can be captured
+import { BrandedQRDisplay } from '@/components/ui/branded-qr-display'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -288,7 +288,7 @@ export function TablesClientContent() {
       ])
 
       setTablesData(tablesData.tables || [])
-      setRestaurantSettings(settingsData.settings || null)
+      setRestaurantSettings(settingsData || null)
     } catch (err) {
       console.error('Error fetching data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -345,6 +345,7 @@ export function TablesClientContent() {
   const [selectedTableForQr, setSelectedTableForQr] = useState<Table | null>(null)
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloadingQr, setIsDownloadingQr] = useState(false);
+  const [copied, setCopied] = useState(false);
   const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const handleOpenTableModal = (table: Table | null = null) => {
@@ -405,23 +406,62 @@ export function TablesClientContent() {
     }
   }
 
-  const handleGenerateQr = (table: Table) => {
-    // TODO: Ensure table has a qr_code field in the DB
+  const handleGenerateQr = async (table: Table) => {
+    console.log('handleGenerateQr called with table:', table);
+    
+    // If table doesn't have a QR code, generate one
     if (!table.qr_code) {
-      // Create a random QR code if not set, then save it into the table
-      // This is a placeholder, you might want to generate a proper QR code
-      // or handle it differently based on your requirements
-      // For now, we just show an error
-      toast.error(t('errors.qr_code_not_set'));
-      return;
+      try {
+        // Generate a unique QR code for this table
+        const uniqueCode = `${table.name.toLowerCase().replace(/\s+/g, '')}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Update the table with the new QR code
+        const res = await fetch(`/api/v1/owner/tables/${table.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ qrCode: uniqueCode }),
+        });
+        
+        if (!res.ok) {
+          throw new Error('Failed to generate QR code');
+        }
+        
+        const updatedTable = await res.json();
+        
+        // Update the local state
+        setTablesData(tablesData.map(t => t.id === table.id ? updatedTable.table : t));
+        
+        // Use the updated table for QR generation
+        setSelectedTableForQr(updatedTable.table);
+        toast.success(t('notifications.qr_generated'));
+      } catch (error) {
+        console.error('Error generating QR code:', error);
+        toast.error(t('errors.qr_generation_failed'));
+        return;
+      }
+    } else {
+      setSelectedTableForQr(table);
     }
-    setSelectedTableForQr(table)
-    setIsQrModalOpen(true)
+    
+    setIsQrModalOpen(true);
   }
   const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'coorder.ai';
   const qrCodeUrl = selectedTableForQr && restaurantSettings
     ? `https://${restaurantSettings.name.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/menu?code=${selectedTableForQr.qr_code}`
     : ''
+
+  const copyToClipboard = async () => {
+    if (!qrCodeUrl) return;
+    try {
+      await navigator.clipboard.writeText(qrCodeUrl);
+      setCopied(true);
+      toast.success(t('notifications.link_copied'));
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+      toast.error(t('errors.copy_failed'));
+    }
+  };
 
   const handleOpenBulkAddModal = () => {
     bulkAddForm.reset({
@@ -710,55 +750,84 @@ export function TablesClientContent() {
             </DialogContent>
           </Dialog>
           <Dialog open={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
-            <DialogContent>
+            <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>{t('qr_for_table')} {selectedTableForQr?.name || ''}</DialogTitle>
               </DialogHeader>
-              {selectedTableForQr && (
-                <div className="text-center">
-                  <div ref={qrCodeRef} className="inline-block p-4 bg-white"> {/* Wrapper for html-to-image */}
-                    <QRCodeDisplay value={qrCodeUrl} size={256} />
+              
+              {selectedTableForQr && restaurantSettings && qrCodeUrl && (
+                <div className="space-y-6">
+                  {/* Branded QR Code for display and download */}
+                  <div className="flex justify-center">
+                    <div ref={qrCodeRef} className="inline-block"> {/* Wrapper for html-to-image */}
+                      <BrandedQRDisplay 
+                        value={qrCodeUrl} 
+                        size={320}
+                        restaurantName={restaurantSettings.name}
+                        tableName={selectedTableForQr.name}
+                      />
+                    </div>
                   </div>
-                  <Button
-                    variant="primary"
-                    className="mt-6 w-full"
-                    disabled={isDownloadingQr}
-                    onClick={async () => {
-                      if (!selectedTableForQr || !qrCodeRef.current) return;
-                      setIsDownloadingQr(true);
-                      try {
-                        // Save QR code URL to DB
-                        const res = await fetch(`/api/v1/owner/tables/${selectedTableForQr.id}`, {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ qr_code: qrCodeUrl }), // Ensure field name matches DB
-                        });
-                        if (!res.ok) {
-                          const errorData = await res.json();
-                          throw new Error(errorData.message || t('errors.qr_save_failed'));
+                  
+                  {/* Action buttons */}
+                  <div className="space-y-3">
+                    {/* Copy Link Button */}
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={copyToClipboard}
+                      disabled={!qrCodeUrl}
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="mr-2 h-4 w-4 text-green-600" />
+                          {t('link_copied')}
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="mr-2 h-4 w-4" />
+                          {t('copy_link')}
+                        </>
+                      )}
+                    </Button>
+                    
+                    {/* Download PNG Button */}
+                    <Button
+                      variant="primary"
+                      className="w-full"
+                      disabled={isDownloadingQr}
+                      onClick={async () => {
+                        if (!selectedTableForQr || !qrCodeRef.current) return;
+                        setIsDownloadingQr(true);
+                        try {
+                          // Download as PNG with higher quality
+                          const dataUrl = await htmlToImage.toPng(qrCodeRef.current, {
+                            quality: 1.0,
+                            pixelRatio: 2
+                          });
+                          const link = document.createElement('a');
+                          link.download = `${restaurantSettings.name.replace(/\s+/g, '_')}_${selectedTableForQr.name.replace(/\s+/g, '_')}_QR.png`;
+                          link.href = dataUrl;
+                          link.click();
+                          toast.success(t('notifications.qr_downloaded'));
+                        } catch (error) {
+                          console.error('Error processing QR code:', error);
+                          toast.error(error instanceof Error ? error.message : t('errors.qr_download_failed'));
+                        } finally {
+                          setIsDownloadingQr(false);
                         }
-                        // Update local state with new QR code URL
-                        setTablesData(prevTables => prevTables.map(table =>
-                          table.id === selectedTableForQr.id ? { ...table, qr_code: qrCodeUrl } : table
-                        ));
-                        toast.success(t('notifications.qr_saved_success'));
-
-                        // Download as PNG
-                        const dataUrl = await htmlToImage.toPng(qrCodeRef.current);
-                        const link = document.createElement('a');
-                        link.download = `${selectedTableForQr.name.replace(/\s+/g, '_')}-qr-code.png`;
-                        link.href = dataUrl;
-                        link.click();
-                      } catch (error) {
-                        console.error('Error processing QR code:', error);
-                        toast.error(error instanceof Error ? error.message : t('errors.qr_download_failed'));
-                      } finally {
-                        setIsDownloadingQr(false);
-                      }
-                    }}>
-                    {isDownloadingQr ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2" />}
-                    {isDownloadingQr ? t('downloading_qr') : t('download_png')}
-                  </Button>
+                      }}>
+                      {isDownloadingQr ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
+                      {isDownloadingQr ? t('downloading_qr') : t('download_png')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Show loading or error states */}
+              {(!selectedTableForQr || !restaurantSettings || !qrCodeUrl) && (
+                <div className="p-4 text-center text-gray-500">
+                  <p>Loading QR code...</p>
                 </div>
               )}
             </DialogContent>

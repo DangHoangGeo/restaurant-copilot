@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { randomUUID } from "crypto";
 
 const tableSchema = z.object({
   name: z.string().min(1).max(50),
@@ -9,8 +10,8 @@ const tableSchema = z.object({
   status: z.enum(['available', 'occupied', 'reserved']).optional().default('available'),
   isOutdoor: z.boolean().optional().default(false),
   isAccessible: z.boolean().optional().default(false),
-  notes: z.string().optional(),
-  qrCode: z.string().optional(),
+  notes: z.string().optional().default('').nullable(),
+  qrCode: z.string().optional().default('').nullable(),
 });
 
 export async function GET() {
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
     const validated = tableSchema.safeParse(body);
 
     if (!validated.success) {
+      console.error('Validation error:', validated.error);
       return NextResponse.json({ errors: validated.error.flatten().fieldErrors }, { status: 400 });
     }
 
@@ -71,8 +73,15 @@ export async function POST(req: Request) {
     if (isOutdoor !== undefined) insertData.is_outdoor = isOutdoor;
     if (isAccessible !== undefined) insertData.is_accessible = isAccessible;
     if (notes !== undefined) insertData.notes = notes;
-    if (qrCode !== undefined) insertData.qr_code = qrCode;
-
+    // Generate random code if qrCode is not provided
+    if (!qrCode || qrCode.trim() === '') {
+      const randomCode = randomUUID();
+      insertData.qr_code = randomCode;
+    } else if (qrCode && qrCode.trim() !== '') {
+      // If qrCode is provided, use it directly
+      insertData.qr_code = qrCode;
+    }
+    
     const { data, error } = await supabaseAdmin
       .from('tables')
       .insert([insertData])
