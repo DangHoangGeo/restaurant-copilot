@@ -29,7 +29,9 @@
     "auto_translations_label": "Bản dịch tự động",
     "auto_translate_name_en_placeholder": "Tên danh mục tự động dịch",
     "auto_translate_name_ja_placeholder": "Tên danh mục tự động dịch",
-    "auto_translate_name_vi_placeholder": "Tên danh mục tự động dịch"
+    "auto_translate_name_vi_placeholder": "Tên danh mục tự động dịch",
+    "items_made_unavailable": "Tất cả món ăn trong danh mục đã được đánh dấu không có sẵn",
+    "availability_update_error": "Không thể cập nhật tình trạng món ăn trong danh mục"
   },
   "buttons": {
     "saving": "Đang Lưu..."
@@ -239,6 +241,7 @@
       "status": "Trạng Thái",
       "schedule": "Lịch Trình",
       "available": "Có Sẵn",
+      "unavailable": "Không Có Sẵn",
       "all_days": "Tất Cả Các Ngày",
       "category_label": "Danh Mục Thực Đơn",
       "category_edit_note": "Không thể thay đổi danh mục khi chỉnh sửa. Tạo món mới để chuyển danh mục.",
@@ -326,7 +329,15 @@
     "low_stock": "Hết Hàng",
     "top_categories": "Danh Mục Hàng Đầu"
   },
+  "item_availability": {
+    "made_available": "Món ăn hiện đã có sẵn",
+    "made_unavailable": "Món ăn hiện không có sẵn",
+    "availability_update_error": "Không thể cập nhật tình trạng món ăn"
+  },
   "filters": {
+    "all": "Tất Cả",
+    "available": "Có Sẵn",
+    "unavailable": "Không Có Sẵn",
     "search_placeholder": "Tìm kiếm món ăn...",
     "all_categories": "Tất Cả Các Danh Mục",
     "filters": "Bộ Lọc",
@@ -347,13 +358,18 @@
     "table": "Bảng"
   },
   "table_headers": {
-    "item": "Món Ăn",
-    "price": "Giá",
-    "image": "Hình Ảnh",
-    "status": "Trạng Thái",
-    "stock": "Tồn Kho",
-    "rating": "Đánh Giá",
-    "actions": "Hành Động",
-    "item_details": "Chi Tiết Món"
+    "image": "Image",
+    "item_details": "Item Details",
+    "actions": "Actions"
+  },
+  "delete_protection": {
+    "category_has_orders_title": "Không thể xóa danh mục",
+    "category_has_orders_description": "Danh mục này chứa các món ăn có đơn hàng đang tồn tại. Hãy cân nhắc đánh dấu các món ăn là không có sẵn thay vì xóa.",
+    "item_has_orders_title": "Không thể xóa món ăn",
+    "item_has_orders_description": "Món ăn này có đơn hàng đang tồn tại. Hãy cân nhắc đánh dấu là không có sẵn thay vì xóa.",
+    "make_unavailable": "Đánh dấu không có sẵn",
+    "force_delete": "Buộc xóa",
+    "cancel": "Hủy",
+    "checking_orders": "Đang kiểm tra đơn hàng hiện có..."
   }
 }

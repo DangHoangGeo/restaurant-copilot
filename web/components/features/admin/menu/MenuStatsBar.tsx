@@ -5,13 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { MenuIcon, AlertTriangle, TrendingUp, CheckCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Category } from '@/shared/types/menu';
+import { getLocalizedText } from '@/lib/utils';
 
 interface MenuStatsBarProps {
   categories: Category[];
   isLoading?: boolean;
+  locale: string;
 }
 
-export function MenuStatsBar({ categories, isLoading = false }: MenuStatsBarProps) {
+export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStatsBarProps) {
   const t = useTranslations('owner.menu.stats');
 
   // Calculate stats
@@ -106,7 +108,11 @@ export function MenuStatsBar({ categories, isLoading = false }: MenuStatsBarProp
                   variant={index === 0 ? "default" : "secondary"}
                   className="text-xs"
                 >
-                  {category.name_en} ({category.menu_items.length})
+                  {getLocalizedText({
+    name_en: category.name_en,
+    name_ja: category.name_ja || undefined,
+    name_vi: category.name_vi || undefined
+  }, locale)} ({category.menu_items.length})
                 </Badge>
               ))}
             </div>

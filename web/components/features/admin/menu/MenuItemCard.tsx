@@ -151,11 +151,13 @@ export function MenuItemCard({
                 {t('currency_format', { value: item.price })}
               </p>
 
-              {/* Status badges */}
+              {/* Status badges with quick toggle */}
               <div className="flex items-center gap-2 mb-2">
                 <Badge 
                   variant={item.available ? 'default' : 'secondary'}
-                  className={`text-xs ${item.available ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-300'}`}
+                  className={`text-xs cursor-pointer transition-colors ${item.available ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300 hover:bg-green-200' : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-300 hover:bg-red-200'}`}
+                  onClick={onToggleAvailability}
+                  title="Click to toggle availability"
                 >
                   {item.available ? t('available') : t('unavailable')}
                 </Badge>
@@ -186,7 +188,9 @@ export function MenuItemCard({
                   />
                   <Badge 
                     variant={item.available ? 'default' : 'secondary'}
-                    className={`text-xs ${item.available ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-300'}`}
+                    className={`text-xs cursor-pointer transition-colors ${item.available ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300 hover:bg-green-200' : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-300 hover:bg-red-200'}`}
+                    onClick={onToggleAvailability}
+                    title="Click to toggle availability"
                   >
                     {item.available ? t('available') : t('unavailable')}
                   </Badge>
@@ -321,7 +325,9 @@ export function MenuItemCard({
             <div className="flex items-center gap-1 sm:gap-2">
               <Badge 
                 variant={item.available ? 'default' : 'secondary'}
-                className={`text-xs ${item.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
+                className={`text-xs cursor-pointer transition-colors ${item.available ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                onClick={onToggleAvailability}
+                title="Click to toggle availability"
               >
                 {item.available ? t('available') : t('unavailable')}
               </Badge>
