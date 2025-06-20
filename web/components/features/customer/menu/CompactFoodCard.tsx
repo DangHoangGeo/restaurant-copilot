@@ -174,56 +174,7 @@ export function CompactFoodCard({
           </div>
         )}
         
-        {/* Enhanced Floating Add Button with better touch feedback */}
-        {canAddItems && (
-          <motion.div
-            animate={isAddingToCart ? { 
-              scale: [1, 1.2, 1], 
-              rotate: [0, 180, 360] 
-            } : { 
-              scale: 1, 
-              rotate: 0 
-            }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ 
-              duration: isAddingToCart ? 0.6 : 0.2,
-              type: "spring",
-              stiffness: 300,
-              damping: 20
-            }}
-            className="absolute bottom-2 right-2"
-          >
-            <Button
-              size="sm"
-              onClick={handleAddClick}
-              disabled={isAddingToCart}
-              className="h-8 w-8 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20"
-              style={{ 
-                backgroundColor: isAddingToCart ? '#10b981' : brandColor,
-                boxShadow: isAddingToCart 
-                  ? '0 0 20px rgba(16, 185, 129, 0.4)' 
-                  : `0 4px 12px ${brandColor}33`
-              }}
-              aria-label={`Add ${itemName} to cart`}
-            >
-              <motion.div
-                animate={isAddingToCart ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Plus className="h-4 w-4 text-white" />
-              </motion.div>
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={isAddingToCart ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-                transition={{ duration: 0.2, delay: 0.1 }}
-                className="absolute inset-0 flex items-center justify-center text-white font-bold"
-              >
-                ✓
-              </motion.div>
-            </Button>
-          </motion.div>
-        )}
+
 
         {/* Enhanced Badge Overlay with better styling */}
         {showBadge && (showPopularBadge || showRecommendedBadge) && (
@@ -281,7 +232,7 @@ export function CompactFoodCard({
       <div className="flex-1 p-3 flex flex-col justify-between min-h-0">
         <div className="space-y-2">
           <div 
-            className="font-semibold text-sm leading-tight text-slate-800 dark:text-slate-200 line-clamp-2 overflow-hidden"
+            className="font-semibold text-xs sm:text-sm leading-tight text-slate-800 dark:text-slate-200 line-clamp-2 overflow-hidden"
             title={itemName}
             style={{ 
               display: '-webkit-box',
@@ -294,10 +245,59 @@ export function CompactFoodCard({
             {itemName}
           </div>
         </div>
-        <div className="mt-auto pt-1">
-          <div className="font-bold text-base text-right" style={{ color: brandColor }}>
+        <div className="mt-auto pt-1 flex items-center justify-between">
+          <div className="font-bold text-base" style={{ color: brandColor }}>
             ¥{item.price}
           </div>
+          {/* Enhanced Add Button moved to bottom right */}
+          {canAddItems && (
+            <motion.div
+              animate={isAddingToCart ? { 
+                scale: [1, 1.2, 1], 
+                rotate: [0, 180, 360] 
+              } : { 
+                scale: 1, 
+                rotate: 0 
+              }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ 
+                duration: isAddingToCart ? 0.6 : 0.2,
+                type: "spring",
+                stiffness: 300,
+                damping: 20
+              }}
+            >
+              <Button
+                size="sm"
+                onClick={handleAddClick}
+                disabled={isAddingToCart}
+                className="h-6 w-6 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20"
+                style={{ 
+                  backgroundColor: isAddingToCart ? '#10b981' : brandColor,
+                  boxShadow: isAddingToCart 
+                    ? '0 0 20px rgba(16, 185, 129, 0.4)' 
+                    : `0 4px 12px ${brandColor}33`
+                }}
+                aria-label={`Add ${itemName} to cart`}
+              >
+                <motion.div
+                  animate={isAddingToCart ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Plus className="h-4 w-4 text-white" />
+                </motion.div>
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={isAddingToCart ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
+                  className="absolute inset-0 flex items-center justify-center text-white font-bold"
+                >
+                  ✓
+                </motion.div>
+              </Button>
+            </motion.div>
+          )}
         </div>
       </div>
     </motion.div>
