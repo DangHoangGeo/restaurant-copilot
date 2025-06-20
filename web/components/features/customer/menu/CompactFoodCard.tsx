@@ -57,6 +57,34 @@ const getFoodEmoji = (itemName: string): string => {
   return '🍽️';
 };
 
+// Helper function to get category-based pastel background colors
+const getCategoryPastelColor = (itemName: string): string => {
+  const name = itemName.toLowerCase();
+  
+  // Food type based colors
+  if (name.includes('coffee') || name.includes('tea') || name.includes('drink')) {
+    return 'from-amber-100 via-yellow-50 to-orange-100 dark:from-amber-900/20 dark:via-yellow-900/10 dark:to-orange-900/20';
+  }
+  if (name.includes('pizza') || name.includes('pasta') || name.includes('bread')) {
+    return 'from-red-100 via-orange-50 to-yellow-100 dark:from-red-900/20 dark:via-orange-900/10 dark:to-yellow-900/20';
+  }
+  if (name.includes('sushi') || name.includes('fish') || name.includes('seafood')) {
+    return 'from-blue-100 via-cyan-50 to-teal-100 dark:from-blue-900/20 dark:via-cyan-900/10 dark:to-teal-900/20';
+  }
+  if (name.includes('salad') || name.includes('vegetable') || name.includes('green')) {
+    return 'from-green-100 via-emerald-50 to-lime-100 dark:from-green-900/20 dark:via-emerald-900/10 dark:to-lime-900/20';
+  }
+  if (name.includes('cake') || name.includes('dessert') || name.includes('ice cream')) {
+    return 'from-pink-100 via-rose-50 to-purple-100 dark:from-pink-900/20 dark:via-rose-900/10 dark:to-purple-900/20';
+  }
+  if (name.includes('meat') || name.includes('beef') || name.includes('chicken')) {
+    return 'from-orange-100 via-red-50 to-pink-100 dark:from-orange-900/20 dark:via-red-900/10 dark:to-pink-900/20';
+  }
+  
+  // Default warm pastel
+  return 'from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-900/30 dark:via-amber-900/20 dark:to-yellow-900/30';
+};
+
 interface CompactFoodCardProps {
   item: FoodItem;
   qtyInCart: number;
@@ -155,19 +183,23 @@ export function CompactFoodCard({
           />
         )}
         
-        {/* Enhanced fallback for missing images with food emojis and better centering */}
+        {/* Enhanced fallback for missing images with category-based colors and better centering */}
         {!item.image_url && (
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-900/30 dark:via-amber-900/20 dark:to-yellow-900/30 flex flex-col items-center justify-center">
+          <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryPastelColor(itemName)} flex flex-col items-center justify-center`}>
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, type: "spring" }}
-              className="text-center"
+              className="text-center flex flex-col items-center justify-center h-full"
             >
-              <span className="text-3xl mb-2 block">
+              <motion.span 
+                className="text-4xl mb-3 block"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 {getFoodEmoji(itemName)}
-              </span>
-              <span className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide bg-white/20 px-2 py-1 rounded-full">
+              </motion.span>
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide bg-white/30 dark:bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
                 {itemName.charAt(0).toUpperCase()}
               </span>
             </motion.div>
@@ -176,18 +208,19 @@ export function CompactFoodCard({
         
 
 
-        {/* Enhanced Badge Overlay with better styling */}
+        {/* Minimal Badge Overlay - positioned to barely cover image */}
         {showBadge && (showPopularBadge || showRecommendedBadge) && (
-          <div className="absolute top-2 left-2 z-10">
+          <div className="absolute top-1 left-1 z-10">
             {showPopularBadge && (
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs flex items-center gap-1 px-2 py-1 shadow-lg border-0">
-                  <TrendingUp className="h-3 w-3" />
-                  Popular
+                <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] flex items-center gap-0.5 px-1 py-0.5 shadow-md border-0 rounded-sm">
+                  <TrendingUp className="h-2 w-2" />
+                  <span className="hidden sm:inline">Popular</span>
+                  <span className="sm:hidden">🔥</span>
                 </Badge>
               </motion.div>
             )}
@@ -197,22 +230,23 @@ export function CompactFoodCard({
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs flex items-center gap-1 px-2 py-1 shadow-lg border-0">
-                  <Sparkles className="h-3 w-3" />
-                  AI Pick
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] flex items-center gap-0.5 px-1 py-0.5 shadow-md border-0 rounded-sm">
+                  <Sparkles className="h-2 w-2" />
+                  <span className="hidden sm:inline">AI Pick</span>
+                  <span className="sm:hidden">✨</span>
                 </Badge>
               </motion.div>
             )}
           </div>
         )}
 
-        {/* Enhanced Quantity Indicator with better styling */}
+        {/* Minimal Quantity Indicator - positioned outside image */}
         {qtyInCart > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 500, damping: 25 }}
-            className="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white z-10"
+            className="absolute -top-1 -right-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow-md border border-white z-10"
           >
             {qtyInCart}
           </motion.div>
@@ -239,7 +273,8 @@ export function CompactFoodCard({
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               lineHeight: '1.3em',
-              maxHeight: '2.6em'
+              maxHeight: '2.6em',
+              wordBreak: 'break-word'
             }}
           >
             {itemName}
@@ -249,38 +284,54 @@ export function CompactFoodCard({
           <div className="font-bold text-base" style={{ color: brandColor }}>
             ¥{item.price}
           </div>
-          {/* Enhanced Add Button moved to bottom right */}
+          {/* Enhanced Add Button with enhanced animations and accessibility */}
           {canAddItems && (
             <motion.div
               animate={isAddingToCart ? { 
-                scale: [1, 1.2, 1], 
-                rotate: [0, 180, 360] 
+                scale: [1, 1.15, 1.05, 1], 
+                rotate: [0, 15, -15, 0] 
               } : { 
                 scale: 1, 
                 rotate: 0 
               }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              whileHover={{ 
+                scale: 1.1,
+                boxShadow: `0 8px 25px ${brandColor}40`
+              }}
+              whileTap={{ 
+                scale: 0.95,
+                transition: { duration: 0.1 }
+              }}
               transition={{ 
-                duration: isAddingToCart ? 0.6 : 0.2,
+                duration: isAddingToCart ? 0.8 : 0.2,
                 type: "spring",
-                stiffness: 300,
-                damping: 20
+                stiffness: 400,
+                damping: 25
               }}
             >
               <Button
                 size="sm"
                 onClick={handleAddClick}
                 disabled={isAddingToCart}
-                className="h-6 w-6 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20"
+                className="h-7 w-7 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20 focus:ring-2 focus:ring-offset-2 relative overflow-hidden"
                 style={{ 
                   backgroundColor: isAddingToCart ? '#10b981' : brandColor,
                   boxShadow: isAddingToCart 
-                    ? '0 0 20px rgba(16, 185, 129, 0.4)' 
-                    : `0 4px 12px ${brandColor}33`
+                    ? '0 0 25px rgba(16, 185, 129, 0.5)' 
+                    : `0 4px 15px ${brandColor}40`
                 }}
                 aria-label={`Add ${itemName} to cart`}
               >
+                {/* Success ripple effect */}
+                {isAddingToCart && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0.8 }}
+                    animate={{ scale: 2, opacity: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="absolute inset-0 rounded-full bg-white"
+                  />
+                )}
+                
                 <motion.div
                   animate={isAddingToCart ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
                   transition={{ duration: 0.2 }}
@@ -290,8 +341,8 @@ export function CompactFoodCard({
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={isAddingToCart ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, delay: 0.1 }}
-                  className="absolute inset-0 flex items-center justify-center text-white font-bold"
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                  className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm"
                 >
                   ✓
                 </motion.div>
