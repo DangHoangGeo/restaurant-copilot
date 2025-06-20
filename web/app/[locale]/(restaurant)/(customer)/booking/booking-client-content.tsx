@@ -15,8 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert } from "@/components/ui/alert";
 import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
 import { useCustomerPageData } from "@/hooks/useCustomerData";
-import { BookingPageSkeleton } from "@/components/customer/loading/CustomerSkeletons";
-import { CustomerError, RestaurantNotFoundError } from "@/components/customer/error/CustomerError";
+import { BookingPageSkeleton } from "@/components/features/customer/loading/CustomerSkeletons";
+import { CustomerError, RestaurantNotFoundError } from "@/components/features/customer/error/CustomerError";
 
 
 interface BookingFormData {
