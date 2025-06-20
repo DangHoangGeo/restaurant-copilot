@@ -60,7 +60,15 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-[9999] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-[9999] grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border shadow-lg duration-200",
+          // Safe area responsive sizing
+          "max-w-[calc(100vw-max(32px,env(safe-area-inset-left,0px))-max(32px,env(safe-area-inset-right,0px)))]",
+          "max-h-[calc(100vh-max(64px,env(safe-area-inset-top,0px))-max(64px,env(safe-area-inset-bottom,0px)))]",
+          "sm:max-w-lg",
+          // Safe area padding
+          "p-6",
+          "px-[max(24px,env(safe-area-inset-left,0px))]",
+          "py-[max(24px,env(safe-area-inset-top,0px))]",
           className
         )}
         {...props}
@@ -69,7 +77,11 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            style={{
+              top: 'max(16px, env(safe-area-inset-top, 0px))',
+              right: 'max(16px, env(safe-area-inset-right, 0px))'
+            }}
           >
             <XIcon />
             <span className="sr-only">Close</span>
@@ -84,7 +96,14 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      className={cn(
+        "flex flex-col gap-2 text-center sm:text-left",
+        // Safe area top padding for modal headers
+        "pt-[max(0px,env(safe-area-inset-top,0px))]",
+        "px-[max(0px,env(safe-area-inset-left,0px))]",
+        "pr-[max(24px,env(safe-area-inset-right,0px))]", // Extra right padding for close button
+        className
+      )}
       {...props}
     />
   )
@@ -96,6 +115,10 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="dialog-footer"
       className={cn(
         "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        // Safe area bottom padding for modal footers
+        "pb-[max(16px,env(safe-area-inset-bottom,0px))]",
+        "px-[max(0px,env(safe-area-inset-left,0px))]",
+        "pr-[max(0px,env(safe-area-inset-right,0px))]",
         className
       )}
       {...props}
