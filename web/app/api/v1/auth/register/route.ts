@@ -95,10 +95,10 @@ export async function POST(req: NextRequest) {
       throw new Error("User data not returned after creation.");
     }
 
-    // 4. Insert into restaurants with { name, subdomain, default_language }, returning restaurant_id.
+    // 4. Insert into restaurants with { name, subdomain, default_language, brand_color }, returning restaurant_id.
     const { data: restaurantData, error: restaurantError } = await supabaseAdmin
       .from("restaurants")
-      .insert([{ name, subdomain, default_language: defaultLanguage }])
+      .insert([{ name, subdomain, default_language: defaultLanguage, brand_color: "#00a3d7" }])
       .select("id")
       .single();
 

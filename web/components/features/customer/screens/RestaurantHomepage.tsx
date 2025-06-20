@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, 
@@ -12,8 +11,6 @@ import {
   Menu as MenuIcon,
   ChevronRight,
   CalendarDays,
-  Star,
-  TrendingUp,
   Sparkles,
   Bot,
   MessageCircle,
@@ -25,7 +22,8 @@ import {
 } from 'lucide-react';
 import { Button, Card, Icon } from '../../../home';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { CustomerHeader } from '../layout/CustomerHeader';
+import { CustomerFooter } from '../layout/CustomerFooter';
 
 // Types for restaurant data
 interface OpeningHours {
@@ -42,16 +40,24 @@ interface RestaurantData {
     id: string;
     name: string;
     subdomain: string;
-    logo_url?: string;
-    brand_color?: string;
-    address?: string;
-    phone?: string;
-    email?: string;
-    website?: string;
-    description_en?: string;
-    description_ja?: string;
-    description_vi?: string;
-    opening_hours?: string | object;
+    logoUrl?: string | null;
+    defaultLocale?: string;
+    contactInfo?: string | null;
+    address?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    website?: string | null;
+    description_en?: string | null;
+    description_ja?: string | null;
+    description_vi?: string | null;
+    opening_hours?: Record<string, string>;
+    social_links?: Record<string, string>;
+    timezone?: string;
+    currency?: string;
+    payment_methods?: string[];
+    delivery_options?: string[];
+    primaryColor?: string;
+    secondaryColor?: string;
   };
   menu: Array<{
     id: string;
@@ -80,6 +86,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const tCustomer = useTranslations('customer.home');
   const tCommon = useTranslations('common');
+  const [selectedLocale, setSelectedLocale] = useState(locale);
 
   useEffect(() => {
     const fetchRestaurantData = async () => {
@@ -105,8 +112,8 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
 
   // Apply restaurant brand color
   useEffect(() => {
-    if (restaurantData?.restaurant?.brand_color) {
-      document.documentElement.style.setProperty('--brand-color', restaurantData.restaurant.brand_color);
+    if (restaurantData?.restaurant?.primaryColor) {
+      document.documentElement.style.setProperty('--brand-color', restaurantData.restaurant.primaryColor);
     }
   }, [restaurantData]);
 
@@ -138,7 +145,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
   }
 
   const { restaurant, menu } = restaurantData;
-  const primaryColor = restaurant.brand_color || '#3B82F6';
+  const primaryColor = restaurant.primaryColor || '#3B82F6';
 
   // Parse opening hours
   const getOpeningHours = (): OpeningHours | null => {
@@ -154,130 +161,18 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
     }
   };
 
-  // Check if restaurant is currently open
-  const isCurrentlyOpen = (): boolean | null => {
-    const openingHours = getOpeningHours();
-    if (!openingHours) return null;
-
-    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-    const today = days[new Date().getDay()];
-    const todayHours = openingHours[today];
-
-    if (!todayHours || todayHours.isClosed) return false;
-    if (!todayHours.isOpen || !todayHours.openTime || !todayHours.closeTime) return false;
-
-    const currentTime = new Date();
-    const currentHour = currentTime.getHours();
-    const currentMinute = currentTime.getMinutes();
-    const currentTimeInMinutes = currentHour * 60 + currentMinute;
-
-    const [openHour, openMinute] = todayHours.openTime.split(':').map(Number);
-    const [closeHour, closeMinute] = todayHours.closeTime.split(':').map(Number);
-    
-    const openTimeInMinutes = openHour * 60 + openMinute;
-    const closeTimeInMinutes = closeHour * 60 + closeMinute;
-
-    return currentTimeInMinutes >= openTimeInMinutes && currentTimeInMinutes <= closeTimeInMinutes;
-  };
-
-  const isOpen = isCurrentlyOpen();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 relative" style={{ '--brand-color': primaryColor } as React.CSSProperties}>
-      {/* Enhanced Header with Animations */}
-      <motion.header 
-        className="bg-white dark:bg-slate-800 shadow-sm border-b backdrop-blur-md bg-opacity-95"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <motion.div 
-              className="flex items-center space-x-4"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              {restaurant.logo_url && (
-                <motion.div 
-                  className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center shadow-lg"
-                  whileHover={{ scale: 1.05, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Image
-                    src={restaurant.logo_url}
-                    alt={restaurant.name}
-                    width={64}
-                    height={64}
-                    className="object-cover"
-                  />
-                </motion.div>
-              )}
-              <div>
-                <motion.h1 
-                  className="text-3xl font-bold text-slate-800 dark:text-slate-100"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  {restaurant.name}
-                </motion.h1>
-                {isOpen !== null && (
-                  <motion.div 
-                    className="flex items-center space-x-2 mt-1"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.7 }}
-                  >
-                    <motion.div 
-                      className={`w-3 h-3 rounded-full ${isOpen ? 'bg-green-500' : 'bg-red-500'}`}
-                      animate={{ 
-                        scale: isOpen ? [1, 1.2, 1] : 1,
-                        opacity: isOpen ? [1, 0.7, 1] : 1
-                      }}
-                      transition={{ 
-                        duration: 2, 
-                        repeat: isOpen ? Infinity : 0,
-                        ease: "easeInOut" 
-                      }}
-                    />
-                    <span className={`text-sm font-medium ${isOpen ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                      {isOpen ? 'Open Now' : 'Closed'}
-                    </span>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Optional Interactive Elements */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="flex items-center space-x-2"
-            >
-              {/* Rating Display */}
-              <motion.div 
-                className="hidden md:flex items-center space-x-1 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-full"
-                whileHover={{ scale: 1.05 }}
-              >
-                <Star className="h-4 w-4 text-amber-500 fill-current" />
-                <span className="text-sm font-medium text-amber-700 dark:text-amber-300">4.8</span>
-              </motion.div>
-              
-              {/* Popular Items Indicator */}
-              <motion.div 
-                className="hidden lg:flex items-center space-x-1 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full"
-                whileHover={{ scale: 1.05 }}
-              >
-                <TrendingUp className="h-4 w-4 text-blue-500" />
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Trending</span>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.header>
+      <CustomerHeader
+        restaurantSettings={restaurantData?.restaurant || {}}
+        onCartClick={() => {}}
+        currentLocale={selectedLocale}
+        onLocaleChange={setSelectedLocale}
+        onOrderHistoryClick={() => {}}
+        cartItemCount={0} // Placeholder, replace with actual cart item count
+        showOrderHistory={ false} // Placeholder, replace with actual state
+      />
 
       {/* Enhanced Hero Section with Context and Animations */}
       <section className="relative bg-gradient-to-br from-[var(--brand-color)] via-[var(--brand-color)]/90 to-[var(--brand-color)]/80 text-white py-20 overflow-hidden">
@@ -390,11 +285,8 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
       {/* Enhanced Main Content with Animations */}
       <main className="container mx-auto px-4 py-12 space-y-12">
         {/* Interactive Restaurant Info Cards */}
-        <motion.div 
+        <div 
           className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
         >
           {/* Enhanced Contact Information Card */}
           {(restaurant.address || restaurant.phone || restaurant.email || restaurant.website) && (
@@ -601,7 +493,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
               </div>
             </Card>
           </motion.div>
-        </motion.div>
+        </div>
 
         {/* Enhanced Featured Menu Categories */}
         {menu && menu.length > 0 && (
@@ -777,130 +669,7 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
         )}
       </AnimatePresence>
 
-      {/* Enhanced Footer with Animations */}
-      <motion.footer 
-        className="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 text-white py-12 mt-12 relative overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-      >
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0">
-          <motion.div
-            className="absolute top-10 left-10 w-32 h-32 bg-[var(--brand-color)]/10 rounded-full blur-xl"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <motion.div
-            className="absolute bottom-10 right-10 w-24 h-24 bg-[var(--brand-color)]/10 rounded-full blur-xl"
-            animate={{
-              scale: [1.2, 1, 1.2],
-              opacity: [0.5, 0.3, 0.5],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1,
-            }}
-          />
-        </div>
-
-        <div className="container mx-auto px-4 relative">
-          <motion.div 
-            className="flex flex-col md:flex-row items-center justify-between mb-8"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 2.2 }}
-          >
-            <div className="mb-4 md:mb-0">
-              <motion.div 
-                className="flex items-center space-x-4"
-                whileHover={{ scale: 1.05 }}
-              >
-                {restaurant.logo_url && (
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.8 }}
-                  >
-                    <Image
-                      src={restaurant.logo_url}
-                      alt={restaurant.name}
-                      width={32}
-                      height={32}
-                      className="rounded"
-                    />
-                  </motion.div>
-                )}
-                <span className="text-xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                  {restaurant.name}
-                </span>
-              </motion.div>
-            </div>
-
-            {/* Social Links Placeholder */}
-            <motion.div 
-              className="flex items-center space-x-4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 2.4 }}
-            >
-              <motion.div
-                whileHover={{ scale: 1.2, rotate: 15 }}
-                className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[var(--brand-color)]/30 transition-colors"
-              >
-                <Heart className="h-4 w-4" />
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.2, rotate: -15 }}
-                className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[var(--brand-color)]/30 transition-colors"
-              >
-                <Star className="h-4 w-4" />
-              </motion.div>
-            </motion.div>
-          </motion.div>
-          
-          <motion.div 
-            className="border-t border-slate-700 pt-6 text-center text-sm text-slate-400"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.6 }}
-          >
-            <motion.p
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 2.8 }}
-            >
-              © {new Date().getFullYear()} {restaurant.name}. {tCommon("all_rights_reserved")}
-            </motion.p>
-            <motion.p
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 3 }}
-              className="mt-2 flex items-center justify-center space-x-2"
-            >
-              <span>{tCommon("powered_by")}</span>
-              <motion.span
-                className="text-[var(--brand-color)] font-semibold"
-                animate={{ opacity: [1, 0.7, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Link href="https://coorder.ai" target="_blank" rel="noopener noreferrer">
-                  Coorder.ai
-                </Link>
-              </motion.span>
-              <Zap className="h-4 w-4 text-[var(--brand-color)]" />
-            </motion.p>
-          </motion.div>
-        </div>
-      </motion.footer>
+      <CustomerFooter restaurantSettings={restaurantData?.restaurant || {}} />
     </div>
   );
 };

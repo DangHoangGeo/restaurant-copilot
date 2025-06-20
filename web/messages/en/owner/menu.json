@@ -12,7 +12,9 @@
   "cancel": "Cancel",
   "save": "Save",
   "available": "Available",
+  "make_available": "Make Available",
   "unavailable": "Unavailable",
+  "make_unavailable": "Make Unavailable",
   "category": {
     "update_success": "Category updated successfully!",
     "create_success": "Category created successfully!",
@@ -29,7 +31,9 @@
     "auto_translations_label": "Auto-generated translations",
     "auto_translate_name_en_placeholder": "Auto-translated category name",
     "auto_translate_name_ja_placeholder": "Auto-translated category name",
-    "auto_translate_name_vi_placeholder": "Auto-translated category name"
+    "auto_translate_name_vi_placeholder": "Auto-translated category name",
+    "items_made_unavailable": "All items in category marked as unavailable",
+    "availability_update_error": "Failed to update category items availability"
   },
   "buttons": {
     "saving": "Saving..."
@@ -114,6 +118,9 @@
     "create_success": "Menu item created successfully!",
     "save_error": "Failed to save menu item. Please try again.",
     "delete_error": "Failed to delete menu item. Please try again.",
+    "made_available": "Item is now available",
+    "made_unavailable": "Item is now unavailable",
+    "availability_update_error": "Failed to update item availability",
     "name_en": "Item Name (English)",
     "name_ja": "Item Name (Japanese)",
     "name_vi": "Item Name (Vietnamese)",
@@ -239,6 +246,7 @@
       "status": "Status",
       "schedule": "Schedule",
       "available": "Available",
+      "unavailable": "Unavailable",
       "all_days": "All Days",
       "category_label": "Menu Category",
       "category_edit_note": "Category cannot be changed when editing. Create a new item to move categories.",
@@ -321,15 +329,22 @@
   },
   "stats": {
     "total_items": "Total Items",
+    "available":"Available",
+    "unavailable": "Unavailable",
     "available_items": "Available",
     "unavailable_items": "Unavailable", 
     "low_stock": "Low Stock",
     "top_categories": "Top Categories"
   },
   "filters": {
+    "all": "All",
+    "available": "Available",
+    "unavailable": "Unavailable",
     "search_placeholder": "Search menu items...",
+    "category": "Category",
     "all_categories": "All Categories",
     "filters": "Filters",
+    "clear_filters": "Clear Filters",
     "clear_all": "Clear All",
     "advanced_filters": "Advanced Filters",
     "availability": "Availability",
@@ -350,5 +365,15 @@
     "image": "Image",
     "item_details": "Item Details",
     "actions": "Actions"
+  },
+  "delete_protection": {
+    "category_has_orders_title": "Cannot Delete Category",
+    "category_has_orders_description": "This category contains items with existing orders. Consider marking items as unavailable instead.",
+    "item_has_orders_title": "Cannot Delete Item", 
+    "item_has_orders_description": "This item has existing orders. Consider marking it as unavailable instead.",
+    "make_unavailable": "Make Unavailable",
+    "force_delete": "Force Delete",
+    "cancel": "Cancel",
+    "checking_orders": "Checking for existing orders..."
   }
 }

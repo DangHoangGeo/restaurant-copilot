@@ -3,14 +3,10 @@
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
   ChevronLeft, 
-  CalendarDays, 
-  Heart,
-  Zap,
-  Star
+  CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,11 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert } from "@/components/ui/alert";
 import { useGetCurrentLocale, getLocalizedText } from "@/lib/customerUtils";
-import { AnimatedRestaurantHeader } from "@/components/common/AnimatedRestaurantHeader";
 import { useCustomerPageData } from "@/hooks/useCustomerData";
 import { BookingPageSkeleton } from "@/components/customer/loading/CustomerSkeletons";
 import { CustomerError, RestaurantNotFoundError } from "@/components/customer/error/CustomerError";
-import Link from "next/link";
+
 
 interface BookingFormData {
   tableId: string;
@@ -107,7 +102,7 @@ export function BookingClientContent() {
     setFormError("");
     
     if (!formData.tableId || !formData.customerName || !formData.contact || !formData.date || !formData.time || formData.partySize < 1) {
-      setFormError(t("booking.form.validation_error_fill_fields"));
+      setFormError(t("form.validation_error_fill_fields"));
       return;
     }
     
@@ -129,7 +124,7 @@ export function BookingClientContent() {
       setSubmitted(true);
     } catch (err) {
       console.error("Booking submission error:", err);
-      setFormError("Failed to submit booking. Please try again.");
+      setFormError("Failed to submit  Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -141,13 +136,7 @@ export function BookingClientContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 relative" style={{ '--brand-color': primaryColor } as React.CSSProperties}>
-      {/* Enhanced Header with Animations */}
-      <AnimatedRestaurantHeader 
-        restaurantSettings={restaurant}
-        badgeText="Table Booking"
-        badgeIcon={CalendarDays}
-      />
-
+    
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         {submitted ? (
@@ -172,7 +161,7 @@ export function BookingClientContent() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              {t("booking.submission_thank_you_title")}
+              {t("submission_thank_you_title")}
             </motion.h2>
             <motion.p 
               className="text-slate-600 dark:text-slate-300 mb-6"
@@ -180,7 +169,7 @@ export function BookingClientContent() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              {t("booking.submission_thank_you_message", { name: formData.customerName })}
+              {t("submission_thank_you_message", { name: formData.customerName })}
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -216,7 +205,7 @@ export function BookingClientContent() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              {t("booking.title")}
+              {t("title")}
             </motion.h2>
             
             {formError && (
@@ -237,12 +226,12 @@ export function BookingClientContent() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <Select name="tableId" value={formData.tableId} onValueChange={handleSelectChange} required>
                     <SelectTrigger>
-                      <SelectValue placeholder={t("booking.form.table_select_placeholder")} />
+                      <SelectValue placeholder={t("form.table_select_placeholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {tables.map((table) => (
                         <SelectItem key={table.id} value={table.id}>
-                          {table.name} ({t("booking.form.table_capacity", { count: table.capacity ?? 0 })})
+                          {table.name} ({t("form.table_capacity", { count: table.capacity ?? 0 })})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -253,7 +242,7 @@ export function BookingClientContent() {
                     value={formData.customerName} 
                     onChange={handleInputChange} 
                     required 
-                    placeholder={t("booking.form.name_placeholder")} 
+                    placeholder={t("form.name_placeholder")} 
                   />
                   
                   <Input 
@@ -261,7 +250,7 @@ export function BookingClientContent() {
                     value={formData.contact} 
                     onChange={handleInputChange} 
                     required 
-                    placeholder={t("booking.form.contact_placeholder")} 
+                    placeholder={t("form.contact_placeholder")} 
                   />
                   
                   <div className="grid grid-cols-2 gap-4">
@@ -289,11 +278,11 @@ export function BookingClientContent() {
                     onChange={handleInputChange} 
                     required 
                     min="1" 
-                    placeholder={t("booking.form.party_size_placeholder")} 
+                    placeholder={t("form.party_size_placeholder")} 
                   />
                   
                   <h4 className="text-md font-semibold pt-4 border-t dark:border-slate-700">
-                    {t("booking.form.preorder_optional_title")}
+                    {t("form.preorder_optional_title")}
                   </h4>
                   
                   <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
@@ -340,7 +329,7 @@ export function BookingClientContent() {
                     style={{ backgroundColor: restaurant.primaryColor || "#0ea5e9" }} 
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? (t("booking.form.submitting_button") || "Submitting...") : t("booking.form.submit_button")}
+                    {isSubmitting ? (t("form.submitting_button") || "Submitting...") : t("form.submit_button")}
                   </Button>
                 </form>
               </Card>
@@ -348,129 +337,6 @@ export function BookingClientContent() {
           </motion.div>
         )}
       </main>
-
-      {/* Enhanced Footer with Animations */}
-      <motion.footer 
-        className="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 text-white py-12 mt-12 relative overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-      >
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0">
-          <motion.div
-            className="absolute top-10 left-10 w-32 h-32 bg-[var(--brand-color)]/10 rounded-full blur-xl"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <motion.div
-            className="absolute bottom-10 right-10 w-24 h-24 bg-[var(--brand-color)]/10 rounded-full blur-xl"
-            animate={{
-              scale: [1.2, 1, 1.2],
-              opacity: [0.5, 0.3, 0.5],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1,
-            }}
-          />
-        </div>
-
-        <div className="container mx-auto px-4 relative">
-          <motion.div 
-            className="flex flex-col md:flex-row items-center justify-between mb-8"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1.2 }}
-          >
-            <div className="mb-4 md:mb-0">
-              <motion.div 
-                className="flex items-center space-x-4"
-                whileHover={{ scale: 1.05 }}
-              >
-                {restaurant.logoUrl && (
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.8 }}
-                  >
-                    <Image
-                      src={restaurant.logoUrl}
-                      alt={restaurant.name}
-                      width={32}
-                      height={32}
-                      className="rounded"
-                    />
-                  </motion.div>
-                )}
-                <span className="text-xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                  {restaurant.name}
-                </span>
-              </motion.div>
-            </div>
-
-            {/* Social Links Placeholder */}
-            <motion.div 
-              className="flex items-center space-x-4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.4 }}
-            >
-              <motion.div
-                whileHover={{ scale: 1.2, rotate: 15 }}
-                className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[var(--brand-color)]/30 transition-colors"
-              >
-                <Heart className="h-4 w-4" />
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.2, rotate: -15 }}
-                className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[var(--brand-color)]/30 transition-colors"
-              >
-                <Star className="h-4 w-4" />
-              </motion.div>
-            </motion.div>
-          </motion.div>
-          
-          <motion.div 
-            className="border-t border-slate-700 pt-6 text-center text-sm text-slate-400"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.6 }}
-          >
-            <motion.p
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 1.8 }}
-            >
-              © {new Date().getFullYear()} {restaurant.name}. All rights reserved.
-            </motion.p>
-            <motion.p
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 2 }}
-              className="mt-2 flex items-center justify-center space-x-2"
-            >
-              <span>Powered by</span>
-              <motion.span
-                className="text-[var(--brand-color)] font-semibold"
-                animate={{ opacity: [1, 0.7, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                {tCommon("powered_by")} <Link target="_blank" href="https://coorder.ai">coorder.ai</Link>
-              </motion.span>
-              <Zap className="h-4 w-4 text-[var(--brand-color)]" />
-            </motion.p>
-          </motion.div>
-        </div>
-      </motion.footer>
     </div>
   );
 }

@@ -5,13 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { MenuIcon, AlertTriangle, TrendingUp, CheckCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Category } from '@/shared/types/menu';
+import { getLocalizedText } from '@/lib/utils';
 
 interface MenuStatsBarProps {
   categories: Category[];
   isLoading?: boolean;
+  locale: string;
 }
 
-export function MenuStatsBar({ categories, isLoading = false }: MenuStatsBarProps) {
+export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStatsBarProps) {
   const t = useTranslations('owner.menu.stats');
 
   // Calculate stats
@@ -67,7 +69,7 @@ export function MenuStatsBar({ categories, isLoading = false }: MenuStatsBarProp
               <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Available</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t('available')}</p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">{availableItems}</p>
             </div>
           </div>
@@ -78,7 +80,7 @@ export function MenuStatsBar({ categories, isLoading = false }: MenuStatsBarProp
               <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Unavailable</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t('unavailable')}</p>
               <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{unavailableItems}</p>
             </div>
           </div>
@@ -106,7 +108,11 @@ export function MenuStatsBar({ categories, isLoading = false }: MenuStatsBarProp
                   variant={index === 0 ? "default" : "secondary"}
                   className="text-xs"
                 >
-                  {category.name_en} ({category.menu_items.length})
+                  {getLocalizedText({
+    name_en: category.name_en,
+    name_ja: category.name_ja || undefined,
+    name_vi: category.name_vi || undefined
+  }, locale)} ({category.menu_items.length})
                 </Badge>
               ))}
             </div>
