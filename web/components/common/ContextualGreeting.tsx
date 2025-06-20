@@ -33,19 +33,19 @@ export function ContextualGreeting({
 }: ContextualGreetingProps) {
   const variants = {
     default: {
-      container: "px-4 py-6",
+      container: "px-4 py-5", // Reduced from py-6 to py-5
       title: "text-2xl font-bold",
       description: "text-white/80 max-w-md mx-auto",
       info: "flex items-center justify-center space-x-4 text-sm text-white/70"
     },
     compact: {
-      container: "px-3 py-4",
+      container: "px-3 py-3", // Reduced from py-4 to py-3
       title: "text-xl font-bold",
       description: "text-white/80 max-w-sm mx-auto text-sm",
       info: "flex items-center justify-center space-x-3 text-xs text-white/70"
     },
     minimal: {
-      container: "px-2 py-3",
+      container: "px-2 py-2", // Reduced from py-3 to py-2
       title: "text-lg font-semibold",
       description: "text-white/80 max-w-xs mx-auto text-sm",
       info: "flex items-center justify-center space-x-2 text-xs text-white/60"

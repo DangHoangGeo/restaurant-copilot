@@ -36,7 +36,15 @@ export function CustomerHeader({
   const is_opening = true;
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white dark:bg-slate-900 shadow-sm">
+    <header 
+      className="sticky z-40 w-full bg-white dark:bg-slate-900 shadow-sm"
+      style={{
+        top: 'env(safe-area-inset-top, 0px)',
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 0px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)'
+      }}
+    >
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link href="/" className="flex items-center space-x-2">

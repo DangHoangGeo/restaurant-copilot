@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, ReactNode } from 'react';
-import { AdminHeader } from '@/components/customer/layout/admin-header';
-import { AdminSidebar } from '@/components/customer/layout/admin-sidebar';
+import { AdminHeader } from '@/components/features/admin/dashboard/layout/admin-header';
+import { AdminSidebar } from '@/components/features/admin/dashboard/layout/admin-sidebar';
 import { RestaurantProvider, RestaurantSettings } from '@/contexts/RestaurantContext';
 import { cn } from '@/lib/utils';
 

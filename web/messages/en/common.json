@@ -39,6 +39,8 @@
   "confirm_booking": "Confirm Booking",
   "selectedPlanLabel": "Selected Plan",
   "changePlan": "Change Plan",
+  "ask_ai": "Ask AI",
+  "view_history": "View History",
   "order_status": {
     "new": "New",
     "ordered": "Ordered",

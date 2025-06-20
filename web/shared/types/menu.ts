@@ -1,6 +1,11 @@
 // Shared menu-related type definitions
 // This file centralizes all MenuItem, Category, and related interfaces
 
+export interface FoodItem extends MenuItem {
+  categoryId?: string;
+  categoryName?: string;
+}
+
 export interface MenuItemSize {
   id?: string;
   size_key: string; // e.g., "small", "medium", "large"
