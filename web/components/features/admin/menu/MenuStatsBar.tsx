@@ -69,7 +69,7 @@ export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStat
               <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Available</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t('available')}</p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">{availableItems}</p>
             </div>
           </div>
@@ -80,7 +80,7 @@ export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStat
               <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Unavailable</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t('unavailable')}</p>
               <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{unavailableItems}</p>
             </div>
           </div>

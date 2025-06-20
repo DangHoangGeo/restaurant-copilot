@@ -82,7 +82,7 @@ export function MenuItemCard({
           <div className="absolute top-2 right-2 z-10">
             <Badge variant="destructive" className="text-xs">
               <AlertTriangle className="h-3 w-3 mr-1" />
-              Low Stock
+              {t('low_stock')}
             </Badge>
           </div>
         )}
@@ -163,7 +163,7 @@ export function MenuItemCard({
                 </Badge>
                 {item.stock_level !== undefined && item.stock_level !== null && (
                   <Badge variant="outline" className="text-xs">
-                    Stock: {item.stock_level}
+                    {t('item.stock_level')}: {item.stock_level}
                   </Badge>
                 )}
               </div>
@@ -196,14 +196,13 @@ export function MenuItemCard({
                   </Badge>
                   {item.stock_level !== undefined && item.stock_level !== null && (
                     <Badge variant="outline" className="text-xs">
-                      Stock: {item.stock_level}
+                      {t('item.stock_level')}: {item.stock_level}
                     </Badge>
                   )}
                 </div>
 
                 {/* Weekday visibility - compact display */}
                 <div className="flex flex-wrap gap-1">
-                  <span className="text-xs text-gray-600 dark:text-gray-400 mr-2">Days:</span>
                   {item.weekday_visibility.slice(0, 3).map(day => (
                     <Badge key={day} variant="outline" className="text-xs px-1.5 py-0.5">
                       {t(`weekdays_short.${day}_short`)}
@@ -233,12 +232,12 @@ export function MenuItemCard({
                       {item.available ? (
                         <>
                           <EyeOff className="h-4 w-4 mr-2" />
-                          Make Unavailable
+                          {t('make_unavailable')}
                         </>
                       ) : (
                         <>
                           <Eye className="h-4 w-4 mr-2" />
-                          Make Available
+                          {t('make_available')}
                         </>
                       )}
                     </DropdownMenuItem>

@@ -235,7 +235,11 @@ export function MenuSearchFilter({
 
 					{filters.categoryId && (
 						<Badge variant="secondary" className="text-xs">
-							{t("category")}: {categories.find(c => c.id === filters.categoryId)?.name_en || 'Unknown'}
+							{t("category")}: {getLocalizedText({
+										name_en: categories.find(c => c.id === filters.categoryId)?.name_en,
+										name_ja: categories.find(c => c.id === filters.categoryId)?.name_ja,
+										name_vi: categories.find(c => c.id === filters.categoryId)?.name_vi
+									}, locale)}
 							<Button
 								variant="ghost"
 								size="sm"
