@@ -13,13 +13,15 @@ import { Skeleton } from "@/components/ui/skeletons/skeleton";
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
+  locale: string;
 }
 
-function CustomerLayoutContent({ children }: CustomerLayoutProps) {
+function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   const t = useTranslations("customer");
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
+  const [selectedLocale, setSelectedLocale] = useState(locale);
   const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();
   const { restaurantSettings, sessionData, isLoading, error } = useCustomerData();
 
@@ -149,6 +151,8 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
       <CustomerHeader
         restaurantSettings={restaurantSettings}
         onCartClick={handleCartClick}
+        currentLocale={selectedLocale}
+        onLocaleChange={setSelectedLocale}
         onOrderHistoryClick={handleOrderHistoryClick}
         cartItemCount={totalCartItems}
         showOrderHistory={!!sessionData.sessionId}
@@ -179,11 +183,11 @@ function CustomerLayoutContent({ children }: CustomerLayoutProps) {
   );
 }
 
-export function CustomerLayout({ children }: CustomerLayoutProps) {
+export function CustomerLayout({ children, locale }: CustomerLayoutProps) {
   return (
     <CustomerDataProvider>
       <CartProvider>
-        <CustomerLayoutContent>
+        <CustomerLayoutContent locale={locale}>
           {children}
         </CustomerLayoutContent>
       </CartProvider>

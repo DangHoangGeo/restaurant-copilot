@@ -14,6 +14,8 @@ interface CustomerHeaderProps {
   restaurantSettings: RestaurantSettings;
   onCartClick?: () => void;
   onOrderHistoryClick?: () => void;
+  currentLocale: string;
+  onLocaleChange: (locale: string) => void;
   cartItemCount?: number;
   showOrderHistory?: boolean;
 }
@@ -22,6 +24,8 @@ export function CustomerHeader({
   restaurantSettings,
   showOrderHistory = false,
   onOrderHistoryClick,
+  currentLocale,
+  onLocaleChange,
 }: CustomerHeaderProps) {
   const t = useTranslations("common");
   //const params = useParams();
@@ -69,8 +73,8 @@ export function CustomerHeader({
         
         <div className="flex items-center space-x-2">
           <LanguageSwitcher 
-            currentLocale="en" 
-            onLocaleChange={() => {}} 
+            currentLocale={currentLocale}
+            onLocaleChange={onLocaleChange} 
           />
           <Button
             variant="ghost"
