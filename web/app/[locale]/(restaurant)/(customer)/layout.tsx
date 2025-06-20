@@ -27,7 +27,7 @@ export default async function CustomerLayoutWrapper({ children, params }: Layout
     <NextIntlClientProvider locale={locale} messages={messages}>
       <Providers>
         <ErrorBoundary>
-          <CustomerLayout>
+          <CustomerLayout locale={locale}>
             {children}
           </CustomerLayout>
         </ErrorBoundary>

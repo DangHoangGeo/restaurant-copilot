@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { getLocalizedText } from '@/lib/customerUtils';
 import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
-import { FoodCard } from '@/components/features/customer/FoodCard';
 import { ItemDetailModal } from '@/components/features/customer/menu/ItemDetailModal';
 import { SmartMenuSkeleton, MenuCardSkeleton } from '@/components/ui/enhanced-skeleton';
 import { useCart } from '@/components/features/customer/CartContext';
@@ -30,6 +29,8 @@ import { useSessionData } from '@/hooks/useSessionData';
 import type { Category, MenuItemSize, Topping } from '@/shared/types/menu';
 import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
 import type { FoodItem } from '@/components/features/customer/FoodCard';
+import { CompactFoodCard } from './CompactFoodCard';
+import { MenuSection } from './MenuSection';
 
 
 // Enhanced interfaces for smart features
@@ -366,20 +367,7 @@ export function SmartMenu({
     }
   }, [canAddItems, onAddToCart, addToCart, handleItemClick]);
 
-  const handleUpdateQuantity = useCallback((itemId: string, newQty: number) => {
-    if (!canAddItems) return;
-    
-    const currentQty = getQuantityByItemId(itemId);
-    
-    if (newQty <= 0) return;
-    
-    if (newQty > currentQty) {
-      const item = allMenuItems.find(i => i.id === itemId);
-      if (item) {
-        addToCart(item, newQty - currentQty);
-      }
-    }
-  }, [canAddItems, getQuantityByItemId, addToCart, allMenuItems]);
+
 
   // Get smart category display order
   const smartCategoryOrder = useMemo(() => {
@@ -428,16 +416,18 @@ export function SmartMenu({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-      {/* Header with contextual greeting */}
-      <ContextualGreeting 
-        contextualInfo={contextualInfo}
-        variant="compact"
-        className="bg-white dark:bg-slate-900 shadow-md"
-        showWeather={true}
-        showTimeInfo={true}
-      />
+      {/* Refined Header with reduced padding */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900">
+        <ContextualGreeting 
+          contextualInfo={contextualInfo}
+          variant="minimal"
+          className="text-center text-white"
+          showWeather={true}
+          showTimeInfo={true}
+        />
+      </div>
 
-      {/* Search and Smart Categories */}
+      {/* Search and Content */}
       <div className="container mx-auto px-4 py-6">
         {/* Enhanced Search Bar */}
         <div className="mb-6">
@@ -470,163 +460,216 @@ export function SmartMenu({
           </div>
         </div>
 
-        {/* Smart Category Tabs */}
-        <div className="mb-8">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <Button
-              variant={activeSmartCategory === 'all' ? 'default' : 'outline'}
-              onClick={() => {
-                setActiveSmartCategory('all');
-                setHasUserInteracted(true);
-              }}
-              className={`flex-shrink-0 ${
-                activeSmartCategory === 'all' ? 'text-white font-medium border-0' : ''
-              }`}
-              style={{
-                whiteSpace: 'nowrap',
-                ...(activeSmartCategory === 'all' ? {
-                  backgroundColor: 'var(--brand-color)',
-                  color: 'white',
-                  borderColor: 'var(--brand-color)'
-                } : {})
-              }}
-            >
-              All Items
-            </Button>
-            {smartCategoryOrder.map((categoryKey) => {
-              const category = smartCategories[categoryKey];
-              const IconComponent = category.icon || Sparkles;
-              const isActive = activeSmartCategory === categoryKey;
-              
-              return (
-                <Button
-                  key={categoryKey}
-                  variant={isActive ? 'default' : 'outline'}
-                  onClick={() => {
-                    setActiveSmartCategory(categoryKey);
-                    setHasUserInteracted(true);
-                  }}
-                  className={`flex-shrink-0 flex items-center gap-2 ${
-                    isActive ? 'text-white font-medium border-0' : ''
-                  }`}
-                  style={{
-                    whiteSpace: 'nowrap',
-                    ...(isActive ? {
-                      backgroundColor: 'var(--brand-color)',
-                      color: 'white',
-                      borderColor: 'var(--brand-color)'
-                    } : {})
-                  }}
-                >
-                  <IconComponent className={`h-4 w-4 ${isActive ? 'text-white' : ''}`} />
-                  {category.name}
-                  <Badge 
-                    variant={isActive ? 'outline' : 'secondary'} 
-                    className={`ml-1 text-xs ${
-                      isActive ? 'bg-white/20 text-white border-white/30' : ''
+        {/* Smart Category Tabs - Hidden when not searching */}
+        {debouncedSearchTerm && (
+          <div className="mb-8">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <Button
+                variant={activeSmartCategory === 'all' ? 'default' : 'outline'}
+                onClick={() => {
+                  setActiveSmartCategory('all');
+                  setHasUserInteracted(true);
+                }}
+                className={`flex-shrink-0 ${
+                  activeSmartCategory === 'all' ? 'text-white font-medium border-0' : ''
+                }`}
+                style={{
+                  whiteSpace: 'nowrap',
+                  ...(activeSmartCategory === 'all' ? {
+                    backgroundColor: 'var(--brand-color)',
+                    color: 'white',
+                    borderColor: 'var(--brand-color)'
+                  } : {})
+                }}
+              >
+                All Items
+              </Button>
+              {smartCategoryOrder.map((categoryKey) => {
+                const category = smartCategories[categoryKey];
+                const IconComponent = category.icon || Sparkles;
+                const isActive = activeSmartCategory === categoryKey;
+                
+                return (
+                  <Button
+                    key={categoryKey}
+                    variant={isActive ? 'default' : 'outline'}
+                    onClick={() => {
+                      setActiveSmartCategory(categoryKey);
+                      setHasUserInteracted(true);
+                    }}
+                    className={`flex-shrink-0 flex items-center gap-2 ${
+                      isActive ? 'text-white font-medium border-0' : ''
                     }`}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      ...(isActive ? {
+                        backgroundColor: 'var(--brand-color)',
+                        color: 'white',
+                        borderColor: 'var(--brand-color)'
+                      } : {})
+                    }}
                   >
-                    {category.count}
-                  </Badge>
-                </Button>
-              );
-            })}
+                    <IconComponent className={`h-4 w-4 ${isActive ? 'text-white' : ''}`} />
+                    {category.name}
+                    <Badge 
+                      variant={isActive ? 'outline' : 'secondary'} 
+                      className={`ml-1 text-xs ${
+                        isActive ? 'bg-white/20 text-white border-white/30' : ''
+                      }`}
+                    >
+                      {category.count}
+                    </Badge>
+                  </Button>
+                );
+              })}
+            </div>
+            
+            {/* Category Description */}
+            {activeSmartCategory && activeSmartCategory !== 'all' && smartCategories[activeSmartCategory] && (
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-sm text-gray-600 mt-2 text-center"
+              >
+                {smartCategories[activeSmartCategory].description}
+              </motion.p>
+            )}
           </div>
-          
-          {/* Category Description */}
-          {activeSmartCategory && activeSmartCategory !== 'all' && smartCategories[activeSmartCategory] && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-sm text-gray-600 mt-2 text-center"
-            >
-              {smartCategories[activeSmartCategory].description}
-            </motion.p>
-          )}
-        </div>
+        )}
 
-        {/* Menu Items Grid with Suspense */}
+        {/* Sectioned Menu Layout - Mobile First Food App Style */}
         <Suspense fallback={<MenuCardSkeleton count={9} />}>
           <AnimatePresence mode="wait">
-            {filteredItems.length > 0 ? (
+            {/* If search is active, show all items in a consistent grid */}
+            {debouncedSearchTerm ? (
               <motion.div
-                key={`${activeSmartCategory}-${debouncedSearchTerm}`}
+                key={`search-${debouncedSearchTerm}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              >              {filteredItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.3 }}
-                  onHoverStart={() => handleItemHover(item.id)}
-                  className="h-full relative"
-                >
-                  <FoodCard
-                    item={item}
-                    qtyInCart={getQuantityByItemId(item.id)}
-                    onAdd={() => handleAddToCart(item)}
-                    onDecrease={() => handleUpdateQuantity(item.id, getQuantityByItemId(item.id) - 1)}
-                    onIncrease={() => handleUpdateQuantity(item.id, getQuantityByItemId(item.id) + 1)}
+                className="px-4"
+              >
+                {filteredItems.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {filteredItems.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05, duration: 0.3 }}
+                        onHoverStart={() => handleItemHover(item.id)}
+                      >
+                        <CompactFoodCard
+                          item={item}
+                          qtyInCart={getQuantityByItemId(item.id)}
+                          onAdd={() => handleAddToCart(item)}
+                          onCardClick={() => handleItemClick(item)}
+                          brandColor={brandColor}
+                          locale={locale}
+                          canAddItems={canAddItems}
+                          showBadge={false}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <div className="text-gray-400 mb-4">
+                      <Search className="h-16 w-16 mx-auto" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">No items found</h3>
+                    <p className="text-gray-600 mb-4">
+                      Try adjusting your search or browse different categories
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setActiveSmartCategory('recommended');
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            ) : (
+              /* Sectioned layout when not searching */
+              <div className="space-y-8">
+                {/* Popular Section */}
+                {smartCategories.popular && smartCategories.popular.count > 0 && (
+                  <MenuSection
+                    title="Popular"
+                    description="Customer favorites and top-rated dishes"
+                    items={smartCategories.popular.items}
                     brandColor={brandColor}
                     locale={locale}
                     canAddItems={canAddItems}
-                    setView={setView}
-                    tableId={tableId}
-                    sessionId={sessionId}
-                    tableNumber={tableNumber}
-                    viewMode="grid"
                     onItemClick={handleItemClick}
+                    onAddToCart={handleAddToCart}
+                    getQuantity={getQuantityByItemId}
+                    showPopularBadge={true}
+                    icon={<TrendingUp className="h-5 w-5" />}
                   />
+                )}
+
+                {/* Recommended Section */}
+                {smartCategories.recommended && smartCategories.recommended.count > 0 && (
+                  <MenuSection
+                    title="Perfect for You"
+                    description="AI-curated picks based on your preferences"
+                    items={smartCategories.recommended.items}
+                    brandColor={brandColor}
+                    locale={locale}
+                    canAddItems={canAddItems}
+                    onItemClick={handleItemClick}
+                    onAddToCart={handleAddToCart}
+                    getQuantity={getQuantityByItemId}
+                    showRecommendedBadge={true}
+                    icon={<Sparkles className="h-5 w-5" />}
+                  />
+                )}
+
+                {/* Time-based Section */}
+                {smartCategories[timeOfDay] && smartCategories[timeOfDay].count > 0 && (
+                  <MenuSection
+                    title={`Perfect for ${timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}`}
+                    description={`Ideal choices for your ${timeOfDay} cravings`}
+                    items={smartCategories[timeOfDay].items}
+                    brandColor={brandColor}
+                    locale={locale}
+                    canAddItems={canAddItems}
+                    onItemClick={handleItemClick}
+                    onAddToCart={handleAddToCart}
+                    getQuantity={getQuantityByItemId}
+                    icon={timeOfDay === 'breakfast' ? <ChefHat className="h-5 w-5" /> : 
+                          timeOfDay === 'lunch' ? <Clock className="h-5 w-5" /> : <Heart className="h-5 w-5" />}
+                  />
+                )}
+
+                {/* Regular Categories */}
+                {activeCategories.map((category) => {
+                  const categoryItems = allMenuItems.filter(item => item.categoryId === category.id);
+                  if (categoryItems.length === 0) return null;
                   
-                  {/* Enhanced item indicators */}
-                  <div className="absolute top-2 right-2 flex flex-col gap-1">
-                    {item.isNew && (
-                      <Badge className="bg-green-500 text-white text-xs">
-                        New
-                      </Badge>
-                    )}
-                    {item.isPopular && (
-                      <Badge className="bg-orange-500 text-white text-xs flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3" />
-                        Popular
-                      </Badge>
-                    )}
-                    {item.isRecommended && (
-                      <Badge className="bg-purple-500 text-white text-xs flex items-center gap-1">
-                        <Sparkles className="h-3 w-3" />
-                        AI Pick
-                      </Badge>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <div className="text-gray-400 mb-4">
-                  <Search className="h-16 w-16 mx-auto" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">No items found</h3>
-                <p className="text-gray-600 mb-4">
-                  Try adjusting your search or browse different categories
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setActiveSmartCategory('recommended');
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              </motion.div>
+                  return (
+                    <MenuSection
+                      key={category.id}
+                      title={getLocalizedText(
+                        { name_en: category.name_en || '', name_ja: category.name_ja || '', name_vi: category.name_vi || '' },
+                        locale
+                      )}
+                      items={categoryItems}
+                      brandColor={brandColor}
+                      locale={locale}
+                      canAddItems={canAddItems}
+                      onItemClick={handleItemClick}
+                      onAddToCart={handleAddToCart}
+                      getQuantity={getQuantityByItemId}
+                    />
+                  );
+                })}
+              </div>
             )}
           </AnimatePresence>
         </Suspense>

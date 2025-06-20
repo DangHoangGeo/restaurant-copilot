@@ -334,12 +334,48 @@ export function MenuClientContent() {
     stockStatus: 'all'
   });
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  
+  // Delete protection state
+  const [deleteProtectionDialog, setDeleteProtectionDialog] = useState<{
+    isOpen: boolean;
+    type: 'category' | 'item';
+    id: string;
+    name: string;
+    hasOrders: boolean;
+  } | null>(null);
+  const [checkingOrders, setCheckingOrders] = useState(false);
 
   const { restaurantSettings: restaurant } = useRestaurantSettings();
   const supabase = createClient();
 
   // Get owner's preferred language from locale
   const ownerLanguage = (locale === 'ja' ? 'ja' : locale === 'vi' ? 'vi' : 'en') as 'en' | 'ja' | 'vi';
+
+  // Helper function to check if item/category has existing orders
+  const checkForExistingOrders = async (type: 'category' | 'item', id: string): Promise<boolean> => {
+    try {
+      const endpoint = type === 'category' 
+        ? `/api/v1/owner/categories/${id}/orders-check`
+        : `/api/v1/owner/menu/menu-items/${id}/orders-check`;
+      
+      const response = await fetch(endpoint, {
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        // If endpoint doesn't exist, assume no orders (backward compatibility)
+        return false;
+      }
+
+      const { hasOrders } = await response.json();
+      return hasOrders;
+    } catch (error) {
+      console.error('Error checking for existing orders:', error);
+      // If we can't check, assume no orders to allow deletion
+      return false;
+    }
+  };
 
   // Load data on component mount
   useEffect(() => {
@@ -637,6 +673,39 @@ export function MenuClientContent() {
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
+    const category = menuData.find(cat => cat.id === categoryId);
+    if (!category) return;
+
+    setCheckingOrders(true);
+    try {
+      const hasOrders = await checkForExistingOrders('category', categoryId);
+      
+      if (hasOrders) {
+        setDeleteProtectionDialog({
+          isOpen: true,
+          type: 'category',
+          id: categoryId,
+          name: getLocalizedText({
+            name_en: category.name_en,
+            name_ja: category.name_ja,
+            name_vi: category.name_vi
+          }, locale),
+          hasOrders: true
+        });
+        return;
+      }
+
+      // No orders found, proceed with deletion
+      await performCategoryDeletion(categoryId);
+    } catch (error) {
+      console.error('Error checking orders for category:', error);
+      toast.error(t('category.delete_error'));
+    } finally {
+      setCheckingOrders(false);
+    }
+  };
+
+  const performCategoryDeletion = async (categoryId: string) => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/v1/owner/categories/${categoryId}`, {
@@ -734,7 +803,68 @@ export function MenuClientContent() {
     }
   };
 
+  const handleToggleAvailability = async (itemId: string, currentAvailability: boolean) => {
+    try {
+      const response = await fetch(`/api/v1/owner/menu/menu-items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ available: !currentAvailability }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update availability');
+      }
+
+      toast.success(t(!currentAvailability ? 'item.made_available' : 'item.made_unavailable'));
+      await reloadData();
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      toast.error(t('item.availability_update_error'));
+    }
+  };
+
   const handleDeleteItem = async (itemId: string) => {
+    // Find the item to get its name for the dialog
+    let itemName = 'Unknown Item';
+    for (const category of menuData) {
+      const item = category.menu_items.find(item => item.id === itemId);
+      if (item) {
+        itemName = getLocalizedText({
+          name_en: item.name_en,
+          name_ja: item.name_ja,
+          name_vi: item.name_vi
+        }, locale);
+        break;
+      }
+    }
+
+    setCheckingOrders(true);
+    try {
+      const hasOrders = await checkForExistingOrders('item', itemId);
+      
+      if (hasOrders) {
+        setDeleteProtectionDialog({
+          isOpen: true,
+          type: 'item',
+          id: itemId,
+          name: itemName,
+          hasOrders: true
+        });
+        return;
+      }
+
+      // No orders found, proceed with deletion
+      await performItemDeletion(itemId);
+    } catch (error) {
+      console.error('Error checking orders for item:', error);
+      toast.error(t('item.delete_error'));
+    } finally {
+      setCheckingOrders(false);
+    }
+  };
+
+  const performItemDeletion = async (itemId: string) => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/v1/owner/menu/menu-items/${itemId}`, { method: 'DELETE' });
@@ -750,6 +880,66 @@ export function MenuClientContent() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Delete protection dialog handlers
+  const handleMakeUnavailable = async () => {
+    if (!deleteProtectionDialog) return;
+    
+    if (deleteProtectionDialog.type === 'item') {
+      try {
+        const response = await fetch(`/api/v1/owner/menu/menu-items/${deleteProtectionDialog.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ available: false }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update availability');
+        }
+
+        toast.success(t('item.made_unavailable'));
+        await reloadData();
+      } catch (error) {
+        console.error('Error making item unavailable:', error);
+        toast.error(t('item.availability_update_error'));
+      }
+    } else if (deleteProtectionDialog.type === 'category') {
+      // Make all items in category unavailable
+      try {
+        const category = menuData.find(cat => cat.id === deleteProtectionDialog.id);
+        if (category) {
+          const updatePromises = category.menu_items.map(item =>
+            fetch(`/api/v1/owner/menu/menu-items/${item.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ available: false }),
+            })
+          );
+          
+          await Promise.all(updatePromises);
+          toast.success(t('category.items_made_unavailable'));
+          await reloadData();
+        }
+      } catch (error) {
+        console.error('Error making category items unavailable:', error);
+        toast.error(t('category.availability_update_error'));
+      }
+    }
+    
+    setDeleteProtectionDialog(null);
+  };
+
+  const handleForceDelete = async () => {
+    if (!deleteProtectionDialog) return;
+    
+    if (deleteProtectionDialog.type === 'item') {
+      await performItemDeletion(deleteProtectionDialog.id);
+    } else if (deleteProtectionDialog.type === 'category') {
+      await performCategoryDeletion(deleteProtectionDialog.id);
+    }
+    
+    setDeleteProtectionDialog(null);
   };
 
   const onDragEnd = async (result: DropResult) => {
@@ -929,7 +1119,7 @@ export function MenuClientContent() {
       </header>
 
       {/* Mobile-Friendly Stats Bar */}
-      <MenuStatsBar categories={menuData} isLoading={isInitialLoading} />
+      <MenuStatsBar categories={menuData} isLoading={isInitialLoading} locale={locale} />
 
       {/* Search and Filter Bar */}
       <MenuSearchFilter
@@ -987,8 +1177,8 @@ export function MenuClientContent() {
                           <Button size="sm" variant="ghost" onClick={() => handleOpenCategoryModal(category as CategoryFormData)}>
                             <SquarePen className="mr-2 h-4 w-4" /> {t('edit')}
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => handleDeleteCategory(category.id)} className="text-red-500 hover:text-red-600" disabled={isLoading}>
-                            <Trash2 className="mr-2 h-4 w-4" /> {t('delete')}
+                          <Button size="sm" variant="ghost" onClick={() => handleDeleteCategory(category.id)} className="text-red-500 hover:text-red-600" disabled={isLoading || checkingOrders}>
+                            <Trash2 className="mr-2 h-4 w-4" /> {checkingOrders ? t('delete_protection.checking_orders') : t('delete')}
                           </Button>
                         </div>
                       </div>
@@ -1026,6 +1216,7 @@ export function MenuClientContent() {
                                               isLoading={isLoading}
                                               onEdit={() => handleOpenItemModal(category, item as MenuItemFormData)}
                                               onDelete={() => handleDeleteItem(item.id)}
+                                              onToggleAvailability={() => handleToggleAvailability(item.id, item.available)}
                                               t={t}
                                               dragRef={providedDraggableItem.innerRef}
                                               dragHandleProps={providedDraggableItem.dragHandleProps}
@@ -1056,6 +1247,7 @@ export function MenuClientContent() {
                                             isLoading={isLoading}
                                             onEdit={() => handleOpenItemModal(category, item as MenuItemFormData)}
                                             onDelete={() => handleDeleteItem(item.id)}
+                                            onToggleAvailability={() => handleToggleAvailability(item.id, item.available)}
                                             t={t}
                                           />
                                         </div>
@@ -1165,6 +1357,53 @@ export function MenuClientContent() {
         }}
       />
     </DragDropContext>
+
+      {/* Delete Protection Dialog */}
+      {deleteProtectionDialog && (
+        <Dialog open={deleteProtectionDialog.isOpen} onOpenChange={(open) => !open && setDeleteProtectionDialog(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                {t(`delete_protection.${deleteProtectionDialog.type}_has_orders_title`)}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t(`delete_protection.${deleteProtectionDialog.type}_has_orders_description`)}
+              </p>
+              <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  {deleteProtectionDialog.type === 'category' ? t('category.name') : t('item.name')}: {deleteProtectionDialog.name}
+                </p>
+              </div>
+            </div>
+            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+              <Button 
+                variant="secondary" 
+                onClick={() => setDeleteProtectionDialog(null)}
+                className="w-full sm:w-auto"
+              >
+                {t('delete_protection.cancel')}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleMakeUnavailable}
+                className="w-full sm:w-auto"
+              >
+                {t('delete_protection.make_unavailable')}
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleForceDelete}
+                className="w-full sm:w-auto"
+              >
+                {t('delete_protection.force_delete')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }

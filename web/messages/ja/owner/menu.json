@@ -27,9 +27,9 @@
     "reorder_error": "Failed to reorder categories.",
     "delete_error_fallback": "Failed to delete category. It might be in use or a server error occurred.",
     "auto_translations_label": "Auto-generated translations",
-    "auto_translate_name_en_placeholder": "Auto-translated category name",
-    "auto_translate_name_ja_placeholder": "Auto-translated category name",
-    "auto_translate_name_vi_placeholder": "Auto-translated category name"
+    "auto_translate_name_en_placeholder": "自動翻訳されたカテゴリ名",
+    "auto_translate_name_ja_placeholder": "自動翻訳されたカテゴリ名",
+    "auto_translate_name_vi_placeholder": "自動翻訳されたカテゴリ名"
   },
   "buttons": {
     "saving": "Saving..."
@@ -318,5 +318,34 @@
     "remove_topping": "Remove Topping",
     "topping_name": "Topping Name",
     "topping_price": "Price"
+  },
+  "table_headers": {
+    "image": "Image",
+    "item_details": "Item Details",
+    "actions": "Actions"
+  },
+  "delete_protection": {
+    "category_has_orders_title": "Category cannot be deleted",
+    "category_has_orders_description": "This category contains items with order history. Consider making the items unavailable instead of deleting the category.",
+    "item_has_orders_title": "Item cannot be deleted",
+    "item_has_orders_description": "This item has order history. Consider making it unavailable instead of deleting it.",
+    "make_unavailable": "Make Unavailable",
+    "force_delete": "Force Delete",
+    "cancel": "Cancel",
+    "checking_orders": "Checking for existing orders..."
+  },
+  "availability": {
+    "made_available": "Item has been made available",
+    "made_unavailable": "Item has been made unavailable",
+    "availability_update_error": "Failed to update category item's availability. Please try again."
+  },
+  "filters": {
+    "category": "Category",
+    "status": "Status",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "apply": "Apply Filters",
+    "reset": "Reset Filters"
   }
 }

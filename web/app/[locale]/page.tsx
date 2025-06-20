@@ -16,7 +16,7 @@ import {
   FooterSection,
 } from '@/components/home';
 import { getSubdomainFromHost } from '@/lib/utils';
-import { RestaurantHomepage } from '@/components/features/customer/screens/RestaurantHomepage';
+import { RestaurantHomepage } from '@/components/features/customer/screens/HomePage';
 
 // Main Landing Page Component
 export default function Page() {
