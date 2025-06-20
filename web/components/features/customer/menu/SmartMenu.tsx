@@ -416,16 +416,18 @@ export function SmartMenu({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-      {/* Header with contextual greeting */}
-      <ContextualGreeting 
-        contextualInfo={contextualInfo}
-        variant="compact"
-        className="bg-white dark:bg-slate-900 shadow-md"
-        showWeather={true}
-        showTimeInfo={true}
-      />
+      {/* Refined Header with reduced padding */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900">
+        <ContextualGreeting 
+          contextualInfo={contextualInfo}
+          variant="minimal"
+          className="text-center text-white"
+          showWeather={true}
+          showTimeInfo={true}
+        />
+      </div>
 
-      {/* Search and Smart Categories */}
+      {/* Search and Content */}
       <div className="container mx-auto px-4 py-6">
         {/* Enhanced Search Bar */}
         <div className="mb-6">
@@ -538,38 +540,40 @@ export function SmartMenu({
         {/* Sectioned Menu Layout - Mobile First Food App Style */}
         <Suspense fallback={<MenuCardSkeleton count={9} />}>
           <AnimatePresence mode="wait">
-            {/* If search is active, show all items in a grid */}
+            {/* If search is active, show all items in a consistent grid */}
             {debouncedSearchTerm ? (
               <motion.div
                 key={`search-${debouncedSearchTerm}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                className="px-4"
               >
                 {filteredItems.length > 0 ? (
-                  filteredItems.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
-                      onHoverStart={() => handleItemHover(item.id)}
-                    >
-                      <CompactFoodCard
-                        item={item}
-                        qtyInCart={getQuantityByItemId(item.id)}
-                        onAdd={() => handleAddToCart(item)}
-                        onCardClick={() => handleItemClick(item)}
-                        brandColor={brandColor}
-                        locale={locale}
-                        canAddItems={canAddItems}
-                        showBadge={false}
-                      />
-                    </motion.div>
-                  ))
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {filteredItems.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05, duration: 0.3 }}
+                        onHoverStart={() => handleItemHover(item.id)}
+                      >
+                        <CompactFoodCard
+                          item={item}
+                          qtyInCart={getQuantityByItemId(item.id)}
+                          onAdd={() => handleAddToCart(item)}
+                          onCardClick={() => handleItemClick(item)}
+                          brandColor={brandColor}
+                          locale={locale}
+                          canAddItems={canAddItems}
+                          showBadge={false}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
                 ) : (
-                  <div className="col-span-full text-center py-16">
+                  <div className="text-center py-16">
                     <div className="text-gray-400 mb-4">
                       <Search className="h-16 w-16 mx-auto" />
                     </div>

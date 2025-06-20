@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, TrendingUp, Sparkles } from "lucide-react";
@@ -38,9 +39,11 @@ export function CompactFoodCard({
     locale,
   );
 
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!canAddItems) return;
+    if (!canAddItems || isAddingToCart) return;
     
     // If item has sizes or toppings, open detail view instead of adding directly
     if ((item.menu_item_sizes && item.menu_item_sizes.length > 0) || 
@@ -49,40 +52,77 @@ export function CompactFoodCard({
       return;
     }
     
+    // Animate the add button
+    setIsAddingToCart(true);
     onAdd();
+    setTimeout(() => setIsAddingToCart(false), 600);
   };
 
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="min-w-[130px] max-w-[160px] rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm flex-shrink-0 cursor-pointer transition-all hover:shadow-lg border border-slate-200 dark:border-slate-700"
+      className="w-[140px] h-[180px] rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm flex-shrink-0 cursor-pointer transition-all hover:shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col"
       onClick={onCardClick}
     >
-      {/* Image Container */}
-      <div className="relative">
+      {/* Image Container - Fixed aspect ratio */}
+      <div className="relative w-full h-[90px] overflow-hidden bg-slate-100 dark:bg-slate-700">
         <Image
           src={item.image_url || "/placeholder-food.png"}
           alt={itemName}
-          width={160}
-          height={96}
-          className="w-full h-24 object-cover"
+          fill
+          className="object-cover"
           loading="lazy"
+          onError={(e) => {
+            // Fallback to colored background with first letter if image fails
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+          }}
         />
         
-        {/* Floating Add Button */}
+        {/* Fallback for missing images */}
+        {!item.image_url && (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center">
+            <span className="text-2xl font-bold text-slate-600 dark:text-slate-300">
+              {itemName.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
+        
+        {/* Floating Add Button with animation */}
         {canAddItems && (
-          <Button
-            size="sm"
-            onClick={handleAddClick}
-            className="absolute bottom-2 right-2 h-7 w-7 rounded-full p-0 shadow-lg hover:shadow-xl transition-all"
-            style={{ backgroundColor: brandColor }}
+          <motion.div
+            animate={isAddingToCart ? { scale: [1, 1.3, 1], rotate: [0, 180, 360] } : { scale: 1, rotate: 0 }}
+            transition={{ duration: 0.6 }}
+            className="absolute bottom-2 right-2"
           >
-            <Plus className="h-3.5 w-3.5 text-white" />
-          </Button>
+            <Button
+              size="sm"
+              onClick={handleAddClick}
+              disabled={isAddingToCart}
+              className="h-7 w-7 rounded-full p-0 shadow-lg hover:shadow-xl transition-all"
+              style={{ backgroundColor: isAddingToCart ? '#10b981' : brandColor }}
+              aria-label={`Add ${itemName} to cart`}
+            >
+              <motion.div
+                animate={isAddingToCart ? { scale: 0 } : { scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Plus className="h-3.5 w-3.5 text-white" />
+              </motion.div>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={isAddingToCart ? { scale: 1 } : { scale: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                ✓
+              </motion.div>
+            </Button>
+          </motion.div>
         )}
 
-        {/* Badge Overlay */}
+        {/* Badge Overlay - Fixed position */}
         {showBadge && (showPopularBadge || showRecommendedBadge) && (
           <div className="absolute top-2 left-2">
             {showPopularBadge && (
@@ -100,11 +140,15 @@ export function CompactFoodCard({
           </div>
         )}
 
-        {/* Quantity Indicator */}
+        {/* Quantity Indicator - Fixed position */}
         {qtyInCart > 0 && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm"
+          >
             {qtyInCart}
-          </div>
+          </motion.div>
         )}
 
         {/* Availability overlay */}
@@ -117,22 +161,26 @@ export function CompactFoodCard({
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-3 space-y-1">
-        <div className="font-semibold text-sm line-clamp-2 leading-tight text-slate-800 dark:text-slate-200" title={itemName}>
-          {itemName}
-        </div>
-        <div className="font-bold text-sm" style={{ color: brandColor }}>
-          ¥{item.price}
-        </div>
-        
-        {/* Additional info for items with customization */}
-        {((item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
-          (item.toppings && item.toppings.length > 0)) && (
-          <div className="text-xs text-sky-600 dark:text-sky-400 font-medium">
-            + Options
+      {/* Content - Fixed height with proper text truncation */}
+      <div className="flex-1 p-3 flex flex-col justify-between min-h-0">
+        <div className="space-y-1">
+          <div 
+            className="font-semibold text-sm leading-tight text-slate-800 dark:text-slate-200 line-clamp-2 overflow-hidden"
+            title={itemName}
+            style={{ 
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              lineHeight: '1.2em',
+              maxHeight: '2.4em'
+            }}
+          >
+            {itemName}
           </div>
-        )}
+          <div className="font-bold text-sm truncate" style={{ color: brandColor }}>
+            ¥{item.price}
+          </div>
+        </div>
       </div>
     </motion.div>
   );
