@@ -60,12 +60,27 @@
     "recommended": "Được Đề Xuất"
   },
   "item_detail": {
+    "choose_size": "Chọn Kích Cỡ",
+    "add_toppings": "Thêm Topping",
+    "special_instructions": "Yêu Cầu Đặc Biệt (Tùy chọn)",
+    "special_instructions_placeholder": "Bất kỳ yêu cầu đặc biệt hoặc dị ứng thực phẩm...",
+    "price_details": "Chi Tiết Giá",
+    "base_price": "Giá cơ bản",
+    "quantity": "Số Lượng",
+    "total": "Tổng Cộng",
+    "currently_unavailable": "Hiện Tại Không Có",
+    "add_to_cart": "Thêm Vào Giỏ",
+    "update": "Cập Nhật",
+    "adding": "Đang thêm...",
+    "characters_remaining": "{count}/200 ký tự",
     "ingredients": "Nguyên Liệu",
     "allergens": "Chất Gây Dị Ứng",
     "nutrition": "Thông Tin Dinh Dưỡng",
     "reviews": "Đánh Giá",
     "rating": "Xếp Hạng",
-    "description": "Mô Tả"
+    "description": "Mô Tả",
+    "decrease_quantity": "Giảm số lượng",
+    "increase_quantity": "Tăng số lượng"
   },
   "ai_assistant": {
     "title": "Trợ Lý Nhà Hàng",

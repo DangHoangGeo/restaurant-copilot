@@ -39,6 +39,8 @@
   "confirm_booking": "Xác nhận đặt chỗ",
   "selectedPlanLabel": "Gói đã chọn",
   "changePlan": "Thay đổi gói",
+   "ask_ai": "Hỏi AI",
+  "view_history": "Xem lịch sử",
   "order_status": {
     "new": "Mới",
     "ordered": "Đã đặt hàng",

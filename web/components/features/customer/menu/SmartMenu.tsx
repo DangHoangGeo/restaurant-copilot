@@ -26,12 +26,11 @@ import { AIAssistant } from '@/components/features/customer/layout/AIAssistant';
 import { useMenuData } from '@/hooks/useMenuData';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useSessionData } from '@/hooks/useSessionData';
-import type { Category, MenuItemSize, Topping } from '@/shared/types/menu';
+import type { Category, FoodItem, MenuItemSize, Topping } from '@/shared/types/menu';
 import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
-import type { FoodItem } from '@/components/features/customer/FoodCard';
 import { CompactFoodCard } from './CompactFoodCard';
 import { MenuSection } from './MenuSection';
-
+import { useTranslations } from 'next-intl';
 
 // Enhanced interfaces for smart features
 interface SmartMenuItem extends FoodItem {
@@ -151,7 +150,7 @@ export function SmartMenu({
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [selectedItem, setSelectedItem] = useState<SmartMenuItem | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  
+  const t  = useTranslations("common");
   // Search input ref for focus management
   const searchInputRef = useRef<HTMLInputElement>(null);
   
@@ -404,10 +403,10 @@ export function SmartMenu({
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="text-red-500 text-xl">Failed to load menu</div>
+          <div className="text-red-500 text-xl">{t('failed_to_load_menu')}</div>
           <Button onClick={() => refetchMenu()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
+            {t('retry')}
           </Button>
         </div>
       </div>
@@ -416,30 +415,30 @@ export function SmartMenu({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-      {/* Refined Header with reduced padding */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900">
+      {/* Compact Header for mobile-first design */}
+      <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-800 dark:to-cyan-900 pb-2">
         <ContextualGreeting 
           contextualInfo={contextualInfo}
           variant="minimal"
-          className="text-center text-white"
-          showWeather={true}
+          className="text-center text-white p-4"
+          showWeather={false}
           showTimeInfo={true}
         />
       </div>
 
-      {/* Search and Content */}
-      <div className="container mx-auto px-4 py-6">
-        {/* Enhanced Search Bar */}
-        <div className="mb-6">
+      {/* Search and Content with tighter spacing */}
+      <div className="container mx-auto px-4 py-4">
+        {/* Enhanced Search Bar with better mobile touch targets */}
+        <div className="mb-4">
           <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               ref={searchInputRef}
               type="search"
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full h-12 text-lg rounded-full border-2 border-gray-200 focus:border-[var(--brand-color)] transition-colors"
+              className="pl-12 pr-12 w-full h-12 text-base rounded-2xl border-2 border-gray-200 focus:border-[var(--brand-color)] transition-colors shadow-sm"
             />
             {searchTerm && (
               <motion.div
@@ -482,7 +481,7 @@ export function SmartMenu({
                   } : {})
                 }}
               >
-                All Items
+                {t('all_items')}
               </Button>
               {smartCategoryOrder.map((categoryKey) => {
                 const category = smartCategories[categoryKey];
@@ -577,9 +576,9 @@ export function SmartMenu({
                     <div className="text-gray-400 mb-4">
                       <Search className="h-16 w-16 mx-auto" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">No items found</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('no_items_found')}</h3>
                     <p className="text-gray-600 mb-4">
-                      Try adjusting your search or browse different categories
+                      {t('try_adjusting_search')}
                     </p>
                     <Button
                       variant="outline"
@@ -588,14 +587,14 @@ export function SmartMenu({
                         setActiveSmartCategory('recommended');
                       }}
                     >
-                      Clear Filters
+                      {t('clear_filters')}
                     </Button>
                   </div>
                 )}
               </motion.div>
             ) : (
-              /* Sectioned layout when not searching */
-              <div className="space-y-8">
+              /* Sectioned layout when not searching - optimized spacing for mobile */
+              <div className="space-y-6">
                 {/* Popular Section */}
                 {smartCategories.popular && smartCategories.popular.count > 0 && (
                   <MenuSection
@@ -682,13 +681,13 @@ export function SmartMenu({
             className="flex items-center gap-2"
           >
             <Bot className="h-4 w-4" />
-            Ask AI Assistant
+            {t('ask_ai')}
           </Button>
           <Button
             variant="outline"
             onClick={() => setView('checkout', { tableId, sessionId, tableNumber })}
           >
-            View History
+            {t('view_history')}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>

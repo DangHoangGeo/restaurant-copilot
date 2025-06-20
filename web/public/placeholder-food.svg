@@ -1,0 +1,37 @@
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef3c7;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#fde68a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="plate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f3f4f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#bg)" rx="12" ry="12"/>
+  
+  <!-- Plate -->
+  <ellipse cx="150" cy="120" rx="80" ry="50" fill="url(#plate)" opacity="0.8"/>
+  <ellipse cx="150" cy="115" rx="75" ry="45" fill="#ffffff" opacity="0.6"/>
+  
+  <!-- Food item representation -->
+  <circle cx="130" cy="100" r="18" fill="#dc2626" opacity="0.7"/>
+  <circle cx="170" cy="105" r="15" fill="#16a34a" opacity="0.7"/>
+  <circle cx="150" cy="125" r="20" fill="#ea580c" opacity="0.7"/>
+  
+  <!-- Garnish -->
+  <path d="M140 85 Q150 75 160 85" stroke="#16a34a" stroke-width="2" fill="none" opacity="0.6"/>
+  <circle cx="145" cy="80" r="2" fill="#16a34a" opacity="0.6"/>
+  <circle cx="155" cy="80" r="2" fill="#16a34a" opacity="0.6"/>
+  
+  <!-- Utensils suggestion -->
+  <path d="M200 40 L205 40 L205 60 L200 60 Z" fill="#9ca3af" opacity="0.4"/>
+  <circle cx="202.5" cy="35" r="3" fill="#9ca3af" opacity="0.4"/>
+  
+  <!-- Text placeholder -->
+  <text x="150" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#92400e" opacity="0.7">Delicious Food</text>
+</svg>

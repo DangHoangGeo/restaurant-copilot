@@ -398,8 +398,16 @@ export const RestaurantHomepage = ({ subdomain, locale }: RestaurantHomepageProp
         
       </section>
 
-      {/* Sticky Bottom Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow z-40 flex">
+      {/* Enhanced Sticky Bottom Bar with Safe Area Support */}
+      <nav 
+        className="fixed left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t shadow-lg z-40 flex"
+        style={{
+          bottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 16px), 16px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)'
+        }}
+      >
         <a
           href={`/${locale}/menu`}
           className="flex-1 flex items-center justify-center py-3 text-[var(--brand-color)] font-bold hover:bg-[var(--brand-color)]/10"

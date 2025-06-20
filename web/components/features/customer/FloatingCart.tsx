@@ -11,9 +11,8 @@ import Image from "next/image";
 import { useCart } from "./CartContext";
 import { getLocalizedText, useGetCurrentLocale } from "@/lib/customerUtils";
 import { ItemDetailModal } from "./menu/ItemDetailModal";
-import type { FoodItem } from "./FoodCard";
 import type { CartItem } from "./CartContext";
-import type { MenuItemSize, Topping, MenuItem } from "@/shared/types/menu";
+import type { MenuItemSize, Topping, MenuItem, FoodItem } from "@/shared/types/menu";
 
 interface Props {
   count: number;
@@ -252,7 +251,12 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
   };
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-[9999] flex justify-center pointer-events-none">
+    <div 
+      className="fixed left-4 right-4 z-[9999] flex justify-center pointer-events-none"
+      style={{
+        bottom: 'max(env(safe-area-inset-bottom, 16px), 16px)',
+      }}
+    >
       <div className="w-full max-w-md pointer-events-auto">
         <AnimatePresence>
           {isExpanded && (
