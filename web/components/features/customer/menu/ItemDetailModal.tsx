@@ -11,7 +11,8 @@ import {
   Star, 
   Minus, 
   Plus, 
-  ShoppingCart
+  ShoppingCart,
+  ChevronDown
 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -58,13 +59,14 @@ export function ItemDetailModal({
   const [selectedToppings, setSelectedToppings] = useState<Topping[]>(initialSelectedToppings);
   const [notes, setNotes] = useState(initialNotes);
   const [isAdding, setIsAdding] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Reset state when modal opens with fresh props
   React.useEffect(() => {
     if (isOpen && item) {
       setQuantity(initialQuantity);
       // Set initial size (prioritize passed initial size, then default size)
-      const defaultSize = initialSelectedSize || (item.menu_item_sizes?.[0]);
+      const defaultSize = initialSelectedSize || (item.menu_item_sizes?.[1] || item.menu_item_sizes?.[0] || null);
       setSelectedSize(defaultSize && defaultSize.id ? defaultSize : null);
       setSelectedToppings([...initialSelectedToppings]);
       setNotes(initialNotes);
@@ -85,9 +87,9 @@ export function ItemDetailModal({
     if (!item) return '';
     return getLocalizedText(
       {
-        name_en: item.description_en || '',
-        name_vi: item.description_vi || '',
-        name_ja: item.description_ja || ''
+        en: item.description_en || '',
+        vi: item.description_vi || '',
+        ja: item.description_ja || ''
       },
       locale
     );
@@ -159,34 +161,54 @@ export function ItemDetailModal({
         
         {/* Enhanced Hero Image Section */}
         <div className="relative h-56 sm:h-72 w-full flex-shrink-0">
-          <Image
-            src={item.image_url || '/placeholder-food.png'}
-            alt={itemName}
-            fill
-            className="object-cover"
-            priority
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
+          {item.image_url && (
+            <Image
+              src={item.image_url}
+              alt={itemName}
+              fill
+              className="object-cover transition-opacity duration-300"
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              onLoad={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.opacity = '1';
+              }}
+              onError={(e) => {
+                // Hide the image if it fails to load
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+              style={{ opacity: 0 }}
+            />
+          )}
+          
+          {/* Fallback for missing images */}
+          {!item.image_url && (
+            <div className="absolute inset-0 bg-gradient-to-br from-green-100 via-emerald-50 to-lime-100 dark:from-green-900/20 dark:via-emerald-900/10 dark:to-lime-900/20 flex flex-col items-center justify-center">
+              <div className="text-center flex flex-col items-center justify-center h-full">
+                <span className="text-4xl sm:text-9xl mb-4 block opacity-60">
+                  🍽️
+                </span>
+                <span className="text-lg sm:text-xl font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide bg-white/30 dark:bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm">
+                  {itemName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            </div>
+          )}
           
           {/* Enhanced gradient overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
           
-          {/* Item information overlay */}
+          {/* Item title overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="space-y-2"
             >
               <h1 className="text-white text-xl sm:text-2xl font-bold leading-tight drop-shadow-2xl">
                 {itemName}
               </h1>
-              {itemDescription && (
-                <p className="text-white/95 text-sm sm:text-base line-clamp-2 drop-shadow-lg">
-                  {itemDescription}
-                </p>
-              )}
             </motion.div>
           </div>
           
@@ -226,7 +248,53 @@ export function ItemDetailModal({
 
         {/* Enhanced Content Section - Scrollable with smooth scrolling */}
         <div className="flex-1 overflow-y-auto scroll-smooth">
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4 min-h-0">
+            {/* Item Description - Collapsible */}
+            {itemDescription && itemDescription.trim().length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-2"
+              >
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                  <div 
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  >
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                      {t('description')}
+                    </h3>
+                    <motion.div
+                      animate={{ rotate: isDescriptionExpanded ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    </motion.div>
+                  </div>
+                  <AnimatePresence>
+                    {isDescriptionExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="overflow-visible"
+                      >
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed whitespace-pre-wrap break-words">
+                          {itemDescription}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  {!isDescriptionExpanded && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
+                      {itemDescription}
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            )}
             {/* Size Selection - Compact Pills */}
             {availableSizes.length > 0 && (
               <motion.div
