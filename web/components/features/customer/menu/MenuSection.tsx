@@ -4,8 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { CompactFoodCard } from "./CompactFoodCard";
-import type { FoodItem } from "../FoodCard";
-
+import { FoodItem } from "@/shared/types/menu";
 // Enhanced interfaces for smart features
 interface SmartMenuItem extends FoodItem {
   categoryId: string;

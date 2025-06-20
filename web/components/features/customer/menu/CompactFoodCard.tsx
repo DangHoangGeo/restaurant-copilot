@@ -7,7 +7,7 @@ import { Plus, TrendingUp, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { getLocalizedText } from "@/lib/customerUtils";
 import Image from "next/image";
-import type { FoodItem } from "../FoodCard";
+import { FoodItem } from "@/shared/types/menu";
 
 // Helper function to get appropriate food emoji based on item name
 const getFoodEmoji = (itemName: string): string => {

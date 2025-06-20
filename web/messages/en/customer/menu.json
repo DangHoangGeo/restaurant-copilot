@@ -60,12 +60,27 @@
     "recommended": "Recommended"
   },
   "item_detail": {
+    "choose_size": "Choose Size",
+    "add_toppings": "Add Toppings",
+    "special_instructions": "Special Instructions (Optional)",
+    "special_instructions_placeholder": "Any special requests or dietary requirements...",
+    "price_details": "Price Details",
+    "base_price": "Base price",
+    "quantity": "Quantity",
+    "total": "Total",
+    "currently_unavailable": "Currently Unavailable",
+    "add_to_cart": "Add to Cart",
+    "update": "Update",
+    "adding": "Adding...",
+    "characters_remaining": "{count}/200 characters",
     "ingredients": "Ingredients",
     "allergens": "Allergens",
     "nutrition": "Nutrition Info",
     "reviews": "Reviews",
     "rating": "Rating",
-    "description": "Description"
+    "description": "Description",
+    "decrease_quantity": "Decrease quantity",
+    "increase_quantity": "Increase quantity"
   },
   "ai_assistant": {
     "title": "Restaurant Assistant",
