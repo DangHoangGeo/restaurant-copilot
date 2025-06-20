@@ -256,47 +256,155 @@
   }
 }
 
-/* Fallback for browsers that don't support safe area */
+/* Safe Area Support for Modals and Bottom Sheets */
+@supports (padding: max(0px)) {
+  /* Modal container safe area support */
+  .modal-container {
+    margin: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    width: calc(100vw - max(16px, env(safe-area-inset-left, 0px)) - max(16px, env(safe-area-inset-right, 0px)));
+    height: calc(100vh - max(32px, env(safe-area-inset-top, 0px)) - max(32px, env(safe-area-inset-bottom, 0px)));
+    max-height: calc(90vh - max(32px, env(safe-area-inset-top, 0px)) - max(32px, env(safe-area-inset-bottom, 0px)));
+  }
+
+  /* Modal content padding */
+  .modal-content {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  /* Bottom action bar safe area support */
+  .modal-footer, 
+  .bottom-action-bar,
+  .sticky-bottom-bar {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    min-height: calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Header elements safe area support */
+  .modal-header-element {
+    margin-top: max(16px, env(safe-area-inset-top, 0px));
+    margin-left: max(16px, env(safe-area-inset-left, 0px));
+    margin-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  /* Full-height modal content area */
+  .modal-content-scrollable {
+    max-height: calc(100vh - max(200px, 150px + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
+  }
+
+  /* Bottom sheet specific styles */
+  .bottom-sheet {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px));
+    border-radius: max(20px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) 0 0;
+  }
+
+  /* Overlay protection for swipe gestures */
+  .gesture-safe-area {
+    margin-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Fallback for browsers that don't support safe areas */
 @supports not (padding: max(0px)) {
-  .safe-area-top {
-    padding-top: 0px;
+  .modal-container {
+    margin: 16px;
+    width: calc(100vw - 32px);
+    height: calc(100vh - 64px);
+    max-height: calc(90vh - 64px);
   }
-  
-  .safe-area-bottom {
+
+  .modal-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .modal-footer, 
+  .bottom-action-bar,
+  .sticky-bottom-bar {
+    padding-bottom: 32px; /* Extra padding for devices without safe area support */
+    padding-left: 16px;
+    padding-right: 16px;
+    min-height: 120px;
+  }
+
+  .modal-header-element {
+    margin: 16px;
+  }
+
+  .modal-content-scrollable {
+    max-height: calc(100vh - 200px);
+  }
+
+  .bottom-sheet {
     padding-bottom: 16px;
+    border-radius: 20px 20px 0 0;
   }
-  
-  .safe-area-left {
-    padding-left: 0px;
-  }
-  
-  .safe-area-right {
-    padding-right: 0px;
-  }
-  
-  .safe-area-x {
-    padding-left: 0px;
-    padding-right: 0px;
-  }
-  
-  .safe-area-y {
-    padding-top: 0px;
-    padding-bottom: 16px;
-  }
-  
-  .safe-area-all {
-    padding: 0px 0px 16px 0px;
-  }
-  
-  .safe-margin-bottom {
+
+  .gesture-safe-area {
     margin-bottom: 16px;
   }
-  
-  .safe-top {
-    top: 0px;
+}
+
+/* Universal safe area utilities */
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-inset-left {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.safe-area-inset-right {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.safe-area-inset-x {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.safe-area-inset-y {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* RTL Layout Support */
+[dir="rtl"] .modal-header-element {
+  margin-left: max(16px, env(safe-area-inset-right, 0px));
+  margin-right: max(16px, env(safe-area-inset-left, 0px));
+}
+
+[dir="rtl"] .modal-content {
+  padding-left: max(16px, env(safe-area-inset-right, 0px));
+  padding-right: max(16px, env(safe-area-inset-left, 0px));
+}
+
+[dir="rtl"] .bottom-action-bar,
+[dir="rtl"] .modal-footer,
+[dir="rtl"] .sticky-bottom-bar {
+  padding-left: max(16px, env(safe-area-inset-right, 0px));
+  padding-right: max(16px, env(safe-area-inset-left, 0px));
+}
+
+/* Responsive breakpoints with safe area support */
+@media (min-width: 768px) {
+  .modal-container {
+    max-width: 42rem; /* max-w-2xl equivalent */
   }
-  
-  .safe-bottom {
-    bottom: 0px;
-  }
+}
+
+/* Hide scrollbar for smooth modal experience */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

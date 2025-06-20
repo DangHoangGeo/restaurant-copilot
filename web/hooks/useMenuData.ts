@@ -38,10 +38,8 @@ const trimMenuItems = (categories: Category[]): Category[] => {
     ...category,
     menu_items: category.menu_items.map(item => ({
       ...item,
-      // Keep only essential fields, remove heavy ones
-      description_en: item.description_en ? item.description_en.substring(0, 100) + '...' : undefined,
-      description_ja: item.description_ja ? item.description_ja.substring(0, 100) + '...' : undefined,
-      description_vi: item.description_vi ? item.description_vi.substring(0, 100) + '...' : undefined,
+      // Keep descriptions full-length for detail modal functionality
+      // Only other heavy fields could be trimmed if needed in the future
     }))
   }));
 };

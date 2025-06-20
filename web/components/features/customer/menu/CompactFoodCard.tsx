@@ -246,7 +246,7 @@ export function CompactFoodCard({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 500, damping: 25 }}
-            className="absolute -top-1 -right-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow-md border border-white z-10"
+            className="absolute top-1 right-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow-md border border-white z-10"
           >
             {qtyInCart}
           </motion.div>
