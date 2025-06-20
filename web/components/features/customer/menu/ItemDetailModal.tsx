@@ -11,8 +11,7 @@ import {
   Star, 
   Minus, 
   Plus, 
-  ShoppingCart,
-  Info
+  ShoppingCart
 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -153,16 +152,8 @@ export function ItemDetailModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
-        className="max-w-2xl w-full h-[100vh] sm:h-[95vh] overflow-hidden p-0 gap-0 bg-white dark:bg-gray-900 z-[9999] flex flex-col m-0 
-                   sm:rounded-t-2xl sm:rounded-b-none sm:max-h-[90vh]"
-        style={{
-          borderRadius: '20px 20px 0 0',
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          paddingLeft: 'env(safe-area-inset-left, 0px)',
-          paddingRight: 'env(safe-area-inset-right, 0px)',
-          minHeight: '100dvh' // Dynamic viewport height for mobile
-        }}
+        className="w-full max-w-2xl h-[85vh] max-h-[90vh] overflow-hidden p-0 gap-0 bg-white dark:bg-gray-900 flex flex-col rounded-2xl sm:h-auto"
+        showCloseButton={false}
       >
         <DialogTitle className="sr-only">{itemName}</DialogTitle>
         
@@ -235,23 +226,22 @@ export function ItemDetailModal({
 
         {/* Enhanced Content Section - Scrollable with smooth scrolling */}
         <div className="flex-1 overflow-y-auto scroll-smooth">
-          <div className="p-4 sm:p-6 space-y-6">
-            {/* Size Selection - Enhanced Horizontal Pills */}
+          <div className="p-4 space-y-4">
+            {/* Size Selection - Compact Pills */}
             {availableSizes.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="space-y-3"
+                className="space-y-2"
               >
-                <h3 className="text-base font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-                  <Info className="h-4 w-4 text-gray-500" />
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                   {t('choose_size')}
                 </h3>
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
                   {availableSizes
                     .sort((a, b) => a.position - b.position)
-                    .map((size, index) => {
+                    .map((size) => {
                       const sizeName = getLocalizedText(
                         { name_en: size.name_en, name_vi: size.name_vi || '', name_ja: size.name_ja || '' },
                         locale
@@ -260,53 +250,46 @@ export function ItemDetailModal({
                       const isSelected = selectedSize?.id === size.id;
                       
                       return (
-                        <motion.div
+                        <Button
                           key={size.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.2, delay: 0.1 + index * 0.05 }}
+                          variant={isSelected ? 'default' : 'outline'}
+                          onClick={() => handleSizeSelect(size)}
+                          className={`flex-shrink-0 h-8 min-w-[60px] px-2 text-xs rounded-lg border transition-colors ${
+                            isSelected 
+                              ? 'shadow-sm' 
+                              : 'hover:border-gray-300'
+                          }`}
+                          style={isSelected ? { 
+                            backgroundColor: brandColor, 
+                            borderColor: brandColor,
+                            color: 'white'
+                          } : undefined}
+                          aria-label={`Select ${sizeName} size for ¥${size.price}`}
                         >
-                          <Button
-                            variant={isSelected ? 'default' : 'outline'}
-                            onClick={() => handleSizeSelect(size)}
-                            className={`flex-shrink-0 h-20 min-w-[80px] px-3 py-2 text-xs rounded-2xl flex flex-col justify-center items-center border-2 transition-all duration-200 ${
-                              isSelected 
-                                ? 'shadow-lg scale-105' 
-                                : 'hover:border-gray-300 hover:shadow-md'
-                            }`}
-                            style={isSelected ? { 
-                              backgroundColor: brandColor, 
-                              borderColor: brandColor,
-                              color: 'white'
-                            } : undefined}
-                            aria-label={`Select ${sizeName} size for ¥${size.price}`}
-                          >
-                            <span className="font-semibold text-center leading-tight">{sizeName}</span>
-                            <span className="text-xs opacity-90 font-bold mt-1">¥{size.price}</span>
-                          </Button>
-                        </motion.div>
+                          <span className="font-medium">{sizeName}</span>
+                          <span className="ml-1 opacity-90">¥{size.price}</span>
+                        </Button>
                       );
                     })}
                 </div>
               </motion.div>
             )}
 
-            {/* Topping Selection - Enhanced Compact Grid */}
+            {/* Topping Selection - Compact Grid */}
             {availableToppings.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
-                className="space-y-3"
+                className="space-y-2"
               >
-                <h3 className="text-base font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-                  <Info className="h-4 w-4 text-gray-500" />
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                   {t('add_toppings')}
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-1.5">
                   {availableToppings
                     .sort((a, b) => (a.position || 0) - (b.position || 0))
-                    .map((topping, index) => {
+                    .map((topping) => {
                       const toppingName = getLocalizedText(
                         { name_en: topping.name_en, name_vi: topping.name_vi || '', name_ja: topping.name_ja || '' },
                         locale
@@ -315,85 +298,74 @@ export function ItemDetailModal({
                       const isSelected = selectedToppings.some(t => t.id === topping.id);
                       
                       return (
-                        <motion.div
+                        <Button
                           key={topping.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.2, delay: 0.2 + index * 0.05 }}
+                          variant={isSelected ? 'default' : 'outline'}
+                          onClick={() => handleToppingToggle(topping)}
+                          className={`h-8 px-2 text-xs rounded-lg border transition-colors w-full ${
+                            isSelected 
+                              ? 'shadow-sm' 
+                              : 'hover:border-gray-300'
+                          }`}
+                          style={isSelected ? { 
+                            backgroundColor: brandColor, 
+                            borderColor: brandColor,
+                            color: 'white'
+                          } : undefined}
+                          aria-label={`${isSelected ? 'Remove' : 'Add'} ${toppingName} topping for ¥${topping.price}`}
                         >
-                          <Button
-                            variant={isSelected ? 'default' : 'outline'}
-                            onClick={() => handleToppingToggle(topping)}
-                            className={`h-20 p-3 text-xs justify-center items-center flex flex-col rounded-2xl border-2 transition-all duration-200 w-full ${
-                              isSelected 
-                                ? 'shadow-lg scale-105' 
-                                : 'hover:border-gray-300 hover:shadow-md'
-                            }`}
-                            style={isSelected ? { 
-                              backgroundColor: brandColor, 
-                              borderColor: brandColor,
-                              color: 'white'
-                            } : undefined}
-                            aria-label={`${isSelected ? 'Remove' : 'Add'} ${toppingName} topping for ¥${topping.price}`}
-                          >
-                            <span className="font-semibold text-center leading-tight line-clamp-2 mb-1">
-                              {toppingName}
-                            </span>
-                            <span className="text-xs opacity-90 font-bold">+¥{topping.price}</span>
-                          </Button>
-                        </motion.div>
+                          <span className="font-medium truncate text-xs mr-1">
+                            {toppingName}
+                          </span>
+                          <span className="opacity-90">+¥{topping.price}</span>
+                        </Button>
                       );
                     })}
                 </div>
               </motion.div>
             )}
 
-            {/* Enhanced Special Notes Section */}
+            {/* Compact Special Notes Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.3 }}
-              className="space-y-3"
+              className="space-y-2"
             >
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                 {t('special_instructions')}
               </h3>
-              <div className="space-y-2">
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder={t('special_instructions_placeholder')}
-                  className="min-h-[60px] resize-none bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 text-sm rounded-2xl focus:border-opacity-60 transition-colors"
-                  style={{ 
-                    focusBorderColor: brandColor,
-                    '--tw-ring-color': brandColor + '40'
-                  } as React.CSSProperties}
-                  maxLength={200}
-                  aria-describedby="notes-counter"
-                />
-                <p 
-                  id="notes-counter"
-                  className="text-xs text-gray-500 dark:text-gray-400 text-right"
-                >
-                  {t('characters_remaining', { count: notes.length })}
-                </p>
-              </div>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t('special_instructions_placeholder')}
+                className="min-h-[40px] max-h-[60px] resize-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors text-sm"
+                style={{ fontSize: '16px' }} // Prevent mobile zoom
+                maxLength={200}
+                aria-describedby="notes-counter"
+              />
+              <p 
+                id="notes-counter"
+                className="text-xs text-gray-500 dark:text-gray-400 text-right"
+              >
+                {notes.length}/200
+              </p>
             </motion.div>
 
-            {/* Enhanced Price Breakdown */}
+            {/* Compact Price Breakdown */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.4 }}
-              className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl space-y-3 border border-gray-200 dark:border-gray-700"
+              className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2 border border-gray-200 dark:border-gray-700"
             >
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                 {t('price_details')}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">
-                    {t('base_price')} {selectedSize ? `(${getLocalizedText({ name_en: selectedSize.name_en, name_vi: selectedSize.name_vi || '', name_ja: selectedSize.name_ja || '' }, locale)})` : ''}:
+                    {t('base_price')}{selectedSize ? ` (${getLocalizedText({ name_en: selectedSize.name_en, name_vi: selectedSize.name_vi || '', name_ja: selectedSize.name_ja || '' }, locale)})` : ''}
                   </span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     ¥{selectedSize ? selectedSize.price : item.price}
@@ -401,20 +373,20 @@ export function ItemDetailModal({
                 </div>
                 {selectedToppings.length > 0 && selectedToppings.map((topping) => (
                   <div key={topping.id} className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      + {getLocalizedText({ name_en: topping.name_en, name_vi: topping.name_vi || '', name_ja: topping.name_ja || '' }, locale)}:
+                    <span className="text-gray-600 dark:text-gray-400 truncate">
+                      + {getLocalizedText({ name_en: topping.name_en, name_vi: topping.name_vi || '', name_ja: topping.name_ja || '' }, locale)}
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">¥{topping.price}</span>
                   </div>
                 ))}
                 {quantity > 1 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">{t('quantity')}:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('quantity')}</span>
                     <span className="font-medium text-gray-900 dark:text-white">× {quantity}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-lg border-t border-gray-200 dark:border-gray-600 pt-2 text-gray-900 dark:text-white">
-                  <span>{t('total')}:</span>
+                <div className="flex justify-between font-bold text-base border-t border-gray-200 dark:border-gray-600 pt-2 text-gray-900 dark:text-white">
+                  <span>{t('total')}</span>
                   <span>¥{totalPrice}</span>
                 </div>
               </div>
@@ -427,41 +399,38 @@ export function ItemDetailModal({
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.5 }}
-          className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-2xl"
+          className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-2xl p-4"
           style={{
-            paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)',
-            paddingTop: '16px',
-            paddingLeft: 'max(env(safe-area-inset-left, 16px), 16px)',
-            paddingRight: 'max(env(safe-area-inset-right, 16px), 16px)'
+            paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))'
           }}
         >
-          {/* Quantity Selector */}
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+          {/* Compact Quantity Selector */}
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white">
               {t('quantity')}
             </h3>
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-1 shadow-md">
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-0.5 gap-0.5 shadow-sm">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={handleQuantityDecrease}
                 disabled={quantity <= 1}
-                className="h-10 w-10 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="h-8 w-8 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                 aria-label={t('decrease_quantity')}
               >
-                <Minus className="h-4 w-4" />
+                <Minus className="h-3.5 w-3.5" />
               </Button>
-              <span className="font-bold min-w-[3rem] text-center text-lg px-3 text-gray-900 dark:text-white">
+              <span className="font-bold min-w-[2.5rem] text-center text-base px-2 text-gray-900 dark:text-white">
                 {quantity}
               </span>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={handleQuantityIncrease}
-                className="h-10 w-10 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="h-8 w-8 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 aria-label={t('increase_quantity')}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
@@ -470,7 +439,7 @@ export function ItemDetailModal({
           <Button
             onClick={handleAddToCart}
             disabled={!canAddItems || !item.available || isAdding}
-            className="w-full h-14 sm:h-16 text-base sm:text-lg font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 text-base font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ 
               backgroundColor: canAddItems && item.available ? brandColor : undefined,
               borderColor: canAddItems && item.available ? brandColor : undefined
@@ -503,7 +472,7 @@ export function ItemDetailModal({
                     <ShoppingCart className="h-5 w-5" />
                     <span>{isEditMode ? t('update') : t('add_to_cart')}</span>
                   </div>
-                  <span className="text-lg font-black bg-white/20 px-3 py-1 rounded-lg">
+                  <span className="text-base font-bold bg-white/20 px-2 py-0.5 rounded-md">
                     ¥{totalPrice}
                   </span>
                 </motion.div>

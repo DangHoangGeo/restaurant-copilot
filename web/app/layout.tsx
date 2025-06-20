@@ -41,6 +41,13 @@ export const metadata: Metadata = {
     },
   ],
   description: "Coorder AI is your co-pilot for restaurant management, providing AI-driven support to streamline operations and enhance efficiency.",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover'
+  }
 };
 
 export default async function RootLayout({
