@@ -328,18 +328,11 @@ export function SmartMenu({
     selectedToppings?: Topping[], 
     notes?: string
   ) => {
-    // For now, use the existing add to cart logic
-    // TODO: Enhance to handle size, toppings, and notes properly
     console.log('Adding to cart:', { item: item.id, quantity, selectedSize, selectedToppings, notes });
     
-    if (onAddToCart) {
-      onAddToCart(item as SmartMenuItem);
-    } else {
-      for (let i = 0; i < quantity; i++) {
-        addToCart(item as SmartMenuItem, 1);
-      }
-    }
-  }, [onAddToCart, addToCart]);
+    // Use the cart context's addToCart function which properly handles size, toppings, and notes
+    addToCart(item as SmartMenuItem, quantity, selectedSize, selectedToppings, notes);
+  }, [addToCart]);
 
   const handleItemHover = useCallback(async (itemId: string) => {
     // Prefetch item details for faster loading
