@@ -472,18 +472,16 @@ export function ItemDetailModal({
             paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))'
           }}
         >
-          {/* Compact Quantity Selector */}
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-              {t('quantity')}
-            </h3>
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-0.5 gap-0.5 shadow-sm">
+          {/* Quantity Selector and Add to Cart on Same Line */}
+          <div className="flex items-center gap-3">
+            {/* Compact Quantity Selector */}
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5 gap-0.5 shadow-sm">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={handleQuantityDecrease}
                 disabled={quantity <= 1}
-                className="h-8 w-8 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="h-8 w-8 rounded-lg p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                 aria-label={t('decrease_quantity')}
               >
                 <Minus className="h-3.5 w-3.5" />
@@ -495,58 +493,58 @@ export function ItemDetailModal({
                 size="sm"
                 variant="ghost"
                 onClick={handleQuantityIncrease}
-                className="h-8 w-8 rounded-full p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="h-8 w-8 rounded-lg p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 aria-label={t('increase_quantity')}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
             </div>
-          </div>
 
-          {/* Add to Cart Button with Enhanced Styling */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={!canAddItems || !item.available || isAdding}
-            className="w-full h-12 text-base font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ 
-              backgroundColor: canAddItems && item.available ? brandColor : undefined,
-              borderColor: canAddItems && item.available ? brandColor : undefined
-            }}
-            aria-label={`${isEditMode ? t('update') : t('add_to_cart')} - ¥${totalPrice}`}
-          >
-            <AnimatePresence mode="wait">
-              {isAdding ? (
-                <motion.div
-                  key="loading"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center gap-3"
-                >
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                  <span>{t('adding')}</span>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="add"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center justify-between w-full px-2"
-                >
-                  <div className="flex items-center gap-3">
-                    <ShoppingCart className="h-5 w-5" />
-                    <span>{isEditMode ? t('update') : t('add_to_cart')}</span>
-                  </div>
-                  <span className="text-base font-bold bg-white/20 px-2 py-0.5 rounded-md">
-                    ¥{totalPrice}
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Button>
+            {/* Add to Cart Button with Enhanced Styling */}
+            <Button
+              onClick={handleAddToCart}
+              disabled={!canAddItems || !item.available || isAdding}
+              className="flex-1 h-12 text-base font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ 
+                backgroundColor: canAddItems && item.available ? brandColor : undefined,
+                borderColor: canAddItems && item.available ? brandColor : undefined
+              }}
+              aria-label={`${isEditMode ? t('update') : t('add_to_cart')} - ¥${totalPrice}`}
+            >
+              <AnimatePresence mode="wait">
+                {isAdding ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center gap-3"
+                  >
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                    <span>{t('adding')}</span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="add"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center justify-between w-full px-2"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ShoppingCart className="h-5 w-5" />
+                      <span>{isEditMode ? t('update') : t('add_to_cart')}</span>
+                    </div>
+                    <span className="text-base font-bold bg-white/20 px-2 py-0.5 rounded-md">
+                      ¥{totalPrice}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Button>
+          </div>
         </motion.div>
       </DialogContent>
     </Dialog>
