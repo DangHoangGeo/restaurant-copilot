@@ -4,6 +4,7 @@ export interface FeatureFlags {
   onlineReviews: boolean;
   lowStockAlerts: boolean;
   tableBooking: boolean;
+  onboarding: boolean;
 }
 export const FEATURE_FLAGS: FeatureFlags = {
   payments: process.env.NEXT_PUBLIC_FEATURE_PAYMENTS === "true",
@@ -11,4 +12,5 @@ export const FEATURE_FLAGS: FeatureFlags = {
   onlineReviews: process.env.NEXT_PUBLIC_FEATURE_REVIEWS === "true",
   lowStockAlerts: process.env.NEXT_PUBLIC_FEATURE_LOWSTOCK === "true",
   tableBooking: process.env.NEXT_PUBLIC_FEATURE_TABLEBOOKING === "true",
+  onboarding: process.env.NEXT_PUBLIC_FEATURE_ONBOARDING !== "false", // Default to true
 };

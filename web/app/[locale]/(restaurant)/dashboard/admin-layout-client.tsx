@@ -42,6 +42,13 @@ export function AdminLayoutClient({ children, restaurantSettings, locale }: Admi
     payment_methods: null,
     delivery_options: null,
     logo_url: restaurantSettings.logoUrl,
+    onboarded: null,
+    hero_title_en: null,
+    hero_title_ja: null,
+    hero_title_vi: null,
+    hero_subtitle_en: null,
+    hero_subtitle_ja: null,
+    hero_subtitle_vi: null
   };
 
   return (

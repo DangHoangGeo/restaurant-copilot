@@ -52,6 +52,14 @@ export type Restaurant = {
   payment_methods: string[] | null;
   delivery_options: string[] | null;
   logo_url: string | null;
+  onboarded: boolean | null;
+  // Hero content fields for homepage
+  hero_title_en: string | null;
+  hero_title_ja: string | null;
+  hero_title_vi: string | null;
+  hero_subtitle_en: string | null;
+  hero_subtitle_ja: string | null;
+  hero_subtitle_vi: string | null;
   // ensure all fields expected by SettingsForm are here
   created_at?: string | null; // Add if needed
   updated_at?: string | null; // Add if needed

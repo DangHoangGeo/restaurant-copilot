@@ -16,6 +16,7 @@ const NAMESPACES = [
   // restaurant owner
   'owner/dashboard',
   'owner/homepage',
+  'owner/onboarding',
   'owner/menu',
   'owner/orders',
   'owner/tables',

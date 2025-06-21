@@ -1,0 +1,193 @@
+{
+  "title": "Hướng Dẫn Nhà Hàng",
+  "description": "Hãy thiết lập hồ sơ nhà hàng và tạo nội dung trang chủ với sự hỗ trợ của AI.",
+  "aiAssisted": "Thiết Lập Với AI",
+  "steps": {
+    "basic": {
+      "title": "Thông Tin Cơ Bản",
+      "description": "Thông tin nhà hàng và liên hệ cần thiết",
+      "fields": {
+        "name": {
+          "label": "Tên Nhà Hàng",
+          "placeholder": "Nhập tên nhà hàng của bạn"
+        },
+        "subdomain": {
+          "label": "URL Website",
+          "placeholder": "nhahangcuaban"
+        },
+        "language": {
+          "label": "Ngôn Ngữ Mặc Định",
+          "placeholder": "Chọn ngôn ngữ chính của bạn"
+        },
+        "brandColor": {
+          "label": "Màu Thương Hiệu"
+        },
+        "phone": {
+          "label": "Số Điện Thoại",
+          "placeholder": "0123 456 789"
+        },
+        "email": {
+          "label": "Địa Chỉ Email",
+          "placeholder": "lienhe@nhahangcuaban.com"
+        },
+        "website": {
+          "label": "Website",
+          "placeholder": "https://nhahangcuaban.com"
+        },
+        "address": {
+          "label": "Địa Chỉ",
+          "placeholder": "123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh"
+        },
+        "contactInfo": {
+          "label": "Thông Tin Liên Hệ Bổ Sung",
+          "placeholder": "Giờ hoạt động, hướng dẫn đặc biệt, v.v."
+        }
+      },
+      "sections": {
+        "contact": "Thông Tin Liên Hệ (Tùy Chọn)"
+      },
+      "buttons": {
+        "continue": "Tiếp Tục"
+      }
+    },
+    "aiGeneration": {
+      "title": "Tạo Nội Dung AI",
+      "description": "Tạo nội dung trang chủ với sự hỗ trợ của AI",
+      "aiInfo": {
+        "title": "Tạo Nội Dung Bằng AI",
+        "description": "Hãy cho chúng tôi biết về nhà hàng của bạn và chúng tôi sẽ tạo văn bản hero, câu chuyện chủ nhà hàng và các món ăn đặc trưng cho trang chủ."
+      },
+      "fields": {
+        "cuisine": {
+          "label": "Loại Ẩm Thực",
+          "placeholder": "Ý, Nhật, Mexico, v.v."
+        },
+        "city": {
+          "label": "Thành Phố/Địa Điểm",
+          "placeholder": "Hồ Chí Minh, Hà Nội, v.v."
+        },
+        "style": {
+          "label": "Phong Cách Nhà Hàng",
+          "placeholder": "Ăn uống thường ngày, cao cấp, thân thiện gia đình, v.v."
+        },
+        "specialties": {
+          "label": "Đặc Sản & Tính Năng",
+          "placeholder": "Pizza lò củi, hải sản tươi, nguyên liệu địa phương, v.v."
+        }
+      },
+      "generation": {
+        "success": "Nội dung đã được tạo thành công!",
+        "error": "Không thể tạo nội dung. Vui lòng thử lại."
+      },
+      "preview": {
+        "title": "Xem Trước Nội Dung Đã Tạo",
+        "ownerStory": "Câu Chuyện Chủ Nhà Hàng",
+        "signatureDishes": "Món Ăn Đặc Trưng"
+      },
+      "buttons": {
+        "back": "Quay Lại",
+        "skip": "Bỏ Qua Tạo AI",
+        "generate": "Tạo Nội Dung",
+        "generating": "Đang Tạo...",
+        "regenerate": "Tạo Lại",
+        "accept": "Sử Dụng Nội Dung Này"
+      }
+    },
+    "media": {
+      "title": "Tải Lên Media",
+      "description": "Tải lên logo nhà hàng, ảnh chủ nhà hàng và hình ảnh thư viện",
+      "sections": {
+        "logo": {
+          "title": "Logo Nhà Hàng",
+          "description": "Tải lên logo nhà hàng cho thương hiệu",
+          "requirements": "PNG, JPG, hoặc GIF tối đa 5MB. Khuyến nghị định dạng vuông."
+        },
+        "ownerPhoto": {
+          "title": "Ảnh Chủ Nhà Hàng",
+          "description": "Tải lên ảnh của bạn cho phần câu chuyện chủ nhà hàng",
+          "requirements": "PNG, JPG, hoặc GIF tối đa 5MB. Khuyến nghị định dạng vuông.",
+          "optional": "Tùy Chọn"
+        },
+        "gallery": {
+          "title": "Hình Ảnh Thư Viện",
+          "description": "Tải lên ảnh nhà hàng, món ăn và không gian",
+          "requirements": "PNG, JPG, hoặc GIF mỗi file tối đa 5MB. Hỗ trợ nhiều hình ảnh.",
+          "optional": "Tùy Chọn"
+        }
+      },
+      "upload": {
+        "logoSuccess": "Logo đã được tải lên thành công",
+        "logoError": "Không thể tải lên logo",
+        "ownerPhotoSuccess": "Ảnh chủ nhà hàng đã được tải lên thành công",
+        "ownerPhotoError": "Không thể tải lên ảnh chủ nhà hàng",
+        "gallerySuccess": "Hình ảnh thư viện đã được tải lên thành công ({count} files)",
+        "galleryError": "Không thể tải lên hình ảnh thư viện"
+      },
+      "errors": {
+        "invalidFileType": "Vui lòng chọn file hình ảnh hợp lệ",
+        "fileTooLarge": "Kích thước file phải nhỏ hơn 5MB"
+      },
+      "buttons": {
+        "back": "Quay Lại",
+        "continue": "Tiếp Tục"
+      }
+    },
+    "review": {
+      "title": "Xem Lại & Hoàn Thành",
+      "description": "Xem lại thông tin nhà hàng và hoàn thành quá trình hướng dẫn.",
+      "sections": {
+        "basicInfo": {
+          "title": "Thông Tin Cơ Bản",
+          "fields": {
+            "name": "Tên Nhà Hàng",
+            "subdomain": "URL Website",
+            "language": "Ngôn Ngữ Mặc Định",
+            "brandColor": "Màu Thương Hiệu",
+            "phone": "Điện Thoại",
+            "email": "Email",
+            "address": "Địa Chỉ",
+            "website": "Website"
+          }
+        },
+        "aiContent": {
+          "title": "Nội Dung AI Tạo",
+          "badge": "AI Tạo",
+          "fields": {
+            "hero": "Phần Hero",
+            "ownerStory": "Câu Chuyện Chủ Nhà Hàng",
+            "signatureDishes": "Món Ăn Đặc Trưng"
+          }
+        },
+        "media": {
+          "title": "Tài Nguyên Media",
+          "fields": {
+            "logo": "Logo",
+            "ownerPhoto": "Ảnh Chủ Nhà Hàng",
+            "gallery": "Thư Viện"
+          }
+        }
+      },
+      "completion": {
+        "title": "Sẵn Sàng Ra Mắt!",
+        "description": "Hồ sơ nhà hàng của bạn đã sẵn sàng. Sau khi hoàn thành hướng dẫn, bạn sẽ có quyền truy cập:",
+        "features": {
+          "homepage": "Trang chủ đẹp với nội dung của bạn",
+          "settings": "Quản lý cài đặt nhà hàng",
+          "menu": "Hệ thống quản lý thực đơn",
+          "orders": "Bảng điều khiển quản lý đơn hàng"
+        }
+      },
+      "buttons": {
+        "back": "Quay Lại",
+        "complete": "Hoàn Thành Hướng Dẫn",
+        "completing": "Đang Hoàn Thành..."
+      }
+    }
+  },
+  "completion": {
+    "success": "Hướng dẫn hoàn thành thành công! Chào mừng đến với bảng điều khiển nhà hàng.",
+    "success_with_warnings": "Hướng dẫn hoàn thành với một số vấn đề. Vui lòng kiểm tra các cảnh báo bên dưới.",
+    "error": "Không thể hoàn thành hướng dẫn. Vui lòng thử lại.",
+    "warning_prefix": "Cảnh báo"
+  }
+}

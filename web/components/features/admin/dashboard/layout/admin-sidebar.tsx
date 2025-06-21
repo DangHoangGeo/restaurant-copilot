@@ -16,9 +16,11 @@ import {
   BookUser,
   List,
   LucideIcon,
+  Sparkles,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
+import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 import { cn } from "@/lib/utils";
 
 interface AdminSidebarProps {
@@ -47,47 +49,6 @@ interface NavItemProps {
   isUtility?: boolean;
 }
 
-const navItemsConfig: NavItemConfig[] = [
-  {
-    icon: Home,
-    labelKey: "admin_sidebar_dashboard",
-    href: "/dashboard",
-    exact: true,
-  },
-  {
-    icon: Eye,
-    labelKey: "admin_sidebar_homepage_management",
-    href: "/dashboard/homepage",
-  },
-  {
-    icon: ClipboardList,
-    labelKey: "admin_sidebar_menu_management",
-    href: "/dashboard/menu",
-  },
-  { icon: List, labelKey: "admin_sidebar_orders", href: "/dashboard/orders" },
-  {
-    icon: TableSimpleIcon,
-    labelKey: "admin_sidebar_table_qr_management",
-    href: "/dashboard/tables",
-  },
-  {
-    icon: UserCog,
-    labelKey: "admin_sidebar_employees_schedules",
-    href: "/dashboard/employees",
-  },
-  {
-    icon: BookUser,
-    labelKey: "admin_sidebar_bookings_preorders",
-    href: "/dashboard/bookings",
-    featureFlag: FEATURE_FLAGS.tableBooking,
-  },
-  {
-    icon: BarChartBig,
-    labelKey: "admin_sidebar_reports_analytics",
-    href: "/dashboard/reports",
-  },
-];
-
 const utilityNavItemsConfig: NavItemConfig[] = [
   {
     icon: Settings,
@@ -105,6 +66,68 @@ export function AdminSidebar({
   const params = useParams();
   const t = useTranslations("owner.dashboard");
   const locale = (params.locale as string) || "en";
+  const { needsOnboarding } = useRestaurantSettings();
+
+  // Dynamic navigation items based on onboarding status
+  const getNavItemsConfig = (): NavItemConfig[] => {
+    const baseItems: NavItemConfig[] = [
+      {
+        icon: Home,
+        labelKey: "admin_sidebar_dashboard",
+        href: "/dashboard",
+        exact: true,
+      },
+    ];
+
+    // Show onboarding if not yet onboarded and feature is enabled
+    if (needsOnboarding && FEATURE_FLAGS.onboarding) {
+      baseItems.push({
+        icon: Sparkles,
+        labelKey: "admin_sidebar_onboarding",
+        href: "/dashboard/onboarding",
+      });
+    } else {
+      // Show regular navigation items only after onboarding
+      baseItems.push(
+        {
+          icon: Eye,
+          labelKey: "admin_sidebar_homepage_management",
+          href: "/dashboard/homepage",
+        },
+        {
+          icon: ClipboardList,
+          labelKey: "admin_sidebar_menu_management",
+          href: "/dashboard/menu",
+        },
+        { icon: List, labelKey: "admin_sidebar_orders", href: "/dashboard/orders" },
+        {
+          icon: TableSimpleIcon,
+          labelKey: "admin_sidebar_table_qr_management",
+          href: "/dashboard/tables",
+        },
+        {
+          icon: UserCog,
+          labelKey: "admin_sidebar_employees_schedules",
+          href: "/dashboard/employees",
+        },
+        {
+          icon: BookUser,
+          labelKey: "admin_sidebar_bookings_preorders",
+          href: "/dashboard/bookings",
+          featureFlag: FEATURE_FLAGS.tableBooking,
+        },
+        {
+          icon: BarChartBig,
+          labelKey: "admin_sidebar_reports_analytics",
+          href: "/dashboard/reports",
+        }
+      );
+    }
+
+    return baseItems;
+  };
+
+  const navItemsConfig = getNavItemsConfig();
 
   const NavItem = ({
     icon: IconComponent,

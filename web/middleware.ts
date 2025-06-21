@@ -5,6 +5,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { getSubdomainFromHost } from '@/lib/utils';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
+import { FEATURE_FLAGS } from '@/config/feature-flags';
 
 const nextIntl = createNextIntlMiddleware(routing);
 
@@ -187,6 +188,40 @@ export async function middleware(req: NextRequest) {
     if (!supabaseUser) {
       const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
       return NextResponse.redirect(loginUrl);
+    }
+
+    // Check onboarding status for authenticated dashboard users
+    if (supabaseUser && FEATURE_FLAGS.onboarding) {
+      try {
+        // Get the restaurant for the authenticated user
+        const { data: restaurants, error: restaurantError } = await supabaseAdmin
+          .from('restaurants')
+          .select('id, onboarded')
+          .eq('user_id', supabaseUser.id)
+          .limit(1);
+
+        if (!restaurantError && restaurants && restaurants.length > 0) {
+          const restaurant = restaurants[0];
+          const isOnboardingPage = currentPathnameForLogic.includes('/dashboard/onboarding');
+          
+          // Redirect to onboarding if not yet onboarded and not already on onboarding page
+          if (!restaurant.onboarded && !isOnboardingPage) {
+            const onboardingUrl = new URL(`/${currentLocaleForLogic}/dashboard/onboarding`, req.url);
+            return NextResponse.redirect(onboardingUrl);
+          }
+          
+          // Redirect away from onboarding if already onboarded
+          if (restaurant.onboarded && isOnboardingPage) {
+            const dashboardUrl = new URL(`/${currentLocaleForLogic}/dashboard`, req.url);
+            return NextResponse.redirect(dashboardUrl);
+          }
+        }
+      } catch (error) {
+        logger.error('middleware', 'Error checking onboarding status', { 
+          error: error instanceof Error ? error.message : String(error),
+          userId: supabaseUser.id 
+        });
+      }
     }
   }
 
