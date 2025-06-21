@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StatCard } from '@/components/features/admin/dashboard/StatCard';
 import { QuickActions } from '@/components/features/admin/dashboard/QuickActions';
 import { RecentOrdersTable, RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable';
+import { PopularItemsList, PopularItem } from '@/components/features/admin/dashboard/PopularItemsList';
+import { SalesOverTimeChart, SalesDataPoint } from '@/components/features/admin/dashboard/SalesOverTimeChart';
+import { LowStockAlerts, LowStockItem } from '@/components/features/admin/dashboard/LowStockAlerts';
 import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +31,9 @@ export interface DashboardData {
 export function DashboardClientContent() {
   const [metrics, setMetrics] = useState<DashboardData | null>(null);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [popularItems, setPopularItems] = useState<PopularItem[]>([]);
+  const [salesData, setSalesData] = useState<SalesDataPoint[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,26 +48,46 @@ export function DashboardClientContent() {
     setError(null);
     
     try {
-      const [metricsRes, ordersRes] = await Promise.all([
-        fetch('/api/v1/owner/dashboard/metrics', { headers: {
-            'Content-Type': 'application/json',
-          },credentials: 'include' }),
-        fetch('/api/v1/owner/dashboard/recent-orders', { headers: {
-            'Content-Type': 'application/json',
-          },credentials: 'include' })
+      const [metricsRes, ordersRes, popularItemsRes, salesDataRes, lowStockRes] = await Promise.all([
+        fetch('/api/v1/owner/dashboard/metrics', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        }),
+        fetch('/api/v1/owner/dashboard/recent-orders', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        }),
+        fetch('/api/v1/owner/dashboard/popular-items', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        }),
+        fetch('/api/v1/owner/dashboard/sales-over-time', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        }),
+        fetch('/api/v1/owner/dashboard/low-stock', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        })
       ]);
 
       if (!metricsRes.ok || !ordersRes.ok) {
         throw new Error('Failed to load dashboard data');
       }
 
-      const [metricsData, ordersData] = await Promise.all([
+      const [metricsData, ordersData, popularItemsData, salesChartData, lowStockData] = await Promise.all([
         metricsRes.json(),
-        ordersRes.json()
+        ordersRes.json(),
+        popularItemsRes.ok ? popularItemsRes.json() : [],
+        salesDataRes.ok ? salesDataRes.json() : [],
+        lowStockRes.ok ? lowStockRes.json() : { data: [] }
       ]);
 
       setMetrics(metricsData);
       setRecentOrders(ordersData);
+      setPopularItems(popularItemsData);
+      setSalesData(salesChartData);
+      setLowStockItems(lowStockData.data || []);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       setError(err instanceof Error ? err.message : t('errors.fetch_failed'));
@@ -211,19 +237,18 @@ export function DashboardClientContent() {
         </div>
       </div>
       
-      {/* Placeholder for more charts/reports */}
+      {/* Charts and Reports */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card>
-          <CardContent className="p-6">
-            <ComingSoon featureName="feature.sales_over_time_chart" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <ComingSoon featureName="feature.popular_items_report" />
-          </CardContent>
-        </Card>
+        <SalesOverTimeChart data={salesData} isLoading={isLoading} />
+        <PopularItemsList items={popularItems} isLoading={isLoading} />
       </div>
+
+      {/* Low Stock Alerts Section */}
+      {lowStockAlertsEnabled && (
+        <div className="mt-8">
+          <LowStockAlerts items={lowStockItems} isLoading={isLoading} />
+        </div>
+      )}
     </div>
   );
 }

@@ -30,6 +30,37 @@
     "sales_over_time_placeholder": "Sales Over Time Chart - Coming Soon",
     "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
   },
+  "reports": {
+    "popular_items_title": "Popular Items (Last 7 Days)",
+    "sales_chart_title": "Sales Over Time (Last 7 Days)",
+    "sold_count": "{count} sold",
+    "no_popular_items": "No popular items yet",
+    "complete_orders_to_see_popular_items": "Complete some orders to see your popular items here",
+    "total_sales_7days": "Total Sales (7 Days)",
+    "total_orders_7days": "Total Orders (7 Days)",
+    "avg_order_value": "Avg. Order Value",
+    "daily_sales_trend": "Daily Sales Trend",
+    "orders_short": "orders",
+    "trend_analysis": "Trend",
+    "trending_up": "Trending Up",
+    "trending_down": "Trending Down",
+    "stable": "Stable"
+  },
+  "low_stock": {
+    "title": "Low Stock Alerts",
+    "no_alerts": "No low stock alerts",
+    "all_items_stocked": "All items are sufficiently stocked",
+    "stock_level": "Stock",
+    "threshold": "Min",
+    "manage_inventory": "Manage Inventory",
+    "export_reorder_list": "Export Reorder List",
+    "reorder_list": "Reorder List",
+    "severity": {
+      "critical": "Critical",
+      "warning": "Warning",
+      "low": "Low"
+    }
+  },
   "errors": {
     "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
     "data_fetch_error": "Failed to load dashboard data. Please try again later.",

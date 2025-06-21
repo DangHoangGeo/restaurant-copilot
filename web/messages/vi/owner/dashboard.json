@@ -30,6 +30,37 @@
     "sales_over_time_placeholder": "Biểu Đồ Doanh Thu Theo Thời Gian - Sắp Ra Mắt",
     "popular_items_report_placeholder": "Báo Cáo Món Phổ Biến - Sắp Ra Mắt"
   },
+  "reports": {
+    "popular_items_title": "Món Phổ Biến (7 Ngày Qua)",
+    "sales_chart_title": "Doanh Thu Theo Thời Gian (7 Ngày Qua)",
+    "sold_count": "{count} đã bán",
+    "no_popular_items": "Chưa có món phổ biến",
+    "complete_orders_to_see_popular_items": "Hoàn thành một số đơn hàng để xem các món phổ biến ở đây",
+    "total_sales_7days": "Tổng Doanh Thu (7 Ngày)",
+    "total_orders_7days": "Tổng Đơn Hàng (7 Ngày)",
+    "avg_order_value": "Giá Trị Đơn Hàng TB",
+    "daily_sales_trend": "Xu Hướng Doanh Thu Hàng Ngày",
+    "orders_short": "đơn",
+    "trend_analysis": "Xu Hướng",
+    "trending_up": "Tăng",
+    "trending_down": "Giảm",
+    "stable": "Ổn định"
+  },
+  "low_stock": {
+    "title": "Cảnh Báo Hết Hàng",
+    "no_alerts": "Không có cảnh báo hết hàng",
+    "all_items_stocked": "Tất cả sản phẩm đều được dự trữ đầy đủ",
+    "stock_level": "Tồn kho",
+    "threshold": "Tối thiểu",
+    "manage_inventory": "Quản Lý Kho",
+    "export_reorder_list": "Xuất Danh Sách Đặt Hàng",
+    "reorder_list": "Danh Sách Đặt Hàng",
+    "severity": {
+      "critical": "Khẩn cấp",
+      "warning": "Cảnh báo",
+      "low": "Thấp"
+    }
+  },
   "errors": {
     "restaurant_not_found": "Không thể xác định bối cảnh nhà hàng. Vui lòng đảm bảo bạn đang truy cập qua một tên miền phụ nhà hàng hợp lệ.",
     "data_fetch_error": "Không thể tải dữ liệu bảng điều khiển. Vui lòng thử lại sau.",

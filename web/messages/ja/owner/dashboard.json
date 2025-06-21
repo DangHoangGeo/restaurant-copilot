@@ -30,6 +30,37 @@
     "sales_over_time_placeholder": "Sales Over Time Chart - Coming Soon",
     "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
   },
+  "reports": {
+    "popular_items_title": "人気商品（過去7日間）",
+    "sales_chart_title": "売上推移（過去7日間）",
+    "sold_count": "{count}個販売",
+    "no_popular_items": "人気商品がありません",
+    "complete_orders_to_see_popular_items": "注文を完了して人気商品を表示してください",
+    "total_sales_7days": "合計売上（7日間）",
+    "total_orders_7days": "合計注文数（7日間）",
+    "avg_order_value": "平均注文金額",
+    "daily_sales_trend": "日別売上推移",
+    "orders_short": "件",
+    "trend_analysis": "トレンド",
+    "trending_up": "上昇中",
+    "trending_down": "下降中",
+    "stable": "安定"
+  },
+  "low_stock": {
+    "title": "在庫不足アラート",
+    "no_alerts": "在庫不足アラートなし",
+    "all_items_stocked": "すべてのアイテムが十分に在庫されています",
+    "stock_level": "在庫",
+    "threshold": "最低",
+    "manage_inventory": "在庫管理",
+    "export_reorder_list": "再注文リストをエクスポート",
+    "reorder_list": "再注文リスト",
+    "severity": {
+      "critical": "緊急",
+      "warning": "警告",
+      "low": "低"
+    }
+  },
   "errors": {
     "restaurant_not_found": "Restaurant context could not be determined. Please ensure you are accessing via a valid restaurant subdomain.",
     "data_fetch_error": "Failed to load dashboard data. Please try again later.",
