@@ -150,6 +150,10 @@
       "loadFailed": "Failed to load owner story"
     }
   },
+  "signature": "Signature",
+  "view_details": "View Details",
+  "browse_full_menu": "Browse Full Menu",
+  "add_to_cart": "Add to Cart",
   "signatureDishes": {
     "title": "Signature Dishes",
     "description": "Select menu items to feature as your signature dishes",

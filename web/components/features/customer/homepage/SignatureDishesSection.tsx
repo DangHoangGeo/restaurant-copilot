@@ -44,7 +44,7 @@ export function SignatureDishesSection({
   primaryColor = "#3B82F6",
   isAdmin = false 
 }: SignatureDishesSectionProps) {
-  const t = useTranslations("customer.home");
+  const t = useTranslations("owner.homepage");
 
   const getDishName = (dish: SignatureDish) => {
     switch (locale) {
@@ -130,12 +130,12 @@ export function SignatureDishesSection({
           <div className="flex items-center justify-center gap-2 mb-4">
             <Sparkles className="h-6 w-6 text-[var(--brand-color)]" />
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
-              {t("signature_dishes") || "Signature Dishes"}
+              {t("signatureDishes.title") || "Signature Dishes"}
             </h2>
             <Sparkles className="h-6 w-6 text-[var(--brand-color)]" />
           </div>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            {t("signature_dishes_description") || "Discover our most popular and chef-recommended dishes"}
+            {t("signatureDishes.description") || "Discover our most popular and chef-recommended dishes"}
           </p>
           <motion.div
             className="w-24 h-1 bg-gradient-to-r from-[var(--brand-color)] to-[var(--brand-color)]/60 rounded-full mx-auto mt-4"

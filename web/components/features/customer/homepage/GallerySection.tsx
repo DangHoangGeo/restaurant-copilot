@@ -34,7 +34,7 @@ export function GallerySection({
   primaryColor = "#3B82F6",
   isAdmin = false 
 }: GallerySectionProps) {
-  const t = useTranslations("customer.home.gallery");
+  const t = useTranslations("owner.homepage.gallery");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
 
@@ -125,10 +125,10 @@ export function GallerySection({
             animate={{ opacity: 1, y: 0 }}
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              {t("gallery") || "Gallery"}
+              {t("title") || "Gallery"}
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              {t("gallery_description") || `Take a look inside ${restaurantName}`}
+              {t("description") || `Take a look inside ${restaurantName}`}
             </p>
             <motion.div
               className="w-24 h-1 bg-gradient-to-r from-[var(--brand-color)] to-[var(--brand-color)]/60 rounded-full mx-auto mt-4"
