@@ -31,6 +31,48 @@
     "popular_items_report_placeholder": "Popular Items Report - Coming Soon"
   },
   "reports": {
+    "title": "Reports & Analytics",
+    "description": "Comprehensive insights into your restaurant's performance",
+    "retry": "Retry",
+    "errors": {
+      "fetch_failed": "Failed to load data"
+    },
+    "dateRangeSelector": {
+      "title": "Date Range & Export",
+      "quickSelect": "Quick Select",
+      "customRange": "Custom Date Range",
+      "selectPeriod": "Select period",
+      "custom": "Custom",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days",
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "pickDate": "Pick a date range",
+      "selectedRange": "Selected Range"
+    },
+    "exporting": "Exporting...",
+    "itemsReport": {
+      "title": "Items Performance Report",
+      "totalRevenue": "Total Revenue",
+      "totalSold": "Items Sold",
+      "avgRating": "Avg Rating",
+      "totalItems": "Total Items",
+      "searchPlaceholder": "Search items...",
+      "filterByCategory": "Filter by category",
+      "allCategories": "All Categories",
+      "itemName": "Item Name",
+      "category": "Category",
+      "totalSold": "Total Sold",
+      "revenue": "Revenue",
+      "avgRating": "Avg Rating",
+      "profitMargin": "Profit Margin",
+      "popularity": "Popularity",
+      "mostPopular": "most popular",
+      "noItemsFound": "No items found matching your criteria",
+      "exporting": "Exporting..."
+    },
     "popular_items_title": "Popular Items (Last 7 Days)",
     "sales_chart_title": "Sales Over Time (Last 7 Days)",
     "sold_count": "{count} sold",
