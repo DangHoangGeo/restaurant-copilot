@@ -60,6 +60,11 @@ export type Restaurant = {
   hero_subtitle_en: string | null;
   hero_subtitle_ja: string | null;
   hero_subtitle_vi: string | null;
+  // Owner story content
+  owner_story_en: string | null;
+  owner_story_ja: string | null;
+  owner_story_vi: string | null;
+  owner_photo_url: string | null;
   // ensure all fields expected by SettingsForm are here
   created_at?: string | null; // Add if needed
   updated_at?: string | null; // Add if needed

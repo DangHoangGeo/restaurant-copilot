@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
@@ -43,18 +43,16 @@ const menuItemSchema = z.object({
   sizes: z.array(menuItemSizeSchema).optional(),
 });
 
-export async function GET(req: NextRequest) {
-  const restaurantId = req.nextUrl.searchParams.get("restaurantId") || "";
-  console.log('GET menu items for restaurantId:', restaurantId);
-  
-  // Validate restaurantId parameter
-  if (!restaurantId || restaurantId.trim() === '') {
-    return NextResponse.json({ message: 'restaurantId parameter is required' }, { status: 400 });
+export async function GET() {
+  const user: AuthUser | null = await getUserFromRequest();
+
+  if (!user || !user.restaurantId) {
+    return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(restaurantId)) {
+  if (!uuidRegex.test(user.restaurantId)) {
     return NextResponse.json({ message: 'Invalid restaurantId format' }, { status: 400 });
   }
 
@@ -95,7 +93,7 @@ export async function GET(req: NextRequest) {
           position
         )
       `)
-      .eq('restaurant_id', restaurantId)
+      .eq('restaurant_id', user.restaurantId)
       .order('position', { ascending: true });
       
     if (error) {

@@ -50,11 +50,20 @@ export function GalleryManager({ }: GalleryManagerProps) {
   const loadGallery = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/v1/restaurant/gallery');
+      const response = await fetch('/api/v1/restaurant/onboarding/data');
       if (!response.ok) throw new Error('Failed to load gallery');
       
       const data = await response.json();
-      setImages(data.images || []);
+      // Transform the simple URLs to the expected format
+      const galleryImages = (data.data.gallery_images || []).map((url: string, index: number) => ({
+        id: `gallery-${index}`,
+        url,
+        alt_text: `Gallery Image ${index + 1}`,
+        is_hero: false, // This would need to be determined differently
+        display_order: index,
+        created_at: new Date().toISOString(),
+      }));
+      setImages(galleryImages);
     } catch (error) {
       console.error('Error loading gallery:', error);
       toast.error(t('errors.loadFailed'));

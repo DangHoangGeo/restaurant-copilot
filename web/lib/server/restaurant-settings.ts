@@ -9,7 +9,7 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
   try {
     const { data: restaurant, error } = await supabaseAdmin
       .from('restaurants')
-      .select('id, name, logo_url, subdomain, brand_color, default_language')
+      .select('id, name, logo_url, subdomain, brand_color, default_language, onboarded')
       .eq('subdomain', subdomain)
       .single();
 
@@ -30,6 +30,7 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
       subdomain: restaurant.subdomain,
       primaryColor: restaurant.brand_color || '#3B82F6',
       defaultLocale: restaurant.default_language || 'en',
+      onboarded: restaurant.onboarded || false,
     };
   } catch (e) {
     await logger.error('getRestaurantSettingsFromSubdomain', 'Exception fetching restaurant by subdomain', {

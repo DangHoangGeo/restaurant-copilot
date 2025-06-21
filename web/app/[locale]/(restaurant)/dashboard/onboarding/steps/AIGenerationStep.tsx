@@ -49,6 +49,7 @@ export function AIGenerationStep({ data, onUpdate, onNext, onBack }: AIGeneratio
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           name: data.name,
           cuisine: formData.cuisine,

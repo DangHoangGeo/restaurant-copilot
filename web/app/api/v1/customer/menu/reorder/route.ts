@@ -15,10 +15,10 @@ async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<str
     return null;
   }
   // Assuming you have a way to get restaurant_id from the user or session
-  // For example, if it's in user_metadata or a custom claim in the JWT
+  // For example, if it's in app_metadata or a custom claim in the JWT
   // Or if the user is directly linked to one restaurant_id
   // This is a placeholder, adapt to your actual authentication/session management
-  return session.user?.user_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
+  return session.user?.app_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
 }
 
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 
 const ownerStorySchema = z.object({
   owner_story_en: z.string().max(1000).optional(),
@@ -36,8 +37,8 @@ interface OwnerStoryEditorProps {
 
 export function OwnerStoryEditor({ }: OwnerStoryEditorProps) {
   const t = useTranslations("owner.homepage.ownerStory");
+  const { restaurantSettings, isLoading: contextLoading, updateSettings } = useRestaurantSettings();
   
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -58,27 +59,18 @@ export function OwnerStoryEditor({ }: OwnerStoryEditorProps) {
     }
   });
 
-  // Load owner story data
-  const loadOwnerStory = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/v1/restaurant/owner-story');
-      if (!response.ok) throw new Error('Failed to load owner story');
-      
-      const data = await response.json();
-      reset(data);
-      setPhotoPreview(data.photo_url);
-    } catch (error) {
-      console.error('Error loading owner story:', error);
-      toast.error(t('errors.loadFailed'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [t, reset]);
-
+  // Load owner story data from RestaurantContext
   useEffect(() => {
-    loadOwnerStory();
-  }, [loadOwnerStory]);
+    if (restaurantSettings) {
+      reset({
+        owner_story_en: restaurantSettings.owner_story_en || "",
+        owner_story_ja: restaurantSettings.owner_story_ja || "",
+        owner_story_vi: restaurantSettings.owner_story_vi || "",
+        photo_url: restaurantSettings.owner_photo_url || "",
+      });
+      setPhotoPreview(restaurantSettings.owner_photo_url);
+    }
+  }, [restaurantSettings, reset]);
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -91,16 +83,31 @@ export function OwnerStoryEditor({ }: OwnerStoryEditorProps) {
       formData.append('photo', file);
 
       // Upload to Supabase storage
-      const response = await fetch('/api/v1/upload/owner-photo', {
+      const uploadResponse = await fetch('/api/v1/upload/owner-photo', {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Failed to upload photo');
+      if (!uploadResponse.ok) throw new Error('Failed to upload photo');
 
-      const data = await response.json();
-      setValue("photo_url", data.url);
-      setPhotoPreview(data.url);
+      const uploadData = await uploadResponse.json();
+      
+      // Update restaurant settings with the new photo URL
+      const settingsResponse = await fetch('/api/v1/restaurant/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ owner_photo_url: uploadData.url }),
+      });
+
+      if (!settingsResponse.ok) throw new Error('Failed to save photo');
+
+      const settingsResult = await settingsResponse.json();
+      updateSettings(settingsResult); // Update the context
+      
+      setValue("photo_url", uploadData.url);
+      setPhotoPreview(uploadData.url);
       toast.success(t('photo.uploadSuccess'));
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -114,16 +121,27 @@ export function OwnerStoryEditor({ }: OwnerStoryEditorProps) {
     try {
       setIsSaving(true);
       
-      const response = await fetch('/api/v1/restaurant/owner-story', {
+      // Update using the restaurant settings API
+      const updateData = {
+        owner_story_en: data.owner_story_en,
+        owner_story_ja: data.owner_story_ja,
+        owner_story_vi: data.owner_story_vi,
+        // Note: photo_url is handled separately in handlePhotoUpload
+      };
+
+      const response = await fetch('/api/v1/restaurant/settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) throw new Error('Failed to save owner story');
 
+      const result = await response.json();
+      updateSettings(result); // Update the context
+      
       toast.success(t('save.success'));
       reset(data); // Reset form to mark as not dirty
     } catch (error) {
@@ -134,7 +152,7 @@ export function OwnerStoryEditor({ }: OwnerStoryEditorProps) {
     }
   };
 
-  if (isLoading) {
+  if (contextLoading) {
     return (
       <Card>
         <CardHeader>

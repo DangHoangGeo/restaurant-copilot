@@ -55,6 +55,11 @@ const utilityNavItemsConfig: NavItemConfig[] = [
     labelKey: "admin_sidebar_restaurant_settings",
     href: "/dashboard/settings",
   },
+  {
+    icon: Eye,
+    labelKey: "admin_sidebar_homepage_management",
+    href: "/dashboard/homepage",
+  },
 ];
 
 export function AdminSidebar({
@@ -90,16 +95,12 @@ export function AdminSidebar({
       // Show regular navigation items only after onboarding
       baseItems.push(
         {
-          icon: Eye,
-          labelKey: "admin_sidebar_homepage_management",
-          href: "/dashboard/homepage",
-        },
-        {
           icon: ClipboardList,
           labelKey: "admin_sidebar_menu_management",
           href: "/dashboard/menu",
         },
-        { icon: List, labelKey: "admin_sidebar_orders", href: "/dashboard/orders" },
+        { icon: List, labelKey: "admin_sidebar_orders",
+          href: "/dashboard/orders" },
         {
           icon: TableSimpleIcon,
           labelKey: "admin_sidebar_table_qr_management",
@@ -230,16 +231,6 @@ export function AdminSidebar({
               ),
           )}
         </nav>
-        <div className="p-3 mt-auto flex-shrink-0 border-t space-y-1.5">
-          <a
-            href={`/${locale}/menu`}
-            rel="noopener noreferrer"
-            className="flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out text-muted-foreground hover:bg-muted hover:text-foreground group"
-          >
-            <Eye className="mr-3 h-5 w-5 text-muted-foreground group-hover:text-foreground" />
-            <span>{t("admin_sidebar_view_customer_site")}</span>
-          </a>
-        </div>
       </aside>
       {isOpen && (
         <div

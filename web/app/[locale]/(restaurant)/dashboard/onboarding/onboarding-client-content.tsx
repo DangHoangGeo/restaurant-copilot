@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -24,7 +24,7 @@ type OnboardingStep = 'basic' | 'ai-generation' | 'media' | 'review';
 export function OnboardingClientContent({ locale }: OnboardingClientContentProps) {
   const t = useTranslations("owner.onboarding");
   const router = useRouter();
-  const { updateSettings } = useRestaurantSettings();
+  const { updateSettings, restaurantSettings } = useRestaurantSettings();
   
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('basic');
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
@@ -34,6 +34,57 @@ export function OnboardingClientContent({ locale }: OnboardingClientContentProps
     brand_color: '#3B82F6',
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load existing restaurant data if available
+  useEffect(() => {
+    if (restaurantSettings) {
+      setOnboardingData(prev => ({
+        ...prev,
+        name: restaurantSettings.name || '',
+        subdomain: restaurantSettings.subdomain || '',
+        default_language: (restaurantSettings.default_language as 'en' | 'ja' | 'vi') || prev.default_language,
+        brand_color: restaurantSettings.brand_color || prev.brand_color,
+        contact_info: restaurantSettings.contact_info || '',
+        address: restaurantSettings.address || '',
+        phone: restaurantSettings.phone || '',
+        email: restaurantSettings.email || '',
+        website: restaurantSettings.website || '',
+        hero_title: restaurantSettings.hero_title_en || '',
+        hero_subtitle: restaurantSettings.hero_subtitle_en || '',
+        owner_story_en: restaurantSettings.owner_story_en || '',
+        owner_story_ja: restaurantSettings.owner_story_ja || '',
+        owner_story_vi: restaurantSettings.owner_story_vi || '',
+        logo_url: restaurantSettings.logo_url || '',
+        owner_photo_url: restaurantSettings.owner_photo_url || '',
+      }));
+      
+      // Load additional onboarding data (gallery images and signature dishes)
+      loadAdditionalOnboardingData();
+    }
+  }, [restaurantSettings]);
+
+  const loadAdditionalOnboardingData = async () => {
+    try {
+      const response = await fetch('/api/v1/restaurant/onboarding/data', {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+		credentials: 'include'
+      });
+      if (response.ok) {
+        const result = await response.json();
+        setOnboardingData(prev => ({
+          ...prev,
+          gallery_images: result.data.gallery_images || [],
+          signature_dishes: result.data.signature_dishes || [],
+        }));
+      } else {
+        console.warn('Failed to load additional onboarding data:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Error loading additional onboarding data:', error);
+    }
+  };
 
   const steps: Array<{
     id: OnboardingStep;
@@ -123,6 +174,7 @@ export function OnboardingClientContent({ locale }: OnboardingClientContentProps
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(apiData),
       });
 
