@@ -46,3 +46,32 @@ export interface RestaurantSettings {
   primaryColor?: string;
   secondaryColor?: string;
 }
+
+export interface RestaurantData {
+  id: string;
+  name: string;
+  subdomain: string;
+  logoUrl?: string | null;
+  tagline_en?: string | null;
+  tagline_ja?: string | null;
+  tagline_vi?: string | null;
+  description_en?: string | null;
+  description_ja?: string | null;
+  description_vi?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  opening_hours?: Record<string, string> | string;
+  social_links?: Record<string, string> | string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  google_rating?: number;
+  google_review_count?: number;
+  google_place_id?: string | null;
+  owner_story_en?: string | null;
+  owner_story_ja?: string | null;
+  owner_story_vi?: string | null;
+  timezone?: string;
+  currency?: string;
+}

@@ -95,5 +95,93 @@
     "error_loading_booking": "Error loading booking form. Please try again later.",
     "error_loading_order_summary": "Error loading order summary. Please try again later.",
     "error_loading_review_form": "Error loading review form. Please try again later."
+  },
+  "hero": {
+    "title": "Authentic Vietnamese Cuisine",
+    "subtitle": "Experience the rich flavors and traditions of Vietnam",
+    "cta_primary": "View Menu",
+    "cta_secondary": "Make Reservation",
+    "view_menu": "View Menu",
+    "make_reservation": "Make a Reservation",
+    "loading": "Loading hero section..."
+  },
+  "gallery": {
+    "title": "Our Restaurant",
+    "subtitle": "Take a look inside our welcoming space",
+    "view_all": "View All Photos",
+    "loading": "Loading gallery...",
+    "no_images": "No images available"
+  },
+  "owner_story": {
+    "title": "Our Story",
+    "subtitle": "From our family to yours",
+    "read_more": "Read More",
+    "read_less": "Read Less",
+    "about_owner": "About the Owner",
+    "meet_the_owner": "Meet the Owner"
+  },
+  "signature_dishes": {
+    "title": "Signature Dishes",
+    "subtitle": "Chef's special recommendations",
+    "try_now": "Try Now",
+    "order_now": "Order Now",
+    "featured": "Featured",
+    "popular": "Popular Choice",
+    "new": "New",
+    "loading": "Loading signature dishes...",
+    "no_dishes": "No signature dishes available"
+  },
+  "reviews": {
+    "reviews_and_ratings": "What Our Customers Say",
+    "see_what_customers_say": "Hear from our satisfied guests",
+    "reviews_coming_soon": "Reviews coming soon!",
+    "reviews_description": "Share your experience with us",
+    "view_on_google": "View on Google",
+    "view_all_reviews": "View All Reviews",
+    "location": "Location",
+    "directions": "Get Directions",
+    "call": "Call Us",
+    "write_review": "Write a Review",
+    "stars": "stars",
+    "loading": "Loading reviews...",
+    "no_reviews": "No reviews yet",
+    "tap_for_hours": "Tap for hours"
+  },
+  "location": {
+    "title": "Visit Us",
+    "subtitle": "Find us in the heart of the city",
+    "get_directions": "Get Directions",
+    "call_now": "Call Now",
+    "address": "Address",
+    "phone": "Phone",
+    "hours": "Hours",
+    "map_loading": "Loading map...",
+    "directions": "Directions"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "We'd love to hear from you",
+    "phone": "Phone",
+    "email": "Email", 
+    "address": "Address",
+    "hours": "Opening Hours",
+    "social_media": "Follow Us",
+    "closed": "Closed",
+    "open_now": "Open Now",
+    "closes_at": "Closes at",
+    "opens_at": "Opens at {time}",
+    "show_all_hours": "Show All Hours",
+    "hide_hours": "Hide All Hours",
+    "opening_hours": "Opening Hours",
+    "today": "Today",
+    "contact_information": "Contact Information",
+    "get_in_touch": "Get in Touch",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
   }
 }

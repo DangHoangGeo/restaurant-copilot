@@ -55,6 +55,11 @@ const navItemsConfig: NavItemConfig[] = [
     exact: true,
   },
   {
+    icon: Eye,
+    labelKey: "admin_sidebar_homepage_management",
+    href: "/dashboard/homepage",
+  },
+  {
     icon: ClipboardList,
     labelKey: "admin_sidebar_menu_management",
     href: "/dashboard/menu",

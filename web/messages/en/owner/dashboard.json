@@ -61,6 +61,7 @@
     "settings": "Settings"
   },
   "admin_sidebar_dashboard": "Dashboard",
+  "admin_sidebar_homepage_management": "Homepage",
   "admin_sidebar_restaurant_settings": "Restaurant Settings",
   "admin_sidebar_menu_management": "Menu Management",
   "admin_sidebar_orders": "Orders",
@@ -72,6 +73,7 @@
   "admin_sidebar_view_customer_site": "View Customer Site",
   "admin_sidebar_logout": "Logout",
   "admin_dashboard_title": "Dashboard Overview",
+  "admin_homepage_title": "Homepage Management",
   "admin_settings_title": "Restaurant Settings",
   "admin_menu_title": "Menu Management",
   "admin_tables_title": "Table & QR Management",
