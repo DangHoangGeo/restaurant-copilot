@@ -1,82 +1,132 @@
 {
-  "title": "Reports & Analytics",
-  "description": "View sales reports, item performance, and customer feedback",
+  "title": "レポート・分析",
+  "description": "売上レポート、商品パフォーマンス、お客様のフィードバックを表示",
+  "retry": "再試行",
+  "errors": {
+    "fetch_failed": "データの読み込みに失敗しました"
+  },
+  "exporting": "エクスポート中...",
   "tabs": {
-    "sales": "Sales",
-    "items": "Items",
-    "feedback": "Feedback"
+    "sales": "売上",
+    "items": "商品",
+    "feedback": "フィードバック"
   },
   "summary": {
-    "total_sales_today": "Total Sales Today",
-    "active_orders_count": "Active Orders",
-    "top_selling_item_today": "Top Selling Item Today",
-    "low_stock_alerts_count": "Low Stock Alerts"
+    "total_sales_today": "本日の売上合計",
+    "active_orders_count": "アクティブな注文",
+    "top_selling_item_today": "本日の売れ筋商品",
+    "low_stock_alerts_count": "在庫不足アラート"
   },
   "recommendations": {
-    "title": "Top Selling Menu Items (Last 7 Days)",
-    "loading": "Loading recommendations...",
-    "errorFetching": "Error fetching recommendations: {error}",
-    "noData": "No top sellers found for the last 7 days.",
-    "soldLabel": "Sold:",
-    "applyButton": "Apply to Next Week",
-    "applyingButton": "Applying...",
-    "applySuccess": "Recommendations applied successfully!",
-    "applyError": "Error applying recommendations: {error}",
-    "missingRestaurantId": "Please select a restaurant to see recommendations.",
-    "missingRestaurantIdApply": "Cannot apply recommendations without a restaurant ID.",
-    "description_7_days": "Based on the last 7 days",
-    "apply_button": "Apply Recommendations"
+    "title": "売れ筋メニュー（過去7日間）",
+    "loading": "おすすめを読み込み中...",
+    "errorFetching": "おすすめの取得エラー: {error}",
+    "noData": "過去7日間の売れ筋商品が見つかりません。",
+    "soldLabel": "販売数:",
+    "applyButton": "来週に適用",
+    "applyingButton": "適用中...",
+    "applySuccess": "おすすめが正常に適用されました！",
+    "applyError": "おすすめの適用エラー: {error}",
+    "missingRestaurantId": "おすすめを表示するにはレストランを選択してください。",
+    "missingRestaurantIdApply": "レストランIDなしではおすすめを適用できません。",
+    "description_7_days": "過去7日間に基づく",
+    "apply_button": "おすすめを適用"
+  },
+  "dateRange": {
+    "today": "今日",
+    "yesterday": "昨日",
+    "last7Days": "過去7日間",
+    "last30Days": "過去30日間",
+    "thisWeek": "今週",
+    "thisMonth": "今月"
+  },
+  "dateRangeSelector": {
+    "title": "期間選択・エクスポート",
+    "quickSelect": "クイック選択",
+    "customRange": "カスタム期間",
+    "selectPeriod": "期間を選択",
+    "custom": "カスタム",
+    "pickDate": "期間を選択してください",
+    "selectedRange": "選択された期間"
   },
   "sales": {
-    "title": "Sales Report",
-    "daily_revenue_chart_placeholder": "Daily revenue chart placeholder",
-    "category_breakdown_chart_placeholder": "Category breakdown placeholder"
+    "title": "売上レポート",
+    "daily_revenue_chart_placeholder": "日次売上チャートプレースホルダー",
+    "category_breakdown_chart_placeholder": "カテゴリ内訳プレースホルダー"
   },
   "daterange": {
-    "last_7_days": "Last 7 Days",
-    "last_30_days": "Last 30 Days"
+    "last_7_days": "過去7日間",
+    "last_30_days": "過去30日間"
   },
   "items": {
-    "title": "Items Report",
+    "title": "商品レポート",
     "table": {
-      "item_name": "Item Name",
-      "total_sold": "Total Sold",
-      "total_revenue": "Total Revenue",
-      "avg_rating": "Avg Rating"
+      "item_name": "商品名",
+      "total_sold": "販売総数",
+      "total_revenue": "売上合計",
+      "avg_rating": "平均評価"
     }
   },
+  "itemsReport": {
+    "title": "商品パフォーマンスレポート",
+    "totalRevenue": "売上合計",
+    "totalSold": "販売数",
+    "avgRating": "平均評価",
+    "totalItems": "商品総数",
+    "searchPlaceholder": "商品を検索...",
+    "filterByCategory": "カテゴリで絞り込み",
+    "allCategories": "全カテゴリ",
+    "itemName": "商品名",
+    "category": "カテゴリ",
+    "revenue": "売上",
+    "profitMargin": "利益率",
+    "popularity": "人気度",
+    "mostPopular": "最も人気",
+    "noItemsFound": "条件に一致する商品が見つかりません"
+  },
+  "analytics": {
+    "salesOverTime": "売上推移",
+    "ordersCount": "注文数",
+    "categoryBreakdown": "カテゴリ別売上",
+    "averageOrderValue": "平均注文額推移",
+    "totalSales": "売上合計",
+    "totalOrders": "注文総数",
+    "avgOrderValue": "平均注文額",
+    "growthRate": "成長率"
+  },
   "metrics": {
-    "total_sales": "Total Sales",
-    "total_items_sold": "Total Items Sold",
-    "average_order_value": "Average Order Value",
-    "top_item": "Top Item",
-    "low_stock": "Low Stock Items",
-    "todaySales": "Today's Sales",
-    "todayOrders": "Today's Orders",
-    "todayRevenue": "Today's Revenue",
-    "totalOrders": "Total Orders",
-    "activeOrders": "Active Orders",
-    "topSeller": "Top Seller",
-    "lowStock": "Low Stock",
-    "noData": "No data available for this period.",
-    "loading": "Loading metrics...",
-    "itemsNeedAttention": "Items that need attention"
+    "total_sales": "売上合計",
+    "total_items_sold": "販売商品総数",
+    "average_order_value": "平均注文額",
+    "top_item": "トップ商品",
+    "low_stock": "在庫不足商品",
+    "todaySales": "本日の売上",
+    "todayOrders": "本日の注文",
+    "todayRevenue": "本日の収益",
+    "totalOrders": "注文総数",
+    "activeOrders": "アクティブな注文",
+    "topSeller": "売れ筋商品",
+    "lowStock": "在庫不足",
+    "noData": "この期間のデータはありません。",
+    "loading": "メトリクスを読み込み中...",
+    "itemsNeedAttention": "注意が必要な商品"
   },
   "recentOrders": {
-    "title": "Recent Orders",
-    "noOrders": "No recent orders found.",
-    "orderId": "Order ID",
-    "customerName": "Customer Name",
-    "totalAmount": "Total Amount",
-    "orderTime": "Order Time",
-    "status": "Status"
+    "title": "最近の注文",
+    "noOrders": "最近の注文が見つかりません。",
+    "table": "テーブル",
+    "orderId": "注文ID",
+    "customerName": "お客様名",
+    "totalAmount": "合計金額",
+    "orderTime": "注文時刻",
+    "status": "ステータス"
   },
   "feedback": {
-    "title": "Feedback",
-    "description_last_50": "Last 50 reviews"
+    "title": "フィードバック",
+    "description_last_50": "最新50件のレビュー"
   },
   "coming_soon": {
-    "title": "Reports & Analytics",
-    "message": "Advanced reporting features are coming soon! You'll be able to view detailed sales analytics, item performance metrics, and customer feedback analysis here."
+    "title": "レポート・分析",
+    "message": "高度なレポート機能は近日公開予定です！詳細な売上分析、商品パフォーマンス指標、お客様のフィードバック分析をここで確認できるようになります。"
   }
 }

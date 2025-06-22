@@ -1,0 +1,245 @@
+{
+  "title": "Homepage Management",
+  "description": "Customize your restaurant's homepage to attract and engage customers",
+  "tabs": {
+    "overview": "Overview",
+    "overviewDescription": "View the status of all homepage sections",
+    "gallery": "Gallery",
+    "galleryDescription": "Manage your restaurant's photo gallery",
+    "ownerStory": "Owner Story",
+    "storyDescription": "Share your personal story and passion",
+    "signatureDishes": "Signature Dishes",
+    "signatureDescription": "Highlight your best menu items",
+    "preview": "Preview",
+    "previewDescription": "See how your homepage looks to customers"
+  },
+  "buttons": {
+    "preview": "Preview",
+    "viewLive": "View Live Site",
+    "configure": "Configure",
+    "refresh": "Refresh",
+    "openInNewTab": "Open in New Tab"
+  },
+  "status": {
+    "configured": "Configured",
+    "needsAttention": "Needs Attention",
+    "missing": "Missing",
+    "unknown": "Unknown"
+  },
+  "overview": {
+    "title": "Homepage Overview",
+    "description": "Monitor and manage all sections of your restaurant homepage",
+    "heroSection": {
+      "title": "Hero Section",
+      "description": "Main banner with restaurant branding and call-to-action"
+    },
+    "gallerySection": {
+      "title": "Photo Gallery",
+      "description": "Showcase your restaurant's atmosphere and dishes"
+    },
+    "ownerStorySection": {
+      "title": "Owner Story",
+      "description": "Personal story that connects with customers"
+    },
+    "signatureDishesSection": {
+      "title": "Signature Dishes",
+      "description": "Highlight your most popular menu items"
+    },
+    "reviewsSection": {
+      "title": "Reviews & Location",
+      "description": "Google reviews and maps integration"
+    },
+    "contactSection": {
+      "title": "Contact & Hours",
+      "description": "Contact information and opening hours"
+    },
+    "stats": {
+      "title": "Quick Stats",
+      "description": "Overview of your homepage content",
+      "galleryImages": "Gallery Images",
+      "signatureDishes": "Signature Dishes",
+      "rating": "Average Rating",
+      "reviews": "Total Reviews"
+    }
+  },
+  "gallery": {
+    "title": "Gallery Management",
+    "description": "Upload and organize photos that showcase your restaurant",
+    "buttons": {
+      "upload": "Upload Photos",
+      "uploadFirst": "Upload Your First Photos",
+      "setHero": "Set as Hero"
+    },
+    "upload": {
+      "title": "Upload New Photos",
+      "description": "Select multiple photos to add to your gallery",
+      "selectFiles": "Select Photos",
+      "selectedCount": "{count} files selected",
+      "success": "Photos uploaded successfully",
+      "error": "Failed to upload photos"
+    },
+    "edit": {
+      "title": "Edit Photo",
+      "description": "Update photo details",
+      "altText": "Alt Text",
+      "altTextPlaceholder": "Describe this photo"
+    },
+    "delete": {
+      "success": "Photo deleted successfully",
+      "error": "Failed to delete photo"
+    },
+    "update": {
+      "success": "Photo updated successfully",
+      "error": "Failed to update photo"
+    },
+    "hero": {
+      "label": "Hero Image",
+      "current": "Current Hero",
+      "error": "Failed to set hero image"
+    },
+    "empty": {
+      "title": "No Photos Yet",
+      "description": "Start building your gallery by uploading your first photos"
+    },
+    "info": {
+      "heroImage": "Choose one image as your hero image - it will be prominently displayed at the top of your homepage"
+    },
+    "errors": {
+      "loadFailed": "Failed to load gallery"
+    }
+  },
+  "ownerStory": {
+    "title": "Owner Story",
+    "description": "Share your personal journey and passion for your restaurant",
+    "photo": {
+      "title": "Owner Photo",
+      "description": "Add a personal photo to connect with your customers",
+      "upload": "Upload Photo",
+      "change": "Change Photo",
+      "alt": "Owner photo",
+      "uploadSuccess": "Photo uploaded successfully",
+      "uploadError": "Failed to upload photo"
+    },
+    "story": {
+      "title": "Your Story",
+      "english": "English Story",
+      "japanese": "Japanese Story",
+      "vietnamese": "Vietnamese Story",
+      "placeholderEn": "Tell your customers about your journey, passion, and what makes your restaurant special...",
+      "placeholderJa": "あなたの歩み、情熱、そしてレストランの特別な魅力についてお客様にお話しください...",
+      "placeholderVi": "Kể cho khách hành về hành trình, đam mê và điều đặc biệt của nhà hàng bạn..."
+    },
+    "buttons": {
+      "save": "Save Story"
+    },
+    "save": {
+      "success": "Owner story saved successfully",
+      "error": "Failed to save owner story"
+    },
+    "info": {
+      "personalTouch": "A personal story helps customers connect with your restaurant and builds trust"
+    },
+    "tips": {
+      "title": "Writing Tips",
+      "personal": "Be authentic and share your personal journey",
+      "authentic": "Mention what inspired you to open the restaurant",
+      "passion": "Express your passion for food and hospitality",
+      "multilingual": "Consider writing in multiple languages for broader appeal"
+    },
+    "errors": {
+      "loadFailed": "Failed to load owner story"
+    }
+  },
+  "signatureDishes": {
+    "title": "Signature Dishes",
+    "description": "Select menu items to feature as your signature dishes",
+    "current": {
+      "title": "Current Signature Dishes",
+      "description": "You have {count} signature dishes selected",
+      "empty": {
+        "title": "No Signature Dishes Selected",
+        "description": "Choose your best menu items to showcase as signature dishes"
+      }
+    },
+    "selector": {
+      "title": "Select From Menu",
+      "description": "Browse your menu and select dishes to feature on your homepage"
+    },
+    "buttons": {
+      "remove": "Remove"
+    },
+    "badge": {
+      "signature": "Signature"
+    },
+    "search": {
+      "placeholder": "Search menu items...",
+      "noResults": {
+        "title": "No Items Found",
+        "description": "Try adjusting your search or filter criteria"
+      }
+    },
+    "filter": {
+      "allCategories": "All Categories"
+    },
+    "status": {
+      "selected": "Selected",
+      "clickToSelect": "Click to select"
+    },
+    "toggle": {
+      "addedSuccess": "Added to signature dishes",
+      "removedSuccess": "Removed from signature dishes",
+      "error": "Failed to update signature dish"
+    },
+    "info": {
+      "recommendation": "We recommend selecting 3-6 of your most popular or unique dishes"
+    },
+    "errors": {
+      "loadFailed": "Failed to load menu items"
+    }
+  },
+  "preview": {
+    "title": "Homepage Preview",
+    "description": "See how your homepage will look to customers across different devices",
+    "viewport": {
+      "title": "Device Preview",
+      "description": "Preview your homepage on different devices",
+      "desktop": "Desktop",
+      "tablet": "Tablet", 
+      "mobile": "Mobile"
+    },
+    "actions": {
+      "loading": "Loading...",
+      "openInNewTab": "Open in New Tab"
+    },
+    "status": {
+      "title": "Homepage Status",
+      "description": "Current state of your homepage sections",
+      "lastUpdated": "Last Updated",
+      "galleryImages": "Gallery Images",
+      "images": "images",
+      "ownerStory": "Owner Story",
+      "configured": "Configured",
+      "signatureDishes": "Signature Dishes", 
+      "dishes": "dishes",
+      "seoSettings": "SEO Settings"
+    },
+    "iframe": {
+      "title": "Homepage Preview"
+    },
+    "success": {
+      "previewOpened": "Preview Opened",
+      "previewOpenedDescription": "Homepage opened in new tab"
+    },
+    "error": {
+      "previewFailed": "Preview Failed",
+      "previewFailedDescription": "Could not open preview"
+    },
+    "tips": {
+      "title": "Preview Tips",
+      "tip1": "Test your homepage on different devices to ensure optimal viewing",
+      "tip2": "Check that all images load properly and text is readable",
+      "tip3": "Verify that contact information and hours are up to date",
+      "tip4": "Make sure the call-to-action buttons work correctly"
+    }
+  }
+}

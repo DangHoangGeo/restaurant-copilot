@@ -57,13 +57,13 @@ const getSettingsSchema = (t: ReturnType<typeof useTranslations<'Dashboard.Setti
     .regex(/^[a-z0-9-]+$/, t("subdomain.invalidFormat")).optional(),
   defaultLanguage: z.enum(["ja", "en", "vi"], { required_error: t("defaultLanguage.required") }),
   brandColor: z.string().regex(/^#([0-9A-Fa-f]{6})$/, t("brandColor.invalidFormat")).nullable().optional(),
-  contactInfo: z.string().max(500, t("contactInfo.maxLength", { maxLength: 500 })).optional().nullable(),
   address: z.string().max(500, t("address.maxLength", { maxLength: 500 })).optional().nullable(),
   phone: z.string().max(50, t("phone.maxLength", { maxLength: 50 })).optional().nullable(),
   email: z.string().max(100, t("email.maxLength", { maxLength: 100 })).optional().nullable()
     .refine((val) => !val || val === "" || z.string().email().safeParse(val).success, t("email.invalidFormat")),
   website: z.string().max(200, t("website.maxLength", { maxLength: 200 })).optional().nullable()
     .refine((val) => !val || val === "" || z.string().url().safeParse(val).success, t("website.invalidFormat")),
+  tax: z.number().min(0, t("tax.min")).max(1, t("tax.max")).optional(),
   opening_hours: z.record(z.string(), z.object({
     isOpen: z.boolean(),
     openTime: z.string().optional(),
@@ -176,11 +176,11 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       subdomain: initialSettings.subdomain || "",
       defaultLanguage: initialSettings.default_language || (["en", "ja", "vi"].includes(locale) ? locale as "en" | "ja" | "vi" : "en"),
       brandColor: initialSettings.brand_color || "#FFFFFF",
-      contactInfo: initialSettings.contact_info || "",
       address: initialSettings.address || "",
       phone: initialSettings.phone || "",
       email: initialSettings.email || "",
       website: initialSettings.website || "",
+      tax: initialSettings.tax || 0.10,
       opening_hours: operatingHours,
       description_en: initialSettings.description_en || "",
       description_ja: initialSettings.description_ja || "",
@@ -316,7 +316,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
           subdomain: data.subdomain,
           default_language: data.defaultLanguage,
           brand_color: data.brandColor,
-          contact_info: data.contactInfo,
+          tax: data.tax,
           address: data.address,
           phone: data.phone,
           email: data.email,
@@ -517,15 +517,17 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
                   </div>
 
                   <div>
-                    <Label htmlFor="contactInfo">{t("labels.contactInfo")}</Label>
-                    <Textarea
-                      id="contactInfo"
-                      {...register("contactInfo")}
-                      maxLength={500}
-                      placeholder={t("placeholders.contactInfo")}
-                      rows={3}
+                    <Label htmlFor="tax">{t("labels.tax")}</Label>
+                    <Input
+                      id="tax"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="1"
+                      {...register("tax", { valueAsNumber: true })}
+                      placeholder={t("placeholders.tax")}
                     />
-                    {errors.contactInfo && <p className="text-sm text-red-500 mt-1">{errors.contactInfo.message}</p>}
+                    {errors.tax && <p className="text-sm text-red-500 mt-1">{errors.tax.message}</p>}
                   </div>
                 </div>
               </div>

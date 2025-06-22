@@ -1,6 +1,11 @@
 {
   "title": "Reports & Analytics",
   "description": "View sales reports, item performance, and customer feedback",
+  "retry": "Retry",
+  "errors": {
+    "fetch_failed": "Failed to load data"
+  },
+  "exporting": "Exporting...",
   "tabs": {
     "sales": "Sales",
     "items": "Items",
@@ -27,6 +32,23 @@
     "description_7_days": "Based on the last 7 days",
     "apply_button": "Apply Recommendations"
   },
+  "dateRange": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last7Days": "Last 7 Days",
+    "last30Days": "Last 30 Days",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month"
+  },
+  "dateRangeSelector": {
+    "title": "Date Range & Export",
+    "quickSelect": "Quick Select",
+    "customRange": "Custom Date Range",
+    "selectPeriod": "Select period",
+    "custom": "Custom",
+    "pickDate": "Pick a date range",
+    "selectedRange": "Selected Range"
+  },
   "sales": {
     "title": "Sales Report",
     "daily_revenue_chart_placeholder": "Daily revenue chart placeholder",
@@ -44,6 +66,33 @@
       "total_revenue": "Total Revenue",
       "avg_rating": "Avg Rating"
     }
+  },
+  "itemsReport": {
+    "title": "Items Performance Report",
+    "totalRevenue": "Total Revenue",
+    "totalSold": "Items Sold",
+    "avgRating": "Avg Rating",
+    "totalItems": "Total Items",
+    "searchPlaceholder": "Search items...",
+    "filterByCategory": "Filter by category",
+    "allCategories": "All Categories",
+    "itemName": "Item Name",
+    "category": "Category",
+    "revenue": "Revenue",
+    "profitMargin": "Profit Margin",
+    "popularity": "Popularity",
+    "mostPopular": "most popular",
+    "noItemsFound": "No items found matching your criteria"
+  },
+  "analytics": {
+    "salesOverTime": "Sales Over Time",
+    "ordersCount": "Orders Count",
+    "categoryBreakdown": "Sales by Category",
+    "averageOrderValue": "Average Order Value Trend",
+    "totalSales": "Total Sales",
+    "totalOrders": "Total Orders",
+    "avgOrderValue": "Avg Order Value",
+    "growthRate": "Growth Rate"
   },
   "metrics": {
     "total_sales": "Total Sales",
@@ -65,6 +114,7 @@
   "recentOrders": {
     "title": "Recent Orders",
     "noOrders": "No recent orders found.",
+    "table": "Table",
     "orderId": "Order ID",
     "customerName": "Customer Name",
     "totalAmount": "Total Amount",

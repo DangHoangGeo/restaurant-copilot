@@ -3,6 +3,91 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { z } from "zod";
 
+// Define types for the database response
+interface OrderItem {
+  id: string;
+  restaurant_id: string;
+  order_id: string;
+  menu_item_id: string;
+  quantity: number;
+  notes: string | null;
+  status: string;
+  price_at_order?: number;
+  topping_ids?: string[];
+  menu_item_size_id?: string;
+  created_at: string;
+  menu_items: Array<{
+    id: string;
+    restaurant_id: string;
+    category_id: string;
+    name_en: string;
+    name_ja: string;
+    name_vi: string;
+    code: string;
+    description_en?: string;
+    description_ja?: string;
+    description_vi?: string;
+    price: number;
+    updated_at: string;
+  }>;
+  menu_item_sizes: Array<{
+    id: string;
+    size_key: string;
+    name_en: string;
+    name_ja: string;
+    name_vi: string;
+    price: number;
+  }>;
+  toppings?: Array<{
+    id: string;
+    name_en: string;
+    name_ja: string;
+    name_vi: string;
+    price: number;
+  }>;
+}
+
+interface OrderWithItems {
+  id: string;
+  restaurant_id: string;
+  table_id: string;
+  session_id: string;
+  guest_count: number;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  updated_at: string;
+  tables: {
+    id: string;
+    name: string;
+    capacity: number;
+  };
+  order_items: OrderItem[];
+}
+
+// Interface for raw Supabase response (may have tables as array)
+interface SupabaseOrderResponse {
+  id: string;
+  restaurant_id: string;
+  table_id: string;
+  session_id: string;
+  guest_count: number;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  updated_at: string;
+  tables: {
+    id: string;
+    name: string;
+    capacity: number;
+  } | {
+    id: string;
+    name: string;
+    capacity: number;
+  }[];
+  order_items: OrderItem[];
+}
+
 const orderItemSchema = z.object({
   menu_item_id: z.string().uuid(),
   quantity: z.number().int().positive(),
@@ -124,7 +209,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await getUserFromRequest();
     
@@ -135,37 +220,167 @@ export async function GET() {
       );
     }
 
-    // Get today's date range for filtering
-    const today = new Date();
-    const startOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      0,
-      0,
-      0,
-      0
-    ).toISOString();
+    // Parse query parameters for filtering
+    const url = new URL(request.url);
+    const fromDate = url.searchParams.get('fromDate');
+    const toDate = url.searchParams.get('toDate');
+    const statusFilter = url.searchParams.get('status'); // Can be comma-separated list
+    const period = url.searchParams.get('period'); // today, yesterday, thisWeek, etc.
 
-    // Fetch all data in parallel for better performance (restaurant info removed - now provided by context)
-    const [ordersResult, tablesResult, categoriesResult] = await Promise.all([
-      // Fetch orders with order items
-      supabaseAdmin
-        .from("orders")
-        .select(`
-          id, table_id, status, total_amount, created_at, 
-          order_items(
-            id, quantity, notes, status, created_at, 
-            menu_items(id, name_en, name_ja, name_vi, category_id, price, 
-              categories(id, name_en, name_ja, name_vi)
-            )
-          ), 
-          tables(id, name)
-        `)
-        .eq("restaurant_id", user.restaurantId)
-        .gte("created_at", startOfDay)
-        .order("created_at", { ascending: false }),
+    // Calculate date range
+    let startDate: string;
+    let endDate: string;
 
+    if (fromDate && toDate) {
+      // Use custom date range
+      startDate = new Date(fromDate).toISOString();
+      endDate = new Date(toDate + 'T23:59:59.999Z').toISOString();
+    } else if (period) {
+      // Use predefined period
+      const now = new Date();
+      switch (period) {
+        case 'today':
+          startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+          endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+          break;
+        case 'yesterday':
+          const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          startDate = new Date(yesterday.setHours(0, 0, 0, 0)).toISOString();
+          endDate = new Date(yesterday.setHours(23, 59, 59, 999)).toISOString();
+          break;
+        case 'thisWeek':
+          const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+          startDate = new Date(startOfWeek.setHours(0, 0, 0, 0)).toISOString();
+          endDate = new Date().toISOString();
+          break;
+        case 'last7days':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+          endDate = new Date().toISOString();
+          break;
+        case 'last30days':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          endDate = new Date().toISOString();
+          break;
+        default:
+          // Default to today if no valid period
+          startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+          endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+      }
+    } else {
+      // Default to today
+      const now = new Date();
+      startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+      endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+    }
+
+    // Parse status filter
+    const statusArray = statusFilter 
+      ? statusFilter.split(',').map(s => s.trim())
+      : ['new', 'serving']; // Default to active orders
+
+    // Use manual query with date and status filtering since RPC function is limited
+    const query = supabaseAdmin
+      .from('orders')
+      .select(`
+        id,
+        restaurant_id,
+        table_id,
+        session_id,
+        guest_count,
+        status,
+        total_amount,
+        created_at,
+        updated_at,
+        tables (
+          id,
+          name,
+          capacity
+        ),
+        order_items (
+          id,
+          restaurant_id,
+          order_id,
+          menu_item_id,
+          quantity,
+          notes,
+          status,
+          price_at_order,
+          topping_ids,
+          menu_item_size_id,
+          created_at,
+          menu_items (
+            id,
+            restaurant_id,
+            category_id,
+            name_en,
+            name_ja,
+            name_vi,
+            code,
+            description_en,
+            description_ja,
+            description_vi,
+            price,
+            updated_at
+          ),
+          menu_item_sizes (
+            id,
+            size_key,
+            name_en,
+            name_ja,
+            name_vi,
+            price
+          )
+        )
+      `)
+      .eq('restaurant_id', user.restaurantId)
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+      .in('status', statusArray)
+      .order('created_at', { ascending: false });
+
+    const { data: ordersData, error: ordersError } = await query;
+
+    if (ordersError) {
+      console.error('Database error:', ordersError);
+      return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+    }
+
+    // Fetch toppings for orders that have them
+    const allToppingIds = new Set<string>();
+    ordersData?.forEach((order: SupabaseOrderResponse) => {
+      order.order_items?.forEach((item: OrderItem) => {
+        if (item.topping_ids && Array.isArray(item.topping_ids)) {
+          item.topping_ids.forEach((id: string) => allToppingIds.add(id));
+        }
+      });
+    });
+
+    const toppingsMap = new Map();
+    if (allToppingIds.size > 0) {
+      const { data: toppingsData } = await supabaseAdmin
+        .from('toppings')
+        .select('id, name_en, name_ja, name_vi, price')
+        .in('id', Array.from(allToppingIds))
+        .eq('restaurant_id', user.restaurantId);
+
+      toppingsData?.forEach(topping => {
+        toppingsMap.set(topping.id, topping);
+      });
+    }
+
+    // Transform data to include toppings and normalize tables structure
+    const orders = ordersData?.map((order: SupabaseOrderResponse): OrderWithItems => ({
+      ...order,
+      // Normalize tables structure - Supabase may return as array or single object
+      tables: Array.isArray(order.tables) ? order.tables[0] : order.tables,
+      order_items: order.order_items?.map((item: OrderItem) => ({
+        ...item,
+        toppings: item.topping_ids?.map((id: string) => toppingsMap.get(id)).filter(Boolean) || []
+      }))
+    })) || [];
+
+    // Fetch additional data that components may need
+    const [tablesResult, categoriesResult] = await Promise.all([
       // Fetch available tables
       supabaseAdmin
         .from("tables")
@@ -185,15 +400,16 @@ export async function GET() {
     ]);
 
     // Check for errors
-    if (ordersResult.error) throw ordersResult.error;
     if (tablesResult.error) throw tablesResult.error;
     if (categoriesResult.error) throw categoriesResult.error;
 
-    // Return structured data (restaurant info no longer included - provided by context)
+    // Return structured data
     return NextResponse.json({
-      orders: ordersResult.data || [],
+      orders,
       tables: tablesResult.data || [],
       categories: categoriesResult.data || [],
+      dateRange: { from: startDate, to: endDate },
+      statusFilter: statusArray
     });
 
   } catch (error) {

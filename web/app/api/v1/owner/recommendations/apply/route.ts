@@ -1,20 +1,13 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { AuthUser, getUserFromRequest } from '@/lib/server/getUserFromRequest';
 
-export async function POST(request: Request) {
-  let requestBody;
-  try {
-    requestBody = await request.json();
-  } catch (error) {
-    console.error('Error parsing request body:', error);
-    return NextResponse.json({ error: 'Invalid request body: Malformed JSON' }, { status: 400 });
-  }
-
-  const { restaurantId } = requestBody;
-
-  if (!restaurantId || typeof restaurantId !== 'string') {
-    return NextResponse.json({ error: 'restaurantId is required and must be a string' }, { status: 400 });
-  }
+export async function POST() {
+  const user: AuthUser | null = await getUserFromRequest();
+  
+    if (!user || !user.restaurantId) {
+      return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
+    }
 
   // It's generally better to use a service role client for such admin operations
   // to ensure necessary permissions and avoid exposing RPCs to anon/authenticated roles
@@ -29,7 +22,7 @@ export async function POST(request: Request) {
 
   try {
     const { data, error } = await supabaseAdmin.rpc('apply_recommendations', {
-      p_restaurant_id: restaurantId,
+      p_restaurant_id: user.restaurantId,
     });
 
     if (error) {

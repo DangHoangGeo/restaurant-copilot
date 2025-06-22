@@ -26,9 +26,9 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       return {
         userId: supabaseUser.id,
         email: supabaseUser.email,
-        restaurantId: supabaseUser.user_metadata?.restaurant_id || null,
+        restaurantId: supabaseUser.app_metadata?.restaurant_id || null,
         subdomain: null,
-        role: supabaseUser.user_metadata?.role || null,
+        role: supabaseUser.app_metadata?.role || null,
       };
     }
 
@@ -52,9 +52,9 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     return {
       userId: supabaseUser.id,
       email: supabaseUser.email,
-      restaurantId: supabaseUser.user_metadata?.restaurant_id || null,
+      restaurantId: supabaseUser.app_metadata?.restaurant_id || null,
       subdomain: null,
-      role: supabaseUser.user_metadata?.role || null,
+      role: supabaseUser.app_metadata?.role || null,
     };
   }
 });

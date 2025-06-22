@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 
 // Use the existing Restaurant type for consistency
 import { Restaurant } from '@/shared/types/restaurant';
@@ -13,6 +14,8 @@ interface RestaurantContextType {
   error: string | null;
   refetchSettings: () => Promise<void>;
   updateSettings: (updatedSettings: RestaurantSettings) => void;
+  isOnboarded: boolean;
+  needsOnboarding: boolean;
 }
 
 const RestaurantContext = createContext<RestaurantContextType | undefined>(undefined);
@@ -28,6 +31,15 @@ export function RestaurantProvider({ children, initialSettings }: RestaurantProv
   );
   const [isLoading, setIsLoading] = useState(!initialSettings);
   const [error, setError] = useState<string | null>(null);
+  
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useParams();
+  const locale = (params.locale as string) || 'en';
+
+  // Calculate onboarding status
+  const isOnboarded = restaurantSettings?.onboarded === true;
+  const needsOnboarding = restaurantSettings !== null && !isOnboarded;
 
   const fetchSettings = async () => {
     try {
@@ -59,6 +71,19 @@ export function RestaurantProvider({ children, initialSettings }: RestaurantProv
     }
   }, [initialSettings]);
 
+  // Check for onboarding redirect needs
+  useEffect(() => {
+    if (!isLoading && needsOnboarding && restaurantSettings) {
+      const isOnboardingPage = pathname.includes('/dashboard/onboarding');
+      const isApiRoute = pathname.startsWith('/api');
+      
+      // Only redirect if not already on onboarding page and not an API route
+      if (!isOnboardingPage && !isApiRoute) {
+        router.push(`/${locale}/dashboard/onboarding`);
+      }
+    }
+  }, [isLoading, needsOnboarding, pathname, router, locale, restaurantSettings]);
+
   const refetchSettings = async () => {
     await fetchSettings();
   };
@@ -73,6 +98,8 @@ export function RestaurantProvider({ children, initialSettings }: RestaurantProv
     error,
     refetchSettings,
     updateSettings,
+    isOnboarded,
+    needsOnboarding,
   };
 
   return (

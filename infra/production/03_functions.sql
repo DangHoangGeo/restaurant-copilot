@@ -68,7 +68,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
     SELECT
-        oi.menu_item_id,
+        mi.id as menu_item_id,
         mi.name_en,
         mi.name_ja,
         mi.name_vi,
@@ -81,12 +81,10 @@ AS $$
         menu_items mi ON oi.menu_item_id = mi.id
     WHERE
         o.restaurant_id = p_restaurant_id AND
-        o.created_at >= NOW() - INTERVAL '7 days'
+        o.created_at >= NOW() - INTERVAL '7 days' AND
+        o.status = 'completed'
     GROUP BY
-        oi.menu_item_id,
-        mi.name_en,
-        mi.name_ja,
-        mi.name_vi
+        mi.id, mi.name_en, mi.name_ja, mi.name_vi
     ORDER BY
         total_sold DESC
     LIMIT
@@ -433,7 +431,7 @@ BEGIN
     LEFT JOIN menu_items mi ON oi.menu_item_id = mi.id
     
     WHERE o.restaurant_id = restaurant_uuid
-      AND o.status IN ('new', 'preparing', 'ready')
+      AND o.status NOT IN ('completed','cancelled') 
     
     GROUP BY 
         o.id, o.restaurant_id, o.table_id, o.session_id, o.guest_count, 

@@ -15,6 +15,8 @@ const NAMESPACES = [
   'serviceAdmin/settings',
   // restaurant owner
   'owner/dashboard',
+  'owner/homepage',
+  'owner/onboarding',
   'owner/menu',
   'owner/orders',
   'owner/tables',

@@ -30,7 +30,7 @@ async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<str
     console.error("Session error for schedule update/delete:", sessionError);
     return null;
   }
-  return session.user?.user_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
+  return session.user?.app_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
 }
 
 // PATCH handler for updating a schedule
