@@ -6,7 +6,7 @@ export interface OnboardingData {
   subdomain: string;
   default_language: 'en' | 'ja' | 'vi';
   brand_color: string;
-  contact_info?: string;
+  tax?: number;
   address?: string;
   phone?: string;
   email?: string;

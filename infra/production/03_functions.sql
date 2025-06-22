@@ -431,7 +431,7 @@ BEGIN
     LEFT JOIN menu_items mi ON oi.menu_item_id = mi.id
     
     WHERE o.restaurant_id = restaurant_uuid
-      AND o.status IN ('new', 'preparing', 'ready')
+      AND o.status NOT IN ('completed','cancelled') 
     
     GROUP BY 
         o.id, o.restaurant_id, o.table_id, o.session_id, o.guest_count, 

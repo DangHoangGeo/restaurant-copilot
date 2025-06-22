@@ -44,7 +44,7 @@ export function OnboardingClientContent({ locale }: OnboardingClientContentProps
         subdomain: restaurantSettings.subdomain || '',
         default_language: (restaurantSettings.default_language as 'en' | 'ja' | 'vi') || prev.default_language,
         brand_color: restaurantSettings.brand_color || prev.brand_color,
-        contact_info: restaurantSettings.contact_info || '',
+        tax: restaurantSettings.tax || 0.10,
         address: restaurantSettings.address || '',
         phone: restaurantSettings.phone || '',
         email: restaurantSettings.email || '',

@@ -33,7 +33,7 @@ export function AdminLayoutClient({ children, restaurantSettings, locale }: Admi
     subdomain: restaurantSettings.subdomain || '',
     default_language: null, // Will be populated by context
     brand_color: restaurantSettings.primaryColor || null,
-    contact_info: null, // Will be populated by context
+    tax: null, // Will be populated by context
     address: null,
     phone: null,
     email: null,

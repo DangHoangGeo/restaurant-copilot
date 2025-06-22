@@ -38,9 +38,9 @@
           "label": "Địa Chỉ",
           "placeholder": "123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh"
         },
-        "contactInfo": {
-          "label": "Thông Tin Liên Hệ Bổ Sung",
-          "placeholder": "Giờ hoạt động, hướng dẫn đặc biệt, v.v."
+        "tax": {
+          "label": "Thuế Suất",
+          "placeholder": "0.10 (10%)"
         }
       },
       "sections": {

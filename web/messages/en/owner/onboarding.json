@@ -38,9 +38,9 @@
           "label": "Address",
           "placeholder": "123 Main Street, City, State 12345"
         },
-        "contactInfo": {
-          "label": "Additional Contact Information",
-          "placeholder": "Operating hours, special instructions, etc."
+        "tax": {
+          "label": "Tax Rate",
+          "placeholder": "0.10 (10%)"
         }
       },
       "sections": {

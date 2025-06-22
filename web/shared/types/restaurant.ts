@@ -38,7 +38,7 @@ export type Restaurant = {
   subdomain: string | null;
   default_language: "en" | "ja" | "vi" | null;
   brand_color: string | null;
-  contact_info: string | null;
+  tax: number | null;
   address: string | null;
   phone: string | null;
   email: string | null;

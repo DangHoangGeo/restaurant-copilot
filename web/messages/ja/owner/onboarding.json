@@ -38,9 +38,9 @@
           "label": "住所",
           "placeholder": "〒123-4567 東京都渋谷区○○1-2-3"
         },
-        "contactInfo": {
-          "label": "追加連絡先情報",
-          "placeholder": "営業時間、特別な案内など"
+        "tax": {
+          "label": "税率",
+          "placeholder": "0.10 (10%)"
         }
       },
       "sections": {

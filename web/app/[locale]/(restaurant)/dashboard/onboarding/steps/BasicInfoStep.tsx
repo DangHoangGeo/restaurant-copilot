@@ -22,7 +22,7 @@ const basicInfoSchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Subdomain can only contain lowercase letters, numbers, and hyphens'),
   default_language: z.enum(['en', 'ja', 'vi']),
   brand_color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Invalid hex color'),
-  contact_info: z.string().max(500).optional(),
+  tax: z.number().min(0).max(1).optional(),
   address: z.string().max(500).optional(),
   phone: z.string().max(50).optional(),
   email: z.string().email('Invalid email address').max(100).optional().or(z.literal('')),
@@ -41,7 +41,7 @@ export function BasicInfoStep({ data, onUpdate, onNext, locale }: BasicInfoStepP
       subdomain: data.subdomain || '',
       default_language: data.default_language || locale as 'en' | 'ja' | 'vi',
       brand_color: data.brand_color || '#3B82F6',
-      contact_info: data.contact_info || '',
+      tax: data.tax || 0.10,
       address: data.address || '',
       phone: data.phone || '',
       email: data.email || '',
@@ -53,7 +53,7 @@ export function BasicInfoStep({ data, onUpdate, onNext, locale }: BasicInfoStepP
     // Convert empty strings to undefined for optional fields
     const cleanData = {
       ...formData,
-      contact_info: formData.contact_info || undefined,
+      tax: formData.tax || 0.10,
       address: formData.address || undefined,
       phone: formData.phone || undefined,
       email: formData.email || undefined,
@@ -265,15 +265,19 @@ export function BasicInfoStep({ data, onUpdate, onNext, locale }: BasicInfoStepP
 
                 <FormField
                   control={form.control}
-                  name="contact_info"
+                  name="tax"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('fields.contactInfo.label')}</FormLabel>
+                      <FormLabel>{t('fields.tax.label')}</FormLabel>
                       <FormControl>
-                        <Textarea
-                          placeholder={t('fields.contactInfo.placeholder')}
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="1"
+                          placeholder={t('fields.tax.placeholder')}
                           {...field}
-                          rows={3}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                         />
                       </FormControl>
                       <FormMessage />
