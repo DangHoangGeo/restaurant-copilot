@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 
 // GET - Fetch all gallery images for a restaurant
-export async function GET(req: NextRequest) {
-  const restaurantId = req.nextUrl.searchParams.get("restaurant_id");
+export async function GET() {
+  const user = await getUserFromRequest();
 
-  if (!restaurantId) {
-    return NextResponse.json({ error: "missing_restaurant_id" }, { status: 400 });
+  if (!user || !user.restaurantId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const { data: images, error } = await supabaseAdmin
       .from("restaurant_gallery_images")
       .select("*")
-      .eq("restaurant_id", restaurantId)
+      .eq("restaurant_id", user.restaurantId)
       .order("sort_order", { ascending: true });
 
     if (error) {
@@ -34,10 +35,16 @@ export async function GET(req: NextRequest) {
 // POST - Create a new gallery image
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { restaurant_id, image_url, caption, alt_text, sort_order, is_hero } = body;
+    const user = await getUserFromRequest();
 
-    if (!restaurant_id || !image_url || !alt_text) {
+    if (!user || !user.restaurantId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { image_url, caption, alt_text, sort_order, is_hero } = body;
+
+    if (!image_url || !alt_text) {
       return NextResponse.json(
         { error: "missing_required_fields" },
         { status: 400 }
@@ -50,7 +57,7 @@ export async function POST(req: NextRequest) {
       const { data: lastImage } = await supabaseAdmin
         .from("restaurant_gallery_images")
         .select("sort_order")
-        .eq("restaurant_id", restaurant_id)
+        .eq("restaurant_id", user.restaurantId)
         .order("sort_order", { ascending: false })
         .limit(1)
         .single();
@@ -61,7 +68,7 @@ export async function POST(req: NextRequest) {
     const { data: image, error } = await supabaseAdmin
       .from("restaurant_gallery_images")
       .insert({
-        restaurant_id,
+        restaurant_id: user.restaurantId,
         image_url,
         caption: caption || null,
         alt_text,

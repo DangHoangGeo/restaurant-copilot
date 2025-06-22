@@ -109,6 +109,7 @@ export async function GET(request: NextRequest) {
     // Process order items
     itemsData?.forEach(item => {
       const menuItem = item.menu_items[0] || item.menu_items;
+	  const orders = item.orders[0] || item.orders;
       const itemId = menuItem.id;
       const quantity = item.quantity || 0;
       const price = item.price_at_order || 0;
@@ -127,7 +128,7 @@ export async function GET(request: NextRequest) {
           totalSold: 0,
           revenue: 0,
           imageUrl: menuItem.image_url,
-          lastOrderDate: item.orders[0].created_at
+          lastOrderDate: orders.created_at
         });
       }
       
@@ -136,8 +137,8 @@ export async function GET(request: NextRequest) {
       existing.revenue += revenue;
       
       // Update last order date if this one is more recent
-      if (new Date(item.orders[0].created_at) > new Date(existing.lastOrderDate)) {
-        existing.lastOrderDate = item.orders[0].created_at;
+      if (new Date(orders.created_at) > new Date(existing.lastOrderDate)) {
+        existing.lastOrderDate = orders.created_at;
       }
     });
 

@@ -14,6 +14,10 @@ interface AdminLayoutClientProps {
     subdomain?: string; 
     primaryColor?: string; 
     onboarded?: boolean;
+    owner_story_en?: string;
+    owner_story_ja?: string | null;
+    owner_story_vi?: string | null;
+    owner_photo_url?: string | null;
   };
   locale: string ;
 }
@@ -50,10 +54,10 @@ export function AdminLayoutClient({ children, restaurantSettings, locale }: Admi
     hero_subtitle_en: null,
     hero_subtitle_ja: null,
     hero_subtitle_vi: null,
-    owner_story_en: null,
-    owner_story_ja: null,
-    owner_story_vi: null,
-    owner_photo_url: null
+    owner_story_en: restaurantSettings.owner_story_en || '',
+    owner_story_ja: restaurantSettings.owner_story_ja || null,
+    owner_story_vi: restaurantSettings.owner_story_vi || null,
+    owner_photo_url: restaurantSettings.owner_photo_url || null
   };
 
   return (

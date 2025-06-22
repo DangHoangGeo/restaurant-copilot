@@ -61,16 +61,17 @@ export function OwnerStoryEditor({ }: OwnerStoryEditorProps) {
 
   // Load owner story data from RestaurantContext
   useEffect(() => {
-    if (restaurantSettings) {
+    if (restaurantSettings && !contextLoading) {
+      console.log("Loading restaurant settings:", restaurantSettings); // Dev log
       reset({
         owner_story_en: restaurantSettings.owner_story_en || "",
         owner_story_ja: restaurantSettings.owner_story_ja || "",
         owner_story_vi: restaurantSettings.owner_story_vi || "",
         photo_url: restaurantSettings.owner_photo_url || "",
       });
-      setPhotoPreview(restaurantSettings.owner_photo_url);
+      setPhotoPreview(restaurantSettings.owner_photo_url || null);
     }
-  }, [restaurantSettings, reset]);
+  }, [restaurantSettings, contextLoading, reset]);
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

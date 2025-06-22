@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 
-// GET - Fetch signature dishes for a restaurant
-export async function GET(req: NextRequest) {
-  const restaurantId = req.nextUrl.searchParams.get("restaurant_id");
+// GET - Fetch all menu items with signature status for a restaurant
+export async function GET() {
+  const user = await getUserFromRequest();
 
-  if (!restaurantId) {
-    return NextResponse.json({ error: "missing_restaurant_id" }, { status: 400 });
+  if (!user || !user.restaurantId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { data: dishes, error } = await supabaseAdmin
+    const { data: menuItems, error } = await supabaseAdmin
       .from("menu_items")
       .select(`
         id,
@@ -23,25 +24,26 @@ export async function GET(req: NextRequest) {
         price,
         image_url,
         position,
+        is_signature,
+        available,
         categories (
           name_en,
           name_ja,
           name_vi
         )
       `)
-      .eq("restaurant_id", restaurantId)
-      .eq("is_signature", true)
+      .eq("restaurant_id", user.restaurantId)
       .eq("available", true)
       .order("position", { ascending: true });
 
     if (error) {
-      console.error("Error fetching signature dishes:", error);
+      console.error("Error fetching menu items:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ signature_dishes: dishes });
+    return NextResponse.json({ menuItems });
   } catch (error) {
-    console.error("Error in signature dishes GET:", error);
+    console.error("Error in menu items GET:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 }
@@ -52,10 +54,16 @@ export async function GET(req: NextRequest) {
 // PUT - Update signature dish status for menu items
 export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { restaurant_id, menu_item_ids } = body;
+    const user = await getUserFromRequest();
 
-    if (!restaurant_id || !Array.isArray(menu_item_ids)) {
+    if (!user || !user.restaurantId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { menu_item_ids } = body;
+
+    if (!Array.isArray(menu_item_ids)) {
       return NextResponse.json(
         { error: "missing_required_fields" },
         { status: 400 }
@@ -66,14 +74,14 @@ export async function PUT(req: NextRequest) {
     await supabaseAdmin
       .from("menu_items")
       .update({ is_signature: false })
-      .eq("restaurant_id", restaurant_id);
+      .eq("restaurant_id", user.restaurantId);
 
     // Then set signature status for selected items
     if (menu_item_ids.length > 0) {
       const { error } = await supabaseAdmin
         .from("menu_items")
         .update({ is_signature: true })
-        .eq("restaurant_id", restaurant_id)
+        .eq("restaurant_id", user.restaurantId)
         .in("id", menu_item_ids);
 
       if (error) {
@@ -102,7 +110,7 @@ export async function PUT(req: NextRequest) {
           name_vi
         )
       `)
-      .eq("restaurant_id", restaurant_id)
+      .eq("restaurant_id", user.restaurantId)
       .eq("is_signature", true)
       .eq("available", true)
       .order("position", { ascending: true });

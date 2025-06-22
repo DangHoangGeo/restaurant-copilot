@@ -34,6 +34,26 @@ interface MenuItem {
   available: boolean;
 }
 
+// Type for the API response
+interface MenuItemApiResponse {
+  id: string;
+  name_en: string;
+  name_ja?: string;
+  name_vi?: string;
+  description_en?: string;
+  description_ja?: string;
+  description_vi?: string;
+  price?: number;
+  image_url?: string;
+  is_signature?: boolean;
+  available?: boolean;
+  categories?: {
+    name_en?: string;
+    name_ja?: string;
+    name_vi?: string;
+  };
+}
+
 interface SignatureDishesProps {
   locale: string;
 }
@@ -74,11 +94,26 @@ export function SignatureDishesSelector({ locale }: SignatureDishesProps) {
       if (!response.ok) throw new Error('Failed to load menu items');
       
       const data = await response.json();
-      setMenuItems(data.menuItems || []);
+      // Transform the data to match our interface  
+      const transformedItems = (data.menuItems || []).map((item: MenuItemApiResponse) => ({
+        id: item.id,
+        name_en: item.name_en,
+        name_ja: item.name_ja || item.name_en,
+        name_vi: item.name_vi || item.name_en,
+        description_en: item.description_en,
+        description_ja: item.description_ja,
+        description_vi: item.description_vi,
+        price: item.price || 0,
+        image_url: item.image_url,
+        category_name: item.categories?.name_en || 'Uncategorized',
+        is_signature: item.is_signature || false,
+        available: item.available !== false,
+      }));
+      setMenuItems(transformedItems);
       
       // Extract unique categories
       const uniqueCategories = Array.from(
-        new Set(data.menuItems?.map((item: MenuItem) => item.category_name) || [])
+        new Set(transformedItems.map((item: MenuItem) => item.category_name))
       ) as string[];
       setCategories(uniqueCategories);
     } catch (error) {

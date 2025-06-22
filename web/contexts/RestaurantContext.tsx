@@ -41,16 +41,6 @@ export function RestaurantProvider({ children, initialSettings }: RestaurantProv
   const isOnboarded = restaurantSettings?.onboarded === true;
   const needsOnboarding = restaurantSettings !== null && !isOnboarded;
 
-  // Debug logging
-  console.log('RestaurantContext - onboarding status:', {
-    restaurantSettings: restaurantSettings ? 'exists' : 'null',
-    onboardedValue: restaurantSettings?.onboarded,
-    onboardedType: typeof restaurantSettings?.onboarded,
-    isOnboarded,
-    needsOnboarding,
-    pathname
-  });
-
   const fetchSettings = async () => {
     try {
       setIsLoading(true);

@@ -46,8 +46,10 @@ interface MenuItemApiResponse {
   image_url?: string;
   is_signature?: boolean;
   available?: boolean;
-  category?: {
+  categories?: {
     name_en?: string;
+    name_ja?: string;
+    name_vi?: string;
   };
 }
 
@@ -84,12 +86,12 @@ export function SignatureDishesSelector({ locale }: SignatureDishesProps) {
   const loadMenuItems = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/v1/owner/menu/menu-items');
+      const response = await fetch('/api/v1/restaurant/signature-dishes');
       if (!response.ok) throw new Error('Failed to load menu items');
       
       const data = await response.json();
       // Transform the data to match our interface
-      const transformedItems = (data.items || []).map((item: MenuItemApiResponse) => ({
+      const transformedItems = (data.menuItems || []).map((item: MenuItemApiResponse) => ({
         id: item.id,
         name_en: item.name_en,
         name_ja: item.name_ja || item.name_en,
@@ -99,7 +101,7 @@ export function SignatureDishesSelector({ locale }: SignatureDishesProps) {
         description_vi: item.description_vi,
         price: item.price || 0,
         image_url: item.image_url,
-        category_name: item.category?.name_en || 'Uncategorized',
+        category_name: item.categories?.name_en || 'Uncategorized',
         is_signature: item.is_signature || false,
         available: item.available !== false,
       }));
@@ -129,17 +131,33 @@ export function SignatureDishesSelector({ locale }: SignatureDishesProps) {
     ));
 
     try {
-      const response = await fetch(`/api/v1/owner/menu/menu-items/${itemId}`, {
+      // Get current signature dish IDs and update the list
+      const updatedSignatureIds = menuItems
+        .map(item => {
+          if (item.id === itemId) {
+            return isSignature ? itemId : null;
+          }
+          return item.is_signature ? item.id : null;
+        })
+        .filter(Boolean) as string[];
+
+      // Use the restaurant signature dishes API for bulk update
+      const response = await fetch('/api/v1/restaurant/signature-dishes', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          is_signature: isSignature
+          menu_item_ids: updatedSignatureIds
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to update signature dish');
+      if (!response.ok) {
+        throw new Error('Failed to update signature dishes');
+      }
+
+      const result = await response.json();
+      console.log('Signature dishes updated successfully:', result);
 
       toast.success(
         isSignature 
@@ -147,7 +165,7 @@ export function SignatureDishesSelector({ locale }: SignatureDishesProps) {
           : t('toggle.removedSuccess')
       );
     } catch (error) {
-      console.error('Error updating signature dish:', error);
+      console.error('Error updating signature dishes:', error);
       // Revert optimistic update
       setMenuItems(prev => prev.map(item => 
         item.id === itemId ? { ...item, is_signature: !isSignature } : item

@@ -50,18 +50,25 @@ export function GalleryManager({ }: GalleryManagerProps) {
   const loadGallery = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/v1/restaurant/onboarding/data');
+      const response = await fetch('/api/v1/restaurant/gallery');
       if (!response.ok) throw new Error('Failed to load gallery');
       
       const data = await response.json();
-      // Transform the simple URLs to the expected format
-      const galleryImages = (data.data.gallery_images || []).map((url: string, index: number) => ({
-        id: `gallery-${index}`,
-        url,
-        alt_text: `Gallery Image ${index + 1}`,
-        is_hero: false, // This would need to be determined differently
-        display_order: index,
-        created_at: new Date().toISOString(),
+      // Use the real gallery images with proper IDs
+      const galleryImages = (data.images || []).map((image: {
+        id: string;
+        image_url: string;
+        alt_text: string;
+        is_hero: boolean;
+        sort_order: number;
+        created_at: string;
+      }) => ({
+        id: image.id,
+        url: image.image_url,
+        alt_text: image.alt_text || `Gallery Image`,
+        is_hero: image.is_hero || false,
+        display_order: image.sort_order || 0,
+        created_at: image.created_at,
       }));
       setImages(galleryImages);
     } catch (error) {
@@ -91,18 +98,38 @@ export function GalleryManager({ }: GalleryManagerProps) {
       
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('alt_text', file.name.replace(/\.[^/.]+$/, ""));
-        formData.append('display_order', String(images.length + i + 1));
+        
+        // First upload the image file
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('type', 'gallery');
 
-        const response = await fetch('/api/v1/restaurant/gallery', {
+        const uploadResponse = await fetch('/api/v1/upload/media', {
           method: 'POST',
-          body: formData,
+          body: uploadFormData,
         });
 
-        if (!response.ok) {
+        if (!uploadResponse.ok) {
           throw new Error(`Failed to upload ${file.name}`);
+        }
+
+        const uploadData = await uploadResponse.json();
+
+        // Then save the image metadata to database
+        const saveResponse = await fetch('/api/v1/restaurant/gallery', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image_url: uploadData.url,
+            alt_text: file.name.replace(/\.[^/.]+$/, ""),
+            sort_order: images.length + i + 1,
+          }),
+        });
+
+        if (!saveResponse.ok) {
+          throw new Error(`Failed to save ${file.name} metadata`);
         }
       }
 

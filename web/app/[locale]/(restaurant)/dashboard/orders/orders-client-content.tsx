@@ -76,7 +76,7 @@ export function OrdersClientContent() {
     isInitialLoading,
     error,
     refetch
-  } = useRestaurantData<OrdersData>('/orders', {
+  } = useRestaurantData<OrdersData>('/owner/orders', {
     autoRefresh: 10000, // Auto refresh every 10 seconds for real-time updates
   });
 

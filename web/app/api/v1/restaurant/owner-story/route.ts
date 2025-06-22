@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 
 // GET - Fetch owner story for a restaurant
-export async function GET(req: NextRequest) {
-  const restaurantId = req.nextUrl.searchParams.get("restaurant_id");
+export async function GET() {
+  const user = await getUserFromRequest();
 
-  if (!restaurantId) {
-    return NextResponse.json({ error: "missing_restaurant_id" }, { status: 400 });
+  if (!user || !user.restaurantId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const { data: restaurant, error } = await supabaseAdmin
       .from("restaurants")
       .select("owner_story_en, owner_story_ja, owner_story_vi")
-      .eq("id", restaurantId)
+      .eq("id", user.restaurantId)
       .single();
 
     if (error) {
@@ -44,15 +45,14 @@ export async function GET(req: NextRequest) {
 // PUT - Update owner story for a restaurant
 export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { restaurant_id, owner_story_en, owner_story_ja, owner_story_vi } = body;
+    const user = await getUserFromRequest();
 
-    if (!restaurant_id) {
-      return NextResponse.json(
-        { error: "missing_restaurant_id" },
-        { status: 400 }
-      );
+    if (!user || !user.restaurantId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const body = await req.json();
+    const { owner_story_en, owner_story_ja, owner_story_vi } = body;
 
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     
@@ -63,7 +63,7 @@ export async function PUT(req: NextRequest) {
     const { data: restaurant, error } = await supabaseAdmin
       .from("restaurants")
       .update(updateData)
-      .eq("id", restaurant_id)
+      .eq("id", user.restaurantId)
       .select("owner_story_en, owner_story_ja, owner_story_vi")
       .single();
 
