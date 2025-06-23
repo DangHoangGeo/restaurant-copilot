@@ -44,6 +44,7 @@
     "framer-motion": "^12.16.0",
     "geist": "^1.4.2",
     "html-to-image": "^1.11.13",
+    "html5-qrcode": "^2.3.8",
     "jose": "^6.0.11",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
