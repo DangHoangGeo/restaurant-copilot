@@ -101,9 +101,8 @@ export function AdminHeader({
 
   return (
     <header 
-      className="bg-card dark:bg-slate-800 shadow-sm sticky z-30 border-b"
+      className="bg-card dark:bg-slate-800 shadow-sm sticky top-0 z-50 border-b"
       style={{
-        top: 'env(safe-area-inset-top, 0px)',
         paddingTop: 'max(env(safe-area-inset-top, 0px), 0px)',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)'

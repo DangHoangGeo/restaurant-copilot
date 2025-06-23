@@ -99,10 +99,8 @@ export function DashboardClientContent() {
 
   useEffect(() => {
     loadData();
-    
-    // Auto-refresh every 30 seconds for live data
-    const interval = setInterval(loadData, 30000);
-    return () => clearInterval(interval);
+    // Note: Removed auto-refresh for dashboard metrics as they don't require real-time updates
+    // The orders page handles real-time order updates through Supabase Realtime
   }, [loadData]);
 
   // Show onboarding welcome screen if not yet onboarded

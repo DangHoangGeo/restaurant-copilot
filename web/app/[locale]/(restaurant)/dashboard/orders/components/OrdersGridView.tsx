@@ -3,22 +3,78 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Order } from "../types";
+import { toast } from "sonner";
 
 interface OrdersGridViewProps {
   orders: Order[];
   onOrderClick: (orderId: string) => void;
   getStatusBadgeVariant: (status: string) => "default" | "secondary" | "outline" | "destructive";
+  locale?: string;
 }
+
+// Helper function to format timestamps
+const formatTimestamp = (timestamp: string, locale: string = 'en') => {
+  const date = new Date(timestamp);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const orderDate = new Date(date);
+  orderDate.setHours(0, 0, 0, 0);
+  
+  // If it's today, show only time
+  if (orderDate.getTime() === today.getTime()) {
+    return date.toLocaleTimeString(locale, { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+  }
+  
+  // If it's not today, show date + time
+  return date.toLocaleString(locale, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+};
 
 export function OrdersGridView({ 
   orders, 
   onOrderClick, 
-  getStatusBadgeVariant 
+  getStatusBadgeVariant,
+  locale = 'en'
 }: OrdersGridViewProps) {
   const t = useTranslations("owner.orders");
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+
+  // Handle order status update
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    setUpdatingOrderId(orderId);
+    
+    try {
+      const response = await fetch(`/api/v1/owner/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update order status');
+      
+      toast.success(t('orderStatusUpdated'));
+      // The parent component will handle refetching via realtime updates
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast.error(t('orderStatusUpdateFailed'));
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -26,6 +82,7 @@ export function OrdersGridView({
         const itemCount = order.order_items.reduce((sum, item) => sum + item.quantity, 0);
         // Estimate guest count based on item count (rough approximation)
         const estimatedGuests = Math.max(1, Math.ceil(itemCount / 3));
+        const isUpdating = updatingOrderId === order.id;
         
         return (
           <Card 
@@ -39,15 +96,38 @@ export function OrdersGridView({
                   <h3 className="font-semibold text-lg">{order.tables?.name || 'No Table'}</h3>
                   <p className="text-sm text-gray-600">#{order.id.slice(-6)}</p>
                 </div>
-                <Badge variant={getStatusBadgeVariant(order.status)}>
-                  {t(order.status)}
-                </Badge>
+                <div className="flex flex-col items-end gap-2">
+                  <Badge variant={getStatusBadgeVariant(order.status)}>
+                    {t(order.status)}
+                  </Badge>
+                  {/* Quick status update dropdown for non-completed orders */}
+                  {order.status !== 'completed' && order.status !== 'canceled' && (
+                    <Select
+                      value={order.status}
+                      onValueChange={(newStatus) => handleStatusUpdate(order.id, newStatus)}
+                      disabled={isUpdating}
+                    >
+                      <SelectTrigger 
+                        className="w-24 h-6 text-xs"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">{t('new')}</SelectItem>
+                        <SelectItem value="serving">{t('serving')}</SelectItem>
+                        <SelectItem value="completed">{t('completed')}</SelectItem>
+                        <SelectItem value="canceled">{t('canceled')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">{t('orderTime')}</span>
-                  <span className="text-sm">{new Date(order.created_at).toLocaleTimeString()}</span>
+                  <span className="text-sm">{formatTimestamp(order.created_at, locale)}</span>
                 </div>
                 
                 <div className="flex justify-between">
