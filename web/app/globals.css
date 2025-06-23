@@ -408,3 +408,13 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Ensure Select dropdowns appear above modals */
+[data-radix-select-content] {
+  z-index: 10000 !important;
+}
+
+/* Specifically target Select content inside Dialog */
+[data-radix-dialog-content] [data-radix-select-content] {
+  z-index: 10000 !important;
+}

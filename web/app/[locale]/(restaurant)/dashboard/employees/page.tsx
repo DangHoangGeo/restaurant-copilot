@@ -1,5 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import { EmployeesClientContent } from "./employees-client-content";
+import EmployeesClientContent from "./employees-client-content";
 
 export default async function EmployeesPage({
   params,

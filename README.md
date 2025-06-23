@@ -12,7 +12,7 @@ CoOrder is a mobile-first, AI-augmented SaaS platform that empowers small restau
   • **Branding & Localization**—Set restaurant name, logo, brand colors, contact info, and default language (Japanese, English, Vietnamese).
   • **Menu Management**—Create/edit categories and items (multi-language names/descriptions, price, images, tags, availability per weekday, ratings, feedback).
   • **Table & QR Code Management**—Define tables, generate/download per-table QR codes for ordering or booking.
-  • **Employee & Schedule Management**—Assign roles (chef/server/cashier/manager), create weekly shifts in a calendar interface.
+  • **Employee & Schedule Management**—Assign roles (chef/server/cashier/manager). Enhanced features include comprehensive weekly schedule management, attendance tracking via QR code check-in/out, verification of attendance records, and basic performance overviews (total hours).
   • **Booking & Pre-Ordering**—Accept table reservations, take preorders, check for time conflicts, and let staff confirm or cancel bookings.
   • **Reports & Analytics**—
      • **Dashboard Cards**: Today’s sales, active orders count, top-seller, low-stock alerts.
