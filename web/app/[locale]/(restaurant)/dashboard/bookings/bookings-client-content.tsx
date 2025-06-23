@@ -75,7 +75,6 @@ export function BookingsClientContent() {
         id: string;
         customer_name: string;
         customer_contact?: string;
-        contact_info?: string;
         booking_date: string;
         booking_time: string;
         party_size: number;
@@ -85,7 +84,7 @@ export function BookingsClientContent() {
       }) => ({
         id: b.id,
         customerName: b.customer_name,
-        contact: b.customer_contact || b.contact_info,
+        contact: b.customer_contact || '',
         date: new Date(b.booking_date).toLocaleDateString(),
         time: b.booking_time,
         partySize: b.party_size,
