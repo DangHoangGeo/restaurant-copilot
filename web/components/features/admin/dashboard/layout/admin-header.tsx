@@ -54,20 +54,28 @@ export function AdminHeader({
   const locale = params.locale as string || 'en';
 
   const handleLogout = async () => {
-    //await supabase.auth.signOut();
-    // call lougout API endpoint
-    const response = await fetch('/api/v1/auth/logout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Logout failed:', errorData);
-      return;
+    try {
+      const response = await fetch('/api/v1/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        console.error('Logout failed:', data.error || 'Unknown error');
+        // Still attempt to redirect even if API call fails
+      }
+      
+      // Redirect to login page
+      router.push(`/${locale}/login`);
+    } catch (error) {
+      console.error('Logout request failed:', error);
+      // Redirect anyway in case of network error
+      router.push(`/${locale}/login`);
     }
-    router.push(`/${locale}/login`);
   };
 
   // Determine current page title based on pathname

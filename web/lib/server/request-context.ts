@@ -15,14 +15,32 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
 
   try {
     // Fetch user record first, then get restaurant data separately for more reliable querying
-    const { data: userRecord, error: userRecordError } = await supabase
+    // Handle potential duplicate user records
+    const { data: userRecords, error: userRecordError } = await supabase
       .from('users')
       .select('restaurant_id, role')
-      .eq('id', supabaseUser.id)
-      .single();
+      .eq('id', supabaseUser.id);
 
-    if (userRecordError || !userRecord || !userRecord.restaurant_id) {
+    if (userRecordError || !userRecords || userRecords.length === 0) {
       // Fallback to user metadata if record not found
+      return {
+        userId: supabaseUser.id,
+        email: supabaseUser.email,
+        restaurantId: supabaseUser.app_metadata?.restaurant_id || null,
+        subdomain: null,
+        role: supabaseUser.app_metadata?.role || null,
+      };
+    }
+
+    if (userRecords.length > 1) {
+      console.warn(`Multiple user records found for user ${supabaseUser.id} (${userRecords.length} records) - using first record`);
+    }
+
+    // Use the first record (or only record if there's just one)
+    const userRecord = userRecords[0];
+
+    if (!userRecord || !userRecord.restaurant_id) {
+      // Fallback to user metadata if no restaurant_id found
       return {
         userId: supabaseUser.id,
         email: supabaseUser.email,
