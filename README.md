@@ -13,6 +13,7 @@ CoOrder is a mobile-first, AI-augmented SaaS platform that empowers small restau
   • **Menu Management**—Create/edit categories and items (multi-language names/descriptions, price, images, tags, availability per weekday, ratings, feedback).
   • **Table & QR Code Management**—Define tables, generate/download per-table QR codes for ordering or booking.
   • **Employee & Schedule Management**—Assign roles (chef/server/cashier/manager), create weekly shifts in a calendar interface.
+  • **Attendance Tracking**—Employees scan QR codes to check in/out; owners verify records and view performance stats.
   • **Booking & Pre-Ordering**—Accept table reservations, take preorders, check for time conflicts, and let staff confirm or cancel bookings.
   • **Reports & Analytics**—
      • **Dashboard Cards**: Today’s sales, active orders count, top-seller, low-stock alerts.

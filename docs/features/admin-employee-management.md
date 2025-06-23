@@ -4,6 +4,10 @@
 
 The Admin Employee Management feature enables restaurant administrators to manage their staff. This includes viewing a list of employees with their roles and contact information, assigning roles, and managing weekly work schedules. The system is designed to link employee profiles to existing user accounts within the restaurant's scope.
 
+### Attendance Tracking
+
+Employees receive a QR code linked to their account. Scanning the code at the restaurant entrance records check-in and check-out times in the `attendance_records` table. Owners or managers can verify these records and see performance summaries on the dashboard.
+
 ## How it works technically
 
 ### Frontend

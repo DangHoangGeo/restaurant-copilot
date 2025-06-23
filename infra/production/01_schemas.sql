@@ -181,11 +181,30 @@ CREATE TABLE IF NOT EXISTS schedules (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   employee_id uuid NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
-  weekday integer NOT NULL CHECK (weekday BETWEEN 1 AND 7),
+  work_date date NOT NULL,
   start_time time NOT NULL,
   end_time time NOT NULL,
+  created_by uuid REFERENCES users(id),
   created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE(restaurant_id, employee_id, work_date)
+);
+
+-- Attendance records
+CREATE TABLE IF NOT EXISTS attendance_records (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  employee_id uuid NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+  work_date date NOT NULL,
+  check_in_time timestamptz,
+  check_out_time timestamptz,
+  hours_worked numeric,
+  status text CHECK (status IN ('recorded','checked')) NOT NULL DEFAULT 'recorded',
+  verified_by uuid REFERENCES users(id),
+  verified_at timestamptz,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE(employee_id, work_date)
 );
 
 -- ================================================
@@ -341,7 +360,10 @@ CREATE INDEX IF NOT EXISTS idx_order_items_restaurant_price ON order_items (rest
 CREATE INDEX IF NOT EXISTS idx_employees_restaurant_role ON employees (restaurant_id, role);
 
 -- Schedule indexes
-CREATE INDEX IF NOT EXISTS idx_schedules_employee_weekday ON schedules (employee_id, weekday);
+CREATE INDEX IF NOT EXISTS idx_schedules_employee_date ON schedules (employee_id, work_date);
+
+-- Attendance indexes
+CREATE INDEX IF NOT EXISTS idx_attendance_employee_date ON attendance_records (employee_id, work_date);
 
 -- Review indexes
 CREATE INDEX IF NOT EXISTS idx_reviews_restaurant_menu_item ON reviews (restaurant_id, menu_item_id);
@@ -382,6 +404,7 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
 ALTER TABLE schedules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attendance_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY;

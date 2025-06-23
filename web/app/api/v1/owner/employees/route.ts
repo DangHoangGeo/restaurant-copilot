@@ -5,8 +5,9 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { logger } from "@/lib/logger";
 
 const createEmployeeSchema = z.object({
-  user_id: z.string().uuid(),
-  role: z.enum(["manager", "chef", "server", "cashier"]),
+  email: z.string().email(),
+  name: z.string().min(1),
+  role: z.enum(["manager", "chef", "server", "cashier", "employee"]),
 });
 
 export async function GET() {
@@ -62,6 +63,7 @@ export async function GET() {
 
       return {
         id: emp.id,
+        user_id: emp.users[0]?.id ?? "",
         name: emp.users[0]?.name ?? "",
         email: emp.users[0]?.email ?? "",
         role: emp.role,
@@ -102,28 +104,33 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    const { user_id, role } = validated.data;
+    const { email, name, role } = validated.data;
 
-    const { data: targetUser, error: userError } = await supabaseAdmin
-      .from("users")
-      .select("id, restaurant_id")
-      .eq("id", user_id)
-      .single();
+    const { data: inviteData, error: inviteError } =
+      await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        data: { restaurant_id: user.restaurantId, role },
+      });
 
-    if (
-      userError ||
-      !targetUser ||
-      targetUser.restaurant_id !== user.restaurantId
-    ) {
+    if (inviteError || !inviteData?.user) {
       return NextResponse.json(
-        { error: "User not found or not part of this restaurant" },
-        { status: 404 },
+        { error: inviteError?.message || "Failed to invite user" },
+        { status: 500 },
       );
     }
 
+    const userId = inviteData.user.id;
+
+    await supabaseAdmin.from("users").insert({
+      id: userId,
+      restaurant_id: user.restaurantId,
+      email,
+      name,
+      role,
+    });
+
     const { data: created, error } = await supabaseAdmin
       .from("employees")
-      .insert({ restaurant_id: user.restaurantId, user_id, role })
+      .insert({ restaurant_id: user.restaurantId, user_id: userId, role })
       .select()
       .single();
 
@@ -131,7 +138,7 @@ export async function POST(req: NextRequest) {
       await logger.error('employees-api-post', 'Error creating employee', {
         error: error.message,
         restaurantId: user.restaurantId,
-        user_id,
+        userId,
         role
       }, user.restaurantId, user.userId);
       return NextResponse.json(

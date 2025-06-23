@@ -25,7 +25,8 @@
     "delete_employee": "Xóa Nhân Viên",
     "edit_schedule": "Sửa Lịch Trình",
     "save": "Lưu",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "verify": "Xác nhận"
   },
   "table": {
     "name": "Tên",
