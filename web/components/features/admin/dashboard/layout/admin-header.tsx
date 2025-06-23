@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl';
 // This mapping should ideally live in a config file
 const viewNameMap: Record<string, string> = {
   '/dashboard': 'admin_sidebar_dashboard',
+  '/dashboard/homepage': 'admin_sidebar_homepage_management',
   '/dashboard/settings': 'admin_sidebar_restaurant_settings',
   '/dashboard/menu': 'admin_sidebar_menu_management',
   '/dashboard/tables': 'admin_sidebar_table_qr_management',

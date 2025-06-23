@@ -7,7 +7,7 @@
     "defaultLanguage": "Ngôn Ngữ Mặc Định",
     "brandColor": "Màu Thương Hiệu",
     "logo": "Logo",
-    "contactInfo": "Thông Tin Liên Hệ",
+    "tax": "Thuế Suất",
     "address": "Địa Chỉ",
     "phone": "Số Điện Thoại",
     "email": "Địa Chỉ Email",
@@ -27,7 +27,7 @@
     "restaurantName": "Nhập tên nhà hàng của bạn",
     "subdomain": "nhahangcuaban (sẽ thành nhahangcuaban.coorder.ai)",
     "brandColor": "#RRGGBB",
-    "contactInfo": "ví dụ: số điện thoại, email",
+    "tax": "0.10 (10%)",
     "address": "Địa chỉ đầy đủ của nhà hàng",
     "phone": "+84 123 456 7890",
     "email": "lienhe@nhahangcuaban.com",
@@ -133,8 +133,9 @@
     "brandColor": {
       "invalidFormat": "Định dạng màu không hợp lệ. Sử dụng định dạng #RRGGBB"
     },
-    "contactInfo": {
-      "maxLength": "Thông tin liên hệ phải dài tối đa {maxLength} ký tự"
+    "tax": {
+      "min": "Thuế suất phải ít nhất 0%",
+      "max": "Thuế suất không thể vượt quá 100%"
     },
     "address": {
       "maxLength": "Địa chỉ phải dài tối đa {maxLength} ký tự"

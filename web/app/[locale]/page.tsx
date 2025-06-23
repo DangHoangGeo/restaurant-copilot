@@ -16,7 +16,7 @@ import {
   FooterSection,
 } from '@/components/home';
 import { getSubdomainFromHost } from '@/lib/utils';
-import { RestaurantHomepage } from '@/components/features/customer/screens/HomePage';
+import { NewHomePage } from '@/components/features/customer/homepage';
 
 // Main Landing Page Component
 export default function Page() {
@@ -31,7 +31,7 @@ export default function Page() {
 
   // If subdomain is detected, show restaurant homepage instead of general landing
   if (subdomain) {
-    return <RestaurantHomepage subdomain={subdomain} locale={locale} />;
+    return <NewHomePage subdomain={subdomain} locale={locale} />;
   }
 
   // Original generic landing page content

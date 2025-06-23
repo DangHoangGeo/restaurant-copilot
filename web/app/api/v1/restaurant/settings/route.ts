@@ -8,16 +8,21 @@ const settingsSchema = z.object({
   subdomain: z.string().min(3).max(50).regex(/^[a-z0-9-]+$/).optional(),
   default_language: z.enum(["ja", "en", "vi"]).optional(),
   brand_color: z.string().regex(/^#([0-9A-Fa-f]{6})$/).nullable().optional(),
-  contact_info: z.string().max(500).nullable().optional(),
   address: z.string().max(500).nullable().optional(),
   phone: z.string().max(50).nullable().optional(),
   email: z.string().max(100).nullable().optional()
     .refine((val) => !val || val === "" || z.string().email().safeParse(val).success, "Invalid email format"),
   website: z.string().max(200).nullable().optional()
     .refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Invalid website URL"),
+  tax: z.number().min(0).max(1).optional(), // Tax rate as decimal (0.10 = 10%)
   description_en: z.string().max(1000).nullable().optional(),
   description_ja: z.string().max(1000).nullable().optional(),
   description_vi: z.string().max(1000).nullable().optional(),
+  // Owner story fields
+  owner_story_en: z.string().max(1000).nullable().optional(),
+  owner_story_ja: z.string().max(1000).nullable().optional(),
+  owner_story_vi: z.string().max(1000).nullable().optional(),
+  owner_photo_url: z.string().url().nullable().optional(),
   opening_hours: z.record(z.string(), z.object({
     isOpen: z.boolean(),
     openTime: z.string().optional(),
@@ -64,11 +69,11 @@ export async function GET() {
         logo_url,
         brand_color,
         default_language,
-        contact_info,
         address,
         phone,
         email,
         website,
+        tax,
         description_en,
         description_ja,
         description_vi,
@@ -77,7 +82,18 @@ export async function GET() {
         timezone,
         currency,
         payment_methods,
-        delivery_options
+        delivery_options,
+        onboarded,
+        hero_title_en,
+        hero_title_ja,
+        hero_title_vi,
+        hero_subtitle_en,
+        hero_subtitle_ja,
+        hero_subtitle_vi,
+        owner_story_en,
+        owner_story_ja,
+        owner_story_vi,
+        owner_photo_url
       `)
       .eq("id", user.restaurantId) // Use authenticated user's restaurant ID
       .single();
@@ -118,19 +134,19 @@ export async function GET() {
       console.warn('Failed to parse social_links JSON:', error);
       parsedSocialLinks = restaurant.social_links;
     }
-    //console.log("Restaurant settings fetched successfully:", restaurant);
-    return NextResponse.json({
+    console.log("Restaurant settings fetched successfully - onboarded status:", restaurant.onboarded, "type:", typeof restaurant.onboarded);
+    const responseData = {
       id: restaurant.id,
       name: restaurant.name,
       subdomain: restaurant.subdomain,
-      logoUrl: restaurant.logo_url,
-      primaryColor: restaurant.brand_color || "#3B82F6",
-      defaultLocale: restaurant.default_language || "en",
-      contactInfo: restaurant.contact_info,
+      logo_url: restaurant.logo_url,
+      brand_color: restaurant.brand_color || "#3B82F6",
+      default_language: restaurant.default_language || "en",
       address: restaurant.address,
       phone: restaurant.phone,
       email: restaurant.email,
       website: restaurant.website,
+      tax: restaurant.tax || 0.10,
       description_en: restaurant.description_en,
       description_ja: restaurant.description_ja,
       description_vi: restaurant.description_vi,
@@ -140,7 +156,23 @@ export async function GET() {
       currency: restaurant.currency,
       payment_methods: restaurant.payment_methods,
       delivery_options: restaurant.delivery_options,
-    });
+      // Add the missing onboarding-related fields
+      onboarded: restaurant.onboarded,
+      hero_title_en: restaurant.hero_title_en,
+      hero_title_ja: restaurant.hero_title_ja,
+      hero_title_vi: restaurant.hero_title_vi,
+      hero_subtitle_en: restaurant.hero_subtitle_en,
+      hero_subtitle_ja: restaurant.hero_subtitle_ja,
+      hero_subtitle_vi: restaurant.hero_subtitle_vi,
+      owner_story_en: restaurant.owner_story_en,
+      owner_story_ja: restaurant.owner_story_ja,
+      owner_story_vi: restaurant.owner_story_vi,
+      owner_photo_url: restaurant.owner_photo_url,
+    };
+
+    console.log('Restaurant settings response - onboarded:', restaurant.onboarded, 'type:', typeof restaurant.onboarded);
+    
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("Unexpected error in restaurant settings API:", error);
     const message = error instanceof Error ? error.message : "Unknown error";

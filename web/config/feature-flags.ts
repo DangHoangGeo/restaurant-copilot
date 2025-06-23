@@ -4,11 +4,13 @@ export interface FeatureFlags {
   onlineReviews: boolean;
   lowStockAlerts: boolean;
   tableBooking: boolean;
+  onboarding: boolean;
 }
 export const FEATURE_FLAGS: FeatureFlags = {
   payments: process.env.NEXT_PUBLIC_FEATURE_PAYMENTS === "true",
   aiAssistant: process.env.NEXT_PUBLIC_FEATURE_AI === "true",
   onlineReviews: process.env.NEXT_PUBLIC_FEATURE_REVIEWS === "true",
-  lowStockAlerts: process.env.NEXT_PUBLIC_FEATURE_LOWSTOCK === "true",
+  lowStockAlerts: process.env.NEXT_PUBLIC_FEATURE_LOWSTOCK === "true" || true, // Enabled by default
   tableBooking: process.env.NEXT_PUBLIC_FEATURE_TABLEBOOKING === "true",
+  onboarding: process.env.NEXT_PUBLIC_FEATURE_ONBOARDING !== "false", // Default to true
 };

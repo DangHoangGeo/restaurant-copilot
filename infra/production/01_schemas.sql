@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS restaurants (
   delivery_options text[] DEFAULT '{}', -- e.g. ['pickup', 'delivery']
   is_active boolean NOT NULL DEFAULT true,
   is_verified boolean NOT NULL DEFAULT false,
-  contact_info text,
+  tax numeric NOT NULL DEFAULT 0.10, -- Default tax rate of 10%
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );

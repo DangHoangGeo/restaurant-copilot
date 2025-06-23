@@ -1,0 +1,193 @@
+{
+  "title": "Restaurant Onboarding",
+  "description": "Let's set up your restaurant profile and create your homepage content with AI assistance.",
+  "aiAssisted": "AI-Assisted Setup",
+  "steps": {
+    "basic": {
+      "title": "Basic Information",
+      "description": "Essential restaurant details and contact information",
+      "fields": {
+        "name": {
+          "label": "Restaurant Name",
+          "placeholder": "Enter your restaurant name"
+        },
+        "subdomain": {
+          "label": "Website URL",
+          "placeholder": "yourrestaurant"
+        },
+        "language": {
+          "label": "Default Language",
+          "placeholder": "Select your primary language"
+        },
+        "brandColor": {
+          "label": "Brand Color"
+        },
+        "phone": {
+          "label": "Phone Number",
+          "placeholder": "+1 (555) 123-4567"
+        },
+        "email": {
+          "label": "Email Address",
+          "placeholder": "contact@yourrestaurant.com"
+        },
+        "website": {
+          "label": "Website",
+          "placeholder": "https://yourrestaurant.com"
+        },
+        "address": {
+          "label": "Address",
+          "placeholder": "123 Main Street, City, State 12345"
+        },
+        "tax": {
+          "label": "Tax Rate",
+          "placeholder": "0.10 (10%)"
+        }
+      },
+      "sections": {
+        "contact": "Contact Information (Optional)"
+      },
+      "buttons": {
+        "continue": "Continue"
+      }
+    },
+    "aiGeneration": {
+      "title": "AI Content Generation",
+      "description": "Generate homepage content with AI assistance",
+      "aiInfo": {
+        "title": "AI-Powered Content Creation",
+        "description": "Tell us about your restaurant and we'll generate hero text, owner story, and signature dishes for your homepage."
+      },
+      "fields": {
+        "cuisine": {
+          "label": "Cuisine Type",
+          "placeholder": "Italian, Japanese, Mexican, etc."
+        },
+        "city": {
+          "label": "City/Location",
+          "placeholder": "New York, Tokyo, etc."
+        },
+        "style": {
+          "label": "Restaurant Style",
+          "placeholder": "Casual dining, fine dining, family-friendly, etc."
+        },
+        "specialties": {
+          "label": "Specialties & Features",
+          "placeholder": "Wood-fired pizza, fresh seafood, local ingredients, etc."
+        }
+      },
+      "generation": {
+        "success": "Content generated successfully!",
+        "error": "Failed to generate content. Please try again."
+      },
+      "preview": {
+        "title": "Generated Content Preview",
+        "ownerStory": "Owner Story",
+        "signatureDishes": "Signature Dishes"
+      },
+      "buttons": {
+        "back": "Back",
+        "skip": "Skip AI Generation",
+        "generate": "Generate Content",
+        "generating": "Generating...",
+        "regenerate": "Generate Again",
+        "accept": "Use This Content"
+      }
+    },
+    "media": {
+      "title": "Media Upload",
+      "description": "Upload your restaurant logo, owner photo, and gallery images",
+      "sections": {
+        "logo": {
+          "title": "Restaurant Logo",
+          "description": "Upload your restaurant logo for branding",
+          "requirements": "PNG, JPG, or GIF up to 5MB. Square format recommended."
+        },
+        "ownerPhoto": {
+          "title": "Owner Photo",
+          "description": "Upload a photo of yourself for the owner story section",
+          "requirements": "PNG, JPG, or GIF up to 5MB. Square format recommended.",
+          "optional": "Optional"
+        },
+        "gallery": {
+          "title": "Gallery Images",
+          "description": "Upload photos of your restaurant, food, and atmosphere",
+          "requirements": "PNG, JPG, or GIF up to 5MB each. Multiple images allowed.",
+          "optional": "Optional"
+        }
+      },
+      "upload": {
+        "logoSuccess": "Logo uploaded successfully",
+        "logoError": "Failed to upload logo",
+        "ownerPhotoSuccess": "Owner photo uploaded successfully",
+        "ownerPhotoError": "Failed to upload owner photo",
+        "gallerySuccess": "Gallery images uploaded successfully ({count} files)",
+        "galleryError": "Failed to upload gallery images"
+      },
+      "errors": {
+        "invalidFileType": "Please select a valid image file",
+        "fileTooLarge": "File size must be less than 5MB"
+      },
+      "buttons": {
+        "back": "Back",
+        "continue": "Continue"
+      }
+    },
+    "review": {
+      "title": "Review & Complete",
+      "description": "Review your restaurant information and complete the onboarding process.",
+      "sections": {
+        "basicInfo": {
+          "title": "Basic Information",
+          "fields": {
+            "name": "Restaurant Name",
+            "subdomain": "Website URL",
+            "language": "Default Language",
+            "brandColor": "Brand Color",
+            "phone": "Phone",
+            "email": "Email",
+            "address": "Address",
+            "website": "Website"
+          }
+        },
+        "aiContent": {
+          "title": "AI-Generated Content",
+          "badge": "AI Generated",
+          "fields": {
+            "hero": "Hero Section",
+            "ownerStory": "Owner Story",
+            "signatureDishes": "Signature Dishes"
+          }
+        },
+        "media": {
+          "title": "Media Assets",
+          "fields": {
+            "logo": "Logo",
+            "ownerPhoto": "Owner Photo",
+            "gallery": "Gallery"
+          }
+        }
+      },
+      "completion": {
+        "title": "Ready to Launch!",
+        "description": "Your restaurant profile is ready. Once you complete onboarding, you'll have access to:",
+        "features": {
+          "homepage": "A beautiful homepage with your content",
+          "settings": "Restaurant settings management",
+          "menu": "Menu management system",
+          "orders": "Order management dashboard"
+        }
+      },
+      "buttons": {
+        "back": "Back",
+        "complete": "Complete Onboarding",
+        "completing": "Completing..."
+      }
+    }
+  },
+  "completion": {
+    "success": "Onboarding completed successfully! Welcome to your restaurant dashboard.",
+    "success_with_warnings": "Onboarding completed with some issues. Check the warnings below.",
+    "error": "Failed to complete onboarding. Please try again.",
+    "warning_prefix": "Warning"
+  }
+}

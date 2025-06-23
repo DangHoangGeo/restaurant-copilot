@@ -3,9 +3,13 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRestaurantSettings } from "@/contexts/RestaurantContext";
+import { useParams } from "next/navigation";
+import { FEATURE_FLAGS } from "@/config/feature-flags";
+import Link from "next/link";
 import SettingsForm from "./settings-form";
 
 // Loading skeleton component
@@ -61,9 +65,47 @@ interface SettingsClientContentProps {
 export function SettingsClientContent({ locale }: SettingsClientContentProps) {
   const t = useTranslations('owner.settings');
   const tCommon = useTranslations('common');
+  const params = useParams();
+  const currentLocale = (params.locale as string) || 'en';
 
   // Use restaurant settings from context instead of fetching independently
-  const { restaurantSettings, isLoading, error, refetchSettings } = useRestaurantSettings();
+  const { restaurantSettings, isLoading, error, refetchSettings, needsOnboarding } = useRestaurantSettings();
+
+  // Show onboarding prompt if not yet onboarded
+  if (FEATURE_FLAGS.onboarding && needsOnboarding && !isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card className="text-center">
+          <CardHeader className="pb-6">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Sparkles className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold">
+              Complete Your Setup First
+            </CardTitle>
+            <p className="text-muted-foreground mt-2">
+              Before configuring your restaurant settings, please complete the initial onboarding process. This will help us set up your basic restaurant profile and generate initial content.
+            </p>
+          </CardHeader>
+          <CardContent className="pb-8">
+            <div className="space-y-4">
+              <Link href={`/${currentLocale}/dashboard/onboarding`}>
+                <Button size="lg" className="w-full">
+                  Complete Onboarding
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <p className="text-sm text-muted-foreground">
+                This will only take a few minutes and includes AI assistance
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Early return for loading state
   if (isLoading) {

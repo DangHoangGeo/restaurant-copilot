@@ -4,14 +4,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StatCard } from '@/components/features/admin/dashboard/StatCard';
 import { QuickActions } from '@/components/features/admin/dashboard/QuickActions';
 import { RecentOrdersTable, RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable';
-import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
+import { PopularItemsList, PopularItem } from '@/components/features/admin/dashboard/PopularItemsList';
+import { SalesOverTimeChart, SalesDataPoint } from '@/components/features/admin/dashboard/SalesOverTimeChart';
+import { LowStockAlerts, LowStockItem } from '@/components/features/admin/dashboard/LowStockAlerts';
+import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ComingSoon } from '@/components/common/coming-soon';
 import { useTranslations } from 'next-intl';
 import { formatCurrency } from '@/lib/utils';
 import { DashboardSkeleton } from '@/components/ui/skeletons/dashboard-skeleton';
 import { ErrorState } from '@/components/ui/states/error-state';
+import { useRestaurantSettings } from '@/contexts/RestaurantContext';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 // Define the dashboard metrics interface
 export interface DashboardData {
@@ -24,33 +31,63 @@ export interface DashboardData {
 export function DashboardClientContent() {
   const [metrics, setMetrics] = useState<DashboardData | null>(null);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [popularItems, setPopularItems] = useState<PopularItem[]>([]);
+  const [salesData, setSalesData] = useState<SalesDataPoint[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const t = useTranslations('owner.dashboard');
   const tCommon = useTranslations('common');
+  const { needsOnboarding, isLoading: contextLoading } = useRestaurantSettings();
+  const params = useParams();
+  const locale = (params.locale as string) || 'en';
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const [metricsRes, ordersRes] = await Promise.all([
-        fetch('/api/v1/owner/dashboard/metrics', { credentials: 'include' }),
-        fetch('/api/v1/owner/dashboard/recent-orders', { credentials: 'include' })
+      const [metricsRes, ordersRes, popularItemsRes, salesDataRes, lowStockRes] = await Promise.all([
+        fetch('/api/v1/owner/dashboard/metrics', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        }),
+        fetch('/api/v1/owner/dashboard/recent-orders', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        }),
+        fetch('/api/v1/owner/dashboard/popular-items', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        }),
+        fetch('/api/v1/owner/dashboard/sales-over-time', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        }),
+        fetch('/api/v1/owner/dashboard/low-stock', { 
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include' 
+        })
       ]);
 
       if (!metricsRes.ok || !ordersRes.ok) {
         throw new Error('Failed to load dashboard data');
       }
 
-      const [metricsData, ordersData] = await Promise.all([
+      const [metricsData, ordersData, popularItemsData, salesChartData, lowStockData] = await Promise.all([
         metricsRes.json(),
-        ordersRes.json()
+        ordersRes.json(),
+        popularItemsRes.ok ? popularItemsRes.json() : [],
+        salesDataRes.ok ? salesDataRes.json() : [],
+        lowStockRes.ok ? lowStockRes.json() : { data: [] }
       ]);
 
       setMetrics(metricsData);
       setRecentOrders(ordersData);
+      setPopularItems(popularItemsData);
+      setSalesData(salesChartData);
+      setLowStockItems(lowStockData.data || []);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       setError(err instanceof Error ? err.message : t('errors.fetch_failed'));
@@ -67,6 +104,48 @@ export function DashboardClientContent() {
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, [loadData]);
+
+  // Show onboarding welcome screen if not yet onboarded
+  if (FEATURE_FLAGS.onboarding && needsOnboarding && !contextLoading) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Card className="text-center">
+          <CardHeader className="pb-6">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Sparkles className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold">
+              Welcome to CoOrder!
+            </CardTitle>
+            <p className="text-muted-foreground mt-2">
+              Let&apos;s get your restaurant set up in just a few minutes. Our AI will help you create a stunning profile and homepage.
+            </p>
+          </CardHeader>
+          <CardContent className="pb-8">
+            <div className="space-y-4 max-w-md mx-auto">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h3 className="font-semibold mb-2">What we&apos;ll set up together:</h3>
+                <ul className="text-sm space-y-1 text-muted-foreground">
+                  <li>✓ Restaurant basic information</li>
+                  <li>✓ AI-generated hero content and owner story</li>
+                  <li>✓ Logo and gallery photos upload</li>
+                  <li>✓ Homepage configuration</li>
+                </ul>
+              </div>
+              <Link href={`/${locale}/dashboard/onboarding`}>
+                <Button size="lg" className="w-full">
+                  Get Started
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Show loading skeleton during initial load
   if (isInitialLoading) {
@@ -158,19 +237,18 @@ export function DashboardClientContent() {
         </div>
       </div>
       
-      {/* Placeholder for more charts/reports */}
+      {/* Charts and Reports */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card>
-          <CardContent className="p-6">
-            <ComingSoon featureName="feature.sales_over_time_chart" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <ComingSoon featureName="feature.popular_items_report" />
-          </CardContent>
-        </Card>
+        <SalesOverTimeChart data={salesData} isLoading={isLoading} />
+        <PopularItemsList items={popularItems} isLoading={isLoading} />
       </div>
+
+      {/* Low Stock Alerts Section */}
+      {lowStockAlertsEnabled && (
+        <div className="mt-8">
+          <LowStockAlerts items={lowStockItems} isLoading={isLoading} />
+        </div>
+      )}
     </div>
   );
 }

@@ -14,21 +14,26 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Fetch restaurant details
-    const { data: restaurant, error: restaurantError } = await supabaseAdmin
-      .from("restaurants")
-      .select("*")
-      .eq("subdomain", subdomain)
-      .single();
+    // Use the new homepage data function for enhanced data
+    const { data: homepageData, error: homepageError } = await supabaseAdmin
+      .rpc('get_restaurant_homepage_data', { restaurant_subdomain: subdomain });
 
-    if (restaurantError || !restaurant) {
+    if (homepageError) {
+      console.error("Error fetching homepage data:", homepageError);
       return NextResponse.json(
-        { error: restaurantError?.message || "Restaurant not found" },
+        { error: homepageError.message },
+        { status: 500 }
+      );
+    }
+
+    if (!homepageData || homepageData.error) {
+      return NextResponse.json(
+        { error: homepageData?.error || "Restaurant not found" },
         { status: 404 }
       );
     }
 
-    // Fetch menu items grouped by category
+    // Fetch menu items grouped by category (for backward compatibility)
     const { data: categories, error: categoriesError } = await supabaseAdmin
       .from("categories")
       .select(`
@@ -47,10 +52,11 @@ export async function GET(req: NextRequest) {
           description_vi,
           price,
           image_url,
-          category_id
+          category_id,
+          is_signature
         )
       `)
-      .eq("restaurant_id", restaurant.id)
+      .eq("restaurant_id", homepageData.restaurant.id)
       .order("position", { ascending: true })
       .order("position", { foreignTable: "menu_items", ascending: true });
 
@@ -63,8 +69,11 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({
-      restaurant,
-      menu: categories
+      restaurant: homepageData.restaurant,
+      menu: categories,
+      owners: homepageData.owners,
+      gallery: homepageData.gallery,
+      signature_dishes: homepageData.signature_dishes
     });
   } catch (error) {
     console.error("Error fetching restaurant data:", error);

@@ -7,7 +7,7 @@
     "defaultLanguage": "Default Language",
     "brandColor": "Brand Color",
     "logo": "Logo",
-    "contactInfo": "Contact Information",
+    "tax": "税率",
     "address": "Address",
     "phone": "Phone Number",
     "email": "Email Address",
@@ -27,7 +27,7 @@
     "restaurantName": "Enter your restaurant's name",
     "subdomain": "yourrestaurant (will become yourrestaurant.coorder.ai)",
     "brandColor": "#RRGGBB",
-    "contactInfo": "e.g., phone number, email",
+    "tax": "0.10 (10%)",
     "address": "Restaurant's full address",
     "phone": "+1 234 567 8900",
     "email": "contact@yourrestaurant.com",
@@ -133,8 +133,9 @@
     "brandColor": {
       "invalidFormat": "Invalid color format. Use #RRGGBB format"
     },
-    "contactInfo": {
-      "maxLength": "Contact info must be {maxLength} characters or less"
+    "tax": {
+      "min": "税率は0%以上である必要があります",
+      "max": "税率は100%を超えることはできません"
     },
     "address": {
       "maxLength": "Address must be {maxLength} characters or less"
