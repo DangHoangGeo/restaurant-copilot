@@ -53,7 +53,7 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRSca
         aspectRatio: 1.0, // Square-ish scan box
       };
 
-      const successCallback = (decodedText: string, decodedResult: any) => {
+      const successCallback = (decodedText: string) => {
         if (qrScannerRef.current && qrScannerRef.current.isScanning) {
            qrScannerRef.current.stop()
             .then(() => {
@@ -72,7 +72,7 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRSca
         }
       };
 
-      const errorCallback = (errorMessage: string) => {
+      const errorCallback = () => {
         // This callback is often for non-fatal errors during scanning attempt.
         // console.warn("QRScanner: Scan attempt failed:", errorMessage);
         // setScanError(t("errors.scanRegion")); // Can be too noisy

@@ -1,20 +1,8 @@
 -- Migration file for employee attendance features
 
 -- 1. users table: Modify role CHECK constraint
-DO $$
-DECLARE
-  constraint_name TEXT;
-BEGIN
-  SELECT conname INTO constraint_name
-  FROM pg_constraint
-  WHERE conrelid = 'users'::regclass
-    AND conname LIKE 'users_role_check%' -- or specific name if known, or based on consrc
-    AND pg_get_constraintdef(oid) LIKE '%CHECK (role IN (%'; -- further refine if multiple CHECK constraints on role
-
-  IF constraint_name IS NOT NULL THEN
-    EXECUTE 'ALTER TABLE users DROP CONSTRAINT ' || quote_ident(constraint_name);
-  END IF;
-END $$;
+-- Drop the existing constraint and recreate it with the new values
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
 ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('owner','chef','server','cashier','manager','employee'));
 
 -- 2. schedules table: Modifications

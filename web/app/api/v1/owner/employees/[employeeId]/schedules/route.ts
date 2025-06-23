@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { logger } from '@/lib/logger';
-import { USER_ROLES, UserRole } from '@/lib/constants';
+import { USER_ROLES } from '@/lib/constants';
 
 // Helper to get start and end dates of an ISO week (YYYY-WW)
 function getWeekDateRange(year: number, weekNumber: number): { startDate: string, endDate: string } {
@@ -50,9 +50,9 @@ const createScheduleSchema = z.object({
 const createSchedulesPayloadSchema = z.array(createScheduleSchema);
 
 
-export async function GET(req: NextRequest, { params }: { params: { employeeId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ employeeId: string }> }) {
   const callingUser: AuthUser | null = await getUserFromRequest();
-  const { employeeId } = params;
+  const { employeeId } = await params;
   const { searchParams } = new URL(req.url);
 
   if (!callingUser || !callingUser.restaurantId) {
@@ -132,9 +132,9 @@ export async function GET(req: NextRequest, { params }: { params: { employeeId: 
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { employeeId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ employeeId: string }> }) {
   const callingUser: AuthUser | null = await getUserFromRequest();
-  const { employeeId } = params;
+  const { employeeId } = await params;
 
   if (!callingUser || !callingUser.restaurantId || !callingUser.userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -144,16 +144,16 @@ export async function POST(req: NextRequest, { params }: { params: { employeeId:
   }
 
   // Authorization: Only Owner or Manager can create schedules
-  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole)) {
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
     await logger.warn('schedules-api-post-auth', `User ${callingUser.userId} with role ${callingUser.role} tried to create schedules for employee ${employeeId} without permission.`,
-      callingUser.restaurantId, callingUser.userId);
+      {}, callingUser.restaurantId, callingUser.userId);
     return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
   }
 
   let body;
   try {
     body = await req.json();
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 

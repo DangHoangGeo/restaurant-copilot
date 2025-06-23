@@ -59,7 +59,7 @@ export default function ScheduleWeek() {
         if (!response.ok) throw new Error(t("errors.loadEmployeesError"));
         const data = await response.json();
         // Assuming data.employees is an array of objects like { id, users: { name } }
-        const fetchedEmployees = data.employees.map((emp: any) => ({
+        const fetchedEmployees = data.employees.map((emp: { id: string; users?: { name?: string } }) => ({
           id: emp.id,
           name: emp.users?.name || `Employee ${emp.id.substring(0,6)}`,
         }));
@@ -129,8 +129,9 @@ export default function ScheduleWeek() {
       };
        // If both start and end times are empty, and it's not an original schedule, effectively remove it from map
       if (!updatedEntry.start_time && !updatedEntry.end_time && !originalWeekSchedule[dateStr]?.id) {
-        const { [dateStr]: _, ...rest } = prev; // remove entry
-        return rest;
+        const newState = { ...prev };
+        delete newState[dateStr];
+        return newState;
       }
       return { ...prev, [dateStr]: updatedEntry };
     });
@@ -221,7 +222,7 @@ export default function ScheduleWeek() {
   };
 
   const daysToDisplay = getDaysOfWeek(currentMonday);
-  const weekRangeStr = formatWeekRangeForDisplay(daysToDisplay[0], daysToDisplay[6], common_t.getLocale());
+  const weekRangeStr = formatWeekRangeForDisplay(daysToDisplay[0], daysToDisplay[6], 'en');
 
 
   return (
@@ -268,7 +269,7 @@ export default function ScheduleWeek() {
                 const scheduleForDay = weekSchedule[dateStr] || {};
                 return (
                   <div key={dateStr} className="p-3 border rounded-lg bg-card shadow">
-                    <p className="font-semibold text-sm mb-2 text-center">{formatDateForDisplay(day, common_t.getLocale())}</p>
+                    <p className="font-semibold text-sm mb-2 text-center">{formatDateForDisplay(day, 'en')}</p>
                     <div className="space-y-2">
                       <Input
                         type="time"

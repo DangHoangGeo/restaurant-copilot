@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import EmployeeForm, { EmployeeFormEmployee, EmployeeFormData } from './EmployeeForm'; // For a modal/drawer
+import EmployeeForm, { EmployeeFormEmployee } from './EmployeeForm'; // For a modal/drawer
+import { EMPLOYEE_JOB_TITLES } from "@/lib/constants";
 import {
   Dialog,
   DialogContent,
@@ -54,7 +55,6 @@ export type DisplayEmployee = {
 export default function EmployeeList() {
   const t = useTranslations("owner.employees.list");
   const t_form = useTranslations("owner.employees.form"); // For dialog title
-  const t_roles = useTranslations("owner.employees.roles"); // For displaying job titles
 
   const [employees, setEmployees] = useState<DisplayEmployee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,7 +63,7 @@ export default function EmployeeList() {
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<EmployeeFormEmployee | null>(null);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -73,6 +73,8 @@ export default function EmployeeList() {
         throw new Error(errorData.error || `Failed to fetch employees: ${response.statusText}`);
       }
       const data = await response.json();
+
+      console.log("Fetched employees", data);
 
       // Transform API data to DisplayEmployee format
       const transformedEmployees: DisplayEmployee[] = (data.employees || []).map((emp: ApiEmployee) => ({
@@ -92,11 +94,11 @@ export default function EmployeeList() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [fetchEmployees]);
 
   const handleAddEmployee = () => {
     setEditingEmployee(null);
@@ -109,7 +111,7 @@ export default function EmployeeList() {
       id: employee.id,
       name: employee.name,
       email: employee.email,
-      employee_job_title: employee.employee_job_title,
+      employee_job_title: employee.employee_job_title as typeof EMPLOYEE_JOB_TITLES[keyof typeof EMPLOYEE_JOB_TITLES],
     };
     setEditingEmployee(formEmployee);
     setShowEmployeeForm(true);
@@ -191,7 +193,7 @@ export default function EmployeeList() {
               <TableRow key={emp.id}>
                 <TableCell className="font-medium">{emp.name}</TableCell>
                 <TableCell>{emp.email}</TableCell>
-                <TableCell>{t_roles(emp.employee_job_title, {}, { defaultValue: emp.employee_job_title })}</TableCell>
+                <TableCell>{emp.employee_job_title}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button variant="outline" size="sm" onClick={() => handleEditEmployee(emp)} disabled={isLoading}>
                     {t("actions.edit")}

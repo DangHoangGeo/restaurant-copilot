@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, BarChart3, CalendarDays, Clock } from "lucide-react";
+import { AlertTriangle, CalendarDays, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   getMonday,
@@ -15,6 +15,13 @@ import {
 } from "@/lib/dateUtils";
 
 // Types
+interface ApiEmployee {
+  id: string;
+  users?: {
+    name?: string;
+  };
+}
+
 interface ApiEmployeeForPerformance {
   id: string; // employees.id
   name: string;
@@ -58,7 +65,7 @@ export default function PerformanceOverview() {
         const response = await fetch("/api/v1/owner/employees");
         if (!response.ok) throw new Error(t("errors.loadEmployeesError"));
         const data = await response.json();
-        const fetchedEmployees = (data.employees || []).map((emp: any) => ({
+        const fetchedEmployees = (data.employees || []).map((emp: ApiEmployee) => ({
           id: emp.id,
           name: emp.users?.name || `Employee ${emp.id.substring(0,6)}`,
         }));

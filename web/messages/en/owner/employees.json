@@ -63,7 +63,6 @@
     "chef": "Chef",
     "server": "Server",
     "cashier": "Cashier"
-    // Add other roles from EMPLOYEE_JOB_TITLES if they exist
   },
   "schedule": {
     "title": "Weekly Schedule",

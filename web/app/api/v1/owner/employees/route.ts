@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getUserFromRequest, AuthUser } from "@/lib/server/getUserFromRequest";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { logger } from "@/lib/logger";
-import { USER_ROLES, EMPLOYEE_JOB_TITLES, UserRole } from "@/lib/constants";
+import { USER_ROLES, EMPLOYEE_JOB_TITLES } from "@/lib/constants";
 
 const createEmployeeSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -27,7 +27,7 @@ export async function GET() {
     const { data, error } = await supabaseAdmin
       .from("employees")
       .select(
-        `id, role, users(id, email, name), schedules(id, weekday, start_time, end_time)`
+        `id, role, user_id, users(id, email, name, role)`
       )
       .eq("restaurant_id", user.restaurantId);
 
@@ -43,36 +43,19 @@ export async function GET() {
     }
 
     // Transform data to match frontend expectations
-    const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const employees = data?.map((emp: {
       id: string;
       role: string;
-      users: Array<{ id: string; email: string; name: string }>;
-      schedules: Array<{ id: string; weekday: number | null; start_time: string | null; end_time: string | null }>;
+      user_id: string;
+      users: { id: string; email: string; name: string; role: string }[] | { id: string; email: string; name: string; role: string };
     }) => {
-      const shifts: Record<string, string | null> = {
-        Mon: null,
-        Tue: null,
-        Wed: null,
-        Thu: null,
-        Fri: null,
-        Sat: null,
-        Sun: null,
-      };
-      
-      emp.schedules?.forEach((s) => {
-        const day = dayMap[(s.weekday ?? 1) - 1] as keyof typeof shifts;
-        if (day) {
-          shifts[day] = `${s.start_time?.slice(0, 5)}-${s.end_time?.slice(0, 5)}`;
-        }
-      });
-
+      // users is returned as an array from Supabase, but we expect a single user
+      const user = Array.isArray(emp.users) ? emp.users[0] : emp.users;
       return {
         id: emp.id,
-        name: emp.users[0]?.name ?? "",
-        email: emp.users[0]?.email ?? "",
-        role: emp.role,
-        shifts,
+        role: emp.role, // This is the employee job title from employees.role
+        user_id: emp.user_id,
+        users: user, // Transform array to single object to match ApiEmployee interface
       };
     }) || [];
 
@@ -103,7 +86,7 @@ export async function POST(req: NextRequest) {
 
   // Ensure the calling user has a role that allows creating employees (e.g. owner or manager)
   // This check might need to be more sophisticated based on app requirements
-  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole)) {
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
     return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
   }
 
@@ -111,7 +94,7 @@ export async function POST(req: NextRequest) {
     let body;
     try {
       body = await req.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: 'Invalid request body: Must be valid JSON' }, { status: 400 });
     }
 
@@ -128,6 +111,7 @@ export async function POST(req: NextRequest) {
     // Step 1: Invite the user via Supabase Auth Admin to create an auth.users entry
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       data: {
+        name: name, // This sets raw_user_meta_data.name in auth.users
         role: USER_ROLES.EMPLOYEE, // All employees get 'employee' role in auth.users meta_data
         restaurant_id: restaurantId,
       },

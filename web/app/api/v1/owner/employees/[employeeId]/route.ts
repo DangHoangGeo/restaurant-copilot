@@ -3,7 +3,7 @@ import { getUserFromRequest, AuthUser } from "@/lib/server/getUserFromRequest";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { logger } from "@/lib/logger";
-import { USER_ROLES, EMPLOYEE_JOB_TITLES, UserRole } from "@/lib/constants";
+import { USER_ROLES, EMPLOYEE_JOB_TITLES } from "@/lib/constants";
 
 const updateEmployeeSchema = z.object({
   name: z.string().min(1, "Name cannot be empty.").optional(),
@@ -17,10 +17,10 @@ const updateEmployeeSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { employeeId: string } }, // Changed from Promise based on typical Next.js usage
+  { params }: { params: Promise<{ employeeId: string }> }, // Changed from Promise based on typical Next.js usage
 ) {
   const callingUser: AuthUser | null = await getUserFromRequest();
-  const { employeeId } = params;
+  const { employeeId } = await params;
 
   if (!callingUser || !callingUser.restaurantId) {
     return NextResponse.json(
@@ -30,7 +30,7 @@ export async function GET(
   }
 
   // Authorization: Ensure calling user is owner or manager
-  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole)) {
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
     return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
   }
 
@@ -83,10 +83,10 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { employeeId: string } }, // Changed from Promise
+  { params }: { params: Promise<{ employeeId: string }> }, // Changed from Promise
 ) {
   const callingUser: AuthUser | null = await getUserFromRequest();
-  const { employeeId } = params;
+  const { employeeId } = await params;
 
   if (!callingUser || !callingUser.restaurantId) {
     return NextResponse.json(
@@ -96,9 +96,9 @@ export async function PATCH(
   }
 
   // Authorization: Ensure calling user is owner or manager
-  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole)) {
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
     await logger.warn('employee-id-api-patch-auth', `User ${callingUser.userId} with role ${callingUser.role} tried to update employee ${employeeId} without permission.`,
-      callingUser.restaurantId, callingUser.userId);
+      {}, callingUser.restaurantId, callingUser.userId);
     return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
   }
 
@@ -113,7 +113,7 @@ export async function PATCH(
     let body;
     try {
       body = await req.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
@@ -195,14 +195,19 @@ export async function PATCH(
     }
 
     // Map to desired response structure if necessary, or return as is
+    // Handle the users relation which might be an array or object
+    const userInfo = Array.isArray(updatedEmployeeData.users) 
+      ? updatedEmployeeData.users[0] 
+      : updatedEmployeeData.users;
+
     const responsePayload = {
       id: updatedEmployeeData.id,
       employee_job_title: updatedEmployeeData.role,
       user: {
-        id: updatedEmployeeData.users?.id,
-        email: updatedEmployeeData.users?.email,
-        name: updatedEmployeeData.users?.name,
-        role: updatedEmployeeData.users?.role, // This is users.role (e.g., 'employee')
+        id: userInfo?.id,
+        email: userInfo?.email,
+        name: userInfo?.name,
+        role: userInfo?.role, // This is users.role (e.g., 'employee')
       }
     };
 
@@ -222,10 +227,10 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request, // Should be NextRequest for consistency if headers/cookies are needed for getUserFromRequest
-  { params }: { params: { employeeId: string } }, // Changed from Promise
+  { params }: { params: Promise<{ employeeId: string }> }, // Changed from Promise
 ) {
   const callingUser: AuthUser | null = await getUserFromRequest();
-  const { employeeId } = params;
+  const { employeeId } = await params;
 
   if (!callingUser || !callingUser.restaurantId) {
     return NextResponse.json(
@@ -235,9 +240,9 @@ export async function DELETE(
   }
 
   // Authorization: Ensure calling user is owner or manager
-  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole)) {
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
     await logger.warn('employee-id-api-delete-auth', `User ${callingUser.userId} with role ${callingUser.role} tried to delete employee ${employeeId} without permission.`,
-      callingUser.restaurantId, callingUser.userId);
+      {}, callingUser.restaurantId, callingUser.userId);
     return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
   }
 

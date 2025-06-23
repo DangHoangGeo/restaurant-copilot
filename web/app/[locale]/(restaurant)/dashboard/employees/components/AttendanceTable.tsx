@@ -15,6 +15,13 @@ import {
 } from "@/lib/dateUtils";
 
 // Types
+interface ApiEmployee {
+  id: string;
+  users?: {
+    name?: string;
+  };
+}
+
 interface ApiEmployeeForAttendance {
   id: string; // employees.id
   name: string;
@@ -64,7 +71,7 @@ export default function AttendanceTable() {
         const response = await fetch("/api/v1/owner/employees");
         if (!response.ok) throw new Error(t("errors.loadEmployeesError"));
         const data = await response.json();
-        const fetchedEmployees = (data.employees || []).map((emp: any) => ({
+        const fetchedEmployees = (data.employees || []).map((emp: ApiEmployee) => ({
           id: emp.id,
           name: emp.users?.name || `Employee ${emp.id.substring(0,6)}`,
         }));
@@ -145,7 +152,7 @@ export default function AttendanceTable() {
     }
   };
 
-  const monthYearDisplay = formatMonthYearForDisplay(currentMonth, common_t.getLocale());
+  const monthYearDisplay = formatMonthYearForDisplay(currentMonth, 'en');
 
   return (
     <div className="space-y-6">

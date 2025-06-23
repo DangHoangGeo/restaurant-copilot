@@ -1,11 +1,10 @@
 "use client";
-import { useState, useEffect }
-from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Assuming Shadcn UI
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTranslations } from "next-intl";
@@ -18,7 +17,7 @@ export type EmployeeFormEmployee = {
   id: string; // This is employees.id
   name: string;
   email: string;
-  employee_job_title: keyof typeof EMPLOYEE_JOB_TITLES | typeof EMPLOYEE_JOB_TITLES[keyof typeof EMPLOYEE_JOB_TITLES]; // Allow for key or value initially
+  employee_job_title: typeof EMPLOYEE_JOB_TITLES[keyof typeof EMPLOYEE_JOB_TITLES]; // Use the values (lowercase)
   // user_id might also be relevant if updates need it, but API takes employees.id for PUT path
 };
 
@@ -28,8 +27,8 @@ const employeeJobTitleValues = Object.values(EMPLOYEE_JOB_TITLES);
 const employeeFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
-  // Ensure that the enum has at least one value.
-  employee_job_title: z.enum(employeeJobTitleValues.length > 0 ? [employeeJobTitleValues[0], ...employeeJobTitleValues.slice(1)] : [""]),
+  // Use the actual values (lowercase) that are sent to the API
+  employee_job_title: z.enum(employeeJobTitleValues.length > 0 ? [employeeJobTitleValues[0], ...employeeJobTitleValues.slice(1)] : ["manager"]),
 });
 
 export type EmployeeFormData = z.infer<typeof employeeFormSchema>;
@@ -44,12 +43,12 @@ export default function EmployeeForm({ employee, onClose, onSuccess }: EmployeeF
   const t = useTranslations("owner.employees.form");
   const common_t = useTranslations("common"); // For generic terms like "Save", "Cancel" if needed
 
-  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<EmployeeFormData>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: {
       name: employee?.name || "",
       email: employee?.email || "",
-      employee_job_title: employee?.employee_job_title || Object.values(EMPLOYEE_JOB_TITLES)[0] || "", // Default to first job title
+      employee_job_title: employee?.employee_job_title || "manager", // Default to first job title value
     }
   });
 
@@ -64,7 +63,7 @@ export default function EmployeeForm({ employee, onClose, onSuccess }: EmployeeF
       reset({ // Default for new employee
         name: "",
         email: "",
-        employee_job_title: Object.values(EMPLOYEE_JOB_TITLES)[0] || "",
+        employee_job_title: "manager", // Use lowercase value
       });
     }
   }, [employee, reset]);
@@ -108,6 +107,14 @@ export default function EmployeeForm({ employee, onClose, onSuccess }: EmployeeF
   };
 
   const currentJobTitles = Object.values(EMPLOYEE_JOB_TITLES);
+  
+  // Helper function to get display label for job title
+  const getJobTitleLabel = (value: string) => {
+    // Capitalize first letter of each word for better display
+    return value.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
 
   return (
     // Removed the modal container (fixed inset-0 div) - this will be rendered inside a DialogContent
@@ -136,23 +143,21 @@ export default function EmployeeForm({ employee, onClose, onSuccess }: EmployeeF
 
       <div className="space-y-1">
         <Label htmlFor="employee_job_title">{t("fields.jobTitle.label")}</Label>
-        <Controller
-          name="employee_job_title"
-          control={control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("fields.jobTitle.placeholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {currentJobTitles.map(title => (
-                  // Assuming EMPLOYEE_JOB_TITLES values are human-readable or we have translations for them
-                  <SelectItem key={title} value={title}>{t(`../../roles.${title}`, {}, { defaultValue: title })}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
+        <Select 
+          onValueChange={(value) => setValue("employee_job_title", value as typeof EMPLOYEE_JOB_TITLES[keyof typeof EMPLOYEE_JOB_TITLES])} 
+          value={watch("employee_job_title")}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={t("fields.jobTitle.placeholder")} />
+          </SelectTrigger>
+          <SelectContent>
+            {currentJobTitles.map(title => (
+              <SelectItem key={title} value={title}>
+                {getJobTitleLabel(title)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {errors.employee_job_title && <p className="text-destructive text-sm">{errors.employee_job_title.message}</p>}
       </div>
 

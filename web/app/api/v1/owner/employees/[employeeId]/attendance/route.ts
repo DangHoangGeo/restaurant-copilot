@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { logger } from '@/lib/logger';
-import { USER_ROLES, UserRole } from '@/lib/constants';
+import { USER_ROLES } from '@/lib/constants';
 
 // Helper to get start and end dates of a YYYY-MM month
 function getMonthDateRange(year: number, month: number): { startDate: string, endDate: string } {
@@ -23,7 +23,7 @@ const querySchema = z.object({
 });
 
 
-export async function GET(req: NextRequest, { params }: { params: { employeeId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ employeeId: string }> }) {
   const callingUser: AuthUser | null = await getUserFromRequest();
   const { searchParams } = new URL(req.url);
 
@@ -31,7 +31,8 @@ export async function GET(req: NextRequest, { params }: { params: { employeeId: 
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const paramsValidation = paramsSchema.safeParse(params);
+  const resolvedParams = await params;
+  const paramsValidation = paramsSchema.safeParse(resolvedParams);
   if (!paramsValidation.success) {
     return NextResponse.json({ error: 'Invalid Employee ID format', details: paramsValidation.error.flatten() }, { status: 400 });
   }
@@ -62,7 +63,7 @@ export async function GET(req: NextRequest, { params }: { params: { employeeId: 
 
     let isOwnerOrManager = false;
     if (callingUser.role) {
-      isOwnerOrManager = [USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole);
+      isOwnerOrManager = [USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager');
     }
 
     // Check if the target employeeId belongs to the callingUser's restaurant
@@ -87,7 +88,7 @@ export async function GET(req: NextRequest, { params }: { params: { employeeId: 
     // If not owner/manager, ensure the calling user is the employee whose records are being requested
     if (!isOwnerOrManager && employeeRestaurantCheck.user_id !== callingUser.userId) {
       await logger.warn('attendance-records-get-auth-denied', `User ${callingUser.userId} (role ${callingUser.role}) attempted to access attendance for employee ${employeeId} without permission.`,
-        callingUser.restaurantId, callingUser.userId);
+        {}, callingUser.restaurantId, callingUser.userId);
       return NextResponse.json({ error: 'Forbidden: You can only access your own attendance records.' }, { status: 403 });
     }
 

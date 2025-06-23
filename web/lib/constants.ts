@@ -16,7 +16,6 @@ export const EMPLOYEE_JOB_TITLES = {
   CHEF: 'chef',
   SERVER: 'server',
   CASHIER: 'cashier',
-  // Add any other specific job titles for the 'employees' table role
 } as const;
 
 export type EmployeeJobTitle = typeof EMPLOYEE_JOB_TITLES[keyof typeof EMPLOYEE_JOB_TITLES];

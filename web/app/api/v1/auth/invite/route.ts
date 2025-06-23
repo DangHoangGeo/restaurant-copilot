@@ -25,14 +25,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized: User is not associated with a restaurant' }, { status: 403 });
     }
 
-    if (!callingUser.role || !ALLOWED_INVITER_ROLES.includes(callingUser.role as USER_ROLES)) {
+    if (!callingUser.role || !ALLOWED_INVITER_ROLES.includes(callingUser.role as (typeof ALLOWED_INVITER_ROLES)[number])) {
       return NextResponse.json({ error: 'Forbidden: User does not have permission to invite new users' }, { status: 403 });
     }
 
     let reqBody;
     try {
       reqBody = await request.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: 'Invalid request body: Must be valid JSON' }, { status: 400 });
     }
 
@@ -95,8 +95,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(newUserRecord, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Unexpected error in invite endpoint:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: 'An unexpected error occurred', details: errorMessage }, { status: 500 });
   }
 }

@@ -15,7 +15,6 @@ import { toast } from "sonner";
 export default function EmployeesDashboard() {
   const t = useTranslations("owner.employees.dashboard");
   const t_qr = useTranslations("owner.employees.qrScannerModal"); // For scan button & results
-  const common_t = useTranslations("common");
 
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 

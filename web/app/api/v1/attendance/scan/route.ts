@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   let body;
   try {
     body = await req.json();
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   // Simplified QR Token validation: For this subtask, qrToken must match employee_id
   if (qrToken !== employee_id) {
     await logger.warn('attendance-scan-invalid-qr', `Invalid QR token for employee ${employee_id}. Token: ${qrToken}`,
-      callingUser.restaurantId, callingUser.userId);
+      {}, callingUser.restaurantId, callingUser.userId);
     return NextResponse.json({ error: 'Invalid QR token.' }, { status: 403 });
   }
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     if (employeeSelfCheckError || !employeeSelfCheck) {
       await logger.warn('attendance-scan-auth-failed', `User ${callingUser.userId} attempted to scan for employee ${employee_id} without authorization or employee not found.`,
-        callingUser.restaurantId, callingUser.userId, { employeeIdInBody: employee_id, error: employeeSelfCheckError?.message });
+        { employeeIdInBody: employee_id, error: employeeSelfCheckError?.message }, callingUser.restaurantId, callingUser.userId);
       return NextResponse.json({ error: 'Forbidden: You can only scan for yourself, or employee not found in your restaurant.' }, { status: 403 });
     }
 

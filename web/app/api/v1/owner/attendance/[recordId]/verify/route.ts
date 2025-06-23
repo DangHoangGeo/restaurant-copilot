@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { logger } from '@/lib/logger';
-import { USER_ROLES, UserRole } from '@/lib/constants';
+import { USER_ROLES } from '@/lib/constants';
 
 const paramsSchema = z.object({
   recordId: z.string().uuid("Invalid Attendance Record ID format"),
@@ -14,23 +14,24 @@ const paramsSchema = z.object({
 //   notes: z.string().optional(),
 // });
 
-export async function PATCH(req: NextRequest, { params }: { params: { recordId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ recordId: string }> }) {
   const callingUser: AuthUser | null = await getUserFromRequest();
 
   if (!callingUser || !callingUser.userId || !callingUser.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: User session not found or incomplete.' }, { status: 401 });
   }
 
-  const paramsValidation = paramsSchema.safeParse(params);
+  const resolvedParams = await params;
+  const paramsValidation = paramsSchema.safeParse(resolvedParams);
   if (!paramsValidation.success) {
     return NextResponse.json({ error: 'Invalid Attendance Record ID format', details: paramsValidation.error.flatten() }, { status: 400 });
   }
   const { recordId } = paramsValidation.data;
 
   // Authorization: Only Owner or Manager can verify attendance
-  if (!callingUser.role || ![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole)) {
+  if (!callingUser.role || ![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
     await logger.warn('attendance-verify-auth-denied', `User ${callingUser.userId} (role ${callingUser.role}) attempted to verify attendance record ${recordId} without permission.`,
-      callingUser.restaurantId, callingUser.userId);
+      {}, callingUser.restaurantId, callingUser.userId);
     return NextResponse.json({ error: 'Forbidden: Insufficient permissions to verify attendance.' }, { status: 403 });
   }
 
@@ -76,7 +77,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { recordId: 
 
     if (existingRecord.restaurant_id !== callingUser.restaurantId) {
       await logger.warn('attendance-verify-wrong-restaurant', `User ${callingUser.userId} attempted to verify record ${recordId} belonging to another restaurant.`,
-        callingUser.restaurantId, callingUser.userId, { targetRestaurantId: existingRecord.restaurant_id });
+        { targetRestaurantId: existingRecord.restaurant_id }, callingUser.restaurantId, callingUser.userId);
       return NextResponse.json({ error: 'Forbidden: Record does not belong to your restaurant.' }, { status: 403 });
     }
 

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { logger } from '@/lib/logger';
-import { USER_ROLES, UserRole } from '@/lib/constants';
+import { USER_ROLES } from '@/lib/constants';
 
 const paramsSchema = z.object({
   employeeId: z.string().uuid("Invalid Employee ID format"),
@@ -19,30 +19,31 @@ const updateScheduleSchema = z.object({
 });
 
 
-export async function PATCH(req: NextRequest, { params }: { params: { employeeId: string, scheduleId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ employeeId: string, scheduleId: string }> }) {
   const callingUser: AuthUser | null = await getUserFromRequest();
 
   if (!callingUser || !callingUser.restaurantId || !callingUser.userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const paramsValidation = paramsSchema.safeParse(params);
+  const resolvedParams = await params;
+  const paramsValidation = paramsSchema.safeParse(resolvedParams);
   if (!paramsValidation.success) {
     return NextResponse.json({ error: 'Invalid Employee or Schedule ID format', details: paramsValidation.error.flatten() }, { status: 400 });
   }
   const { employeeId, scheduleId } = paramsValidation.data;
 
   // Authorization: Only Owner or Manager can update schedules
-  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole)) {
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
     await logger.warn('schedule-id-api-patch-auth', `User ${callingUser.userId} (role ${callingUser.role}) tried to update schedule ${scheduleId} for employee ${employeeId} without permission.`,
-      callingUser.restaurantId, callingUser.userId);
+      {}, callingUser.restaurantId, callingUser.userId);
     return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
   }
 
   let body;
   try {
     body = await req.json();
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
@@ -102,23 +103,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { employeeId
 }
 
 
-export async function DELETE(req: NextRequest, { params }: { params: { employeeId: string, scheduleId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ employeeId: string, scheduleId: string }> }) {
   const callingUser: AuthUser | null = await getUserFromRequest();
 
   if (!callingUser || !callingUser.restaurantId || !callingUser.userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const paramsValidation = paramsSchema.safeParse(params);
+  const resolvedParams = await params;
+  const paramsValidation = paramsSchema.safeParse(resolvedParams);
   if (!paramsValidation.success) {
     return NextResponse.json({ error: 'Invalid Employee or Schedule ID format', details: paramsValidation.error.flatten() }, { status: 400 });
   }
   const { employeeId, scheduleId } = paramsValidation.data;
 
   // Authorization: Only Owner or Manager can delete schedules
-  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as UserRole)) {
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
      await logger.warn('schedule-id-api-delete-auth', `User ${callingUser.userId} (role ${callingUser.role}) tried to delete schedule ${scheduleId} for employee ${employeeId} without permission.`,
-      callingUser.restaurantId, callingUser.userId);
+      {}, callingUser.restaurantId, callingUser.userId);
     return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
   }
 
