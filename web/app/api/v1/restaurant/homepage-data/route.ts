@@ -39,7 +39,6 @@ export async function GET() {
         tagline_en: result.restaurant_tagline_en,
         tagline_ja: result.restaurant_tagline_ja,
         tagline_vi: result.restaurant_tagline_vi,
-        contact_info: result.restaurant_contact_info,
         address: result.restaurant_address,
         phone: result.restaurant_phone,
         email: result.restaurant_email,
