@@ -43,12 +43,9 @@ export async function GET() {
       const itemsCount = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
       
       // Generate customer name
-      const tableName = Array.isArray(order.tables) && order.tables.length > 0 
-        ? order.tables[0]?.name 
-        : null;
-      const customerName = tableName 
-        ? `Table ${tableName}` 
-        : `Order ${order.id.substring(0, 6)}`;
+      const tables = Array.isArray(order.tables)? order.tables[0] : order.tables;
+      const tableName = tables?.name || null;
+      const customerName = tableName
 
       return {
         id: order.id,

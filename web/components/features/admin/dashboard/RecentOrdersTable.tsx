@@ -72,44 +72,74 @@ export function RecentOrdersTable({ orders, isLoading = false }: RecentOrdersTab
   const currencyFormatter = new Intl.NumberFormat(locale, { style: 'currency', currency: 'JPY' });
 
   return (
-    <Card className="lg:col-span-2">
+    <Card className="lg:col-span-2 py-4">
       <CardHeader>
         <CardTitle className="text-lg">{t('recent_orders.title')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[300px] w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('recent_orders.table_header_order')}</TableHead>
-                <TableHead>{t('recent_orders.table_header_items')}</TableHead>
-                <TableHead className="text-right">{t('recent_orders.table_header_total')}</TableHead>
-                <TableHead>{t('recent_orders.table_header_status')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <div className="font-medium">{order.customerName || `Order #${order.id.substring(0, 6)}`}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {dateFormatter.format(new Date(order.createdAt))}
-                    </div>
-                  </TableCell>
-                  <TableCell>{order.itemsCount}</TableCell>
-                  <TableCell className="text-right">
-                    {currencyFormatter.format(order.totalAmount)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(order.status)} className="capitalize">
-                      {tCommon(`order_status.${order.status}`)}
-                    </Badge>
-                  </TableCell>
+        <div className="w-full overflow-x-auto">
+          <ScrollArea className="h-[300px] w-full">
+            <Table className="min-w-[280px] sm:min-w-[500px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[35%] min-w-[120px] sm:min-w-[150px]">{t('recent_orders.table_header_order')}</TableHead>
+                  <TableHead className="w-[15%] min-w-[60px] sm:min-w-[80px] hidden sm:table-cell">{t('recent_orders.table_header_items')}</TableHead>
+                  <TableHead className="w-[25%] text-right min-w-[70px] sm:min-w-[100px]">{t('recent_orders.table_header_total')}</TableHead>
+                  <TableHead className="w-[25%] min-w-[90px] sm:min-w-[100px]">{t('recent_orders.table_header_status')}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => {
+                  // Extract table name and order code from customerName
+                  const getDisplayInfo = () => {
+                    const customerName = order.customerName || '';
+                    
+                    
+                    return { 
+                      tableName: customerName || `Table ${order.id.substring(0, 6)}`, 
+                      orderCode: order.id.substring(0, 6) 
+                    };
+                  };
+
+                  const { tableName, orderCode } = getDisplayInfo();
+
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell className="w-[35%] min-w-[120px] sm:min-w-[150px] pr-2">
+                        <div className="flex flex-col space-y-1">
+                          <div className="flex items-center">
+                            <span className="font-medium text-sm truncate">{tableName}</span>
+                            <span className="text-xs text-muted-foreground ml-1 flex-shrink-0">#{orderCode}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            <span>{dateFormatter.format(new Date(order.createdAt))}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground sm:hidden">
+                            <span>{order.itemsCount} items</span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="w-[15%] min-w-[60px] sm:min-w-[80px] hidden sm:table-cell text-center">{order.itemsCount}</TableCell>
+                      <TableCell className="w-[25%] text-right min-w-[70px] sm:min-w-[100px] pr-2">
+                        <div className="text-sm font-medium">
+                          {currencyFormatter.format(order.totalAmount)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="w-[25%] min-w-[90px] sm:min-w-[100px]">
+                        <Badge 
+                          variant={getStatusBadgeVariant(order.status)} 
+                          className="capitalize text-xs px-2 py-1 whitespace-nowrap"
+                        >
+                          {tCommon(`order_status.${order.status}`)}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
