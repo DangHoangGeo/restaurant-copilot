@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logEvent } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
 
@@ -90,20 +91,177 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch user's restaurant_id and subdomain
-    // 1. Get the user's restaurant_id
-    const { data: userRecord, error } = await supabase
+    // 1. Get the user's restaurant_id - handle potential duplicates
+    const { data: userRecords, error } = await supabase
       .from("users")
       .select("restaurant_id, two_factor_enabled, role")
-      .eq("id", data.user.id)
-      .single();
+      .eq("id", data.user.id);
 
-    const restaurantId = userRecord?.restaurant_id;
-
-    if (error || !restaurantId) {
+    if (error) {
       await logEvent({
         level: "ERROR",
         endpoint: "/api/v1/auth/login",
-        message: `Failed to retrieve user data: ${error?.message || "No restaurant_id found"}`,
+        message: `Failed to query user data: ${error.message}`,
+        metadata: { ip, userId: data.user.id },
+      });
+      return new Response(
+        "Failed to retrieve user information",
+        { status: 500 },
+      );
+    }
+
+    let userRecord;
+    let restaurantId;
+
+    if (!userRecords || userRecords.length === 0) {
+      // User record not found in users table - this might be a query issue, let's try again with admin client
+      await logEvent({
+        level: "WARN",
+        endpoint: "/api/v1/auth/login",
+        message: "No user record found with regular client, trying admin client",
+        metadata: { ip, userId: data.user.id },
+      });
+
+      // Try with admin client in case there are RLS issues
+      const { data: adminUserRecords, error: adminError } = await supabaseAdmin
+        .from("users")
+        .select("restaurant_id, two_factor_enabled, role")
+        .eq("id", data.user.id);
+
+      if (!adminError && adminUserRecords && adminUserRecords.length > 0) {
+        await logEvent({
+          level: "INFO",
+          endpoint: "/api/v1/auth/login",
+          message: "Found user record with admin client",
+          metadata: { ip, userId: data.user.id, recordCount: adminUserRecords.length },
+        });
+        
+        userRecord = adminUserRecords[0];
+        restaurantId = userRecord?.restaurant_id;
+      } else {
+        // Still no user record found - check if we can create it from auth metadata
+        await logEvent({
+          level: "WARN",
+          endpoint: "/api/v1/auth/login",
+          message: "No user record found even with admin client, checking auth metadata for fallback creation",
+          metadata: { ip, userId: data.user.id, adminError: adminError?.message },
+        });
+
+        // Check if user has restaurant metadata from registration
+        const authRestaurantId = data.user.app_metadata?.restaurant_id;
+        const authRole = data.user.app_metadata?.role;
+
+        if (authRestaurantId && authRole) {
+          // Try to create the missing user record
+          try {
+            const { error: insertError } = await supabaseAdmin.from("users").insert([
+              {
+                id: data.user.id,
+                restaurant_id: authRestaurantId,
+                email: data.user.email,
+                name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+                role: authRole,
+              },
+            ]);
+
+            if (insertError) {
+              // Check if it's a duplicate key constraint - if so, the record exists but our query had issues
+              if (insertError.code === '23505') { // PostgreSQL unique constraint violation
+                await logEvent({
+                  level: "WARN",
+                  endpoint: "/api/v1/auth/login",
+                  message: "User record already exists but query didn't find it, retrying query",
+                  metadata: { ip, userId: data.user.id, authRestaurantId },
+                });
+                
+                // Retry the query one more time
+                const { data: retryUserRecords, error: retryError } = await supabaseAdmin
+                  .from("users")
+                  .select("restaurant_id, two_factor_enabled, role")
+                  .eq("id", data.user.id);
+
+                if (!retryError && retryUserRecords && retryUserRecords.length > 0) {
+                  userRecord = retryUserRecords[0];
+                  restaurantId = userRecord?.restaurant_id;
+                  await logEvent({
+                    level: "INFO",
+                    endpoint: "/api/v1/auth/login",
+                    message: "Successfully found user record on retry",
+                    metadata: { ip, userId: data.user.id },
+                  });
+                }
+              } else {
+                await logEvent({
+                  level: "ERROR",
+                  endpoint: "/api/v1/auth/login",
+                  message: `Failed to create missing user record: ${insertError.message}`,
+                  metadata: { ip, userId: data.user.id, authRestaurantId, errorCode: insertError.code },
+                });
+              }
+            } else {
+              await logEvent({
+                level: "INFO",
+                endpoint: "/api/v1/auth/login",
+                message: "Successfully created missing user record from auth metadata",
+                metadata: { ip, userId: data.user.id, authRestaurantId },
+              });
+              
+              userRecord = {
+                restaurant_id: authRestaurantId,
+                two_factor_enabled: false,
+                role: authRole
+              };
+              restaurantId = authRestaurantId;
+            }
+          } catch (createError) {
+            await logEvent({
+              level: "ERROR",
+              endpoint: "/api/v1/auth/login",
+              message: `Exception creating missing user record: ${createError instanceof Error ? createError.message : String(createError)}`,
+              metadata: { ip, userId: data.user.id, authRestaurantId },
+            });
+          }
+        }
+
+        // If we still don't have a user record, return error
+        if (!userRecord) {
+          await logEvent({
+            level: "ERROR",
+            endpoint: "/api/v1/auth/login",
+            message: "No user record found and unable to create from auth metadata",
+            metadata: { 
+              ip, 
+              userId: data.user.id, 
+              hasAuthMetadata: !!authRestaurantId,
+              adminQueryError: adminError?.message 
+            },
+          });
+          return new Response(
+            "User record not found. Please contact support or re-register your account.",
+            { status: 404 },
+          );
+        }
+      }
+    } else {
+      if (userRecords.length > 1) {
+        await logEvent({
+          level: "WARN",
+          endpoint: "/api/v1/auth/login",
+          message: `Multiple user records found (${userRecords.length} records) - using first record`,
+          metadata: { ip, userId: data.user.id, recordCount: userRecords.length },
+        });
+      }
+
+      // Use the first record (or only record if there's just one)
+      userRecord = userRecords[0];
+      restaurantId = userRecord?.restaurant_id;
+    }
+
+    if (!restaurantId) {
+      await logEvent({
+        level: "ERROR",
+        endpoint: "/api/v1/auth/login",
+        message: "No restaurant_id found in user record",
         metadata: { ip, userId: data.user.id },
       });
       return new Response(

@@ -5,15 +5,15 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { 
-  useRestaurantData, 
   useMutation, 
   usePerformanceMonitor 
 } from "@/hooks";
+import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { OrdersSkeleton } from "@/components/ui/skeletons";
 import { ErrorState } from "@/components/ui/states";
 import { PageTemplate } from "@/components/ui/page-template";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Grid3X3, List, Eye } from "lucide-react";
 import { type DateRange } from "@/components/features/admin/reports/date-range-selector";
 import { Order, Table as TableType } from "./types";
 import { Category } from '@/shared/types/menu';
@@ -21,7 +21,6 @@ import { Category } from '@/shared/types/menu';
 // Import modular components
 import { OrdersStatsHeader } from "./components/OrdersStatsHeader";
 import { OrdersFilters } from "./components/OrdersFilters";
-import { ViewToggle } from "./components/ViewToggle";
 import { OrdersGridView } from "./components/OrdersGridView";
 import { OrdersListView } from "./components/OrdersListView";
 import { OrdersTableView } from "./components/OrdersTableView";
@@ -65,14 +64,14 @@ export function OrdersClientContent() {
     return `/owner/orders?${params.toString()}`;
   };
 
-  // Fetch orders data
+  // Fetch orders data with realtime updates
   const {
     data: ordersData,
     isInitialLoading,
     error,
     refetch
-  } = useRestaurantData<OrdersData>(buildEndpoint(), {
-    autoRefresh: 10000, // Auto refresh every 10 seconds for real-time updates
+  } = useOrdersRealtime<OrdersData>({
+    endpoint: buildEndpoint(),
     dependencies: [orderStatus, dateRange] // Refetch when these change
   });
   
@@ -210,35 +209,48 @@ export function OrdersClientContent() {
   const totalOrders = filteredOrders.length;
   const totalRevenue = filteredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-  const totalItems = filteredOrders.reduce((sum, order) => 
-    sum + order.order_items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
-  );
 
   return (
     <PageTemplate
-      title={t("title")}
-      subtitle={t("subtitle")}
+      title={t("orders")} // Simplified title for mobile
+      subtitle="" // Remove subtitle on mobile
       action={
+        <div className="hidden sm:block">
+          <Button 
+            onClick={() => {
+              logInteraction('new_order_clicked');
+              setIsNewOrderModalOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {t('newOrder')}
+          </Button>
+        </div>
+      }
+    >
+      {/* New Order Button - Mobile Priority */}
+      <div className="block sm:hidden mb-4">
         <Button 
           onClick={() => {
             logInteraction('new_order_clicked');
             setIsNewOrderModalOpen(true);
           }}
+          className="w-full"
+          size="lg"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-5 w-5 mr-2" />
           {t('newOrder')}
         </Button>
-      }
-    >
-      {/* Stats Header */}
+      </div>
+
+      {/* Stats Header - Mobile Optimized */}
       <OrdersStatsHeader
         totalOrders={totalOrders}
         totalRevenue={totalRevenue}
         avgOrderValue={avgOrderValue}
-        totalItems={totalItems}
       />
 
-      {/* Filters */}
+      {/* Filters - Mobile Optimized */}
       <OrdersFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -251,11 +263,34 @@ export function OrdersClientContent() {
         viewType={viewType}
       />
 
-      {/* View Toggle */}
-      <ViewToggle
-        viewType={viewType}
-        onViewTypeChange={setViewType}
-      />
+      {/* View Toggle - Hide table view, mobile optimized */}
+      <div className="flex space-x-2 mb-4">
+        <Button
+          variant={viewType === "grid" ? "default" : "outline"}
+          onClick={() => setViewType("grid")}
+          className="flex-1 sm:flex-none"
+        >
+          <Grid3X3 className="h-4 w-4 mr-2" />
+          {t('gridView')}
+        </Button>
+        <Button
+          variant={viewType === "items" ? "default" : "outline"}
+          onClick={() => setViewType("items")}
+          className="flex-1 sm:flex-none"
+        >
+          <List className="h-4 w-4 mr-2" />
+          {t('itemsView')}
+        </Button>
+        {/* Hide table view on mobile, show on desktop */}
+        <Button
+          variant={viewType === "orders" ? "default" : "outline"}
+          onClick={() => setViewType("orders")}
+          className="hidden lg:flex"
+        >
+          <Eye className="h-4 w-4 mr-2" />
+          {t('tableView')}
+        </Button>
+      </div>
 
       {/* Content Area - Show empty state if no orders */}
       {filteredOrders.length === 0 ? (
@@ -293,6 +328,7 @@ export function OrdersClientContent() {
                 if (order) setSelectedOrderForDetail(order);
               }}
               getStatusBadgeVariant={getStatusBadgeVariant}
+              locale={locale}
             />
           )}
 

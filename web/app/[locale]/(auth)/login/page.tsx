@@ -49,9 +49,11 @@ export default function LoginPage() {
       if (data.twoFactorRequired && data.token) {
         router.push(`/${locale}/two-factor?token=${encodeURIComponent(data.token)}`);
       } else if (data.redirectUrl) {
-        router.push(data.redirectUrl);
+        // Use the redirectUrl from the API which includes the correct subdomain
+        window.location.href = data.redirectUrl;
       } else {
-        setError(t("subdomainNotFound"));
+        // Fallback to dashboard on current domain if no redirectUrl provided
+        router.push(`/${locale}/dashboard`);
       }
     } catch (err) {
       if (err instanceof Error) {

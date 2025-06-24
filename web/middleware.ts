@@ -190,6 +190,72 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
+    // Restaurant ownership verification for subdomain access
+    const host = req.headers.get("host") || req.nextUrl.host;
+    const subdomain = getSubdomainFromHost(host);
+    
+    if (subdomain && subdomain !== 'www') {
+      try {
+        // Get the user's restaurant and check if it matches the subdomain
+        const { data: userRecord, error: userError } = await supabaseAdmin
+          .from('users')
+          .select('restaurant_id')
+          .eq('id', supabaseUser.id)
+          .single();
+
+        if (userError || !userRecord?.restaurant_id) {
+          logger.error('middleware', 'Error fetching user restaurant', { 
+            error: userError?.message || 'No restaurant_id found',
+            userId: supabaseUser.id 
+          });
+          const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
+          return NextResponse.redirect(loginUrl);
+        }
+
+        // Get the restaurant's subdomain to verify ownership
+        const { data: restaurant, error: restaurantError } = await supabaseAdmin
+          .from('restaurants')
+          .select('subdomain')
+          .eq('id', userRecord.restaurant_id)
+          .single();
+
+        if (restaurantError || !restaurant) {
+          logger.error('middleware', 'Error fetching restaurant subdomain', { 
+            error: restaurantError?.message || 'Restaurant not found',
+            restaurantId: userRecord.restaurant_id,
+            userId: supabaseUser.id 
+          });
+          const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
+          return NextResponse.redirect(loginUrl);
+        }
+
+        // Verify that the user's restaurant matches the current subdomain
+        if (restaurant.subdomain !== subdomain) {
+          logger.warn('middleware', 'User attempting to access dashboard for different restaurant', { 
+            userSubdomain: restaurant.subdomain,
+            accessedSubdomain: subdomain,
+            userId: supabaseUser.id,
+            restaurantId: userRecord.restaurant_id
+          });
+          // Redirect to their own restaurant's dashboard
+          const userDashboardUrl = `https://${restaurant.subdomain}.${process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai'}/${currentLocaleForLogic}/dashboard`;
+          if (process.env.NEXT_PRIVATE_DEVELOPMENT === "true") {
+            const devUrl = `http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`;
+            return NextResponse.redirect(new URL(devUrl));
+          }
+          return NextResponse.redirect(new URL(userDashboardUrl));
+        }
+      } catch (error) {
+        logger.error('middleware', 'Error verifying restaurant ownership', { 
+          error: error instanceof Error ? error.message : String(error),
+          userId: supabaseUser.id,
+          subdomain 
+        });
+        const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
+        return NextResponse.redirect(loginUrl);
+      }
+    }
+
     // Check onboarding status for authenticated dashboard users
     if (supabaseUser && FEATURE_FLAGS.onboarding) {
       try {

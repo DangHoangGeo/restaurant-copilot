@@ -38,8 +38,8 @@ export function FormField({
   const successId = `${fieldId}-success`;
   
   const sizeClasses = {
-    sm: "h-8 text-sm",
-    md: "h-9 text-sm",
+    sm: "h-8 text-base",
+    md: "h-9 text-base",
     lg: "h-10 text-base"
   };
 
