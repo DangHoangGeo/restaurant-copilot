@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { StatCard } from '@/components/features/admin/dashboard/StatCard';
+import { MobileStatsCards } from '@/components/features/admin/dashboard/MobileStatsCards';
 import { QuickActions } from '@/components/features/admin/dashboard/QuickActions';
 import { RecentOrdersTable, RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable';
 import { PopularItemsList, PopularItem } from '@/components/features/admin/dashboard/PopularItemsList';
@@ -99,10 +100,8 @@ export function DashboardClientContent() {
 
   useEffect(() => {
     loadData();
-    
-    // Auto-refresh every 30 seconds for live data
-    const interval = setInterval(loadData, 30000);
-    return () => clearInterval(interval);
+    // Note: Removed auto-refresh for dashboard metrics as they don't require real-time updates
+    // The orders page handles real-time order updates through Supabase Realtime
   }, [loadData]);
 
   // Show onboarding welcome screen if not yet onboarded
@@ -169,19 +168,24 @@ export function DashboardClientContent() {
   const topSellerMetric = metrics?.topSellerToday?.metricValue ?? '';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Page Header */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+      <header className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
           {t('title')}
         </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-1 md:mt-2 text-sm text-gray-600 dark:text-gray-400">
           {t('subtitle')}
         </p>
       </header>
 
-      {/* Dashboard Metrics */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Dashboard Metrics - Mobile/Tablet Optimized */}
+      <div className="block lg:hidden">
+        <MobileStatsCards metrics={metrics}  isLoading={isLoading} />
+      </div>
+      
+      {/* Dashboard Metrics - Desktop */}
+      <div className="hidden lg:grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           titleKey="cards.todays_sales"
           value={metrics ? formatCurrency(metrics.todaySales, 'JPY') : 'N/A'}
