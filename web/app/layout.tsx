@@ -4,7 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "coorder ai | your AI assistant for restaurant management",
@@ -71,6 +71,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
+            <Analytics />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
