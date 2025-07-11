@@ -1,38 +1,62 @@
 {
-  "title": "Employee Management",
-  "subtitle": "Manage your restaurant staff and schedules",
-  "views": {
-    "list": "List",
-    "schedule": "Schedule"
+  "dashboard": {
+    "tabs": {
+      "employees": "Employees",
+      "schedule": "Schedule",
+      "attendance": "Attendance",
+      "performance": "Performance"
+    },
+    "actions": {
+      "openQrScanner": "Scan QR Code for Attendance"
+    }
   },
-  "employee": "Employee",
-  "select_role": "Select Role",
-  "role": "Role",
-  "enter_name": "Enter Employee Name",
-  "enter_email": "Enter Employee Email",
-  "add_employee": "Add Employee",
-  "edit_employee": "Edit Employee",
-  "delete_employee": "Delete Employee",
-  "edit_schedule": "Edit Schedule",
-  "save_changes": "Save Changes",
-  "cancel": "Cancel",
-  "search_placeholder": "Search employees...",
-  "no_employees": "No employees found",
-  "employee_details": "Employee Details",
-  "actions": {
-    "add_employee": "Add Employee",
-    "edit_employee": "Edit Employee",
-    "delete_employee": "Delete Employee",
-    "edit_schedule": "Edit Schedule",
-    "save": "Save",
-    "cancel": "Cancel"
+  "list": {
+    "title": "Employee Management",
+    "actions": {
+      "addEmployee": "Add New Employee",
+      "edit": "Edit",
+      "manageSchedule": "Manage Schedule"
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "jobTitle": "Job Title",
+      "actions": "Actions",
+      "noEmployees": "No employees found. Add your first employee to get started."
+    },
+    "notifications": {
+      "fetchError": "Failed to fetch employees: {error}",
+      "errorTitle": "Error"
+    }
   },
-  "table": {
-    "name": "Name",
-    "email": "Email",
-    "role": "Role",
-    "shifts": "Shifts",
-    "actions": "Actions"
+  "form": {
+    "addTitle": "Add New Employee",
+    "editTitle": "Edit Employee Details",
+    "fields": {
+      "name": {
+        "label": "Full Name",
+        "placeholder": "e.g. John Doe"
+      },
+      "email": {
+        "label": "Email Address",
+        "placeholder": "e.g. john.doe@example.com",
+        "editDisabledHint": "Email cannot be changed after creation."
+      },
+      "jobTitle": {
+        "label": "Job Title",
+        "placeholder": "Select a job title"
+      }
+    },
+    "actions": {
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel"
+    },
+    "notifications": {
+      "createSuccess": "Employee added successfully.",
+      "updateSuccess": "Employee details updated.",
+      "saveError": "Failed to save employee: {error}"
+    }
   },
   "roles": {
     "manager": "Manager",
@@ -40,54 +64,95 @@
     "server": "Server",
     "cashier": "Cashier"
   },
-  "form": {
-    "name_label": "Full Name",
-    "name_placeholder": "Enter employee's full name",
-    "email_label": "Email Address",
-    "email_placeholder": "Enter employee's email",
-    "role_label": "Role",
-    "role_placeholder": "Select a role"
-  },
   "schedule": {
-    "title": "Employee Schedules",
-    "edit_title": "Edit Schedule for {name}",
-    "weekdays": {
-      "monday": "Monday",
-      "tuesday": "Tuesday", 
-      "wednesday": "Wednesday",
-      "thursday": "Thursday",
-      "friday": "Friday",
-      "saturday": "Saturday",
-      "sunday": "Sunday"
+    "title": "Weekly Schedule",
+    "selectEmployeePlaceholder": "Select an employee to view or edit their schedule",
+    "promptSelectEmployee": "Please select an employee above to manage their weekly schedule.",
+    "actions": {
+      "saveChanges": "Save Schedule Changes",
+      "saving": "Saving Schedule..."
     },
-    "time_format": "{start} - {end}",
-    "no_shift": "Off",
-    "start_time": "Start Time",
-    "end_time": "End Time"
+    "weekDisplayLabel": "Week: {range}",
+    "prevWeekBtn": "Previous Week",
+    "nextWeekBtn": "Next Week",
+    "errors": {
+      "loadEmployeesError": "Failed to load employees for schedule.",
+      "loadSchedulesError": "Failed to load schedules for the selected week.",
+      "errorTitle": "Error Loading Schedule"
+    },
+    "notifications": {
+      "saveSuccess": "Schedule updated successfully.",
+      "savePartial": "Schedule partially updated. {success} of {total} operations succeeded.",
+      "saveErrorAll": "Failed to save any schedule changes. Please try again.",
+      "saveErrorGeneral": "An error occurred while saving the schedule: {error}",
+      "noChanges": "No changes detected in the schedule."
+    }
   },
-  "notifications": {
-    "employee_added": "Employee added successfully",
-    "employee_updated": "Employee updated successfully",
-    "employee_deleted": "Employee deleted successfully",
-    "schedule_updated": "Schedule updated successfully",
-    "add_failed": "Failed to add employee",
-    "update_failed": "Failed to update employee",
-    "delete_failed": "Failed to delete employee",
-    "schedule_failed": "Failed to update schedule"
+  "attendance": {
+    "title": "Employee Attendance",
+    "selectEmployeePlaceholder": "Select an employee to view attendance",
+    "promptSelectEmployee": "Please select an employee to view their attendance records.",
+    "prevMonthBtn": "Previous Month",
+    "nextMonthBtn": "Next Month",
+    "table": {
+      "date": "Date",
+      "checkIn": "Check-In",
+      "checkOut": "Check-Out",
+      "hoursWorked": "Hours Worked",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "verify": "Verify",
+      "verifying": "Verifying..."
+    },
+    "status": {
+      "recorded": "Recorded",
+      "verified": "Verified"
+    },
+    "noRecordsFound": "No attendance records found for the selected employee and month.",
+    "errors": {
+      "loadEmployeesError": "Failed to load employees list.",
+      "loadRecordsError": "Failed to load attendance records.",
+      "verifyError": "Failed to verify attendance record.",
+      "errorTitle": "Error"
+    },
+    "notifications": {
+      "verifySuccess": "Attendance record verified successfully."
+    }
   },
-  "confirmations": {
-    "delete_title": "Delete Employee",
-    "delete_message": "Are you sure you want to delete {name}? This action cannot be undone."
+  "qrScannerModal": {
+    "title": "Scan Employee QR Code",
+    "actions": {
+      "close": "Close Scanner"
+    },
+    "initializing": "Initializing QR scanner and requesting camera access...",
+    "errors": {
+      "scanErrorTitle": "Scan Error",
+      "permissionDenied": "Camera permission was denied. Please enable camera access in your browser settings.",
+      "noCameraFound": "No suitable camera found. Please ensure a camera is connected and enabled.",
+      "startError": "Could not start QR scanner",
+      "stopError": "Could not stop QR scanner"
+    },
+    "notifications": {
+      "scanSuccess": "QR code scanned successfully. Processing...",
+      "scanApiError": "Could not process scan. Please check the QR code or try again."
+    }
   },
-  "empty_state": {
-    "no_employees": "No employees found",
-    "add_first": "Add your first employee to get started"
-  },
-  "validation": {
-    "name_required": "Name is required",
-    "email_required": "Email is required",
-    "email_invalid": "Please enter a valid email",
-    "role_required": "Role is required",
-    "time_invalid": "Start time must be before end time"
+  "performance": {
+    "title": "Employee Performance",
+    "selectEmployeePlaceholder": "Select an employee to view performance",
+    "promptSelectEmployee": "Please select an employee to view their performance metrics.",
+    "totalHoursWeekLabel": "Total Hours (Current Week)",
+    "totalHoursMonthLabel": "Total Hours (Current Month)",
+    "hoursUnit": "hrs",
+    "currentWeekPeriod": "Current week (Mon-Sun)",
+    "currentMonthPeriod": "Current calendar month",
+    "noData": "No performance data available for the selected employee or period.",
+    "errors": {
+      "loadEmployeesError": "Failed to load employees list.",
+      "loadPerformanceError": "Failed to load performance data.",
+      "errorTitle": "Error"
+    }
   }
 }

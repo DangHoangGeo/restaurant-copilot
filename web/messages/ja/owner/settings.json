@@ -7,7 +7,7 @@
     "defaultLanguage": "Default Language",
     "brandColor": "Brand Color",
     "logo": "Logo",
-    "tax": "税率",
+    "tax": "Tax Rate",
     "address": "Address",
     "phone": "Phone Number",
     "email": "Email Address",
@@ -134,8 +134,8 @@
       "invalidFormat": "Invalid color format. Use #RRGGBB format"
     },
     "tax": {
-      "min": "税率は0%以上である必要があります",
-      "max": "税率は100%を超えることはできません"
+      "min": "Tax rate must be at least 0%",
+      "max": "Tax rate cannot exceed 100%"
     },
     "address": {
       "maxLength": "Address must be {maxLength} characters or less"

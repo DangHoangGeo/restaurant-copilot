@@ -18,19 +18,19 @@
   "is_accessible_label": "Accessible",
   "notes_label": "Notes",
   "notes_placeholder": "Any notes about this table...",
-  "outdoor": "屋外",
-  "accessible": "アクセシブル",
-  "status": "ステータス",
-  "capacity": "収容人数",
-  "position": "位置",
-  "view_qr": "QRコードを表示",
-  "qr_for_table": "QRコード",
-  "qr_refresh_reminder": "QRコードが2週間以上経過しています。セキュリティのため更新を検討してください。",
-  "refresh_qr": "QRコードを更新",
-  "download_png": "PNG をダウンロード",
-  "downloading_qr": "QRコードをダウンロード中...",
-  "copy_link": "リンクをコピー",
-  "link_copied": "コピーしました!",
+  "outdoor": "Outdoor",
+  "accessible": "Accessible",
+  "status": "Status",
+  "capacity": "Capacity",
+  "position": "Position",
+  "view_qr": "View QR Code",
+  "qr_for_table": "QR Code for Table",
+  "qr_refresh_reminder": "QR code is over 2 weeks old. Consider refreshing for better security.",
+  "refresh_qr": "Refresh QR Code",
+  "download_png": "Download PNG",
+  "downloading_qr": "Downloading QR...",
+  "copy_link": "Copy Link",
+  "link_copied": "Link Copied!",
   "validation": {
     "name_required": "Table name is required.",
     "name_max_length": "Table name must be {maxLength} characters or less.",
@@ -49,19 +49,24 @@
     "bulk_start_index_max": "Starting number cannot exceed {max}."
   },
   "notifications": {
-    "update_success": "テーブルが正常に更新されました。",
-    "create_success": "テーブルが正常に作成されました。",
-    "qr_saved_success": "QRコードが保存され、ダウンロードの準備ができました。",
-    "link_copied": "リンクがコピーされました！",
-    "qr_downloaded": "QRコードが正常にダウンロードされました！",
-    "qr_refreshed": "QRコードが更新されました！"
+    "update_success": "Table updated successfully.",
+    "create_success": "Table created successfully.",
+    "bulk_create_success": "{count} tables created successfully.",
+    "qr_saved_success": "QR code saved and ready for download.",
+    "link_copied": "Link copied to clipboard!",
+    "qr_downloaded": "QR code downloaded successfully!",
+    "qr_generated": "QR code generated successfully!",
+    "qr_refreshed": "QR code refreshed successfully!"
   },
   "errors": {
-    "save_failed": "テーブルの保存に失敗しました。もう一度お試しください。",
-    "qr_save_failed": "QRコードのテーブルへの保存に失敗しました。もう一度お試しください。",
-    "qr_download_failed": "QRコード画像のダウンロードに失敗しました。",
-    "copy_failed": "リンクのコピーに失敗しました。",
-    "qr_code_not_set": "このテーブルにはQRコードが設定されていません。"
+    "save_failed": "Failed to save table. Please try again.",
+    "bulk_create_failed": "Failed to create tables. Please try again.",
+    "qr_save_failed": "Failed to save QR code to table. Please try again.",
+    "qr_download_failed": "Failed to download QR code image.",
+    "download_failed": "Failed to download QR code image.",
+    "copy_failed": "Failed to copy link to clipboard.",
+    "qr_code_not_set": "QR code is not set for this table.",
+    "qr_generation_failed": "Failed to generate QR code. Please try again."
   },
   "empty_state": {
     "title": "No Tables Found",
@@ -77,9 +82,49 @@
     "name_prefix_placeholder": "e.g., Table, Area A - ",
     "start_index_label": "Starting Number",
     "default_name_prefix": "Table ",
+    "create_button": "Create Tables",
     "submit_button": "Add Tables",
     "notification_success": "{count} tables added successfully.",
     "notification_error": "Failed to add {count} tables. Errors: {errors}"
   },
-  "qr_code_generate_message": "Generating QR Code..."
+  "downloading": "Downloading...",
+  "download_qr": "Download QR Code",
+  "qr_code_generate_message": "Generating QR Code...",
+  "search_placeholder": "Search by table name...",
+  "filter_status": "Filter status",
+  "all_status": "All Status",
+  "clear_filters": "Clear",
+  "clear_filters_button": "Clear filters",
+  "view_mode": {
+    "grid": "Grid View",
+    "list": "List View"
+  },
+  "stats": {
+    "available": "Available",
+    "occupied": "Occupied", 
+    "reserved": "Reserved",
+    "qr_codes": "QR Codes"
+  },
+  "pagination": {
+    "showing": "Showing {start}-{end} of {total} tables",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}"
+  },
+  "table_info": {
+    "capacity_with_icon": "{count} seats",
+    "outdoor_badge": "Outdoor",
+    "accessible_badge": "Accessible",
+    "qr_old_warning": "QR code is old - consider refreshing"
+  },
+  "actions": {
+    "edit": "Edit",
+    "qr_code": "QR Code",
+    "view_qr_code": "View QR Code"
+  },
+  "search_results": {
+    "no_tables_found": "No tables found",
+    "adjust_search": "Try adjusting your search or filter criteria"
+  },
+  "status_count": "{count} of {total} tables"
 }
