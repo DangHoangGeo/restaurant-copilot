@@ -1,0 +1,29 @@
+{
+  "title": "User Management",
+  "subtitle": "Manage all restaurant owners and users across the platform",
+  "table": {
+    "name": "Name",
+    "email": "Email",
+    "restaurant": "Restaurant",
+    "role": "Role",
+    "status": "Status",
+    "created": "Created",
+    "actions": "Actions"
+  },
+  "filters": {
+    "all_users": "All Users",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending Verification"
+  },
+  "actions": {
+    "view_details": "View Details",
+    "suspend_user": "Suspend User",
+    "activate_user": "Activate User",
+    "reset_password": "Reset Password"
+  },
+  "empty_state": {
+    "title": "No Users Found",
+    "description": "No users match your current filters."
+  }
+}

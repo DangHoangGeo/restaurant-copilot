@@ -1,0 +1,23 @@
+{
+  "title": "Service Admin Dashboard",
+  "subtitle": "Manage the CoOrder platform and all restaurant tenants",
+  "cards": {
+    "total_restaurants": "Total Restaurants",
+    "active_users": "Active Users",
+    "monthly_revenue": "Monthly Revenue",
+    "system_health": "System Health"
+  },
+  "quick_actions": {
+    "title": "Quick Actions",
+    "add_restaurant": "Add Restaurant",
+    "view_analytics": "View Platform Analytics",
+    "system_settings": "System Settings"
+  },
+  "recent_activity": {
+    "title": "Recent Platform Activity",
+    "no_activity": "No recent activity to display."
+  },
+  "metadata": {
+    "title": "Service Admin Dashboard - CoOrder Platform"
+  }
+}
