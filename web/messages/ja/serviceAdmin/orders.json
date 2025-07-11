@@ -1,29 +1,29 @@
 {
-  "title": "Platform Orders",
-  "subtitle": "Monitor orders across all restaurants on the platform",
+  "title": "プラットフォームの注文",
+  "subtitle": "プラットフォーム上のすべてのレストランの注文を監視します",
   "filters": {
-    "all_restaurants": "All Restaurants",
-    "today": "Today",
-    "this_week": "This Week",
-    "this_month": "This Month"
+    "all_restaurants": "すべてのレストラン",
+    "today": "今日",
+    "this_week": "今週",
+    "this_month": "今月"
   },
   "table": {
-    "order_id": "Order ID",
-    "restaurant": "Restaurant",
-    "customer": "Customer",
-    "items": "Items",
-    "total": "Total",
-    "status": "Status",
-    "created": "Created"
+    "order_id": "注文ID",
+    "restaurant": "レストラン",
+    "customer": "顧客",
+    "items": "品目",
+    "total": "合計",
+    "status": "ステータス",
+    "created": "作成日時"
   },
   "metrics": {
-    "total_orders": "Total Orders",
-    "total_revenue": "Total Revenue",
-    "average_order": "Average Order Value",
-    "completion_rate": "Completion Rate"
+    "total_orders": "総注文数",
+    "total_revenue": "総収益",
+    "average_order": "平均注文額",
+    "completion_rate": "完了率"
   },
   "empty_state": {
-    "title": "No Orders Found",
-    "description": "No orders match your current filters."
+    "title": "注文が見つかりません",
+    "description": "現在のフィルターに一致する注文はありません。"
   }
 }
