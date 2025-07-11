@@ -1,33 +1,33 @@
 {
-  "title": "Platform Settings",
-  "subtitle": "Configure global platform settings and features",
+  "title": "プラットフォーム設定",
+  "subtitle": "グローバルプラットフォーム設定と機能を構成します",
   "sections": {
     "general": {
-      "title": "General Settings",
-      "platform_name": "Platform Name",
-      "maintenance_mode": "Maintenance Mode",
-      "maintenance_message": "Maintenance Message"
+      "title": "一般設定",
+      "platform_name": "プラットフォーム名",
+      "maintenance_mode": "メンテナンスモード",
+      "maintenance_message": "メンテナンスメッセージ"
     },
     "features": {
-      "title": "Feature Flags",
-      "enable_new_registrations": "Enable New Registrations",
-      "enable_ai_features": "Enable AI Features",
-      "enable_analytics": "Enable Analytics"
+      "title": "機能フラグ",
+      "enable_new_registrations": "新規登録を有効にする",
+      "enable_ai_features": "AI機能を有効にする",
+      "enable_analytics": "分析を有効にする"
     },
     "limits": {
-      "title": "Platform Limits",
-      "max_restaurants_per_user": "Max Restaurants per User",
-      "max_menu_items": "Max Menu Items per Restaurant",
-      "storage_limit": "Storage Limit per Restaurant (MB)"
+      "title": "プラットフォーム制限",
+      "max_restaurants_per_user": "ユーザーあたりの最大レストラン数",
+      "max_menu_items": "レストランあたりの最大メニュー項目数",
+      "storage_limit": "レストランあたりのストレージ制限（MB）"
     },
     "notifications": {
-      "title": "Platform Notifications",
-      "system_alerts": "System Alerts",
-      "maintenance_notifications": "Maintenance Notifications"
+      "title": "プラットフォーム通知",
+      "system_alerts": "システムアラート",
+      "maintenance_notifications": "メンテナンス通知"
     }
   },
   "buttons": {
-    "save_settings": "Save Settings",
-    "reset_defaults": "Reset to Defaults"
+    "save_settings": "設定を保存",
+    "reset_defaults": "デフォルトにリセット"
   }
 }
