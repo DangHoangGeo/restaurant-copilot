@@ -1,222 +1,222 @@
 {
   "terms": {
     "metadata": {
-      "title": "Terms of Service",
-      "description": "Terms of Service for CoOrder restaurant management platform. Learn about your rights and responsibilities when using our service."
+      "title": "利用規約",
+      "description": "CoOrderレストラン管理プラットフォームの利用規約。サービス利用時の権利と責任についてご確認ください。"
     },
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: {date}",
-    "printButton": "Print this page",
+    "title": "利用規約",
+    "lastUpdated": "最終更新日: {date}",
+    "printButton": "このページを印刷",
     "navigation": {
-      "acceptance": "1. Acceptance of Terms",
-      "description": "2. Description of Service",
-      "eligibility": "3. Eligibility",
-      "account": "4. Account Registration",
-      "payment": "5. Payment Terms",
-      "use": "6. Acceptable Use",
-      "content": "7. Content and Data",
-      "intellectual": "8. Intellectual Property",
-      "privacy": "9. Privacy",
-      "termination": "10. Termination",
-      "disclaimers": "11. Disclaimers",
-      "limitation": "12. Limitation of Liability",
-      "indemnification": "13. Indemnification",
-      "governing": "14. Governing Law",
-      "changes": "15. Changes to Terms",
-      "contact": "16. Contact Information"
+      "acceptance": "1. 利用規約の承諾",
+      "description": "2. サービスの説明",
+      "eligibility": "3. 利用資格",
+      "account": "4. アカウント登録",
+      "payment": "5. 支払い条件",
+      "use": "6. 適正な利用",
+      "content": "7. コンテンツとデータ",
+      "intellectual": "8. 知的財産権",
+      "privacy": "9. プライバシー",
+      "termination": "10. 契約の終了",
+      "disclaimers": "11. 免責事項",
+      "limitation": "12. 責任の制限",
+      "indemnification": "13. 補償",
+      "governing": "14. 準拠法",
+      "changes": "15. 利用規約の変更",
+      "contact": "16. お問い合わせ"
     },
     "sections": {
         "acceptance": {
-          "title": "1. Acceptance of Terms",
-          "content": "By accessing and using the CoOrder restaurant management service (\"Service\"), you agree to be bound by these Terms of Service. If you do not agree to any part of these terms, you may not use our Service."
+          "title": "1. 利用規約の承諾",
+          "content": "CoOrderレストラン管理サービス（「本サービス」）へのアクセスおよび利用により、本利用規約に同意したものとみなされます。いずれかの条項に同意いただけない場合は、本サービスをご利用いただけません。"
         },
         "description": {
-          "title": "2. Description of Service",
-          "content": "CoOrder provides a comprehensive restaurant management platform including menu management, order processing, booking system, staff management tools, and analytics. The Service is designed to help restaurants streamline their operations and improve customer experience."
+          "title": "2. サービスの説明",
+          "content": "CoOrderは、メニュー管理、注文処理、予約システム、スタッフ管理ツール、分析機能などを含む包括的なレストラン管理プラットフォームを提供します。本サービスは、レストランの業務効率化と顧客体験の向上を目的としています。"
         },
         "registration": {
-          "title": "3. Account Registration",
-          "content": "To use the Service, you must create an account. You agree to provide accurate, current, and complete information during registration and to update such information to keep it accurate. You are responsible for safeguarding your account password and for all activities under your account."
+          "title": "3. アカウント登録",
+          "content": "本サービスを利用するには、アカウントを作成する必要があります。登録時には正確かつ最新の情報を提供し、常に最新の状態に保つことに同意します。アカウントのパスワード管理およびアカウントで行われるすべての活動について責任を負います。"
         },
         "subscriptions": {
-          "title": "4. Subscriptions and Payment",
-          "subtitle": "Subscription Plans",
+          "title": "4. サブスクリプションと支払い",
+          "subtitle": "サブスクリプションプラン",
           "plans": {
-            "description": "We offer several subscription plans:",
-            "free": "**Free Plan**: Basic functionality with limited features",
-            "basic": "**Basic Plan**: Full access to core features with monthly pricing",
-            "premium": "**Premium Plan**: All features plus advanced analytics and priority support"
+            "description": "複数のサブスクリプションプランを提供しています：",
+            "free": "【無料プラン】：基本機能（機能制限あり）",
+            "basic": "【ベーシックプラン】：主要機能をすべて利用可能（月額制）",
+            "premium": "【プレミアムプラン】：全機能＋高度な分析・優先サポート"
           },
           "billing": {
-            "title": "Billing",
-            "content": "Paid plans are billed monthly or annually in advance. All fees are non-refundable except as required by law. Pricing may change with 30 days notice."
+            "title": "請求",
+            "content": "有料プランは月額または年額で前払いとなります。すべての料金は法律で義務付けられている場合を除き返金不可です。価格は30日前の通知で変更される場合があります。"
           },
           "cancellation": {
-            "title": "Cancellation",
-            "content": "You may cancel your subscription at any time. Cancellation will be effective at the end of the current billing cycle."
+            "title": "解約",
+            "content": "サブスクリプションはいつでも解約できます。解約は現在の請求サイクル終了時に有効となります。"
           }
         },
         "usage": {
-          "title": "5. Acceptable Use",
-          "content": "You agree to use the Service only for lawful purposes and in a way that does not infringe the rights of any third party. You must not:",
+          "title": "5. 適正な利用",
+          "content": "本サービスは、合法的な目的および第三者の権利を侵害しない方法でのみ利用することに同意します。以下の行為は禁止されています：",
           "restrictions": {
-            "0": "Use the Service for any illegal activities",
-            "1": "Upload or distribute viruses or other malicious code",
-            "2": "Attempt unauthorized access to our systems",
-            "3": "Interfere with the normal operation of the Service",
-            "4": "Violate any applicable laws or regulations"
+            "0": "違法行為への利用",
+            "1": "ウイルスや悪意のあるコードのアップロード・配布",
+            "2": "無断でシステムへアクセスを試みる行為",
+            "3": "サービスの正常な運用を妨害する行為",
+            "4": "適用される法令や規則の違反"
           }
         },
         "intellectual": {
-          "title": "6. Intellectual Property",
-          "content": "The Service and its original content, features and functionality are and will remain the exclusive property of CoOrder and its licensors. The Service is protected by copyright, trademark, and other laws. You may not copy, modify, distribute, sell, or lease any part of our Service."
+          "title": "6. 知的財産権",
+          "content": "本サービスおよびそのオリジナルコンテンツ、機能はCoOrderおよびライセンサーの独占的財産です。本サービスは著作権、商標等の法律により保護されています。無断での複製、改変、配布、販売、リースは禁止されています。"
         },
         "privacy": {
-          "title": "7. Privacy and Data",
-          "content": "Your privacy is important to us. Our collection and use of your information is governed by our Privacy Policy. By using the Service, you consent to the collection and use of information in accordance with our Privacy Policy."
+          "title": "7. プライバシーとデータ",
+          "content": "お客様のプライバシーは当社にとって重要です。情報の収集・利用はプライバシーポリシーに従います。本サービスの利用により、プライバシーポリシーに基づく情報の収集・利用に同意したものとみなされます。"
         },
         "termination": {
-          "title": "8. Termination",
-          "content": "We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms of Service. Upon termination, your right to use the Service will cease immediately."
+          "title": "8. 契約の終了",
+          "content": "利用規約違反等、理由の如何を問わず、事前通知なくアカウントを即時停止・終了する場合があります。終了後は本サービスの利用権が直ちに失効します。"
         },
         "liability": {
-          "title": "9. Disclaimer of Warranties",
-          "content": "The Service is provided on an \"as is\" and \"as available\" basis. CoOrder disclaims all warranties, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall CoOrder be liable for any indirect, incidental, special, consequential, or punitive damages."
+          "title": "9. 免責事項",
+          "content": "本サービスは「現状有姿」および「利用可能な範囲」で提供されます。CoOrderは、明示または黙示を問わず、商品性、特定目的への適合性、非侵害性など一切の保証を否認します。間接的・偶発的・特別・結果的・懲罰的損害について一切責任を負いません。"
         },
         "governing": {
-          "title": "10. Governing Law",
-          "content": "These Terms shall be interpreted and governed by the laws of [Your Jurisdiction], without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights."
+          "title": "10. 準拠法",
+          "content": "本規約は【お客様の管轄区域】の法律に準拠し、解釈されます。規約の権利や条項の不行使は、権利放棄とはみなされません。"
         },
         "changes": {
-          "title": "11. Changes to Terms",
-          "content": "We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion."
+          "title": "11. 利用規約の変更",
+          "content": "当社は本規約を随時変更または改定する権利を有します。重要な変更の場合は、新しい規約の発効30日前までに通知します。重要な変更かどうかは当社の裁量で判断します。"
         },
         "contact": {
-          "title": "12. Contact Information",
-          "content": "If you have any questions about these Terms of Service, please contact us at:",
-          "email": "Email: legal@coorder.com",
-          "address": "Address: Tokyo, Japan",
-          "phone": "Phone: 080-9344-7200"
+          "title": "12. お問い合わせ",
+          "content": "本利用規約についてご質問がある場合は、以下までご連絡ください：",
+          "email": "メール：legal@coorder.com",
+          "address": "住所：東京都",
+          "phone": "電話：080-9344-7200"
         }
       }
   },
   "privacy": {
     "metadata": {
-      "title": "Privacy Policy",
-      "description": "Learn how CoOrder collects, uses, and protects your personal information in our restaurant management service."
+      "title": "プライバシーポリシー",
+      "description": "CoOrderがレストラン管理サービスでお客様の個人情報をどのように収集・利用・保護するかをご案内します。"
     },
-    "title": "Privacy Policy",
-    "lastUpdated": "Last updated: {date}",
-    "printButton": "Print this page",
+    "title": "プライバシーポリシー",
+    "lastUpdated": "最終更新日: {date}",
+    "printButton": "このページを印刷",
     "navigation": {
-      "overview": "1. Overview",
-      "collection": "2. Information We Collect",
-      "usage": "3. How We Use Information",
-      "sharing": "4. Information Sharing",
-      "security": "5. Data Security",
-      "retention": "6. Data Retention",
-      "rights": "7. Your Rights",
-      "cookies": "8. Cookies and Tracking",
-      "international": "9. International Transfers",
-      "children": "10. Children's Privacy",
-      "changes": "11. Changes to this Policy",
-      "contact": "12. Contact Us"
+      "overview": "1. 概要",
+      "collection": "2. 収集する情報",
+      "usage": "3. 情報の利用方法",
+      "sharing": "4. 情報の共有",
+      "security": "5. データの安全管理",
+      "retention": "6. データの保存期間",
+      "rights": "7. お客様の権利",
+      "cookies": "8. クッキーと追跡技術",
+      "international": "9. 国際的なデータ移転",
+      "children": "10. 子どものプライバシー",
+      "changes": "11. ポリシーの変更",
+      "contact": "12. お問い合わせ"
     },
     "sections": {
       "overview": {
-        "title": "1. Overview",
-        "content": "CoOrder (\"we\", \"our\", or \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our CoOrder restaurant management service (\"Service\")."
+        "title": "1. 概要",
+        "content": "CoOrder（「当社」または「私たち」）は、お客様のプライバシー保護に努めています。本プライバシーポリシーは、CoOrderレストラン管理サービス（「本サービス」）利用時の情報の収集・利用・開示・保護について説明します。"
       },
       "collection": {
-        "title": "2. Information We Collect",
-        "subtitle": "We collect information you provide directly to us:",
+        "title": "2. 収集する情報",
+        "subtitle": "お客様から直接ご提供いただく情報：",
         "direct": {
-          "account": "**Account Information**: Name, email address, password, and contact details",
-          "restaurant": "**Restaurant Information**: Restaurant name, address, phone number, and business details",
-          "payment": "**Payment Information**: Billing details and payment information (processed securely)",
-          "content": "**Content**: Menu information, dish descriptions, images, and other restaurant data"
+          "account": "【アカウント情報】：氏名、メールアドレス、パスワード、連絡先など",
+          "restaurant": "【レストラン情報】：店舗名、住所、電話番号、事業情報など",
+          "payment": "【支払い情報】：請求先情報および支払い情報（安全に処理されます）",
+          "content": "【コンテンツ】：メニュー情報、料理説明、画像、その他レストランデータ"
         },
         "automatic": {
-          "title": "We also collect information automatically:",
-          "usage": "**Usage Data**: How you interact with our Service",
-          "device": "**Device Information**: IP address, browser type, operating system",
-          "location": "**Location Data**: General location information based on IP address",
-          "cookies": "**Cookies and Tracking Data**: As described in the Cookies section below"
+          "title": "自動的に収集される情報：",
+          "usage": "【利用データ】：サービスの利用状況",
+          "device": "【端末情報】：IPアドレス、ブラウザ種類、OSなど",
+          "location": "【位置情報】：IPアドレスに基づく一般的な位置情報",
+          "cookies": "【クッキーと追跡データ】：下記クッキーの項目を参照"
         }
       },
       "usage": {
-        "title": "3. How We Use Information",
-        "content": "We use the information we collect to:",
+        "title": "3. 情報の利用方法",
+        "content": "収集した情報は以下の目的で利用します：",
         "purposes": {
-          "0": "Provide, maintain, and improve our Service",
-          "1": "Process transactions and send related notices",
-          "2": "Send technical notices, updates, and security alerts",
-          "3": "Provide customer support and respond to your requests",
-          "4": "Analyze usage to improve our Service",
-          "5": "Personalize your user experience",
-          "6": "Comply with legal obligations"
+          "0": "サービスの提供・維持・改善",
+          "1": "取引処理および関連通知の送信",
+          "2": "技術的なお知らせ、更新、セキュリティ通知の送信",
+          "3": "カスタマーサポートおよびお問い合わせ対応",
+          "4": "利用状況の分析によるサービス改善",
+          "5": "ユーザー体験のパーソナライズ",
+          "6": "法的義務の遵守"
         }
       },
       "sharing": {
-        "title": "4. Information Sharing",
-        "content": "We do not sell your personal information. We may share your information in the following circumstances:",
+        "title": "4. 情報の共有",
+        "content": "お客様の個人情報を販売することはありません。以下の場合に情報を共有することがあります：",
         "circumstances": {
-          "0": "**Service Providers**: With trusted contractors who provide services on our behalf",
-          "1": "**Legal Requirements**: When required by law or to protect our rights",
-          "2": "**Business Transactions**: In the event of a merger, acquisition, or asset sale",
-          "3": "**Consent**: With your explicit consent for specific purposes"
+          "0": "【サービス提供者】：当社のためにサービスを提供する信頼できる業者",
+          "1": "【法的要件】：法令遵守や権利保護のため",
+          "2": "【事業譲渡】：合併・買収・資産売却時",
+          "3": "【同意】：特定目的でお客様の明示的な同意がある場合"
         }
       },
       "security": {
-        "title": "5. Data Security",
-        "content": "We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:",
+        "title": "5. データの安全管理",
+        "content": "お客様の個人情報を不正アクセス・改ざん・開示・破壊から保護するため、適切なセキュリティ対策を実施しています。主な対策は以下の通りです：",
         "measures": {
-          "0": "Encryption of data in transit and at rest",
-          "1": "Regular access controls and system monitoring",
-          "2": "Employee training on security practices",
-          "3": "Regular security assessments"
+          "0": "データの送受信および保存時の暗号化",
+          "1": "定期的なアクセス制御とシステム監視",
+          "2": "従業員へのセキュリティ教育",
+          "3": "定期的なセキュリティ評価"
         }
       },
       "retention": {
-        "title": "6. Data Retention",
-        "content": "We retain your personal information only for as long as necessary to provide the Service and comply with legal obligations. When information is no longer needed, we will securely delete or anonymize it."
+        "title": "6. データの保存期間",
+        "content": "サービス提供および法的義務の履行に必要な期間のみ個人情報を保存します。不要となった情報は安全に削除または匿名化します。"
       },
       "rights": {
-        "title": "7. Your Rights",
-        "content": "Depending on your location, you may have the following rights regarding your personal information:",
+        "title": "7. お客様の権利",
+        "content": "お客様の所在地によっては、以下の権利を有する場合があります：",
         "list": {
-          "0": "**Access**: Request a copy of the personal information we hold about you",
-          "1": "**Rectification**: Request that we correct inaccurate information",
-          "2": "**Erasure**: Request that we delete your personal information",
-          "3": "**Restriction**: Request that we restrict processing of your information",
-          "4": "**Portability**: Request transfer of your data to another organization",
-          "5": "**Objection**: Object to our processing of your personal information"
+          "0": "【開示請求】：当社が保有する個人情報の写しの請求",
+          "1": "【訂正請求】：不正確な情報の訂正請求",
+          "2": "【削除請求】：個人情報の削除請求",
+          "3": "【利用制限請求】：情報処理の制限請求",
+          "4": "【データポータビリティ】：他組織へのデータ移転請求",
+          "5": "【異議申立て】：個人情報処理への異議申立て"
         },
-        "exercise": "To exercise these rights, please contact us using the contact information provided below."
+        "exercise": "これらの権利を行使する場合は、下記の連絡先までご連絡ください。"
       },
       "cookies": {
-        "title": "8. Cookies and Tracking Technologies",
-        "content": "We use cookies and similar tracking technologies to collect and use personal information about you. Cookies are small files stored on your device. You can control cookies through your browser settings."
+        "title": "8. クッキーと追跡技術",
+        "content": "当社はクッキーや類似の追跡技術を利用してお客様の個人情報を収集・利用します。クッキーはお客様の端末に保存される小さなファイルです。ブラウザ設定でクッキーを管理できます。"
       },
       "international": {
-        "title": "9. International Transfers",
-        "content": "Your information may be transferred to and maintained on computers located outside of your state, province, country, or other governmental jurisdiction where data protection laws may differ from those in your jurisdiction."
+        "title": "9. 国際的なデータ移転",
+        "content": "お客様の情報は、データ保護法が異なる他の都道府県・国・管轄区域のコンピュータに転送・保管される場合があります。"
       },
       "children": {
-        "title": "10. Children's Privacy",
-        "content": "Our Service is not intended for children under 13. We do not knowingly collect personally identifiable information from children under 13."
+        "title": "10. 子どものプライバシー",
+        "content": "本サービスは13歳未満のお子様を対象としていません。当社は13歳未満の個人情報を故意に収集しません。"
       },
       "changes": {
-        "title": "11. Changes to this Policy",
-        "content": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"last updated\" date."
+        "title": "11. ポリシーの変更",
+        "content": "プライバシーポリシーは随時更新される場合があります。変更時は本ページに新しいポリシーを掲載し、「最終更新日」を更新します。"
       },
       "contact": {
-        "title": "12. Contact Us",
-        "content": "If you have any questions about this Privacy Policy, please contact us at:",
-        "email": "Email: privacy@coorder.com",
-        "address": "Address: Tokyo, Japan",
-        "phone": "Phone: 080-9344-7200",
-        "dpo": "Data Protection Officer: dpo@coorder.com"
+        "title": "12. お問い合わせ",
+        "content": "本プライバシーポリシーに関するご質問は、以下までご連絡ください：",
+        "email": "メール：privacy@coorder.com",
+        "address": "住所：東京都",
+        "phone": "電話：080-9344-7200",
+        "dpo": "データ保護責任者：dpo@coorder.com"
       }
     }
   }
