@@ -1,93 +1,158 @@
 {
-  "title": "Quản Lý Nhân Viên",
-  "subtitle": "Quản lý nhân viên và lịch trình của nhà hàng",
-  "views": {
-    "list": "Danh Sách",
-    "schedule": "Lịch Trình"
+  "dashboard": {
+    "tabs": {
+      "employees": "Nhân viên",
+      "schedule": "Lịch",
+      "attendance": "Chấm công",
+      "performance": "Hiệu suất"
+    },
+    "actions": {
+      "openQrScanner": "Quét mã QR để chấm công"
+    }
   },
-  "employee": "Nhân Viên",
-  "select_role": "Chọn Vai Trò",
-  "role": "Vai Trò",
-  "enter_name": "Nhập Tên Nhân Viên",
-  "enter_email": "Nhập Email Nhân Viên",
-  "add_employee": "Thêm Nhân Viên",
-  "edit_employee": "Sửa Nhân Viên",
-  "delete_employee": "Xóa Nhân Viên",
-  "edit_schedule": "Sửa Lịch Trình",
-  "save_changes": "Lưu Thay Đổi",
-  "cancel": "Hủy",
-  "search_placeholder": "Tìm kiếm nhân viên...",
-  "no_employees": "Không tìm thấy nhân viên nào",
-  "employee_details": "Chi Tiết Nhân Viên",
-  "actions": {
-    "add_employee": "Thêm Nhân Viên",
-    "edit_employee": "Sửa Nhân Viên",
-    "delete_employee": "Xóa Nhân Viên",
-    "edit_schedule": "Sửa Lịch Trình",
-    "save": "Lưu",
-    "cancel": "Hủy"
-  },
-  "table": {
-    "name": "Tên",
-    "email": "Email",
-    "role": "Vai Trò",
-    "shifts": "Ca Làm",
-    "actions": "Hành Động"
-  },
-  "roles": {
-    "manager": "Quản Lý",
-    "chef": "Đầu Bếp",
-    "server": "Phục Vụ",
-    "cashier": "Thu Ngân"
+  "list": {
+    "title": "Quản lý nhân viên",
+    "actions": {
+      "addEmployee": "Thêm nhân viên mới",
+      "edit": "Chỉnh sửa",
+      "manageSchedule": "Quản lý lịch"
+    },
+    "table": {
+      "name": "Tên",
+      "email": "Email",
+      "jobTitle": "Chức danh",
+      "actions": "Hành động",
+      "noEmployees": "Không tìm thấy nhân viên. Thêm nhân viên đầu tiên để bắt đầu."
+    },
+    "notifications": {
+      "fetchError": "Không thể lấy danh sách nhân viên: {error}",
+      "errorTitle": "Lỗi"
+    }
   },
   "form": {
-    "name_label": "Họ và Tên",
-    "name_placeholder": "Nhập họ và tên nhân viên",
-    "email_label": "Địa Chỉ Email",
-    "email_placeholder": "Nhập email nhân viên",
-    "role_label": "Vai Trò",
-    "role_placeholder": "Chọn vai trò"
+    "addTitle": "Thêm nhân viên mới",
+    "editTitle": "Chỉnh sửa thông tin nhân viên",
+    "fields": {
+      "name": {
+        "label": "Họ và tên",
+        "placeholder": "ví dụ: Nguyễn Văn A"
+      },
+      "email": {
+        "label": "Địa chỉ email",
+        "placeholder": "ví dụ: nguyen.a@example.com",
+        "editDisabledHint": "Email không thể thay đổi sau khi tạo."
+      },
+      "jobTitle": {
+        "label": "Chức danh",
+        "placeholder": "Chọn chức danh"
+      }
+    },
+    "actions": {
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu...",
+      "cancel": "Hủy"
+    },
+    "notifications": {
+      "createSuccess": "Đã thêm nhân viên thành công.",
+      "updateSuccess": "Cập nhật thông tin nhân viên thành công.",
+      "saveError": "Không thể lưu nhân viên: {error}"
+    }
+  },
+  "roles": {
+    "manager": "Quản lý",
+    "chef": "Đầu bếp",
+    "server": "Phục vụ",
+    "cashier": "Thu ngân"
   },
   "schedule": {
-    "title": "Lịch Trình Nhân Viên",
-    "edit_title": "Sửa Lịch Trình cho {name}",
-    "weekdays": {
-      "monday": "Thứ Hai",
-      "tuesday": "Thứ Ba",
-      "wednesday": "Thứ Tư",
-      "thursday": "Thứ Năm",
-      "friday": "Thứ Sáu",
-      "saturday": "Thứ Bảy",
-      "sunday": "Chủ Nhật"
+    "title": "Lịch làm việc hàng tuần",
+    "selectEmployeePlaceholder": "Chọn nhân viên để xem hoặc chỉnh sửa lịch",
+    "promptSelectEmployee": "Vui lòng chọn nhân viên ở trên để quản lý lịch hàng tuần.",
+    "actions": {
+      "saveChanges": "Lưu thay đổi lịch",
+      "saving": "Đang lưu lịch..."
     },
-    "time_format": "{start} - {end}",
-    "no_shift": "Nghỉ",
-    "start_time": "Giờ Bắt Đầu",
-    "end_time": "Giờ Kết Thúc"
+    "weekDisplayLabel": "Tuần: {range}",
+    "prevWeekBtn": "Tuần trước",
+    "nextWeekBtn": "Tuần sau",
+    "errors": {
+      "loadEmployeesError": "Không thể tải danh sách nhân viên cho lịch.",
+      "loadSchedulesError": "Không thể tải lịch trong tuần đã chọn.",
+      "errorTitle": "Lỗi tải lịch"
+    },
+    "notifications": {
+      "saveSuccess": "Cập nhật lịch thành công.",
+      "savePartial": "Cập nhật một phần lịch. Đã thành công {success}/{total} tác vụ.",
+      "saveErrorAll": "Không thể lưu bất kỳ thay đổi nào. Vui lòng thử lại.",
+      "saveErrorGeneral": "Đã xảy ra lỗi khi lưu lịch: {error}",
+      "noChanges": "Không có thay đổi nào trong lịch."
+    }
   },
-  "notifications": {
-    "employee_added": "Thêm nhân viên thành công",
-    "employee_updated": "Cập nhật nhân viên thành công",
-    "employee_deleted": "Xóa nhân viên thành công",
-    "schedule_updated": "Cập nhật lịch trình thành công",
-    "add_failed": "Không thể thêm nhân viên",
-    "update_failed": "Không thể cập nhật nhân viên",
-    "delete_failed": "Không thể xóa nhân viên",
-    "schedule_failed": "Không thể cập nhật lịch trình"
+  "attendance": {
+    "title": "Chấm công nhân viên",
+    "selectEmployeePlaceholder": "Chọn nhân viên để xem chấm công",
+    "promptSelectEmployee": "Vui lòng chọn nhân viên để xem bảng chấm công.",
+    "prevMonthBtn": "Tháng trước",
+    "nextMonthBtn": "Tháng sau",
+    "table": {
+      "date": "Ngày",
+      "checkIn": "Giờ vào",
+      "checkOut": "Giờ ra",
+      "hoursWorked": "Giờ làm",
+      "status": "Trạng thái",
+      "actions": "Hành động"
+    },
+    "actions": {
+      "verify": "Xác nhận",
+      "verifying": "Đang xác nhận..."
+    },
+    "status": {
+      "recorded": "Đã ghi nhận",
+      "verified": "Đã xác nhận"
+    },
+    "noRecordsFound": "Không tìm thấy bản ghi chấm công cho nhân viên và tháng đã chọn.",
+    "errors": {
+      "loadEmployeesError": "Không thể tải danh sách nhân viên.",
+      "loadRecordsError": "Không thể tải bản ghi chấm công.",
+      "verifyError": "Không thể xác nhận bản ghi chấm công.",
+      "errorTitle": "Lỗi"
+    },
+    "notifications": {
+      "verifySuccess": "Xác nhận chấm công thành công."
+    }
   },
-  "confirmations": {
-    "delete_title": "Xóa Nhân Viên",
-    "delete_message": "Bạn có chắc muốn xóa {name}? Hành động này không thể hoàn tác."
+  "qrScannerModal": {
+    "title": "Quét mã QR nhân viên",
+    "actions": {
+      "close": "Đóng"
+    },
+    "initializing": "Khởi tạo máy quét QR và yêu cầu quyền truy cập camera...",
+    "errors": {
+      "scanErrorTitle": "Lỗi quét",
+      "permissionDenied": "Quyền truy cập camera bị từ chối. Vui lòng bật quyền trong cài đặt trình duyệt.",
+      "noCameraFound": "Không tìm thấy camera phù hợp. Vui lòng kiểm tra kết nối camera.",
+      "startError": "Không thể khởi động máy quét QR",
+      "stopError": "Không thể dừng máy quét QR"
+    },
+    "notifications": {
+      "scanSuccess": "Quét mã QR thành công. Đang xử lý...",
+      "scanApiError": "Không thể xử lý kết quả quét. Vui lòng kiểm tra mã QR hoặc thử lại."
+    }
   },
-  "empty_state": {
-    "no_employees": "Không tìm thấy nhân viên nào",
-    "add_first": "Thêm nhân viên đầu tiên để bắt đầu"
-  },
-  "validation": {
-    "name_required": "Tên là bắt buộc",
-    "email_required": "Email là bắt buộc",
-    "email_invalid": "Vui lòng nhập email hợp lệ",
-    "role_required": "Vai trò là bắt buộc",
-    "time_invalid": "Giờ bắt đầu phải trước giờ kết thúc"
+  "performance": {
+    "title": "Hiệu suất nhân viên",
+    "selectEmployeePlaceholder": "Chọn nhân viên để xem hiệu suất",
+    "promptSelectEmployee": "Vui lòng chọn nhân viên để xem chỉ số hiệu suất.",
+    "totalHoursWeekLabel": "Tổng giờ (Tuần hiện tại)",
+    "totalHoursMonthLabel": "Tổng giờ (Tháng hiện tại)",
+    "hoursUnit": "giờ",
+    "currentWeekPeriod": "Tuần hiện tại (Thứ 2–CN)",
+    "currentMonthPeriod": "Tháng hiện tại",
+    "noData": "Không có dữ liệu hiệu suất cho nhân viên hoặc kỳ đã chọn.",
+    "errors": {
+      "loadEmployeesError": "Không thể tải danh sách nhân viên.",
+      "loadPerformanceError": "Không thể tải dữ liệu hiệu suất.",
+      "errorTitle": "Lỗi"
+    }
   }
 }

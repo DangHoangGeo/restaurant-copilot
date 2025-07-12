@@ -1,104 +1,158 @@
 {
-  "title": "スタッフ管理",
-  "subtitle": "従業員プロファイル、役割、スケジュールを管理します",
-  "tabs": {
-    "all_staff": "すべてのスタッフ",
-    "schedules": "スケジュール",
-    "permissions": "権限"
-  },
-  "all_staff": {
-    "add_employee_button": "従業員を追加",
-    "search_placeholder": "スタッフを検索...",
-    "list_headers": {
-      "name": "名前",
-      "role": "役割",
-      "email": "メールアドレス",
-      "phone": "電話番号",
-      "status": "ステータス",
-      "actions": "アクション"
-    },
-    "status_options": {
-      "active": "アクティブ",
-      "inactive": "非アクティブ",
-      "on_leave": "休暇中"
-    },
-    "empty_state": {
-      "title": "従業員がいません",
-      "message": "最初の従業員を追加して、チームの構築を始めましょう。"
+  "dashboard": {
+    "tabs": {
+      "employees": "従業員",
+      "schedule": "スケジュール",
+      "attendance": "勤怠",
+      "performance": "パフォーマンス"
     },
     "actions": {
+      "openQrScanner": "勤怠用QRコードをスキャン"
+    }
+  },
+  "list": {
+    "title": "従業員管理",
+    "actions": {
+      "addEmployee": "新しい従業員を追加",
       "edit": "編集",
-      "view_schedule": "スケジュールを表示",
-      "deactivate": "無効化",
-      "activate": "有効化"
-    }
-  },
-  "add_employee_modal": {
-    "title": "新しい従業員を追加",
-    "edit_title": "従業員情報を編集",
-    "labels": {
-      "first_name": "名",
-      "last_name": "姓",
+      "manageSchedule": "スケジュール管理"
+    },
+    "table": {
+      "name": "氏名",
       "email": "メールアドレス",
-      "phone": "電話番号",
-      "role": "役割",
-      "pin": "PIN (ログイン用)",
-      "confirm_pin": "PIN を確認"
+      "jobTitle": "役職",
+      "actions": "操作",
+      "noEmployees": "従業員が見つかりません。最初の従業員を追加してください。"
     },
-    "placeholders": {
-      "first_name": "名を入力",
-      "last_name": "姓を入力",
-      "email": "メールアドレスを入力",
-      "phone": "電話番号を入力",
-      "pin": "4桁のPIN",
-      "confirm_pin": "PIN を再入力"
+    "notifications": {
+      "fetchError": "従業員の取得に失敗しました: {error}",
+      "errorTitle": "エラー"
+    }
+  },
+  "form": {
+    "addTitle": "新しい従業員を追加",
+    "editTitle": "従業員情報を編集",
+    "fields": {
+      "name": {
+        "label": "氏名",
+        "placeholder": "例: 山田 太郎"
+      },
+      "email": {
+        "label": "メールアドレス",
+        "placeholder": "例: taro.yamada@example.com",
+        "editDisabledHint": "作成後はメールアドレスを変更できません。"
+      },
+      "jobTitle": {
+        "label": "役職",
+        "placeholder": "役職を選択"
+      }
     },
-    "role_options": {
-      "manager": "マネージャー",
-      "chef": "シェフ",
-      "waitstaff": "ウェイター/ウェイトレス",
-      "bartender": "バーテンダー",
-      "host": "ホスト/ホステス",
-      "kitchen_staff": "キッチンスタッフ",
-      "other": "その他"
-    },
-    "buttons": {
-      "add": "従業員を追加",
+    "actions": {
       "save": "変更を保存",
+      "saving": "保存中...",
       "cancel": "キャンセル"
     },
     "notifications": {
-      "add_success": "従業員が正常に追加されました",
-      "add_error": "従業員の追加に失敗しました: {error}",
-      "update_success": "従業員情報が正常に更新されました",
-      "update_error": "従業員情報の更新に失敗しました: {error}",
-      "pin_mismatch": "PIN が一致しません"
+      "createSuccess": "従業員が正常に追加されました。",
+      "updateSuccess": "従業員情報が更新されました。",
+      "saveError": "従業員の保存に失敗しました: {error}"
     }
   },
-  "schedules": {
-    "title": "従業員スケジュール",
-    "coming_soon": "従業員のスケジュール管理機能は間もなく利用可能になります。",
-    "description": "週次および日次のスケジュールを作成および表示します。"
+  "roles": {
+    "manager": "マネージャー",
+    "chef": "シェフ",
+    "server": "ホールスタッフ",
+    "cashier": "レジ係"
   },
-  "permissions": {
-    "title": "役割と権限",
-    "coming_soon": "役割ベースのアクセス制御と権限のカスタマイズは間もなく利用可能になります。",
-    "description": "さまざまな従業員の役割に対するアクセスレベルを定義します。"
-  },
-  "delete_employee_modal": {
-    "title": "従業員を削除",
-    "confirmation_message": "本当に {employeeName} を削除しますか？この操作は元に戻せません。",
-    "buttons": {
-      "delete": "削除",
-      "cancel": "キャンセル"
+  "schedule": {
+    "title": "週間スケジュール",
+    "selectEmployeePlaceholder": "従業員を選択してスケジュールを表示／編集",
+    "promptSelectEmployee": "上から従業員を選択して週間スケジュールを管理してください。",
+    "actions": {
+      "saveChanges": "スケジュールを保存",
+      "saving": "スケジュール保存中..."
+    },
+    "weekDisplayLabel": "週: {range}",
+    "prevWeekBtn": "前の週",
+    "nextWeekBtn": "次の週",
+    "errors": {
+      "loadEmployeesError": "スケジュール用の従業員を読み込めませんでした。",
+      "loadSchedulesError": "選択した週のスケジュールを読み込めませんでした。",
+      "errorTitle": "スケジュール読み込みエラー"
     },
     "notifications": {
-      "delete_success": "従業員が正常に削除されました",
-      "delete_error": "従業員の削除に失敗しました: {error}"
+      "saveSuccess": "スケジュールが正常に更新されました。",
+      "savePartial": "一部の操作のみ正常に更新されました。成功: {success}/{total}",
+      "saveErrorAll": "すべてのスケジュール変更の保存に失敗しました。再試行してください。",
+      "saveErrorGeneral": "スケジュールの保存中にエラーが発生しました: {error}",
+      "noChanges": "変更は検出されませんでした。"
     }
   },
-  "errors": {
-    "fetch_failed": "従業員データの読み込みに失敗しました。",
-    "generic_error": "エラーが発生しました。しばらくしてからもう一度お試しください。"
+  "attendance": {
+    "title": "従業員勤怠",
+    "selectEmployeePlaceholder": "従業員を選択して勤怠を表示",
+    "promptSelectEmployee": "従業員を選択して勤怠記録を表示してください。",
+    "prevMonthBtn": "前の月",
+    "nextMonthBtn": "次の月",
+    "table": {
+      "date": "日付",
+      "checkIn": "出勤",
+      "checkOut": "退勤",
+      "hoursWorked": "労働時間",
+      "status": "ステータス",
+      "actions": "操作"
+    },
+    "actions": {
+      "verify": "承認",
+      "verifying": "承認中..."
+    },
+    "status": {
+      "recorded": "記録済み",
+      "verified": "承認済み"
+    },
+    "noRecordsFound": "選択した従業員・月の勤怠記録が見つかりません。",
+    "errors": {
+      "loadEmployeesError": "従業員リストの読み込みに失敗しました。",
+      "loadRecordsError": "勤怠記録の読み込みに失敗しました。",
+      "verifyError": "勤怠記録の承認に失敗しました。",
+      "errorTitle": "エラー"
+    },
+    "notifications": {
+      "verifySuccess": "勤怠記録が正常に承認されました。"
+    }
+  },
+  "qrScannerModal": {
+    "title": "従業員QRコードをスキャン",
+    "actions": {
+      "close": "スキャナーを閉じる"
+    },
+    "initializing": "QRスキャナーを初期化中、カメラアクセスをリクエストしています...",
+    "errors": {
+      "scanErrorTitle": "スキャンエラー",
+      "permissionDenied": "カメラの権限が拒否されました。ブラウザの設定からカメラアクセスを有効にしてください。",
+      "noCameraFound": "適切なカメラが見つかりません。カメラが接続・有効になっているか確認してください。",
+      "startError": "QRスキャナーを開始できませんでした",
+      "stopError": "QRスキャナーを停止できませんでした"
+    },
+    "notifications": {
+      "scanSuccess": "QRコードのスキャンに成功しました。処理中...",
+      "scanApiError": "スキャン処理に失敗しました。QRコードを確認して再試行してください。"
+    }
+  },
+  "performance": {
+    "title": "従業員パフォーマンス",
+    "selectEmployeePlaceholder": "従業員を選択してパフォーマンスを表示",
+    "promptSelectEmployee": "従業員を選択してパフォーマンス指標を表示してください。",
+    "totalHoursWeekLabel": "今週の総労働時間",
+    "totalHoursMonthLabel": "今月の総労働時間",
+    "hoursUnit": "時間",
+    "currentWeekPeriod": "今週 (月〜日)",
+    "currentMonthPeriod": "今月",
+    "noData": "選択した従業員・期間のデータがありません。",
+    "errors": {
+      "loadEmployeesError": "従業員リストの読み込みに失敗しました。",
+      "loadPerformanceError": "パフォーマンスデータの読み込みに失敗しました。",
+      "errorTitle": "エラー"
+    }
   }
 }

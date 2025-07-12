@@ -1,158 +1,158 @@
 {
-  "title": "Cài Đặt Nhà Hàng",
-  "description": "Quản lý thông tin, thương hiệu và sự hiện diện trực tuyến của nhà hàng.",
+  "title": "Cài đặt nhà hàng",
+  "description": "Quản lý thông tin, thương hiệu và sự hiện diện trực tuyến của bạn.",
   "labels": {
-    "restaurantName": "Tên Nhà Hàng",
-    "subdomain": "Tên Miền",
-    "defaultLanguage": "Ngôn Ngữ Mặc Định",
-    "brandColor": "Màu Thương Hiệu",
+    "restaurantName": "Tên nhà hàng",
+    "subdomain": "Tên miền",
+    "defaultLanguage": "Ngôn ngữ mặc định",
+    "brandColor": "Màu thương hiệu",
     "logo": "Logo",
-    "tax": "Thuế Suất",
-    "address": "Địa Chỉ",
-    "phone": "Số Điện Thoại",
-    "email": "Địa Chỉ Email",
-    "website": "Website",
-    "operatingHours": "Giờ Hoạt Động",
-    "description": "Mô Tả",
-    "descriptions": "Mô Tả Đa Ngôn Ngữ",
-    "descriptionEn": "Mô Tả (Tiếng Anh)",
-    "descriptionJa": "Mô Tả (Tiếng Nhật)",
-    "descriptionVi": "Mô Tả (Tiếng Việt)",
-    "socialLinks": "Liên Kết Mạng Xã Hội",
-    "currency": "Tiền Tệ",
-    "paymentMethods": "Phương Thức Thanh Toán",
-    "deliveryOptions": "Tùy Chọn Dịch Vụ"
+    "tax": "Thuế",
+    "address": "Địa chỉ",
+    "phone": "Số điện thoại",
+    "email": "Địa chỉ email",
+    "website": "Trang web",
+    "operatingHours": "Giờ mở cửa",
+    "description": "Mô tả",
+    "descriptions": "Mô tả đa ngôn ngữ",
+    "descriptionEn": "Mô tả (Tiếng Anh)",
+    "descriptionJa": "Mô tả (Tiếng Nhật)",
+    "descriptionVi": "Mô tả (Tiếng Việt)",
+    "socialLinks": "Liên kết mạng xã hội",
+    "currency": "Tiền tệ",
+    "paymentMethods": "Phương thức thanh toán",
+    "deliveryOptions": "Tùy chọn phục vụ"
   },
   "placeholders": {
-    "restaurantName": "Nhập tên nhà hàng của bạn",
-    "subdomain": "nhahangcuaban (sẽ thành nhahangcuaban.coorder.ai)",
+    "restaurantName": "Nhập tên nhà hàng",
+    "subdomain": "tênnhàhàng (sẽ thành tênnhàhàng.coorder.ai)",
     "brandColor": "#RRGGBB",
     "tax": "0.10 (10%)",
     "address": "Địa chỉ đầy đủ của nhà hàng",
-    "phone": "+84 123 456 7890",
-    "email": "lienhe@nhahangcuaban.com",
-    "website": "https://nhahangcuaban.com",
-    "hours": "ví dụ: T2-T6: 9h-22h, T7-CN: 10h-23h",
-    "description": "Mô tả ngắn gọn về nhà hàng của bạn",
-    "descriptionEn": "Mô tả nhà hàng của bạn bằng tiếng Anh",
-    "descriptionJa": "日本語でレストランを説明してください",
-    "descriptionVi": "Mô tả nhà hàng của bạn bằng tiếng Việt"
+    "phone": "+84 123 456 789",
+    "email": "contact@nhahang.com",
+    "website": "https://nhahang.com",
+    "hours": "ví dụ: Thứ 2–6: 9h–22h, Thứ 7–CN: 10h–23h",
+    "description": "Mô tả ngắn gọn về nhà hàng",
+    "descriptionEn": "Mô tả nhà hàng bằng tiếng Anh",
+    "descriptionJa": "Mô tả nhà hàng bằng tiếng Nhật",
+    "descriptionVi": "Mô tả nhà hàng bằng tiếng Việt"
   },
   "operatingHours": {
-    "title": "Giờ Hoạt Động",
-    "description": "Thiết lập giờ hoạt động hàng ngày của nhà hàng.",
+    "title": "Giờ mở cửa",
+    "description": "Đặt giờ mở cửa hàng ngày cho nhà hàng.",
     "presets": {
       "standard": "9-21",
       "restaurant": "11-22",
       "cafe": "7-17",
-      "closed": "Đóng Cửa"
+      "closed": "Đóng cửa"
     },
-    "closed": "Đóng Cửa",
-    "helpText": "Khách hàng sẽ thấy thông tin này trên trang nhà hàng của bạn."
+    "closed": "Đóng cửa",
+    "helpText": "Khách hàng sẽ nhìn thấy giờ này trên trang của bạn."
   },
   "socialLinks": {
-    "helpText": "Thêm các hồ sơ mạng xã hội để giúp khách hàng kết nối với bạn."
+    "helpText": "Thêm hồ sơ mạng xã hội để khách hàng dễ kết nối."
   },
   "paymentMethods": {
-    "cash": "Tiền Mặt",
-    "creditCard": "Thẻ Tín Dụng",
-    "mobilePayment": "Thanh Toán Di Động",
+    "cash": "Tiền mặt",
+    "creditCard": "Thẻ tín dụng",
+    "mobilePayment": "Thanh toán di động",
     "paypay": "PayPay"
   },
   "deliveryOptions": {
-    "title": "Tùy Chọn Dịch Vụ",
-    "description": "Chọn cách khách hàng có thể thưởng thức món ăn của bạn",
-    "dineIn": "Ăn Tại Chỗ",
-    "pickup": "Lấy Tại Quầy",
-    "delivery": "Giao Hàng"
+    "title": "Tùy chọn phục vụ",
+    "description": "Chọn cách khách hàng nhận món",
+    "dineIn": "Ăn tại chỗ",
+    "pickup": "Mang về",
+    "delivery": "Giao hàng"
   },
   "currency": {
     "JPY": "Yên Nhật (¥)",
-    "USD": "Đô La Mỹ ($)",
+    "USD": "Đô la Mỹ ($)",
     "VND": "Đồng Việt Nam (₫)"
   },
   "aiDescription": {
-    "title": "✨ Trình Tạo Mô Tả Bằng AI",
-    "subtitle": "Để AI tạo ra các mô tả hấp dẫn bằng cả ba ngôn ngữ cho nhà hàng của bạn",
-    "cuisine": "Loại Ẩm Thực",
-    "atmosphere": "Bầu Không Khí",
-    "specialties": "Món Đặc Biệt",
-    "location": "Vị Trí",
-    "additionalInfo": "Thông Tin Bổ Sung",
-    "cuisinePlaceholder": "ví dụ: Nhật Bản, Việt Nam, Ý",
+    "title": "✨ Trình tạo mô tả AI",
+    "subtitle": "Để AI tạo mô tả hấp dẫn cho ba ngôn ngữ của bạn",
+    "cuisine": "Loại ẩm thực",
+    "atmosphere": "Không gian",
+    "specialties": "Món đặc trưng",
+    "location": "Vị trí",
+    "additionalInfo": "Thông tin bổ sung",
+    "cuisinePlaceholder": "ví dụ: Nhật, Việt, Ý",
     "atmospherePlaceholder": "ví dụ: Ấm cúng, Hiện đại, Truyền thống",
     "specialtiesPlaceholder": "ví dụ: Sushi tươi, Phở chính gốc",
-    "locationPlaceholder": "ví dụ: Trung tâm Hà Nội, Quận 1",
-    "additionalInfoPlaceholder": "Bất kỳ đặc điểm độc đáo, lịch sử hoặc thông tin đặc biệt nào về nhà hàng của bạn...",
-    "generate": "Tạo Mô Tả",
-    "generating": "Đang Tạo...",
+    "locationPlaceholder": "ví dụ: Trung tâm Tokyo, Shibuya",
+    "additionalInfoPlaceholder": "Bất kỳ điểm đặc biệt, lịch sử hoặc thông tin thêm...",
+    "generate": "Tạo mô tả",
+    "generating": "Đang tạo...",
     "success": "Tạo mô tả thành công!",
-    "disclaimer": "Nội dung do AI tạo ra nên được xem xét và chỉnh sửa nếu cần.",
+    "disclaimer": "Nội dung AI cần được xem lại và chỉnh sửa nếu cần.",
     "errors": {
       "missingName": "Vui lòng nhập tên nhà hàng trước",
-      "generationFailed": "Không thể tạo mô tả. Vui lòng thử lại."
+      "generationFailed": "Tạo mô tả thất bại. Vui lòng thử lại."
     }
   },
   "buttons": {
-    "saveChanges": "Lưu Thay Đổi",
-    "uploadingLogo": "Đang Tải Lên...",
-    "updatingSettings": "Đang Cập Nhật...",
-    "checkAvailability": "Kiểm Tra Tính Khả Dụng"
+    "saveChanges": "Lưu thay đổi",
+    "uploadingLogo": "Đang tải lên...",
+    "updatingSettings": "Đang cập nhật...",
+    "checkAvailability": "Kiểm tra tính khả dụng"
   },
   "notifications": {
-    "successTitle": "Cài Đặt Đã Cập Nhật",
-    "successMessage": "Cài đặt nhà hàng của bạn đã được cập nhật thành công.",
-    "settingsSaved": "Cài đặt đã được lưu thành công.",
+    "successTitle": "Cập nhật thành công",
+    "successMessage": "Cài đặt nhà hàng đã được cập nhật.",
+    "settingsSaved": "Lưu cài đặt thành công.",
     "saveError": "Lỗi khi lưu cài đặt: {error}",
-    "uploadError": "Lỗi khi tải lên logo: {error}",
-    "errorTitle": "Cập Nhật Thất Bại",
+    "uploadError": "Lỗi khi tải logo: {error}",
+    "errorTitle": "Cập nhật thất bại",
     "errorMessage": "Không thể cập nhật cài đặt: {error}",
-    "logoUploadErrorTitle": "Tải Lên Logo Thất Bại",
-    "logoUploadErrorMessage": "Không thể tải lên logo: {error}",
-    "logoRemovedMessage": "Logo đã bị xóa. Lưu thay đổi để xác nhận.",
+    "logoUploadErrorTitle": "Tải logo thất bại",
+    "logoUploadErrorMessage": "Không thể tải logo: {error}",
+    "logoRemovedMessage": "Đã xóa logo. Lưu thay đổi để xác nhận.",
     "fileTooLarge": "Tệp quá lớn. Tối đa 5MB.",
-    "invalidFileType": "Loại tệp không hợp lệ. Vui lòng tải lên hình ảnh.",
-    "settingsSaveFailedGeneric": "Không thể lưu cài đặt. Vui lòng thử lại.",
-    "compressionError": "Lỗi nén hình ảnh. Vui lòng thử hình ảnh khác hoặc kiểm tra định dạng.",
+    "invalidFileType": "Loại tệp không hợp lệ. Vui lòng tải ảnh.",
+    "settingsSaveFailedGeneric": "Lưu cài đặt thất bại. Vui lòng thử lại.",
+    "compressionError": "Lỗi nén ảnh. Vui lòng thử ảnh khác.",
     "subdomainCheckSuccess": "Tên miền khả dụng!",
-    "subdomainCheckError": "Tên miền không khả dụng hoặc không hợp lệ"
+    "subdomainCheckError": "Tên miền không hợp lệ hoặc đã được sử dụng"
   },
   "validation": {
     "name": {
       "required": "Tên nhà hàng là bắt buộc",
-      "maxLength": "Tên phải dài tối đa {maxLength} ký tự"
+      "maxLength": "Tên không quá {maxLength} ký tự"
     },
     "subdomain": {
-      "minLength": "Tên miền phải có ít nhất {minLength} ký tự",
-      "maxLength": "Tên miền phải dài tối đa {maxLength} ký tự",
-      "invalidFormat": "Tên miền chỉ được chứa chữ cái thường, số và dấu gạch ngang"
+      "minLength": "Tên miền tối thiểu {minLength} ký tự",
+      "maxLength": "Tên miền tối đa {maxLength} ký tự",
+      "invalidFormat": "Tên miền chỉ gồm chữ thường, số và dấu gạch ngang"
     },
     "defaultLanguage": {
       "required": "Ngôn ngữ mặc định là bắt buộc"
     },
     "brandColor": {
-      "invalidFormat": "Định dạng màu không hợp lệ. Sử dụng định dạng #RRGGBB"
+      "invalidFormat": "Định dạng màu không hợp lệ. Dùng #RRGGBB"
     },
     "tax": {
-      "min": "Thuế suất phải ít nhất 0%",
-      "max": "Thuế suất không thể vượt quá 100%"
+      "min": "Tỷ lệ thuế tối thiểu 0%",
+      "max": "Tỷ lệ thuế tối đa 100%"
     },
     "address": {
-      "maxLength": "Địa chỉ phải dài tối đa {maxLength} ký tự"
+      "maxLength": "Địa chỉ không quá {maxLength} ký tự"
     },
     "phone": {
-      "maxLength": "Số điện thoại phải dài tối đa {maxLength} ký tự"
+      "maxLength": "Số điện thoại không quá {maxLength} ký tự"
     },
     "email": {
-      "invalidFormat": "Vui lòng nhập địa chỉ email hợp lệ",
-      "maxLength": "Email phải dài tối đa {maxLength} ký tự"
+      "invalidFormat": "Vui lòng nhập email hợp lệ",
+      "maxLength": "Email không quá {maxLength} ký tự"
     },
     "website": {
-      "invalidFormat": "Vui lòng nhập URL website hợp lệ",
-      "maxLength": "URL website phải dài tối đa {maxLength} ký tự"
+      "invalidFormat": "Vui lòng nhập URL hợp lệ",
+      "maxLength": "URL không quá {maxLength} ký tự"
     },
     "description": {
-      "maxLength": "Mô tả phải dài tối đa {maxLength} ký tự"
+      "maxLength": "Mô tả không quá {maxLength} ký tự"
     },
     "socialLinks": {
       "invalidUrl": "Vui lòng nhập URL hợp lệ"
@@ -161,7 +161,7 @@
       "required": "Tiền tệ là bắt buộc"
     },
     "logoFile": {
-      "maxSize": "Tệp logo phải nhỏ hơn {maxSize}MB",
+      "maxSize": "Logo không quá {maxSize}MB",
       "invalidType": "Logo phải ở định dạng PNG, JPEG hoặc WebP"
     },
     "logoUrl": {
@@ -173,46 +173,46 @@
     "logoIconFallback": "Logo"
   },
   "sections": {
-    "basic": "Thông Tin Cơ Bản",
-    "branding": "Thương Hiệu & Hình Ảnh",
-    "contact": "Liên Hệ & Vị Trí",
-    "operations": "Hoạt Động",
-    "descriptions": "Mô Tả",
-    "online": "Sự Hiện Diện Trực Tuyến",
-    "business": "Cài Đặt Kinh Doanh"
+    "basic": "Thông tin cơ bản",
+    "branding": "Thương hiệu & Hình ảnh",
+    "contact": "Liên hệ & Địa điểm",
+    "operations": "Hoạt động",
+    "descriptions": "Mô tả",
+    "online": "Hiện diện trực tuyến",
+    "business": "Cài đặt doanh nghiệp"
   },
   "tabs": {
-    "basic": "Cơ Bản",
-    "domain": "Tên Miền",
+    "basic": "Cơ bản",
+    "domain": "Domain",
     "hours": "Giờ",
-    "descriptions": "Mô Tả",
-    "business": "Kinh Doanh",
-    "delivery": "Dịch Vụ"
+    "descriptions": "Mô tả",
+    "business": "Doanh nghiệp",
+    "delivery": "Phục vụ"
   },
   "basicInfo": {
-    "title": "Thông Tin Cơ Bản",
-    "description": "Thông tin cần thiết về nhà hàng của bạn"
+    "title": "Thông tin cơ bản",
+    "description": "Chi tiết thiết yếu về nhà hàng"
   },
   "domainManagement": {
-    "title": "Quản Lý Tên Miền",
-    "description": "Tùy chỉnh địa chỉ web của nhà hàng",
-    "checking": "Đang kiểm tra tính khả dụng...",
-    "available": "✅ Tên miền này khả dụng!",
-    "unavailable": "❌ Tên miền này đã được sử dụng",
-    "infoTitle": "Cách hoạt động",
-    "infoText": "Khách hàng sẽ truy cập thực đơn và hệ thống đặt hàng qua tên miền tùy chỉnh của bạn."
+    "title": "Quản lý tên miền",
+    "description": "Tùy chỉnh địa chỉ trang web của bạn",
+    "checking": "Đang kiểm tra...",
+    "available": "✅ Tên miền khả dụng!",
+    "unavailable": "❌ Tên miền đã được sử dụng",
+    "infoTitle": "Cách thức hoạt động",
+    "infoText": "Khách hàng sẽ truy cập menu và hệ thống đặt hàng qua tên miền của bạn."
   },
   "descriptions": {
-    "title": "Mô Tả Nhà Hàng",
-    "description": "Tạo các mô tả hấp dẫn bằng nhiều ngôn ngữ"
+    "title": "Mô tả nhà hàng",
+    "description": "Tạo mô tả hấp dẫn bằng nhiều ngôn ngữ"
   },
   "businessSettings": {
-    "title": "Cài Đặt Kinh Doanh",
-    "description": "Cấu hình tiền tệ và tùy chọn thanh toán"
+    "title": "Cài đặt doanh nghiệp",
+    "description": "Cấu hình tiền tệ và phương thức thanh toán"
   },
   "currencyOptions": {
     "JPY": "Yên Nhật (¥)",
-    "USD": "Đô La Mỹ ($)",
+    "USD": "Đô la Mỹ ($)",
     "VND": "Đồng Việt Nam (₫)"
   }
 }
