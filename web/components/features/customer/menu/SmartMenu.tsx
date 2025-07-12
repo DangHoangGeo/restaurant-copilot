@@ -14,15 +14,15 @@ import {
   ChefHat,
   ArrowRight,
   Heart,
-  Bot,
-  RefreshCw
+  RefreshCw,
+  Menu,
+  X
 } from 'lucide-react';
 import { getLocalizedText } from '@/lib/customerUtils';
 import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
 import { ItemDetailModal } from '@/components/features/customer/menu/ItemDetailModal';
 import { SmartMenuSkeleton, MenuCardSkeleton } from '@/components/ui/enhanced-skeleton';
 import { useCart } from '@/components/features/customer/CartContext';
-import { AIAssistant } from '@/components/features/customer/layout/AIAssistant';
 import { useMenuData } from '@/hooks/useMenuData';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useSessionData } from '@/hooks/useSessionData';
@@ -146,7 +146,12 @@ export function SmartMenu({
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [activeSmartCategory, setActiveSmartCategory] = useState<string>('all');
-  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  // Category filter modal state
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  const [debouncedCategorySearchTerm] = useDebounce(categorySearchTerm, 300);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string | null>(null);
+  // const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [selectedItem, setSelectedItem] = useState<SmartMenuItem | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
@@ -288,9 +293,13 @@ export function SmartMenu({
     };
   }, [allMenuItems, contextualInfo.timeContext, timeOfDay]);
 
-  // Filtered items based on search and active category
+  // Filtered items based on search, category, and active smart category
   const filteredItems = useMemo(() => {
     let items = allMenuItems;
+    // apply selected category filter first
+    if (activeCategoryFilter) {
+      items = items.filter(item => item.categoryId === activeCategoryFilter);
+    }
 
     // Apply search filter
     if (debouncedSearchTerm) {
@@ -306,7 +315,7 @@ export function SmartMenu({
     }
 
     return items;
-  }, [allMenuItems, debouncedSearchTerm, activeSmartCategory, smartCategories]);
+  }, [allMenuItems, debouncedSearchTerm, activeSmartCategory, smartCategories, activeCategoryFilter]);
 
   // Optimized event handlers
   const handleItemClick = useCallback((item: FoodItem) => {
@@ -396,7 +405,7 @@ export function SmartMenu({
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="text-red-500 text-xl">{t('failed_to_load_menu')}</div>
+          <div className="text-red-500 text-xl">{t('menu.failed_to_load_menu')}</div>
           <Button onClick={() => refetchMenu()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             {t('retry')}
@@ -409,7 +418,14 @@ export function SmartMenu({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Compact Header for mobile-first design */}
-      <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-800 dark:to-cyan-900 pb-2">
+      <div 
+        className="pb-2"
+        style={{
+          background: brandColor 
+            ? `linear-gradient(135deg, ${brandColor} 0%, ${brandColor}cc 50%, ${brandColor}aa 100%)`
+            : 'linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%)', // fallback cyan gradient
+        }}
+      >
         <ContextualGreeting 
           contextualInfo={contextualInfo}
           variant="minimal"
@@ -474,7 +490,7 @@ export function SmartMenu({
                   } : {})
                 }}
               >
-                {t('all_items')}
+                {t('menu.all_items')}
               </Button>
               {smartCategoryOrder.map((categoryKey) => {
                 const category = smartCategories[categoryKey];
@@ -569,9 +585,9 @@ export function SmartMenu({
                     <div className="text-gray-400 mb-4">
                       <Search className="h-16 w-16 mx-auto" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{t('no_items_found')}</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('menu.no_items_found')}</h3>
                     <p className="text-gray-600 mb-4">
-                      {t('try_adjusting_search')}
+                      {t('menu.try_adjusting_search')}
                     </p>
                     <Button
                       variant="outline"
@@ -580,7 +596,7 @@ export function SmartMenu({
                         setActiveSmartCategory('recommended');
                       }}
                     >
-                      {t('clear_filters')}
+                      {t('menu.clear_filters')}
                     </Button>
                   </div>
                 )}
@@ -588,79 +604,104 @@ export function SmartMenu({
             ) : (
               /* Sectioned layout when not searching - optimized spacing for mobile */
               <div className="space-y-6">
-                {/* Popular Section */}
-                {smartCategories.popular && smartCategories.popular.count > 0 && (
+                {/* Show filtered content when category filter is active */}
+                {activeCategoryFilter ? (
+                  /* Single category view */
                   <MenuSection
-                    title="Popular"
-                    description="Customer favorites and top-rated dishes"
-                    items={smartCategories.popular.items}
+                    title={getLocalizedText(
+                      { 
+                        name_en: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_en || '', 
+                        name_ja: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_ja || '', 
+                        name_vi: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_vi || '' 
+                      },
+                      locale
+                    )}
+                    items={filteredItems}
                     brandColor={brandColor}
                     locale={locale}
                     canAddItems={canAddItems}
                     onItemClick={handleItemClick}
                     onAddToCart={handleAddToCart}
                     getQuantity={getQuantityByItemId}
-                    showPopularBadge={true}
-                    icon={<TrendingUp className="h-5 w-5" />}
                   />
-                )}
+                ) : (
+                  /* Normal sectioned view */
+                  <>
+                    {/* Popular Section */}
+                    {smartCategories.popular && smartCategories.popular.count > 0 && (
+                      <MenuSection
+                        title={t('menu.popular')}
+                        description={t('menu.popular_description')}
+                        items={smartCategories.popular.items}
+                        brandColor={brandColor}
+                        locale={locale}
+                        canAddItems={canAddItems}
+                        onItemClick={handleItemClick}
+                        onAddToCart={handleAddToCart}
+                        getQuantity={getQuantityByItemId}
+                        showPopularBadge={true}
+                        icon={<TrendingUp className="h-5 w-5" />}
+                      />
+                    )}
 
-                {/* Recommended Section */}
-                {smartCategories.recommended && smartCategories.recommended.count > 0 && (
-                  <MenuSection
-                    title="Perfect for You"
-                    description="AI-curated picks based on your preferences"
-                    items={smartCategories.recommended.items}
-                    brandColor={brandColor}
-                    locale={locale}
-                    canAddItems={canAddItems}
-                    onItemClick={handleItemClick}
-                    onAddToCart={handleAddToCart}
-                    getQuantity={getQuantityByItemId}
-                    showRecommendedBadge={true}
-                    icon={<Sparkles className="h-5 w-5" />}
-                  />
-                )}
+                    {/* Recommended Section */}
+                    {smartCategories.recommended && smartCategories.recommended.count > 0 && (
+                      <MenuSection
+                        title={t('menu.perfect_for_you')}
+                        description={t('menu.perfect_for_you_description')}
+                        items={smartCategories.recommended.items}
+                        brandColor={brandColor}
+                        locale={locale}
+                        canAddItems={canAddItems}
+                        onItemClick={handleItemClick}
+                        onAddToCart={handleAddToCart}
+                        getQuantity={getQuantityByItemId}
+                        showRecommendedBadge={true}
+                        icon={<Sparkles className="h-5 w-5" />}
+                      />
+                    )}
 
-                {/* Time-based Section */}
-                {smartCategories[timeOfDay] && smartCategories[timeOfDay].count > 0 && (
-                  <MenuSection
-                    title={`Perfect for ${timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}`}
-                    description={`Ideal choices for your ${timeOfDay} cravings`}
-                    items={smartCategories[timeOfDay].items}
-                    brandColor={brandColor}
-                    locale={locale}
-                    canAddItems={canAddItems}
-                    onItemClick={handleItemClick}
-                    onAddToCart={handleAddToCart}
-                    getQuantity={getQuantityByItemId}
-                    icon={timeOfDay === 'breakfast' ? <ChefHat className="h-5 w-5" /> : 
-                          timeOfDay === 'lunch' ? <Clock className="h-5 w-5" /> : <Heart className="h-5 w-5" />}
-                  />
-                )}
+                    {/* Time-based Section */}
+                    {smartCategories[timeOfDay] && smartCategories[timeOfDay].count > 0 && (
+                      <MenuSection
+                        title={t(`menu.perfect_for_${timeOfDay}`)}
+                        description={t(`menu.perfect_for_${timeOfDay}_description`)}
+                        items={smartCategories[timeOfDay].items}
+                        brandColor={brandColor}
+                        locale={locale}
+                        canAddItems={canAddItems}
+                        onItemClick={handleItemClick}
+                        onAddToCart={handleAddToCart}
+                        getQuantity={getQuantityByItemId}
+                        icon={timeOfDay === 'breakfast' ? <ChefHat className="h-5 w-5" /> : 
+                              timeOfDay === 'lunch' ? <Clock className="h-5 w-5" /> : <Heart className="h-5 w-5" />}
+                      />
+                    )}
 
-                {/* Regular Categories */}
-                {activeCategories.map((category) => {
-                  const categoryItems = allMenuItems.filter(item => item.categoryId === category.id);
-                  if (categoryItems.length === 0) return null;
-                  
-                  return (
-                    <MenuSection
-                      key={category.id}
-                      title={getLocalizedText(
-                        { name_en: category.name_en || '', name_ja: category.name_ja || '', name_vi: category.name_vi || '' },
-                        locale
-                      )}
-                      items={categoryItems}
-                      brandColor={brandColor}
-                      locale={locale}
-                      canAddItems={canAddItems}
-                      onItemClick={handleItemClick}
-                      onAddToCart={handleAddToCart}
-                      getQuantity={getQuantityByItemId}
-                    />
-                  );
-                })}
+                    {/* Regular Categories */}
+                    {activeCategories.map((category) => {
+                      const categoryItems = allMenuItems.filter(item => item.categoryId === category.id);
+                      if (categoryItems.length === 0) return null;
+                      
+                      return (
+                        <MenuSection
+                          key={category.id}
+                          title={getLocalizedText(
+                            { name_en: category.name_en || '', name_ja: category.name_ja || '', name_vi: category.name_vi || '' },
+                            locale
+                          )}
+                          items={categoryItems}
+                          brandColor={brandColor}
+                          locale={locale}
+                          canAddItems={canAddItems}
+                          onItemClick={handleItemClick}
+                          onAddToCart={handleAddToCart}
+                          getQuantity={getQuantityByItemId}
+                        />
+                      );
+                    })}
+                  </>
+                )}
               </div>
             )}
           </AnimatePresence>
@@ -668,14 +709,7 @@ export function SmartMenu({
 
         {/* Quick Access Actions */}
         <div className="mt-12 flex justify-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => setIsAIAssistantOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Bot className="h-4 w-4" />
-            {t('ask_ai')}
-          </Button>
+          {/* Hide AI assistant for now */}
           <Button
             variant="outline"
             onClick={() => setView('checkout', { tableId, sessionId, tableNumber })}
@@ -686,13 +720,177 @@ export function SmartMenu({
         </div>
       </div>
 
-      {/* AI Assistant Integration */}
-      <AIAssistant
-        isOpen={isAIAssistantOpen}
-        onToggle={() => setIsAIAssistantOpen(!isAIAssistantOpen)}
-        restaurantName={restaurantName}
-        currentContext="menu"
-      />
+      {/* Category Filter Bottom Sheet */}
+      <AnimatePresence>
+        {isCategoryModalOpen && (
+          /* Bottom Sheet - No backdrop, menu stays fully visible */
+          <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ 
+                type: 'spring', 
+                damping: 30, 
+                stiffness: 300,
+                mass: 0.8
+              }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl max-h-[70vh] overflow-hidden"
+            >
+              {/* Handle */}
+              <div className="flex justify-center py-3">
+                <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+              </div>
+              
+              {/* Header */}
+              <div className="px-6 pb-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {t('menu.filter_categories')}
+                  </h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsCategoryModalOpen(false)}
+                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                {activeCategoryFilter && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {t('menu.currently_showing')}: {getLocalizedText(
+                      { 
+                        name_en: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_en || '', 
+                        name_ja: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_ja || '', 
+                        name_vi: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_vi || '' 
+                      },
+                      locale
+                    )}
+                  </p>
+                )}
+              </div>
+              
+              {/* Search */}
+              <div className="px-6 pb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="search"
+                    placeholder={t('menu.search_categories')}
+                    value={categorySearchTerm}
+                    onChange={e => setCategorySearchTerm(e.target.value)}
+                    className="pl-10 w-full rounded-xl border-gray-200 dark:border-gray-700"
+                  />
+                </div>
+              </div>
+              
+              {/* Categories List */}
+              <div className="px-6 pb-6 overflow-y-auto max-h-[40vh]">
+                {/* Show All Option */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full text-left p-3 rounded-xl mb-2 transition-all duration-200 ${
+                    !activeCategoryFilter
+                      ? 'bg-[var(--brand-color)] text-white shadow-md'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                  onClick={() => {
+                    setActiveCategoryFilter(null);
+                    setIsCategoryModalOpen(false);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">
+                      {t('menu.show_all_categories')}
+                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      {allMenuItems.length}
+                    </Badge>
+                  </div>
+                </motion.button>
+                
+                {/* Category Options */}
+                {activeCategories
+                  .filter(cat =>
+                    getLocalizedText(
+                      { name_en: cat.name_en || '', name_ja: cat.name_ja || '', name_vi: cat.name_vi || '' },
+                      locale
+                    )
+                      .toLowerCase()
+                      .includes(debouncedCategorySearchTerm.toLowerCase())
+                  )
+                  .map(cat => {
+                    const categoryItems = allMenuItems.filter(item => item.categoryId === cat.id);
+                    const isActive = activeCategoryFilter === cat.id;
+                    
+                    return (
+                      <motion.button
+                        key={cat.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`w-full text-left p-3 rounded-xl mb-2 transition-all duration-200 ${
+                          isActive
+                            ? 'bg-[var(--brand-color)] text-white shadow-md'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`}
+                        onClick={() => {
+                          setActiveCategoryFilter(cat.id);
+                          setIsCategoryModalOpen(false);
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">
+                            {getLocalizedText(
+                              { name_en: cat.name_en || '', name_ja: cat.name_ja || '', name_vi: cat.name_vi || '' },
+                              locale
+                            )}
+                          </span>
+                          <Badge 
+                            variant={isActive ? "outline" : "secondary"} 
+                            className={`text-xs ${isActive ? 'border-white text-white' : ''}`}
+                          >
+                            {categoryItems.length}
+                          </Badge>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+              </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Category Filter Button */}
+      <div className="fixed bottom-6 right-4 z-30">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Button
+            className="p-4 rounded-lg shadow-2xl border-2 border-white dark:border-gray-700"
+            style={{
+              background: brandColor 
+                ? `linear-gradient(135deg, ${brandColor} 0%, ${brandColor}dd 100%)`
+                : 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
+            }}
+            onClick={() => setIsCategoryModalOpen(true)}
+          >
+            <Menu className="h-6 w-6 text-white" />
+          </Button>
+        </motion.div>
+        
+        {/* Category Filter Indicator */}
+        {activeCategoryFilter && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold"
+          >
+            1
+          </motion.div>
+        )}
+      </div>
 
       {/* Item Detail Modal */}
       <ItemDetailModal

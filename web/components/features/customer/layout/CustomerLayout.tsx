@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useParams, useRouter, usePathname } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CartProvider, useCart } from "../CartContext";
 import { CustomerDataProvider, useCustomerData } from "./CustomerDataContext";
@@ -8,7 +8,7 @@ import type { CartItem } from "../CartContext";
 import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";
 import { FloatingCart } from "../FloatingCart";
-import { AIAssistant } from "./AIAssistant";
+//import { AIAssistant } from "./AIAssistant";
 import { Skeleton } from "@/components/ui/skeletons/skeleton";
 
 interface CustomerLayoutProps {
@@ -20,18 +20,15 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   const t = useTranslations("customer");
   const params = useParams();
   const router = useRouter();
-  const pathname = usePathname();
+  //const pathname = usePathname();
   const [selectedLocale, setSelectedLocale] = useState(locale);
   const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();
   const { restaurantSettings, sessionData, isLoading, error } = useCustomerData();
 
-  const [isAIOpen, setIsAIOpen] = useState(false);
+  //const [isAIOpen, setIsAIOpen] = useState(false);
 
   // Determine current context for AI Assistant
-  const currentContext = pathname.includes('/menu') 
-    ? 'menu': pathname.includes('/order') 
-        ? 'order' 
-        : 'menu';
+  //const currentContext = pathname.includes('/menu') ? 'menu': pathname.includes('/order') ? 'order' : 'menu';
 
   // Handle navigation
   const handleCartClick = () => {
@@ -172,13 +169,13 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
           brandColor={restaurantSettings.primaryColor || "#4f46e5"}
         />
       )}
-      
+      {/**  AI Assistant Component 
       <AIAssistant
         isOpen={isAIOpen}
         onToggle={() => setIsAIOpen(!isAIOpen)}
         restaurantName={restaurantSettings.name}
         currentContext={currentContext as 'menu' | 'cart' | 'order'}
-      />
+      />*/}
     </div>
   );
 }

@@ -187,5 +187,31 @@
   "ordering_for_table": "Đặt hàng cho bàn {tableId}",
   "item": {
     "weekday_visibility": "Hiển thị theo ngày trong tuần"
+  },
+  "menu": {
+    "failed_to_load_menu": "Không thể tải menu",
+    "all_items": "Tất cả món",
+    "no_items_found": "Không tìm thấy món nào",
+    "try_adjusting_search": "Thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc",
+    "clear_filters": "Xóa bộ lọc",
+    "filter_categories": "Lọc danh mục",
+    "search_categories": "Tìm kiếm danh mục...",
+    "show_all_categories": "Hiển thị tất cả danh mục",
+    "popular": "Phổ biến",
+    "popular_description": "Món ăn được yêu thích và đánh giá cao",
+    "perfect_for_you": "Phù hợp với bạn",
+    "perfect_for_you_description": "Lựa chọn được AI tuyển chọn dựa trên sở thích của bạn",
+    "perfect_for_breakfast": "Phù hợp cho bữa sáng",
+    "perfect_for_breakfast_description": "Lựa chọn lý tưởng cho bữa sáng của bạn",
+    "perfect_for_lunch": "Phù hợp cho bữa trưa",
+    "perfect_for_lunch_description": "Lựa chọn lý tưởng cho bữa trưa của bạn",
+    "perfect_for_afternoon": "Phù hợp cho buổi chiều",
+    "perfect_for_afternoon_description": "Lựa chọn lý tưởng cho buổi chiều của bạn",
+    "perfect_for_dinner": "Phù hợp cho bữa tối",
+    "perfect_for_dinner_description": "Lựa chọn lý tưởng cho bữa tối của bạn",
+    "perfect_for_late": "Phù hợp cho đêm muộn",
+    "perfect_for_late_description": "Lựa chọn lý tưởng cho đêm muộn của bạn",
+    "customer_favorites": "Yêu thích của khách hàng",
+    "currently_showing": "Hiện đang hiển thị"
   }
 }

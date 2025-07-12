@@ -187,5 +187,31 @@
   "ordering_for_table": "テーブル{tableId}の注文",
   "item": {
     "weekday_visibility": "曜日の表示設定"
+  },
+  "menu": {
+    "failed_to_load_menu": "メニューの読み込みに失敗しました",
+    "all_items": "すべてのアイテム",
+    "no_items_found": "アイテムが見つかりません",
+    "try_adjusting_search": "検索条件やフィルターを調整してみてください",
+    "clear_filters": "フィルターをクリア",
+    "filter_categories": "カテゴリーフィルター",
+    "search_categories": "カテゴリーを検索...",
+    "show_all_categories": "すべてのカテゴリーを表示",
+    "popular": "人気",
+    "popular_description": "お客様のお気に入りと高評価料理",
+    "perfect_for_you": "あなたにぴったり",
+    "perfect_for_you_description": "お好みに基づいたAI厳選メニュー",
+    "perfect_for_breakfast": "朝食にぴったり",
+    "perfect_for_breakfast_description": "朝食におすすめの理想的な選択",
+    "perfect_for_lunch": "昼食にぴったり",
+    "perfect_for_lunch_description": "昼食におすすめの理想的な選択",
+    "perfect_for_afternoon": "午後にぴったり",
+    "perfect_for_afternoon_description": "午後におすすめの理想的な選択",
+    "perfect_for_dinner": "夕食にぴったり",
+    "perfect_for_dinner_description": "夕食におすすめの理想的な選択",
+    "perfect_for_late": "夜食にぴったり",
+    "perfect_for_late_description": "夜食におすすめの理想的な選択",
+    "customer_favorites": "お客様のお気に入り",
+    "currently_showing": "現在表示中"
   }
 }

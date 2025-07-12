@@ -187,5 +187,31 @@
   "ordering_for_table": "Ordering for Table {tableId}",
   "item": {
     "weekday_visibility": "Weekday Visibility"
+  },
+  "menu": {
+    "failed_to_load_menu": "Failed to load menu",
+    "all_items": "All Items",
+    "no_items_found": "No items found",
+    "try_adjusting_search": "Try adjusting your search terms or filters",
+    "clear_filters": "Clear Filters",
+    "filter_categories": "Filter Categories",
+    "search_categories": "Search categories...",
+    "show_all_categories": "Show All Categories",
+    "popular": "Popular",
+    "popular_description": "Customer favorites and top-rated dishes",
+    "perfect_for_you": "Perfect for You",
+    "perfect_for_you_description": "AI-curated picks based on your preferences",
+    "perfect_for_breakfast": "Perfect for Breakfast",
+    "perfect_for_breakfast_description": "Ideal choices for your breakfast cravings",
+    "perfect_for_lunch": "Perfect for Lunch",
+    "perfect_for_lunch_description": "Ideal choices for your lunch cravings",
+    "perfect_for_afternoon": "Perfect for Afternoon",
+    "perfect_for_afternoon_description": "Ideal choices for your afternoon cravings",
+    "perfect_for_dinner": "Perfect for Dinner",
+    "perfect_for_dinner_description": "Ideal choices for your dinner cravings",
+    "perfect_for_late": "Perfect for Late Night",
+    "perfect_for_late_description": "Ideal choices for your late night cravings",
+    "customer_favorites": "Customer Favorites",
+    "currently_showing": "Currently showing"
   }
 }
