@@ -1,0 +1,23 @@
+{
+  "title": "サービス管理ダッシュボード",
+  "subtitle": "CoOrderプラットフォームとすべてのレストランテナントを管理します",
+  "cards": {
+    "total_restaurants": "総レストラン数",
+    "active_users": "アクティブユーザー数",
+    "monthly_revenue": "月間収益",
+    "system_health": "システムヘルス"
+  },
+  "quick_actions": {
+    "title": "クイックアクション",
+    "add_restaurant": "レストランを追加",
+    "view_analytics": "プラットフォーム分析を表示",
+    "system_settings": "システム設定"
+  },
+  "recent_activity": {
+    "title": "最近のプラットフォームアクティビティ",
+    "no_activity": "表示する最近のアクティビティはありません。"
+  },
+  "metadata": {
+    "title": "サービス管理ダッシュボード - CoOrderプラットフォーム"
+  }
+}

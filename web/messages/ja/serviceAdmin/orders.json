@@ -1,0 +1,29 @@
+{
+  "title": "プラットフォームの注文",
+  "subtitle": "プラットフォーム上のすべてのレストランの注文を監視します",
+  "filters": {
+    "all_restaurants": "すべてのレストラン",
+    "today": "今日",
+    "this_week": "今週",
+    "this_month": "今月"
+  },
+  "table": {
+    "order_id": "注文ID",
+    "restaurant": "レストラン",
+    "customer": "顧客",
+    "items": "品目",
+    "total": "合計",
+    "status": "ステータス",
+    "created": "作成日時"
+  },
+  "metrics": {
+    "total_orders": "総注文数",
+    "total_revenue": "総収益",
+    "average_order": "平均注文額",
+    "completion_rate": "完了率"
+  },
+  "empty_state": {
+    "title": "注文が見つかりません",
+    "description": "現在のフィルターに一致する注文はありません。"
+  }
+}

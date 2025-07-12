@@ -1,98 +1,82 @@
 {
-  "welcome_to": "Welcome to ",
-  "menu_title": "Menu",
-  "add_to_cart": "Add",
-  "no_menu_items": "No menu items available",
-  "restaurant_not_found_description": "The restaurant you are trying to access does not exist or is currently unavailable.",
-  "view_menu": "View Menu",
-  "contact_information": "Contact Information",
-  "visit_website": "Visit Website",
-  "opening_hours": "Opening Hours",
-  "quick_actions": "Quick Actions",
-  "scan_qr_code": "Scan QR Code",
-  "book_table": "Book a Table",
-  "popular": "Most Popular",
-  "view_full_menu": "View Full Menu",
-  "ai_assistant": "AI Assistant",
-  "ai_assistant_description": "Get personalized recommendations and assistance with your order",
-  "smart_recommendations": "Smart Recommendations",
-  "interactive_chat": "Interactive Chat",
-  "got_it": "Got it",
-  "admin_panel": {
-    "toggle_label": "Toggle Admin Panel"
+  "hero": {
+    "title_part1": "あなたの街の",
+    "title_part2": "最高の味を",
+    "subtitle": "作りたてのお食事を玄関先までお届けします。",
+    "cta_button": "今すぐ注文"
   },
-  "pick_for_you": "Recommended for You",
-  "popular_items": "Popular Items",
-  "recommended_items": "Recommended Items",
-  "view_cart": "View Cart",
-  "no_results_found": "No results found",
-  "adjusting_filters_or_search": "Try adjusting your filters or search terms.",
-  "clear_filters": "Clear Filters",
-  "current_session": "Current Ordering Session",
-  "active": "Active",
-  "inactive": "Inactive",
-  "close": "Close",
-  "session_active_more": "You can still add more items!",
-  "menu_item_detail_back_to_menu": "Back to Menu",
-  "menu_item_detail_add_to_cart": "Add to Cart",
-  "decrease_quantity": "Decrease quantity by one",
-  "increase_quantity": "Increase quantity by one",
-  "search_placeholder": "Search menu items...",
-  "menu_item_detail_added_to_cart_msg": "{itemName} has been added to your cart.",
-  "no_order_found": "No orders found",
-  "no_order_items": "No orders have been placed at this table yet.",
-  "redirecting_to_history": "Redirecting to order history...",
-  "ordering_for_table": "Ordering for Table {tableId}",
-  "serving_today": "Serving Today: {day}",
-  "item_added_to_cart_msg": "{item} added to cart!",
-  "admin_panel_button": "Admin Panel",
-  "session_management": {
-    "suggest_help": "I need help",
-    "session_created": "Session Created",
-    "session_code_created": "Your session code is: {code}",
-    "session_create_error": "Error Creating Session",
-    "session_joined": "Session Joined",
-    "session_joined_success": "You've successfully joined the dining session",
-    "session_join_error": "Error Joining Session",
-    "invalid_session_code": "Invalid session code. Please try again.",
-    "try_again_later": "Please try again later",
-    "create_new_session": "Create New Session",
-    "join_existing_session": "Join Existing Session",
-    "guest_count": "Number of Guests",
-    "guest_count_description": "How many people are in your party?",
-    "cancel": "Cancel",
-    "creating": "Creating...",
-    "create_session": "Create Session",
-    "session_code": "Session Code",
-    "enter_session_code": "Enter the 6-digit code",
-    "session_code_description": "Ask your host for the 6-digit session code",
-    "joining": "Joining...",
-    "join_session": "Join Session",
-    "restaurant_not_found": "Restaurant Not Found",
-    "restaurant_not_found_message": "We couldn't find the restaurant you're looking for. Please check the URL and try again."
+  "featured_dishes": {
+    "title": "おすすめ料理",
+    "view_all_button": "全メニューを見る"
   },
-  "meta": {
-    "title": "Menu & Ordering",
-    "description": "Browse our menu and place your order easily"
+  "how_it_works": {
+    "title": "ご利用方法",
+    "step1_title": "メニューを見る",
+    "step1_description": "豊富な種類のレストランや料理からお選びください。",
+    "step2_title": "注文する",
+    "step2_description": "お好きな商品をカートに追加し、チェックアウトしてください。",
+    "step3_title": "お食事を楽しむ",
+    "step3_description": "お食事が準備され、配達されるまでの間、リラックスしてお待ちください。"
   },
-  "qr_dialog": {
-    "title": "Scan QR Code",
-    "description": "Scan the QR code on your table to start ordering",
-    "scan_qr_code": "Scan QR Code",
-    "qr_code_scanned": "QR Code Scanned",
-    "qr_code_error": "Error scanning QR code. Please try again."
+  "testimonials": {
+    "title": "お客様の声",
+    "testimonial1_text": "「このアプリでの注文は本当に簡単で便利です！食べ物もいつも美味しいです。」",
+    "testimonial1_author": "佐藤 花子",
+    "testimonial2_text": "「メニューの種類が豊富で、いつも新しいお気に入りが見つかります。配達も迅速です！」",
+    "testimonial2_author": "鈴木 一郎",
+    "testimonial3_text": "「カスタマーサポートが素晴らしい！アレルギーに関する質問にも親切に対応してくれました。」",
+    "testimonial3_author": "高橋 直子"
   },
-  "common": {
-    "total": "Total",
-    "cancel": "Cancel Order",
-    "confirm": "Confirm Order",
-    "from_price": "From {price}",
-    "restaurant_not_found": "Restaurant not found. Please check the URL or contact support.",
-    "error_loading_menu": "Error loading menu. Please try again later.",
-    "error_loading_cart": "Error loading cart. Please try again later.",
-    "error_loading_checkout": "Error loading checkout. Please try again later.",
-    "error_loading_booking": "Error loading booking form. Please try again later.",
-    "error_loading_order_summary": "Error loading order summary. Please try again later.",
-    "error_loading_review_form": "Error loading review form. Please try again later."
+  "cta_banner": {
+    "title": "お腹が空きましたか？",
+    "subtitle": "お気に入りのレストランの料理を今すぐ注文しましょう！",
+    "cta_button": "メニューを見る"
+  },
+  "restaurant_highlights": {
+    "title": "注目のレストラン",
+    "description": "地元で人気のお店や新しいお店を発見しましょう。"
+  },
+  "cuisine_categories": {
+    "title": "料理カテゴリー",
+    "description": "さまざまな料理のジャンルからお選びいただけます。",
+    "view_more_button": "もっと見る"
+  },
+  "app_promotion": {
+    "title": "アプリで注文をもっと簡単に",
+    "description": "専用アプリをダウンロードして、特別割引やスムーズな注文体験をお楽しみください。",
+    "app_store_button": "App Store",
+    "google_play_button": "Google Play"
+  },
+  "newsletter_signup": {
+    "title": "ニュースレターに登録",
+    "description": "最新情報、プロモーション、特別オファーをいち早く受け取りましょう。",
+    "email_placeholder": "メールアドレスを入力",
+    "subscribe_button": "登録する",
+    "success_message": "ご登録ありがとうございます！",
+    "error_message": "登録に失敗しました。もう一度お試しください。"
+  },
+  "social_media_links": {
+    "title": "フォローする",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "twitter": "Twitter"
+  },
+  "search_section": {
+    "placeholder": "料理、レストラン、キーワードで検索...",
+    "button_text": "検索"
+  },
+  "location_services": {
+    "prompt": "お近くのレストランを表示するために位置情報を許可しますか？",
+    "allow_button": "許可する",
+    "deny_button": "許可しない"
+  },
+  "popular_items": {
+    "title": "人気商品",
+    "add_to_cart_button": "カートに追加"
+  },
+  "special_offers": {
+    "title": "特別オファー",
+    "valid_until": "有効期限: {date}",
+    "limited_time_offer": "期間限定オファー"
   }
 }

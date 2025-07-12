@@ -1,0 +1,33 @@
+{
+  "title": "プラットフォーム設定",
+  "subtitle": "グローバルプラットフォーム設定と機能を構成します",
+  "sections": {
+    "general": {
+      "title": "一般設定",
+      "platform_name": "プラットフォーム名",
+      "maintenance_mode": "メンテナンスモード",
+      "maintenance_message": "メンテナンスメッセージ"
+    },
+    "features": {
+      "title": "機能フラグ",
+      "enable_new_registrations": "新規登録を有効にする",
+      "enable_ai_features": "AI機能を有効にする",
+      "enable_analytics": "分析を有効にする"
+    },
+    "limits": {
+      "title": "プラットフォーム制限",
+      "max_restaurants_per_user": "ユーザーあたりの最大レストラン数",
+      "max_menu_items": "レストランあたりの最大メニュー項目数",
+      "storage_limit": "レストランあたりのストレージ制限（MB）"
+    },
+    "notifications": {
+      "title": "プラットフォーム通知",
+      "system_alerts": "システムアラート",
+      "maintenance_notifications": "メンテナンス通知"
+    }
+  },
+  "buttons": {
+    "save_settings": "設定を保存",
+    "reset_defaults": "デフォルトにリセット"
+  }
+}

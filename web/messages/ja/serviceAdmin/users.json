@@ -1,0 +1,29 @@
+{
+  "title": "ユーザー管理",
+  "subtitle": "プラットフォーム全体のすべてのレストランオーナーとユーザーを管理します",
+  "table": {
+    "name": "名前",
+    "email": "メールアドレス",
+    "restaurant": "レストラン",
+    "role": "役割",
+    "status": "ステータス",
+    "created": "作成日時",
+    "actions": "アクション"
+  },
+  "filters": {
+    "all_users": "すべてのユーザー",
+    "active": "アクティブ",
+    "inactive": "非アクティブ",
+    "pending": "検証待ち"
+  },
+  "actions": {
+    "view_details": "詳細を表示",
+    "suspend_user": "ユーザーを停止",
+    "activate_user": "ユーザーをアクティブ化",
+    "reset_password": "パスワードをリセット"
+  },
+  "empty_state": {
+    "title": "ユーザーが見つかりません",
+    "description": "現在のフィルターに一致するユーザーはいません。"
+  }
+}

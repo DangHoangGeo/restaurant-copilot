@@ -1,86 +1,86 @@
 {
-  "title": "Your Cart",
-  "items_in_cart": "{count} item in cart",
-  "items_in_cart_plural": "{count} items in cart",
-  "review_order_button": "Review Order",
-  "toppings_label": "Toppings: {toppings}",
+  "title": "カート",
+  "items_in_cart": "カートに{count}点の商品があります",
+  "items_in_cart_plural": "カートに{count}点の商品があります",
+  "review_order_button": "注文内容を確認",
+  "toppings_label": "トッピング: {toppings}",
   "empty_cart": {
-    "title": "Your cart is empty",
-    "message": "Add some delicious items to your cart to continue.",
-    "browse_menu": "Browse Menu"
+    "title": "カートは空です",
+    "message": "カートに美味しい商品を追加して注文を続けてください。",
+    "browse_menu": "メニューを見る"
   },
   "item_card": {
-    "quantity": "Qty: {quantity}",
-    "price_each": "¥{price} each",
-    "total_price": "Total: ¥{total}",
-    "notes": "Notes: {notes}",
-    "size": "Size: {size}",
-    "toppings": "Toppings: {toppings}",
-    "edit_item": "Edit Item",
-    "remove_item": "Remove Item"
+    "quantity": "数量: {quantity}",
+    "price_each": "各 ¥{price}",
+    "total_price": "合計: ¥{total}",
+    "notes": "備考: {notes}",
+    "size": "サイズ: {size}",
+    "toppings": "トッピング: {toppings}",
+    "edit_item": "商品を編集",
+    "remove_item": "商品を削除"
   },
   "cart_summary": {
-    "subtotal": "Subtotal",
-    "tax": "Tax",
-    "total": "Total",
-    "item_count": "{count} item",
-    "item_count_plural": "{count} items"
+    "subtotal": "小計",
+    "tax": "消費税",
+    "total": "合計",
+    "item_count": "{count}点",
+    "item_count_plural": "{count}点"
   },
   "actions": {
-    "continue_shopping": "Continue Shopping",
-    "clear_cart": "Clear Cart",
-    "proceed_to_checkout": "Proceed to Checkout",
-    "add_more_items": "Add More Items"
+    "continue_shopping": "買い物を続ける",
+    "clear_cart": "カートを空にする",
+    "proceed_to_checkout": "レジに進む",
+    "add_more_items": "さらに商品を追加"
   },
   "modals": {
     "clear_cart": {
-      "title": "Clear Cart",
-      "message": "Are you sure you want to remove all items from your cart?",
-      "confirm": "Clear Cart",
-      "cancel": "Keep Items"
+      "title": "カートを空にする",
+      "message": "カートからすべての商品を削除してもよろしいですか？",
+      "confirm": "カートを空にする",
+      "cancel": "商品を保持する"
     },
     "remove_item": {
-      "title": "Remove Item", 
-      "message": "Are you sure you want to remove {itemName} from your cart?",
-      "confirm": "Remove",
-      "cancel": "Keep"
+      "title": "商品を削除",
+      "message": "カートから{itemName}を削除してもよろしいですか？",
+      "confirm": "削除",
+      "cancel": "保持する"
     }
   },
   "guest_dialog": {
-    "title": "Welcome! How many guests?",
-    "confirm": "Start Ordering"
+    "title": "ようこそ！何名様ですか？",
+    "confirm": "注文を開始"
   },
   "session": {
-    "created_title": "Session Created!",
-    "share_passcode": "Share this 4-digit code with others at your table so they can join your order:",
-    "passcode_instruction": "Others can scan the table QR code and enter this passcode to join your session.",
-    "ask_for_passcode": "Ask for Passcode",
-    "ask_for_passcode_instruction": "If you don't have the passcode, please ask the person who started the order.",
-    "start_ordering": "Start Ordering",
-    "enter_passcode_title": "Enter Passcode",
-    "enter_passcode_placeholder": "Enter 4-digit code",
-    "join_session": "Join Session",
-    "session_expired": "Session Expired",
-    "session_expired_message": "Your order session has been completed or expired. Thank you for your visit!",
-    "session_expired_instruction": "To place a new order, please scan the QR code on your table again.",
-    "invalid_table": "Invalid Table",
-    "invalid_table_message": "The table ID is invalid or doesn't belong to this restaurant.",
-    "invalid_table_instruction": "Please scan a valid QR code from a table at this restaurant.",
-    "view_menu_only": "View Menu Only"
+    "created_title": "セッションが作成されました！",
+    "share_passcode": "テーブルの他の方とこの4桁のコードを共有して、注文に参加できるようにしてください:",
+    "passcode_instruction": "他の方はテーブルのQRコードをスキャンし、このパスコードを入力するとセッションに参加できます。",
+    "ask_for_passcode": "パスコードを尋ねる",
+    "ask_for_passcode_instruction": "パスコードをお持ちでない場合は、注文を開始した方にお尋ねください。",
+    "start_ordering": "注文を開始",
+    "enter_passcode_title": "パスコードを入力",
+    "enter_passcode_placeholder": "4桁のコードを入力",
+    "join_session": "セッションに参加",
+    "session_expired": "セッションの有効期限が切れました",
+    "session_expired_message": "ご注文のセッションが完了したか、有効期限が切れました。ご来店ありがとうございました！",
+    "session_expired_instruction": "新しい注文をするには、テーブルのQRコードを再度スキャンしてください。",
+    "invalid_table": "無効なテーブル",
+    "invalid_table_message": "テーブルIDが無効であるか、このレストランのものではありません。",
+    "invalid_table_instruction": "このレストランのテーブルから有効なQRコードをスキャンしてください。",
+    "view_menu_only": "メニューのみ表示"
   },
   "notifications": {
-    "item_added": "{itemName} added to cart",
-    "item_removed": "{itemName} removed from cart",
-    "cart_cleared": "Cart cleared",
-    "update_failed": "Failed to update cart. Please try again."
+    "item_added": "{itemName}がカートに追加されました",
+    "item_removed": "{itemName}がカートから削除されました",
+    "cart_cleared": "カートが空にされました",
+    "update_failed": "カートの更新に失敗しました。もう一度お試しください。"
   },
   "floating_cart": {
-    "title": "Your Cart",
-    "items_count": "{count} items",
-    "total": "Total: {amount}",
-    "view_cart": "View Cart",
-    "checkout": "Checkout",
-    "empty_message": "Your cart is empty",
-    "add_items": "Add some delicious items!"
+    "title": "カート",
+    "items_count": "{count}点",
+    "total": "合計: {amount}",
+    "view_cart": "カートを見る",
+    "checkout": "レジに進む",
+    "empty_message": "カートは空です",
+    "add_items": "美味しい商品を追加しましょう！"
   }
 }

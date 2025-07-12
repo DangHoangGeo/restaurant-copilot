@@ -1,93 +1,104 @@
 {
-  "title": "Employee Management",
-  "subtitle": "Manage your restaurant staff and schedules",
-  "views": {
-    "list": "List",
-    "schedule": "Schedule"
+  "title": "スタッフ管理",
+  "subtitle": "従業員プロファイル、役割、スケジュールを管理します",
+  "tabs": {
+    "all_staff": "すべてのスタッフ",
+    "schedules": "スケジュール",
+    "permissions": "権限"
   },
-  "employee": "Employee",
-  "select_role": "Select Role",
-  "role": "Role",
-  "enter_name": "Enter Employee Name",
-  "enter_email": "Enter Employee Email",
-  "add_employee": "Add Employee",
-  "edit_employee": "Edit Employee",
-  "delete_employee": "Delete Employee",
-  "edit_schedule": "Edit Schedule",
-  "save_changes": "Save Changes",
-  "cancel": "Cancel",
-  "search_placeholder": "Search employees...",
-  "no_employees": "No employees found",
-  "employee_details": "Employee Details",
-  "actions": {
-    "add_employee": "Add Employee",
-    "edit_employee": "Edit Employee",
-    "delete_employee": "Delete Employee",
-    "edit_schedule": "Edit Schedule",
-    "save": "Save",
-    "cancel": "Cancel"
-  },
-  "table": {
-    "name": "Name",
-    "email": "Email",
-    "role": "Role",
-    "shifts": "Shifts",
-    "actions": "Actions"
-  },
-  "roles": {
-    "manager": "Manager",
-    "chef": "Chef",
-    "server": "Server",
-    "cashier": "Cashier"
-  },
-  "form": {
-    "name_label": "Full Name",
-    "name_placeholder": "Enter employee's full name",
-    "email_label": "Email Address",
-    "email_placeholder": "Enter employee's email",
-    "role_label": "Role",
-    "role_placeholder": "Select a role"
-  },
-  "schedule": {
-    "title": "Employee Schedules",
-    "edit_title": "Edit Schedule for {name}",
-    "weekdays": {
-      "monday": "Monday",
-      "tuesday": "Tuesday", 
-      "wednesday": "Wednesday",
-      "thursday": "Thursday",
-      "friday": "Friday",
-      "saturday": "Saturday",
-      "sunday": "Sunday"
+  "all_staff": {
+    "add_employee_button": "従業員を追加",
+    "search_placeholder": "スタッフを検索...",
+    "list_headers": {
+      "name": "名前",
+      "role": "役割",
+      "email": "メールアドレス",
+      "phone": "電話番号",
+      "status": "ステータス",
+      "actions": "アクション"
     },
-    "time_format": "{start} - {end}",
-    "no_shift": "Off",
-    "start_time": "Start Time",
-    "end_time": "End Time"
+    "status_options": {
+      "active": "アクティブ",
+      "inactive": "非アクティブ",
+      "on_leave": "休暇中"
+    },
+    "empty_state": {
+      "title": "従業員がいません",
+      "message": "最初の従業員を追加して、チームの構築を始めましょう。"
+    },
+    "actions": {
+      "edit": "編集",
+      "view_schedule": "スケジュールを表示",
+      "deactivate": "無効化",
+      "activate": "有効化"
+    }
   },
-  "notifications": {
-    "employee_added": "Employee added successfully",
-    "employee_updated": "Employee updated successfully",
-    "employee_deleted": "Employee deleted successfully",
-    "schedule_updated": "Schedule updated successfully",
-    "add_failed": "Failed to add employee",
-    "update_failed": "Failed to update employee",
-    "delete_failed": "Failed to delete employee",
-    "schedule_failed": "Failed to update schedule"
+  "add_employee_modal": {
+    "title": "新しい従業員を追加",
+    "edit_title": "従業員情報を編集",
+    "labels": {
+      "first_name": "名",
+      "last_name": "姓",
+      "email": "メールアドレス",
+      "phone": "電話番号",
+      "role": "役割",
+      "pin": "PIN (ログイン用)",
+      "confirm_pin": "PIN を確認"
+    },
+    "placeholders": {
+      "first_name": "名を入力",
+      "last_name": "姓を入力",
+      "email": "メールアドレスを入力",
+      "phone": "電話番号を入力",
+      "pin": "4桁のPIN",
+      "confirm_pin": "PIN を再入力"
+    },
+    "role_options": {
+      "manager": "マネージャー",
+      "chef": "シェフ",
+      "waitstaff": "ウェイター/ウェイトレス",
+      "bartender": "バーテンダー",
+      "host": "ホスト/ホステス",
+      "kitchen_staff": "キッチンスタッフ",
+      "other": "その他"
+    },
+    "buttons": {
+      "add": "従業員を追加",
+      "save": "変更を保存",
+      "cancel": "キャンセル"
+    },
+    "notifications": {
+      "add_success": "従業員が正常に追加されました",
+      "add_error": "従業員の追加に失敗しました: {error}",
+      "update_success": "従業員情報が正常に更新されました",
+      "update_error": "従業員情報の更新に失敗しました: {error}",
+      "pin_mismatch": "PIN が一致しません"
+    }
   },
-  "confirmations": {
-    "delete_title": "Delete Employee",
-    "delete_message": "Are you sure you want to delete {name}? This action cannot be undone."
+  "schedules": {
+    "title": "従業員スケジュール",
+    "coming_soon": "従業員のスケジュール管理機能は間もなく利用可能になります。",
+    "description": "週次および日次のスケジュールを作成および表示します。"
   },
-  "empty_state": {
-    "no_employees": "No employees found",
-    "add_first": "Add your first employee to get started"
+  "permissions": {
+    "title": "役割と権限",
+    "coming_soon": "役割ベースのアクセス制御と権限のカスタマイズは間もなく利用可能になります。",
+    "description": "さまざまな従業員の役割に対するアクセスレベルを定義します。"
   },
-  "validation": {
-    "name_required": "Name is required",
-    "email_required": "Email is required",
-    "email_invalid": "Please enter a valid email",
-    "role_required": "Role is required",
-    "time_invalid": "Start time must be before end time"
+  "delete_employee_modal": {
+    "title": "従業員を削除",
+    "confirmation_message": "本当に {employeeName} を削除しますか？この操作は元に戻せません。",
+    "buttons": {
+      "delete": "削除",
+      "cancel": "キャンセル"
+    },
+    "notifications": {
+      "delete_success": "従業員が正常に削除されました",
+      "delete_error": "従業員の削除に失敗しました: {error}"
+    }
+  },
+  "errors": {
+    "fetch_failed": "従業員データの読み込みに失敗しました。",
+    "generic_error": "エラーが発生しました。しばらくしてからもう一度お試しください。"
   }
 }

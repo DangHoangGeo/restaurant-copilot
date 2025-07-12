@@ -1,126 +1,149 @@
 {
   "title": "注文管理",
-  "orders": "注文",
-  "orderItems": "注文アイテム",
-  "subtitle": "リアルタイムで注文を監視・管理",
-  "totalOrders": "総注文数",
-  "totalRevenue": "総売上",
-  "avgOrderValue": "平均注文金額",
-  "totalItems": "総アイテム数",
-  "gridView": "グリッド表示",
-  "listView": "リスト表示",
-  "orderView": "注文表示",
-  "searchOrdersOrId": "テーブル、注文ID（下6桁）で検索...",
-  "orderTime": "注文時間",
-  "totalAmount": "合計金額",
-  "itemCount": "アイテム",
-  "itemName": "商品名",
-  "size": "サイズ",
-  "toppings": "トッピング",
-  "quantity": "数量",
-  "notes": "メモ",
-  "table": "テーブル",
-  "no_orders": "No orders to display.",
-  "search_placeholder": "Search orders by customer name, items, or order ID...",
-  "filter_by_status": "Filter by Status",
-  "createFirstOrder": "Create your first order to get started!",
-  "createNewOrder": "Create New Order",
-  "selectTable": "Select Table",
-  "viewAllOrders": "View All Orders",
-  "all_statuses": "All Statuses",
-  "new": "New",
-  "preparing": "Preparing",
-  "ready": "Ready",
-  "completed": "Completed",
-  "canceled": "キャンセル済み",
-  "itemStatus": "アイテムステータス",
-  "orderStatus": "注文ステータス",
-  "allStatuses": "全ステータス",
-  "allItemStatuses": "全アイテムステータス",
-  "ordered": "注文済み",
-  "served": "提供済み",
-  "estimatedGuests": "推定ゲスト数",
-  "dateRange": "日付範囲",
-  "today": "今日",
-  "yesterday": "昨日",
-  "thisWeek": "今週",
-  "lastWeek": "先週",
-  "thisMonth": "今月",
-  "lastMonth": "先月",
-  "custom": "カスタム",
-  "from": "開始日",
-  "to": "終了日",
-  "apply": "適用",
-  "reset": "リセット",
-  "chooseTable": "テーブルを選択",
-  "selectItems": "アイテムを選択",
-  "createOrder": "注文作成",
-  "orderCreated": "注文が正常に作成されました",
-  "orderCreationFailed": "注文の作成に失敗しました",
-  "itemStatusUpdated": "アイテムステータスが正常に更新されました",
-  "itemStatusUpdateFailed": "アイテムステータスの更新に失敗しました",
-  "pleaseSelectTableAndItems": "テーブルとアイテムを選択してください",
-  "loadingError": "注文の読み込みエラー",
-  "newOrder": "新規注文",
-  "orderDetail": "注文詳細",
-  "closeModal": "閉じる",
-  "guest": "ゲスト",
-  "guests": "ゲスト",
-  "viewDetails": "詳細を見る",
-  "table": {
-    "order_id": "Order ID",
-    "customer": "Customer",
-    "items": "Items",
-    "total": "Total",
-    "status": "Status",
-    "time": "Time",
-    "actions": "Actions"
+  "subtitle": "入ってくる注文を監視し、処理します",
+  "tabs": {
+    "active_orders": "進行中の注文 ({count})",
+    "order_history": "注文履歴",
+    "kitchen_view": "キッチンビュー"
   },
-  "status_buttons": {
-    "mark_preparing": "Mark Preparing",
-    "mark_ready": "Mark Ready",
-    "mark_completed": "Mark Completed",
-    "cancel_order": "Cancel Order"
+  "filters": {
+    "search_placeholder": "注文IDまたは顧客名で検索...",
+    "status_filter_label": "ステータスで絞り込み",
+    "all_statuses": "すべてのステータス",
+    "table_filter_label": "テーブルで絞り込み",
+    "all_tables": "すべてのテーブル",
+    "date_range_filter_label": "期間で絞り込み"
   },
-  "order_details": {
-    "title": "Order Details",
-    "order_info": "Order Information",
-    "customer_info": "Customer Information",
-    "items_ordered": "Items Ordered",
-    "special_notes": "Special Notes",
-    "no_notes": "No special notes for this order",
-    "total_amount": "Total Amount",
-    "order_time": "Order Time",
-    "table_number": "Table Number",
-    "guest_count": "Guest Count"
+  "active_orders_columns": {
+    "order_id": "注文ID",
+    "table_number": "テーブル番号",
+    "customer_name": "顧客名",
+    "order_time": "注文時間",
+    "total_amount": "合計金額",
+    "status": "ステータス",
+    "actions": "アクション"
   },
-  "item_status": {
-    "ordered": "Ordered",
-    "preparing": "Preparing",
-    "ready": "Ready",
-    "served": "Served"
+  "order_history_columns": {
+    "order_id": "注文ID",
+    "customer_name": "顧客名",
+    "order_date": "注文日",
+    "total_amount": "合計金額",
+    "payment_status": "支払いステータス",
+    "fulfillment_status": "履行ステータス"
+  },
+  "order_status": {
+    "pending": "保留中",
+    "confirmed": "確認済み",
+    "preparing": "準備中",
+    "ready_for_pickup": "受け取り準備完了",
+    "out_for_delivery": "配達中",
+    "delivered": "配達済み",
+    "completed": "完了",
+    "canceled": "キャンセル済み",
+    "declined": "拒否済み",
+    "refunded": "返金済み"
+  },
+  "payment_status": {
+    "paid": "支払い済み",
+    "unpaid": "未払い",
+    "pending": "保留中",
+    "failed": "失敗",
+    "refunded": "返金済み",
+    "partially_refunded": "一部返金済み"
   },
   "actions": {
-    "view_details": "View Details",
-    "update_status": "Update Status",
-    "print_receipt": "Print Receipt",
-    "contact_customer": "Contact Customer"
+    "view_details": "詳細を表示",
+    "update_status": "ステータスを更新",
+    "print_receipt": "レシートを印刷",
+    "process_refund": "返金を処理",
+    "contact_customer": "顧客に連絡"
+  },
+  "order_details_modal": {
+    "title": "注文詳細 #{orderId}",
+    "customer_info_title": "顧客情報",
+    "customer_name_label": "名前:",
+    "customer_phone_label": "電話番号:",
+    "customer_email_label": "メールアドレス:",
+    "delivery_address_label": "配送先住所:",
+    "order_items_title": "注文商品",
+    "item_header": "商品",
+    "quantity_header": "数量",
+    "price_header": "価格",
+    "subtotal_header": "小計",
+    "notes_label": "特記事項:",
+    "subtotal_label": "小計:",
+    "taxes_label": "税金:",
+    "discount_label": "割引:",
+    "delivery_fee_label": "配送料:",
+    "total_label": "合計:",
+    "payment_method_label": "支払い方法:",
+    "order_type_label": "注文タイプ:",
+    "dine_in": "店内飲食",
+    "takeaway": "テイクアウト",
+    "delivery": "デリバリー"
+  },
+  "update_status_modal": {
+    "title": "注文ステータスを更新",
+    "current_status_label": "現在のステータス:",
+    "new_status_label": "新しいステータス:",
+    "notify_customer_label": "顧客に通知する",
+    "buttons": {
+      "update": "更新",
+      "cancel": "キャンセル"
+    }
+  },
+  "kitchen_view_options": {
+    "group_by_item": "商品ごとにグループ化",
+    "group_by_order": "注文ごとにグループ化",
+    "show_completed": "完了した商品を表示"
+  },
+  "kitchen_card": {
+    "mark_as_prepared": "調理済みとしてマーク",
+    "mark_as_ready": "準備完了としてマーク",
+    "prepared_at": "{time} に調理済み",
+    "table_prefix": "テーブル"
   },
   "notifications": {
-    "status_updated": "Order status updated successfully",
-    "status_update_failed": "Failed to update order status",
-    "order_canceled": "Order canceled successfully",
-    "cancel_failed": "Failed to cancel order"
+    "new_order_received_title": "新規注文受信",
+    "new_order_received_body": "テーブル {tableNumber} からの新しい注文 #{orderId}。",
+    "status_update_success": "注文ステータスが正常に更新されました。",
+    "status_update_error": "注文ステータスの更新に失敗しました: {error}",
+    "order_fetch_error": "注文の取得に失敗しました。",
+    "print_success": "レシートが印刷キューに送信されました。",
+    "print_error": "レシートの印刷に失敗しました: {error}"
   },
-  "empty_state": {
-    "title": "No Orders Found",
-    "description": "No orders match your current filters.",
-    "all_caught_up": "All caught up! No new orders at the moment."
+  "empty_states": {
+    "no_active_orders_title": "進行中の注文はありません",
+    "no_active_orders_message": "新しい注文が入ると、ここに表示されます。",
+    "no_order_history_title": "注文履歴はありません",
+    "no_order_history_message": "完了した注文はここに表示されます。",
+    "no_kitchen_orders_title": "キッチンに表示する注文はありません",
+    "no_kitchen_orders_message": "調理が必要な注文はここに表示されます。"
   },
-  "real_time": {
-    "new_order": "New Order Received!",
-    "order_updated": "Order Updated",
-    "auto_refresh": "Auto-refreshing every 30 seconds"
+  "sound_settings": {
+    "enable_new_order_sound": "新規注文通知音を有効にする",
+    "test_sound_button": "テストサウンド"
   },
-  "real_time_update_pending": "Order status updating..."
+  "auto_refresh": {
+    "label": "自動更新:",
+    "interval_5s": "5秒ごと",
+    "interval_10s": "10秒ごと",
+    "interval_30s": "30秒ごと",
+    "interval_off": "オフ"
+  },
+  "errors": {
+    "fetch_failed": "注文データの読み込みに失敗しました。",
+    "update_failed": "注文の更新に失敗しました。",
+    "no_order_found": "指定されたIDの注文が見つかりません。"
+  },
+  "table_view": {
+    "title": "テーブルビュー",
+    "description": "テーブルのステータスとアクティブな注文を視覚的に表示します。",
+    "table_status": {
+      "available": "空席",
+      "occupied": "利用中 ({orderCount} 注文)",
+      "needs_attention": "対応が必要"
+    },
+    "view_orders_button": "注文を表示"
+  }
 }

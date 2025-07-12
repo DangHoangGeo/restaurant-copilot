@@ -1,0 +1,223 @@
+{
+  "Hero": {
+    "title": "CoOrderでレストランをモダナイズ",
+    "subtitle": "メニュー、注文、予約、スタッフ、分析を一つにした、モバイルファーストのオールインワンプラットフォーム。どこでも、いつでも、顧客を喜ばせ、チームを強化します。",
+    "cta": "無料で始める"
+  },
+  "header": {
+    "logo_aria_label": "CoOrderロゴ",
+    "login": "ログイン",
+    "signup": "サインアップ"
+  },
+  "theme": {
+    "toggle": "テーマ切替"
+  },
+  "hero": {
+    "headline_part1": "モバイルファースト、AI支援SaaSで",
+    "headline_part2": "小規模レストラン向け。",
+    "subheadline": "CoOrderは小規模レストランがスマートフォンやタブレットだけで、メニュー、注文、予約、スタッフ、分析など、全ての運営を管理できるようにします。",
+    "cta": {
+      "signup": "無料トライアル開始",
+      "demo": "デモを見る",
+      "subtext": "クレジットカード不要。14日間の無料トライアル。"
+    },
+    "image_alt": "CoOrderダッシュボードモックアップ"
+  },
+  "social_proof": {
+    "trusted_by": "あなたのようなレストランの成功をサポート",
+    "testimonial1": {
+      "quote": "CoOrderが私たちの日々の運営を変革しました。注文がスムーズになり、スタッフはより満足し、QR注文がお客様に大好評です！"
+    },
+    "testimonial2": {
+      "quote": "分析ダッシュボードは画期的です。これにより、実際の利益に直結するデータに基づいた意思決定が可能になりました。"
+    },
+    "security_badge1": "SSL暗号化済み",
+    "security_badge2": "稼働率99.9%",
+    "security_badge3": "GDPR準拠"
+  },
+  "features": {
+    "title": "ビジネスを加速する強力な機能",
+    "subtitle": "CoOrderは業務の効率化と顧客満足度向上を実現するための多彩な機能を搭載しています。",
+    "menu_management": {
+      "title": "直感的なメニュー管理",
+      "description": "写真、説明、価格を使って、デジタルメニューを簡単に作成、更新、整理できます。多言語対応。",
+      "benefit": "メニュー更新が数分で完了、数時間かかりません。"
+    },
+    "qr_ordering": {
+      "title": "シームレスなQR注文",
+      "description": "お客様はテーブルにあるQRコードをスキャンして、メニューの閲覧、注文、さらにはスマートフォンから直接の支払いを行います。",
+      "benefit": "注文の正確性とテーブル回転率を向上させます。"
+    },
+    "booking_preordering": {
+      "title": "高度な予約＆先行注文",
+      "description": "テーブル予約を管理し、お客様がスムーズなダイニング体験のために食事の先行注文を行えるようにします。",
+      "benefit": "待ち時間を短縮し、顧客の流れを改善します。"
+    },
+    "smart_analytics": {
+      "title": "スマートな分析＆レポーティング",
+      "description": "売上、人気メニュー、スタッフのパフォーマンス、顧客のフィードバックをリアルタイムで把握し、ビジネスを最適化します。",
+      "benefit": "成長のためのデータ駆動の意思決定を実現します。"
+    },
+    "staff_management": {
+      "title": "効率的なスタッフ管理",
+      "description": "専用のモバイルアプリで役割の割り当て、シフト管理、スタッフパフォーマンスの追跡を行います。",
+      "benefit": "モバイルツールでチームを強化します。"
+    },
+    "mobile_first": {
+      "title": "真のモバイルファースト体験",
+      "description": "スマートフォンやタブレットからレストラン全体を管理。大掛かりなハードウェアや複雑な設定は不要です。",
+      "benefit": "どこからでもビジネスを運営できます。"
+    }
+  },
+  "howitworks": {
+    "title": "数分で始める",
+    "subtitle": "簡単なステップで、最新のレストランプラットフォームを立ち上げましょう。",
+    "step1": {
+      "title": "サインアップ＆カスタマイズ",
+      "description": "アカウントを作成し、レストランのプロフィールを設定し、デジタルメニューやブランディングをカスタマイズします。"
+    },
+    "step2": {
+      "title": "QRコード生成",
+      "description": "各テーブルまたはセクション用に固有のQRコードを印刷します。お客様がスキャンしてメニューにアクセスし、注文できます。"
+    },
+    "step3": {
+      "title": "サービス開始＆成長",
+      "description": "スタッフアプリで直接注文を受け、テーブルを管理し、スマートな洞察でビジネスの成長を実感します。"
+    },
+    "step4": {
+      "title": "24時間年中無休のサポート",
+      "description": "専任のサポートチームが、CoOrderでの成功をサポートするために、あらゆる段階でお手伝いします。"
+    }
+  },
+  "benefits": {
+    "title": "レストランに実感できる成果",
+    "subtitle": "CoOrderは単なるソフトウェアではなく、成長のパートナーです。どのようにサポートするかご覧ください：",
+    "item1": "収益を最大20%増加",
+    "item2": "管理タスクで週最大10時間の節約",
+    "item3": "顧客満足度を向上",
+    "item4": "注文＆テーブル管理を効率化",
+    "item5": "モバイルツールでスタッフを強化",
+    "item6": "実行可能なビジネスインサイトを提供"
+  },
+  "faq": {
+    "title": "よくある質問",
+    "subtitle": "ご質問はありますか？回答はここにあります！レストラン経営者の皆様から寄せられるよくある質問をまとめました。",
+    "item1": {
+      "q": "CoOrderはどのようなレストラン向けですか？",
+      "a": "CoOrderは、小規模から中規模のレストラン、カフェ、バー、フードトラック向けに設計されており、運営の近代化と顧客体験の向上を実現します。"
+    },
+    "item2": {
+      "q": "セットアップは難しいですか？",
+      "a": "全く問題ありません！直感的なインターフェイスとガイド付きのセットアッププロセスにより、数分で始められます。技術的な専門知識は不要です。"
+    },
+    "item3": {
+      "q": "専用ハードウェアは必要ですか？",
+      "a": "いいえ、CoOrderはモバイルファーストです。既存のスマートフォンやタブレットから全てを管理できます。高価なPOSシステムは不要です。"
+    },
+    "item4": {
+      "q": "カスタマーサポートはどうなっていますか？",
+      "a": "包括的なオンラインサポート、チュートリアル、専任のサポートチームが、ご質問や問題に対応します。"
+    }
+  },
+  "pricing": {
+    "title": "プランを選ぶ",
+    "subtitle": "レストランのニーズに完璧なプランを選んでください。無料トライアルから始め、必要に応じてアップグレードできます。",
+    "popular": "最も人気のある",
+    "billing": {
+      "monthly": "月額",
+      "yearly": "年額",
+      "per_month": "月あたり",
+      "billed_yearly": "年払い",
+      "save_20": "20%割引"
+    },
+    "plans": {
+      "starter": {
+        "title": "スタータープラン",
+        "description": "1日最大100人の小規模店舗に最適"
+      },
+      "growth": {
+        "title": "グロースプラン",
+        "description": "1日100～500人の通常店舗に最適"
+      },
+      "enterprise": {
+        "title": "エンタープライズプラン",
+        "description": "複数店舗を管理する経営者向け"
+      }
+    },
+    "features": {
+      "basic_order_management": "基本的な注文管理",
+      "ai_analytics_basic": "AI分析（基本的な洞察）",
+      "basic_customer_support": "基本的なカスタマーサポート",
+      "advanced_order_management": "高度な注文管理",
+      "enhanced_ai_analytics": "高度なAI分析と洞察",
+      "priority_customer_support": "優先カスタマーサポート",
+      "external_platform_integrations": "外部プラットフォームとの統合",
+      "full_feature_access": "すべての機能にフルアクセス",
+      "comprehensive_ai_optimization": "包括的なAI駆動のビジネス最適化",
+      "dedicated_ai_support": "専任のAI対応カスタマー＆テクニカルサポート",
+      "multi_location_management": "多店舗管理機能"
+    },
+    "cta": {
+      "start_free_trial": "無料トライアル開始",
+      "choose_plan": "プランを選ぶ",
+      "contact_sales": "営業に問い合わせ"
+    },
+    "up_to_customers": "1日あたり最大{count}人のお客様に対応",
+    "trial_info": "{days}日間の無料トライアル付き",
+    "bottom_cta": {
+      "title": "どのプランが最適かわからない場合は？",
+      "start_free": "無料トライアル開始",
+      "or": "または",
+      "contact_sales": "営業に相談"
+    }
+  },
+  "cta_section": {
+    "title": "レストランを変革する準備はできていますか？",
+    "subtitle": "何百ものレストランがCoOrderで業務を簡素化し、利益を向上させています。",
+    "cta": {
+      "signup": "無料で始める",
+      "contact_sales": "デモをリクエスト"
+    }
+  },
+  "footer": {
+    "tagline": "一つの注文で小規模レストランをモダナイズ。",
+    "links": {
+      "product_title": "製品",
+      "features": "機能",
+      "pricing": "料金",
+      "integrations": "統合",
+      "company_title": "企業情報",
+      "about_us": "私たちについて",
+      "careers": "採用情報",
+      "blog": "ブログ",
+      "support_title": "サポート",
+      "help_center": "ヘルプセンター",
+      "contact_us": "お問い合わせ",
+      "status": "ステータス"
+    },
+    "categories": {
+      "product": "製品",
+      "company": "企業",
+      "resources_title": "リソース",
+      "case_studies": "事例",
+      "webinars": "ウェビナー",
+      "documentation": "ドキュメンテーション",
+      "community": "コミュニティ",
+      "developers": "開発者",
+      "support": "サポート"
+    },
+    "legal": {
+      "title": "法的情報",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "cookies": "クッキーポリシー",
+      "security": "セキュリティ"
+    },
+    "copyright": "© 2023 Coorder.ai。無断複製を禁じます。",
+    "privacy_policy": "プライバシーポリシー",
+    "terms_of_service": "利用規約"
+  },
+  "common": {
+    "all_rights_reserved": "全著作権所有"
+  }
+}

@@ -1,132 +1,109 @@
 {
-  "title": "レポート・分析",
-  "description": "売上レポート、商品パフォーマンス、お客様のフィードバックを表示",
-  "retry": "再試行",
-  "errors": {
-    "fetch_failed": "データの読み込みに失敗しました"
-  },
-  "exporting": "エクスポート中...",
-  "tabs": {
-    "sales": "売上",
-    "items": "商品",
-    "feedback": "フィードバック"
-  },
-  "summary": {
-    "total_sales_today": "本日の売上合計",
-    "active_orders_count": "アクティブな注文",
-    "top_selling_item_today": "本日の売れ筋商品",
-    "low_stock_alerts_count": "在庫不足アラート"
-  },
-  "recommendations": {
-    "title": "売れ筋メニュー（過去7日間）",
-    "loading": "おすすめを読み込み中...",
-    "errorFetching": "おすすめの取得エラー: {error}",
-    "noData": "過去7日間の売れ筋商品が見つかりません。",
-    "soldLabel": "販売数:",
-    "applyButton": "来週に適用",
-    "applyingButton": "適用中...",
-    "applySuccess": "おすすめが正常に適用されました！",
-    "applyError": "おすすめの適用エラー: {error}",
-    "missingRestaurantId": "おすすめを表示するにはレストランを選択してください。",
-    "missingRestaurantIdApply": "レストランIDなしではおすすめを適用できません。",
-    "description_7_days": "過去7日間に基づく",
-    "apply_button": "おすすめを適用"
-  },
-  "dateRange": {
+  "title": "レポートと分析",
+  "subtitle": "レストランのパフォーマンスに関する洞察を得る",
+  "date_range_picker": {
+    "label": "期間を選択:",
     "today": "今日",
     "yesterday": "昨日",
-    "last7Days": "過去7日間",
-    "last30Days": "過去30日間",
-    "thisWeek": "今週",
-    "thisMonth": "今月"
-  },
-  "dateRangeSelector": {
-    "title": "期間選択・エクスポート",
-    "quickSelect": "クイック選択",
-    "customRange": "カスタム期間",
-    "selectPeriod": "期間を選択",
-    "custom": "カスタム",
-    "pickDate": "期間を選択してください",
-    "selectedRange": "選択された期間"
-  },
-  "sales": {
-    "title": "売上レポート",
-    "daily_revenue_chart_placeholder": "日次売上チャートプレースホルダー",
-    "category_breakdown_chart_placeholder": "カテゴリ内訳プレースホルダー"
-  },
-  "daterange": {
     "last_7_days": "過去7日間",
-    "last_30_days": "過去30日間"
+    "last_30_days": "過去30日間",
+    "this_month": "今月",
+    "last_month": "先月",
+    "custom_range": "カスタム範囲...",
+    "apply_button": "適用",
+    "cancel_button": "キャンセル"
   },
-  "items": {
-    "title": "商品レポート",
-    "table": {
-      "item_name": "商品名",
-      "total_sold": "販売総数",
-      "total_revenue": "売上合計",
-      "avg_rating": "平均評価"
-    }
+  "export_button": "エクスポート",
+  "export_options": {
+    "csv": "CSVとしてエクスポート",
+    "pdf": "PDFとしてエクスポート"
   },
-  "itemsReport": {
-    "title": "商品パフォーマンスレポート",
-    "totalRevenue": "売上合計",
-    "totalSold": "販売数",
-    "avgRating": "平均評価",
-    "totalItems": "商品総数",
-    "searchPlaceholder": "商品を検索...",
-    "filterByCategory": "カテゴリで絞り込み",
-    "allCategories": "全カテゴリ",
-    "itemName": "商品名",
-    "category": "カテゴリ",
-    "revenue": "売上",
-    "profitMargin": "利益率",
-    "popularity": "人気度",
-    "mostPopular": "最も人気",
-    "noItemsFound": "条件に一致する商品が見つかりません"
+  "tabs": {
+    "sales_overview": "売上概要",
+    "item_performance": "商品パフォーマンス",
+    "customer_insights": "顧客インサイト",
+    "employee_performance": "従業員パフォーマンス"
   },
-  "analytics": {
-    "salesOverTime": "売上推移",
-    "ordersCount": "注文数",
-    "categoryBreakdown": "カテゴリ別売上",
-    "averageOrderValue": "平均注文額推移",
-    "totalSales": "売上合計",
-    "totalOrders": "注文総数",
-    "avgOrderValue": "平均注文額",
-    "growthRate": "成長率"
-  },
-  "metrics": {
-    "total_sales": "売上合計",
-    "total_items_sold": "販売商品総数",
+  "sales_overview": {
+    "total_sales": "総売上",
+    "total_orders": "総注文数",
     "average_order_value": "平均注文額",
-    "top_item": "トップ商品",
-    "low_stock": "在庫不足商品",
-    "todaySales": "本日の売上",
-    "todayOrders": "本日の注文",
-    "todayRevenue": "本日の収益",
-    "totalOrders": "注文総数",
-    "activeOrders": "アクティブな注文",
-    "topSeller": "売れ筋商品",
-    "lowStock": "在庫不足",
-    "noData": "この期間のデータはありません。",
-    "loading": "メトリクスを読み込み中...",
-    "itemsNeedAttention": "注意が必要な商品"
+    " busiest_day": "最も忙しい曜日",
+    "busiest_hour": "最も忙しい時間帯",
+    "sales_trend_chart_title": "売上トレンド",
+    "payment_methods_chart_title": "支払い方法の内訳",
+    "order_types_chart_title": "注文タイプの分布"
   },
-  "recentOrders": {
-    "title": "最近の注文",
-    "noOrders": "最近の注文が見つかりません。",
-    "table": "テーブル",
-    "orderId": "注文ID",
-    "customerName": "お客様名",
-    "totalAmount": "合計金額",
-    "orderTime": "注文時刻",
-    "status": "ステータス"
+  "item_performance": {
+    "search_placeholder": "商品名またはSKUで検索...",
+    "sort_by_label": "並べ替え:",
+    "sort_options": {
+      "revenue_desc": "収益 (降順)",
+      "revenue_asc": "収益 (昇順)",
+      "quantity_sold_desc": "販売数量 (降順)",
+      "quantity_sold_asc": "販売数量 (昇順)",
+      "profit_margin_desc": "利益率 (降順)",
+      "profit_margin_asc": "利益率 (昇順)"
+    },
+    "table_headers": {
+      "item_name": "商品名",
+      "category": "カテゴリ",
+      "quantity_sold": "販売数量",
+      "total_revenue": "総収益",
+      "cost_of_goods": "商品原価",
+      "profit": "利益",
+      "profit_margin": "利益率"
+    },
+    "empty_state": "選択した期間のデータはありません。"
   },
-  "feedback": {
-    "title": "フィードバック",
-    "description_last_50": "最新50件のレビュー"
+  "customer_insights": {
+    "total_customers": "総顧客数",
+    "new_customers": "新規顧客数",
+    "returning_customers": "リピート顧客数",
+    "average_spend_per_customer": "顧客一人当たりの平均支出額",
+    "top_customers_chart_title": "上位顧客 (支出額別)",
+    "customer_retention_rate": "顧客維持率",
+    "coming_soon": "顧客インサイトは間もなく利用可能になります。"
   },
-  "coming_soon": {
-    "title": "レポート・分析",
-    "message": "高度なレポート機能は近日公開予定です！詳細な売上分析、商品パフォーマンス指標、お客様のフィードバック分析をここで確認できるようになります。"
+  "employee_performance": {
+    "search_placeholder": "従業員名で検索...",
+    "table_headers": {
+      "employee_name": "従業員名",
+      "orders_processed": "処理済み注文数",
+      "total_sales_attributed": "帰属総売上",
+      "average_items_per_order": "注文あたりの平均商品数"
+    },
+    "coming_soon": "従業員パフォーマンスレポートは間もなく利用可能になります。"
+  },
+  "charts": {
+    "no_data_available": "利用可能なデータがありません",
+    "loading_chart": "グラフを読み込み中..."
+  },
+  "notifications": {
+    "export_started": "レポートのエクスポートが開始されました。準備ができたら通知されます。",
+    "export_success": "レポートが正常にエクスポートされました。",
+    "export_error": "レポートのエクスポートに失敗しました: {error}",
+    "data_load_error": "レポートデータの読み込みに失敗しました。後でもう一度お試しください。"
+  },
+  "filters": {
+    "category_label": "カテゴリで絞り込み:",
+    "all_categories": "すべてのカテゴリ",
+    "employee_label": "従業員で絞り込み:",
+    "all_employees": "すべての従業員",
+    "order_type_label": "注文タイプで絞り込み:",
+    "all_order_types": "すべての注文タイプ",
+    "dine_in": "店内飲食",
+    "takeaway": "テイクアウト",
+    "delivery": "デリバリー"
+  },
+  "tooltips": {
+    "total_sales": "選択した期間の税引前総売上。",
+    "total_orders": "選択した期間の総注文数。",
+    "average_order_value": "1注文あたりの平均金額。",
+    "profit_margin": "収益に対する利益の割合。"
+  },
+  "errors": {
+    "fetch_failed": "レポートデータの取得に失敗しました。",
+    "invalid_date_range": "無効な期間が選択されました。"
   }
 }

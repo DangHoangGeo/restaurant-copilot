@@ -1,0 +1,191 @@
+{
+  "loading": "読み込み中...",
+  "all_rights_reserved": "All rights reserved.",
+  "go_to_homepage": "ホームページへ",
+  "powered_by": "提供：",
+  "save": "保存",
+  "saving": "保存中...",
+  "saveChanges": "変更を保存",
+  "retry": "再試行",
+  "cancel": "キャンセル",
+  "edit": "編集",
+  "delete": "削除",
+  "confirm": "確認",
+  "view_details": "詳細を表示",
+  "close_modal": "モーダルを閉じる",
+  "search": "検索...",
+  "available": "利用可能",
+  "unavailable": "利用不可",
+  "list": "リスト",
+  "schedule": "スケジュール",
+  "off_duty": "非番",
+  "export_csv": "CSVをエクスポート",
+  "export_pdf": "PDFをエクスポート",
+  "unknown_item": "不明なアイテム",
+  "total": "合計",
+  "admin_panel_button": "管理パネル",
+  "needs_attention": "注意が必要",
+  "all_good": "すべて問題なし",
+  "zod_form_hint": "フォームの検証はZodによって処理されます。すべての必須フィールドが正しく入力されていることを確認してください。",
+  "feature_in_development": "「{feature}」機能は現在開発中であり、まもなく利用可能になります。",
+  "form_placeholder": "フォームフィールドはここに配置されます。",
+  "back_to_menu": "メニューに戻る",
+  "back_to_home": "ホームに戻る",
+  "add_more_items": "アイテムを追加",
+  "recharts_note": "グラフ提供：Recharts",
+  "datatable_component_note": "データテーブルコンポーネントのプレースホルダー。",
+  "sold": "販売済み",
+  "cancel_booking": "予約をキャンセル",
+  "confirm_booking": "予約を確認",
+  "selectedPlanLabel": "選択したプラン",
+  "changePlan": "プランを変更",
+  "ask_ai": "AIに質問",
+  "view_history": "履歴を表示",
+  "order_status": {
+    "new": "新規",
+    "ordered": "注文済み",
+    "serving": "提供中",
+    "preparing": "準備中",
+    "ready": "準備完了",
+    "completed": "完了",
+    "canceled": "キャンセル済み"
+  },
+  "order_item_status": {
+    "ordered": "注文済み",
+    "preparing": "準備中",
+    "ready": "準備完了",
+    "served": "提供済み"
+  },
+  "cart": "カート",
+  "view_cart_label": "カートを見る",
+  "order_history_label": "注文履歴",
+  "weekdays": {
+    "mon": "月曜日",
+    "tue": "火曜日",
+    "wed": "水曜日",
+    "thu": "木曜日",
+    "fri": "金曜日",
+    "sat": "土曜日",
+    "sun": "日曜日",
+    "mon_short": "月",
+    "tue_short": "火",
+    "wed_short": "水",
+    "thu_short": "木",
+    "fri_short": "金",
+    "sat_short": "土",
+    "sun_short": "日"
+  },
+  "days": {
+    "monday": "月曜日",
+    "tuesday": "火曜日",
+    "wednesday": "水曜日",
+    "thursday": "木曜日",
+    "friday": "金曜日",
+    "saturday": "土曜日",
+    "sunday": "日曜日"
+  },
+  "language_switcher": {
+    "toggle_label": "言語を変更"
+  },
+  "defaultLanguageLabel": "デフォルト言語",
+  "defaultLanguagePlaceholder": "デフォルト言語を選択",
+  "languageOption": {
+    "en": "英語",
+    "ja": "日本語",
+    "vi": "ベトナム語"
+  },
+  "theme": {
+    "toggle_aria_label": "ライト/ダークテーマを切り替え",
+    "toggle_label": "テーマを切り替え"
+  },
+  "switch_to_light_mode": "ライトモードに切り替え",
+  "switch_to_dark_mode": "ダークモードに切り替え",
+  "rating": {
+    "set_stars": "{count}つ星評価を設定",
+    "current_stars": "現在の評価：{count}つ星",
+    "no_reviews": "まだレビューはありません"
+  },
+  "alert": {
+    "info": {
+      "title": "情報"
+    },
+    "success": {
+      "title": "成功"
+    },
+    "warning": {
+      "title": "警告"
+    },
+    "error": {
+      "title": "エラー"
+    }
+  },
+  "errors": {
+    "noSubdomainDetected": "レストランのサブドメインが検出されませんでした。",
+    "noRestaurantIdForSubdomain": "指定されたサブドメインのレストランIDが見つかりませんでした。",
+    "noRestaurantIdTitle": "レストランが特定されていません",
+    "noRestaurantIdMessage": "レストランIDを特定できませんでした。このページに正しくアクセスしていることを確認してください。",
+    "fetchErrorTitle": "設定の読み込みエラー",
+    "fetchErrorMessage": "レストラン設定の取得中に問題が発生しました。後でもう一度お試しください。",
+    "noSettingsFoundTitle": "設定が見つかりません",
+    "noSettingsFoundMessage": "このレストランの設定データが見つかりませんでした。"
+  },
+  "404": {
+    "title": "ページが見つかりません",
+    "description": "申し訳ありませんが、お探しのページは存在しないか、移動されました。",
+    "back_home": "ホームに戻る"
+  },
+  "validation": {
+    "nameRequired": "レストラン名は必須です。",
+    "nameMaxLength": "レストラン名は{maxLength}文字以下である必要があります。",
+    "defaultLanguageRequired": "デフォルト言語は必須です。",
+    "brandColorInvalidFormat": "無効なブランドカラー形式です。#RRGGBBを使用してください。",
+    "contactInfoMaxLength": "連絡先情報は{maxLength}文字以下である必要があります。",
+    "addressMaxLength": "住所は{maxLength}文字以下である必要があります。",
+    "openingHoursMaxLength": "営業時間は{maxLength}文字以下である必要があります。",
+    "descriptionMaxLength": "説明は{maxLength}文字以下である必要があります。",
+    "logoFileMaxSize": "ロゴ画像は{maxSize}MB以下である必要があります。",
+    "logoFileInvalidType": "無効なファイルタイプです。PNG、JPG、またはWEBP画像をアップロードしてください。",
+    "logoUrlinvalidFormat": "無効なロゴURL形式です。"
+  },
+  "coming_soon": {
+    "title": "近日公開",
+    "description": "{feature}は近日公開予定です！",
+    "generic_description": "この機能は開発中です。"
+  },
+  "feature": {
+    "low_stock_alerts_dashboard": "ダッシュボードの在庫僅少アラート",
+    "sales_over_time_chart": "売上推移グラフ",
+    "popular_items_report": "人気商品レポート"
+  },
+  "mark_resolved": "解決済みにする",
+  "mark_unresolved": "未解決にする",
+  "defaultUnnamedRestaurant": "名称未設定のレストラン",
+  "processing": "処理中...",
+  "logout": {
+    "title": "ログアウトしています...",
+    "message": "正常にログアウトしました。まもなくリダイレクトします。",
+    "login_again_button": "再度ログイン"
+  },
+  "layout_errors": {
+    "fallbackRestaurantName": "フォールバックレストラン",
+    "configurationErrorTitle": "レストラン設定エラー",
+    "configurationErrorDescription": "サブドメイン：{subdomain}の設定を読み込めませんでした。フォールバック設定で表示しています。",
+    "adminPanelTitle": "管理パネル",
+    "noRestaurantContextTitle": "エラー：レストランコンテキストがありません",
+    "noRestaurantContextDescription": "このダッシュボードが正しく機能するには、有効なレストランサブドメインが必要です。"
+  },
+  "customer_errors": {
+    "restaurant_not_found": "レストランが見つかりません。URLを確認するか、サポートにお問い合わせください。",
+    "error_loading_menu": "メニューの読み込みエラーです。後でもう一度お試しください。",
+    "error_loading_cart": "カートの読み込みエラーです。後でもう一度お試しください。",
+    "error_loading_checkout": "チェックアウトの読み込みエラーです。後でもう一度お試しください。",
+    "error_loading_booking": "予約フォームの読み込みエラーです。後でもう一度お試しください。",
+    "error_loading_order_summary": "注文概要の読み込みエラーです。後でもう一度お試しください。",
+    "error_loading_review_form": "レビューフォームの読み込みエラーです。後でもう一度お試しください。"
+  },
+  "currency_format": "{value, number, ::currency/JPY}",
+  "ordering_for_table": "テーブル{tableId}の注文",
+  "item": {
+    "weekday_visibility": "曜日の表示設定"
+  }
+}
