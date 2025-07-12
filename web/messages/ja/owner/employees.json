@@ -1,158 +1,104 @@
 {
-  "dashboard": {
-    "tabs": {
-      "employees": "Employees",
-      "schedule": "Schedule",
-      "attendance": "Attendance",
-      "performance": "Performance"
+  "title": "スタッフ管理",
+  "subtitle": "従業員プロファイル、役割、スケジュールを管理します",
+  "tabs": {
+    "all_staff": "すべてのスタッフ",
+    "schedules": "スケジュール",
+    "permissions": "権限"
+  },
+  "all_staff": {
+    "add_employee_button": "従業員を追加",
+    "search_placeholder": "スタッフを検索...",
+    "list_headers": {
+      "name": "名前",
+      "role": "役割",
+      "email": "メールアドレス",
+      "phone": "電話番号",
+      "status": "ステータス",
+      "actions": "アクション"
+    },
+    "status_options": {
+      "active": "アクティブ",
+      "inactive": "非アクティブ",
+      "on_leave": "休暇中"
+    },
+    "empty_state": {
+      "title": "従業員がいません",
+      "message": "最初の従業員を追加して、チームの構築を始めましょう。"
     },
     "actions": {
-      "openQrScanner": "Scan QR Code for Attendance"
+      "edit": "編集",
+      "view_schedule": "スケジュールを表示",
+      "deactivate": "無効化",
+      "activate": "有効化"
     }
   },
-  "list": {
-    "title": "Employee Management",
-    "actions": {
-      "addEmployee": "Add New Employee",
-      "edit": "Edit",
-      "manageSchedule": "Manage Schedule"
+  "add_employee_modal": {
+    "title": "新しい従業員を追加",
+    "edit_title": "従業員情報を編集",
+    "labels": {
+      "first_name": "名",
+      "last_name": "姓",
+      "email": "メールアドレス",
+      "phone": "電話番号",
+      "role": "役割",
+      "pin": "PIN (ログイン用)",
+      "confirm_pin": "PIN を確認"
     },
-    "table": {
-      "name": "Name",
-      "email": "Email",
-      "jobTitle": "Job Title",
-      "actions": "Actions",
-      "noEmployees": "No employees found. Add your first employee to get started."
+    "placeholders": {
+      "first_name": "名を入力",
+      "last_name": "姓を入力",
+      "email": "メールアドレスを入力",
+      "phone": "電話番号を入力",
+      "pin": "4桁のPIN",
+      "confirm_pin": "PIN を再入力"
+    },
+    "role_options": {
+      "manager": "マネージャー",
+      "chef": "シェフ",
+      "waitstaff": "ウェイター/ウェイトレス",
+      "bartender": "バーテンダー",
+      "host": "ホスト/ホステス",
+      "kitchen_staff": "キッチンスタッフ",
+      "other": "その他"
+    },
+    "buttons": {
+      "add": "従業員を追加",
+      "save": "変更を保存",
+      "cancel": "キャンセル"
     },
     "notifications": {
-      "fetchError": "Failed to fetch employees: {error}",
-      "errorTitle": "Error"
+      "add_success": "従業員が正常に追加されました",
+      "add_error": "従業員の追加に失敗しました: {error}",
+      "update_success": "従業員情報が正常に更新されました",
+      "update_error": "従業員情報の更新に失敗しました: {error}",
+      "pin_mismatch": "PIN が一致しません"
     }
   },
-  "form": {
-    "addTitle": "Add New Employee",
-    "editTitle": "Edit Employee Details",
-    "fields": {
-      "name": {
-        "label": "Full Name",
-        "placeholder": "e.g. John Doe"
-      },
-      "email": {
-        "label": "Email Address",
-        "placeholder": "e.g. john.doe@example.com",
-        "editDisabledHint": "Email cannot be changed after creation."
-      },
-      "jobTitle": {
-        "label": "Job Title",
-        "placeholder": "Select a job title"
-      }
-    },
-    "actions": {
-      "save": "Save Changes",
-      "saving": "Saving...",
-      "cancel": "Cancel"
+  "schedules": {
+    "title": "従業員スケジュール",
+    "coming_soon": "従業員のスケジュール管理機能は間もなく利用可能になります。",
+    "description": "週次および日次のスケジュールを作成および表示します。"
+  },
+  "permissions": {
+    "title": "役割と権限",
+    "coming_soon": "役割ベースのアクセス制御と権限のカスタマイズは間もなく利用可能になります。",
+    "description": "さまざまな従業員の役割に対するアクセスレベルを定義します。"
+  },
+  "delete_employee_modal": {
+    "title": "従業員を削除",
+    "confirmation_message": "本当に {employeeName} を削除しますか？この操作は元に戻せません。",
+    "buttons": {
+      "delete": "削除",
+      "cancel": "キャンセル"
     },
     "notifications": {
-      "createSuccess": "Employee added successfully.",
-      "updateSuccess": "Employee details updated.",
-      "saveError": "Failed to save employee: {error}"
+      "delete_success": "従業員が正常に削除されました",
+      "delete_error": "従業員の削除に失敗しました: {error}"
     }
   },
-  "roles": {
-    "manager": "Manager",
-    "chef": "Chef",
-    "server": "Server",
-    "cashier": "Cashier"
-  },
-  "schedule": {
-    "title": "Weekly Schedule",
-    "selectEmployeePlaceholder": "Select an employee to view or edit their schedule",
-    "promptSelectEmployee": "Please select an employee above to manage their weekly schedule.",
-    "actions": {
-      "saveChanges": "Save Schedule Changes",
-      "saving": "Saving Schedule..."
-    },
-    "weekDisplayLabel": "Week: {range}",
-    "prevWeekBtn": "Previous Week",
-    "nextWeekBtn": "Next Week",
-    "errors": {
-      "loadEmployeesError": "Failed to load employees for schedule.",
-      "loadSchedulesError": "Failed to load schedules for the selected week.",
-      "errorTitle": "Error Loading Schedule"
-    },
-    "notifications": {
-      "saveSuccess": "Schedule updated successfully.",
-      "savePartial": "Schedule partially updated. {success} of {total} operations succeeded.",
-      "saveErrorAll": "Failed to save any schedule changes. Please try again.",
-      "saveErrorGeneral": "An error occurred while saving the schedule: {error}",
-      "noChanges": "No changes detected in the schedule."
-    }
-  },
-  "attendance": {
-    "title": "Employee Attendance",
-    "selectEmployeePlaceholder": "Select an employee to view attendance",
-    "promptSelectEmployee": "Please select an employee to view their attendance records.",
-    "prevMonthBtn": "Previous Month",
-    "nextMonthBtn": "Next Month",
-    "table": {
-      "date": "Date",
-      "checkIn": "Check-In",
-      "checkOut": "Check-Out",
-      "hoursWorked": "Hours Worked",
-      "status": "Status",
-      "actions": "Actions"
-    },
-    "actions": {
-      "verify": "Verify",
-      "verifying": "Verifying..."
-    },
-    "status": {
-      "recorded": "Recorded",
-      "verified": "Verified"
-    },
-    "noRecordsFound": "No attendance records found for the selected employee and month.",
-    "errors": {
-      "loadEmployeesError": "Failed to load employees list.",
-      "loadRecordsError": "Failed to load attendance records.",
-      "verifyError": "Failed to verify attendance record.",
-      "errorTitle": "Error"
-    },
-    "notifications": {
-      "verifySuccess": "Attendance record verified successfully."
-    }
-  },
-  "qrScannerModal": {
-    "title": "Scan Employee QR Code",
-    "actions": {
-      "close": "Close Scanner"
-    },
-    "initializing": "Initializing QR scanner and requesting camera access...",
-    "errors": {
-      "scanErrorTitle": "Scan Error",
-      "permissionDenied": "Camera permission was denied. Please enable camera access in your browser settings.",
-      "noCameraFound": "No suitable camera found. Please ensure a camera is connected and enabled.",
-      "startError": "Could not start QR scanner",
-      "stopError": "Could not stop QR scanner"
-    },
-    "notifications": {
-      "scanSuccess": "QR code scanned successfully. Processing...",
-      "scanApiError": "Could not process scan. Please check the QR code or try again."
-    }
-  },
-  "performance": {
-    "title": "Employee Performance",
-    "selectEmployeePlaceholder": "Select an employee to view performance",
-    "promptSelectEmployee": "Please select an employee to view their performance metrics.",
-    "totalHoursWeekLabel": "Total Hours (Current Week)",
-    "totalHoursMonthLabel": "Total Hours (Current Month)",
-    "hoursUnit": "hrs",
-    "currentWeekPeriod": "Current week (Mon-Sun)",
-    "currentMonthPeriod": "Current calendar month",
-    "noData": "No performance data available for the selected employee or period.",
-    "errors": {
-      "loadEmployeesError": "Failed to load employees list.",
-      "loadPerformanceError": "Failed to load performance data.",
-      "errorTitle": "Error"
-    }
+  "errors": {
+    "fetch_failed": "従業員データの読み込みに失敗しました。",
+    "generic_error": "エラーが発生しました。しばらくしてからもう一度お試しください。"
   }
 }
