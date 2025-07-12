@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OrdersView: View {
-    @StateObject private var orderManager = OrderManager()
+    @EnvironmentObject var orderManager: OrderManager
     @StateObject private var supabaseManager = SupabaseManager.shared
     @EnvironmentObject var printerManager: PrinterManager
     @EnvironmentObject private var localizationManager: LocalizationManager

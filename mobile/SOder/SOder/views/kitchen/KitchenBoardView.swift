@@ -5,7 +5,7 @@ import SwiftUI
 struct KitchenBoardView: View {
     @EnvironmentObject var printerManager: PrinterManager
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var orderManager = OrderManager()
+    @EnvironmentObject var orderManager: OrderManager
     @StateObject private var supabaseManager = SupabaseManager.shared
     
     // State management
@@ -334,4 +334,5 @@ struct KitchenBoardView: View {
 #Preview {
     KitchenBoardView()
         .environmentObject(PrinterManager())
+        .environmentObject(OrderManager())
 }

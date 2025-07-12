@@ -3,6 +3,7 @@ import SwiftUI
 struct MainTabView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var printerManager = PrinterManager()
+    @EnvironmentObject private var orderManager: OrderManager
     @State private var selectedTab = 0
     
     var body: some View {
@@ -10,6 +11,7 @@ struct MainTabView: View {
             // Orders Tab
             OrdersView()
                 .environmentObject(printerManager)
+                .environmentObject(orderManager)
                 .tabItem {
                     Label("tab_orders".localized, systemImage: "list.bullet.rectangle.portrait")
                 }
@@ -18,6 +20,7 @@ struct MainTabView: View {
             // Kitchen Board Tab
             KitchenBoardView()
                 .environmentObject(printerManager)
+                .environmentObject(orderManager)
                 .tabItem {
                     Label("tab_kitchen".localized, systemImage: "flame")
                 }
@@ -57,4 +60,5 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
+        .environmentObject(OrderManager())
 }
