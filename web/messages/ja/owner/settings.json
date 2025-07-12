@@ -1,218 +1,176 @@
 {
-  "title": "Restaurant Settings",
-  "description": "Manage your restaurant's information, branding, and online presence.",
-  "labels": {
-    "restaurantName": "Restaurant Name",
-    "subdomain": "Domain Name",
-    "defaultLanguage": "Default Language",
-    "brandColor": "Brand Color",
-    "logo": "Logo",
-    "tax": "Tax Rate",
-    "address": "Address",
-    "phone": "Phone Number",
-    "email": "Email Address",
-    "website": "Website",
-    "operatingHours": "Operating Hours",
-    "description": "Description",
-    "descriptions": "Multi-language Descriptions",
-    "descriptionEn": "Description (English)",
-    "descriptionJa": "Description (Japanese)",
-    "descriptionVi": "Description (Vietnamese)",
-    "socialLinks": "Social Media Links",
-    "currency": "Currency",
-    "paymentMethods": "Payment Methods",
-    "deliveryOptions": "Service Options"
+  "title": "レストラン設定",
+  "subtitle": "レストランの運営と顧客体験のあらゆる側面を管理します",
+  "tabs": {
+    "general": "一般",
+    "store_appearance": "店舗の外観",
+    "ordering": "注文設定",
+    "payments": "支払い",
+    "taxes_fees": "税金と手数料",
+    "localization": "ローカリゼーション",
+    "notifications": "通知",
+    "integrations": "連携",
+    "advanced": "詳細設定"
   },
-  "placeholders": {
-    "restaurantName": "Enter your restaurant's name",
-    "subdomain": "yourrestaurant (will become yourrestaurant.coorder.ai)",
-    "brandColor": "#RRGGBB",
-    "tax": "0.10 (10%)",
-    "address": "Restaurant's full address",
-    "phone": "+1 234 567 8900",
-    "email": "contact@yourrestaurant.com",
-    "website": "https://yourrestaurant.com",
-    "hours": "e.g., Mon-Fri: 9am-10pm, Sat-Sun: 10am-11pm",
-    "description": "A brief description of your restaurant",
-    "descriptionEn": "Describe your restaurant in English",
-    "descriptionJa": "日本語でレストランを説明してください",
-    "descriptionVi": "Mô tả nhà hàng của bạn bằng tiếng Việt"
+  "general": {
+    "section_title": "基本レストラン情報",
+    "restaurant_name_label": "レストラン名",
+    "restaurant_name_placeholder": "レストランの名前",
+    "restaurant_type_label": "レストランの種類",
+    "restaurant_type_placeholder": "例：カフェ、高級レストラン、ファミリースタイル",
+    "contact_email_label": "連絡先メールアドレス",
+    "contact_email_placeholder": "顧客問い合わせ用のメールアドレス",
+    "contact_phone_label": "連絡先電話番号",
+    "contact_phone_placeholder": "顧客問い合わせ用の電話番号",
+    "address_label": "住所",
+    "street_address_placeholder": "番地",
+    "city_placeholder": "市区町村",
+    "state_province_placeholder": "都道府県",
+    "postal_code_placeholder": "郵便番号",
+    "country_placeholder": "国",
+    "timezone_label": "タイムゾーン",
+    "select_timezone_placeholder": "タイムゾーンを選択"
   },
-  "operatingHours": {
-    "title": "Operating Hours",
-    "description": "Set your restaurant's daily operating hours.",
-    "presets": {
-      "standard": "9-21",
-      "restaurant": "11-22",
-      "cafe": "7-17",
-      "closed": "Closed"
-    },
-    "closed": "Closed",
-    "helpText": "Customers will see these on your restaurant page."
+  "store_appearance": {
+    "section_title": "店舗のブランディングと外観",
+    "logo_upload_label": "レストランのロゴ",
+    "upload_logo_button": "ロゴをアップロード",
+    "favicon_upload_label": "ファビコン",
+    "upload_favicon_button": "ファビコンをアップロード",
+    "cover_photo_label": "カバー写真 (ホームページ用)",
+    "upload_cover_photo_button": "カバー写真をアップロード",
+    "primary_color_label": "主要テーマカラー",
+    "secondary_color_label": "副次テーマカラー",
+    "font_label": "フォントスタイル",
+    "select_font_placeholder": "フォントを選択"
   },
-  "socialLinks": {
-    "helpText": "Add your social media profiles to help customers connect with you."
+  "ordering": {
+    "section_title": "注文受付と処理",
+    "enable_online_ordering_label": "オンライン注文を有効にする",
+    "order_types_supported_label": "サポートする注文タイプ",
+    "dine_in_label": "店内飲食",
+    "takeaway_label": "テイクアウト",
+    "delivery_label": "デリバリー",
+    "minimum_order_amount_label": "最低注文金額",
+    "minimum_order_amount_placeholder": "0.00",
+    "delivery_settings_title": "デリバリー設定",
+    "delivery_radius_label": "配達範囲 (km)",
+    "delivery_radius_placeholder": "例：5",
+    "delivery_fee_label": "配送料",
+    "delivery_fee_placeholder": "0.00",
+    "free_delivery_threshold_label": "送料無料になる最低注文額",
+    "free_delivery_threshold_placeholder": "0.00",
+    "estimated_preparation_time_label": "推定準備時間 (分)",
+    "operating_hours_title": "営業時間",
+    "add_hours_button": "営業時間を追加",
+    "day_of_week_label": "曜日",
+    "opens_at_label": "開店時間",
+    "closes_at_label": "閉店時間",
+    "closed_label": "休業日",
+    "special_hours_title": "特別営業時間 (休日など)",
+    "add_special_hours_button": "特別営業時間を追加",
+    "date_label": "日付",
+    "auto_accept_orders_label": "注文を自動承認する",
+    "order_fulfillment_options_label": "注文処理オプション",
+    "send_to_kitchen_printer": "キッチン プリンターに送信",
+    "display_on_kitchen_screen": "キッチン表示画面に表示"
   },
-  "paymentMethods": {
-    "cash": "Cash",
-    "creditCard": "Credit Card",
-    "mobilePayment": "Mobile Payment",
-    "paypay": "PayPay"
+  "payments": {
+    "section_title": "支払い処理",
+    "accepted_payment_methods_label": "対応支払い方法",
+    "credit_card_label": "クレジットカード (Stripe経由)",
+    "paypal_label": "PayPal",
+    "cash_on_delivery_label": "代金引換/現地払い",
+    "stripe_connect_title": "Stripe接続",
+    "stripe_status_connected": "Stripeアカウントが接続されました。",
+    "stripe_status_not_connected": "Stripeアカウントが接続されていません。",
+    "connect_stripe_button": "Stripeに接続",
+    "manage_stripe_button": "Stripeダッシュボードを管理",
+    "currency_label": "通貨",
+    "select_currency_placeholder": "通貨を選択"
   },
-  "deliveryOptions": {
-    "title": "Service Options",
-    "description": "Choose how customers can enjoy your food",
-    "dineIn": "Dine In",
-    "pickup": "Pickup",
-    "delivery": "Delivery"
+  "taxes_fees": {
+    "section_title": "税金と追加料金",
+    "enable_taxes_label": "税金を有効にする",
+    "tax_rate_label": "税率 (%)",
+    "tax_rate_placeholder": "例: 10.00",
+    "tax_id_label": "納税者番号 (オプション)",
+    "tax_id_placeholder": "納税者番号を入力",
+    "prices_inclusive_of_tax_label": "価格に税金を含める",
+    "additional_fees_title": "追加料金",
+    "add_fee_button": "料金を追加",
+    "fee_name_label": "料金名",
+    "fee_name_placeholder": "例：サービス料",
+    "fee_type_label": "料金タイプ",
+    "percentage_option": "パーセンテージ",
+    "fixed_amount_option": "固定額",
+    "fee_value_label": "料金",
+    "fee_value_placeholder": "0.00"
   },
-  "currency": {
-    "JPY": "Japanese Yen (¥)",
-    "USD": "US Dollar ($)",
-    "VND": "Vietnamese Dong (₫)"
-  },
-  "aiDescription": {
-    "title": "✨ AI-Powered Description Generator",
-    "subtitle": "Let AI create compelling descriptions in all three languages for your restaurant",
-    "cuisine": "Cuisine Type",
-    "atmosphere": "Atmosphere",
-    "specialties": "Specialties",
-    "location": "Location",
-    "additionalInfo": "Additional Information",
-    "cuisinePlaceholder": "e.g., Japanese, Vietnamese, Italian",
-    "atmospherePlaceholder": "e.g., Cozy, Modern, Traditional",
-    "specialtiesPlaceholder": "e.g., Fresh sushi, Authentic pho",
-    "locationPlaceholder": "e.g., Downtown Tokyo, Shibuya",
-    "additionalInfoPlaceholder": "Any unique features, history, or special information about your restaurant...",
-    "generate": "Generate Descriptions",
-    "generating": "Generating...",
-    "success": "Descriptions generated successfully!",
-    "disclaimer": "AI-generated content should be reviewed and edited as needed.",
-    "errors": {
-      "missingName": "Please enter a restaurant name first",
-      "generationFailed": "Failed to generate descriptions. Please try again."
-    }
-  },
-  "buttons": {
-    "saveChanges": "Save Changes",
-    "uploadingLogo": "Uploading...",
-    "updatingSettings": "Updating...",
-    "checkAvailability": "Check Availability"
+  "localization": {
+    "section_title": "言語と地域設定",
+    "default_language_label": "デフォルト言語",
+    "select_language_placeholder": "言語を選択",
+    "supported_languages_label": "サポートする言語",
+    "date_format_label": "日付形式",
+    "select_date_format_placeholder": "日付形式を選択",
+    "time_format_label": "時刻形式",
+    "select_time_format_placeholder": "時刻形式を選択",
+    "measurement_unit_label": "測定単位 (距離用)",
+    "kilometers_option": "キロメートル",
+    "miles_option": "マイル"
   },
   "notifications": {
-    "successTitle": "Settings Updated",
-    "successMessage": "Your restaurant settings have been updated successfully.",
-    "settingsSaved": "Settings saved successfully.",
-    "saveError": "Error saving settings: {error}",
-    "uploadError": "Error uploading logo: {error}",
-    "errorTitle": "Update Failed",
-    "errorMessage": "Could not update settings: {error}",
-    "logoUploadErrorTitle": "Logo Upload Failed",
-    "logoUploadErrorMessage": "Could not upload logo: {error}",
-    "logoRemovedMessage": "Logo removed. Save changes to confirm.",
-    "fileTooLarge": "File is too large. Max 5MB.",
-    "invalidFileType": "Invalid file type. Please upload an image.",
-    "settingsSaveFailedGeneric": "Failed to save settings. Please try again.",
-    "compressionError": "Error compressing image. Please try a different image or check its format.",
-    "subdomainCheckSuccess": "Domain name is available!",
-    "subdomainCheckError": "Domain name is not available or invalid"
+    "section_title": "管理者通知設定",
+    "admin_email_notifications_label": "新しい注文のメール通知",
+    "admin_email_placeholder": "通知を受信するメールアドレス",
+    "admin_sms_notifications_label": "新しい注文のSMS通知",
+    "admin_sms_placeholder": "通知を受信する電話番号",
+    "customer_notification_settings_link": "顧客通知設定 (プロフィールで管理)"
   },
-  "validation": {
-    "name": {
-      "required": "Restaurant name is required",
-      "maxLength": "Name must be {maxLength} characters or less"
-    },
-    "subdomain": {
-      "minLength": "Domain must be at least {minLength} characters",
-      "maxLength": "Domain must be {maxLength} characters or less",
-      "invalidFormat": "Domain can only contain lowercase letters, numbers, and hyphens"
-    },
-    "defaultLanguage": {
-      "required": "Default language is required"
-    },
-    "brandColor": {
-      "invalidFormat": "Invalid color format. Use #RRGGBB format"
-    },
-    "tax": {
-      "min": "Tax rate must be at least 0%",
-      "max": "Tax rate cannot exceed 100%"
-    },
-    "address": {
-      "maxLength": "Address must be {maxLength} characters or less"
-    },
-    "phone": {
-      "maxLength": "Phone number must be {maxLength} characters or less"
-    },
-    "email": {
-      "invalidFormat": "Please enter a valid email address",
-      "maxLength": "Email must be {maxLength} characters or less"
-    },
-    "website": {
-      "invalidFormat": "Please enter a valid website URL",
-      "maxLength": "Website URL must be {maxLength} characters or less"
-    },
-    "description": {
-      "maxLength": "Description must be {maxLength} characters or less"
-    },
-    "socialLinks": {
-      "invalidUrl": "Please enter a valid URL"
-    },
-    "currency": {
-      "required": "Currency is required"
-    },
-    "logoFile": {
-      "maxSize": "Logo file must be {maxSize}MB or less",
-      "invalidType": "Logo must be PNG, JPEG, or WebP format"
-    },
-    "logoUrl": {
-      "invalidFormat": "Invalid logo URL format"
-    }
+  "integrations": {
+    "section_title": "サードパーティ連携",
+    "google_analytics_id_label": "Google AnalyticsトラッキングID",
+    "google_analytics_id_placeholder": "UA-XXXXX-Y",
+    "facebook_pixel_id_label": "Facebook Pixel ID",
+    "facebook_pixel_id_placeholder": "Pixel IDを入力",
+    "manage_linked_accounts_link": "連携アカウントを管理 (プロフィール設定)"
   },
-  "altText": {
-    "logoPreview": "Restaurant logo preview",
-    "logoIconFallback": "Logo"
+  "advanced": {
+    "section_title": "詳細設定",
+    "maintenance_mode_label": "メンテナンスモードを有効にする",
+    "maintenance_mode_message_label": "メンテナンスモードメッセージ",
+    "maintenance_mode_message_placeholder": "サイトは現在メンテナンス中です。間もなく再開します。",
+    "api_access_title": "APIアクセス (開発者向け)",
+    "generate_api_key_button": "APIキーを生成",
+    "current_api_key_label": "現在のAPIキー:",
+    "data_management_title": "データ管理",
+    "export_restaurant_data_button": "レストランデータをエクスポート",
+    "delete_restaurant_data_button": "レストランデータを削除",
+    "delete_restaurant_confirmation_message": "本当にすべてのレストランデータを削除しますか？この操作は元に戻せません。"
   },
-  "sections": {
-    "basic": "Basic Information",
-    "branding": "Branding & Visual",
-    "contact": "Contact & Location",
-    "operations": "Operations",
-    "descriptions": "Descriptions",
-    "online": "Online Presence",
-    "business": "Business Settings"
+  "buttons": {
+    "save_settings": "設定を保存",
+    "saving_settings": "設定を保存中...",
+    "cancel": "キャンセル"
   },
-  "tabs": {
-    "basic": "Basic",
-    "domain": "Domain",
-    "hours": "Hours",
-    "descriptions": "Descriptions",
-    "business": "Business",
-    "delivery": "Service"
+  "notifications_panel": {
+    "save_success_title": "成功",
+    "save_success_message": "設定が正常に保存されました。",
+    "save_error_title": "エラー",
+    "save_error_message": "設定の保存中にエラーが発生しました: {error}",
+    "generic_error_message": "予期せぬエラーが発生しました。後でもう一度お試しください。"
   },
-  "basicInfo": {
-    "title": "Basic Information",
-    "description": "Essential details about your restaurant"
+  "validation_errors": {
+    "required": "このフィールドは必須です。",
+    "invalid_email": "無効なメールアドレスです。",
+    "invalid_phone": "無効な電話番号です。",
+    "invalid_number": "有効な数値を入力してください。",
+    "invalid_percentage": "有効なパーセンテージを入力してください (0-100)。"
   },
-  "domainManagement": {
-    "title": "Domain Management",
-    "description": "Customize your restaurant's web address",
-    "checking": "Checking availability...",
-    "available": "✅ This domain is available!",
-    "unavailable": "❌ This domain is already taken",
-    "infoTitle": "How it works",
-    "infoText": "Your customers will access your menu and ordering system through your custom domain."
-  },
-  "descriptions": {
-    "title": "Restaurant Descriptions",
-    "description": "Create compelling descriptions in multiple languages"
-  },
-  "businessSettings": {
-    "title": "Business Settings",
-    "description": "Configure currency and payment options"
-  },
-  "currencyOptions": {
-    "JPY": "Japanese Yen (¥)",
-    "USD": "US Dollar ($)",
-    "VND": "Vietnamese Dong (₫)"
+  "tooltips": {
+    "primary_color": "ブランドの主要な色。ボタンやアクセントに使用されます。",
+    "favicon": "ブラウザのタブに表示される小さなアイコン。",
+    "maintenance_mode": "有効にすると、顧客はあなたのレストランサイトにアクセスできなくなります。"
   }
 }

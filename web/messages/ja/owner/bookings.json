@@ -1,48 +1,48 @@
 {
-  "title": "Booking Management",
-  "subtitle": "Manage table reservations and customer bookings",
+  "title": "予約管理",
+  "subtitle": "テーブル予約と顧客の予約を管理します",
   "table": {
-    "customer_name": "Customer Name",
-    "contact": "Contact",
-    "date_time": "Date & Time",
-    "party_size": "Party Size",
-    "status": "Status",
-    "actions": "Actions"
+    "customer_name": "顧客名",
+    "contact": "連絡先",
+    "date_time": "日時",
+    "party_size": "人数",
+    "status": "ステータス",
+    "actions": "アクション"
   },
   "status": {
-    "pending": "Pending",
-    "confirmed": "Confirmed",
-    "canceled": "Canceled"
+    "pending": "保留中",
+    "confirmed": "確定済み",
+    "canceled": "キャンセル済み"
   },
   "actions": {
-    "view_details": "View Details",
-    "confirm_booking": "Confirm Booking",
-    "cancel_booking": "Cancel Booking",
-    "confirming": "Confirming...",
-    "canceling": "Canceling..."
+    "view_details": "詳細を表示",
+    "confirm_booking": "予約を確定",
+    "cancel_booking": "予約をキャンセル",
+    "confirming": "確定中...",
+    "canceling": "キャンセル中..."
   },
-  "details_title": "Booking Details",
+  "details_title": "予約詳細",
   "notifications": {
-    "update_success": "Booking status updated successfully",
-    "update_failed": "Failed to update booking status: {error}",
-    "fetch_error": "Failed to load bookings"
+    "update_success": "予約ステータスが正常に更新されました",
+    "update_failed": "予約ステータスの更新に失敗しました: {error}",
+    "fetch_error": "予約の読み込みに失敗しました"
   },
   "empty_state": {
-    "title": "No Bookings Yet",
-    "description": "Start managing your bookings here",
-    "no_bookings": "No bookings found",
-    "message": "Bookings will appear here when customers make reservations"
+    "title": "まだ予約はありません",
+    "description": "ここから予約の管理を始めましょう",
+    "no_bookings": "予約が見つかりません",
+    "message": "顧客が予約をすると、ここに表示されます"
   },
   "preorder": {
-    "title": "Pre-ordered Items",
-    "no_preorder_items": "No pre-ordered items"
+    "title": "事前注文された商品",
+    "no_preorder_items": "事前注文された商品はありません"
   },
   "errors": {
-    "no_bookings_found": "No bookings found.",
-    "fetchErrorTitle": "Error Fetching Bookings"
+    "no_bookings_found": "予約が見つかりません。",
+    "fetchErrorTitle": "予約取得エラー"
   },
   "coming_soon": {
-    "title": "Table Booking Management",
-    "message": "This feature is coming soon! You'll be able to manage customer table reservations and bookings here."
+    "title": "テーブル予約管理",
+    "message": "この機能は間もなく登場します！ここで顧客のテーブル予約と予約管理ができるようになります。"
   }
 }

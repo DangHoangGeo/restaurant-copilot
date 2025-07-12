@@ -1,193 +1,117 @@
 {
-  "title": "Restaurant Onboarding",
-  "description": "Let's set up your restaurant profile and create your homepage content with AI assistance.",
-  "aiAssisted": "AI-Assisted Setup",
+  "title": "CoOrderへようこそ！",
+  "subtitle": "レストランのセットアップを完了し、注文の受付を開始しましょう。",
+  "get_started": "始める",
+  "progress_bar_label": "{percent}% 完了",
   "steps": {
-    "basic": {
-      "title": "Basic Information",
-      "description": "Essential restaurant details and contact information",
-      "fields": {
-        "name": {
-          "label": "Restaurant Name",
-          "placeholder": "Enter your restaurant name"
-        },
-        "subdomain": {
-          "label": "Website URL",
-          "placeholder": "yourrestaurant"
-        },
-        "language": {
-          "label": "Default Language",
-          "placeholder": "Select your primary language"
-        },
-        "brandColor": {
-          "label": "Brand Color"
-        },
-        "phone": {
-          "label": "Phone Number",
-          "placeholder": "+1 (555) 123-4567"
-        },
-        "email": {
-          "label": "Email Address",
-          "placeholder": "contact@yourrestaurant.com"
-        },
-        "website": {
-          "label": "Website",
-          "placeholder": "https://yourrestaurant.com"
-        },
-        "address": {
-          "label": "Address",
-          "placeholder": "123 Main Street, City, State 12345"
-        },
-        "tax": {
-          "label": "Tax Rate",
-          "placeholder": "0.10 (10%)"
-        }
-      },
-      "sections": {
-        "contact": "Contact Information (Optional)"
-      },
-      "buttons": {
-        "continue": "Continue"
+    "restaurant_info": {
+      "title": "レストラン情報",
+      "status_pending": "未完了",
+      "status_completed": "完了",
+      "status_in_progress": "進行中",
+      "form": {
+        "restaurant_name_label": "レストラン名",
+        "restaurant_name_placeholder": "レストランの名前を入力してください",
+        "restaurant_type_label": "レストランの種類",
+        "restaurant_type_placeholder": "種類を選択 (例: イタリアン, カフェ)",
+        "address_label": "住所",
+        "address_placeholder": "レストランの住所を入力してください",
+        "phone_label": "電話番号",
+        "phone_placeholder": "レストランの電話番号を入力してください",
+        "owner_name_label": "オーナー名",
+        "owner_name_placeholder": "オーナーの名前を入力してください",
+        "owner_email_label": "オーナーのメールアドレス",
+        "owner_email_placeholder": "オーナーのメールアドレスを入力してください"
       }
     },
-    "aiGeneration": {
-      "title": "AI Content Generation",
-      "description": "Generate homepage content with AI assistance",
-      "aiInfo": {
-        "title": "AI-Powered Content Creation",
-        "description": "Tell us about your restaurant and we'll generate hero text, owner story, and signature dishes for your homepage."
-      },
-      "fields": {
-        "cuisine": {
-          "label": "Cuisine Type",
-          "placeholder": "Italian, Japanese, Mexican, etc."
-        },
-        "city": {
-          "label": "City/Location",
-          "placeholder": "New York, Tokyo, etc."
-        },
-        "style": {
-          "label": "Restaurant Style",
-          "placeholder": "Casual dining, fine dining, family-friendly, etc."
-        },
-        "specialties": {
-          "label": "Specialties & Features",
-          "placeholder": "Wood-fired pizza, fresh seafood, local ingredients, etc."
-        }
-      },
-      "generation": {
-        "success": "Content generated successfully!",
-        "error": "Failed to generate content. Please try again."
-      },
-      "preview": {
-        "title": "Generated Content Preview",
-        "ownerStory": "Owner Story",
-        "signatureDishes": "Signature Dishes"
-      },
-      "buttons": {
-        "back": "Back",
-        "skip": "Skip AI Generation",
-        "generate": "Generate Content",
-        "generating": "Generating...",
-        "regenerate": "Generate Again",
-        "accept": "Use This Content"
-      }
+    "menu_setup": {
+      "title": "メニュー設定",
+      "description": "最初のメニュー項目とカテゴリを追加します。",
+      "add_menu_item_button": "最初のメニュー項目を追加",
+      "manage_menu_link": "メニュー管理へ移動"
     },
-    "media": {
-      "title": "Media Upload",
-      "description": "Upload your restaurant logo, owner photo, and gallery images",
-      "sections": {
-        "logo": {
-          "title": "Restaurant Logo",
-          "description": "Upload your restaurant logo for branding",
-          "requirements": "PNG, JPG, or GIF up to 5MB. Square format recommended."
-        },
-        "ownerPhoto": {
-          "title": "Owner Photo",
-          "description": "Upload a photo of yourself for the owner story section",
-          "requirements": "PNG, JPG, or GIF up to 5MB. Square format recommended.",
-          "optional": "Optional"
-        },
-        "gallery": {
-          "title": "Gallery Images",
-          "description": "Upload photos of your restaurant, food, and atmosphere",
-          "requirements": "PNG, JPG, or GIF up to 5MB each. Multiple images allowed.",
-          "optional": "Optional"
-        }
-      },
-      "upload": {
-        "logoSuccess": "Logo uploaded successfully",
-        "logoError": "Failed to upload logo",
-        "ownerPhotoSuccess": "Owner photo uploaded successfully",
-        "ownerPhotoError": "Failed to upload owner photo",
-        "gallerySuccess": "Gallery images uploaded successfully ({count} files)",
-        "galleryError": "Failed to upload gallery images"
-      },
-      "errors": {
-        "invalidFileType": "Please select a valid image file",
-        "fileTooLarge": "File size must be less than 5MB"
-      },
-      "buttons": {
-        "back": "Back",
-        "continue": "Continue"
-      }
+    "table_setup": {
+      "title": "テーブル設定",
+      "description": "テーブルを追加し、QRコードを生成します。",
+      "add_table_button": "最初のテーブルを追加",
+      "manage_tables_link": "テーブル管理へ移動"
     },
-    "review": {
-      "title": "Review & Complete",
-      "description": "Review your restaurant information and complete the onboarding process.",
-      "sections": {
-        "basicInfo": {
-          "title": "Basic Information",
-          "fields": {
-            "name": "Restaurant Name",
-            "subdomain": "Website URL",
-            "language": "Default Language",
-            "brandColor": "Brand Color",
-            "phone": "Phone",
-            "email": "Email",
-            "address": "Address",
-            "website": "Website"
-          }
-        },
-        "aiContent": {
-          "title": "AI-Generated Content",
-          "badge": "AI Generated",
-          "fields": {
-            "hero": "Hero Section",
-            "ownerStory": "Owner Story",
-            "signatureDishes": "Signature Dishes"
-          }
-        },
-        "media": {
-          "title": "Media Assets",
-          "fields": {
-            "logo": "Logo",
-            "ownerPhoto": "Owner Photo",
-            "gallery": "Gallery"
-          }
-        }
-      },
-      "completion": {
-        "title": "Ready to Launch!",
-        "description": "Your restaurant profile is ready. Once you complete onboarding, you'll have access to:",
-        "features": {
-          "homepage": "A beautiful homepage with your content",
-          "settings": "Restaurant settings management",
-          "menu": "Menu management system",
-          "orders": "Order management dashboard"
-        }
-      },
-      "buttons": {
-        "back": "Back",
-        "complete": "Complete Onboarding",
-        "completing": "Completing..."
-      }
+    "payment_setup": {
+      "title": "支払い設定",
+      "description": "支払い処理のためにStripeアカウントを接続します。",
+      "connect_stripe_button": "Stripeに接続",
+      "stripe_connected_message": "Stripeアカウントが接続されました。",
+      "stripe_connection_pending": "Stripe接続保留中"
+    },
+    "staff_setup": {
+      "title": "スタッフ設定",
+      "description": "最初の従業員メンバーを追加します。",
+      "add_employee_button": "最初の従業員を追加",
+      "manage_staff_link": "スタッフ管理へ移動"
+    },
+    "review_publish": {
+      "title": "確認と公開",
+      "description": "設定を確認し、レストランを公開します。",
+      "review_settings_button": "設定を確認",
+      "publish_restaurant_button": "レストランを公開",
+      "restaurant_live_message": "おめでとうございます！あなたのレストランは現在公開されています。"
     }
   },
-  "completion": {
-    "success": "Onboarding completed successfully! Welcome to your restaurant dashboard.",
-    "success_with_warnings": "Onboarding completed with some issues. Check the warnings below.",
-    "error": "Failed to complete onboarding. Please try again.",
-    "warning_prefix": "Warning"
+  "navigation": {
+    "next_step": "次のステップ",
+    "previous_step": "前のステップ",
+    "skip_step": "このステップをスキップ",
+    "complete_onboarding": "オンボーディングを完了"
+  },
+  "notifications": {
+    "save_success": "情報が正常に保存されました。",
+    "save_error": "情報の保存中にエラーが発生しました: {error}",
+    "publish_success": "レストランが正常に公開されました！",
+    "publish_error": "レストランの公開中にエラーが発生しました: {error}",
+    "stripe_connection_success": "Stripeアカウントが正常に接続されました。",
+    "stripe_connection_error": "Stripeアカウントの接続に失敗しました: {error}"
+  },
+  "errors": {
+    "required_field": "このフィールドは必須です。",
+    "invalid_email": "無効なメールアドレスです。",
+    "generic_error": "予期せぬエラーが発生しました。後でもう一度お試しください。"
+  },
+  "tips": {
+    "restaurant_info": "正確な情報は、顧客があなたのレストランを見つけやすくするのに役立ちます。",
+    "menu_setup": "食欲をそそる説明と高品質の画像で、あなたの最高の料理を紹介しましょう。",
+    "table_setup": "テーブルのQRコードにより、顧客は簡単にメニューにアクセスし、注文することができます。",
+    "payment_setup": "安全な支払い処理は、あなたとあなたの顧客にとって不可欠です。",
+    "staff_setup": "チームメンバーを追加することで、業務を効率化し、役割を委任することができます。",
+    "review_publish": "公開する前にすべての詳細を再確認してください。"
+  },
+  "help_modal": {
+    "title": "ヘルプとサポート",
+    "description": "オンボーディングプロセスでサポートが必要ですか？ドキュメントを参照するか、サポートチームにお問い合わせください。",
+    "documentation_link": "ドキュメントを見る",
+    "contact_support_button": "サポートに連絡"
+  },
+  "exit_confirmation_modal": {
+    "title": "オンボーディングを終了しますか？",
+    "message": "進行状況は保存されているので、後でいつでも再開できます。",
+    "buttons": {
+      "exit": "終了",
+      "stay": "続ける"
+    }
+  },
+  "all_set_page": {
+    "title": "すべて設定完了です！",
+    "message": "おめでとうございます、{restaurantName}！あなたのレストランはCoOrderで注文を受け付ける準備ができました。",
+    "actions": {
+      "go_to_dashboard": "ダッシュボードへ移動",
+      "view_live_site": "ライブサイトを見る",
+      "add_another_item": "別のメニュー項目を追加"
+    },
+    "next_steps_title": "次のステップ:",
+    "next_steps_list": [
+      "ホームページをカスタマイズして、より多くの顧客を引き付けましょう。",
+      "特別プロモーションや割引を設定しましょう。",
+      "従業員のスケジュールを管理しましょう。",
+      "販売レポートと分析を監視しましょう。"
+    ]
   }
 }

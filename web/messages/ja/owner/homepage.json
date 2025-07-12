@@ -1,249 +1,249 @@
 {
-  "title": "Homepage Management",
-  "description": "Customize your restaurant's homepage to attract and engage customers",
+  "title": "ホームページ管理",
+  "description": "レストランのホームページをカスタマイズして、顧客を引き付け、エンゲージメントを高めます",
   "tabs": {
-    "overview": "Overview",
-    "overviewDescription": "View the status of all homepage sections",
-    "gallery": "Gallery",
-    "galleryDescription": "Manage your restaurant's photo gallery",
-    "ownerStory": "Owner Story",
-    "storyDescription": "Share your personal story and passion",
-    "signatureDishes": "Signature Dishes",
-    "signatureDescription": "Highlight your best menu items",
-    "preview": "Preview",
-    "previewDescription": "See how your homepage looks to customers"
+    "overview": "概要",
+    "overviewDescription": "すべてのホームページセクションのステータスを表示します",
+    "gallery": "ギャラリー",
+    "galleryDescription": "レストランのフォトギャラリーを管理します",
+    "ownerStory": "オーナーストーリー",
+    "storyDescription": "あなたの個人的なストーリーと情熱を共有します",
+    "signatureDishes": "代表料理",
+    "signatureDescription": "最高のメニュー項目を強調表示します",
+    "preview": "プレビュー",
+    "previewDescription": "ホームページが顧客にどのように見えるかを確認します"
   },
   "buttons": {
-    "preview": "Preview",
-    "viewLive": "View Live Site",
-    "configure": "Configure",
-    "refresh": "Refresh",
-    "openInNewTab": "Open in New Tab"
+    "preview": "プレビュー",
+    "viewLive": "ライブサイトを表示",
+    "configure": "設定",
+    "refresh": "更新",
+    "openInNewTab": "新しいタブで開く"
   },
   "status": {
-    "configured": "Configured",
-    "needsAttention": "Needs Attention",
-    "missing": "Missing",
-    "unknown": "Unknown"
+    "configured": "設定済み",
+    "needsAttention": "対応が必要",
+    "missing": "不足",
+    "unknown": "不明"
   },
   "overview": {
-    "title": "Homepage Overview",
-    "description": "Monitor and manage all sections of your restaurant homepage",
+    "title": "ホームページ概要",
+    "description": "レストランのホームページのすべてのセクションを監視および管理します",
     "heroSection": {
-      "title": "Hero Section",
-      "description": "Main banner with restaurant branding and call-to-action"
+      "title": "ヒーローセクション",
+      "description": "レストランのブランディングと行動喚起を含むメインバナー"
     },
     "gallerySection": {
-      "title": "Photo Gallery",
-      "description": "Showcase your restaurant's atmosphere and dishes"
+      "title": "フォトギャラリー",
+      "description": "レストランの雰囲気と料理を紹介します"
     },
     "ownerStorySection": {
-      "title": "Owner Story",
-      "description": "Personal story that connects with customers"
+      "title": "オーナーストーリー",
+      "description": "顧客とつながる個人的なストーリー"
     },
     "signatureDishesSection": {
-      "title": "Signature Dishes",
-      "description": "Highlight your most popular menu items"
+      "title": "代表料理",
+      "description": "最も人気のあるメニュー項目を強調表示します"
     },
     "reviewsSection": {
-      "title": "Reviews & Location",
-      "description": "Google reviews and maps integration"
+      "title": "レビューと場所",
+      "description": "Googleレビューとマップの統合"
     },
     "contactSection": {
-      "title": "Contact & Hours",
-      "description": "Contact information and opening hours"
+      "title": "連絡先と営業時間",
+      "description": "連絡先情報と営業時間"
     },
     "stats": {
-      "title": "Quick Stats",
-      "description": "Overview of your homepage content",
-      "galleryImages": "Gallery Images",
-      "signatureDishes": "Signature Dishes",
-      "rating": "Average Rating",
-      "reviews": "Total Reviews"
+      "title": "クイック統計",
+      "description": "ホームページコンテンツの概要",
+      "galleryImages": "ギャラリー画像",
+      "signatureDishes": "代表料理",
+      "rating": "平均評価",
+      "reviews": "総レビュー数"
     }
   },
   "gallery": {
-    "title": "Gallery Management",
-    "description": "Upload and organize photos that showcase your restaurant",
+    "title": "ギャラリー管理",
+    "description": "レストランを紹介する写真をアップロードして整理します",
     "buttons": {
-      "upload": "Upload Photos",
-      "uploadFirst": "Upload Your First Photos",
-      "setHero": "Set as Hero"
+      "upload": "写真をアップロード",
+      "uploadFirst": "最初の写真をアップロード",
+      "setHero": "ヒーロー画像に設定"
     },
     "upload": {
-      "title": "Upload New Photos",
-      "description": "Select multiple photos to add to your gallery",
-      "selectFiles": "Select Photos",
-      "selectedCount": "{count} files selected",
-      "success": "Photos uploaded successfully",
-      "error": "Failed to upload photos"
+      "title": "新しい写真をアップロード",
+      "description": "ギャラリーに追加する複数の写真を選択します",
+      "selectFiles": "写真を選択",
+      "selectedCount": "{count} ファイルが選択されました",
+      "success": "写真が正常にアップロードされました",
+      "error": "写真のアップロードに失敗しました"
     },
     "edit": {
-      "title": "Edit Photo",
-      "description": "Update photo details",
-      "altText": "Alt Text",
-      "altTextPlaceholder": "Describe this photo"
+      "title": "写真を編集",
+      "description": "写真の詳細を更新します",
+      "altText": "代替テキスト",
+      "altTextPlaceholder": "この写真を説明してください"
     },
     "delete": {
-      "success": "Photo deleted successfully",
-      "error": "Failed to delete photo"
+      "success": "写真が正常に削除されました",
+      "error": "写真の削除に失敗しました"
     },
     "update": {
-      "success": "Photo updated successfully",
-      "error": "Failed to update photo"
+      "success": "写真が正常に更新されました",
+      "error": "写真の更新に失敗しました"
     },
     "hero": {
-      "label": "Hero Image",
-      "current": "Current Hero",
-      "error": "Failed to set hero image"
+      "label": "ヒーロー画像",
+      "current": "現在のヒーロー画像",
+      "error": "ヒーロー画像の設定に失敗しました"
     },
     "empty": {
-      "title": "No Photos Yet",
-      "description": "Start building your gallery by uploading your first photos"
+      "title": "まだ写真がありません",
+      "description": "最初の写真をアップロードしてギャラリーの構築を開始します"
     },
     "info": {
-      "heroImage": "Choose one image as your hero image - it will be prominently displayed at the top of your homepage"
+      "heroImage": "ヒーロー画像として1枚の画像を選択してください - それはホームページの上部に目立つように表示されます"
     },
     "errors": {
-      "loadFailed": "Failed to load gallery"
+      "loadFailed": "ギャラリーの読み込みに失敗しました"
     }
   },
   "ownerStory": {
-    "title": "Owner Story",
-    "description": "Share your personal journey and passion for your restaurant",
+    "title": "オーナーストーリー",
+    "description": "あなたの個人的な旅とレストランへの情熱を共有します",
     "photo": {
-      "title": "Owner Photo",
-      "description": "Add a personal photo to connect with your customers",
-      "upload": "Upload Photo",
-      "change": "Change Photo",
-      "alt": "Owner photo",
-      "uploadSuccess": "Photo uploaded successfully",
-      "uploadError": "Failed to upload photo"
+      "title": "オーナーの写真",
+      "description": "顧客とつながるために個人の写真を追加します",
+      "upload": "写真をアップロード",
+      "change": "写真を変更",
+      "alt": "オーナーの写真",
+      "uploadSuccess": "写真が正常にアップロードされました",
+      "uploadError": "写真のアップロードに失敗しました"
     },
     "story": {
-      "title": "Your Story",
-      "english": "English Story",
-      "japanese": "Japanese Story",
-      "vietnamese": "Vietnamese Story",
+      "title": "あなたのストーリー",
+      "english": "英語のストーリー",
+      "japanese": "日本語のストーリー",
+      "vietnamese": "ベトナム語のストーリー",
       "placeholderEn": "Tell your customers about your journey, passion, and what makes your restaurant special...",
       "placeholderJa": "あなたの歩み、情熱、そしてレストランの特別な魅力についてお客様にお話しください...",
       "placeholderVi": "Kể cho khách hành về hành trình, đam mê và điều đặc biệt của nhà hàng bạn..."
     },
     "buttons": {
-      "save": "Save Story"
+      "save": "ストーリーを保存"
     },
     "save": {
-      "success": "Owner story saved successfully",
-      "error": "Failed to save owner story"
+      "success": "オーナーストーリーが正常に保存されました",
+      "error": "オーナーストーリーの保存に失敗しました"
     },
     "info": {
-      "personalTouch": "A personal story helps customers connect with your restaurant and builds trust"
+      "personalTouch": "個人的なストーリーは、顧客があなたのレストランとつながり、信頼を築くのに役立ちます"
     },
     "tips": {
-      "title": "Writing Tips",
-      "personal": "Be authentic and share your personal journey",
-      "authentic": "Mention what inspired you to open the restaurant",
-      "passion": "Express your passion for food and hospitality",
-      "multilingual": "Consider writing in multiple languages for broader appeal"
+      "title": "執筆のヒント",
+      "personal": "本物であり、あなたの個人的な旅を共有してください",
+      "authentic": "レストランを開いたきっかけについて言及してください",
+      "passion": "料理とホスピタリティへの情熱を表現してください",
+      "multilingual": "より幅広いアピールのために多言語で書くことを検討してください"
     },
     "errors": {
-      "loadFailed": "Failed to load owner story"
+      "loadFailed": "オーナーストーリーの読み込みに失敗しました"
     }
   },
-  "signature": "Signature",
-  "view_details": "View Details",
-  "browse_full_menu": "Browse Full Menu",
-  "add_to_cart": "Add to Cart",
+  "signature": "代表",
+  "view_details": "詳細を表示",
+  "browse_full_menu": "全メニューを見る",
+  "add_to_cart": "カートに追加",
   "signatureDishes": {
-    "title": "Signature Dishes",
-    "description": "Select menu items to feature as your signature dishes",
+    "title": "代表料理",
+    "description": "代表料理として特集するメニュー項目を選択します",
     "current": {
-      "title": "Current Signature Dishes",
-      "description": "You have {count} signature dishes selected",
+      "title": "現在の代表料理",
+      "description": "{count} 品の代表料理が選択されています",
       "empty": {
-        "title": "No Signature Dishes Selected",
-        "description": "Choose your best menu items to showcase as signature dishes"
+        "title": "代表料理が選択されていません",
+        "description": "最高のメニュー項目を選択して、代表料理として紹介してください"
       }
     },
     "selector": {
-      "title": "Select From Menu",
-      "description": "Browse your menu and select dishes to feature on your homepage"
+      "title": "メニューから選択",
+      "description": "メニューを閲覧し、ホームページで特集する料理を選択します"
     },
     "buttons": {
-      "remove": "Remove"
+      "remove": "削除"
     },
     "badge": {
-      "signature": "Signature"
+      "signature": "代表"
     },
     "search": {
-      "placeholder": "Search menu items...",
+      "placeholder": "メニュー項目を検索...",
       "noResults": {
-        "title": "No Items Found",
-        "description": "Try adjusting your search or filter criteria"
+        "title": "項目が見つかりません",
+        "description": "検索またはフィルター条件を調整してみてください"
       }
     },
     "filter": {
-      "allCategories": "All Categories"
+      "allCategories": "すべてのカテゴリ"
     },
     "status": {
-      "selected": "Selected",
-      "clickToSelect": "Click to select"
+      "selected": "選択済み",
+      "clickToSelect": "クリックして選択"
     },
     "toggle": {
-      "addedSuccess": "Added to signature dishes",
-      "removedSuccess": "Removed from signature dishes",
-      "error": "Failed to update signature dish"
+      "addedSuccess": "代表料理に追加されました",
+      "removedSuccess": "代表料理から削除されました",
+      "error": "代表料理の更新に失敗しました"
     },
     "info": {
-      "recommendation": "We recommend selecting 3-6 of your most popular or unique dishes"
+      "recommendation": "最も人気のある、またはユニークな料理を3〜6品選択することをお勧めします"
     },
     "errors": {
-      "loadFailed": "Failed to load menu items"
+      "loadFailed": "メニュー項目の読み込みに失敗しました"
     }
   },
   "preview": {
-    "title": "Homepage Preview",
-    "description": "See how your homepage will look to customers across different devices",
+    "title": "ホームページプレビュー",
+    "description": "さまざまなデバイスでホームページが顧客にどのように見えるかを確認します",
     "viewport": {
-      "title": "Device Preview",
-      "description": "Preview your homepage on different devices",
-      "desktop": "Desktop",
-      "tablet": "Tablet", 
-      "mobile": "Mobile"
+      "title": "デバイスプレビュー",
+      "description": "さまざまなデバイスでホームページをプレビューします",
+      "desktop": "デスクトップ",
+      "tablet": "タブレット",
+      "mobile": "モバイル"
     },
     "actions": {
-      "loading": "Loading...",
-      "openInNewTab": "Open in New Tab"
+      "loading": "読み込み中...",
+      "openInNewTab": "新しいタブで開く"
     },
     "status": {
-      "title": "Homepage Status",
-      "description": "Current state of your homepage sections",
-      "lastUpdated": "Last Updated",
-      "galleryImages": "Gallery Images",
-      "images": "images",
-      "ownerStory": "Owner Story",
-      "configured": "Configured",
-      "signatureDishes": "Signature Dishes", 
-      "dishes": "dishes",
-      "seoSettings": "SEO Settings"
+      "title": "ホームページのステータス",
+      "description": "ホームページセクションの現在の状態",
+      "lastUpdated": "最終更新日",
+      "galleryImages": "ギャラリー画像",
+      "images": "画像",
+      "ownerStory": "オーナーストーリー",
+      "configured": "設定済み",
+      "signatureDishes": "代表料理",
+      "dishes": "料理",
+      "seoSettings": "SEO設定"
     },
     "iframe": {
-      "title": "Homepage Preview"
+      "title": "ホームページプレビュー"
     },
     "success": {
-      "previewOpened": "Preview Opened",
-      "previewOpenedDescription": "Homepage opened in new tab"
+      "previewOpened": "プレビューを開きました",
+      "previewOpenedDescription": "ホームページが新しいタブで開かれました"
     },
     "error": {
-      "previewFailed": "Preview Failed",
-      "previewFailedDescription": "Could not open preview"
+      "previewFailed": "プレビューに失敗しました",
+      "previewFailedDescription": "プレビューを開けませんでした"
     },
     "tips": {
-      "title": "Preview Tips",
-      "tip1": "Test your homepage on different devices to ensure optimal viewing",
-      "tip2": "Check that all images load properly and text is readable",
-      "tip3": "Verify that contact information and hours are up to date",
-      "tip4": "Make sure the call-to-action buttons work correctly"
+      "title": "プレビューのヒント",
+      "tip1": "最適な表示を確保するために、さまざまなデバイスでホームページをテストしてください",
+      "tip2": "すべての画像が正しく読み込まれ、テキストが読みやすいことを確認してください",
+      "tip3": "連絡先情報と営業時間が最新であることを確認してください",
+      "tip4": "行動喚起ボタンが正しく機能することを確認してください"
     }
   }
 }

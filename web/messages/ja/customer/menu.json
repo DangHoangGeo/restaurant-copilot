@@ -1,108 +1,89 @@
 {
-  "title": "Menu",
-  "serving_today": "Serving Today",
-  "view_menu": "View Menu",
-  "item_details": "Item Details",
-  "add_to_cart": "Add",
-  "out_of_stock": "Out of Stock",
-  "quantity": "Quantity",
-  "item_quantity": "Qty: {quantity}",
-  "item_notes": "Notes: {notes}",
-  "total_price": "Total Price",
-  "search_placeholder": "Search menu...",
-  "popular_now": "Popular Now",
-  "recommended": "Recommended",
-  "add_to_cart_success": "{itemName} added to your cart.",
-  "add_to_cart_error": "Failed to add {itemName} to cart. Please try again.",
-  "view_only": "View Only",
-  "decrease_quantity": "Decrease quantity",
-  "increase_quantity": "Increase quantity",
-  "item_added_to_cart_msg": "{item} added to cart!",
-  "select_size": "Select Size",
-  "select_toppings": "Select Toppings",
-  "selected_toppings": "Selected Toppings:",
-  "base_price": "Base Price",
-  "toppings_price": "Toppings",
-  "view_smart": "View Smart Menu",
-  "view_classic": "View Classic Menu",
-  "browse_categories": "Browse Categories",
-  "no_items_found": "No items found in this category.",
-  "categories": {
-    "all": "All Items",
-    "featured": "Featured",
-    "appetizers": "Appetizers",
-    "mains": "Main Courses",
-    "desserts": "Desserts",
-    "beverages": "Beverages"
-  },
-  "filters": {
-    "dietary": {
-      "vegetarian": "Vegetarian",
-      "vegan": "Vegan",
-      "gluten_free": "Gluten Free",
-      "dairy_free": "Dairy Free"
-    },
-    "price_range": {
-      "under_1000": "Under ¥1,000",
-      "1000_2000": "¥1,000 - ¥2,000",
-      "over_2000": "Over ¥2,000"
+  "title": "メニュー",
+  "search_placeholder": "料理名や食材で検索...",
+  "search_button": "検索",
+  "clear_filters_button": "フィルターをクリア",
+  "category_all": "すべて",
+  "item_card": {
+    "add_to_cart_button": "カートに追加",
+    "customize_button": "カスタマイズ",
+    "view_details_button": "詳細を見る",
+    "out_of_stock": "品切れ",
+    "calories": "{count} カロリー",
+    "tags": {
+      "spicy": "辛い",
+      "vegetarian": "ベジタリアン",
+      "vegan": "ビーガン",
+      "gluten_free": "グルテンフリー",
+      "new": "新商品",
+      "popular": "人気"
     }
   },
-  "food_card":{
-    "view_details": "View Details",
-    "add_to_cart": "Add to Cart",
-    "out_of_stock": "Out of Stock",
-    "price_from" : "From ¥{price}",
-    "price": "Price",
-    "rating": "Rating",
-    "reviews_count": "{count} Reviews",
-    "popular": "Popular",
-    "recommended": "Recommended"
+  "filters": {
+    "title": "フィルター",
+    "category_label": "カテゴリー",
+    "dietary_restrictions_label": "食事制限",
+    "price_range_label": "価格帯",
+    "spice_level_label": "辛さレベル",
+    "sort_by_label": "並び替え",
+    "sort_options": {
+      "name_asc": "名前 (昇順)",
+      "name_desc": "名前 (降順)",
+      "price_asc": "価格 (安い順)",
+      "price_desc": "価格 (高い順)",
+      "popularity": "人気順"
+    },
+    "apply_filters_button": "フィルターを適用"
   },
-  "item_detail": {
-    "choose_size": "Choose Size",
-    "add_toppings": "Add Toppings",
-    "special_instructions": "Special Instructions (Optional)",
-    "special_instructions_placeholder": "Any special requests or dietary requirements...",
-    "price_details": "Price Details",
-    "base_price": "Base price",
-    "quantity": "Quantity",
-    "total": "Total",
-    "currently_unavailable": "Currently Unavailable",
-    "add_to_cart": "Add to Cart",
-    "update": "Update",
-    "adding": "Adding...",
-    "characters_remaining": "{count}/200 characters",
-    "ingredients": "Ingredients",
-    "allergens": "Allergens",
-    "nutrition": "Nutrition Info",
-    "reviews": "Reviews",
-    "rating": "Rating",
-    "description": "Description",
-    "decrease_quantity": "Decrease quantity",
-    "increase_quantity": "Increase quantity"
+  "item_details_modal": {
+    "title": "商品の詳細",
+    "description_label": "説明",
+    "ingredients_label": "原材料",
+    "allergens_label": "アレルゲン",
+    "nutrition_info_label": "栄養成分表示",
+    "quantity_label": "数量",
+    "special_instructions_label": "特記事項",
+    "special_instructions_placeholder": "アレルギー対応や特別なご要望など...",
+    "add_to_cart_button": "カートに追加",
+    "update_item_button": "商品を更新",
+    "close_button": "閉じる"
   },
-  "ai_assistant": {
-    "title": "Restaurant Assistant",
-    "open": "Open virtual assistant",
-    "close": "Close virtual assistant",
-    "placeholder": "Ask me about ingredients, allergies, or recommendations...",
-    "input": "Type your message",
-    "send": "Send",
-    "suggest_popular": "What's popular here?",
-    "suggest_dietary": "Any vegetarian options?",
-    "suggest_recommendation": "What do you recommend?",
-    "suggest_recommendations": "Can you recommend something?",
-    "suggest_cart_help": "Help with my order",
-    "suggest_special_requests": "Special dietary needs",
-    "suggest_eta": "How long until my food arrives?",
-    "suggest_add_more": "I want to add more items",
-    "suggest_payment": "How do I pay?",
-    "suggest_help": "I need help",
-    "thinking": "Thinking...",
-    "help_text": "I can help you with ingredient questions, dietary restrictions, and personalized recommendations!"
+  "customization_options": {
+    "title": "カスタマイズオプション",
+    "size_label": "サイズ",
+    "toppings_label": "トッピング",
+    "add_ons_label": "追加オプション",
+    "spice_level_label": "辛さのレベル",
+    "cooking_preferences_label": "調理方法の指定",
+    "no_charge": "無料",
+    "additional_cost": "+¥{cost}"
   },
-  "ai_chat": {
-    "toggle_label": "Toggle AI Chat"
-  }
+  "restaurant_info": {
+    "name": "レストラン名: {name}",
+    "address": "住所: {address}",
+    "phone": "電話番号: {phone}",
+    "hours": "営業時間: {hours}",
+    "delivery_info": "配達情報: {info}",
+    "pickup_info": "テイクアウト情報: {info}"
+  },
+  "empty_menu": {
+    "title": "メニューに商品がありません",
+    "message": "現在、このレストランでは利用可能な商品がありません。後ほどもう一度ご確認ください。"
+  },
+  "error_loading_menu": {
+    "title": "メニューの読み込みエラー",
+    "message": "メニューの読み込み中にエラーが発生しました。インターネット接続を確認して、もう一度お試しください。",
+    "retry_button": "再試行"
+  },
+  "notifications": {
+    "item_added_to_cart": "{itemName} がカートに追加されました。",
+    "item_updated_in_cart": "{itemName} がカート内で更新されました。"
+  },
+  "dietary_icons": {
+    "vegetarian_alt": "ベジタリアン料理",
+    "vegan_alt": "ビーガン料理",
+    "gluten_free_alt": "グルテンフリー料理",
+    "spicy_alt": "辛い料理"
+  },
+  "back_to_restaurants_button": "レストラン一覧に戻る"
 }

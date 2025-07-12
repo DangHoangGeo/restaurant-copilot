@@ -1,29 +1,29 @@
 {
-  "title": "User Management",
-  "subtitle": "Manage all restaurant owners and users across the platform",
+  "title": "ユーザー管理",
+  "subtitle": "プラットフォーム全体のすべてのレストランオーナーとユーザーを管理します",
   "table": {
-    "name": "Name",
-    "email": "Email",
-    "restaurant": "Restaurant",
-    "role": "Role",
-    "status": "Status",
-    "created": "Created",
-    "actions": "Actions"
+    "name": "名前",
+    "email": "メールアドレス",
+    "restaurant": "レストラン",
+    "role": "役割",
+    "status": "ステータス",
+    "created": "作成日時",
+    "actions": "アクション"
   },
   "filters": {
-    "all_users": "All Users",
-    "active": "Active",
-    "inactive": "Inactive",
-    "pending": "Pending Verification"
+    "all_users": "すべてのユーザー",
+    "active": "アクティブ",
+    "inactive": "非アクティブ",
+    "pending": "検証待ち"
   },
   "actions": {
-    "view_details": "View Details",
-    "suspend_user": "Suspend User",
-    "activate_user": "Activate User",
-    "reset_password": "Reset Password"
+    "view_details": "詳細を表示",
+    "suspend_user": "ユーザーを停止",
+    "activate_user": "ユーザーをアクティブ化",
+    "reset_password": "パスワードをリセット"
   },
   "empty_state": {
-    "title": "No Users Found",
-    "description": "No users match your current filters."
+    "title": "ユーザーが見つかりません",
+    "description": "現在のフィルターに一致するユーザーはいません。"
   }
 }
