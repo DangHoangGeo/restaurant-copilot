@@ -1,25 +1,82 @@
- {
-	"session_created_title": "Session Created!",
-	"start_session": "Start Your Order",
-	"passcode_share_message": "Share this 4-digit code with others at your table so they can join your order:",
-	"passcode_instructions": "Others can scan the table QR code and enter this passcode to join your session.",
-	"ask_for_passcode": "Ask for Passcode",
-	"ask_for_passcode_instruction": "If you don't have the passcode, please ask the person who started the order.",
-	"start_ordering": "Start Ordering",
-	"enter_passcode_title": "Enter Passcode",
-	"enter_passcode_placeholder": "Enter 4-digit code",
-	"join_session_title": "Join Session",
-	"join_session_description": "Enter the 4-digit code provided by the person who started the order.",
-	"join": "Join Order",
-	"session_expired": "Session Expired",
-	"session_expired_message": "Your order session has been completed or expired. Thank you for your visit!",
-	"session_expired_instruction": "To place a new order, please scan the QR code on your table again.",
-	"invalid_table": "Invalid Table",
-	"invalid_table_message": "The table ID is invalid or doesn't belong to this restaurant.",
-	"invalid_table_instruction": "Please scan a valid QR code from a table at this restaurant.",
-	"view_menu_only": "View Menu Only",
-	"guest_count_title": "Guest Count",
-	"guest_count_description": "Please enter the number of guests at your table. This helps us prepare your order better.",
-	"cancel": "Cancel",
-	"continue_to_menu": "Continue to Menu"
+{
+  "title": "セッション",
+  "active_sessions_title": "アクティブなセッション",
+  "join_session_title": "セッションに参加",
+  "create_session_title": "新しいセッションを作成",
+  "session_card": {
+    "session_id_label": "セッションID:",
+    "restaurant_label": "レストラン:",
+    "table_label": "テーブル:",
+    "status_label": "ステータス:",
+    "participants_label": "参加者:",
+    "view_session_button": "セッションを見る",
+    "leave_session_button": "セッションを退出",
+    "end_session_button": "セッションを終了"
+  },
+  "join_session_form": {
+    "session_code_placeholder": "セッションコードを入力",
+    "join_button": "参加する",
+    "scan_qr_button": "QRコードをスキャン"
+  },
+  "create_session_form": {
+    "restaurant_select_label": "レストランを選択",
+    "restaurant_select_placeholder": "レストランを選ぶ",
+    "table_select_label": "テーブルを選択",
+    "table_select_placeholder": "テーブルを選ぶ",
+    "max_participants_label": "最大参加人数（任意）",
+    "create_button": "作成する"
+  },
+  "session_details": {
+    "session_id": "セッションID: {id}",
+    "session_code": "セッションコード: {code} (他の人と共有)",
+    "restaurant_name": "レストラン: {name}",
+    "table_number": "テーブル番号: {number}",
+    "status": "ステータス: {status}",
+    "participants_title": "参加者:",
+    "add_participant_button": "参加者を追加",
+    "view_order_button": "注文を見る",
+    "place_order_button": "注文する"
+  },
+  "notifications": {
+    "session_created_success": "セッションが正常に作成されました。",
+    "session_joined_success": "セッションに正常に参加しました。",
+    "session_left_success": "セッションから正常に退出しました。",
+    "session_ended_success": "セッションが正常に終了しました。",
+    "error_creating_session": "セッションの作成に失敗しました。",
+    "error_joining_session": "セッションへの参加に失敗しました。",
+    "error_session_not_found": "セッションが見つかりません。",
+    "error_session_full": "セッションが満員です。",
+    "participant_joined": "{name}さんがセッションに参加しました。",
+    "participant_left": "{name}さんがセッションを退出しました。"
+  },
+  "session_status": {
+    "active": "アクティブ",
+    "pending_payment": "支払い待ち",
+    "closed": "終了済み",
+    "expired": "期限切れ"
+  },
+  "leave_session_confirm": {
+    "title": "セッションを退出",
+    "message": "このセッションから退出してもよろしいですか？退出すると、このセッションでの注文や支払いには参加できなくなります。",
+    "confirm_button": "退出する",
+    "cancel_button": "キャンセル"
+  },
+  "end_session_confirm": {
+    "title": "セッションを終了",
+    "message": "このセッションを終了してもよろしいですか？終了すると、すべての参加者がセッションから削除され、新しい注文はできなくなります。",
+    "confirm_button": "終了する",
+    "cancel_button": "キャンセル"
+  },
+  "qr_scanner": {
+    "title": "QRコードをスキャン",
+    "instruction": "テーブルのQRコードにカメラを向けてください。",
+    "no_camera_access": "カメラへのアクセスがありません。設定で許可してください。",
+    "error_scanning": "QRコードのスキャン中にエラーが発生しました。"
+  },
+  "invite_modal": {
+    "title": "友達を招待",
+    "instruction": "このセッションコードを共有するか、QRコードをスキャンしてもらってください:",
+    "copy_code_button": "コードをコピー",
+    "show_qr_button": "QRコードを表示"
+  }
 }
