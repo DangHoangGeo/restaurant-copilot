@@ -34,8 +34,16 @@ struct AutoPrintStats {
     }
 }
 
+actor PrintQueue {
+    func enqueue(_ job: @Sendable () async throws) async throws {
+        try await job()
+    }
+}
+
 class OrderManager: ObservableObject {
     private let supabaseManager = SupabaseManager.shared
+    private let printerManager: PrinterManager
+    private let printQueue = PrintQueue()
     
     @Published var orders: [Order] = []
     @Published var allOrders: [Order] = []  // Add missing allOrders property
@@ -126,7 +134,8 @@ class OrderManager: ObservableObject {
         // Potentially price_at_order if quantity/options change price
     }
     
-    init() {
+    init(printerManager: PrinterManager = .shared) {
+        self.printerManager = printerManager
         // Monitor authentication state changes
         setupAuthenticationMonitoring()
         loadAutoPrintingSettings()
@@ -944,7 +953,9 @@ class OrderManager: ObservableObject {
             }
             
             do {
-                try await PrinterManager().printKitchenSlip(for: order)
+                try await printQueue.enqueue {
+                    try await printerManager.printKitchenSlip(for: order)
+                }
                 printedNewOrders.insert(order.id)
                 autoPrintStats.recordNewOrderPrint()
                 
@@ -990,7 +1001,9 @@ class OrderManager: ObservableObject {
             }
             
             do {
-                try await printItemOverview(item: item, order: order)
+                try await printQueue.enqueue {
+                    try await printItemOverview(item: item, order: order)
+                }
                 printedReadyItems.insert(item.id)
                 autoPrintStats.recordReadyItemPrint()
                 
