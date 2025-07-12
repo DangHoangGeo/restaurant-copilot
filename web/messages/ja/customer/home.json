@@ -1,82 +1,187 @@
 {
+  "welcome_to": "ようこそ ",
+  "menu_title": "メニュー",
+  "add_to_cart": "追加",
+  "no_menu_items": "メニュー項目がありません",
+  "restaurant_not_found_description": "アクセスしようとしているレストランは存在しないか、現在利用できません。",
+  "view_menu": "メニューを見る",
+  "make_reservation": "予約する",
+  "contact_information": "連絡先情報",
+  "visit_website": "ウェブサイトを見る",
+  "opening_hours": "営業時間",
+  "quick_actions": "クイックアクション",
+  "scan_qr_code": "QRコードをスキャン",
+  "book_table": "テーブルを予約",
+  "popular": "人気順",
+  "view_full_menu": "フルメニューを見る",
+  "ai_assistant": "AIアシスタント",
+  "ai_assistant_description": "注文の個別おすすめとサポートを受ける",
+  "smart_recommendations": "スマートおすすめ",
+  "interactive_chat": "インタラクティブチャット",
+  "got_it": "了解",
+  "admin_panel": {
+    "toggle_label": "管理パネルを切り替え"
+  },
+  "pick_for_you": "おすすめ",
+  "popular_items": "人気アイテム",
+  "recommended_items": "おすすめアイテム",
+  "view_cart": "カートを見る",
+  "no_results_found": "結果が見つかりません",
+  "adjusting_filters_or_search": "フィルターや検索ワードを調整してみてください。",
+  "clear_filters": "フィルターをクリア",
+  "current_session": "現在の注文セッション",
+  "active": "アクティブ",
+  "inactive": "非アクティブ",
+  "close": "閉じる",
+  "session_active_more": "さらにアイテムを追加できます！",
+  "menu_item_detail_back_to_menu": "メニューに戻る",
+  "menu_item_detail_add_to_cart": "カートに追加",
+  "decrease_quantity": "数量を1つ減らす",
+  "increase_quantity": "数量を1つ増やす",
+  "search_placeholder": "メニューを検索...",
+  "menu_item_detail_added_to_cart_msg": "{itemName}をカートに追加しました。",
+  "no_order_found": "注文が見つかりません",
+  "no_order_items": "このテーブルではまだ注文がありません。",
+  "redirecting_to_history": "注文履歴にリダイレクトしています…",
+  "ordering_for_table": "テーブル{tableId}の注文",
+  "serving_today": "本日のおすすめ：{day}",
+  "item_added_to_cart_msg": "{item}をカートに追加しました！",
+  "admin_panel_button": "管理パネル",
+  "session_management": {
+    "suggest_help": "ヘルプが必要",
+    "session_created": "セッション作成完了",
+    "session_code_created": "あなたのセッションコード：{code}",
+    "session_create_error": "セッション作成エラー",
+    "session_joined": "セッション参加完了",
+    "session_joined_success": "セッションに正常に参加しました",
+    "session_join_error": "セッション参加エラー",
+    "invalid_session_code": "無効なセッションコードです。再試行してください。",
+    "try_again_later": "後でもう一度お試しください",
+    "create_new_session": "新しいセッションを作成",
+    "join_existing_session": "既存のセッションに参加",
+    "guest_count": "ゲスト数",
+    "guest_count_description": "何名でご利用ですか？",
+    "cancel": "キャンセル",
+    "creating": "作成中…",
+    "create_session": "セッションを作成",
+    "session_code": "セッションコード",
+    "enter_session_code": "6桁のコードを入力",
+    "session_code_description": "ホストから6桁のセッションコードを聞いてください",
+    "joining": "参加中…",
+    "join_session": "セッションに参加",
+    "restaurant_not_found": "レストランが見つかりません",
+    "restaurant_not_found_message": "指定されたレストランが見つかりません。URLを確認して再度お試しください。"
+  },
+  "meta": {
+    "title": "メニュー＆注文",
+    "description": "メニューを見て簡単に注文できます"
+  },
+  "qr_dialog": {
+    "title": "QRコードをスキャン",
+    "description": "テーブルのQRコードをスキャンして注文を始めてください",
+    "scan_qr_code": "QRコードをスキャン",
+    "qr_code_scanned": "QRコードをスキャンしました",
+    "qr_code_error": "QRコードのスキャン中にエラーが発生しました。再試行してください。"
+  },
+  "common": {
+    "total": "合計",
+    "cancel": "注文をキャンセル",
+    "confirm": "注文を確定",
+    "from_price": "{price}から",
+    "restaurant_not_found": "レストランが見つかりません。URLをご確認いただくかサポートまでご連絡ください。",
+    "error_loading_menu": "メニューの読み込みエラー。後でもう一度お試しください。",
+    "error_loading_cart": "カートの読み込みエラー。後でもう一度お試しください。",
+    "error_loading_checkout": "チェックアウトの読み込みエラー。後でもう一度お試しください。",
+    "error_loading_booking": "予約フォームの読み込みエラー。後でもう一度お試しください。",
+    "error_loading_order_summary": "注文概要の読み込みエラー。後でもう一度お試しください。",
+    "error_loading_review_form": "レビューフォームの読み込みエラー。後でもう一度お試しください。"
+  },
   "hero": {
-    "title_part1": "あなたの街の",
-    "title_part2": "最高の味を",
-    "subtitle": "作りたてのお食事を玄関先までお届けします。",
-    "cta_button": "今すぐ注文"
+    "title": "本格ベトナム料理",
+    "subtitle": "ベトナムの豊かな風味と伝統を体験",
+    "cta_primary": "メニューを見る",
+    "cta_secondary": "予約する",
+    "view_menu": "メニューを見る",
+    "make_reservation": "予約する",
+    "loading": "ヒーローセクションを読み込み中…"
   },
-  "featured_dishes": {
-    "title": "おすすめ料理",
-    "view_all_button": "全メニューを見る"
+  "gallery": {
+    "title": "レストラン内観",
+    "subtitle": "居心地の良い空間をご覧ください",
+    "view_all": "すべての写真を見る",
+    "loading": "ギャラリーを読み込み中…",
+    "no_images": "画像がありません"
   },
-  "how_it_works": {
-    "title": "ご利用方法",
-    "step1_title": "メニューを見る",
-    "step1_description": "豊富な種類のレストランや料理からお選びください。",
-    "step2_title": "注文する",
-    "step2_description": "お好きな商品をカートに追加し、チェックアウトしてください。",
-    "step3_title": "お食事を楽しむ",
-    "step3_description": "お食事が準備され、配達されるまでの間、リラックスしてお待ちください。"
+  "owner_story": {
+    "title": "私たちの物語",
+    "subtitle": "家族からあなたへ",
+    "read_more": "続きを読む",
+    "read_less": "閉じる",
+    "about_owner": "オーナーについて",
+    "meet_the_owner": "オーナーに会う"
   },
-  "testimonials": {
-    "title": "お客様の声",
-    "testimonial1_text": "「このアプリでの注文は本当に簡単で便利です！食べ物もいつも美味しいです。」",
-    "testimonial1_author": "佐藤 花子",
-    "testimonial2_text": "「メニューの種類が豊富で、いつも新しいお気に入りが見つかります。配達も迅速です！」",
-    "testimonial2_author": "鈴木 一郎",
-    "testimonial3_text": "「カスタマーサポートが素晴らしい！アレルギーに関する質問にも親切に対応してくれました。」",
-    "testimonial3_author": "高橋 直子"
+  "signature_dishes": {
+    "title": "シグネチャー料理",
+    "subtitle": "シェフおすすめ",
+    "try_now": "今すぐ試す",
+    "order_now": "今すぐ注文",
+    "featured": "注目",
+    "popular": "人気",
+    "new": "新着",
+    "loading": "シグネチャー料理を読み込み中…",
+    "no_dishes": "シグネチャー料理がありません"
   },
-  "cta_banner": {
-    "title": "お腹が空きましたか？",
-    "subtitle": "お気に入りのレストランの料理を今すぐ注文しましょう！",
-    "cta_button": "メニューを見る"
+  "reviews": {
+    "reviews_and_ratings": "お客様の声",
+    "see_what_customers_say": "満足したお客様の声を聴く",
+    "reviews_coming_soon": "レビューは近日公開予定！",
+    "reviews_description": "体験を共有してください",
+    "view_on_google": "Googleで見る",
+    "view_all_reviews": "すべてのレビューを見る",
+    "location": "場所",
+    "directions": "行き方",
+    "call": "お電話",
+    "write_review": "レビューを書く",
+    "stars": "評価",
+    "loading": "レビューを読み込み中…",
+    "no_reviews": "レビューがありません",
+    "tap_for_hours": "営業時間を見るにはタップ"
   },
-  "restaurant_highlights": {
-    "title": "注目のレストラン",
-    "description": "地元で人気のお店や新しいお店を発見しましょう。"
+  "location": {
+    "title": "アクセス",
+    "subtitle": "街の中心でお待ちしています",
+    "get_directions": "ルートを確認",
+    "call_now": "今すぐ電話",
+    "address": "住所",
+    "phone": "電話番号",
+    "hours": "営業時間",
+    "map_loading": "地図を読み込み中…",
+    "directions": "ルート"
   },
-  "cuisine_categories": {
-    "title": "料理カテゴリー",
-    "description": "さまざまな料理のジャンルからお選びいただけます。",
-    "view_more_button": "もっと見る"
-  },
-  "app_promotion": {
-    "title": "アプリで注文をもっと簡単に",
-    "description": "専用アプリをダウンロードして、特別割引やスムーズな注文体験をお楽しみください。",
-    "app_store_button": "App Store",
-    "google_play_button": "Google Play"
-  },
-  "newsletter_signup": {
-    "title": "ニュースレターに登録",
-    "description": "最新情報、プロモーション、特別オファーをいち早く受け取りましょう。",
-    "email_placeholder": "メールアドレスを入力",
-    "subscribe_button": "登録する",
-    "success_message": "ご登録ありがとうございます！",
-    "error_message": "登録に失敗しました。もう一度お試しください。"
-  },
-  "social_media_links": {
-    "title": "フォローする",
-    "facebook": "Facebook",
-    "instagram": "Instagram",
-    "twitter": "Twitter"
-  },
-  "search_section": {
-    "placeholder": "料理、レストラン、キーワードで検索...",
-    "button_text": "検索"
-  },
-  "location_services": {
-    "prompt": "お近くのレストランを表示するために位置情報を許可しますか？",
-    "allow_button": "許可する",
-    "deny_button": "許可しない"
-  },
-  "popular_items": {
-    "title": "人気商品",
-    "add_to_cart_button": "カートに追加"
-  },
-  "special_offers": {
-    "title": "特別オファー",
-    "valid_until": "有効期限: {date}",
-    "limited_time_offer": "期間限定オファー"
+  "contact": {
+    "title": "お問い合わせ",
+    "subtitle": "お気軽にご連絡ください",
+    "phone": "電話",
+    "email": "メール",
+    "address": "住所",
+    "hours": "営業時間",
+    "social_media": "フォローする",
+    "closed": "休業中",
+    "open_now": "営業中",
+    "closes_at": "閉店時間",
+    "opens_at": "{time}に開店",
+    "show_all_hours": "すべての営業時間を表示",
+    "hide_hours": "営業時間を隠す",
+    "opening_hours": "営業時間",
+    "today": "今日",
+    "contact_information": "連絡先情報",
+    "get_in_touch": "お問い合わせ",
+    "monday": "月曜日",
+    "tuesday": "火曜日",
+    "wednesday": "水曜日",
+    "thursday": "木曜日",
+    "friday": "金曜日",
+    "saturday": "土曜日",
+    "sunday": "日曜日"
   }
 }
