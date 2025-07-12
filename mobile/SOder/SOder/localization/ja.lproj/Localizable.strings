@@ -479,4 +479,12 @@
 "manual_printer_setup_connection_title" = "接続";
 "manual_printer_setup_add_button" = "プリンターを追加";
 "manual_printer_setup_help_text" = "ネットワークプリンターのIPアドレスとポートを入力してください。ほとんどのレシートプリンターはポート9100を使用します。";
+"printer_failed_jobs_title" = "失敗した印刷ジョブ";
+"printer_retry_button" = "再試行";
+"printer_no_failed_jobs_message" = "失敗した印刷ジョブはありません";
+"printer_job_retry_success_alert" = "印刷ジョブが正常に完了しました！";
+"printer_job_retry_failed_alert" = "再試行に失敗しました: %@";
+"printer_job_queued_log" = "失敗したジョブをキューに追加: %@";
+"printer_job_retry_success_log" = "%@ の再試行が成功しました";
+"printer_job_retry_failed_log" = "%@ の再試行に失敗しました";
 

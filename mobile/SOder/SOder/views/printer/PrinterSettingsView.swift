@@ -247,7 +247,7 @@ struct PrinterSettingsView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    
+
                     if printerManager.printLogs.count > 5 {
                         Button("printer_view_all_logs_button".localized) {
                             showingAllLogs = true // Show the all logs view
@@ -255,6 +255,40 @@ struct PrinterSettingsView: View {
                         .font(.caption)
                         .foregroundColor(.blue)
                     }
+                }
+            }
+
+            // Failed Print Jobs Section
+            if !printerManager.failedJobs.isEmpty {
+                Section("printer_failed_jobs_title".localized) {
+                    ForEach(printerManager.failedJobs) { job in
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(job.description)
+                                    .font(.subheadline)
+                                Text(DateFormatter.localizedString(from: job.timestamp, dateStyle: .none, timeStyle: .short))
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Button("printer_retry_button".localized) {
+                                Task {
+                                    let success = await printerManager.retry(job: job)
+                                    await MainActor.run {
+                                        connectionMessage = success ? "printer_job_retry_success_alert".localized : String(format: "printer_job_retry_failed_alert".localized, job.description)
+                                        showingConnectionAlert = true
+                                    }
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                }
+            } else {
+                Section("printer_failed_jobs_title".localized) {
+                    Text("printer_no_failed_jobs_message".localized)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
             

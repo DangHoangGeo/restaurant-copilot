@@ -13,6 +13,7 @@ class PrinterManager: ObservableObject {
     @Published var errorMessage: String?
     @Published var printLogs: [String] = []
     @Published var printedOrders: [Order] = []
+    @Published var failedJobs: [PrintJob] = []
     
     private let printerService = PrinterService.shared
     private let settingsManager = PrinterSettingsManager.shared
@@ -180,6 +181,9 @@ class PrinterManager: ObservableObject {
         } catch {
             errorMessage = String(format: "printer_test_print_failed_log".localized, error.localizedDescription)
             addLog(String(format: "printer_test_print_failed_log".localized, error.localizedDescription))
+            queueFailedJob(description: "Test Receipt") { [weak self] in
+                await self?.printTestReceipt() ?? false
+            }
             return false
         }
     }
@@ -198,6 +202,9 @@ class PrinterManager: ObservableObject {
         } catch {
             errorMessage = String(format: "printer_receipt_print_failed_log".localized, error.localizedDescription)
             addLog(String(format: "printer_receipt_print_failed_log".localized, error.localizedDescription))
+            queueFailedJob(description: "Order \(order.id.prefix(8))") { [weak self] in
+                await self?.printOrderReceipt(order) ?? false
+            }
             return false
         }
     }
@@ -217,6 +224,9 @@ class PrinterManager: ObservableObject {
         } catch {
             errorMessage = String(format: "printer_kitchen_summary_failed_log".localized, error.localizedDescription)
             addLog(String(format: "printer_kitchen_summary_failed_log".localized, error.localizedDescription))
+            queueFailedJob(description: "Kitchen Summary \(group.itemName)") { [weak self] in
+                await self?.printKitchenSummary(group) ?? false
+            }
             return false
         }
     }
@@ -236,6 +246,9 @@ class PrinterManager: ObservableObject {
         } catch {
             errorMessage = String(format: "printer_kitchen_test_print_failed_log".localized, error.localizedDescription)
             addLog(String(format: "printer_kitchen_test_print_failed_log".localized, error.localizedDescription))
+            queueFailedJob(description: "Kitchen Test Receipt") { [weak self] in
+                await self?.printKitchenTestReceipt() ?? false
+            }
             return false
         }
     }
@@ -363,11 +376,32 @@ class PrinterManager: ObservableObject {
     private func addLog(_ message: String) {
         let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
         printLogs.append("[\(timestamp)] \(message)")
-        
+
         // Keep only last 50 log entries
         if printLogs.count > 50 {
             printLogs.removeFirst(printLogs.count - 50)
         }
+    }
+
+    // Queue a failed print job for retry
+    private func queueFailedJob(description: String, action: @escaping @Sendable () async -> Bool) {
+        let job = PrintJob(description: description, retryAction: action)
+        failedJobs.append(job)
+        addLog(String(format: "printer_job_queued_log".localized, description))
+    }
+
+    // Retry a previously failed job
+    func retry(job: PrintJob) async -> Bool {
+        let success = await job.retryAction()
+        if success {
+            if let index = failedJobs.firstIndex(where: { $0.id == job.id }) {
+                failedJobs.remove(at: index)
+            }
+            addLog(String(format: "printer_job_retry_success_log".localized, job.description))
+        } else {
+            addLog(String(format: "printer_job_retry_failed_log".localized, job.description))
+        }
+        return success
     }
     
     private func isValidIPAddress(_ ip: String) -> Bool {
@@ -402,6 +436,14 @@ enum PrinterType: String, Codable, CaseIterable {
         case .network: return "network"
         }
     }
+}
+
+// Represents a failed print job that can be retried
+struct PrintJob: Identifiable {
+    let id = UUID()
+    let description: String
+    let retryAction: @Sendable () async -> Bool
+    let timestamp = Date()
 }
 
 // MARK: - PrinterManager Extension for Checkout

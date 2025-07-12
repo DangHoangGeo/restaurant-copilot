@@ -458,3 +458,11 @@
 "navigate_to_draft_order" = "Navigate to Draft Order";
 "would_navigate_to_draft_order_view_for_order_%%@._items:_%%d" = "Would navigate to Draft Order View for order %@. Items: %d";
 "add_%%@_to_order" = "Add %@ to order";
+"printer_failed_jobs_title" = "Failed Print Jobs";
+"printer_retry_button" = "Retry";
+"printer_no_failed_jobs_message" = "No failed print jobs";
+"printer_job_retry_success_alert" = "Print job completed successfully!";
+"printer_job_retry_failed_alert" = "Retry failed for %@";
+"printer_job_queued_log" = "Queued failed job: %@";
+"printer_job_retry_success_log" = "Retry succeeded for %@";
+"printer_job_retry_failed_log" = "Retry failed for %@";

@@ -483,4 +483,12 @@
 "manual_printer_setup_connection_title" = "Kết nối";
 "manual_printer_setup_add_button" = "Thêm Máy in";
 "manual_printer_setup_help_text" = "Nhập địa chỉ IP và cổng của máy in mạng. Hầu hết máy in biên lai sử dụng cổng 9100.";
+"printer_failed_jobs_title" = "Công việc in thất bại";
+"printer_retry_button" = "Thử lại";
+"printer_no_failed_jobs_message" = "Không có công việc in thất bại";
+"printer_job_retry_success_alert" = "In lại thành công!";
+"printer_job_retry_failed_alert" = "Thử lại thất bại: %@";
+"printer_job_queued_log" = "Đã xếp hàng công việc thất bại: %@";
+"printer_job_retry_success_log" = "Thử lại thành công cho %@";
+"printer_job_retry_failed_log" = "Thử lại thất bại cho %@";
 
