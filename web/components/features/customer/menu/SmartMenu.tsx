@@ -409,7 +409,14 @@ export function SmartMenu({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Compact Header for mobile-first design */}
-      <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-800 dark:to-cyan-900 pb-2">
+      <div 
+        className="pb-2"
+        style={{
+          background: brandColor 
+            ? `linear-gradient(135deg, ${brandColor} 0%, ${brandColor}cc 50%, ${brandColor}aa 100%)`
+            : 'linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%)', // fallback cyan gradient
+        }}
+      >
         <ContextualGreeting 
           contextualInfo={contextualInfo}
           variant="minimal"
