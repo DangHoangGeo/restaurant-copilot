@@ -56,7 +56,7 @@
     "itemsReport": {
       "title": "商品パフォーマンスレポート",
       "totalRevenue": "総収益",
-      "totalSold": "販売済み商品",
+      "totalSold": "総販売数",
       "avgRating": "平均評価",
       "totalItems": "総アイテム数",
       "searchPlaceholder": "商品を検索...",
@@ -64,9 +64,7 @@
       "allCategories": "すべてのカテゴリ",
       "itemName": "商品名",
       "category": "カテゴリ",
-      "totalSold": "総販売数",
       "revenue": "収益",
-      "avgRating": "平均評価",
       "profitMargin": "利益率",
       "popularity": "人気度",
       "mostPopular": "最も人気",

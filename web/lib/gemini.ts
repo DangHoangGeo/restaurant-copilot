@@ -99,13 +99,12 @@ Please provide translations in this exact JSON format (no additional text):
 }
 
 Translation guidelines:
-- For Vietnamese dishes, use proper Vietnamese names with English descriptions where helpful
 - For Japanese dishes, use proper Japanese names with accurate translations
 - Keep culinary terms authentic and appetizing
 - Use proper capitalization for menu items
 - Ensure translations sound natural for restaurant menus
 - If the source is already in one language, improve/refine it if needed
-
+- Do not add furigana or romanization for Japanese
 Text: "${text}"
 `;
 
@@ -347,7 +346,6 @@ ${contextInfo}
 
 ## Guidelines:
 ### For Name:
-- For Vietnamese dishes, use proper Vietnamese names with English descriptions where helpful
 - For Japanese dishes, use proper Japanese names with accurate translations
 - Keep culinary terms authentic and appetizing
 - Use proper capitalization for menu items

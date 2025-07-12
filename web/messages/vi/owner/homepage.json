@@ -1,245 +1,249 @@
 {
-  "title": "Homepage Management",
-  "description": "Customize your restaurant's homepage to attract and engage customers",
+  "title": "Quản lý Trang chủ",
+  "description": "Tùy chỉnh trang chủ của nhà hàng để thu hút và giữ chân khách hàng",
   "tabs": {
-    "overview": "Overview",
-    "overviewDescription": "View the status of all homepage sections",
-    "gallery": "Gallery",
-    "galleryDescription": "Manage your restaurant's photo gallery",
-    "ownerStory": "Owner Story",
-    "storyDescription": "Share your personal story and passion",
-    "signatureDishes": "Signature Dishes",
-    "signatureDescription": "Highlight your best menu items",
-    "preview": "Preview",
-    "previewDescription": "See how your homepage looks to customers"
+    "overview": "Tổng quan",
+    "overviewDescription": "Xem trạng thái của tất cả các mục trên trang chủ",
+    "gallery": "Thư viện ảnh",
+    "galleryDescription": "Quản lý bộ sưu tập ảnh nhà hàng",
+    "ownerStory": "Câu chuyện chủ quán",
+    "storyDescription": "Chia sẻ câu chuyện và đam mê của bạn",
+    "signatureDishes": "Món đặc trưng",
+    "signatureDescription": "Nổi bật các món bán chạy nhất",
+    "preview": "Xem trước",
+    "previewDescription": "Xem trang chủ khách hàng sẽ thấy"
   },
   "buttons": {
-    "preview": "Preview",
-    "viewLive": "View Live Site",
-    "configure": "Configure",
-    "refresh": "Refresh",
-    "openInNewTab": "Open in New Tab"
+    "preview": "Xem trước",
+    "viewLive": "Xem trang thật",
+    "configure": "Cấu hình",
+    "refresh": "Làm mới",
+    "openInNewTab": "Mở tab mới"
   },
   "status": {
-    "configured": "Configured",
-    "needsAttention": "Needs Attention",
-    "missing": "Missing",
-    "unknown": "Unknown"
+    "configured": "Đã cấu hình",
+    "needsAttention": "Cần chú ý",
+    "missing": "Thiếu",
+    "unknown": "Không rõ"
   },
   "overview": {
-    "title": "Homepage Overview",
-    "description": "Monitor and manage all sections of your restaurant homepage",
+    "title": "Tổng quan Trang chủ",
+    "description": "Theo dõi và quản lý tất cả mục trên trang chủ",
     "heroSection": {
-      "title": "Hero Section",
-      "description": "Main banner with restaurant branding and call-to-action"
+      "title": "Phần chính",
+      "description": "Banner chính với thương hiệu và lời kêu gọi hành động"
     },
     "gallerySection": {
-      "title": "Photo Gallery",
-      "description": "Showcase your restaurant's atmosphere and dishes"
+      "title": "Thư viện ảnh",
+      "description": "Trưng bày không gian và món ăn"
     },
     "ownerStorySection": {
-      "title": "Owner Story",
-      "description": "Personal story that connects with customers"
+      "title": "Câu chuyện chủ quán",
+      "description": "Câu chuyện cá nhân kết nối với khách hàng"
     },
     "signatureDishesSection": {
-      "title": "Signature Dishes",
-      "description": "Highlight your most popular menu items"
+      "title": "Món đặc trưng",
+      "description": "Nổi bật các món bán chạy nhất"
     },
     "reviewsSection": {
-      "title": "Reviews & Location",
-      "description": "Google reviews and maps integration"
+      "title": "Đánh giá & Vị trí",
+      "description": "Tích hợp đánh giá Google và bản đồ"
     },
     "contactSection": {
-      "title": "Contact & Hours",
-      "description": "Contact information and opening hours"
+      "title": "Liên hệ & Giờ mở cửa",
+      "description": "Thông tin liên hệ và giờ hoạt động"
     },
     "stats": {
-      "title": "Quick Stats",
-      "description": "Overview of your homepage content",
-      "galleryImages": "Gallery Images",
-      "signatureDishes": "Signature Dishes",
-      "rating": "Average Rating",
-      "reviews": "Total Reviews"
+      "title": "Thống kê nhanh",
+      "description": "Tổng quan nội dung trang chủ",
+      "galleryImages": "Ảnh thư viện",
+      "signatureDishes": "Món đặc trưng",
+      "rating": "Điểm trung bình",
+      "reviews": "Tổng đánh giá"
     }
   },
   "gallery": {
-    "title": "Gallery Management",
-    "description": "Upload and organize photos that showcase your restaurant",
+    "title": "Quản lý Thư viện",
+    "description": "Tải lên và sắp xếp ảnh để giới thiệu nhà hàng",
     "buttons": {
-      "upload": "Upload Photos",
-      "uploadFirst": "Upload Your First Photos",
-      "setHero": "Set as Hero"
+      "upload": "Tải ảnh lên",
+      "uploadFirst": "Tải ảnh đầu tiên",
+      "setHero": "Chọn làm chính"
     },
     "upload": {
-      "title": "Upload New Photos",
-      "description": "Select multiple photos to add to your gallery",
-      "selectFiles": "Select Photos",
-      "selectedCount": "{count} files selected",
-      "success": "Photos uploaded successfully",
-      "error": "Failed to upload photos"
+      "title": "Tải ảnh mới",
+      "description": "Chọn nhiều ảnh để thêm vào thư viện",
+      "selectFiles": "Chọn ảnh",
+      "selectedCount": "{count} tập tin đã chọn",
+      "success": "Tải ảnh thành công",
+      "error": "Không thể tải ảnh"
     },
     "edit": {
-      "title": "Edit Photo",
-      "description": "Update photo details",
-      "altText": "Alt Text",
-      "altTextPlaceholder": "Describe this photo"
+      "title": "Chỉnh sửa ảnh",
+      "description": "Cập nhật thông tin ảnh",
+      "altText": "Chú thích ảnh",
+      "altTextPlaceholder": "Mô tả ảnh này"
     },
     "delete": {
-      "success": "Photo deleted successfully",
-      "error": "Failed to delete photo"
+      "success": "Xóa ảnh thành công",
+      "error": "Không thể xóa ảnh"
     },
     "update": {
-      "success": "Photo updated successfully",
-      "error": "Failed to update photo"
+      "success": "Cập nhật ảnh thành công",
+      "error": "Không thể cập nhật ảnh"
     },
     "hero": {
-      "label": "Hero Image",
-      "current": "Current Hero",
-      "error": "Failed to set hero image"
+      "label": "Ảnh chính",
+      "current": "Ảnh hiện tại",
+      "error": "Không thể đặt ảnh chính"
     },
     "empty": {
-      "title": "No Photos Yet",
-      "description": "Start building your gallery by uploading your first photos"
+      "title": "Chưa có ảnh",
+      "description": "Bắt đầu xây dựng thư viện bằng cách tải ảnh lên"
     },
     "info": {
-      "heroImage": "Choose one image as your hero image - it will be prominently displayed at the top of your homepage"
+      "heroImage": "Chọn một ảnh làm chính - nó sẽ hiển thị nổi bật ở đầu trang chủ"
     },
     "errors": {
-      "loadFailed": "Failed to load gallery"
+      "loadFailed": "Không thể tải thư viện"
     }
   },
   "ownerStory": {
-    "title": "Owner Story",
-    "description": "Share your personal journey and passion for your restaurant",
+    "title": "Câu chuyện chủ quán",
+    "description": "Chia sẻ hành trình và đam mê của bạn",
     "photo": {
-      "title": "Owner Photo",
-      "description": "Add a personal photo to connect with your customers",
-      "upload": "Upload Photo",
-      "change": "Change Photo",
-      "alt": "Owner photo",
-      "uploadSuccess": "Photo uploaded successfully",
-      "uploadError": "Failed to upload photo"
+      "title": "Ảnh chủ quán",
+      "description": "Thêm ảnh cá nhân để kết nối với khách",
+      "upload": "Tải ảnh lên",
+      "change": "Thay đổi ảnh",
+      "alt": "Ảnh chủ quán",
+      "uploadSuccess": "Tải ảnh thành công",
+      "uploadError": "Không thể tải ảnh"
     },
     "story": {
-      "title": "Your Story",
-      "english": "English Story",
-      "japanese": "Japanese Story",
-      "vietnamese": "Vietnamese Story",
-      "placeholderEn": "Tell your customers about your journey, passion, and what makes your restaurant special...",
+      "title": "Câu chuyện của bạn",
+      "english": "Câu chuyện tiếng Anh",
+      "japanese": "Câu chuyện tiếng Nhật",
+      "vietnamese": "Câu chuyện tiếng Việt",
+      "placeholderEn": "Kể cho khách về hành trình, đam mê và điều đặc biệt của nhà hàng...",
       "placeholderJa": "あなたの歩み、情熱、そしてレストランの特別な魅力についてお客様にお話しください...",
       "placeholderVi": "Kể cho khách hành về hành trình, đam mê và điều đặc biệt của nhà hàng bạn..."
     },
     "buttons": {
-      "save": "Save Story"
+      "save": "Lưu câu chuyện"
     },
     "save": {
-      "success": "Owner story saved successfully",
-      "error": "Failed to save owner story"
+      "success": "Lưu câu chuyện thành công",
+      "error": "Không thể lưu câu chuyện"
     },
     "info": {
-      "personalTouch": "A personal story helps customers connect with your restaurant and builds trust"
+      "personalTouch": "Một câu chuyện cá nhân giúp khách kết nối và tin tưởng hơn"
     },
     "tips": {
-      "title": "Writing Tips",
-      "personal": "Be authentic and share your personal journey",
-      "authentic": "Mention what inspired you to open the restaurant",
-      "passion": "Express your passion for food and hospitality",
-      "multilingual": "Consider writing in multiple languages for broader appeal"
+      "title": "Mẹo viết",
+      "personal": "Chân thật và chia sẻ hành trình cá nhân",
+      "authentic": "Đề cập điều đã truyền cảm hứng cho bạn mở nhà hàng",
+      "passion": "Thể hiện đam mê ẩm thực và hiếu khách",
+      "multilingual": "Viết đa ngôn ngữ để tiếp cận nhiều đối tượng"
     },
     "errors": {
-      "loadFailed": "Failed to load owner story"
+      "loadFailed": "Không thể tải câu chuyện"
     }
   },
+  "signature": "Đặc trưng",
+  "view_details": "Xem chi tiết",
+  "browse_full_menu": "Xem toàn bộ thực đơn",
+  "add_to_cart": "Thêm vào giỏ",
   "signatureDishes": {
-    "title": "Signature Dishes",
-    "description": "Select menu items to feature as your signature dishes",
+    "title": "Món đặc trưng",
+    "description": "Chọn món để hiển thị là đặc trưng",
     "current": {
-      "title": "Current Signature Dishes",
-      "description": "You have {count} signature dishes selected",
+      "title": "Món đang chọn",
+      "description": "Bạn đã chọn {count} món",
       "empty": {
-        "title": "No Signature Dishes Selected",
-        "description": "Choose your best menu items to showcase as signature dishes"
+        "title": "Chưa chọn món đặc trưng",
+        "description": "Chọn món nổi bật để giới thiệu"
       }
     },
     "selector": {
-      "title": "Select From Menu",
-      "description": "Browse your menu and select dishes to feature on your homepage"
+      "title": "Chọn từ thực đơn",
+      "description": "Duyệt thực đơn và chọn món hiển thị"
     },
     "buttons": {
-      "remove": "Remove"
+      "remove": "Xóa"
     },
     "badge": {
-      "signature": "Signature"
+      "signature": "Đặc trưng"
     },
     "search": {
-      "placeholder": "Search menu items...",
+      "placeholder": "Tìm món...",
       "noResults": {
-        "title": "No Items Found",
-        "description": "Try adjusting your search or filter criteria"
+        "title": "Không tìm thấy",
+        "description": "Thử điều chỉnh tiêu chí tìm kiếm"
       }
     },
     "filter": {
-      "allCategories": "All Categories"
+      "allCategories": "Tất cả danh mục"
     },
     "status": {
-      "selected": "Selected",
-      "clickToSelect": "Click to select"
+      "selected": "Đã chọn",
+      "clickToSelect": "Nhấp để chọn"
     },
     "toggle": {
-      "addedSuccess": "Added to signature dishes",
-      "removedSuccess": "Removed from signature dishes",
-      "error": "Failed to update signature dish"
+      "addedSuccess": "Đã thêm món đặc trưng",
+      "removedSuccess": "Đã xóa món đặc trưng",
+      "error": "Không thể cập nhật"
     },
     "info": {
-      "recommendation": "We recommend selecting 3-6 of your most popular or unique dishes"
+      "recommendation": "Gợi ý chọn 3–6 món bán chạy hoặc độc đáo"
     },
     "errors": {
-      "loadFailed": "Failed to load menu items"
+      "loadFailed": "Không thể tải món"
     }
   },
   "preview": {
-    "title": "Homepage Preview",
-    "description": "See how your homepage will look to customers across different devices",
+    "title": "Xem trước Trang chủ",
+    "description": "Xem trang chủ trên các thiết bị khác nhau",
     "viewport": {
-      "title": "Device Preview",
-      "description": "Preview your homepage on different devices",
-      "desktop": "Desktop",
-      "tablet": "Tablet", 
-      "mobile": "Mobile"
+      "title": "Xem thiết bị",
+      "description": "Xem trang chủ trên máy tính, tablet, mobile",
+      "desktop": "Máy tính",
+      "tablet": "Tablet",
+      "mobile": "Di động"
     },
     "actions": {
-      "loading": "Loading...",
-      "openInNewTab": "Open in New Tab"
+      "loading": "Đang tải...",
+      "openInNewTab": "Mở tab mới"
     },
     "status": {
-      "title": "Homepage Status",
-      "description": "Current state of your homepage sections",
-      "lastUpdated": "Last Updated",
-      "galleryImages": "Gallery Images",
-      "images": "images",
-      "ownerStory": "Owner Story",
-      "configured": "Configured",
-      "signatureDishes": "Signature Dishes", 
-      "dishes": "dishes",
-      "seoSettings": "SEO Settings"
+      "title": "Trạng thái Trang chủ",
+      "description": "Trạng thái các mục",
+      "lastUpdated": "Cập nhật lần cuối",
+      "galleryImages": "Ảnh thư viện",
+      "images": "ảnh",
+      "ownerStory": "Câu chuyện chủ quán",
+      "configured": "Đã cấu hình",
+      "signatureDishes": "Món đặc trưng",
+      "dishes": "món",
+      "seoSettings": "Cài đặt SEO"
     },
     "iframe": {
-      "title": "Homepage Preview"
+      "title": "Xem trước Trang chủ"
     },
     "success": {
-      "previewOpened": "Preview Opened",
-      "previewOpenedDescription": "Homepage opened in new tab"
+      "previewOpened": "Đã mở xem trước",
+      "previewOpenedDescription": "Trang chủ đã mở trong tab mới"
     },
     "error": {
-      "previewFailed": "Preview Failed",
-      "previewFailedDescription": "Could not open preview"
+      "previewFailed": "Xem trước thất bại",
+      "previewFailedDescription": "Không thể mở xem trước"
     },
     "tips": {
-      "title": "Preview Tips",
-      "tip1": "Test your homepage on different devices to ensure optimal viewing",
-      "tip2": "Check that all images load properly and text is readable",
-      "tip3": "Verify that contact information and hours are up to date",
-      "tip4": "Make sure the call-to-action buttons work correctly"
+      "title": "Mẹo xem trước",
+      "tip1": "Thử trên các thiết bị để đảm bảo hiển thị tốt",
+      "tip2": "Kiểm tra ảnh và chữ có đọc được không",
+      "tip3": "Xác nhận thông tin liên hệ và giờ mở cửa",
+      "tip4": "Đảm bảo nút kêu gọi hoạt động đúng"
     }
   }
 }

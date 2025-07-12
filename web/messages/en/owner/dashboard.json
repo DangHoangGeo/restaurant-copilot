@@ -64,9 +64,7 @@
       "allCategories": "All Categories",
       "itemName": "Item Name",
       "category": "Category",
-      "totalSold": "Total Sold",
       "revenue": "Revenue",
-      "avgRating": "Avg Rating",
       "profitMargin": "Profit Margin",
       "popularity": "Popularity",
       "mostPopular": "most popular",
@@ -169,5 +167,4 @@
       "logout_button": "Logout"
     },
     "default_restaurant_name": "CoOrder"
-    
 }
