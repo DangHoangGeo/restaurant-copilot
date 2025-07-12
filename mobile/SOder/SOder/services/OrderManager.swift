@@ -492,6 +492,19 @@ class OrderManager: ObservableObject {
     }
     
     // MARK: - Fetch Orders
+    private func fetchOrdersViaRPC() async throws -> [Order] {
+        guard let restaurantId = supabaseManager.currentRestaurantId else {
+            throw OrderManagerError.missingRestaurantId
+        }
+
+        let response: [OrderWithDetailsResponse] = try await supabaseManager.client
+            .rpc("get_active_orders_with_details", params: ["restaurant_uuid": restaurantId])
+            .execute()
+            .value
+
+        return response.map { $0.toOrder() }
+    }
+
     @MainActor
     func fetchActiveOrders() async {
         guard supabaseManager.isAuthenticated else {
@@ -499,53 +512,21 @@ class OrderManager: ObservableObject {
             print("Cannot fetch orders - user not authenticated")
             return
         }
-        
-        guard let restaurantId = supabaseManager.currentRestaurantId else {
-            errorMessage = "No restaurant ID available"
-            print("Cannot fetch orders - no restaurant ID")
-            return
-        }
-        
+
         isLoading = true
         errorMessage = nil
-        
+
         do {
-            let response: [OrderWithTableResponse] = try await supabaseManager.client
-                .from("orders")
-                .select("""
-                    *,
-                    table:tables(*),
-                    order_items(
-                        *,
-                        menu_item:menu_items(
-                            *,
-                            category:categories(
-                                id,
-                                name_en,
-                                name_ja,
-                                name_vi
-                            )
-                        ),
-                        menu_item_size:menu_item_sizes(*)
-                    )
-                """)
-                .eq("restaurant_id", value: restaurantId)
-                .in("status", values: ["new", "serving"])
-                .order("created_at", ascending: false)
-                .execute()
-                .value
-            
-            self.orders = response.map { $0.toOrder() }
+            self.orders = try await fetchOrdersViaRPC()
             print("Fetched \(orders.count) active orders")
-            
         } catch {
             errorMessage = "Failed to fetch orders: \(error.localizedDescription)"
             print("Error fetching orders: \(error)")
         }
-        
+
         isLoading = false
     }
-    
+
     // Add missing fetchAllOrders method
     @MainActor
     func fetchAllOrders() async {
@@ -554,49 +535,18 @@ class OrderManager: ObservableObject {
             print("Cannot fetch all orders - user not authenticated")
             return
         }
-        
-        guard let restaurantId = supabaseManager.currentRestaurantId else {
-            errorMessage = "No restaurant ID available"
-            print("Cannot fetch all orders - no restaurant ID")
-            return
-        }
-        
+
         isLoading = true
         errorMessage = nil
-        
+
         do {
-            let response: [OrderWithTableResponse] = try await supabaseManager.client
-                .from("orders")
-                .select("""
-                    *,
-                    table:tables(*),
-                    order_items(
-                        *,
-                        menu_item:menu_items(
-                            *,
-                            category:categories(
-                                id,
-                                name_en,
-                                name_ja,
-                                name_vi
-                            )
-                        ),
-                        menu_item_size:menu_item_sizes(*)
-                    )
-                """)
-                .eq("restaurant_id", value: restaurantId)
-                .order("created_at", ascending: false)
-                .execute()
-                .value
-            
-            self.allOrders = response.map { $0.toOrder() }
+            self.allOrders = try await fetchOrdersViaRPC()
             print("Fetched \(allOrders.count) total orders")
-            
         } catch {
             errorMessage = "Failed to fetch all orders: \(error.localizedDescription)"
             print("Error fetching all orders: \(error)")
         }
-        
+
         isLoading = false
     }
     
