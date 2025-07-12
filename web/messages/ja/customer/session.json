@@ -1,82 +1,25 @@
 {
-  "title": "セッション",
-  "active_sessions_title": "アクティブなセッション",
+  "session_created_title": "セッションを作成しました！",
+  "start_session": "注文を始める",
+  "passcode_share_message": "他の方が参加できるよう、この4桁のコードを共有してください：",
+  "passcode_instructions": "テーブルのQRコードをスキャンし、このパスコードを入力して参加できます。",
+  "ask_for_passcode": "パスコードを聞く",
+  "ask_for_passcode_instruction": "パスコードがない場合は、注文を開始した方にお尋ねください。",
+  "start_ordering": "注文を始める",
+  "enter_passcode_title": "パスコードを入力",
+  "enter_passcode_placeholder": "4桁のコードを入力",
   "join_session_title": "セッションに参加",
-  "create_session_title": "新しいセッションを作成",
-  "session_card": {
-    "session_id_label": "セッションID:",
-    "restaurant_label": "レストラン:",
-    "table_label": "テーブル:",
-    "status_label": "ステータス:",
-    "participants_label": "参加者:",
-    "view_session_button": "セッションを見る",
-    "leave_session_button": "セッションを退出",
-    "end_session_button": "セッションを終了"
-  },
-  "join_session_form": {
-    "session_code_placeholder": "セッションコードを入力",
-    "join_button": "参加する",
-    "scan_qr_button": "QRコードをスキャン"
-  },
-  "create_session_form": {
-    "restaurant_select_label": "レストランを選択",
-    "restaurant_select_placeholder": "レストランを選ぶ",
-    "table_select_label": "テーブルを選択",
-    "table_select_placeholder": "テーブルを選ぶ",
-    "max_participants_label": "最大参加人数（任意）",
-    "create_button": "作成する"
-  },
-  "session_details": {
-    "session_id": "セッションID: {id}",
-    "session_code": "セッションコード: {code} (他の人と共有)",
-    "restaurant_name": "レストラン: {name}",
-    "table_number": "テーブル番号: {number}",
-    "status": "ステータス: {status}",
-    "participants_title": "参加者:",
-    "add_participant_button": "参加者を追加",
-    "view_order_button": "注文を見る",
-    "place_order_button": "注文する"
-  },
-  "notifications": {
-    "session_created_success": "セッションが正常に作成されました。",
-    "session_joined_success": "セッションに正常に参加しました。",
-    "session_left_success": "セッションから正常に退出しました。",
-    "session_ended_success": "セッションが正常に終了しました。",
-    "error_creating_session": "セッションの作成に失敗しました。",
-    "error_joining_session": "セッションへの参加に失敗しました。",
-    "error_session_not_found": "セッションが見つかりません。",
-    "error_session_full": "セッションが満員です。",
-    "participant_joined": "{name}さんがセッションに参加しました。",
-    "participant_left": "{name}さんがセッションを退出しました。"
-  },
-  "session_status": {
-    "active": "アクティブ",
-    "pending_payment": "支払い待ち",
-    "closed": "終了済み",
-    "expired": "期限切れ"
-  },
-  "leave_session_confirm": {
-    "title": "セッションを退出",
-    "message": "このセッションから退出してもよろしいですか？退出すると、このセッションでの注文や支払いには参加できなくなります。",
-    "confirm_button": "退出する",
-    "cancel_button": "キャンセル"
-  },
-  "end_session_confirm": {
-    "title": "セッションを終了",
-    "message": "このセッションを終了してもよろしいですか？終了すると、すべての参加者がセッションから削除され、新しい注文はできなくなります。",
-    "confirm_button": "終了する",
-    "cancel_button": "キャンセル"
-  },
-  "qr_scanner": {
-    "title": "QRコードをスキャン",
-    "instruction": "テーブルのQRコードにカメラを向けてください。",
-    "no_camera_access": "カメラへのアクセスがありません。設定で許可してください。",
-    "error_scanning": "QRコードのスキャン中にエラーが発生しました。"
-  },
-  "invite_modal": {
-    "title": "友達を招待",
-    "instruction": "このセッションコードを共有するか、QRコードをスキャンしてもらってください:",
-    "copy_code_button": "コードをコピー",
-    "show_qr_button": "QRコードを表示"
-  }
+  "join_session_description": "開始者から提供された4桁のコードを入力してください。",
+  "join": "参加",
+  "session_expired": "セッションが終了しました",
+  "session_expired_message": "注文セッションは完了または期限切れです。ご来店ありがとうございました！",
+  "session_expired_instruction": "新しい注文をするには、テーブルのQRコードを再度スキャンしてください。",
+  "invalid_table": "無効なテーブル",
+  "invalid_table_message": "テーブルIDが無効か、このレストランに属していません。",
+  "invalid_table_instruction": "有効なテーブルのQRコードをスキャンしてください。",
+  "view_menu_only": "メニューのみ閲覧",
+  "guest_count_title": "ゲスト数",
+  "guest_count_description": "テーブルの人数を入力してください。準備の参考になります。",
+  "cancel": "キャンセル",
+  "continue_to_menu": "メニューへ進む"
 }

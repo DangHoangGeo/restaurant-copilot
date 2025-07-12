@@ -4,7 +4,24 @@ import { ThemeProvider } from "next-themes";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import {  Lora, Klee_One } from 'next/font/google';
+
+const lora = Lora({
+  subsets: ['latin', 'vietnamese'],
+  weight: ['400', '500', '600', '700'],
+});
+
+const kleeOne = Klee_One({
+  subsets: ['latin'],
+  weight: ['400', '600'],
+});
+
+const fontMap = {
+  en: lora,
+  vi: lora,
+  ja: kleeOne,
+};
 
 export const metadata: Metadata = {
   title: "coorder ai | your AI assistant for restaurant management",
@@ -65,9 +82,14 @@ export default async function RootLayout({
     notFound();
   }
 
+  const font = fontMap[locale as keyof typeof fontMap] || lora;
+
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="antialiased">
+      <body
+        style={{ fontFamily: font.style.fontFamily }}
+        className="antialiased bg-background"
+      >
         <NextIntlClientProvider locale={locale}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}

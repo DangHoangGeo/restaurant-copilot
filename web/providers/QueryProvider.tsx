@@ -55,7 +55,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.REACT_APP_SHOW_DEV_TOOLS && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}
     </QueryClientProvider>
