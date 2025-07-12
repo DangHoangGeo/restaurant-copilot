@@ -33,6 +33,8 @@ struct PrinterConfigurationView: View {
                                 showingAddPrinter = true
                             }
                             .buttonStyle(.bordered)
+                            .accessibilityLabel("printer_config_setup_button".localized)
+                            .accessibilityHint("accessibility_button_hint".localized)
                         }
                     }
                     .padding(.vertical, 4)
@@ -74,6 +76,8 @@ struct PrinterConfigurationView: View {
                             }
                         }
                         .foregroundColor(.blue)
+                        .accessibilityLabel("printer_config_add_another_button".localized)
+                        .accessibilityHint("accessibility_button_hint".localized)
                     }
                 } else {
                     Section("printer_config_get_started_title".localized) {
@@ -90,6 +94,8 @@ struct PrinterConfigurationView: View {
                             }
                         }
                         .foregroundColor(.blue)
+                        .accessibilityLabel("printer_config_add_first_button".localized)
+                        .accessibilityHint("accessibility_button_hint".localized)
                         
                         VStack(alignment: .leading, spacing: 8) {
                             Text("printer_config_why_configure_title".localized)
@@ -127,6 +133,8 @@ struct PrinterConfigurationView: View {
                         showingRestaurantSettings = true
                     }
                     .foregroundColor(.blue)
+                    .accessibilityLabel("printer_config_edit_restaurant_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
                 
                 // Default Printer Info (only show if using default)
@@ -161,6 +169,8 @@ struct PrinterConfigurationView: View {
                     Button("add_printer".localized) {
                         showingAddPrinter = true
                     }
+                    .accessibilityLabel("add_printer".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
             }
         }
@@ -175,12 +185,16 @@ struct PrinterConfigurationView: View {
         }
         .alert("printer_config_delete_alert_title".localized, isPresented: $showingDeleteAlert) {
             Button("cancel".localized, role: .cancel) { }
+            .accessibilityLabel("cancel".localized)
+            .accessibilityHint("accessibility_button_hint".localized)
             Button("delete".localized, role: .destructive) {
                 if let printer = printerToDelete {
                     settingsManager.removePrinter(id: printer.id)
                     printerToDelete = nil
                 }
             }
+            .accessibilityLabel("delete".localized)
+            .accessibilityHint("accessibility_button_hint".localized)
         } message: {
             Text("printer_config_delete_alert_message".localized)
         }
@@ -239,6 +253,8 @@ struct PrinterConfigRowView: View {
                 }
                 .buttonStyle(.bordered)
                 .font(.caption)
+                .accessibilityLabel("edit".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
                 
                 if isActive {
                     Button("printer_config_row_deactivate_button".localized) {
@@ -247,12 +263,16 @@ struct PrinterConfigRowView: View {
                     .buttonStyle(.bordered)
                     .font(.caption)
                     .foregroundColor(.orange)
+                    .accessibilityLabel("printer_config_row_deactivate_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 } else {
                     Button("printer_config_row_activate_button".localized) {
                         onActivate?()
                     }
                     .buttonStyle(.borderedProminent)
                     .font(.caption)
+                    .accessibilityLabel("printer_config_row_activate_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
                 
                 if !isActive, let onDelete = onDelete {
@@ -262,6 +282,8 @@ struct PrinterConfigRowView: View {
                     .buttonStyle(.bordered)
                     .font(.caption)
                     .foregroundColor(.red)
+                    .accessibilityLabel("delete".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
             }
         }

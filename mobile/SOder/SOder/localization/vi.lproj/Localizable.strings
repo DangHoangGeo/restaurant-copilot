@@ -484,3 +484,8 @@
 "manual_printer_setup_add_button" = "Thêm Máy in";
 "manual_printer_setup_help_text" = "Nhập địa chỉ IP và cổng của máy in mạng. Hầu hết máy in biên lai sử dụng cổng 9100.";
 
+
+// MARK: - Accessibility Hints
+"accessibility_button_hint" = "Nhấn đúp để kích hoạt.";
+"accessibility_row_hint" = "Nhấn đúp để xem thêm.";
+"accessibility_toggle_hint" = "Nhấn đúp để chuyển đổi.";

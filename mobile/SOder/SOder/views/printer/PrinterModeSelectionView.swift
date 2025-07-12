@@ -74,15 +74,21 @@ struct PrinterModeSelectionView: View {
         }
         .alert("printer_mode_selection_alert_enable_dual_title".localized, isPresented: $showingDualModeAlert) {
             Button("cancel".localized, role: .cancel) { }
+            .accessibilityLabel("cancel".localized)
+            .accessibilityHint("accessibility_button_hint".localized)
             Button("printer_mode_selection_alert_auto_assign_button".localized) {
                 settingsManager.autoAssignDualPrinters()
                 settingsManager.setPrinterMode(.dual)
                 validateCurrentSetup()
             }
+            .accessibilityLabel("printer_mode_selection_alert_auto_assign_button".localized)
+            .accessibilityHint("accessibility_button_hint".localized)
             Button("printer_mode_selection_alert_manual_setup_button".localized) {
                 settingsManager.setPrinterMode(.dual)
                 validateCurrentSetup()
             }
+            .accessibilityLabel("printer_mode_selection_alert_manual_setup_button".localized)
+            .accessibilityHint("accessibility_button_hint".localized)
         } message: {
             Text("printer_mode_selection_alert_message".localized)
         }
@@ -164,6 +170,8 @@ struct PrinterModeCard: View {
         }
         .disabled(!canSelect)
         .opacity(canSelect ? 1.0 : 0.6)
+        .accessibilityLabel(mode.displayName)
+        .accessibilityHint("accessibility_button_hint".localized)
     }
 }
 
@@ -225,11 +233,15 @@ struct DualPrinterStatusView: View {
                 }
                 .buttonStyle(.bordered)
                 .disabled(settingsManager.configuredPrinters.count < 2)
-                
+                .accessibilityLabel("printer_mode_selection_alert_auto_assign_button".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
+
                 NavigationLink(destination: DualPrinterAssignmentView()) {
                     Text("printer_mode_selection_alert_manual_setup_button".localized)
                 }
                 .buttonStyle(.bordered)
+                .accessibilityLabel("printer_mode_selection_alert_manual_setup_button".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
             }
         }
         .padding()
@@ -294,6 +306,8 @@ struct DualPrinterAssignmentView: View {
                     }
                 }
                 .disabled(!settingsManager.hasKitchenPrinter())
+                .accessibilityLabel("printer_mode_selection_test_kitchen_button".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
                 
                 Button("printer_mode_selection_test_checkout_button".localized) {
                     Task {
@@ -305,6 +319,8 @@ struct DualPrinterAssignmentView: View {
                     }
                 }
                 .disabled(!settingsManager.hasCheckoutPrinter())
+                .accessibilityLabel("printer_mode_selection_test_checkout_button".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
             }
         }
         .navigationTitle("printer_mode_selection_dual_setup_title".localized)
@@ -314,6 +330,8 @@ struct DualPrinterAssignmentView: View {
                 Button("done".localized) {
                     dismiss()
                 }
+                .accessibilityLabel("done".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
             }
         }
     }

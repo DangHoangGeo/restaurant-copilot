@@ -15,6 +15,8 @@ struct PrintLanguageConfigView: View {
                             dismiss()
                         }
                         .fontWeight(.semibold)
+                        .accessibilityLabel("printer_done_button".localized)
+                        .accessibilityHint("accessibility_button_hint".localized)
                     }
                 }
                 .alert("print_language_changed_success".localized, isPresented: $showSuccessMessage) {
@@ -137,6 +139,8 @@ struct PrintLanguageConfigView: View {
             }
         }
         .padding(.vertical, 8)
+        .accessibilityLabel(language.displayName)
+        .accessibilityHint("accessibility_row_hint".localized)
         .contentShape(Rectangle())
         .onTapGesture {
             let previousLanguage = settingsManager.printLanguage

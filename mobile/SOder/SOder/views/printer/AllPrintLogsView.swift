@@ -19,6 +19,8 @@ struct AllPrintLogsView: View {
                     Button("printer_done_button".localized) {
                         presentationMode.wrappedValue.dismiss()
                     }
+                    .accessibilityLabel("printer_done_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
             }
         }

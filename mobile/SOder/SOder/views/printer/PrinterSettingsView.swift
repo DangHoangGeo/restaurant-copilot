@@ -155,6 +155,8 @@ struct PrinterSettingsView: View {
                         }
                         .buttonStyle(.bordered)
                         .foregroundColor(.red)
+                        .accessibilityLabel("printer_disconnect_button".localized)
+                        .accessibilityHint("accessibility_button_hint".localized)
                     }
                 }
                 .padding(.vertical, 4)
@@ -199,6 +201,8 @@ struct PrinterSettingsView: View {
                     }
                     .buttonStyle(.bordered)
                     .foregroundColor(.blue)
+                    .accessibilityLabel("printer_refresh_printers_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                     Spacer()
                 }
                 .padding(.top, printerManager.availablePrinters.isEmpty ? 4 : 8) // Adjust padding based on content
@@ -221,7 +225,9 @@ struct PrinterSettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    
+                    .accessibilityLabel("printer_print_test_receipt_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
+
                     Button(action: {
                         Task {
                             await printKitchenTest()
@@ -236,6 +242,8 @@ struct PrinterSettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+                    .accessibilityLabel("printer_print_kitchen_test_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
             }
             
@@ -254,6 +262,8 @@ struct PrinterSettingsView: View {
                         }
                         .font(.caption)
                         .foregroundColor(.blue)
+                        .accessibilityLabel("printer_view_all_logs_button".localized)
+                        .accessibilityHint("accessibility_button_hint".localized)
                     }
                 }
             }
@@ -294,10 +304,14 @@ struct PrinterSettingsView: View {
                     showingAllLogs = true // Show the all logs view
                 }
                 .fontWeight(.semibold)
+                .accessibilityLabel("printer_view_all_logs_button".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
             }
         }
         .alert("printer_connection_alert_title".localized, isPresented: $showingConnectionAlert) {
             Button("printer_alert_ok_button".localized) { }
+            .accessibilityLabel("printer_alert_ok_button".localized)
+            .accessibilityHint("accessibility_button_hint".localized)
         } message: {
             Text(connectionMessage)
         }
@@ -436,6 +450,8 @@ struct PrinterRowView: View {
                 }
                 .buttonStyle(.bordered)
                 .foregroundColor(.blue)
+                .accessibilityLabel("printer_connect_button".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
             }
         }
         .padding(.vertical, 4)
@@ -459,6 +475,8 @@ struct ManualPrinterSetupView: View {
                 Button("printer_cancel_button".localized) {
                     presentationMode.wrappedValue.dismiss()
                 }
+                .accessibilityLabel("printer_cancel_button".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
             }
         }
     }
@@ -478,6 +496,8 @@ struct ManualPrinterSetupView: View {
                     addNetworkPrinter()
                 }
                 .disabled(printerName.isEmpty || ipAddress.isEmpty)
+                .accessibilityLabel("manual_printer_setup_add_button".localized)
+                .accessibilityHint("accessibility_button_hint".localized)
             }
             
             Section {

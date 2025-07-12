@@ -480,3 +480,8 @@
 "manual_printer_setup_add_button" = "プリンターを追加";
 "manual_printer_setup_help_text" = "ネットワークプリンターのIPアドレスとポートを入力してください。ほとんどのレシートプリンターはポート9100を使用します。";
 
+
+// MARK: - Accessibility Hints
+"accessibility_button_hint" = "ダブルタップで実行します。";
+"accessibility_row_hint" = "ダブルタップして詳細を表示します。";
+"accessibility_toggle_hint" = "ダブルタップで切り替えます。";

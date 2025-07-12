@@ -91,6 +91,8 @@ struct AddPrinterView: View {
                             }
                         }
                     }
+                    .accessibilityLabel("printer_add_edit_test_connection_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                     .disabled(isTestingConnection || ipAddress.isEmpty || port.isEmpty)
                     
                     if let testResult = testResult {
@@ -113,12 +115,16 @@ struct AddPrinterView: View {
                     Button("cancel".localized) {
                         presentationMode.wrappedValue.dismiss()
                     }
+                    .accessibilityLabel("cancel".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("save".localized) {
                         savePrinter()
                     }
+                    .accessibilityLabel("save".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                     .disabled(!isValidInput())
                 }
             }
@@ -299,6 +305,8 @@ struct EditPrinterView: View {
                             }
                         }
                     }
+                    .accessibilityLabel("printer_add_edit_test_connection_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                     .disabled(isTestingConnection || ipAddress.isEmpty || port.isEmpty)
                     
                     if let testResult = testResult {
@@ -315,12 +323,16 @@ struct EditPrinterView: View {
                     Button("cancel".localized) {
                         presentationMode.wrappedValue.dismiss()
                     }
+                    .accessibilityLabel("cancel".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("save".localized) {
                         savePrinter()
                     }
+                    .accessibilityLabel("save".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                     .disabled(!isValidInput())
                 }
             }
@@ -477,12 +489,16 @@ struct RestaurantSettingsView: View {
                     Button("cancel".localized) {
                         presentationMode.wrappedValue.dismiss()
                     }
+                    .accessibilityLabel("cancel".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("save".localized) {
                         saveSettings()
                     }
+                    .accessibilityLabel("save".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
             }
         }

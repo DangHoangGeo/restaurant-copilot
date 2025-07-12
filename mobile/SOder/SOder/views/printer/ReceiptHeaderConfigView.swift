@@ -66,7 +66,7 @@ struct ReceiptHeaderConfigView: View {
                 }
                 
                 Section {
-                    Button(action: autoFetchSettings) {
+                   Button(action: autoFetchSettings) {
                         HStack {
                             Image(systemName: "arrow.clockwise")
                                 .foregroundColor(.blue)
@@ -78,6 +78,8 @@ struct ReceiptHeaderConfigView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+                    .accessibilityLabel("receipt_header_auto_fetch_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 } header: {
                     Text("receipt_header_auto_fetch_title".localized)
                 } footer: {
@@ -126,6 +128,8 @@ struct ReceiptHeaderConfigView: View {
                     Button("printer_cancel_button".localized) {
                         dismiss()
                     }
+                    .accessibilityLabel("printer_cancel_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -133,6 +137,8 @@ struct ReceiptHeaderConfigView: View {
                         saveSettings()
                         dismiss()
                     }
+                    .accessibilityLabel("printer_save_button".localized)
+                    .accessibilityHint("accessibility_button_hint".localized)
                     .fontWeight(.semibold)
                     .disabled(!hasChanges)
                 }

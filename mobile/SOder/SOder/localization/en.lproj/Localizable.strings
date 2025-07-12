@@ -458,3 +458,9 @@
 "navigate_to_draft_order" = "Navigate to Draft Order";
 "would_navigate_to_draft_order_view_for_order_%%@._items:_%%d" = "Would navigate to Draft Order View for order %@. Items: %d";
 "add_%%@_to_order" = "Add %@ to order";
+
+// MARK: - Accessibility Hints
+"accessibility_button_hint" = "Double tap to activate.";
+"accessibility_row_hint" = "Double tap for more information.";
+"accessibility_toggle_hint" = "Double tap to toggle.";
+
