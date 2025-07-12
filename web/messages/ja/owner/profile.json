@@ -1,125 +1,98 @@
 {
-  "title": "オーナープロフィール",
-  "subtitle": "アカウント情報を管理し、設定をカスタマイズします",
+  "title": "プロフィール設定",
+  "subtitle": "アカウント情報とセキュリティ設定を管理",
+  "profileUpdated": "プロフィールが正常に更新されました",
+  "passwordChanged": "パスワードが正常に変更されました",
+  "twoFactorEnabled": "二段階認証が有効になりました",
+  "twoFactorDisabled": "二段階認証が無効になりました",
+  "errorLoading": "プロフィールの読み込みエラー",
+  "failedToLoad": "プロフィールデータの読み込みに失敗しました",
+  "enabled": "有効",
+  "disabled": "無効",
+  "roleOwner": "オーナー",
   "tabs": {
-    "personal_info": "個人情報",
+    "profile": "プロフィール",
     "security": "セキュリティ",
-    "notifications": "通知設定",
-    "linked_accounts": "連携アカウント"
+    "authentication": "2FA"
   },
-  "personal_info": {
-    "form_title": "個人情報の編集",
-    "labels": {
-      "first_name": "名",
-      "last_name": "姓",
-      "email": "メールアドレス",
-      "phone_number": "電話番号",
-      "profile_picture": "プロフィール写真"
+  "profileInfo": {
+    "title": "個人情報",
+    "description": "個人情報とアカウント情報を更新",
+    "name": "氏名",
+    "namePlaceholder": "氏名を入力",
+    "email": "メールアドレス",
+    "emailPlaceholder": "メールアドレスを入力",
+    "emailChangeNote": "メールを変更すると確認が必要です",
+    "restaurantInfo": "店舗情報",
+    "restaurantName": "店舗名",
+    "subdomain": "サブドメイン",
+    "restaurantEmail": "連絡用メール",
+    "restaurantPhone": "電話番号",
+    "restaurantAddress": "住所",
+    "accountInfo": "アカウント情報",
+    "role": "役割",
+    "memberSince": "登録日",
+    "roles": {
+      "owner": "オーナー",
+      "manager": "マネージャー",
+      "staff": "スタッフ"
     },
-    "placeholders": {
-      "first_name": "名を入力",
-      "last_name": "姓を入力",
-      "phone_number": "電話番号を入力"
-    },
-    "buttons": {
-      "save_changes": "変更を保存",
-      "upload_picture": "写真をアップロード",
-      "remove_picture": "写真を削除"
-    },
-    "notifications": {
-      "update_success": "プロフィール情報が正常に更新されました。",
-      "update_error": "プロフィール情報の更新に失敗しました: {error}",
-      "picture_upload_success": "プロフィール写真が正常にアップロードされました。",
-      "picture_upload_error": "プロフィール写真のアップロードに失敗しました: {error}",
-      "picture_removed_success": "プロフィール写真が正常に削除されました。",
-      "picture_removed_error": "プロフィール写真の削除に失敗しました: {error}"
-    }
+    "updateSuccess": "プロフィールが正常に更新されました"
   },
   "security": {
-    "change_password_title": "パスワードの変更",
-    "labels": {
-      "current_password": "現在のパスワード",
-      "new_password": "新しいパスワード",
-      "confirm_new_password": "新しいパスワードの確認"
-    },
-    "placeholders": {
-      "current_password": "現在のパスワードを入力",
-      "new_password": "新しいパスワードを入力",
-      "confirm_new_password": "新しいパスワードを再入力"
-    },
-    "buttons": {
-      "change_password": "パスワードを変更"
-    },
-    "two_factor_auth_title": "二要素認証 (2FA)",
-    "two_factor_auth_description": "アカウントにセキュリティのレイヤーを追加します。",
-    "enable_2fa_button": "2FAを有効にする",
-    "disable_2fa_button": "2FAを無効にする",
-    "two_factor_enabled_message": "二要素認証は現在有効です。",
-    "two_factor_disabled_message": "二要素認証は現在無効です。",
-    "notifications": {
-      "password_change_success": "パスワードが正常に変更されました。",
-      "password_change_error": "パスワードの変更に失敗しました: {error}",
-      "2fa_enable_success": "二要素認証が正常に有効化されました。",
-      "2fa_enable_error": "二要素認証の有効化に失敗しました: {error}",
-      "2fa_disable_success": "二要素認証が正常に無効化されました。",
-      "2fa_disable_error": "二要素認証の無効化に失敗しました: {error}"
+    "title": "パスワード＆セキュリティ",
+    "description": "パスワードとセキュリティ設定を更新",
+    "currentPassword": "現在のパスワード",
+    "currentPasswordPlaceholder": "現在のパスワードを入力",
+    "newPassword": "新しいパスワード",
+    "newPasswordPlaceholder": "新しいパスワードを入力",
+    "confirmPassword": "新しいパスワード（確認）",
+    "confirmPasswordPlaceholder": "新しいパスワードを再入力",
+    "changePassword": "パスワードを変更",
+    "changingPassword": "変更中...",
+    "passwordChangeSuccess": "パスワードが正常に変更されました",
+    "passwordTips": {
+      "title": "パスワードセキュリティのヒント",
+      "tip1": "8文字以上で、文字・数字・記号を混ぜる",
+      "tip2": "名前や誕生日など個人情報を避ける",
+      "tip3": "他サービスと同じパスワードは使わない",
+      "tip4": "パスワードマネージャーの利用を検討する"
     }
   },
-  "notifications_settings": {
-    "title": "通知設定",
-    "description": "通知を受け取る方法とタイミングを選択します。",
-    "email_notifications_label": "メール通知",
-    "push_notifications_label": "プッシュ通知 (モバイルアプリ)",
-    "sms_notifications_label": "SMS通知",
-    "notification_types": {
-      "new_orders": "新規注文",
-      "order_updates": "注文の更新",
-      "low_stock_alerts": "在庫僅少アラート",
-      "system_updates": "システムアップデートとお知らせ",
-      "promotional_emails": "プロモーションメール"
-    },
-    "settings_group_all": "すべて",
-    "settings_group_important": "重要のみ",
-    "settings_group_none": "なし",
-    "buttons": {
-      "save_preferences": "設定を保存"
-    },
-    "notifications": {
-      "save_success": "通知設定が正常に保存されました。",
-      "save_error": "通知設定の保存に失敗しました: {error}"
-    }
-  },
-  "linked_accounts": {
-    "title": "連携アカウント",
-    "description": "サードパーティのアカウントをCoOrderに接続して管理します。",
-    "stripe_title": "Stripe (支払い処理)",
-    "stripe_connected_message": "Stripeアカウント ({accountId}) が接続されています。",
-    "stripe_not_connected_message": "Stripeアカウントが接続されていません。",
-    "connect_stripe_button": "Stripeに接続",
-    "disconnect_stripe_button": "Stripeを切断",
-    "google_my_business_title": "Googleマイビジネス",
-    "gmb_connected_message": "Googleマイビジネスアカウントが接続されています。",
-    "gmb_not_connected_message": "Googleマイビジネスアカウントが接続されていません。",
-    "connect_gmb_button": "Googleマイビジネスに接続",
-    "disconnect_gmb_button": "Googleマイビジネスを切断",
-    "notifications": {
-      "disconnect_success": "{accountName} が正常に切断されました。",
-      "disconnect_error": "{accountName} の切断に失敗しました: {error}",
-      "connect_success": "{accountName} が正常に接続されました。",
-      "connect_error": "{accountName} の接続に失敗しました: {error}"
-    }
-  },
-  "errors": {
-    "fetch_profile_failed": "プロファイルデータの読み込みに失敗しました。",
-    "unauthorized": "この情報にアクセスする権限がありません。",
-    "form_validation_error": "フォームにエラーがあります。確認して再試行してください。"
-  },
-  "account_actions": {
-    "logout_button": "ログアウト",
-    "delete_account_button": "アカウントを削除",
-    "delete_account_modal_title": "アカウントを削除しますか？",
-    "delete_account_modal_message": "この操作は元に戻せません。すべてのアカウントデータとレストラン情報が完全に削除されます。",
-    "delete_account_modal_confirm_button": "はい、アカウントを削除します",
-    "delete_account_modal_cancel_button": "キャンセル"
+  "twoFactor": {
+    "title": "二段階認証",
+    "description": "アカウントに追加のセキュリティを設定",
+    "enabled": "有効",
+    "disabled": "無効",
+    "enable": "2FAを有効にする",
+    "disable": "2FAを無効にする",
+    "enabling": "有効化中...",
+    "disabling": "無効化中...",
+    "settingUp": "設定中...",
+    "enabledDescription": "二段階認証が有効になっています",
+    "disabledDescription": "アカウントに追加のセキュリティを設定してください",
+    "currentlyEnabled": "現在、二段階認証が有効です。",
+    "enhanceSecurity": "二段階認証を有効にしてセキュリティを強化",
+    "requiresApp": "認証アプリが必要です",
+    "setupTitle": "二段階認証の設定",
+    "setupDescription": "以下の手順で2FAを設定してください",
+    "step1Title": "1. QRコードをスキャン",
+    "step2Title": "2. 手動入力（代替）",
+    "step3Title": "3. 設定を確認",
+    "scanInstructions": "認証アプリでQRコードをスキャン",
+    "manualKey": "手動入力用キー",
+    "manualInstructions": "QRコードが読み取れない場合、キーを入力してください",
+    "verificationCode": "認証コード",
+    "verifyInstructions": "アプリの6桁コードを入力",
+    "setupSuccess": "二段階認証が有効になりました",
+    "secretCopied": "シークレットキーをクリップボードにコピーしました",
+    "disableTitle": "二段階認証の無効化",
+    "disableWarning": "無効化するとセキュリティが低下します",
+    "currentPassword": "現在のパスワード",
+    "passwordPlaceholder": "現在のパスワードを入力",
+    "disableSuccess": "二段階認証が無効になりました",
+    "aboutTitle": "二段階認証について",
+    "aboutDescription": "2FAはパスワードに加えて認証コードを要求し、セキュリティを強化します。",
+    "recommendedApps": "推奨認証アプリ"
   }
 }

@@ -1,72 +1,122 @@
 {
   "title": "Báo cáo & Phân tích",
   "description": "Xem báo cáo doanh thu, hiệu suất món và phản hồi khách hàng",
+  "retry": "Thử lại",
+  "errors": {
+    "fetch_failed": "Tải dữ liệu thất bại"
+  },
+  "exporting": "Đang xuất...",
   "tabs": {
     "sales": "Doanh thu",
-    "items": "Món ăn",
+    "items": "Món",
     "feedback": "Phản hồi"
   },
   "summary": {
-    "total_sales_today": "Doanh thu hôm nay",
-    "active_orders_count": "Đơn hàng đang hoạt động",
-    "top_selling_item_today": "Món bán chạy nhất hôm nay",
-    "low_stock_alerts_count": "Cảnh báo hết hàng"
+    "total_sales_today": "Tổng doanh thu hôm nay",
+    "active_orders_count": "Đơn đang hoạt động",
+    "top_selling_item_today": "Món bán chạy hôm nay",
+    "low_stock_alerts_count": "Cảnh báo thiếu hàng"
   },
   "recommendations": {
     "title": "Món bán chạy nhất (7 ngày qua)",
-    "loading": "Đang tải gợi ý...",
-    "errorFetching": "Lỗi khi lấy gợi ý: {error}",
-    "noData": "Không có món bán chạy nào trong 7 ngày qua.",
+    "loading": "Đang tải đề xuất...",
+    "errorFetching": "Lỗi tải đề xuất: {error}",
+    "noData": "Không tìm thấy món bán chạy trong 7 ngày qua.",
     "soldLabel": "Đã bán:",
     "applyButton": "Áp dụng cho tuần tới",
     "applyingButton": "Đang áp dụng...",
-    "applySuccess": "Áp dụng gợi ý thành công!",
-    "applyError": "Lỗi khi áp dụng gợi ý: {error}",
-    "missingRestaurantId": "Vui lòng chọn nhà hàng để xem gợi ý.",
-    "missingRestaurantIdApply": "Không thể áp dụng gợi ý khi chưa có mã nhà hàng.",
-    "description_7_days": "Dựa trên dữ liệu 7 ngày gần nhất",
-    "apply_button": "Áp dụng Gợi ý"
+    "applySuccess": "Áp dụng đề xuất thành công!",
+    "applyError": "Lỗi khi áp dụng đề xuất: {error}",
+    "missingRestaurantId": "Vui lòng chọn nhà hàng để xem đề xuất.",
+    "missingRestaurantIdApply": "Không thể áp dụng đề xuất khi thiếu ID nhà hàng.",
+    "description_7_days": "Dựa trên 7 ngày qua",
+    "apply_button": "Áp dụng đề xuất"
+  },
+  "dateRange": {
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "last7Days": "7 ngày qua",
+    "last30Days": "30 ngày qua",
+    "thisWeek": "Tuần này",
+    "thisMonth": "Tháng này"
+  },
+  "dateRangeSelector": {
+    "title": "Chọn khoảng ngày & Xuất",
+    "quickSelect": "Chọn nhanh",
+    "customRange": "Khoảng ngày tùy chỉnh",
+    "selectPeriod": "Chọn khoảng",
+    "custom": "Tùy chỉnh",
+    "pickDate": "Chọn khoảng ngày",
+    "selectedRange": "Khoảng đã chọn"
   },
   "sales": {
     "title": "Báo cáo doanh thu",
     "daily_revenue_chart_placeholder": "Biểu đồ doanh thu hàng ngày",
-    "category_breakdown_chart_placeholder": "Biểu đồ phân loại theo danh mục"
+    "category_breakdown_chart_placeholder": "Biểu đồ phân loại"
   },
   "daterange": {
     "last_7_days": "7 ngày qua",
     "last_30_days": "30 ngày qua"
   },
   "items": {
-    "title": "Báo cáo món ăn",
+    "title": "Báo cáo món",
     "table": {
       "item_name": "Tên món",
-      "total_sold": "Số lượng bán",
+      "total_sold": "Tổng đã bán",
       "total_revenue": "Tổng doanh thu",
-      "avg_rating": "Đánh giá TB"
+      "avg_rating": "Đánh giá trung bình"
     }
+  },
+  "itemsReport": {
+    "title": "Báo cáo hiệu suất món",
+    "totalRevenue": "Tổng doanh thu",
+    "totalSold": "Số món đã bán",
+    "avgRating": "Đánh giá trung bình",
+    "totalItems": "Tổng số món",
+    "searchPlaceholder": "Tìm món...",
+    "filterByCategory": "Lọc theo danh mục",
+    "allCategories": "Tất cả danh mục",
+    "itemName": "Tên món",
+    "category": "Danh mục",
+    "revenue": "Doanh thu",
+    "profitMargin": "Biên lợi nhuận",
+    "popularity": "Độ phổ biến",
+    "mostPopular": "Phổ biến nhất",
+    "noItemsFound": "Không tìm thấy món phù hợp"
+  },
+  "analytics": {
+    "salesOverTime": "Doanh thu theo thời gian",
+    "ordersCount": "Số đơn",
+    "categoryBreakdown": "Doanh thu theo danh mục",
+    "averageOrderValue": "Xu hướng giá trị trung bình",
+    "totalSales": "Tổng doanh thu",
+    "totalOrders": "Tổng số đơn",
+    "avgOrderValue": "Giá trị trung bình",
+    "growthRate": "Tốc độ tăng trưởng"
   },
   "metrics": {
     "total_sales": "Tổng doanh thu",
-    "total_items_sold": "Tổng số món bán ra",
-    "average_order_value": "Giá trị đơn trung bình",
+    "total_items_sold": "Tổng số món bán",
+    "average_order_value": "Giá trị trung bình",
     "top_item": "Món bán chạy",
-    "low_stock": "Món gần hết hàng",
+    "low_stock": "Món thiếu hàng",
     "todaySales": "Doanh thu hôm nay",
-    "todayOrders": "Đơn hàng hôm nay",
+    "todayOrders": "Đơn hôm nay",
     "todayRevenue": "Doanh thu hôm nay",
-    "totalOrders": "Tổng đơn hàng",
-    "activeOrders": "Đơn đang hoạt động",
-    "topSeller": "Bán chạy nhất",
-    "lowStock": "Sắp hết hàng",
-    "noData": "Không có dữ liệu cho giai đoạn này.",
-    "loading": "Đang tải dữ liệu...",
+    "totalOrders": "Tổng số đơn",
+    "activeOrders": "Đơn đang chạy",
+    "topSeller": "Bán chạy",
+    "lowStock": "Thiếu hàng",
+    "noData": "Không có dữ liệu cho khoảng này.",
+    "loading": "Đang tải số liệu...",
     "itemsNeedAttention": "Món cần chú ý"
   },
   "recentOrders": {
-    "title": "Đơn hàng gần đây",
-    "noOrders": "Không có đơn hàng nào gần đây.",
-    "orderId": "Mã Đơn",
-    "customerName": "Tên khách hàng",
+    "title": "Đơn gần đây",
+    "noOrders": "Không tìm thấy đơn gần đây.",
+    "table": "Bàn",
+    "orderId": "Mã đơn",
+    "customerName": "Tên khách",
     "totalAmount": "Tổng tiền",
     "orderTime": "Thời gian đặt",
     "status": "Trạng thái"
@@ -77,6 +127,6 @@
   },
   "coming_soon": {
     "title": "Báo cáo & Phân tích",
-    "message": "Các tính năng báo cáo nâng cao sắp ra mắt! Bạn sẽ có thể xem phân tích doanh số, hiệu suất món ăn và phân tích phản hồi khách hàng chi tiết tại đây."
+    "message": "Tính năng báo cáo nâng cao sẽ sớm ra mắt! Bạn sẽ xem được phân tích chi tiết về doanh thu, hiệu suất món và phản hồi khách hàng."
   }
 }

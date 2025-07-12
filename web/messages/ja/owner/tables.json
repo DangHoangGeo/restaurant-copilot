@@ -1,144 +1,130 @@
 {
-  "title": "テーブル管理",
-  "subtitle": "レストランのテーブルレイアウトとQRコードを管理します",
-  "add_table_button": "テーブルを追加",
-  "add_section_button": "セクションを追加",
-  "table_view_options": {
-    "layout_view": "レイアウトビュー",
-    "list_view": "リストビュー"
+  "title": "テーブル＆QR管理",
+  "tables_list": "テーブル一覧",
+  "add_table": "テーブルを追加",
+  "edit_table": "テーブルを編集",
+  "table_name_label": "テーブル名",
+  "table_name_placeholder": "例: Table 1, Patio 5",
+  "capacity_label": "収容人数（席数）",
+  "capacity_placeholder": "例: 4",
+  "status_label": "ステータス",
+  "select_status_placeholder": "ステータスを選択",
+  "status_options": {
+    "available": "利用可",
+    "occupied": "使用中",
+    "reserved": "予約済み"
   },
-  "table_list_headers": {
-    "table_name_number": "テーブル名/番号",
-    "section": "セクション",
-    "capacity": "収容人数",
-    "status": "ステータス",
-    "qr_code": "QRコード",
-    "actions": "アクション"
-  },
-  "table_status": {
-    "available": "空席",
-    "occupied": "利用中",
-    "reserved": "予約済み",
-    "needs_cleaning": "清掃が必要"
-  },
-  "table_actions": {
-    "edit": "編集",
-    "generate_qr": "QRコードを生成",
-    "print_qr": "QRコードを印刷",
-    "view_orders": "注文を表示",
-    "change_status": "ステータスを変更",
-    "delete": "削除"
-  },
-  "add_edit_table_modal": {
-    "add_title": "新しいテーブルを追加",
-    "edit_title": "テーブルを編集",
-    "table_name_number_label": "テーブル名/番号",
-    "table_name_number_placeholder": "例：テーブル1、パティオ席A",
-    "section_label": "セクション (オプション)",
-    "select_section_placeholder": "セクションを選択または新規作成",
-    "add_new_section_option": "新しいセクションを追加...",
-    "capacity_label": "収容人数",
-    "capacity_placeholder": "例：4",
-    "status_label": "ステータス",
-    "buttons": {
-      "save_table": "テーブルを保存",
-      "cancel": "キャンセル"
-    }
-  },
-  "add_section_modal": {
-    "title": "新しいセクションを追加",
-    "edit_title": "セクションを編集",
-    "section_name_label": "セクション名",
-    "section_name_placeholder": "例：メインダイニングルーム、バーエリア",
-    "buttons": {
-      "add_section": "セクションを追加",
-      "save_section": "セクションを保存",
-      "cancel": "キャンセル"
-    }
-  },
-  "qr_code_modal": {
-    "title": "テーブル {tableName} のQRコード",
-    "description": "顧客はこのQRコードをスキャンしてメニューを表示し、注文することができます。",
-    "print_button": "印刷",
-    "download_button": "ダウンロード (PNG)",
-    "qr_code_style_label": "QRコードスタイル:",
-    "style_options": {
-      "standard": "標準",
-      "with_logo": "ロゴ付き",
-      "custom_text": "カスタムテキスト付き"
-    },
-    "custom_text_input_label": "QRコードの下のテキスト:",
-    "custom_text_placeholder": "テーブル番号、レストラン名など"
-  },
-  "delete_table_modal": {
-    "title": "テーブルを削除",
-    "confirmation_message": "本当にテーブル「{tableName}」を削除しますか？この操作は元に戻せません。",
-    "buttons": {
-      "delete": "削除",
-      "cancel": "キャンセル"
-    }
-  },
-  "delete_section_modal": {
-    "title": "セクションを削除",
-    "confirmation_message_empty_section": "本当にセクション「{sectionName}」を削除しますか？この操作は元に戻せません。",
-    "confirmation_message_with_tables": "セクション「{sectionName}」には {tableCount} 個のテーブルが含まれています。これらのテーブルをどうしますか？",
-    "options": {
-      "delete_tables": "セクションとすべてのテーブルを削除",
-      "move_tables": "テーブルを別のセクションに移動",
-      "unassign_tables": "テーブルをセクションから解除"
-    },
-    "select_new_section_label": "新しいセクションを選択",
-    "buttons": {
-      "delete": "削除",
-      "cancel": "キャンセル"
-    }
+  "is_outdoor_label": "屋外席",
+  "is_accessible_label": "バリアフリー",
+  "notes_label": "備考",
+  "notes_placeholder": "このテーブルについての備考…",
+  "outdoor": "屋外席",
+  "accessible": "バリアフリー",
+  "status": "ステータス",
+  "capacity": "収容人数",
+  "position": "位置",
+  "view_qr": "QRコードを表示",
+  "qr_for_table": "テーブル用QRコード",
+  "qr_refresh_reminder": "QRコードが2週間以上経過しています。更新を検討してください。",
+  "refresh_qr": "QRコードを更新",
+  "download_png": "PNGをダウンロード",
+  "downloading_qr": "QRダウンロード中…",
+  "copy_link": "リンクをコピー",
+  "link_copied": "リンクをコピーしました！",
+  "validation": {
+    "name_required": "テーブル名は必須です。",
+    "name_max_length": "テーブル名は{maxLength}文字以内で入力してください。",
+    "capacity_required": "収容人数は必須です。",
+    "capacity_min": "収容人数は最低{min}以上である必要があります。",
+    "status_required": "ステータスは必須です。",
+    "notes_max_length": "備考は{maxLength}文字以内で入力してください。",
+    "qrCode_invalid_url": "無効なQRコードURL形式です。",
+    "bulk_count_required": "テーブル数は必須です。",
+    "bulk_count_min": "最低{min}テーブルを追加してください。",
+    "bulk_count_max": "一度に追加できるテーブルは{max}以下です。",
+    "bulk_name_prefix_required": "名前プレフィックスは必須です。",
+    "bulk_name_prefix_max_length": "名前プレフィックスは{maxLength}文字以内で入力してください。",
+    "bulk_start_index_required": "開始番号は必須です。",
+    "bulk_start_index_min": "開始番号は最低{min}以上である必要があります。",
+    "bulk_start_index_max": "開始番号は{max}以下である必要があります。"
   },
   "notifications": {
-    "table_created_success": "テーブルが正常に作成されました。",
-    "table_created_error": "テーブルの作成に失敗しました: {error}",
-    "table_updated_success": "テーブルが正常に更新されました。",
-    "table_updated_error": "テーブルの更新に失敗しました: {error}",
-    "table_deleted_success": "テーブルが正常に削除されました。",
-    "table_deleted_error": "テーブルの削除に失敗しました: {error}",
-    "section_created_success": "セクションが正常に作成されました。",
-    "section_created_error": "セクションの作成に失敗しました: {error}",
-    "section_updated_success": "セクションが正常に更新されました。",
-    "section_updated_error": "セクションの更新に失敗しました: {error}",
-    "section_deleted_success": "セクションが正常に削除されました。",
-    "section_deleted_error": "セクションの削除に失敗しました: {error}",
-    "qr_code_generated_success": "QRコードが正常に生成されました。",
-    "qr_code_generation_error": "QRコードの生成に失敗しました: {error}",
-    "qr_code_print_error": "QRコードの印刷に失敗しました。プリンタの設定を確認してください。"
-  },
-  "layout_view_coming_soon": {
-    "title": "テーブルレイアウトビュー",
-    "message": "この機能は間もなく登場します！レストランのテーブルを視覚的に配置し、管理できるようになります。"
-  },
-  "empty_state": {
-    "no_tables_title": "テーブルがありません",
-    "no_tables_message": "最初のテーブルを追加して、テーブル管理を始めましょう。",
-    "no_sections_title": "セクションがありません",
-    "no_sections_message": "セクションを追加して、テーブルを整理しましょう。"
-  },
-  "bulk_qr_generation": {
-    "button_text": "すべてのQRコードを生成/印刷",
-    "modal_title": "一括QRコード処理",
-    "select_tables_label": "テーブルを選択:",
-    "all_tables_option": "すべてのテーブル",
-    "tables_in_section_option": "セクション内のテーブル:",
-    "individual_tables_option": "個別のテーブルを選択...",
-    "output_format_label": "出力形式:",
-    "single_page_option": "単一ページ (複数のQRコード)",
-    "multiple_pages_option": "複数ページ (QRコードごとに1ページ)",
-    "generate_and_print_button": "生成して印刷",
-    "generate_and_download_button": "生成してダウンロード (ZIP)",
-    "notifications": {
-      "bulk_qr_success": "{count} 個のQRコードが正常に処理されました。",
-      "bulk_qr_error": "一括QRコード処理中にエラーが発生しました。"
-    }
+    "update_success": "テーブルが正常に更新されました。",
+    "create_success": "テーブルが正常に作成されました。",
+    "bulk_create_success": "{count}件のテーブルを作成しました。",
+    "qr_saved_success": "QRコードを保存しました。ダウンロード可能です。",
+    "link_copied": "リンクをコピーしました！",
+    "qr_downloaded": "QRコードが正常にダウンロードされました！",
+    "qr_generated": "QRコードが正常に生成されました！",
+    "qr_refreshed": "QRコードが更新されました！"
   },
   "errors": {
-    "fetch_tables_failed": "テーブルデータの取得に失敗しました。",
-    "fetch_sections_failed": "セクションデータの取得に失敗しました。"
-  }
+    "save_failed": "テーブルの保存に失敗しました。再試行してください。",
+    "bulk_create_failed": "一括作成に失敗しました。再試行してください。",
+    "qr_save_failed": "QRコードの保存に失敗しました。再試行してください。",
+    "qr_download_failed": "QRコードのダウンロードに失敗しました。",
+    "download_failed": "QRコード画像のダウンロードに失敗しました。",
+    "copy_failed": "リンクのコピーに失敗しました。",
+    "qr_code_not_set": "このテーブルにQRコードが設定されていません。",
+    "qr_generation_failed": "QRコードの生成に失敗しました。再試行してください。"
+  },
+  "empty_state": {
+    "title": "テーブルが見つかりません",
+    "description": "最初のテーブルを追加するか、一括追加をお試しください。",
+    "add_table_button": "単一テーブルを追加",
+    "bulk_add_button": "一括追加"
+  },
+  "bulk_add": {
+    "button_text": "一括追加",
+    "title": "テーブル一括追加",
+    "count_label": "追加するテーブル数",
+    "name_prefix_label": "テーブル名プレフィックス",
+    "name_prefix_placeholder": "例: Table, Area A - ",
+    "start_index_label": "開始番号",
+    "default_name_prefix": "Table ",
+    "create_button": "テーブルを作成",
+    "submit_button": "追加",
+    "notification_success": "{count}件のテーブルを追加しました。",
+    "notification_error": "{count}件の追加に失敗しました。エラー: {errors}"
+  },
+  "downloading": "ダウンロード中…",
+  "download_qr": "QRコードをダウンロード",
+  "qr_code_generate_message": "QRコードを生成中…",
+  "search_placeholder": "テーブル名で検索…",
+  "filter_status": "ステータスでフィルタ",
+  "all_status": "すべてのステータス",
+  "clear_filters": "クリア",
+  "clear_filters_button": "フィルタをクリア",
+  "view_mode": {
+    "grid": "グリッド表示",
+    "list": "リスト表示"
+  },
+  "stats": {
+    "available": "利用可",
+    "occupied": "使用中",
+    "reserved": "予約済み",
+    "qr_codes": "QRコード数"
+  },
+  "pagination": {
+    "showing": "{start}–{end} 件中 {total} 件を表示",
+    "previous": "前へ",
+    "next": "次へ",
+    "page": "ページ {page}"
+  },
+  "table_info": {
+    "capacity_with_icon": "{count}席",
+    "outdoor_badge": "屋外席",
+    "accessible_badge": "バリアフリー",
+    "qr_old_warning": "QRコードが古いです – 更新を検討してください"
+  },
+  "actions": {
+    "edit": "編集",
+    "qr_code": "QRコード",
+    "view_qr_code": "QRコードを見る"
+  },
+  "search_results": {
+    "no_tables_found": "テーブルが見つかりません",
+    "adjust_search": "検索条件を調整してください"
+  },
+  "status_count": "{count}/{total} 件のテーブル"
 }
