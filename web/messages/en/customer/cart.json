@@ -80,6 +80,7 @@
     "total": "Total: {amount}",
     "view_cart": "View Cart",
     "checkout": "Checkout",
+    "placing_order": "Placing Order",
     "empty_message": "Your cart is empty",
     "add_items": "Add some delicious items!"
   }

@@ -314,11 +314,11 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                         >
                           <ShoppingCart className="h-4 w-4" />
                         </motion.div>
-                        {t("floating_cart.checkout")}...
+                        {t("floating_cart.placing_order")}...
                       </>
                     ) : (
                       <>
-                        {t("floating_cart.checkout")}
+                        {t("floating_cart.place_order")}
                         <ChevronRight className="h-4 w-4 ml-2" />
                       </>
                     )}

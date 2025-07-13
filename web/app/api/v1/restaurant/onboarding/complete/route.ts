@@ -26,8 +26,8 @@ const onboardingCompleteSchema = z.object({
   owner_story_vi: z.string().max(1000).optional(),
   
   // Media URLs
-  logo_url: z.string().url().optional(),
-  owner_photo_url: z.string().url().optional(),
+  logo_url: z.string().url().or(z.literal('')).optional(),
+  owner_photo_url: z.string().url().or(z.literal('')).optional(),
   gallery_images: z.array(z.string().url()).optional(),
   
   // Signature dishes (will be processed separately)
@@ -60,10 +60,11 @@ export async function POST(request: NextRequest) {
     const validation = onboardingCompleteSchema.safeParse(body);
 
     if (!validation.success) {
+      console.error('Onboarding validation error:', validation.error);
       return NextResponse.json(
         { 
           error: 'Validation failed', 
-          details: validation.error.flatten().fieldErrors 
+          message: validation.error.flatten().fieldErrors 
         },
         { status: 400 }
       );
