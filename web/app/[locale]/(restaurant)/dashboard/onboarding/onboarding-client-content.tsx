@@ -28,10 +28,24 @@ export function OnboardingClientContent({ locale }: OnboardingClientContentProps
   
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('basic');
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
-    name: '',
-    subdomain: '',
+    name: restaurantSettings?.name || '',
+    subdomain: restaurantSettings?.subdomain || '',
     default_language: locale as 'en' | 'ja' | 'vi',
-    brand_color: '#3B82F6',
+    brand_color: restaurantSettings?.brand_color || '#3B82F6',
+    tax: restaurantSettings?.tax || 0.10,
+    address: restaurantSettings?.address || '',
+    phone: restaurantSettings?.phone || '',
+    email: restaurantSettings?.email || '',
+    website: restaurantSettings?.website || '',
+    hero_title: restaurantSettings?.hero_title_en || '',
+    hero_subtitle: restaurantSettings?.hero_subtitle_en || '',
+    owner_story_en: restaurantSettings?.owner_story_en || '',
+    owner_story_ja: restaurantSettings?.owner_story_ja || '',
+    owner_story_vi: restaurantSettings?.owner_story_vi || '',
+    logo_url: restaurantSettings?.logo_url || '',
+    owner_photo_url: restaurantSettings?.owner_photo_url || '',
+    gallery_images: [],
+    signature_dishes: [],
   });
   const [isLoading, setIsLoading] = useState(false);
 
