@@ -79,6 +79,7 @@
     "items_count": "{count}点",
     "total": "合計: {amount}",
     "view_cart": "カートを見る",
+    "placing_order": "注文",
     "checkout": "レジに進む",
     "empty_message": "カートは空です",
     "add_items": "美味しい商品を追加しましょう！"
