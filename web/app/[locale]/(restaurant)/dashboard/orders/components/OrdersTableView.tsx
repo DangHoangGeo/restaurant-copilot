@@ -12,6 +12,7 @@ import { Order } from "../types";
 interface OrdersTableViewProps {
   orders: Order[];
   onOrderClick: (orderId: string) => void;
+  onOrderStatusUpdate?: (orderId: string, newStatus: string) => Promise<void>;
   getStatusBadgeVariant: (status: string) => "default" | "secondary" | "outline" | "destructive";
   locale: string;
 }
@@ -19,6 +20,7 @@ interface OrdersTableViewProps {
 export function OrdersTableView({ 
   orders, 
   onOrderClick, 
+  onOrderStatusUpdate, // eslint-disable-line @typescript-eslint/no-unused-vars
   getStatusBadgeVariant,
   locale 
 }: OrdersTableViewProps) {

@@ -23,6 +23,10 @@
   "price": "価格",
   "notes": "備考",
   "actions": "操作",
+  "edit": "編集",
+  "save": "保存",
+  "cancel": "キャンセル",
+  "qty": "数量",
   "no_orders": "表示する注文がありません。",
   "noOrderItems": "表示する注文アイテムがありません。",
   "search_placeholder": "顧客名、アイテム、注文IDで検索…",
@@ -128,5 +132,11 @@
     "order_canceled": "注文が正常にキャンセルされました",
     "cancel_failed": "注文のキャンセルに失敗しました"
   },
-  "serving": "提供中"
+  "serving": "提供中",
+  "orderStatusUpdated": "注文ステータスが正常に更新されました",
+  "orderStatusUpdateFailed": "注文ステータスの更新に失敗しました",
+  "addItems": "アイテムを追加",
+  "checkout": "会計",
+  "selectSize": "サイズを選択",
+  "noSize": "サイズなし"
 }

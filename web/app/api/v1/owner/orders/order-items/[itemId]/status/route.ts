@@ -42,7 +42,12 @@ export async function PATCH(
       .eq("id", itemId)
       .single();
 
-    if (fetchError || !orderItem || (orderItem.orders as {restaurant_id: string}[])[0].restaurant_id !== user.restaurantId) {
+    console.log("Fetched order item:", orderItem);
+    const restaurantId = Array.isArray(orderItem?.orders)
+      ? (orderItem?.orders as { restaurant_id: string }[])[0]?.restaurant_id
+      : (orderItem?.orders as { restaurant_id: string } | undefined)?.restaurant_id;
+
+    if (fetchError || !orderItem || restaurantId !== user.restaurantId) {
       return NextResponse.json(
         { success: false, error: "Order item not found" },
         { status: 404 }

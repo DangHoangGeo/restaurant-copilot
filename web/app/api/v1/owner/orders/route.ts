@@ -417,8 +417,10 @@ export async function GET(request: Request) {
 
     // Fetch toppings for orders that have them
     const allToppingIds = new Set<string>();
+    const allMenuItemIds = new Set<string>();
     ordersData?.forEach((order: SupabaseOrderResponse) => {
       order.order_items?.forEach((item: OrderItem) => {
+        allMenuItemIds.add(item.menu_item_id);
         if (item.topping_ids && Array.isArray(item.topping_ids)) {
           item.topping_ids.forEach((id: string) => allToppingIds.add(id));
         }
@@ -438,6 +440,41 @@ export async function GET(request: Request) {
       });
     }
 
+    // Fetch all available sizes and toppings for menu items in the orders
+    const menuItemSizesMap = new Map();
+    const menuItemToppingsMap = new Map();
+    if (allMenuItemIds.size > 0) {
+      // Fetch all sizes for menu items
+      const { data: sizesData } = await supabaseAdmin
+        .from('menu_item_sizes')
+        .select('id, menu_item_id, size_key, name_en, name_ja, name_vi, price')
+        .in('menu_item_id', Array.from(allMenuItemIds))
+        .eq('restaurant_id', user.restaurantId)
+        .order('position', { ascending: true });
+
+      sizesData?.forEach(size => {
+        if (!menuItemSizesMap.has(size.menu_item_id)) {
+          menuItemSizesMap.set(size.menu_item_id, []);
+        }
+        menuItemSizesMap.get(size.menu_item_id).push(size);
+      });
+
+      // Fetch all toppings for menu items
+      const { data: allToppingsData } = await supabaseAdmin
+        .from('toppings')
+        .select('id, menu_item_id, name_en, name_ja, name_vi, price')
+        .in('menu_item_id', Array.from(allMenuItemIds))
+        .eq('restaurant_id', user.restaurantId)
+        .order('position', { ascending: true });
+
+      allToppingsData?.forEach(topping => {
+        if (!menuItemToppingsMap.has(topping.menu_item_id)) {
+          menuItemToppingsMap.set(topping.menu_item_id, []);
+        }
+        menuItemToppingsMap.get(topping.menu_item_id).push(topping);
+      });
+    }
+
     // Transform data to include toppings and normalize tables structure
     const orders = ordersData?.map((order: SupabaseOrderResponse): OrderWithItems => ({
       ...order,
@@ -445,7 +482,9 @@ export async function GET(request: Request) {
       tables: Array.isArray(order.tables) ? order.tables[0] : order.tables,
       order_items: order.order_items?.map((item: OrderItem) => ({
         ...item,
-        toppings: item.topping_ids?.map((id: string) => toppingsMap.get(id)).filter(Boolean) || []
+        toppings: item.topping_ids?.map((id: string) => toppingsMap.get(id)).filter(Boolean) || [],
+        availableSizes: menuItemSizesMap.get(item.menu_item_id) || [],
+        availableToppings: menuItemToppingsMap.get(item.menu_item_id) || []
       }))
     })) || [];
 

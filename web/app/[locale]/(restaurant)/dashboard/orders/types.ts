@@ -52,7 +52,7 @@ export interface OrderItem {
   id: string;
   quantity: number;
   notes?: string | null;
-  status: "ordered" | "preparing" | "ready" | "served";
+  status: "new" | "preparing" | "ready" | "served" | "canceled";
   created_at: string;
   menu_item_size_id?: string | null;
   topping_ids?: string[] | null;
@@ -95,6 +95,21 @@ export interface OrderItem {
     price: number;
   };
   toppings?: {
+    id: string;
+    name_en: string;
+    name_ja: string;
+    name_vi: string;
+    price: number;
+  }[];
+  availableSizes?: {
+    id: string;
+    size_key: string;
+    name_en: string;
+    name_ja: string;
+    name_vi: string;
+    price: number;
+  }[];
+  availableToppings?: {
     id: string;
     name_en: string;
     name_ja: string;
