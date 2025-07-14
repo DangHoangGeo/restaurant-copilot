@@ -15,7 +15,7 @@ import { PageTemplate } from "@/components/ui/page-template";
 import { Button } from "@/components/ui/button";
 import { Plus, Grid3X3, List, Eye } from "lucide-react";
 import { type DateRange } from "@/components/features/admin/reports/date-range-selector";
-import { Order, Table as TableType } from "./types";
+import { Order, Table as TableType, OrderItem } from "./types";
 import { Category } from '@/shared/types/menu';
 
 // Import modular components
@@ -116,6 +116,48 @@ export function OrdersClientContent() {
       refetch();
     } catch {
       toast.error(t('itemStatusUpdateFailed'));
+    }
+  };
+
+  // Order status update handler
+  const handleOrderStatusUpdate = async (orderId: string, newStatus: string) => {
+    logInteraction('order_status_update_initiated');
+    
+    try {
+      const response = await fetch(`/api/v1/owner/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update order status');
+      
+      logInteraction('order_status_updated');
+      toast.success(t('orderStatusUpdated'));
+      refetch();
+    } catch {
+      toast.error(t('orderStatusUpdateFailed'));
+    }
+  };
+
+  // Item edit handler
+  const handleItemEdit = async (itemId: string, updates: Partial<OrderItem>) => {
+    logInteraction('item_edit_initiated');
+    
+    try {
+      const response = await fetch(`/api/v1/owner/orders/order-items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update item');
+      
+      logInteraction('item_edited');
+      toast.success(t('itemUpdated'));
+      refetch();
+    } catch {
+      toast.error(t('itemUpdateFailed'));
     }
   };
 
@@ -233,6 +275,20 @@ export function OrdersClientContent() {
         </Button>
       </div>
 
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 z-50 sm:hidden">
+        <Button
+          onClick={() => {
+            logInteraction('new_order_fab_clicked');
+            setIsNewOrderModalOpen(true);
+          }}
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+          size="lg"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      </div>
+
       {/* Stats Header - Mobile Optimized */}
       <OrdersStatsHeader
         totalOrders={totalOrders}
@@ -317,6 +373,7 @@ export function OrdersClientContent() {
                 const order = filteredOrders.find(o => o.id === orderId);
                 if (order) setSelectedOrderForDetail(order);
               }}
+              onOrderStatusUpdate={handleOrderStatusUpdate}
               getStatusBadgeVariant={getStatusBadgeVariant}
               locale={locale}
             />
@@ -326,6 +383,7 @@ export function OrdersClientContent() {
             <OrdersListView
               orders={filteredOrders}
               onItemStatusUpdate={handleItemStatusUpdate}
+              onItemEdit={handleItemEdit}
               getItemStatusBadgeVariant={getItemStatusBadgeVariant}
               locale={locale}
             />
@@ -338,6 +396,7 @@ export function OrdersClientContent() {
                 const order = filteredOrders.find(o => o.id === orderId);
                 if (order) setSelectedOrderForDetail(order);
               }}
+              onOrderStatusUpdate={handleOrderStatusUpdate}
               getStatusBadgeVariant={getStatusBadgeVariant}
               locale={locale}
             />
@@ -364,6 +423,8 @@ export function OrdersClientContent() {
         isOpen={!!selectedOrderForDetail}
         onClose={() => setSelectedOrderForDetail(null)}
         locale={locale}
+        categories={categories}
+        onUpdateOrderStatus={handleOrderStatusUpdate}
       />
     </PageTemplate>
   );

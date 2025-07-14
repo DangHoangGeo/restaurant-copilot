@@ -8,11 +8,11 @@ import { Eye, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Order } from "../types";
-import { toast } from "sonner";
 
 interface OrdersGridViewProps {
   orders: Order[];
   onOrderClick: (orderId: string) => void;
+  onOrderStatusUpdate?: (orderId: string, newStatus: string) => Promise<void>;
   getStatusBadgeVariant: (status: string) => "default" | "secondary" | "outline" | "destructive";
   locale?: string;
 }
@@ -47,6 +47,7 @@ const formatTimestamp = (timestamp: string, locale: string = 'en') => {
 export function OrdersGridView({ 
   orders, 
   onOrderClick, 
+  onOrderStatusUpdate,
   getStatusBadgeVariant,
   locale = 'en'
 }: OrdersGridViewProps) {
@@ -55,22 +56,12 @@ export function OrdersGridView({
 
   // Handle order status update
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    if (!onOrderStatusUpdate) return;
+    
     setUpdatingOrderId(orderId);
     
     try {
-      const response = await fetch(`/api/v1/owner/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      
-      if (!response.ok) throw new Error('Failed to update order status');
-      
-      toast.success(t('orderStatusUpdated'));
-      // The parent component will handle refetching via realtime updates
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error(t('orderStatusUpdateFailed'));
+      await onOrderStatusUpdate(orderId, newStatus);
     } finally {
       setUpdatingOrderId(null);
     }
@@ -102,24 +93,23 @@ export function OrdersGridView({
                   </Badge>
                   {/* Quick status update dropdown for non-completed orders */}
                   {order.status !== 'completed' && order.status !== 'canceled' && (
-                    <Select
-                      value={order.status}
-                      onValueChange={(newStatus) => handleStatusUpdate(order.id, newStatus)}
-                      disabled={isUpdating}
-                    >
-                      <SelectTrigger 
-                        className="w-24 h-6 text-xs"
-                        onClick={(e) => e.stopPropagation()}
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Select
+                        value={order.status}
+                        onValueChange={(newStatus) => handleStatusUpdate(order.id, newStatus)}
+                        disabled={isUpdating}
                       >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">{t('new')}</SelectItem>
-                        <SelectItem value="serving">{t('serving')}</SelectItem>
-                        <SelectItem value="completed">{t('completed')}</SelectItem>
-                        <SelectItem value="canceled">{t('canceled')}</SelectItem>
-                      </SelectContent>
-                    </Select>
+                        <SelectTrigger className="w-24 h-6 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">{t('new')}</SelectItem>
+                          <SelectItem value="serving">{t('serving')}</SelectItem>
+                          <SelectItem value="completed">{t('completed')}</SelectItem>
+                          <SelectItem value="canceled">{t('canceled')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
                 </div>
               </div>

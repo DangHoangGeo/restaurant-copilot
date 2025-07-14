@@ -23,6 +23,10 @@
   "price": "Price",
   "notes": "Notes",
   "actions": "Actions",
+  "edit": "Edit",
+  "save": "Save",
+  "cancel": "Cancel",
+  "qty": "Qty",
   "no_orders": "No orders to display.",
   "noOrderItems": "No order items to display.",
   "search_placeholder": "Search orders by customer name, items, or order ID...",
@@ -73,6 +77,10 @@
   "orderCreationFailed": "Failed to create order",
   "itemStatusUpdated": "Item status updated successfully",
   "itemStatusUpdateFailed": "Failed to update item status",
+  "itemUpdated": "Item updated successfully",
+  "itemUpdateFailed": "Failed to update item",
+  "orderStatusUpdated": "Order status updated successfully",
+  "orderStatusUpdateFailed": "Failed to update order status",
   "pleaseSelectTableAndItems": "Please select a table and add items",
   "loadingError": "Error loading orders",
   "newOrder": "New Order",
@@ -84,6 +92,10 @@
   "markPreparing": "Mark Preparing",
   "markReady": "Mark Ready", 
   "markServed": "Mark Served",
+  "editItem": "Edit Item",
+  "cancelItem": "Cancel Item",
+  "dragDropToChangeStatus": "Drag & drop to change status",
+  "readyAndServed": "Ready & Served",
   "table": {
     "table_name": "Table Name",
     "order_id": "Order ID",
@@ -135,5 +147,7 @@
     "order_canceled": "Order canceled successfully",
     "cancel_failed": "Failed to cancel order"
   },
-  "serving": "Serving"
+  "serving": "Serving",
+  "selectSize": "Select Size",
+  "noSize": "No Size"
 }
