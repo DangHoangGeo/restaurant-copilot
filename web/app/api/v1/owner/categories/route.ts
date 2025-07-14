@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
+import { checkAuthorization } from '@/lib/server/rolePermissions';
 
 // Schema for validating the request body when creating/updating a category
 const categorySchema = z.object({
@@ -19,6 +20,10 @@ export async function GET() {
   if (!user || !user.restaurantId) {
     return NextResponse.json({ message: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
+
+  // Check authorization for categories SELECT
+  const authError = checkAuthorization(user, 'categories', 'SELECT');
+  if (authError) return authError;
 
   const restaurantId = user.restaurantId;
 
@@ -97,10 +102,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 
-  // TODO: Add role-based authorization check here if necessary
-  // e.g., fetch user role from an 'employees' table linked to user.userId
-  // and check if they have 'owner' or 'manager' roles for user.restaurantId.
-  // For now, proceeding if user is associated with the restaurant.
+  // Check authorization for categories INSERT
+  const authError = checkAuthorization(user, 'categories', 'INSERT');
+  if (authError) return authError;
 
   try {
     const body = await req.json();

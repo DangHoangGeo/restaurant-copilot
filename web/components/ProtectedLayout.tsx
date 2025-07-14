@@ -42,6 +42,21 @@ export function useAuth() {
   return context;
 }
 
+/**
+ * ProtectedLayout Component
+ * 
+ * This component provides client-side authentication context for dashboard pages.
+ * 
+ * IMPORTANT: Primary authentication protection is handled by middleware.ts which
+ * redirects unauthenticated users away from /dashboard/* paths before they reach
+ * React components. This component serves as:
+ * 
+ * 1. A fallback protection layer for edge cases
+ * 2. A provider for user context throughout the dashboard
+ * 3. A loading/error state handler for authentication API calls
+ * 
+ * The middleware.ts file is the primary gatekeeper for route protection.
+ */
 export function ProtectedLayout({
   children,
 }: {
@@ -96,7 +111,9 @@ export function ProtectedLayout({
 
   useEffect(() => {
     if (!isLoading && !user && !error) {
-      // If loading is complete and user is not authenticated, redirect to login
+      // NOTE: This redirect is redundant with middleware.ts protection
+      // The middleware already handles redirecting unauthenticated users from /dashboard/* paths
+      // This client-side redirect serves as a fallback for edge cases where middleware didn't catch it
       const locale = pathname.split('/')[1] || 'en';
       router.push(`/${locale}/login`);
     }

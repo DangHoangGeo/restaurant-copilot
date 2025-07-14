@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { invalidateMenuCache } from '@/lib/server/request-context';
+import { logger } from '@/lib/logger';
+import { checkAuthorization } from '@/lib/server/rolePermissions';
 
 // Schema for toppings
 const toppingSchema = z.object({
@@ -49,6 +51,10 @@ export async function GET() {
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
+
+  // Check authorization for menu_items SELECT
+  const authError = checkAuthorization(user, 'menu_items', 'SELECT');
+  if (authError) return authError;
 
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -97,14 +103,20 @@ export async function GET() {
       .order('position', { ascending: true });
       
     if (error) {
-      console.error('Error fetching menu items:', error);
+      await logger.error('menu-items-api-get', 'Error fetching menu items', {
+        error: error.message,
+        restaurantId: user.restaurantId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Error fetching menu items', details: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ menuItems }, { status: 200 });
 
   } catch (error) {
-    console.error('API Error in GET menu items:', error);
+    await logger.error('menu-items-api-get', 'API Error in GET menu items', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId: user?.restaurantId
+    }, user?.restaurantId, user?.userId);
     return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknown error!" }, { status: 500 });
   }
 }
@@ -116,12 +128,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 
+  // Check authorization for menu_items INSERT
+  const authError = checkAuthorization(user, 'menu_items', 'INSERT');
+  if (authError) return authError;
+
   try {
     const body = await req.json();
     const validatedData = menuItemSchema.safeParse(body);
 
     if (!validatedData.success) {
-	  console.error('Validation error in POST menu item:', validatedData.error);
+      await logger.error('menu-items-api-post', 'Validation error in POST menu item', {
+        error: validatedData.error.message,
+        restaurantId: user.restaurantId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ errors: validatedData.error.flatten().fieldErrors }, { status: 400 });
     }
 
@@ -200,7 +219,10 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error('Error creating menu item:', error);
+      await logger.error('menu-items-api-post', 'Error creating menu item', {
+        error: error.message,
+        restaurantId: user.restaurantId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Error creating menu item', details: error.message }, { status: 500 });
     }
 
@@ -223,7 +245,11 @@ export async function POST(req: Request) {
         .insert(toppingsData);
 
       if (toppingsError) {
-        console.error('Error creating toppings:', toppingsError);
+        await logger.error('menu-items-api-post', 'Error creating toppings', {
+          error: toppingsError.message,
+          restaurantId: user.restaurantId,
+          menuItemId: menuItemId
+        }, user.restaurantId, user.userId);
         // Clean up the menu item if toppings fail
         await supabaseAdmin.from('menu_items').delete().eq('id', menuItemId);
         return NextResponse.json({ message: 'Error creating toppings', details: toppingsError.message }, { status: 500 });
@@ -248,7 +274,11 @@ export async function POST(req: Request) {
         .insert(sizesData);
 
       if (sizesError) {
-        console.error('Error creating sizes:', sizesError);
+        await logger.error('menu-items-api-post', 'Error creating sizes', {
+          error: sizesError.message,
+          restaurantId: user.restaurantId,
+          menuItemId: menuItemId
+        }, user.restaurantId, user.userId);
         // Clean up the menu item and toppings if sizes fail
         await supabaseAdmin.from('menu_items').delete().eq('id', menuItemId);
         return NextResponse.json({ message: 'Error creating sizes', details: sizesError.message }, { status: 500 });
@@ -267,7 +297,11 @@ export async function POST(req: Request) {
       .single();
 
     if (fetchError) {
-      console.error('Error fetching complete menu item:', fetchError);
+      await logger.error('menu-items-api-post', 'Error fetching complete menu item', {
+        error: fetchError.message,
+        restaurantId: user.restaurantId,
+        menuItemId: menuItemId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Menu item created but error fetching complete data', details: fetchError.message }, { status: 500 });
     }
 
@@ -277,7 +311,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Menu item created successfully', menuItem: completeMenuItem }, { status: 201 });
 
   } catch (error) {
-    console.error('API Error in POST menu items:', error);
+    await logger.error('menu-items-api-post', 'API Error in POST menu items', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId: user?.restaurantId
+    }, user?.restaurantId, user?.userId);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: 'Validation error', errors: error.flatten().fieldErrors }, { status: 400 });
     }
