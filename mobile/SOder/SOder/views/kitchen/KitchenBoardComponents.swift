@@ -247,16 +247,18 @@ struct KitchenItemCard: View {
     
     private var nextActionText: String {
         switch item.status {
-			case .ordered: return "kitchen_action_start_preparing".localized
-			case .preparing: return "kitchen_action_mark_ready".localized
-			case .ready: return "kitchen_action_mark_served".localized
-			case .served: return "kitchen_action_completed".localized
-			case .cancelled: return "kitchen_action_cancel_order".localized
+        case .draft: return "kitchen_action_start".localized
+        case .ordered: return "kitchen_action_start_preparing".localized
+        case .preparing: return "kitchen_action_mark_ready".localized
+        case .ready: return "kitchen_action_mark_served".localized
+        case .served: return "kitchen_action_completed".localized
+        case .cancelled: return "kitchen_action_cancel_order".localized
         }
     }
     
     private var statusColor: Color {
         switch item.status {
+        case .draft: return .gray
         case .ordered: return .blue
         case .preparing: return .orange
         case .ready: return .green
@@ -270,6 +272,7 @@ struct KitchenItemCard: View {
             return Color.red.opacity(0.1)
         } else {
             switch item.status {
+            case .draft: return Color.gray.opacity(0.03)
             case .ordered: return Color.blue.opacity(0.03)
             case .preparing: return Color.orange.opacity(0.03)
             case .ready: return Color.green.opacity(0.03)
@@ -281,6 +284,7 @@ struct KitchenItemCard: View {
     
     private var priorityBorderColor: Color {
         switch item.status {
+        case .draft: return .gray
         case .ordered: return .blue
         case .preparing: return .orange
         case .ready: return .green
@@ -533,6 +537,7 @@ struct CompactKitchenItemCard: View {
     
     private var statusColor: Color {
         switch item.status {
+        case .draft: return .gray
         case .ordered: return .blue
         case .preparing: return .orange
         case .ready: return .green
@@ -543,6 +548,7 @@ struct CompactKitchenItemCard: View {
     
     private var nextActionText: String {
         switch item.status {
+        case .draft: return "kitchen_action_start".localized
         case .ordered: return "kitchen_action_start_preparing".localized
         case .preparing: return "kitchen_action_mark_ready".localized
         case .ready: return "kitchen_action_mark_served".localized
@@ -890,6 +896,7 @@ struct HorizontalKitchenItemCard: View {
     
     private var statusColor: Color {
         switch item.status {
+        case .draft: return .gray
         case .ordered: return .blue
         case .preparing: return .orange
         case .ready: return .green
@@ -900,6 +907,7 @@ struct HorizontalKitchenItemCard: View {
     
     private var actionText: String {
         switch item.status {
+        case .draft: return "kitchen_action_start".localized
         case .ordered: return "kitchen_action_start".localized
         case .preparing: return "kitchen_action_ready".localized
         case .ready: return "kitchen_action_serve".localized
@@ -910,6 +918,7 @@ struct HorizontalKitchenItemCard: View {
     
     private var actionIcon: String {
         switch item.status {
+        case .draft: return "doc.plaintext"
         case .ordered: return "play.fill"
         case .preparing: return "checkmark.circle.fill"
         case .ready: return "hand.raised.fill"

@@ -118,7 +118,7 @@ struct OrderDetailView: View {
                     }
                     
                     HStack(spacing: 20) {
-                        Label("\(order.guest_count)", systemImage: "person.2")
+                        Label("\(order.guest_count ?? 0)", systemImage: "person.2") // Handle optional guest_count
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
@@ -126,8 +126,8 @@ struct OrderDetailView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
-                        if !order.session_id.isEmpty {
-                            Label("ID: \(order.id.prefix(6).uppercased())", systemImage: "number")
+                        if let sessionId = order.session_id, !sessionId.isEmpty { // Handle optional session_id
+                            Label("ID: \(order.id.prefix(6).uppercased())", systemImage: "number") // Displaying order.id, condition on session_id
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -138,7 +138,7 @@ struct OrderDetailView: View {
             // Order Actions Section
             orderActionsSection(for: order)
             
-            if let total = order.total_amount {
+            if let total = order.total_price { // Changed total_amount to total_price
                 HStack {
                     Text("orders_total_amount".localized)
                         .font(.headline)
@@ -289,11 +289,11 @@ struct OrderDetailView: View {
     private func printReceipt(for order: Order) async {
         let receiptData = CheckoutReceiptData(
             order: order,
-            subtotal: order.total_amount ?? 0,
-            discountAmount: 0,
+            subtotal: order.total_price ?? 0, // Changed total_amount to total_price
+            discountAmount: 0, // Assuming discount_amount is on Order or calculated elsewhere
             discountCode: nil,
-            taxAmount: (order.total_amount ?? 0) * 0.10,
-            totalAmount: (order.total_amount ?? 0) * 1.10,
+            taxAmount: (order.total_price ?? 0) * 0.10, // Changed total_amount to total_price
+            totalAmount: (order.total_price ?? 0) * 1.10, // Changed total_amount to total_price
             timestamp: Date()
         )
         

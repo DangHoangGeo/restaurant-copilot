@@ -1,27 +1,34 @@
 import Foundation
 
 // MARK: - Order Models
-struct Order: Decodable, Identifiable, Equatable, Hashable {
+struct Order: Codable, Identifiable, Equatable, Hashable { // Changed to Codable
     let id: String
     let restaurant_id: String
     let table_id: String
-    let session_id: String
-    let guest_count: Int
+    //let user_id: String? // Added user_id as it's in NewOrderPayload and often useful
+    let session_id: String? // session_id can be nullable in DB
+    let guest_count: Int?
     var status: OrderStatus
-    let total_amount: Double?
+    var total_price: Double? // Renamed from total_amount to match DB
+    let order_number: Int? // Added as it's in OrderManager's mock and often present
     let created_at: String
     var updated_at: String
     
     // Related data
     var table: Table?
     var order_items: [OrderItem]?
+    var payment_method: String? // Added from OrderManager mock
+    var discount_amount: Double? // Added from OrderManager mock
+    var tax_amount: Double? // Added from OrderManager mock
+    var tip_amount: Double? // Added from OrderManager mock
     
     // Equatable conformance
     static func == (lhs: Order, rhs: Order) -> Bool {
         return lhs.id == rhs.id &&
                lhs.status == rhs.status &&
                lhs.updated_at == rhs.updated_at &&
-               lhs.order_items?.count == rhs.order_items?.count
+               lhs.order_items?.count == rhs.order_items?.count &&
+               lhs.total_price == rhs.total_price
     }
     
     // Hashable conformance
@@ -29,10 +36,12 @@ struct Order: Decodable, Identifiable, Equatable, Hashable {
         hasher.combine(id)
         hasher.combine(status)
         hasher.combine(updated_at)
+        hasher.combine(total_price)
     }
 }
 
-enum OrderStatus: String, Decodable, CaseIterable {
+enum OrderStatus: String, Codable, CaseIterable { // Changed to Codable
+    case draft = "draft" // Added draft status
     case new = "new"
     case serving = "serving"
     case completed = "completed"
@@ -40,6 +49,7 @@ enum OrderStatus: String, Decodable, CaseIterable {
     
     var displayName: String {
         switch self {
+        case .draft: return "Draft"
         case .new: return "New"
         case .serving: return "Serving"
         case .completed: return "Completed"
@@ -49,6 +59,7 @@ enum OrderStatus: String, Decodable, CaseIterable {
     
     var color: String {
         switch self {
+        case .draft: return "teal" // Example color for draft
         case .new: return "blue"
         case .serving: return "orange"
         case .completed: return "gray"
@@ -57,27 +68,39 @@ enum OrderStatus: String, Decodable, CaseIterable {
     }
 }
 
-struct OrderItem: Decodable, Identifiable {
+struct OrderItem: Codable, Identifiable, Equatable, Hashable { // Changed to Codable, added Equatable, Hashable
     let id: String
     let restaurant_id: String
     let order_id: String
     let menu_item_id: String
-    let quantity: Int
-    let notes: String?
+    var quantity: Int // Made var for potential updates
+    var notes: String? // Made var
     let menu_item_size_id: String?
-    let topping_ids: [String]?
-    let price_at_order: Double
+    let topping_ids: [String]? // Consider if this should be [ToppingId] if ToppingId is a distinct type
+    var price_at_order: Double // Made var, if options change, this might need update
     var status: OrderItemStatus
     let created_at: String
     var updated_at: String
 
     // Related data
     var menu_item: MenuItem?
-    var menu_item_size: MenuItemSize?
-    var toppings: [Topping]?
+    var menu_item_size: MenuItemSize? // This is likely a String ID if MenuItemSize is just a typealias for String.
+                                      // If MenuItemSize becomes a struct, this should be `MenuItemSize?`
+    var toppings: [Topping]? // Similar to menu_item_size
+
+    // Equatable
+    static func == (lhs: OrderItem, rhs: OrderItem) -> Bool {
+        lhs.id == rhs.id && lhs.quantity == rhs.quantity && lhs.notes == rhs.notes && lhs.status == rhs.status
+    }
+
+    // Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
-enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
+enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to Codable
+    case draft = "draft_item" // Added from OrderManager
     case ordered = "ordered"
     case preparing = "preparing"
     case ready = "ready"
@@ -86,6 +109,7 @@ enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
     
     var displayName: String {
         switch self {
+        case .draft: return "Draft Item"
         case .ordered: return "Ordered"
         case .preparing: return "Preparing"
         case .ready: return "Ready"
@@ -96,6 +120,7 @@ enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
     
     var color: String {
         switch self {
+        case .draft: return "purple" // Example color
         case .ordered: return "blue"
         case .preparing: return "orange"
         case .ready: return "green"
@@ -106,7 +131,7 @@ enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
     
     // Comparable conformance - defines ordering for status progression
     static func < (lhs: OrderItemStatus, rhs: OrderItemStatus) -> Bool {
-        let order: [OrderItemStatus] = [.ordered, .preparing, .ready, .served, .cancelled]
+        let order: [OrderItemStatus] = [.draft, .ordered, .preparing, .ready, .served, .cancelled]
         guard let lhsIndex = order.firstIndex(of: lhs),
               let rhsIndex = order.firstIndex(of: rhs) else {
             return false
@@ -116,140 +141,197 @@ enum OrderItemStatus: String, Decodable, CaseIterable, Comparable {
 }
 
 // MARK: - Category Model
-struct Category: Decodable, Identifiable {
+struct Category: Codable, Identifiable, Hashable { // Changed to Codable, added Hashable
     let id: String
     let name_en: String
-    let name_ja: String
-    let name_vi: String
+    let name_ja: String? // Made optional for flexibility
+    let name_vi: String? // Made optional for flexibility
+    let position: Int? // Often categories have a display order
     
     // Helper to get localized name (defaulting to English)
     var displayName: String {
-        return name_en // You can implement locale-based selection later
+        // TODO: Integrate with LocalizationManager
+        return name_en
+    }
+
+    // Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
 
-struct MenuItem:  Decodable, Identifiable {
+struct MenuItem: Codable, Identifiable, Hashable { // Changed to Codable, added Hashable
     let id: String
     let restaurant_id: String
     let category_id: String
     let name_en: String
-    let name_ja: String
-    let name_vi: String
+    let name_ja: String? // Made optional
+    let name_vi: String? // Made optional
     let code: String?
     let description_en: String?
-    let description_ja: String?
-    let description_vi: String?
+    let description_ja: String? // Made optional
+    let description_vi: String? // Made optional
     let price: Double
     let tags: [String]?
     let image_url: String?
-    let stock_level: Int
+    let stock_level: Int? // Made optional as it might not always be tracked
     let available: Bool
-    let position: Int
+    let position: Int? // Made optional
     let created_at: String
     let updated_at: String
     
     // Category information (when fetched with joins)
     var category: Category?
     
+    // For POS flow, to hold available sizes and toppings if applicable
+    var availableSizes: [MenuItemSize]?
+    var availableToppings: [Topping]?
+
     // Helper to get localized name (defaulting to English)
     var displayName: String {
-        return name_en // You can implement locale-based selection later
+        // TODO: Integrate with LocalizationManager
+        return name_en
     }
     
     var displayDescription: String? {
-        return description_en // You can implement locale-based selection later
+        // TODO: Integrate with LocalizationManager
+        return description_en
     }
     
     // Helper to get category name with fallback
     var categoryDisplayName: String {
         return category?.displayName ?? category_id
     }
+
+    // Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 // MARK: - Menu Item Size & Topping Models
-struct MenuItemSize: Decodable, Identifiable {
-    let id: String
+struct MenuItemSize: Codable, Identifiable, Hashable { // Changed to Codable, added Hashable
+    let id: String // This is the menu_item_size_id
     let restaurant_id: String
-    let menu_item_id: String
-    let size_key: String
+    let menu_item_id: String // Foreign key to menu_items
+    let size_key: String? // e.g., "S", "M", "L" - could be part of a separate "SizeDefinition" table
     let name_en: String
-    let name_ja: String
-    let name_vi: String
+    let name_ja: String? // Made optional
+    let name_vi: String? // Made optional
     let price: Double
-    let position: Int
+    let position: Int? // Made optional
     let created_at: String
     let updated_at: String
 
-    var displayName: String { name_en }
+    var displayName: String {
+        // TODO: Integrate with LocalizationManager
+        return name_en
+    }
+    // In previous stubs, MenuItemSize was sometimes used as just a String ID.
+    // This struct makes it a full model. If OrderItem.menu_item_size_id refers to this,
+    // then OrderItem.menu_item_size should be of type MenuItemSize?
+
+    // Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
-struct Topping: Decodable, Identifiable {
+struct Topping: Codable, Identifiable, Hashable { // Changed to Codable, added Hashable
     let id: String
     let restaurant_id: String
-    let menu_item_id: String
-    let name_ja: String
+    // let menu_item_id: String? // A topping might be general or specific to a menu_item. Assume general for now.
     let name_en: String
-    let name_vi: String
-    let price: Double
-    let position: Int
+    let name_ja: String? // Made optional
+    let name_vi: String? // Made optional
+    let price: Double // Price of the topping itself
+    let position: Int? // Made optional
     let created_at: String
     let updated_at: String
 
-    var displayName: String { name_en }
+    var displayName: String {
+        // TODO: Integrate with LocalizationManager
+        return name_en
+    }
+
+    // Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
-struct Table: Decodable, Identifiable {
+struct Table: Codable, Identifiable, Hashable { // Changed to Codable, added Hashable
     let id: String
     let restaurant_id: String
     let name: String
-    let status: TableStatus
+    var status: TableStatus // Made var if it can be updated client-side then synced
     let capacity: Int
-    let is_outdoor: Bool
-    let is_accessible: Bool
+    let is_outdoor: Bool? // Made optional
+    let is_accessible: Bool? // Made optional
     let notes: String?
     let qr_code: String?
-    let created_at: String
-    let updated_at: String
+    let created_at: String?
+    let updated_at: String?
+
+    // Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
-enum TableStatus: String, Decodable, CaseIterable {
+// This is the canonical TableStatus enum. The duplicate will be removed.
+enum TableStatus: String, Codable, CaseIterable { // Changed to Codable
     case available = "available"
     case occupied = "occupied"
     case reserved = "reserved"
+    case maintenance = "maintenance" // Added from SelectTableView stub
     
     var displayName: String {
         switch self {
         case .available: return "Available"
         case .occupied: return "Occupied"
         case .reserved: return "Reserved"
+        case .maintenance: return "Maintenance"
+        }
+    }
+
+    var color: String { // Added color property, useful for UI
+        switch self {
+        case .available: return "green"
+        case .occupied: return "orange"
+        case .reserved: return "purple"
+        case .maintenance: return "gray"
         }
     }
 }
 
-// MARK: - Function Response Models
+
+// MARK: - Function Response Models / DTOs
 
 // Response type for orders with joined table and order items data
-struct OrderWithTableResponse: Decodable {
+struct OrderWithTableResponse: Decodable { // Should remain Decodable, not Codable unless sent back
     let id: String
     let restaurant_id: String
     let table_id: String
-    let session_id: String
-    let guest_count: Int
+    let user_id: String?
+    let session_id: String?
+    let guest_count: Int?
     let status: String
-    let total_amount: Double?
+    let total_price: Double? // Renamed from total_amount
+    let order_number: Int?
     let created_at: String
     let updated_at: String
     
     // Nested table data
-    let table: TableResponse?
+    let table: TableResponse? // Assuming TableResponse is a DTO for table data
     
     // Nested order items data
-    let order_items: [OrderItemWithMenuResponse]
+    let order_items: [OrderItemWithMenuResponse]? // Made optional as it might not always be joined
     
     // Convert to Order model
     func toOrder() -> Order {
         let tableModel = table?.toTable()
-        let orderItems = order_items.map { $0.toOrderItem() }
+        let orderItemsModels = order_items?.map { $0.toOrderItem() }
         
         return Order(
             id: id,
@@ -257,28 +339,31 @@ struct OrderWithTableResponse: Decodable {
             table_id: table_id,
             session_id: session_id,
             guest_count: guest_count,
-            status: OrderStatus(rawValue: status) ?? .new,
-            total_amount: total_amount,
+            status: OrderStatus(rawValue: status) ?? .new, // Default if status string is unknown
+            total_price: total_price,
+            order_number: order_number,
             created_at: created_at,
             updated_at: updated_at,
             table: tableModel,
-            order_items: orderItems
+            order_items: orderItemsModels
+            // payment_method, discount_amount etc. are nil as they are not in this DTO
         )
     }
 }
 
-struct TableResponse: Decodable {
+struct TableResponse: Decodable { // Should remain Decodable
     let id: String
     let restaurant_id: String
     let name: String
-    let status: String
+    let status: String // Raw string status from DB
     let capacity: Int
-    let is_outdoor: Bool
-    let is_accessible: Bool
+    let is_outdoor: Bool?
+    let is_accessible: Bool?
     let notes: String?
     let qr_code: String?
-    let created_at: String
-    let updated_at: String
+    let created_at: String?
+    let updated_at: String?
+    // created_at and updated_at might not be needed in all Table DTOs if not displayed
     
     func toTable() -> Table {
         return Table(
@@ -296,76 +381,33 @@ struct TableResponse: Decodable {
         )
     }
 }
+// Removed OrderWithDetailsResponse as it was very similar to OrderWithTableResponse
+// and could be consolidated or made more distinct if different joins are truly needed.
+// For now, assuming OrderWithTableResponse is the primary DTO for fetching orders with details.
 
-struct OrderWithDetailsResponse: Decodable {
-    let order_id: String
-    let order_restaurant_id: String
-    let order_table_id: String
-    let order_session_id: String
-    let order_guest_count: Int
-    let order_status: String
-    let order_total_amount: Double?
-    let order_created_at: String
-    let order_updated_at: String
-    
-    let table_id: String?
-    let table_name: String?
-    let table_status: String?
-    let table_capacity: Int?
-    let table_is_outdoor: Bool?
-    let table_is_accessible: Bool?
-    let table_notes: String?
-    
-    let order_items: [OrderItemWithMenuResponse]
-    
-    // Convert to Order model
-    func toOrder() -> Order {
-        let table = table_id != nil ? Table(
-            id: table_id!,
-            restaurant_id: order_restaurant_id,
-            name: table_name ?? "",
-            status: TableStatus(rawValue: table_status ?? "available") ?? .available,
-            capacity: table_capacity ?? 0,
-            is_outdoor: table_is_outdoor ?? false,
-            is_accessible: table_is_accessible ?? false,
-            notes: table_notes,
-            qr_code: nil,
-            created_at: "",
-            updated_at: ""
-        ) : nil
-        
-        let orderItems = order_items.map { $0.toOrderItem() }
-        
-        return Order(
-            id: order_id,
-            restaurant_id: order_restaurant_id,
-            table_id: order_table_id,
-            session_id: order_session_id,
-            guest_count: order_guest_count,
-            status: OrderStatus(rawValue: order_status) ?? .new,
-            total_amount: order_total_amount,
-            created_at: order_created_at,
-            updated_at: order_updated_at,
-            table: table,
-            order_items: orderItems
-        )
-    }
-}
 
-struct OrderItemWithMenuResponse: Decodable {
+struct OrderItemWithMenuResponse: Decodable { // Should remain Decodable
     let id: String
     let restaurant_id: String
     let order_id: String
     let menu_item_id: String
     let quantity: Int
     let notes: String?
-    let menu_item_size_id: String?
-    let topping_ids: [String]?
+    let menu_item_size_id: String? // This is the ID of the selected MenuItemSize
+    let topping_ids: [String]?     // Array of Topping IDs
     let price_at_order: Double
-    let status: String
+    let status: String             // Raw string status from DB
     let created_at: String
-    let menu_item: MenuItemResponse
-    let menu_item_size: MenuItemSizeResponse?
+    let updated_at: String         // Added updated_at
+
+    // Nested full objects (DTOs)
+    let menu_item: MenuItemResponse             // DTO for menu_item
+    let menu_item_size: MenuItemSizeResponse?   // DTO for menu_item_size (optional)
+    // let toppings: [ToppingResponse]?         // DTOs for toppings (optional array)
+    // For toppings, Supabase might return them as a JSON array of IDs or objects.
+    // If they are full objects, then ToppingResponse would be used.
+    // If it's just an array of IDs, topping_ids: [String]? is fine.
+    // The current Topping model is a full object, so if toppings are joined as full objects:
     let toppings: [ToppingResponse]?
     
     func toOrderItem() -> OrderItem {
@@ -389,13 +431,13 @@ struct OrderItemWithMenuResponse: Decodable {
     }
 }
 
-struct MenuItemResponse: Decodable {
+struct MenuItemResponse: Decodable { // Should remain Decodable
     let id: String
     let restaurant_id: String
     let category_id: String
     let name_en: String
-    let name_ja: String
-    let name_vi: String
+    let name_ja: String?
+    let name_vi: String?
     let code: String?
     let description_en: String?
     let description_ja: String?
@@ -403,14 +445,14 @@ struct MenuItemResponse: Decodable {
     let price: Double
     let tags: [String]?
     let image_url: String?
-    let stock_level: Int
+    let stock_level: Int?
     let available: Bool
-    let position: Int
+    let position: Int?
     let created_at: String
     let updated_at: String
     
-    // Category information when fetched with joins
-    let category: Category?
+    // Category information when fetched with joins (DTO)
+    let category: Category? // Assuming CategoryResponse is a DTO for category
     
     func toMenuItem() -> MenuItem {
         return MenuItem(
@@ -437,16 +479,36 @@ struct MenuItemResponse: Decodable {
     }
 }
 
-struct MenuItemSizeResponse: Decodable {
+// Added CategoryResponse DTO
+struct CategoryResponse: Decodable {
+    let id: String
+    let name_en: String
+    let name_ja: String?
+    let name_vi: String?
+    let position: Int?
+
+    func toCategory() -> Category {
+        return Category(
+            id: id,
+            name_en: name_en,
+            name_ja: name_ja,
+            name_vi: name_vi,
+            position: position
+        )
+    }
+}
+
+
+struct MenuItemSizeResponse: Decodable { // Should remain Decodable
     let id: String
     let restaurant_id: String
     let menu_item_id: String
     let size_key: String
     let name_en: String
-    let name_ja: String
-    let name_vi: String
+    let name_ja: String?
+    let name_vi: String?
     let price: Double
-    let position: Int
+    let position: Int?
     let created_at: String
     let updated_at: String
 
@@ -467,15 +529,15 @@ struct MenuItemSizeResponse: Decodable {
     }
 }
 
-struct ToppingResponse: Decodable {
+struct ToppingResponse: Decodable { // Should remain Decodable
     let id: String
     let restaurant_id: String
-    let menu_item_id: String
-    let name_ja: String
+    //let menu_item_id: String? // If toppings can be item-specific
     let name_en: String
-    let name_vi: String
+    let name_ja: String?
+    let name_vi: String?
     let price: Double
-    let position: Int
+    let position: Int?
     let created_at: String
     let updated_at: String
 
@@ -483,9 +545,8 @@ struct ToppingResponse: Decodable {
         Topping(
             id: id,
             restaurant_id: restaurant_id,
-            menu_item_id: menu_item_id,
-            name_ja: name_ja,
             name_en: name_en,
+            name_ja: name_ja,
             name_vi: name_vi,
             price: price,
             position: position,

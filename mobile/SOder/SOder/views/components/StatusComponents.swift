@@ -8,6 +8,8 @@ struct StatusBadge: View {
     private var display: (text: String, color: Color, icon: String) {
         switch status.lowercased() {
         // Order Statuses
+        case "draft":
+            return ("Draft", .gray, "doc.text")
         case "new":
             return ("New", .blue, "sparkles")
         case "serving":
@@ -48,6 +50,8 @@ struct EnhancedStatusBadge: View {
     
     private var display: (text: String, color: Color, icon: String) {
         switch status {
+        case .draft:
+            return ("Draft", .gray, "doc.text")
         case .new:
             return ("New", .blue, "sparkles")
         case .serving:
@@ -82,6 +86,8 @@ struct OrderItemStatusBadge: View {
     
     private var display: (text: String, color: Color, icon: String) {
         switch status {
+        case .draft:
+            return ("Draft", .gray, "doc.text")
         case .ordered:
             return ("Ordered", .blue, "doc.text")
         case .preparing:
@@ -265,7 +271,7 @@ struct OrderRowView: View {
                 VStack(alignment: .trailing, spacing: 8) {
                     EnhancedStatusBadge(status: order.status)
                     
-                    if let total = order.total_amount {
+                    if let total = order.total_price {
                         Text("¥\(String(format: "%.0f", total))")
                             .font(.subheadline)
                             .fontWeight(.semibold)
@@ -383,6 +389,8 @@ struct EnhancedOrderItemView: View {
     
     private func getNextStatus() -> OrderItemStatus {
         switch OrderItemStatus(rawValue: item.status.rawValue) ?? .ordered {
+        case .draft:
+            return .ordered
         case .ordered:
             return .preparing
         case .preparing:

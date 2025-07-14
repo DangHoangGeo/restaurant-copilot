@@ -302,6 +302,7 @@ struct ItemDetailView: View {
     
     private var statusColor: Color {
         switch item.status {
+        case .draft: return .gray
         case .ordered: return .blue
         case .preparing: return .orange
         case .ready: return .green
@@ -312,6 +313,7 @@ struct ItemDetailView: View {
     
     private var statusIcon: String {
         switch item.status {
+        case .draft: return "doc.plaintext"
         case .ordered: return "flame"
         case .preparing: return "checkmark.circle"
         case .ready: return "checkmark.circle.fill"
@@ -322,6 +324,7 @@ struct ItemDetailView: View {
     
     private var nextStatusText: String {
         switch item.status {
+        case .draft: return "Ordered"
         case .ordered: return "Preparing"
         case .preparing: return "Ready"
         case .ready: return "Served"
@@ -395,6 +398,7 @@ struct OrderItemDetailRow: View {
     
     private var statusColor: Color {
         switch orderItem.status {
+        case .draft: return .gray
         case .ordered: return .blue
         case .preparing: return .orange
         case .ready: return .green
@@ -437,6 +441,7 @@ struct StatusProgressView: View {
     
     private func statusColor(for status: OrderItemStatus) -> Color {
         switch status {
+        case .draft: return .gray
         case .ordered: return .blue
         case .preparing: return .orange
         case .ready: return .green

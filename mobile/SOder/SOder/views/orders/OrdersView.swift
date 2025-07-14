@@ -12,6 +12,7 @@ struct OrdersView: View {
     @State private var selectedOrder: Order? = nil
     @State private var showingCheckout = false
     @State private var showAllOrders = false
+    @State private var showingNewOrderFlow = false
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -98,6 +99,28 @@ struct OrdersView: View {
                         selectedOrder = nil
                     }
                 )
+            }
+        }
+        .sheet(isPresented: $showingNewOrderFlow) {
+            NavigationStack {
+                SelectTableView(onOrderConfirmed: {
+                    // Refresh orders and close the new order flow
+                    Task {
+                        await orderManager.fetchActiveOrders()
+                    }
+                    showingNewOrderFlow = false
+                })
+                    .environmentObject(orderManager)
+                    .environmentObject(supabaseManager)
+                    .environmentObject(printerManager)
+                    .environmentObject(localizationManager)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Cancel") {
+                                showingNewOrderFlow = false
+                            }
+                        }
+                    }
             }
         }
     }
@@ -208,6 +231,22 @@ struct OrdersView: View {
                     }
                     .padding(.horizontal)
                 }
+                
+                // New Order Button
+                Button(action: {
+                    showingNewOrderFlow = true
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                        Text("New Order")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal)
             }
             .padding()
             .background(Color(.systemGray6))
@@ -418,6 +457,17 @@ struct OrdersView: View {
         .navigationTitle("Orders")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    showingNewOrderFlow = true
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                        Text("New Order")
+                    }
+                }
+            }
+            
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
                     Button("Refresh Orders") {
@@ -542,7 +592,7 @@ struct SidebarOrderRowView: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     EnhancedStatusBadge(status: order.status)
                     
-                    if let total = order.total_amount {
+                    if let total = order.total_price { // Changed total_amount to total_price
                         Text("¥\(String(format: "%.0f", total))")
                             .font(.subheadline)
                             .fontWeight(.semibold)
