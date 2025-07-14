@@ -1,13 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { logger } from '@/lib/logger';
+import { checkAuthorization } from '@/lib/server/rolePermissions';
 
 export async function GET() {
+  const user = await getUserFromRequest();
+  if (!user?.restaurantId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Check authorization for reports SELECT
+  const authError = checkAuthorization(user, 'analytics', 'SELECT');
+  if (authError) return authError;
+
   try {
-    const user = await getUserFromRequest();
-    if (!user?.restaurantId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     // Get today's date for filtering
     const today = new Date().toISOString().split('T')[0];
@@ -97,7 +104,10 @@ export async function GET() {
 
     return NextResponse.json(metrics);
   } catch (error) {
-    console.error('Error fetching reports data:', error);
+    await logger.error('reports-api-get', 'Error fetching reports data', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId: user?.restaurantId
+    }, user?.restaurantId, user?.userId);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

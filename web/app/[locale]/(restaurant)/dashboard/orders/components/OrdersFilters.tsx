@@ -31,7 +31,7 @@ export function OrdersFilters({
   viewType
 }: OrdersFiltersProps) {
   const t = useTranslations("owner.orders");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
 
   // Quick date options for mobile
   const setQuickDate = (days: number) => {
@@ -45,7 +45,7 @@ export function OrdersFilters({
   const statusOptions = viewType === "items" 
     ? [
         { value: "all", label: t('allStatuses') },
-        { value: "ordered", label: t('ordered') },
+        { value: "new", label: t('new') },
         { value: "preparing", label: t('preparing') },
         { value: "ready", label: t('ready') },
         { value: "served", label: t('served') }

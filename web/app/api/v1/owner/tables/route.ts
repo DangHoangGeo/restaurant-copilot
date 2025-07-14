@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { logger } from '@/lib/logger';
+import { checkAuthorization } from '@/lib/server/rolePermissions';
 import { randomUUID } from "crypto";
 
 const tableSchema = z.object({
@@ -18,12 +20,17 @@ const tableSchema = z.object({
 export async function GET() {
   const user = await getUserFromRequest();
     
-    if (!user?.restaurantId) {
-      return NextResponse.json(
-        { error: "Restaurant ID not found" },
-        { status: 401 }
-      );
-    }
+  if (!user?.restaurantId) {
+    return NextResponse.json(
+      { error: "Restaurant ID not found" },
+      { status: 401 }
+    );
+  }
+
+  // Check authorization for tables SELECT
+  const authError = checkAuthorization(user, 'tables', 'SELECT');
+  if (authError) return authError;
+
   const restaurantId = user.restaurantId;
   if (!restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing restaurant ID' }, { status: 401 });
@@ -36,13 +43,19 @@ export async function GET() {
       .order('name');
 
     if (error) {
-      console.error('Error fetching tables:', error);
+      await logger.error('tables-api-get', 'Error fetching tables', {
+        error: error.message,
+        restaurantId
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error fetching tables', details: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ tables }, { status: 200 });
   } catch (error) {
-    console.error('API Error in GET tables:', error);
+    await logger.error('tables-api-get', 'API Error in GET tables', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId
+    }, restaurantId, user?.userId);
     return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
@@ -54,12 +67,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 
+  // Check authorization for tables INSERT
+  const authError = checkAuthorization(user, 'tables', 'INSERT');
+  if (authError) return authError;
+
   try {
     const body = await req.json();
     const validated = tableSchema.safeParse(body);
 
     if (!validated.success) {
-      console.error('Validation error:', validated.error);
+      await logger.error('tables-api-post', 'Validation error', {
+        error: validated.error.message,
+        restaurantId: user.restaurantId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ errors: validated.error.flatten().fieldErrors }, { status: 400 });
     }
 
@@ -93,13 +113,20 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error('Error creating table:', error);
+      await logger.error('tables-api-post', 'Error creating table', {
+        error: error.message,
+        restaurantId: user.restaurantId,
+        tableData: insertData
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Error creating table', details: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ table: data }, { status: 201 });
   } catch (error) {
-    console.error('API Error in POST tables:', error);
+    await logger.error('tables-api-post', 'API Error in POST tables', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      restaurantId: user?.restaurantId
+    }, user?.restaurantId, user?.userId);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: 'Validation error', errors: error.flatten().fieldErrors }, { status: 400 });
     }

@@ -374,13 +374,49 @@ CREATE POLICY "Authenticated users can SELECT reviews"
   TO authenticated
   USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
 
--- Staff can manage reviews
-CREATE POLICY "Staff can manage reviews"
+-- Staff can manage reviews with role-based restrictions
+CREATE POLICY "Staff can INSERT reviews"
   ON reviews
-  FOR ALL
+  FOR INSERT
   TO authenticated
-  USING (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'))
-  WITH CHECK (restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id'));
+  WITH CHECK (
+    restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id') AND
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE id = auth.uid() AND role IN ('owner', 'manager')
+    )
+  );
+
+CREATE POLICY "Staff can UPDATE reviews"
+  ON reviews
+  FOR UPDATE
+  TO authenticated
+  USING (
+    restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id') AND
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE id = auth.uid() AND role IN ('owner', 'manager')
+    )
+  )
+  WITH CHECK (
+    restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id') AND
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE id = auth.uid() AND role IN ('owner', 'manager')
+    )
+  );
+
+CREATE POLICY "Staff can DELETE reviews"
+  ON reviews
+  FOR DELETE
+  TO authenticated
+  USING (
+    restaurant_id::text = (auth.jwt() -> 'app_metadata' ->> 'restaurant_id') AND
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE id = auth.uid() AND role IN ('owner', 'manager')
+    )
+  );
 
 -- ================================================
 -- FEEDBACK TABLE POLICIES

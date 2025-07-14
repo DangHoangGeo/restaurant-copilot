@@ -15,7 +15,7 @@ import { PageTemplate } from "@/components/ui/page-template";
 import { Button } from "@/components/ui/button";
 import { Plus, Grid3X3, List, Eye } from "lucide-react";
 import { type DateRange } from "@/components/features/admin/reports/date-range-selector";
-import { Order, Table as TableType } from "./types";
+import { Order, Table as TableType, OrderItem } from "./types";
 import { Category } from '@/shared/types/menu';
 
 // Import modular components
@@ -45,8 +45,8 @@ export function OrdersClientContent() {
   const [orderStatus, setOrderStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState<DateRange>({
-    from: new Date(), // Default to yesterday
-    to: new Date(), // Default to today
+    from: new Date(Date.now() - 86400000), // Default to yesterday
+    to: new Date(Date.now()),
   });
 
   // Build dynamic endpoint with query parameters
@@ -81,8 +81,6 @@ export function OrdersClientContent() {
   
   // Form states for new order
   const [selectedTable, setSelectedTable] = useState<string>("");
-  const [currentOrderItems, setCurrentOrderItems] = useState<{[key: string]: number}>({});
-  const [orderNotes, setOrderNotes] = useState<{[key: string]: string}>({});
   
   // Create order mutation
   const createOrder = useMutation<unknown, unknown>({
@@ -92,8 +90,6 @@ export function OrdersClientContent() {
       logInteraction('order_created');
       toast.success(t('orderCreated'));
       setIsNewOrderModalOpen(false);
-      setCurrentOrderItems({});
-      setOrderNotes({});
       setSelectedTable("");
       refetch();
     },
@@ -123,25 +119,61 @@ export function OrdersClientContent() {
     }
   };
 
-  // Create order handler
-  const handleCreateOrder = async () => {
-    if (!selectedTable || Object.keys(currentOrderItems).length === 0) {
-      toast.error(t('pleaseSelectTableAndItems'));
-      return;
+  // Order status update handler
+  const handleOrderStatusUpdate = async (orderId: string, newStatus: string) => {
+    logInteraction('order_status_update_initiated');
+    
+    try {
+      const response = await fetch(`/api/v1/owner/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update order status');
+      
+      logInteraction('order_status_updated');
+      toast.success(t('orderStatusUpdated'));
+      refetch();
+    } catch {
+      toast.error(t('orderStatusUpdateFailed'));
     }
+  };
 
-    const orderItems = Object.entries(currentOrderItems)
-      .filter(([, quantity]) => quantity > 0)
-      .map(([menuItemId, quantity]) => ({
-        menu_item_id: menuItemId,
-        quantity,
-        notes: orderNotes[menuItemId] || null,
-      }));
+  // Item edit handler
+  const handleItemEdit = async (itemId: string, updates: Partial<OrderItem>) => {
+    logInteraction('item_edit_initiated');
+    
+    try {
+      const response = await fetch(`/api/v1/owner/orders/order-items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update item');
+      
+      logInteraction('item_edited');
+      toast.success(t('itemUpdated'));
+      refetch();
+    } catch {
+      toast.error(t('itemUpdateFailed'));
+    }
+  };
 
-    await createOrder.mutate({
-      table_id: selectedTable,
-      order_items: orderItems,
-    });
+  // Create order handler
+  const handleCreateOrder = async (orderData: {
+    table_id: string;
+    guest_count: number;
+    order_items: Array<{
+      menu_item_id: string;
+      quantity: number;
+      notes?: string;
+      menu_item_size_id?: string;
+      topping_ids?: string[];
+    }>;
+  }) => {
+    await createOrder.mutate(orderData);
   };
 
   // Badge variant helpers
@@ -243,6 +275,20 @@ export function OrdersClientContent() {
         </Button>
       </div>
 
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 z-50 sm:hidden">
+        <Button
+          onClick={() => {
+            logInteraction('new_order_fab_clicked');
+            setIsNewOrderModalOpen(true);
+          }}
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+          size="lg"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      </div>
+
       {/* Stats Header - Mobile Optimized */}
       <OrdersStatsHeader
         totalOrders={totalOrders}
@@ -327,6 +373,7 @@ export function OrdersClientContent() {
                 const order = filteredOrders.find(o => o.id === orderId);
                 if (order) setSelectedOrderForDetail(order);
               }}
+              onOrderStatusUpdate={handleOrderStatusUpdate}
               getStatusBadgeVariant={getStatusBadgeVariant}
               locale={locale}
             />
@@ -336,6 +383,7 @@ export function OrdersClientContent() {
             <OrdersListView
               orders={filteredOrders}
               onItemStatusUpdate={handleItemStatusUpdate}
+              onItemEdit={handleItemEdit}
               getItemStatusBadgeVariant={getItemStatusBadgeVariant}
               locale={locale}
             />
@@ -348,6 +396,7 @@ export function OrdersClientContent() {
                 const order = filteredOrders.find(o => o.id === orderId);
                 if (order) setSelectedOrderForDetail(order);
               }}
+              onOrderStatusUpdate={handleOrderStatusUpdate}
               getStatusBadgeVariant={getStatusBadgeVariant}
               locale={locale}
             />
@@ -357,16 +406,13 @@ export function OrdersClientContent() {
 
       {/* Modals */}
       <NewOrderModal
+        key={isNewOrderModalOpen ? 'open' : 'closed'}
         isOpen={isNewOrderModalOpen}
         onClose={() => setIsNewOrderModalOpen(false)}
         tables={tables}
         categories={categories}
         selectedTable={selectedTable}
         onTableChange={setSelectedTable}
-        currentOrderItems={currentOrderItems}
-        onOrderItemsChange={setCurrentOrderItems}
-        orderNotes={orderNotes}
-        onOrderNotesChange={setOrderNotes}
         onCreateOrder={handleCreateOrder}
         isCreating={createOrder.isLoading}
         locale={locale}
@@ -377,6 +423,8 @@ export function OrdersClientContent() {
         isOpen={!!selectedOrderForDetail}
         onClose={() => setSelectedOrderForDetail(null)}
         locale={locale}
+        categories={categories}
+        onUpdateOrderStatus={handleOrderStatusUpdate}
       />
     </PageTemplate>
   );

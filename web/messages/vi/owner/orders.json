@@ -8,9 +8,10 @@
   "totalRevenue": "Tổng doanh thu",
   "avgOrderValue": "Giá trị đơn trung bình",
   "totalItems": "Tổng số mặt hàng",
-  "gridView": "Chế độ lưới",
-  "itemsView": "Chế độ danh sách",
-  "orderView": "Chế độ xem đơn",
+  "gridView": "Lưới",
+  "itemsView": "Danh sách gọi món",
+  "tableView": "Bảng",
+  "orderView": "Danh sách đơn",
   "searchOrdersOrId": "Tìm theo bàn, mã đơn (6 ký tự cuối)...",
   "orderTime": "Thời gian đặt",
   "totalAmount": "Tổng tiền",
@@ -22,6 +23,10 @@
   "price": "Giá",
   "notes": "Ghi chú",
   "actions": "Thao tác",
+  "edit": "Chỉnh sửa",
+  "save": "Lưu",
+  "cancel": "Hủy",
+  "qty": "SL",
   "no_orders": "Không có đơn hàng nào để hiển thị.",
   "noOrderItems": "Không có mặt hàng nào để hiển thị.",
   "search_placeholder": "Tìm đơn theo tên khách, món hoặc mã đơn...",
@@ -127,5 +132,11 @@
     "order_canceled": "Hủy đơn thành công",
     "cancel_failed": "Hủy đơn thất bại"
   },
-  "serving": "Đang phục vụ"
+  "serving": "Đang phục vụ",
+  "orderStatusUpdated": "Cập nhật trạng thái đơn thành công",
+  "orderStatusUpdateFailed": "Cập nhật trạng thái đơn thất bại",
+  "addItems": "Thêm món",
+  "checkout": "Thanh toán",
+  "selectSize": "Chọn kích cỡ",
+  "noSize": "Không có kích cỡ"
 }

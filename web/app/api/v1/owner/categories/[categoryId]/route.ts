@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
+import { checkAuthorization } from '@/lib/server/rolePermissions';
 
 // Schema for validating the request body when updating a category
 const categoryUpdateSchema = z.object({
@@ -18,6 +19,10 @@ export async function PUT(req: Request,{ params }: { params: Promise<{ categoryI
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
+
+  // Check authorization for categories UPDATE
+  const authError = checkAuthorization(user, 'categories', 'UPDATE');
+  if (authError) return authError;
 
   const { categoryId } = await params;
 
@@ -85,6 +90,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 
+  // Check authorization for categories DELETE
+  const authError = checkAuthorization(user, 'categories', 'DELETE');
+  if (authError) return authError;
+
   const { categoryId } = await params;
 
   // Validate UUID format
@@ -113,7 +122,11 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
       .limit(1);
 
     if (menuItemsError) {
-      console.error('Error checking for menu items:', menuItemsError);
+      await logger.error('categories-api-delete', 'Error checking for menu items', {
+        error: menuItemsError.message,
+        categoryId,
+        restaurantId: user.restaurantId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Error checking category contents', details: menuItemsError.message }, { status: 500 });
     }
 
@@ -128,14 +141,22 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
       .eq('restaurant_id', user.restaurantId);
 
     if (error) {
-      console.error('Error deleting category:', error);
+      await logger.error('categories-api-delete', 'Error deleting category', {
+        error: error.message,
+        categoryId,
+        restaurantId: user.restaurantId
+      }, user.restaurantId, user.userId);
       return NextResponse.json({ message: 'Error deleting category', details: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Category deleted successfully' }, { status: 200 });
 
   } catch (error) {
-    console.error('API Error in DELETE category:', error);
+    await logger.error('categories-api-delete', 'API Error in DELETE category', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      categoryId,
+      restaurantId: user?.restaurantId
+    }, user?.restaurantId, user?.userId);
     return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknown error!" }, { status: 500 });
   }
 }
