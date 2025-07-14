@@ -64,7 +64,7 @@ function DialogContent({
           // Safe area responsive sizing
           "max-w-[calc(100vw-max(32px,env(safe-area-inset-left,0px))-max(32px,env(safe-area-inset-right,0px)))]",
           "max-h-[calc(100vh-max(64px,env(safe-area-inset-top,0px))-max(64px,env(safe-area-inset-bottom,0px)))]",
-          "sm:max-w-lg",
+          "sm:max-w-2xl",
           // Safe area padding
           "p-6",
           "px-[max(24px,env(safe-area-inset-left,0px))]",

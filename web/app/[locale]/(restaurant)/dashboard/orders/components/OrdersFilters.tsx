@@ -31,7 +31,7 @@ export function OrdersFilters({
   viewType
 }: OrdersFiltersProps) {
   const t = useTranslations("owner.orders");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
 
   // Quick date options for mobile
   const setQuickDate = (days: number) => {

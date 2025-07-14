@@ -25,7 +25,7 @@ import { OrdersGridView } from "./components/OrdersGridView";
 import { OrdersListView } from "./components/OrdersListView";
 import { OrdersTableView } from "./components/OrdersTableView";
 import { OrderDetailModal } from "./components/OrderDetailModal";
-import { EnhancedNewOrderModal } from "./components/EnhancedNewOrderModal";
+import { NewOrderModal } from "./components/NewOrderModal";
 
 interface OrdersData {
   orders: Order[];
@@ -45,8 +45,8 @@ export function OrdersClientContent() {
   const [orderStatus, setOrderStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState<DateRange>({
-    from: new Date(), // Default to yesterday
-    to: new Date(), // Default to today
+    from: new Date(Date.now() - 86400000), // Default to yesterday
+    to: new Date(Date.now()),
   });
 
   // Build dynamic endpoint with query parameters
@@ -346,7 +346,8 @@ export function OrdersClientContent() {
       )}
 
       {/* Modals */}
-      <EnhancedNewOrderModal
+      <NewOrderModal
+        key={isNewOrderModalOpen ? 'open' : 'closed'}
         isOpen={isNewOrderModalOpen}
         onClose={() => setIsNewOrderModalOpen(false)}
         tables={tables}

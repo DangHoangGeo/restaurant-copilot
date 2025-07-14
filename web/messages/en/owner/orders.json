@@ -10,6 +10,7 @@
   "totalItems": "Total Items",
   "gridView": "Orders View",
   "itemsView": "Items View",
+  "tableView": "Table View",
   "orderView": "Order View",
   "searchOrdersOrId": "Search by table, order ID (last 6 chars)...",
   "orderTime": "Order Time",
