@@ -1,8 +1,6 @@
 ---
 applyTo: 'web/**'
 ---
-Coding standards, domain knowledge, and preferences that AI should follow.
-
 ## Web Application (Next.js, React, TypeScript) Development Rules
 
 When generating code for the web application, adhere to the following standards to ensure code quality, consistency, and maintainability.

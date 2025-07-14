@@ -32,7 +32,7 @@ export function OrderDetailModal({
       <DialogContent className="max-w-2xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>
-            {t('orderDetails')} - {order.tables?.name} (#{order.id.slice(-6)})
+            {t('order_details.title')} - {order.tables?.name} (#{order.id.slice(-6)})
           </DialogTitle>
         </DialogHeader>
         
@@ -41,7 +41,7 @@ export function OrderDetailModal({
             {/* Order Info */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{t('orderInformation')}</CardTitle>
+                <CardTitle className="text-lg">{t('order_details.order_info')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
@@ -49,7 +49,7 @@ export function OrderDetailModal({
                   <span>{new Date(order.created_at).toLocaleString(locale)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">{t('table')}</span>
+                  <span className="text-gray-600">{t('order_details.table_number')}</span>
                   <span>{order.tables?.name}</span>
                 </div>
                 <div className="flex justify-between">

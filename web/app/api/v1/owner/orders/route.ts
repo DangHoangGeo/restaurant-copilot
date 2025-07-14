@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Define types for the database response
 interface OrderItem {
@@ -92,10 +93,13 @@ const orderItemSchema = z.object({
   menu_item_id: z.string().uuid(),
   quantity: z.number().int().positive(),
   notes: z.string().nullable().optional(),
+  menu_item_size_id: z.string().uuid().optional(),
+  topping_ids: z.array(z.string().uuid()).optional(),
 });
 
 const createOrderSchema = z.object({
   table_id: z.string().uuid(),
+  guest_count: z.number().int().positive().optional().default(1),
   order_items: z.array(orderItemSchema).min(1),
 });
 
@@ -119,7 +123,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { table_id, order_items } = validatedData.data;
+    const { table_id, guest_count, order_items } = validatedData.data;
 
     // Verify table belongs to restaurant
     const { data: table, error: tableError } = await supabaseAdmin
@@ -138,6 +142,8 @@ export async function POST(req: NextRequest) {
 
     // Verify menu items belong to restaurant and calculate total
     let total_amount = 0;
+    const itemPrices = new Map<string, number>(); // Store calculated price for each item
+    
     for (const item of order_items) {
       const { data: menuItem, error: menuError } = await supabaseAdmin
         .from("menu_items")
@@ -153,7 +159,59 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      total_amount += menuItem.price * item.quantity;
+      let itemPrice = menuItem.price;
+
+      // Add size price if specified
+      if (item.menu_item_size_id) {
+        const { data: sizeData, error: sizeError } = await supabaseAdmin
+          .from("menu_item_sizes")
+          .select("price")
+          .eq("id", item.menu_item_size_id)
+          .eq("restaurant_id", user.restaurantId)
+          .single();
+
+        if (sizeError || !sizeData) {
+          return NextResponse.json(
+            { success: false, error: `Menu item size ${item.menu_item_size_id} not found` },
+            { status: 404 }
+          );
+        }
+
+        itemPrice = sizeData.price; // Size price replaces base price
+      }
+
+      // Add toppings price if specified
+      if (item.topping_ids && item.topping_ids.length > 0) {
+        const { data: toppingsData, error: toppingsError } = await supabaseAdmin
+          .from("toppings")
+          .select("price")
+          .in("id", item.topping_ids)
+          .eq("restaurant_id", user.restaurantId);
+
+        if (toppingsError || !toppingsData) {
+          return NextResponse.json(
+            { success: false, error: "Invalid toppings specified" },
+            { status: 404 }
+          );
+        }
+
+        // Validate all toppings exist
+        if (toppingsData.length !== item.topping_ids.length) {
+          return NextResponse.json(
+            { success: false, error: "Some toppings not found" },
+            { status: 404 }
+          );
+        }
+
+        const toppingsPrice = toppingsData.reduce((sum, topping) => sum + topping.price, 0);
+        itemPrice += toppingsPrice;
+      }
+
+      // Store the calculated price for this item
+      const itemKey = `${item.menu_item_id}-${item.menu_item_size_id || 'no-size'}-${(item.topping_ids || []).sort().join(',')}`;
+      itemPrices.set(itemKey, itemPrice);
+      
+      total_amount += itemPrice * item.quantity;
     }
 
     // Create the order
@@ -162,6 +220,8 @@ export async function POST(req: NextRequest) {
       .insert({
         restaurant_id: user.restaurantId,
         table_id,
+        session_id: randomUUID(),
+        guest_count,
         status: "new",
         total_amount,
       })
@@ -177,13 +237,23 @@ export async function POST(req: NextRequest) {
     }
 
     // Create order items
-    const orderItemsToInsert = order_items.map(item => ({
-      order_id: newOrder.id,
-      menu_item_id: item.menu_item_id,
-      quantity: item.quantity,
-      notes: item.notes || null,
-      status: "ordered" as const,
-    }));
+    const orderItemsToInsert = order_items.map(item => {
+      // Generate the same key used during price calculation
+      const itemKey = `${item.menu_item_id}-${item.menu_item_size_id || 'no-size'}-${(item.topping_ids || []).sort().join(',')}`;
+      const priceAtOrder = itemPrices.get(itemKey) || 0;
+      
+      return {
+        restaurant_id: user.restaurantId,
+        order_id: newOrder.id,
+        menu_item_id: item.menu_item_id,
+        quantity: item.quantity,
+        notes: item.notes || null,
+        menu_item_size_id: item.menu_item_size_id || null,
+        topping_ids: item.topping_ids || null,
+        price_at_order: priceAtOrder,
+        status: "new" as const,
+      };
+    });
 
     const { error: itemsError } = await supabaseAdmin
       .from("order_items")
@@ -388,12 +458,16 @@ export async function GET(request: Request) {
         .eq("restaurant_id", user.restaurantId)
         .order("name"),
 
-      // Fetch menu categories and items
+      // Fetch menu categories and items with sizes and toppings
       supabaseAdmin
         .from("categories")
         .select(`
-          id, name_en, name_ja, name_vi,
-          menu_items(id, name_en, name_ja, name_vi, price, available)
+          id, name_en, name_ja, name_vi, position,
+          menu_items(
+            id, name_en, name_ja, name_vi, price, available, position,
+            menu_item_sizes(id, size_key, name_en, name_ja, name_vi, price, position),
+            toppings(id, name_en, name_ja, name_vi, price, position)
+          )
         `)
         .eq("restaurant_id", user.restaurantId)
         .order("position")

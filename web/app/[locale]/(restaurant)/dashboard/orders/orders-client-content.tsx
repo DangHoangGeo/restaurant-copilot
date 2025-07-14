@@ -45,8 +45,8 @@ export function OrdersClientContent() {
   const [orderStatus, setOrderStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState<DateRange>({
-    from: new Date(), // Default to yesterday
-    to: new Date(), // Default to today
+    from: new Date(Date.now() - 86400000), // Default to yesterday
+    to: new Date(Date.now()),
   });
 
   // Build dynamic endpoint with query parameters
@@ -81,8 +81,6 @@ export function OrdersClientContent() {
   
   // Form states for new order
   const [selectedTable, setSelectedTable] = useState<string>("");
-  const [currentOrderItems, setCurrentOrderItems] = useState<{[key: string]: number}>({});
-  const [orderNotes, setOrderNotes] = useState<{[key: string]: string}>({});
   
   // Create order mutation
   const createOrder = useMutation<unknown, unknown>({
@@ -92,8 +90,6 @@ export function OrdersClientContent() {
       logInteraction('order_created');
       toast.success(t('orderCreated'));
       setIsNewOrderModalOpen(false);
-      setCurrentOrderItems({});
-      setOrderNotes({});
       setSelectedTable("");
       refetch();
     },
@@ -124,24 +120,18 @@ export function OrdersClientContent() {
   };
 
   // Create order handler
-  const handleCreateOrder = async () => {
-    if (!selectedTable || Object.keys(currentOrderItems).length === 0) {
-      toast.error(t('pleaseSelectTableAndItems'));
-      return;
-    }
-
-    const orderItems = Object.entries(currentOrderItems)
-      .filter(([, quantity]) => quantity > 0)
-      .map(([menuItemId, quantity]) => ({
-        menu_item_id: menuItemId,
-        quantity,
-        notes: orderNotes[menuItemId] || null,
-      }));
-
-    await createOrder.mutate({
-      table_id: selectedTable,
-      order_items: orderItems,
-    });
+  const handleCreateOrder = async (orderData: {
+    table_id: string;
+    guest_count: number;
+    order_items: Array<{
+      menu_item_id: string;
+      quantity: number;
+      notes?: string;
+      menu_item_size_id?: string;
+      topping_ids?: string[];
+    }>;
+  }) => {
+    await createOrder.mutate(orderData);
   };
 
   // Badge variant helpers
@@ -357,16 +347,13 @@ export function OrdersClientContent() {
 
       {/* Modals */}
       <NewOrderModal
+        key={isNewOrderModalOpen ? 'open' : 'closed'}
         isOpen={isNewOrderModalOpen}
         onClose={() => setIsNewOrderModalOpen(false)}
         tables={tables}
         categories={categories}
         selectedTable={selectedTable}
         onTableChange={setSelectedTable}
-        currentOrderItems={currentOrderItems}
-        onOrderItemsChange={setCurrentOrderItems}
-        orderNotes={orderNotes}
-        onOrderNotesChange={setOrderNotes}
         onCreateOrder={handleCreateOrder}
         isCreating={createOrder.isLoading}
         locale={locale}
