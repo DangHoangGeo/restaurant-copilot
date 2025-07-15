@@ -176,7 +176,8 @@ class SupabaseManager: ObservableObject {
                 subdomain: "error", // Indicate error state
                 timezone: "UTC",
                 created_at: "",
-                updated_at: ""
+                updated_at: "",
+                taxRate: 0.1
             )
             print("Using fallback restaurant due to loading error.")
         }
@@ -393,7 +394,8 @@ class SupabaseManager: ObservableObject {
             subdomain: "test",
             timezone: "Asia/Tokyo",
             created_at: "",
-            updated_at: ""
+            updated_at: "",
+            taxRate: 0.1
         )
         isAuthenticated = true
         print("Set test restaurant: \(currentRestaurant?.name ?? "Unknown")")
@@ -420,6 +422,12 @@ struct Restaurant: Codable {
     let timezone: String
     let created_at: String
     let updated_at: String
+    let taxRate: Double?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, subdomain, timezone, created_at, updated_at
+        case taxRate = "tax_rate"
+    }
 }
 
 enum AuthError: LocalizedError {

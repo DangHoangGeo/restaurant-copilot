@@ -65,6 +65,8 @@ struct DraftOrderView: View {
                         dismiss()
                     }
                     .buttonStyle(.borderedProminent)
+                    .accessibilityLabel("Add menu items to order")
+                    .accessibilityHint("Tap to return to menu and add items to this order")
                 }
                 Spacer()
             }
@@ -76,6 +78,8 @@ struct DraftOrderView: View {
                 Button("Back to Menu") {
                     dismiss()
                 }
+                .accessibilityLabel("Return to menu")
+                .accessibilityHint("Tap to go back to the restaurant menu")
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -86,6 +90,7 @@ struct DraftOrderView: View {
                 }
                 .disabled(isLoading || isProcessingOrder)
                 .accessibilityLabel("Refresh order details")
+                .accessibilityHint("Tap to reload the current order information")
             }
         }
         .task {
@@ -154,6 +159,8 @@ struct DraftOrderView: View {
             .tint(.green)
             .controlSize(.large)
             .disabled(isProcessingOrder || draftOrder == nil || draftOrder?.order_items?.isEmpty == true)
+            .accessibilityLabel("Confirm order to kitchen")
+            .accessibilityHint("Tap to send this order to the kitchen for preparation")
 
             Button("Cancel Entire Order", role: .destructive) {
                 showingCancelConfirmAlert = true
@@ -161,6 +168,8 @@ struct DraftOrderView: View {
             .buttonStyle(.bordered)
             .controlSize(.large)
             .disabled(isProcessingOrder || draftOrder == nil)
+            .accessibilityLabel("Cancel entire order")
+            .accessibilityHint("Tap to cancel this entire order permanently")
         }
         .padding()
     }

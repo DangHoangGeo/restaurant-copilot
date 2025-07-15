@@ -13,6 +13,7 @@ struct OrderDetailView: View {
     @State private var selectedItem: OrderItem? = nil
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @EnvironmentObject private var supabaseManager: SupabaseManager
     
     // Get current order from OrderManager to ensure we have the latest state
     private var currentOrder: Order? {
@@ -287,13 +288,15 @@ struct OrderDetailView: View {
     
     @MainActor
     private func printReceipt(for order: Order) async {
+        let subtotal = order.total_amount ?? 0
+        let taxRate = supabaseManager.currentRestaurant?.taxRate ?? 0.10
         let receiptData = CheckoutReceiptData(
             order: order,
-            subtotal: order.total_amount ?? 0,
+            subtotal: subtotal,
             discountAmount: 0, // Assuming discount_amount is on Order or calculated elsewhere
             discountCode: nil,
-            taxAmount: (order.total_amount ?? 0) * 0.10,
-            totalAmount: (order.total_amount ?? 0) * 1.10,
+            taxAmount: subtotal * taxRate,
+            totalAmount: subtotal * (1 + taxRate),
             timestamp: Date()
         )
         

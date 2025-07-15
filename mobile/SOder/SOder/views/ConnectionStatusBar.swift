@@ -41,7 +41,7 @@ struct ConnectionStatusBar: View {
             Spacer()
             
             if let restaurant = supabaseManager.currentRestaurant {
-                Text(restaurant.name!)
+                Text(restaurant.name ?? "Unknown Restaurant")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundColor(.primary)
