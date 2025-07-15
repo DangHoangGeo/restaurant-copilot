@@ -271,7 +271,7 @@ struct OrderRowView: View {
                 VStack(alignment: .trailing, spacing: 8) {
                     EnhancedStatusBadge(status: order.status)
                     
-                    if let total = order.total_price {
+                    if let total = order.total_amount {
                         Text("¥\(String(format: "%.0f", total))")
                             .font(.subheadline)
                             .fontWeight(.semibold)

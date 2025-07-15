@@ -9,7 +9,7 @@ struct Order: Codable, Identifiable, Equatable, Hashable { // Changed to Codable
     let session_id: String? // session_id can be nullable in DB
     let guest_count: Int?
     var status: OrderStatus
-    var total_price: Double? // Renamed from total_amount to match DB
+    var total_amount: Double? // Renamed from total_amount to match DB
     let order_number: Int? // Added as it's in OrderManager's mock and often present
     let created_at: String
     var updated_at: String
@@ -28,7 +28,7 @@ struct Order: Codable, Identifiable, Equatable, Hashable { // Changed to Codable
                lhs.status == rhs.status &&
                lhs.updated_at == rhs.updated_at &&
                lhs.order_items?.count == rhs.order_items?.count &&
-               lhs.total_price == rhs.total_price
+               lhs.total_amount == rhs.total_amount
     }
     
     // Hashable conformance
@@ -36,7 +36,7 @@ struct Order: Codable, Identifiable, Equatable, Hashable { // Changed to Codable
         hasher.combine(id)
         hasher.combine(status)
         hasher.combine(updated_at)
-        hasher.combine(total_price)
+        hasher.combine(total_amount)
     }
 }
 
@@ -317,7 +317,7 @@ struct OrderWithTableResponse: Decodable { // Should remain Decodable, not Codab
     let session_id: String?
     let guest_count: Int?
     let status: String
-    let total_price: Double? // Renamed from total_amount
+    let total_amount: Double?
     let order_number: Int?
     let created_at: String
     let updated_at: String
@@ -340,7 +340,7 @@ struct OrderWithTableResponse: Decodable { // Should remain Decodable, not Codab
             session_id: session_id,
             guest_count: guest_count,
             status: OrderStatus(rawValue: status) ?? .new, // Default if status string is unknown
-            total_price: total_price,
+            total_amount: total_amount,
             order_number: order_number,
             created_at: created_at,
             updated_at: updated_at,
