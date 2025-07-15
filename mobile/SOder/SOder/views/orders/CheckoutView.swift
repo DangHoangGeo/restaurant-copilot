@@ -47,7 +47,7 @@ struct CheckoutView: View {
     private let taxRate: Double = 0.10 // 10% tax
     
     private var subtotal: Double {
-        order.total_price ?? 0 // Changed total_amount to total_price
+        order.total_amount ?? 0
     }
     
     private var discountAmount: Double {

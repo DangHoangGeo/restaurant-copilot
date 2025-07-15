@@ -47,7 +47,7 @@ struct DraftOrderView: View {
                             Text("Total Price:")
                                 .fontWeight(.bold)
                             Spacer()
-                            Text(String(format: "%.0f円", order.total_price ?? calculateTotalPrice()))
+                            Text(String(format: "%.0f円", order.total_amount ?? calculateTotalPrice()))
                                 .fontWeight(.bold)
                         }
                     }

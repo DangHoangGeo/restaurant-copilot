@@ -138,7 +138,7 @@ struct OrderDetailView: View {
             // Order Actions Section
             orderActionsSection(for: order)
             
-            if let total = order.total_price { // Changed total_amount to total_price
+            if let total = order.total_amount {
                 HStack {
                     Text("orders_total_amount".localized)
                         .font(.headline)
@@ -289,11 +289,11 @@ struct OrderDetailView: View {
     private func printReceipt(for order: Order) async {
         let receiptData = CheckoutReceiptData(
             order: order,
-            subtotal: order.total_price ?? 0, // Changed total_amount to total_price
+            subtotal: order.total_amount ?? 0,
             discountAmount: 0, // Assuming discount_amount is on Order or calculated elsewhere
             discountCode: nil,
-            taxAmount: (order.total_price ?? 0) * 0.10, // Changed total_amount to total_price
-            totalAmount: (order.total_price ?? 0) * 1.10, // Changed total_amount to total_price
+            taxAmount: (order.total_amount ?? 0) * 0.10,
+            totalAmount: (order.total_amount ?? 0) * 1.10,
             timestamp: Date()
         )
         

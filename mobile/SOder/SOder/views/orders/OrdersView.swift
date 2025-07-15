@@ -592,7 +592,7 @@ struct SidebarOrderRowView: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     EnhancedStatusBadge(status: order.status)
                     
-                    if let total = order.total_price { // Changed total_amount to total_price
+                    if let total = order.total_amount {
                         Text("¥\(String(format: "%.0f", total))")
                             .font(.subheadline)
                             .fontWeight(.semibold)
