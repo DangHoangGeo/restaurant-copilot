@@ -1,0 +1,58 @@
+[CENTER][BOLD]{{restaurant.name}}[/BOLD][/CENTER]
+[CENTER]{{restaurant.address}}[/CENTER]
+[CENTER]{{restaurant.phone}}[/CENTER]
+
+[SEPARATOR]
+
+[CENTER][BOLD]Receipt[/BOLD][/CENTER]
+Order: {{order.id}}
+Table: {{order.table_name}}
+Date: {{order.date}}
+Time: {{order.time}}
+
+[SEPARATOR]
+
+{{#items}}
+[ROW]
+[COL_LEFT]{{quantity}}x {{name}}[/COL_LEFT]
+[COL_RIGHT]¥{{price}}[/COL_RIGHT]
+[/ROW]
+{{#notes}}
+  Note: {{notes}}
+{{/notes}}
+{{/items}}
+
+[SEPARATOR]
+
+[ROW]
+[COL_LEFT]Subtotal:[/COL_LEFT]
+[COL_RIGHT]¥{{subtotal}}[/COL_RIGHT]
+[/ROW]
+
+{{#tax}}
+[ROW]
+[COL_LEFT]Tax:[/COL_LEFT]
+[COL_RIGHT]¥{{tax}}[/COL_RIGHT]
+[/ROW]
+{{/tax}}
+
+{{#discount}}
+[ROW]
+[COL_LEFT]Discount:[/COL_LEFT]
+[COL_RIGHT]-¥{{discount}}[/COL_RIGHT]
+[/ROW]
+{{/discount}}
+
+[SEPARATOR]
+
+[ROW]
+[COL_LEFT][BOLD]Total:[/BOLD][/COL_LEFT]
+[COL_RIGHT][BOLD]¥{{total_price}}[/BOLD][/COL_RIGHT]
+[/ROW]
+
+[SEPARATOR]
+
+[CENTER]Thank you for your visit![/CENTER]
+[CENTER]{{restaurant.website}}[/CENTER]
+
+[CUT]

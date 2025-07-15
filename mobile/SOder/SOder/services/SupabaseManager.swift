@@ -193,6 +193,137 @@ class SupabaseManager: ObservableObject {
         restaurantIdFromToken = nil
     }
     
+    // MARK: - Data Fetching (New POS Flow Related)
+
+    enum SupabaseManagerError: Error, LocalizedError {
+        case missingRestaurantId
+        case dataNotFound
+        case fetchError(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .missingRestaurantId:
+                return "Restaurant ID is missing. Cannot perform data fetching."
+            case .dataNotFound:
+                return "Requested data not found."
+            case .fetchError(let message):
+                return "Failed to fetch data: \(message)"
+            }
+        }
+    }
+
+    func fetchAllTables() async throws -> [Table] {
+        guard let restaurantId = self.currentRestaurantId else {
+            print("Error: Missing restaurantId in fetchAllTables")
+            throw SupabaseManagerError.missingRestaurantId
+        }
+        do {
+            let tables: [Table] = try await client
+                .from("tables")
+                .select()
+                .eq("restaurant_id", value: restaurantId)
+                .order("name", ascending: true)
+                .execute()
+                .value
+            return tables
+        } catch {
+            print("Error fetching tables: \(error.localizedDescription)")
+            throw SupabaseManagerError.fetchError(error.localizedDescription)
+        }
+    }
+
+    func fetchAllCategories() async throws -> [Category] {
+        guard let restaurantId = self.currentRestaurantId else {
+            print("Error: Missing restaurantId in fetchAllCategories")
+            throw SupabaseManagerError.missingRestaurantId
+        }
+        do {
+            let categories: [Category] = try await client
+                .from("categories")
+                .select() // Assuming category model has restaurant_id or RLS is in place
+                .eq("restaurant_id", value: restaurantId) // Ensure only for current restaurant
+                .order("position", ascending: true) // Assuming 'position' for ordering
+                .execute()
+                .value
+            return categories
+        } catch {
+            print("Error fetching categories: \(error.localizedDescription)")
+            throw SupabaseManagerError.fetchError(error.localizedDescription)
+        }
+    }
+
+    func fetchMenuItems(categoryId: String) async throws -> [MenuItem] {
+        guard let restaurantId = self.currentRestaurantId else {
+            print("Error: Missing restaurantId in fetchMenuItems")
+            throw SupabaseManagerError.missingRestaurantId
+        }
+        do {
+            let menuItems: [MenuItem] = try await client
+                .from("menu_items")
+                .select("*, category:categories(*)") // Example of joining category details
+                .eq("restaurant_id", value: restaurantId)
+                .eq("category_id", value: categoryId)
+                .order("position", ascending: true) // Assuming 'position' for ordering
+                .execute()
+                .value
+            return menuItems
+        } catch {
+            print("Error fetching menu items for category \(categoryId): \(error.localizedDescription)")
+            throw SupabaseManagerError.fetchError(error.localizedDescription)
+        }
+    }
+
+    func fetchAllMenuItems() async throws -> [MenuItem] {
+        guard let restaurantId = self.currentRestaurantId else {
+            print("Error: Missing restaurantId in fetchAllMenuItems")
+            throw SupabaseManagerError.missingRestaurantId
+        }
+        do {
+            let menuItems: [MenuItem] = try await client
+                .from("menu_items")
+                .select("*, category:categories(*)") // Join category details for filtering
+                .eq("restaurant_id", value: restaurantId)
+                .eq("available", value: true) // Only fetch available items for POS
+                .order("position", ascending: true)
+                .execute()
+                .value
+            return menuItems
+        } catch {
+            print("Error fetching all menu items: \(error.localizedDescription)")
+            throw SupabaseManagerError.fetchError(error.localizedDescription)
+        }
+    }
+
+    func fetchMenuItemDetails(menuItemId: String) async throws -> MenuItem {
+        // Ensure currentRestaurantId is available if items are restaurant-specific
+        // and RLS isn't solely relied upon for this check.
+        // guard let restaurantId = self.currentRestaurantId else {
+        //     print("Error: Missing restaurantId in fetchMenuItemDetails")
+        //     throw SupabaseManagerError.missingRestaurantId
+        // }
+
+        do {
+            // Assuming 'menu_item_sizes' and 'menu_item_toppings' are the correct table names
+            // and are correctly linked via foreign keys to 'menu_items'.
+            // The models MenuItem, MenuItemSize, Topping must be Codable and match the response.
+            // The refactored MenuItem model has `availableSizes: [MenuItemSize]?` and `availableToppings: [Topping]?`
+            // which Supabase client can populate if the select query is structured correctly.
+            // The `(*)` fetches all columns for the related records.
+            let menuItem: MenuItem = try await client
+                .from("menu_items")
+                .select("*, category:categories(*), availableSizes:menu_item_sizes(*), availableToppings:menu_item_toppings(*)")
+                .eq("id", value: menuItemId)
+                // .eq("restaurant_id", value: restaurantId) // If needed, but RLS should handle this
+                .single()
+                .execute()
+                .value
+            return menuItem
+        } catch {
+            print("Error fetching menu item details for \(menuItemId): \(error.localizedDescription)")
+            throw SupabaseManagerError.fetchError(error.localizedDescription)
+        }
+    }
+
     // MARK: - Debug Functions
     @MainActor
     func debugDatabaseConnection() async {

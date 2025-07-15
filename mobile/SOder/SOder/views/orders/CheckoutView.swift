@@ -134,7 +134,7 @@ struct CheckoutView: View {
                                             .font(.title2)
                                             .fontWeight(.bold)
                     HStack(spacing: 16) {
-                        Label("\(order.guest_count)", systemImage: "person.2")
+                        Label("\(order.guest_count ?? 0)", systemImage: "person.2") // Handle optional guest_count
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
@@ -162,7 +162,7 @@ struct CheckoutView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     
                     HStack(spacing: 16) {
-                        Label("\(order.guest_count)", systemImage: "person.2")
+                        Label("\(order.guest_count ?? 0)", systemImage: "person.2") // Handle optional guest_count
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         

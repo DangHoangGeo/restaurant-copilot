@@ -480,3 +480,90 @@
 "manual_printer_setup_add_button" = "プリンターを追加";
 "manual_printer_setup_help_text" = "ネットワークプリンターのIPアドレスとポートを入力してください。ほとんどのレシートプリンターはポート9100を使用します。";
 
+// MARK: - Accessibility Labels and Hints (Japanese)
+"accessibility_printer_language_warning" = "警告：プリンターでサポートされていない印刷言語";
+"accessibility_printer_language_warning_hint" = "選択された印刷言語はプリンターで完全にサポートされていない可能性があります";
+"accessibility_printer_language_config_label" = "印刷言語設定";
+"accessibility_printer_language_config_hint" = "印刷言語設定を構成するため移動";
+"accessibility_printer_connected_label" = "プリンター接続済み";
+"accessibility_printer_disconnected_label" = "プリンター切断済み";
+"accessibility_disconnect_printer_label" = "プリンターから切断";
+"accessibility_disconnect_printer_hint" = "現在接続されているプリンターを切断します";
+"accessibility_no_printers_found_label" = "プリンターが見つかりません。アプリはネットワークとBluetoothプリンターをスキャンします";
+"accessibility_refresh_printers_label" = "プリンターリストを更新";
+"accessibility_refresh_printers_hint" = "ネットワーク上の利用可能なプリンターをスキャン";
+"accessibility_printer_name_label" = "プリンター名";
+"accessibility_printer_name_hint" = "このプリンターを識別する名前を入力";
+"accessibility_printer_type_label" = "プリンタータイプ";
+"accessibility_printer_type_hint" = "プリンターのタイプを選択：レシートまたはキッチン";
+"accessibility_ip_address_label" = "IPアドレス";
+"accessibility_ip_address_hint" = "プリンターのIPアドレスを入力";
+"accessibility_port_number_label" = "ポート番号";
+"accessibility_port_number_hint" = "プリンターのポート番号を入力、通常は9100";
+"accessibility_connection_timeout_label" = "接続タイムアウト";
+"accessibility_connection_timeout_hint" = "プリンター接続の待機時間を調整";
+"accessibility_max_retries_label" = "最大リトライ回数";
+"accessibility_max_retries_hint" = "接続試行の最大回数を設定";
+"accessibility_test_connection_label" = "接続テスト";
+"accessibility_test_connection_hint" = "このプリンターへの接続をテスト";
+"accessibility_save_printer_label" = "プリンターを保存";
+"accessibility_save_printer_hint" = "このプリンター構成を保存";
+"accessibility_print_queue_label" = "プリントキュー";
+"accessibility_print_queue_hint" = "プリントジョブを表示および管理";
+"accessibility_retry_print_job_label" = "プリントジョブを再試行";
+"accessibility_retry_print_job_hint" = "この失敗したプリントジョブを再試行";
+"accessibility_print_job_failed_label" = "プリントジョブ失敗";
+"accessibility_print_job_completed_label" = "プリントジョブ完了";
+"accessibility_print_job_pending_label" = "プリントジョブ待機中";
+"accessibility_print_job_printing_label" = "プリントジョブ進行中";
+
+// MARK: - Print Queue and Templates (Japanese)
+"print_queue_title" = "プリントキュー";
+"print_queue_statistics" = "キュー統計";
+"print_queue_pending_jobs" = "待機中のジョブ";
+"print_queue_failed_jobs" = "失敗したジョブ";
+"print_queue_completed_jobs" = "完了したジョブ";
+"print_queue_clear_completed" = "完了したジョブをクリア";
+"print_queue_clear_all" = "すべてのジョブをクリア";
+"print_queue_clear_all_confirmation" = "これによりキューからすべてのプリントジョブが削除されます。この操作は元に戻すことはできません。";
+"print_queue_no_jobs" = "プリントジョブなし";
+"print_queue_no_jobs_description" = "オーダーやレシートを印刷するとプリントジョブがここに表示されます";
+"receipt_customization_title" = "レシート設定";
+"receipt_template_encoding_title" = "レシートテンプレート＆エンコーディング";
+"receipt_template_encoding_description" = "レシート形式とエンコーディングをカスタマイズ";
+
+// MARK: - Receipt Customization View
+"encoding_settings" = "エンコーディング設定";
+"receipt_encoding" = "レシートエンコーディング";
+"encoding_description" = "プリンターに最適な文字エンコーディングを選択してください。ほとんどの現代的なプリンターにはUTF-8が推奨されます。";
+"custom_template" = "カスタムテンプレート";
+"receipt_template" = "レシートテンプレート";
+"template_placeholder" = "空の場合はデフォルトテンプレートを使用します。{{order.id}}、{{items}}などのテンプレート変数を使用できます。";
+"template_help" = "テンプレートヘルプ";
+"available_variables" = "利用可能な変数:";
+"format_tags" = "フォーマットタグ:";
+"actions" = "アクション";
+"test_template" = "テンプレートテスト";
+"load_default_template" = "デフォルトテンプレートを読み込む";
+"reset_to_default" = "デフォルトにリセット";
+"receipt_customization" = "レシート設定";
+"save" = "保存";
+"receipt_preview" = "レシートプレビュー";
+"generating_preview" = "プレビュー生成中...";
+"done" = "完了";
+"preview_not_available" = "プレビューが利用できません";
+
+// Variable descriptions
+"restaurant_name_desc" = "レストラン名";
+"order_id_desc" = "注文ID";
+"table_name_desc" = "テーブル名";
+"items_loop_desc" = "注文アイテムをループ";
+"item_quantity_desc" = "アイテム数量（アイテムループ内）";
+"item_name_desc" = "アイテム名（アイテムループ内）";
+"item_price_desc" = "アイテム価格（アイテムループ内）";
+"order_total_desc" = "注文合計";
+"center_align_desc" = "中央揃え";
+"bold_text_desc" = "太字";
+"separator_desc" = "水平線";
+"cut_paper_desc" = "紙カット";
+

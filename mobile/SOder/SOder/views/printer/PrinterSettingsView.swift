@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PrinterSettingsView: View {
-    @StateObject private var printerManager = PrinterManager()
+    @EnvironmentObject private var printerManager: PrinterManager
     @StateObject private var settingsManager = PrinterSettingsManager.shared
     @State private var showingConnectionAlert = false
     @State private var connectionMessage = ""
@@ -20,21 +20,19 @@ struct PrinterSettingsView: View {
                             ReceiptHeaderConfigView()
                         } else if destination == "print-language" {
                             PrintLanguageConfigView()
+                        } else if destination == "print-queue" {
+                            PrintQueueView()
+                        } else if destination == "receipt-customization" {
+                            ReceiptCustomizationView()
                         }
                     }
             }
             .navigationBarTitleDisplayMode(.inline) // Ensure inline title for consistency
         } else {
             NavigationView {
-                // Empty sidebar for iPad to force content to main area
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    Text("printer_settings_title")
-                        .navigationBarHidden(true)
-                }
-                
                 mainContent
             }
-            .navigationViewStyle(StackNavigationViewStyle()) // Ensure stack style on iPad
+            .navigationViewStyle(StackNavigationViewStyle()) // Force stack style on all devices
         }
     }
     
@@ -82,6 +80,71 @@ struct PrinterSettingsView: View {
                 }
             }
             
+            // Print Queue Section
+            Section("Print Queue") {
+                if #available(iOS 16.0, *) {
+                    NavigationLink(value: "print-queue") {
+                        HStack {
+                            Image(systemName: "tray")
+                                .foregroundColor(.blue)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("accessibility_print_queue_label".localized)
+                                    .font(.headline)
+                                Text("View and manage print jobs")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            let queueManager = PrintQueueManager.shared
+                            if queueManager.pendingJobsCount > 0 {
+                                Text("\(queueManager.pendingJobsCount)")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(Color.orange)
+                                    .cornerRadius(10)
+                            }
+                        }
+                    }
+                    .accessibilityLabel("accessibility_print_queue_label".localized)
+                    .accessibilityHint("accessibility_print_queue_hint".localized)
+                } else {
+                    NavigationLink(destination: PrintQueueView()) {
+                        HStack {
+                            Image(systemName: "tray")
+                                .foregroundColor(.blue)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("accessibility_print_queue_label".localized)
+                                    .font(.headline)
+                                Text("View and manage print jobs")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            let queueManager = PrintQueueManager.shared
+                            if queueManager.pendingJobsCount > 0 {
+                                Text("\(queueManager.pendingJobsCount)")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(Color.orange)
+                                    .cornerRadius(10)
+                            }
+                        }
+                    }
+                    .accessibilityLabel("accessibility_print_queue_label".localized)
+                    .accessibilityHint("accessibility_print_queue_hint".localized)
+                }
+            }
+            
             // Print Language Configuration Section
             Section("print_language_title".localized) {
                 if #available(iOS 16.0, *) {
@@ -104,6 +167,8 @@ struct PrinterSettingsView: View {
                                 Image(systemName: "exclamationmark.triangle")
                                     .foregroundColor(.orange)
                                     .font(.caption)
+                                    .accessibilityLabel("accessibility_printer_language_warning".localized)
+                                    .accessibilityHint("accessibility_printer_language_warning_hint".localized)
                             }
                         }
                     }
@@ -127,6 +192,45 @@ struct PrinterSettingsView: View {
                                 Image(systemName: "exclamationmark.triangle")
                                     .foregroundColor(.orange)
                                     .font(.caption)
+                                    .accessibilityLabel("accessibility_printer_language_warning".localized)
+                                    .accessibilityHint("accessibility_printer_language_warning_hint".localized)
+                            }
+                        }
+                    }
+                    .accessibilityLabel("accessibility_printer_language_config_label".localized)
+                    .accessibilityHint("accessibility_printer_language_config_hint".localized)
+                }
+            }
+            
+            // Receipt Customization Section
+            Section("receipt_customization_title".localized) {
+                if #available(iOS 16.0, *) {
+                    NavigationLink(value: "receipt-customization") {
+                        HStack {
+                            Image(systemName: "doc.text.fill")
+                                .foregroundColor(.blue)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("receipt_template_encoding_title".localized)
+                                    .font(.headline)
+                                Text("receipt_template_encoding_description".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                } else {
+                    NavigationLink(destination: ReceiptCustomizationView()) {
+                        HStack {
+                            Image(systemName: "doc.text.fill")
+                                .foregroundColor(.blue)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("receipt_template_encoding_title".localized)
+                                    .font(.headline)
+                                Text("receipt_template_encoding_description".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
                         }
                     }
@@ -138,6 +242,7 @@ struct PrinterSettingsView: View {
                 HStack {
                     Image(systemName: printerManager.isConnected ? "printer.fill" : "printer")
                         .foregroundColor(printerManager.isConnected ? .green : .gray)
+                        .accessibilityLabel(printerManager.isConnected ? "accessibility_printer_connected_label".localized : "accessibility_printer_disconnected_label".localized)
                     
                     VStack(alignment: .leading) {
                         Text("printer_status_label".localized)
@@ -155,6 +260,8 @@ struct PrinterSettingsView: View {
                         }
                         .buttonStyle(.bordered)
                         .foregroundColor(.red)
+                        .accessibilityLabel("accessibility_disconnect_printer_label".localized)
+                        .accessibilityHint("accessibility_disconnect_printer_hint".localized)
                     }
                 }
                 .padding(.vertical, 4)
@@ -168,6 +275,7 @@ struct PrinterSettingsView: View {
                             .font(.largeTitle)
                             .foregroundColor(.gray)
                             .padding(.bottom, 2)
+                            .accessibilityHidden(true)
                         Text("printer_no_printers_found".localized)
                             .foregroundColor(.secondary)
                         Text("printer_scans_for_network_and_bluetooth".localized) // New localized string
@@ -177,6 +285,8 @@ struct PrinterSettingsView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("accessibility_no_printers_found_label".localized)
                 } else {
                     ForEach(printerManager.availablePrinters) { printer in
                         PrinterRowView(
@@ -198,6 +308,8 @@ struct PrinterSettingsView: View {
                         Label("printer_refresh_printers_button".localized, systemImage: "arrow.clockwise")
                     }
                     .buttonStyle(.bordered)
+                    .accessibilityLabel("accessibility_refresh_printers_label".localized)
+                    .accessibilityHint("accessibility_refresh_printers_hint".localized)
                     .foregroundColor(.blue)
                     Spacer()
                 }

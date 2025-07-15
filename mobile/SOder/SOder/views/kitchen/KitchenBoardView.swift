@@ -5,7 +5,7 @@ import SwiftUI
 struct KitchenBoardView: View {
     @EnvironmentObject var printerManager: PrinterManager
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var orderManager = OrderManager()
+    @EnvironmentObject private var orderManager: OrderManager
     @StateObject private var supabaseManager = SupabaseManager.shared
     
     // State management
@@ -40,7 +40,9 @@ struct KitchenBoardView: View {
                     onRefresh: {
                         Task {
                             await orderManager.fetchActiveOrders()
-                            computeCategoryGrouping()
+                            await MainActor.run {
+                                computeCategoryGrouping()
+                            }
                         }
                     },
                     onPrintSummary: {
@@ -94,7 +96,9 @@ struct KitchenBoardView: View {
                         Button("kitchen_retry".localized) {
                             Task {
                                 await orderManager.fetchActiveOrders()
-                                computeCategoryGrouping()
+                                await MainActor.run {
+                                    computeCategoryGrouping()
+                                }
                             }
                         }
                         .font(.caption)
@@ -132,7 +136,9 @@ struct KitchenBoardView: View {
         .navigationBarHidden(true)
         .task {
             await orderManager.fetchActiveOrders()
-            computeCategoryGrouping()
+            await MainActor.run {
+                computeCategoryGrouping()
+            }
             startRefreshTimer()
         }
         .onDisappear {
@@ -251,6 +257,8 @@ struct KitchenBoardView: View {
                 let newStatus: OrderItemStatus
                 
                 switch groupedItem.status {
+                    case .draft:
+                        newStatus = .ordered
                     case .ordered:
                         newStatus = .preparing
                     case .preparing:
@@ -285,7 +293,9 @@ struct KitchenBoardView: View {
         refreshTimer = Timer.scheduledTimer(withTimeInterval: KitchenBoardConfig.autoRefreshInterval, repeats: true) { _ in 
             Task {
                 await orderManager.fetchActiveOrders()
-                computeCategoryGrouping()
+                await MainActor.run {
+                    computeCategoryGrouping()
+                }
             }
         }
     }
@@ -331,7 +341,3 @@ struct KitchenBoardView: View {
 }
 
 
-#Preview {
-    KitchenBoardView()
-        .environmentObject(PrinterManager())
-}

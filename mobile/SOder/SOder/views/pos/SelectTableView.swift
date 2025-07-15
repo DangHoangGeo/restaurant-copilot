@@ -1,81 +1,54 @@
 import SwiftUI
 
-// Basic Table model for this view's purpose
-// In a real app, this would come from the shared models directory
-struct Table: Identifiable, Codable, Hashable {
-    let id: String
-    var name: String
-    var status: String // "available", "occupied", "reserved"
-    var capacity: Int?
+// Local stubs for Table and TableStatus have been removed.
+// This view will now use the canonical versions from Models.swift
 
-    // Mock data
-    static let mockTables: [Table] = [
-        Table(id: UUID().uuidString, name: "Table 1", status: "available", capacity: 4),
-        Table(id: UUID().uuidString, name: "Table 2", status: "occupied", capacity: 2),
-        Table(id: UUID().uuidString, name: "Table 3", status: "reserved", capacity: 6),
-        Table(id: UUID().uuidString, name: "Table 4", status: "available", capacity: 4),
-        Table(id: UUID().uuidString, name: "Counter Seat 1", status: "available", capacity: 1),
-        Table(id: UUID().uuidString, name: "Counter Seat 2", status: "occupied", capacity: 1),
-        Table(id: UUID().uuidString, name: "VIP Room", status: "available", capacity: 10),
-        Table(id: UUID().uuidString, name: "Patio 1", status: "maintenance", capacity: 4), // Example of another status
-    ]
-}
-
-// Enum for Table Status to manage colors and interactivity
-enum TableStatus: String, CaseIterable {
-    case available
-    case occupied
-    case reserved
-    case maintenance // Added another example status
-    case unknown
-
-    init(rawValue: String) {
-        switch rawValue.lowercased() {
-        case "available": self = .available
-        case "occupied": self = .occupied
-        case "reserved": self = .reserved
-        case "maintenance": self = .maintenance
-        default: self = .unknown
-        }
-    }
-
-    var color: Color {
-        switch self {
-        case .available: return .green
-        case .occupied: return .orange
-        case .reserved: return .purple
-        case .maintenance: return .gray
-        case .unknown: return .yellow
-        }
-    }
-
-    var displayName: String {
-        return self.rawValue.capitalized
-    }
-
+// Helper extension for TableStatus to define isSelectableForNewOrder if not already on canonical model
+// This is a UI-specific concern, so an extension here is acceptable.
+// If TableStatus from Models.swift already has this, this extension can be removed.
+extension TableStatus {
     var isSelectableForNewOrder: Bool {
         return self == .available
     }
+
+    // Convert the string color from the canonical model to a SwiftUI.Color
+    var swiftUIColor: Color {
+        switch self.color { // self.color refers to the String property from canonical TableStatus
+        case "green": return .green
+        case "orange": return .orange
+        case "purple": return .purple
+        case "gray": return .gray
+        case "red": return .red
+        case "blue": return .blue
+        case "teal": return .teal // Added from OrderStatus, might be useful
+        default: return .yellow // Fallback for unknown string colors
+        }
+    }
 }
 
+
+
 struct SelectTableView: View {
-    // Using EnvironmentObject assuming these are set up higher in the hierarchy in a real app
-    // For isolated preview/testing, @StateObject might be used initially.
-    @EnvironmentObject var orderManager: OrderManager
+    let onOrderConfirmed: (() -> Void)?
+    
+    // Using EnvironmentObject to consume the shared OrderManager instance
+    @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject var supabaseManager: SupabaseManager // For fetching tables
 
-    @State private var tables: [Table] = []
+    @State private var tables: [Table] = [] // This will now be [Models.Table]
+
     @State private var isLoading = false
     @State private var showingErrorAlert = false
     @State private var errorMessage: String? = nil
 
-    // For navigation to MenuCategoryView (actual navigation will be set up later)
-    @State private var navigateToMenuForTable: Table? = nil
+    // For navigation to MenuSelectionView
+    @State private var selectedTable: Table? = nil
+    @State private var newOrderId: String? = nil
 
     // Define grid layout: 3 columns for iPad, 2 for iPhone
     #if os(iOS)
     private var columns: [GridItem] {
-        UserInterfaceIdiom.current == .pad ?
+        UIDevice.current.userInterfaceIdiom == .pad ?
             Array(repeating: .init(.flexible()), count: 3) :
             Array(repeating: .init(.flexible()), count: 2)
     }
@@ -106,6 +79,13 @@ struct SelectTableView: View {
                 }
             }
             .navigationTitle("Select a Table")
+            .navigationDestination(item: $selectedTable) { table in
+                if let orderId = newOrderId {
+                    MenuSelectionView(orderId: orderId, table: table, onOrderConfirmed: onOrderConfirmed)
+                        .environmentObject(orderManager)
+                        .environmentObject(supabaseManager)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -123,20 +103,6 @@ struct SelectTableView: View {
                     await fetchTables()
                 }
             }
-            .alert("Start Order", isPresented: Binding(
-                get: { navigateToMenuForTable != nil },
-                set: { if !$0 { navigateToMenuForTable = nil } }
-            )) {
-                Button("OK") {
-                    // Actual navigation would be handled here, e.g., using NavigationLink value
-                    // For now, just dismisses the alert.
-                    // The next step would be to navigate to MenuCategoryView(table: selectedTable)
-                    print("Navigation to MenuCategoryView for table \(navigateToMenuForTable?.name ?? "") confirmed.")
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Proceed to menu for table \(navigateToMenuForTable?.name ?? "")?")
-            }
             .alert("Error", isPresented: $showingErrorAlert) {
                 Button("OK") {}
             } message: {
@@ -146,8 +112,9 @@ struct SelectTableView: View {
     }
 
     @ViewBuilder
-    private func tableCell(for table: Table) -> some View {
-        let status = TableStatus(rawValue: table.status)
+    private func tableCell(for table: Table) -> some View { // table is now Models.Table
+        // let status = TableStatus(rawValue: table.status) // No longer needed, table.status is TableStatus enum
+        let status = table.status // Directly use the enum from the model
 
         VStack(alignment: .center, spacing: 8) {
             Text(table.name)
@@ -159,18 +126,16 @@ struct SelectTableView: View {
 
             HStack {
                 Image(systemName: status.isSelectableForNewOrder ? "checkmark.circle.fill" : "info.circle.fill")
-                    .foregroundColor(status.color)
+                    .foregroundColor(status.swiftUIColor) // Use swiftUIColor
                 Text(status.displayName)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(status.color)
+                    .foregroundColor(status.swiftUIColor) // Use swiftUIColor
             }
 
-            if let capacity = table.capacity {
-                Text("Capacity: \(capacity)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
+            Text("Capacity: \(table.capacity)")
+                .font(.caption)
+                .foregroundColor(.gray)
         }
         .padding()
         .frame(minHeight: 120) // Give a minimum height for consistency
@@ -180,15 +145,17 @@ struct SelectTableView: View {
         .shadow(color: .black.opacity(0.1), radius: 3, x: 1, y: 2)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(status.color.opacity(0.7), lineWidth: status.isSelectableForNewOrder ? 2 : 0.5)
+                .stroke(status.swiftUIColor.opacity(0.7), lineWidth: status.isSelectableForNewOrder ? 2 : 0.5) // Use swiftUIColor
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(table.name), Status: \(status.displayName)\(table.capacity != nil ? ", Capacity: \(table.capacity!)" : "")")
+        .accessibilityLabel("\(table.name), Status: \(status.displayName), Capacity: \(table.capacity)")
         .accessibilityHint(status.isSelectableForNewOrder ? "Tap to start a new order for this table." : "This table is currently \(status.displayName).")
         .onTapGesture {
             if status.isSelectableForNewOrder {
                 print("Selected available table: \(table.name)")
-                navigateToMenuForTable = table // Trigger alert/navigation
+                // Create a new draft order ID
+                newOrderId = UUID().uuidString
+                selectedTable = table
             } else {
                 print("Selected non-available table: \(table.name), Status: \(status.displayName)")
                 // Optionally, show an alert or navigate to existing order details if occupied/reserved
@@ -199,25 +166,33 @@ struct SelectTableView: View {
         .opacity(status.isSelectableForNewOrder ? 1.0 : 0.7) // Dim non-selectable tables
     }
 
-    // Stubbed data fetching
     @MainActor
     private func fetchTables() async {
         isLoading = true
         errorMessage = nil
 
-        // Simulate network delay
-        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        do {
+            // Ensure SupabaseManager has a valid restaurant ID
+            guard supabaseManager.currentRestaurantId != nil else {
+                self.errorMessage = "Restaurant not identified. Please ensure you are logged in correctly."
+                self.showingErrorAlert = true
+                self.isLoading = false
+                self.tables = [] // Clear tables if restaurant ID is missing
+                return
+            }
 
-        // In a real app, this would call supabaseManager.fetchAllTables()
-        // For now, use mock data.
-        // self.tables = try await supabaseManager.fetchAllTablesForRestaurant()
-
-        // Using mock data:
-        self.tables = Table.mockTables.shuffled() // Shuffle to see different orders
-
-        // Example of error handling (can be uncommented to test)
-        // self.errorMessage = "Failed to load tables. Please try again."
-        // self.showingErrorAlert = true
+            self.tables = try await supabaseManager.fetchAllTables()
+            if self.tables.isEmpty {
+                // You might want to set a specific message for "no tables found" vs. an error
+                // For now, the main view handles the empty state text.
+                print("No tables found for the current restaurant.")
+            }
+        } catch {
+            print("Error fetching tables: \(error.localizedDescription)")
+            self.errorMessage = "Failed to load tables: \(error.localizedDescription)"
+            self.showingErrorAlert = true
+            self.tables = [] // Clear tables on error
+        }
 
         isLoading = false
     }
@@ -226,20 +201,13 @@ struct SelectTableView: View {
 // Preview
 struct SelectTableView_Previews: PreviewProvider {
     static var previews: some View {
-        // For preview, create mock managers or use in-memory versions
-        // This setup is basic; a real preview might need more context.
-        let mockOrderManager = OrderManager() // Assuming OrderManager() can be initialized
-        let mockSupabaseManager = SupabaseManager.shared // Or a mock version
+        // For preview, create mock SupabaseManager
+        let mockSupabaseManager = SupabaseManager.shared // Using shared for preview convenience
 
-        SelectTableView()
-            .environmentObject(mockOrderManager)
+        // If SupabaseManager.shared.currentRestaurant is nil, the mock data generation might use a default.
+        // For a more robust preview, ensure currentRestaurant is set or SupabaseManager is mocked appropriately.
+
+        return SelectTableView(onOrderConfirmed: nil)
             .environmentObject(mockSupabaseManager)
-            .onAppear {
-                // You might want to populate mockSupabaseManager with some restaurant context
-                // if SelectTableView relies on it directly during initialization or .task
-                if mockSupabaseManager.currentRestaurant == nil {
-                     // mockSupabaseManager.currentRestaurant = Restaurant(id: "preview_resto_id", name: "Preview Cafe", ...)
-                }
-            }
     }
 }

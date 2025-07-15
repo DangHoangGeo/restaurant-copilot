@@ -1,0 +1,27 @@
+[CENTER][BOLD]KITCHEN ORDER[/BOLD][/CENTER]
+
+Order: {{order.id}}
+Table: {{order.table_name}}
+Time: {{order.time}}
+
+[SEPARATOR]
+
+{{#items}}
+[BOLD]{{quantity}}x {{name}}[/BOLD]
+{{#customizations}}
+  - {{customizations}}
+{{/customizations}}
+{{#notes}}
+  Note: {{notes}}
+{{/notes}}
+
+{{/items}}
+
+[SEPARATOR]
+
+{{#special_instructions}}
+[BOLD]Special Instructions:[/BOLD]
+{{special_instructions}}
+{{/special_instructions}}
+
+[CUT]

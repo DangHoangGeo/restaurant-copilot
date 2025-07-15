@@ -5,6 +5,8 @@ import ExternalAccessory
 
 @MainActor
 class PrinterManager: ObservableObject {
+    static let shared = PrinterManager()
+    
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Published var isConnected = false
     @Published var printerStatus = "printer_disconnected_status".localized
@@ -19,7 +21,7 @@ class PrinterManager: ObservableObject {
     private var networkMonitor: NWPathMonitor?
     private var bluetoothAccessory: EAAccessory?
     
-    init() {
+    private init() {
         checkAvailablePrinters()
         startNetworkMonitoring()
         loadSavedPrinter()
@@ -275,7 +277,7 @@ class PrinterManager: ObservableObject {
             menu_item_size_id: "L",
             topping_ids: nil,
             price_at_order: 900,
-            status: .served,
+            status: OrderItemStatus.served, // Explicitly use OrderItemStatus
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
         )
@@ -290,7 +292,7 @@ class PrinterManager: ObservableObject {
             menu_item_size_id: "M",
             topping_ids: nil,
             price_at_order: 900,
-            status: .served,
+            status: OrderItemStatus.served, // Explicitly use OrderItemStatus
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
         )
@@ -301,7 +303,7 @@ class PrinterManager: ObservableObject {
             id: UUID().uuidString,
             restaurant_id: "test-restaurant",
             name: "Table 5",
-            status: .available,
+            status: TableStatus.available, // Explicitly use TableStatus
             capacity: 4,
             is_outdoor: false,
             is_accessible: false,
@@ -317,8 +319,9 @@ class PrinterManager: ObservableObject {
             table_id: mockTable.id,
             session_id: "test-session",
             guest_count: 3,
-            status: .serving,
+            status: OrderStatus.serving, // Explicitly use OrderStatus
             total_amount: 2900,
+            order_number: 10,
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
             table: mockTable,

@@ -484,3 +484,102 @@
 "manual_printer_setup_add_button" = "Thêm Máy in";
 "manual_printer_setup_help_text" = "Nhập địa chỉ IP và cổng của máy in mạng. Hầu hết máy in biên lai sử dụng cổng 9100.";
 
+// MARK: - Accessibility Labels and Hints (Vietnamese)
+"accessibility_printer_language_warning" = "Cảnh báo: Ngôn ngữ in không được máy in hỗ trợ";
+"accessibility_printer_language_warning_hint" = "Ngôn ngữ in đã chọn có thể không được máy in hỗ trợ hoàn toàn";
+"accessibility_printer_language_config_label" = "Cấu hình ngôn ngữ in";
+"accessibility_printer_language_config_hint" = "Điều hướng để cấu hình cài đặt ngôn ngữ in";
+"accessibility_printer_connected_label" = "Máy in đã kết nối";
+"accessibility_printer_disconnected_label" = "Máy in đã ngắt kết nối";
+"accessibility_disconnect_printer_label" = "Ngắt kết nối máy in";
+"accessibility_disconnect_printer_hint" = "Ngắt kết nối máy in hiện tại";
+"accessibility_no_printers_found_label" = "Không tìm thấy máy in. Ứng dụng quét máy in mạng và Bluetooth";
+"accessibility_refresh_printers_label" = "Làm mới danh sách máy in";
+"accessibility_refresh_printers_hint" = "Quét máy in có sẵn trên mạng";
+"accessibility_printer_name_label" = "Tên máy in";
+"accessibility_printer_name_hint" = "Nhập tên để xác định máy in này";
+"accessibility_printer_type_label" = "Loại máy in";
+"accessibility_printer_type_hint" = "Chọn loại máy in: hóa đơn hoặc bếp";
+"accessibility_ip_address_label" = "Địa chỉ IP";
+"accessibility_ip_address_hint" = "Nhập địa chỉ IP của máy in";
+"accessibility_port_number_label" = "Số cổng";
+"accessibility_port_number_hint" = "Nhập số cổng của máy in, thường là 9100";
+"accessibility_connection_timeout_label" = "Thời gian chờ kết nối";
+"accessibility_connection_timeout_hint" = "Điều chỉnh thời gian chờ kết nối máy in";
+"accessibility_max_retries_label" = "Số lần thử lại tối đa";
+"accessibility_max_retries_hint" = "Đặt số lần thử kết nối tối đa";
+"accessibility_test_connection_label" = "Kiểm tra kết nối";
+"accessibility_test_connection_hint" = "Kiểm tra kết nối đến máy in này";
+"accessibility_save_printer_label" = "Lưu máy in";
+"accessibility_save_printer_hint" = "Lưu cấu hình máy in này";
+"accessibility_print_queue_label" = "Hàng đợi in";
+"accessibility_print_queue_hint" = "Xem và quản lý công việc in";
+"accessibility_retry_print_job_label" = "Thử lại công việc in";
+"accessibility_retry_print_job_hint" = "Thử lại công việc in thất bại này";
+"accessibility_print_job_failed_label" = "Công việc in thất bại";
+"accessibility_print_job_completed_label" = "Công việc in hoàn thành";
+"accessibility_print_job_pending_label" = "Công việc in đang chờ";
+"accessibility_print_job_printing_label" = "Công việc in đang tiến hành";
+
+// MARK: - Print Queue and Templates (Vietnamese)
+"print_queue_title" = "Hàng đợi In";
+"print_queue_statistics" = "Thống kê Hàng đợi";
+"print_queue_pending_jobs" = "Công việc Đang chờ";
+"print_queue_failed_jobs" = "Công việc Thất bại";
+"print_queue_completed_jobs" = "Công việc Hoàn thành";
+"print_queue_clear_completed" = "Xóa Công việc Hoàn thành";
+"print_queue_clear_all" = "Xóa Tất cả Công việc";
+"print_queue_clear_all_confirmation" = "Điều này sẽ xóa tất cả công việc in khỏi hàng đợi. Hành động này không thể hoàn tác.";
+"print_queue_no_jobs" = "Không có Công việc In";
+"print_queue_no_jobs_description" = "Công việc in sẽ xuất hiện ở đây khi bạn in đơn hàng hoặc hóa đơn";
+"receipt_customization_title" = "Tùy chỉnh hóa đơn";
+"receipt_template_encoding_title" = "Mẫu hóa đơn & Mã hóa";
+"receipt_template_encoding_description" = "Tùy chỉnh định dạng hóa đơn và mã hóa";
+"receipt_template_title" = "Tùy chỉnh Hóa đơn";
+"receipt_encoding_title" = "Cài đặt Mã hóa";
+"receipt_encoding_label" = "Mã hóa Hóa đơn";
+"receipt_encoding_description" = "Chọn mã hóa ký tự hoạt động tốt nhất với máy in của bạn. UTF-8 được khuyến nghị cho hầu hết các máy in hiện đại.";
+"receipt_template_help_title" = "Trợ giúp Mẫu";
+"receipt_template_available_variables" = "Biến Có sẵn:";
+"receipt_template_format_tags" = "Thẻ Định dạng:";
+"receipt_template_test" = "Kiểm tra Mẫu";
+"receipt_template_reset" = "Đặt lại về Mặc định";
+"receipt_preview_title" = "Xem trước Hóa đơn";
+"receipt_preview_generating" = "Đang tạo Xem trước...";
+"receipt_preview_not_available" = "Xem trước không khả dụng";
+
+// MARK: - Receipt Customization View
+"encoding_settings" = "Cài đặt mã hóa";
+"receipt_encoding" = "Mã hóa hóa đơn";
+"encoding_description" = "Chọn mã hóa ký tự phù hợp nhất với máy in của bạn. UTF-8 được khuyến nghị cho hầu hết các máy in hiện đại.";
+"custom_template" = "Mẫu tùy chỉnh";
+"receipt_template" = "Mẫu hóa đơn";
+"template_placeholder" = "Để trống để sử dụng mẫu mặc định. Bạn có thể sử dụng các biến mẫu như {{order.id}}, {{items}}, v.v.";
+"template_help" = "Hướng dẫn mẫu";
+"available_variables" = "Biến có sẵn:";
+"format_tags" = "Thẻ định dạng:";
+"actions" = "Hành động";
+"test_template" = "Kiểm tra mẫu";
+"load_default_template" = "Tải mẫu mặc định";
+"reset_to_default" = "Đặt lại mặc định";
+"receipt_customization" = "Tùy chỉnh hóa đơn";
+"save" = "Lưu";
+"receipt_preview" = "Xem trước hóa đơn";
+"generating_preview" = "Đang tạo xem trước...";
+"done" = "Xong";
+"preview_not_available" = "Xem trước không khả dụng";
+
+// Variable descriptions
+"restaurant_name_desc" = "Tên nhà hàng";
+"order_id_desc" = "ID đơn hàng";
+"table_name_desc" = "Tên bàn";
+"items_loop_desc" = "Lặp qua các mục đơn hàng";
+"item_quantity_desc" = "Số lượng mục (trong vòng lặp mục)";
+"item_name_desc" = "Tên mục (trong vòng lặp mục)";
+"item_price_desc" = "Giá mục (trong vòng lặp mục)";
+"order_total_desc" = "Tổng đơn hàng";
+"center_align_desc" = "Căn giữa văn bản";
+"bold_text_desc" = "Văn bản đậm";
+"separator_desc" = "Đường ngang";
+"cut_paper_desc" = "Cắt giấy";
+
