@@ -430,7 +430,7 @@
 "printer_done_button" = "完了";
 "printer_connect_button" = "接続";
 "printer_cancel_button" = "キャンセル";
-"tab_new_order" = "注文"
+"tab_new_order" = "注文";
 // MARK: - Receipt Header Configuration
 "receipt_header_title" = "レシートヘッダー";
 "receipt_header_config_title" = "レシートヘッダー設定";

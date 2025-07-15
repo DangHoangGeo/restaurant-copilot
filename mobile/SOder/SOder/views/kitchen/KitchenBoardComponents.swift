@@ -21,16 +21,16 @@ struct CategoryFilterChip: View {
                         .font(.captionBold)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
-                        .padding(4)
+                        .padding(Spacing.xxs)
                         .background(color)
                         .clipShape(Circle())
                 }
             }
             .padding(.horizontal, Spacing.md)
             .padding(.vertical, 6)
-            .background(isSelected ? color.opacity(0.8) : Color(.systemGray5))
+            .background(isSelected ? color.opacity(0.8) : Color.appSurface)
             .foregroundColor(isSelected ? .white : .appTextPrimary)
-            .cornerRadius(16)
+            .cornerRadius(CornerRadius.md)
         }
     }
 }
@@ -50,13 +50,13 @@ struct KitchenStatCard: View {
                 .fontWeight(.bold)
                 .foregroundColor(color)
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.captionRegular)
+                .foregroundColor(.appTextSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
+        .padding(.vertical, Spacing.sm)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.sm)
     }
 }
 
@@ -79,11 +79,10 @@ struct KitchenItemCard: View {
                             .font(.caption)
                             .fontWeight(.bold)
                     }
-                    .foregroundColor(.red)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color.red.opacity(0.2))
-                    .cornerRadius(8)
+                    .foregroundColor(.appError)
+                    .padding(Spacing.xs)
+                    .background(Color.appError.opacity(0.2))
+                    .cornerRadius(CornerRadius.sm)
                 }
                 
                 Spacer()
@@ -91,7 +90,7 @@ struct KitchenItemCard: View {
                 Text(timeAgoText)
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
             }
             
             // Item name and prominent quantity
@@ -107,7 +106,7 @@ struct KitchenItemCard: View {
                         Text("kitchen_size".localized + " \(size)")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                     }
                 }
                 
@@ -129,7 +128,7 @@ struct KitchenItemCard: View {
                     Text("kitchen_modifications".localized)
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextSecondary)
                     
                     ForEach(item.toppings.prefix(3), id: \.self) { topping in
                         Text("• \(topping)")
@@ -140,7 +139,7 @@ struct KitchenItemCard: View {
                     if item.toppings.count > 3 {
                         Text("+ \(item.toppings.count - 3) more...")
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                             .italic()
                     }
                 }
@@ -203,14 +202,14 @@ struct KitchenItemCard: View {
                         
                         Text("kitchen_tap_to".localized + " \(nextActionText)")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextSecondary)
                 }
                 .padding(16)
                 .background(Color(.systemGray6))
@@ -421,7 +420,7 @@ struct CompactKitchenItemCard: View {
                         Text("kitchen_size".localized + " \(size)")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                     }
                 }
                 
@@ -443,7 +442,7 @@ struct CompactKitchenItemCard: View {
                     Text("kitchen_tables".localized)
                         .font(.caption)
                         .fontWeight(.medium)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextSecondary)
                     
                     Text(Array(item.tables.sorted()).joined(separator: ", "))
                         .font(.headline)
@@ -591,7 +590,7 @@ struct CategoryGroupView: View {
                 
                 Text("kitchen_items_count".localized.replacingOccurrences(of: "{count}", with: "\(categoryGroup.items.count)"))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color(.systemGray5))
@@ -636,17 +635,17 @@ struct KitchenEmptyStateView: View {
                 
                 Text("kitchen_empty_no_items".localized)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
             }
             
             if orderCount > 0 {
                 Text("kitchen_empty_total_orders".localized.replacingOccurrences(of: "{count}", with: "\(orderCount)"))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
             } else {
                 Text("kitchen_empty_no_orders".localized)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -704,7 +703,7 @@ struct ImprovedCategoryGroupView: View {
                 Text("kitchen_items_count".localized.replacingOccurrences(of: "{count}", with: "\(categoryGroup.items.count)"))
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color(.systemGray5))
