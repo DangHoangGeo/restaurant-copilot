@@ -555,3 +555,51 @@ struct ToppingResponse: Decodable { // Should remain Decodable
         )
     }
 }
+
+// MARK: - Print Formatter Extensions
+extension Order {
+    var tableName: String? {
+        return table?.name ?? "Table \(table_id)"
+    }
+    
+    var items: [OrderItem] {
+        return order_items ?? []
+    }
+    
+    var subtotal: Double {
+        return items.reduce(0) { $0 + ($1.price_at_order * Double($1.quantity)) }
+    }
+    
+    var tax: Double {
+        return tax_amount ?? 0
+    }
+    
+    var discount: Double {
+        return discount_amount ?? 0
+    }
+    
+    var total: Double {
+        return total_amount ?? subtotal + tax - discount
+    }
+    
+    var createdAt: Date {
+        let formatter = ISO8601DateFormatter()
+        return formatter.date(from: created_at) ?? Date()
+    }
+    
+    var specialInstructions: String? {
+        // Combine all order item notes into special instructions
+        let allNotes = items.compactMap { $0.notes }.filter { !$0.isEmpty }
+        return allNotes.isEmpty ? nil : allNotes.joined(separator: "\n")
+    }
+}
+
+extension OrderItem {
+    var name: String {
+        return menu_item?.name_en ?? "Unknown Item"
+    }
+    
+    var price: Double {
+        return price_at_order
+    }
+}

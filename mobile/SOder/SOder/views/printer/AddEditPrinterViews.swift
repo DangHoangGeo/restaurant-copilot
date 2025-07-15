@@ -22,26 +22,35 @@ struct AddPrinterView: View {
                 Section("printer_add_edit_info_title".localized) {
                     TextField("printer_add_edit_name_label".localized, text: $printerName)
                         .autocorrectionDisabled()
+                        .accessibilityLabel("accessibility_printer_name_label".localized)
+                        .accessibilityHint("accessibility_printer_name_hint".localized)
                     
                     Picker("printer_add_edit_type_label".localized, selection: $printerType) {
                         ForEach(ConfiguredPrinterType.allCases, id: \.self) { type in
                             HStack {
                                 Image(systemName: type.icon)
+                                    .accessibilityHidden(true)
                                 Text(type.displayName)
                             }
                             .tag(type)
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
+                    .accessibilityLabel("accessibility_printer_type_label".localized)
+                    .accessibilityHint("accessibility_printer_type_hint".localized)
                 }
                 
                 Section("printer_add_edit_network_settings_title".localized) {
                     TextField("printer_add_edit_ip_address_label".localized, text: $ipAddress)
                         .keyboardType(.decimalPad)
                         .autocorrectionDisabled()
+                        .accessibilityLabel("accessibility_ip_address_label".localized)
+                        .accessibilityHint("accessibility_ip_address_hint".localized)
                     
                     TextField("printer_add_edit_port_label".localized, text: $port)
                         .keyboardType(.numberPad)
+                        .accessibilityLabel("accessibility_port_number_label".localized)
+                        .accessibilityHint("accessibility_port_number_hint".localized)
                 }
                 
                 Section("printer_add_edit_advanced_settings_title".localized) {
@@ -49,6 +58,9 @@ struct AddPrinterView: View {
                         Text(String(format: "printer_add_edit_connection_timeout_label".localized, Int(connectionTimeout)))
                             .font(.caption)
                         Slider(value: $connectionTimeout, in: 1...30, step: 1)
+                            .accessibilityLabel("accessibility_connection_timeout_label".localized)
+                            .accessibilityHint("accessibility_connection_timeout_hint".localized)
+                            .accessibilityValue("\(Int(connectionTimeout)) seconds")
                     }
                     
                     VStack(alignment: .leading) {
@@ -58,6 +70,9 @@ struct AddPrinterView: View {
                             get: { Double(maxRetries) },
                             set: { maxRetries = Int($0) }
                         ), in: 1...10, step: 1)
+                            .accessibilityLabel("accessibility_max_retries_label".localized)
+                            .accessibilityHint("accessibility_max_retries_hint".localized)
+                            .accessibilityValue("\(maxRetries) attempts")
                     }
                 }
                 
