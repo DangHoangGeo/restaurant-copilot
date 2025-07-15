@@ -12,14 +12,13 @@ struct CategoryFilterChip: View {
     
     var body: some View {
         Button(action: action) {
-            HStack {
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.medium)
+            HStack {            Text(title)
+                .font(.captionBold)
+                .fontWeight(.medium)
                 
                 if count > 0 {
                     Text("\(count)")
-                        .font(.caption2)
+                        .font(.captionBold)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                         .padding(4)
@@ -27,10 +26,10 @@ struct CategoryFilterChip: View {
                         .clipShape(Circle())
                 }
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Spacing.md)
             .padding(.vertical, 6)
             .background(isSelected ? color.opacity(0.8) : Color(.systemGray5))
-            .foregroundColor(isSelected ? .white : .primary)
+            .foregroundColor(isSelected ? .white : .appTextPrimary)
             .cornerRadius(16)
         }
     }
@@ -47,7 +46,7 @@ struct KitchenStatCard: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.title2)
+                .font(.cardTitle)
                 .fontWeight(.bold)
                 .foregroundColor(color)
             Text(label)

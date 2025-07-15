@@ -105,142 +105,134 @@ struct OrderDetailView: View {
     }
     
     private func orderHeader(for order: Order) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             HStack {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     HStack {
-                        Text(order.table?.name ?? "Table \(order.table_id)")
-                            .font(.title2)
+                        Text(order.table?.name ?? String(format: "order_detail_table_fallback".localized, order.table_id))
+                            .font(.cardTitle)
+                            .foregroundColor(.appTextPrimary)
                             .fontWeight(.bold)
-                        
                         Spacer()
-                        
                         EnhancedStatusBadge(status: order.status)
                     }
-                    
-                    HStack(spacing: 20) {
-                        Label("\(order.guest_count ?? 0)", systemImage: "person.2") // Handle optional guest_count
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
+                    HStack(spacing: Spacing.md) {
+                        Label("\(order.guest_count ?? 0)", systemImage: "person.2")
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                         Label(formatTime(order.created_at), systemImage: "clock")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        if let sessionId = order.session_id, !sessionId.isEmpty { // Handle optional session_id
-                            Label("ID: \(order.id.prefix(6).uppercased())", systemImage: "number") // Displaying order.id, condition on session_id
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
+                        if let sessionId = order.session_id, !sessionId.isEmpty {
+                            Label(String(format: "order_detail_id_label".localized, order.id.prefix(6).uppercased()), systemImage: "number")
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextSecondary)
                         }
                     }
                 }
             }
-            
-            // Order Actions Section
             orderActionsSection(for: order)
-            
             if let total = order.total_amount {
                 HStack {
                     Text("orders_total_amount".localized)
-                        .font(.headline)
+                        .font(.bodyMedium)
                         .fontWeight(.semibold)
-                    
+                        .foregroundColor(.appTextPrimary)
                     Spacer()
-                    
                     Text("¥\(String(format: "%.0f", total))")
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.appPrimary)
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .padding(Spacing.md)
+                .background(Color.appSurface)
+                .cornerRadius(CornerRadius.md)
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .padding(Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
+
     private func orderActionsSection(for order: Order) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.sm) {
             if order.status == .completed {
-                // Show only print receipt for completed orders
                 Button(action: {
                     Task { await printReceipt(for: order) }
                 }) {
                     HStack {
                         Image(systemName: "printer")
                         Text("orders_print_receipt".localized)
+                            .font(.buttonLarge)
                             .fontWeight(.semibold)
                     }
                     .frame(maxWidth: 120)
                     .frame(height: 44)
-                    .background(Color.blue)
+                    .background(Color.appPrimary)
                     .foregroundColor(.white)
-                    .cornerRadius(12)
+                    .cornerRadius(CornerRadius.md)
                 }
+                .accessibilityLabel("orders_print_receipt_accessibility".localized)
             } else {
-                // Show checkout for non-completed orders
-                HStack(spacing: 16){
-                    // Status progression buttons
+                HStack(spacing: Spacing.md){
                     if order.status == .new {
                         Button(action: {
                             Task { await updateOrderStatus(.serving) }
                         }) {
                             HStack {
                                 Image(systemName: "fork.knife")
-                                Text("Mark as Serving")
+                                Text("orders_mark_serving".localized)
+                                    .font(.buttonLarge)
                                     .fontWeight(.medium)
                             }
                             .frame(maxWidth: 256)
                             .frame(height: 44)
-                            .background(Color.orange)
+                            .background(Color.appWarning)
                             .foregroundColor(.white)
-                            .cornerRadius(8)
+                            .cornerRadius(CornerRadius.md)
                         }
                         .disabled(isUpdatingStatus)
+                        .accessibilityLabel("orders_mark_serving_accessibility".localized)
                     }
-                    
                     Button(action: onCheckout) {
                         HStack {
                             Image(systemName: "creditcard")
-                            Text("Checkout")
+                            Text("orders_checkout".localized)
+                                .font(.buttonLarge)
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: 256)
                         .frame(height: 44)
-                        .background(Color.blue)
+                        .background(Color.appPrimary)
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .cornerRadius(CornerRadius.md)
                     }
+                    .accessibilityLabel("orders_checkout_accessibility".localized)
                 }
             }
         }
     }
-    
+
     private func orderItemsSection(for order: Order) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
-                Text("Order Items (\(sortedItems.count))")
-                    .font(.headline)
+                Text(String(format: "order_items_section_title".localized, sortedItems.count))
+                    .font(.bodyMedium)
                     .fontWeight(.semibold)
-                
+                    .foregroundColor(.appTextPrimary)
                 Spacer()
-                
                 if sortedItems.contains(where: { $0.status.rawValue == "ordered" }) {
                     HStack {
                         Image(systemName: "circle.fill")
-                            .font(.caption)
-                            .foregroundColor(.red)
-                        Text("New items")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appError)
+                        Text("order_items_new_label".localized)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                     }
                 }
             }
-            
             VStack(spacing: 0) {
                 ForEach(Array(sortedItems.enumerated()), id: \.element.id) { index, item in
                     EnhancedOrderItemView(
@@ -254,20 +246,18 @@ struct OrderDetailView: View {
                     .onTapGesture {
                         selectedItem = item
                     }
-                    
-                    // Add separator between items (except for the last item)
                     if index < sortedItems.count - 1 {
                         Divider()
-                            .padding(.leading, 16)
-                            .padding(.trailing, 16)
-                            .padding(.vertical, 8)
+                            .padding(.leading, Spacing.md)
+                            .padding(.trailing, Spacing.md)
+                            .padding(.vertical, Spacing.xs)
                     }
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .padding(Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     

@@ -9,22 +9,22 @@ struct StatusBadge: View {
         switch status.lowercased() {
         // Order Statuses
         case "draft":
-            return ("Draft", .gray, "doc.text")
+            return ("Draft", .appTextSecondary, "doc.text")
         case "new":
-            return ("New", .blue, "sparkles")
+            return ("New", .appInfo, "sparkles")
         case "serving":
-            return ("Serving", .orange, "fork.knife")
+            return ("Serving", .appWarning, "fork.knife")
         case "completed":
-            return ("Completed", .gray, "checkmark.seal.fill")
+            return ("Completed", .appSuccess, "checkmark.seal.fill")
         case "canceled":
-            return ("Canceled", .red, "xmark.circle.fill")
+            return ("Canceled", .appError, "xmark.circle.fill")
         // Booking Statuses
         case "pending":
-            return ("Pending", .gray, "hourglass")
+            return ("Pending", .appTextSecondary, "hourglass")
         case "confirmed":
-            return ("Confirmed", .green, "checkmark.seal.fill")
+            return ("Confirmed", .appSuccess, "checkmark.seal.fill")
         default:
-            return (status.capitalized, .gray, "questionmark.circle")
+            return (status.capitalized, .appTextSecondary, "questionmark.circle")
         }
     }
     
@@ -34,8 +34,8 @@ struct StatusBadge: View {
             Text(display.text)
                 .fontWeight(.medium)
         }
-        .font(.caption)
-        .padding(.horizontal, 8)
+        .font(.captionBold)
+        .padding(.horizontal, Spacing.sm)
         .padding(.vertical, 4)
         .background(display.color.opacity(0.15))
         .foregroundColor(display.color)
@@ -136,8 +136,7 @@ struct FilterChip: View {
                 
                 if count > 0 {
                     Text("\(count)")
-                        .font(.caption2)
-                        .fontWeight(.bold)
+                        .font(.captionBold)
                         .foregroundColor(isSelected ? .white : color)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -145,9 +144,9 @@ struct FilterChip: View {
                         .cornerRadius(8)
                 }
             }
-            .font(.subheadline)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .font(.buttonMedium)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
             .background(isSelected ? color : color.opacity(0.1))
             .foregroundColor(isSelected ? .white : color)
             .cornerRadius(20)
