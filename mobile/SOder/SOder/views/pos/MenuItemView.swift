@@ -157,7 +157,6 @@ struct MenuItemView: View {
 
 struct MenuItemView_Previews: PreviewProvider {
     static var previews: some View {
-        let mockOrderManager = OrderManager()
         let mockSupabaseManager = SupabaseManager.shared
 
         // Create a mock Category instance (canonical model)
@@ -187,7 +186,7 @@ struct MenuItemView_Previews: PreviewProvider {
 
         return NavigationView { // For toolbar and title
             MenuItemView(category: mockCategory, orderId: mockOrderId, table: mockTable, onOrderConfirmed: nil)
-                .environmentObject(mockOrderManager)
+                .environmentObject(OrderManager.shared)
                 .environmentObject(mockSupabaseManager)
         }
     }

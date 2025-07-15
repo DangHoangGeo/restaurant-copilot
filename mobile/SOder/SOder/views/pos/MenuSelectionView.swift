@@ -327,7 +327,6 @@ struct CategoryFilterButton: View {
 
 struct MenuSelectionView_Previews: PreviewProvider {
     static var previews: some View {
-        let mockOrderManager = OrderManager()
         let mockSupabaseManager = SupabaseManager.shared
         let mockTable = Table(
             id: "previewTable",
@@ -346,7 +345,7 @@ struct MenuSelectionView_Previews: PreviewProvider {
 
         NavigationStack {
             MenuSelectionView(orderId: mockOrderId, table: mockTable, onOrderConfirmed: nil)
-                .environmentObject(mockOrderManager)
+                .environmentObject(OrderManager.shared)
                 .environmentObject(mockSupabaseManager)
         }
     }

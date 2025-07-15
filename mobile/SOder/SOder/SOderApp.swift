@@ -15,6 +15,8 @@ struct SOderApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(localizationManager)
+                .environmentObject(OrderManager.shared)
+                .environmentObject(PrinterManager.shared)
         }
     }
 }

@@ -141,7 +141,6 @@ struct MenuCategoryView: View {
 struct MenuCategoryView_Previews: PreviewProvider {
     static var previews: some View {
         // Create mock data for preview using canonical models
-        let mockOrderManager = OrderManager()
         let mockSupabaseManager = SupabaseManager.shared // Use shared for convenience or a mock
 
         // Ensure currentRestaurant is set on SupabaseManager for previews if fetchCategories relies on it
@@ -167,7 +166,7 @@ struct MenuCategoryView_Previews: PreviewProvider {
 
         return NavigationView { // NavigationView for toolbar and title to show up correctly
             MenuCategoryView(orderId: mockOrderId, table: mockTable, onOrderConfirmed: nil)
-                .environmentObject(mockOrderManager)
+                .environmentObject(OrderManager.shared)
                 .environmentObject(mockSupabaseManager)
         }
     }

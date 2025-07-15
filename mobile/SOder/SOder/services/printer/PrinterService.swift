@@ -9,6 +9,12 @@ enum PrinterError: Error, LocalizedError {
     case configurationError(String)
     case dataEncodingError(String)
     case timeout
+    case jobFailed(String)
+    case queueFull
+    case invalidJobData
+    case printerOffline
+    case paperOut
+    case printerBusy
     
     var errorDescription: String? {
         switch self {
@@ -24,6 +30,47 @@ enum PrinterError: Error, LocalizedError {
             return "Data encoding error: \(msg)"
         case .timeout:
             return "Connection timeout"
+        case .jobFailed(let msg):
+            return "Print job failed: \(msg)"
+        case .queueFull:
+            return "Print queue is full"
+        case .invalidJobData:
+            return "Invalid print job data"
+        case .printerOffline:
+            return "Printer is offline"
+        case .paperOut:
+            return "Printer is out of paper"
+        case .printerBusy:
+            return "Printer is busy"
+        }
+    }
+    
+    var recoverySuggestion: String? {
+        switch self {
+        case .connectionFailed:
+            return "Check printer connection and network settings"
+        case .sendFailed:
+            return "Try printing again or check printer status"
+        case .notConnected:
+            return "Connect to a printer first"
+        case .configurationError:
+            return "Check printer configuration in settings"
+        case .dataEncodingError:
+            return "Check print data format and encoding"
+        case .timeout:
+            return "Check network connection and try again"
+        case .jobFailed:
+            return "Check printer status and try again"
+        case .queueFull:
+            return "Wait for current jobs to complete or clear the queue"
+        case .invalidJobData:
+            return "Check the print job data format"
+        case .printerOffline:
+            return "Check if printer is powered on and connected"
+        case .paperOut:
+            return "Replace printer paper and try again"
+        case .printerBusy:
+            return "Wait for printer to become available"
         }
     }
 }
@@ -155,6 +202,51 @@ class PrinterService {
 
 // MARK: - Print Job Extensions
 extension PrinterService {
+    // MARK: - Queue-based Print Methods
+    func queueKitchenOrder(_ order: Order) async throws {
+        let formatter = PrintFormatter()
+        guard let printData = formatter.formatOrderForKitchen(order: order) else {
+            throw PrinterError.dataEncodingError("Failed to format kitchen order")
+        }
+        
+        try await MainActor.run {
+            try PrintQueueManager.shared.enqueue(
+                data: printData,
+                jobType: .kitchenOrder,
+                description: "Kitchen Order #\(order.id)"
+            )
+        }
+    }
+    
+    func queueCustomerReceipt(_ order: Order, isOfficial: Bool = false) async throws {
+        let formatter = PrintFormatter()
+        guard let printData = formatter.formatCustomerReceipt(order: order, isOfficial: isOfficial) else {
+            throw PrinterError.dataEncodingError("Failed to format customer receipt")
+        }
+        
+        try await MainActor.run {
+            try PrintQueueManager.shared.enqueue(
+                data: printData,
+                jobType: .customerReceipt,
+                description: "Receipt #\(order.id)"
+            )
+        }
+    }
+    
+    func queueTestReceipt() async throws {
+        let formatter = PrintFormatter()
+        let printData = formatter.formatTestReceipt()
+        
+        try await MainActor.run {
+            try PrintQueueManager.shared.enqueue(
+                data: printData,
+                jobType: .testReceipt,
+                description: "Test Receipt"
+            )
+        }
+    }
+    
+    // MARK: - Legacy Direct Print Methods (for backward compatibility)
     func printKitchenOrder(_ order: Order) async throws {
         let formatter = PrintFormatter()
         guard let printData = formatter.formatOrderForKitchen(order: order) else {

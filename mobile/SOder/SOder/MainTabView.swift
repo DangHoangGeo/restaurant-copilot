@@ -3,7 +3,7 @@ import SwiftUI
 struct MainTabView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var supabaseManager: SupabaseManager
-    @StateObject private var printerManager = PrinterManager()
+    @EnvironmentObject private var printerManager: PrinterManager
     @State private var selectedTab = 0
     
     var body: some View {

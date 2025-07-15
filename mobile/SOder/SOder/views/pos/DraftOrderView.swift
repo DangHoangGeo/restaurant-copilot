@@ -249,7 +249,6 @@ struct DraftOrderView: View {
 
 struct DraftOrderView_Previews: PreviewProvider {
     static var previews: some View {
-        let mockOrderManager = OrderManager()
         let mockTable = Table(
             id: "previewTableDraft",
             restaurant_id: "resto_preview",
@@ -267,7 +266,7 @@ struct DraftOrderView_Previews: PreviewProvider {
 
         NavigationStack {
             DraftOrderView(orderId: mockOrderId, table: mockTable, onOrderConfirmed: nil)
-                .environmentObject(mockOrderManager)
+                .environmentObject(OrderManager.shared)
         }
     }
 }

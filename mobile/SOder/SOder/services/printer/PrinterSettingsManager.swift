@@ -18,6 +18,8 @@ class PrinterSettingsManager: ObservableObject {
     // New: Print language and receipt header settings
     @Published var printLanguage: PrintLanguage = .english
     @Published var receiptHeader: ReceiptHeaderSettings
+    @Published var receiptEncoding: String.Encoding = .utf8
+    @Published var customReceiptTemplate: String = ""
     
     private let userDefaults = UserDefaults.standard
     private let printersKey = "configured_printers"
@@ -28,6 +30,8 @@ class PrinterSettingsManager: ObservableObject {
     private let restaurantSettingsKey = "restaurant_settings"
     private let printLanguageKey = "print_language"
     private let receiptHeaderKey = "receipt_header"
+    private let receiptEncodingKey = "receipt_encoding"
+    private let customReceiptTemplateKey = "custom_receipt_template"
     
     private init() {
         // Initialize with default restaurant settings
@@ -235,6 +239,8 @@ class PrinterSettingsManager: ObservableObject {
         loadRestaurantSettings()
         loadPrintLanguage()
         loadReceiptHeader()
+        loadReceiptEncoding()
+        loadCustomReceiptTemplate()
     }
     
     private func loadConfiguredPrinters() {
@@ -293,11 +299,24 @@ class PrinterSettingsManager: ObservableObject {
         }
     }
     
+    private func loadReceiptEncoding() {
+        let encodingRawValue = userDefaults.integer(forKey: receiptEncodingKey)
+        if encodingRawValue != 0 {
+            receiptEncoding = String.Encoding(rawValue: UInt(encodingRawValue))
+        }
+    }
+    
+    private func loadCustomReceiptTemplate() {
+        customReceiptTemplate = userDefaults.string(forKey: customReceiptTemplateKey) ?? ""
+    }
+    
     private func saveSettings() {
         saveConfiguredPrinters()
         saveActivePrinter()
         saveDualPrinters()
         savePrinterMode()
+        saveReceiptEncoding()
+        saveCustomReceiptTemplate()
     }
     
     private func saveConfiguredPrinters() {
@@ -348,6 +367,14 @@ class PrinterSettingsManager: ObservableObject {
         if let data = try? JSONEncoder().encode(receiptHeader) {
             userDefaults.set(data, forKey: receiptHeaderKey)
         }
+    }
+    
+    private func saveReceiptEncoding() {
+        userDefaults.set(Int(receiptEncoding.rawValue), forKey: receiptEncodingKey)
+    }
+    
+    private func saveCustomReceiptTemplate() {
+        userDefaults.set(customReceiptTemplate, forKey: customReceiptTemplateKey)
     }
     
     // MARK: - Validation
