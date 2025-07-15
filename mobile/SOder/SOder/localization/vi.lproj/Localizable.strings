@@ -474,6 +474,7 @@
 "print_language_changed_success" = "Ngôn ngữ in đã được cập nhật thành công!";
 "print_language_fallback_note" = "Nếu máy in không hỗ trợ ngôn ngữ đã chọn, mã món hàng sẽ được sử dụng thay vì tên.";
 
+"tab_new_order" = "Thêm order"
 // MARK: - Manual Printer Setup Localization
 "manual_printer_setup_title" = "Thêm Máy in Mạng";
 "manual_printer_setup_printer_info_title" = "Thông tin Máy in";
