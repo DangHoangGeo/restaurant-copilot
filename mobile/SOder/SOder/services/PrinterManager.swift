@@ -5,6 +5,8 @@ import ExternalAccessory
 
 @MainActor
 class PrinterManager: ObservableObject {
+    static let shared = PrinterManager()
+    
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Published var isConnected = false
     @Published var printerStatus = "printer_disconnected_status".localized
@@ -19,7 +21,7 @@ class PrinterManager: ObservableObject {
     private var networkMonitor: NWPathMonitor?
     private var bluetoothAccessory: EAAccessory?
     
-    init() {
+    private init() {
         checkAvailablePrinters()
         startNetworkMonitoring()
         loadSavedPrinter()

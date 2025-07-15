@@ -31,8 +31,8 @@ extension TableStatus {
 struct SelectTableView: View {
     let onOrderConfirmed: (() -> Void)?
     
-    // Using StateObject like other views (OrdersView, KitchenBoardView) to maintain consistency
-    @StateObject private var orderManager = OrderManager()
+    // Using EnvironmentObject to consume the shared OrderManager instance
+    @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject var supabaseManager: SupabaseManager // For fetching tables
 
     @State private var tables: [Table] = [] // This will now be [Models.Table]

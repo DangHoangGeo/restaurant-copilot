@@ -35,7 +35,10 @@ struct AutoPrintStats {
 }
 
 class OrderManager: ObservableObject {
+    static let shared = OrderManager()
+    
     private let supabaseManager = SupabaseManager.shared
+    private let printerManager = PrinterManager.shared
     
     @Published var orders: [Order] = []
     @Published var allOrders: [Order] = []  // Add missing allOrders property
@@ -126,7 +129,7 @@ class OrderManager: ObservableObject {
         // Potentially price_at_order if quantity/options change price
     }
     
-    init() {
+    private init() {
         // Monitor authentication state changes
         setupAuthenticationMonitoring()
         loadAutoPrintingSettings()
@@ -511,33 +514,46 @@ class OrderManager: ObservableObject {
         errorMessage = nil
         
         do {
+            // Use the optimized RPC function instead of client-side joins
             let response: [OrderWithTableResponse] = try await supabaseManager.client
-                .from("orders")
-                .select("""
-                    *,
-                    table:tables(*),
-                    order_items(
-                        *,
-                        menu_item:menu_items(
-                            *,
-                            category:categories(
-                                id,
-                                name_en,
-                                name_ja,
-                                name_vi
-                            )
-                        ),
-                        menu_item_size:menu_item_sizes(*)
-                    )
-                """)
-                .eq("restaurant_id", value: restaurantId)
-                .in("status", values: ["new", "serving"])
-                .order("created_at", ascending: false)
+                .rpc("get_active_orders_with_details", params: ["p_restaurant_id": restaurantId])
                 .execute()
                 .value
             
-            self.orders = response.map { $0.toOrder() }
-            print("Fetched \(orders.count) active orders")
+            // Still need to fetch related data for order items, table, etc.
+            // This will be done in a separate, more efficient query
+            var ordersWithDetails: [OrderWithTableResponse] = []
+            
+            for order in response {
+                let orderWithDetails: OrderWithTableResponse = try await supabaseManager.client
+                    .from("orders")
+                    .select("""
+                        *,
+                        table:tables(*),
+                        order_items(
+                            *,
+                            menu_item:menu_items(
+                                *,
+                                category:categories(
+                                    id,
+                                    name_en,
+                                    name_ja,
+                                    name_vi
+                                )
+                            ),
+                            menu_item_size:menu_item_sizes(*)
+                        )
+                    """)
+                    .eq("id", value: order.id)
+                    .single()
+                    .execute()
+                    .value
+                
+                ordersWithDetails.append(orderWithDetails)
+            }
+            
+            self.orders = ordersWithDetails.map { $0.toOrder() }
+            print("Fetched \(orders.count) active orders using RPC")
             
         } catch {
             errorMessage = "Failed to fetch orders: \(error.localizedDescription)"
@@ -945,7 +961,8 @@ class OrderManager: ObservableObject {
             }
             
             do {
-                try await PrinterManager().printKitchenSlip(for: order)
+                // Use the shared PrinterManager instance instead of creating a new one
+                try await printerManager.printKitchenSlip(for: order)
                 printedNewOrders.insert(order.id)
                 autoPrintStats.recordNewOrderPrint()
                 
