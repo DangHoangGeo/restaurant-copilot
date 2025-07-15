@@ -39,6 +39,7 @@ class OrderManager: ObservableObject {
     
     private let supabaseManager = SupabaseManager.shared
     private let printerManager = PrinterManager.shared
+    private let autoPrintQueue = DispatchQueue(label: "auto-print-queue", qos: .userInitiated)
     
     @Published var orders: [Order] = []
     @Published var allOrders: [Order] = []  // Add missing allOrders property
@@ -943,11 +944,24 @@ class OrderManager: ObservableObject {
     
     @MainActor
     private func autoPrintNewOrders(previousOrders: [Order]) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            autoPrintQueue.async {
+                Task {
+                    await self.performAutoPrintNewOrders(previousOrders: previousOrders)
+                    continuation.resume()
+                }
+            }
+        }
+    }
+    
+    private func performAutoPrintNewOrders(previousOrders: [Order]) async {
         let newOrders = findNewOrders(currentOrders: orders, previousOrders: previousOrders)
         
         guard !newOrders.isEmpty else { return }
         
-        autoPrintingInProgress = true
+        await MainActor.run {
+            autoPrintingInProgress = true
+        }
         
         for order in newOrders {
             // Skip if already printed
@@ -964,25 +978,35 @@ class OrderManager: ObservableObject {
                 // Use the shared PrinterManager instance instead of creating a new one
                 try await printerManager.printKitchenSlip(for: order)
                 printedNewOrders.insert(order.id)
-                autoPrintStats.recordNewOrderPrint()
+                await MainActor.run {
+                    autoPrintStats.recordNewOrderPrint()
+                }
                 
                 let tableInfo = order.table?.name ?? "Table \(order.table_id)"
-                lastAutoPrintResult = "✅ Auto-printed new order for \(tableInfo)"
+                await MainActor.run {
+                    lastAutoPrintResult = "✅ Auto-printed new order for \(tableInfo)"
+                }
                 print("Auto-printed new order: \(order.id) for \(tableInfo)")
                 
             } catch {
-                autoPrintStats.recordPrintFailure()
-                lastAutoPrintResult = "❌ Auto-print failed: \(error.localizedDescription)"
+                await MainActor.run {
+                    autoPrintStats.recordPrintFailure()
+                    lastAutoPrintResult = "❌ Auto-print failed: \(error.localizedDescription)"
+                }
                 print("Auto-print failed for new order \(order.id): \(error.localizedDescription)")
             }
         }
         
-        autoPrintingInProgress = false
+        await MainActor.run {
+            autoPrintingInProgress = false
+        }
         
         // Clear the result message after 5 seconds
         Task {
             try? await Task.sleep(nanoseconds: 5_000_000_000)
-            lastAutoPrintResult = nil
+            await MainActor.run {
+                lastAutoPrintResult = nil
+            }
         }
     }
     

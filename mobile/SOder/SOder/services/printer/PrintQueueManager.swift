@@ -78,7 +78,6 @@ struct PrintJob: Identifiable, Codable {
 }
 
 // MARK: - Print Queue Manager
-@MainActor
 class PrintQueueManager: ObservableObject {
     static let shared = PrintQueueManager()
     
@@ -89,6 +88,7 @@ class PrintQueueManager: ObservableObject {
     private let maxRetries = 3
     private let userDefaults = UserDefaults.standard
     private let queueKey = "PrintQueueJobs"
+    private let processingQueue = DispatchQueue(label: "print-queue-processing", qos: .userInitiated)
     
     private init() {
         loadQueue()
@@ -147,10 +147,17 @@ class PrintQueueManager: ObservableObject {
         guard !isProcessing else { return }
         
         Task {
-            isProcessing = true
-            defer { isProcessing = false }
+            await MainActor.run {
+                isProcessing = true
+            }
             
-            while let nextJob = getNextPendingJob() {
+            defer {
+                Task { @MainActor in
+                    isProcessing = false
+                }
+            }
+            
+            while let nextJob = await getNextPendingJob() {
                 await processJob(nextJob)
                 
                 // Small delay between jobs to prevent overwhelming the printer
@@ -159,40 +166,61 @@ class PrintQueueManager: ObservableObject {
         }
     }
     
-    private func getNextPendingJob() -> PrintJob? {
-        return jobs.first { $0.status == .pending }
+    private func getNextPendingJob() async -> PrintJob? {
+        return await MainActor.run {
+            jobs.first { $0.status == .pending }
+        }
     }
     
     private func processJob(_ job: PrintJob) async {
-        guard let index = jobs.firstIndex(where: { $0.id == job.id }) else { return }
+        let index = await MainActor.run {
+            jobs.firstIndex(where: { $0.id == job.id })
+        }
+        
+        guard let validIndex = index else { return }
         
         // Update job status to printing
-        jobs[index].status = .printing
-        jobs[index].attempts += 1
-        saveQueue()
+        await MainActor.run {
+            if jobs.indices.contains(validIndex) {
+                jobs[validIndex].status = .printing
+                jobs[validIndex].attempts += 1
+            }
+        }
+        await saveQueueAsync()
         
         do {
-            // Execute the print job
-            try await PrinterService.shared.executePrintJob(jobs[index])
+            // Execute the print job on background queue
+            let currentJob = await MainActor.run { 
+                jobs.indices.contains(validIndex) ? jobs[validIndex] : job 
+            }
+            try await PrinterService.shared.executePrintJob(currentJob)
             
             // Job completed successfully
-            jobs[index].status = .completed
-            jobs[index].errorMessage = nil
+            await MainActor.run {
+                if jobs.indices.contains(validIndex) {
+                    jobs[validIndex].status = .completed
+                    jobs[validIndex].errorMessage = nil
+                }
+            }
             
         } catch {
             // Job failed
-            jobs[index].errorMessage = error.localizedDescription
-            
-            if jobs[index].attempts < maxRetries {
-                // Retry the job
-                jobs[index].status = .pending
-            } else {
-                // Max retries reached, mark as failed
-                jobs[index].status = .failed
+            await MainActor.run {
+                if jobs.indices.contains(validIndex) {
+                    jobs[validIndex].errorMessage = error.localizedDescription
+                    
+                    if jobs[validIndex].attempts < maxRetries {
+                        // Retry the job
+                        jobs[validIndex].status = .pending
+                    } else {
+                        // Max retries reached, mark as failed
+                        jobs[validIndex].status = .failed
+                    }
+                }
             }
         }
         
-        saveQueue()
+        await saveQueueAsync()
     }
     
     private func startProcessing() {
@@ -210,6 +238,22 @@ class PrintQueueManager: ObservableObject {
             userDefaults.set(data, forKey: queueKey)
         } catch {
             print("Failed to save print queue: \(error)")
+        }
+    }
+    
+    private func saveQueueAsync() async {
+        let jobsCopy = await MainActor.run { jobs }
+        
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            processingQueue.async {
+                do {
+                    let data = try JSONEncoder().encode(jobsCopy)
+                    self.userDefaults.set(data, forKey: self.queueKey)
+                } catch {
+                    print("Failed to save print queue: \(error)")
+                }
+                continuation.resume()
+            }
         }
     }
     

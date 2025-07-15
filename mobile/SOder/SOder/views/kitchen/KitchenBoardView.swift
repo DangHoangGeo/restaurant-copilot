@@ -17,6 +17,96 @@ struct KitchenBoardView: View {
     @State private var printMessage = ""
     @State private var refreshTimer: Timer?
     @State private var viewMode: KitchenViewMode = .statusColumns
+    @State private var isComputingGrouping = false
+    
+    // Actor for background computation
+    private actor CategoryGroupingActor {
+        func computeGrouping(orders: [Order]) async -> [CategoryGroup] {
+            var newGroupedItems: [GroupedItem] = []
+            
+            // Sort orders by creation time first (oldest first - first come first serve)
+            let sortedOrders = orders.sorted { order1, order2 in
+                let date1 = dateFromString(order1.created_at)
+                let date2 = dateFromString(order2.created_at)
+                return date1 < date2
+            }
+            
+            for order in sortedOrders {
+                for orderItem in order.order_items ?? [] {
+                    guard let menuItem = orderItem.menu_item else { continue }
+                    
+                    // Only show active items (new, preparing)
+                    guard orderItem.status == .ordered || orderItem.status == .preparing else { continue }
+                    
+                    // Use the individual order item's creation time, not the order's creation time
+                    let itemTime = dateFromString(orderItem.created_at)
+                    
+                    // Safely unwrap optionals and provide default values
+                    let itemName = menuItem.displayName
+                    let quantity = orderItem.quantity ?? 0
+                    let priority = 0 // Default priority
+
+                    // Get category name from the fetched category data
+                    let categoryName = menuItem.categoryDisplayName
+                    
+                    // Get table name instead of ID
+                    let tableName = order.table?.name ?? String(format: "order_table_number".localized, order.table_id)
+                    
+                    // Create a UNIQUE identifier that ensures items with different sizes/toppings are NEVER grouped
+                    // Include order ID to prevent grouping across different orders
+                    let sizeKey = orderItem.menu_item_size_id ?? "no_size"
+                    let toppingsKey = (orderItem.topping_ids?.sorted().joined(separator: ",")) ?? "no_toppings"
+                    let notesKey = orderItem.notes ?? "no_notes"
+                    let uniqueKey = "\(order.id)_\(menuItem.id)_\(sizeKey)_\(toppingsKey)_\(notesKey)_\(orderItem.status.rawValue)"
+                    
+                    // Each unique combination should be its own item - no grouping across different sizes/toppings
+                    let newGroupedItem = GroupedItem(
+                        itemId: uniqueKey,
+                        itemName: itemName,
+                        quantity: quantity,
+                        tables: [tableName],
+                        orderItems: [orderItem],
+                        categoryName: categoryName,
+                        notes: orderItem.notes,
+                        orderTime: itemTime, // Use individual item time instead of order time
+                        priority: priority,
+                        status: orderItem.status
+                    )
+                    newGroupedItems.append(newGroupedItem)
+                }
+            }
+            
+            // Group by category and maintain the order (already sorted by order time)
+            return Dictionary(grouping: newGroupedItems) { $0.categoryName }
+                .map { categoryName, items in
+                    CategoryGroup(
+                        categoryName: categoryName,
+                        items: items // Already sorted by order time (first come first serve)
+                    )
+                }
+        }
+        
+        private func dateFromString(_ dateString: String) -> Date {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+            
+            // Fallback for dates without fractional seconds
+            formatter.formatOptions = [.withInternetDateTime]
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+            
+            // If all parsing fails, log the error and return current date
+            print("⚠️ Failed to parse date string: '\(dateString)'. Using current date as fallback.")
+            return Date()
+        }
+    }
+    
+    private let groupingActor = CategoryGroupingActor()
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
@@ -177,25 +267,73 @@ struct KitchenBoardView: View {
     private func dateFromString(_ dateString: String) -> Date {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
         if let date = formatter.date(from: dateString) {
             return date
         }
+        
         // Fallback for dates without fractional seconds
         formatter.formatOptions = [.withInternetDateTime]
-        return formatter.date(from: dateString) ?? Date() // Return current date as a last resort
+        if let date = formatter.date(from: dateString) {
+            return date
+        }
+        
+        // If all parsing fails, log the error and return current date
+        print("⚠️ Failed to parse date string: '\(dateString)'. Using current date as fallback.")
+        return Date()
     }
     
     private func computeCategoryGrouping() {
+        Task {
+            let orders = orderManager.orders
+            let grouped = await computeCategoryGroupingAsync(orders: orders)
+            await MainActor.run {
+                groupedByCategory = grouped
+            }
+        }
+    }
+    
+    private func computeCategoryGroupingAsync(orders: [Order]) async -> [CategoryGroup] {
+        return await withTaskGroup(of: [GroupedItem].self) { group in
+            // Sort orders by creation time first (oldest first - first come first serve)
+            let sortedOrders = orders.sorted { order1, order2 in
+                let date1 = dateFromString(order1.created_at)
+                let date2 = dateFromString(order2.created_at)
+                return date1 < date2
+            }
+            
+            // Process orders in batches to avoid blocking
+            let batchSize = 10
+            for i in stride(from: 0, to: sortedOrders.count, by: batchSize) {
+                let endIndex = min(i + batchSize, sortedOrders.count)
+                let batch = Array(sortedOrders[i..<endIndex])
+                
+                group.addTask {
+                    await self.processOrderBatch(batch)
+                }
+            }
+            
+            var allGroupedItems: [GroupedItem] = []
+            for await batchItems in group {
+                allGroupedItems.append(contentsOf: batchItems)
+            }
+            
+            // Group by category and maintain the order (already sorted by order time)
+            return Dictionary(grouping: allGroupedItems) { $0.categoryName }
+                .map { categoryName, items in
+                    CategoryGroup(
+                        categoryName: categoryName,
+                        items: items // Already sorted by order time (first come first serve)
+                    )
+                }
+                .sorted { $0.categoryName < $1.categoryName }
+        }
+    }
+    
+    private func processOrderBatch(_ orders: [Order]) async -> [GroupedItem] {
         var newGroupedItems: [GroupedItem] = []
         
-        // Sort orders by creation time first (oldest first - first come first serve)
-        let sortedOrders = orderManager.orders.sorted { order1, order2 in
-            let date1 = dateFromString(order1.created_at)
-            let date2 = dateFromString(order2.created_at)
-            return date1 < date2
-        }
-        
-        for order in sortedOrders {
+        for order in orders {
             for orderItem in order.order_items ?? [] {
                 guard let menuItem = orderItem.menu_item else { continue }
                 
@@ -240,15 +378,7 @@ struct KitchenBoardView: View {
             }
         }
         
-        // Group by category and maintain the order (already sorted by order time)
-        groupedByCategory = Dictionary(grouping: newGroupedItems) { $0.categoryName }
-            .map { categoryName, items in
-                CategoryGroup(
-                    categoryName: categoryName,
-                    items: items // Already sorted by order time (first come first serve)
-                )
-            }
-            .sorted { $0.categoryName < $1.categoryName }
+        return newGroupedItems
     }
     
     private func advanceItemStatus(_ groupedItem: GroupedItem) {

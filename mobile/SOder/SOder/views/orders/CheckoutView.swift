@@ -20,6 +20,7 @@ struct CheckoutView: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var supabaseManager: SupabaseManager
     
     enum PaymentMethod: String, CaseIterable {
         case cash = "cash"
@@ -43,8 +44,10 @@ struct CheckoutView: View {
         }
     }
     
-    // Tax rate - this could be configurable per restaurant
-    private let taxRate: Double = 0.10 // 10% tax
+    // Tax rate - configurable per restaurant
+    private var taxRate: Double {
+        supabaseManager.currentRestaurant?.taxRate ?? 0.10 // Default to 10% if not configured
+    }
     
     private var subtotal: Double {
         order.total_amount ?? 0
