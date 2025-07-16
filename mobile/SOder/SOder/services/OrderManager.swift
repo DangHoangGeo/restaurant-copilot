@@ -104,7 +104,7 @@ class OrderManager: ObservableObject {
     struct NewOrderPayload: Codable {
         let restaurant_id: String
         let table_id: String
-        let user_id: String // Assuming user_id is the UUID of the authenticated user
+        // let user_id: String // REMOVED: Not present in DB
         let guest_count: Int?
         var status: String
         var total_amount: Double = 0 // Initial total price
@@ -157,7 +157,7 @@ class OrderManager: ObservableObject {
         let newOrderPayload = NewOrderPayload(
             restaurant_id: restaurantId,
             table_id: tableId,
-            user_id: userId, // Assuming current authenticated user is placing the order
+            // user_id: userId, // REMOVED: Not present in DB
             guest_count: guestCount,
             status: ORDER_STATUS_DRAFT
         )

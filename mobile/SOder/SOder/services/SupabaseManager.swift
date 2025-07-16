@@ -295,26 +295,13 @@ class SupabaseManager: ObservableObject {
         }
     }
 
+    // Fetch menu item details including available sizes and toppings
     func fetchMenuItemDetails(menuItemId: String) async throws -> MenuItem {
-        // Ensure currentRestaurantId is available if items are restaurant-specific
-        // and RLS isn't solely relied upon for this check.
-        // guard let restaurantId = self.currentRestaurantId else {
-        //     print("Error: Missing restaurantId in fetchMenuItemDetails")
-        //     throw SupabaseManagerError.missingRestaurantId
-        // }
-
         do {
-            // Assuming 'menu_item_sizes' and 'menu_item_toppings' are the correct table names
-            // and are correctly linked via foreign keys to 'menu_items'.
-            // The models MenuItem, MenuItemSize, Topping must be Codable and match the response.
-            // The refactored MenuItem model has `availableSizes: [MenuItemSize]?` and `availableToppings: [Topping]?`
-            // which Supabase client can populate if the select query is structured correctly.
-            // The `(*)` fetches all columns for the related records.
             let menuItem: MenuItem = try await client
                 .from("menu_items")
-                .select("*, category:categories(*), availableSizes:menu_item_sizes(*), availableToppings:menu_item_toppings(*)")
+                .select("*, category:categories(*), availableSizes:menu_item_sizes(*), availableToppings:toppings(*)")
                 .eq("id", value: menuItemId)
-                // .eq("restaurant_id", value: restaurantId) // If needed, but RLS should handle this
                 .single()
                 .execute()
                 .value

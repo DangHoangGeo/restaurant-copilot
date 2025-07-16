@@ -11,40 +11,38 @@ struct DraftOrderView: View {
     @State private var draftOrder: Order? = nil
     @State private var isLoading = false
     @State private var isProcessingOrder = false
-
     @State private var errorMessage: String? = nil
     @State private var showingErrorAlert = false
     @State private var showingCancelConfirmAlert = false
     @State private var showOrderConfirmedAlert = false
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             if isLoading {
-                ProgressView("Loading draft order...")
-                    .padding()
+                ProgressView("loading_draft_order_text".localized)
+                    .padding(16)
             } else if let order = draftOrder, let items = order.order_items, !items.isEmpty {
                 List {
-                    Section(header: Text("Items (\(items.count))")) {
+                    Section(header: Text("items_section_title".localized + " (\(items.count))")) {
                         ForEach(items) { item in
                             orderItemRow(item)
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
                                         Task { await removeOrderItem(item.id) }
                                     } label: {
-                                        Label("Remove", systemImage: "trash.fill")
+                                        Label("remove_item_action_label".localized, systemImage: "trash.fill")
                                     }
                                 }
                         }
                     }
-
-                    Section(header: Text("Order Summary")) {
+                    Section(header: Text("order_summary_section_title".localized)) {
                         HStack {
-                            Text("Total Items:")
+                            Text("total_items_label".localized)
                             Spacer()
                             Text("\(items.reduce(0) { $0 + $1.quantity })")
                         }
                         HStack {
-                            Text("Total Price:")
+                            Text("total_price_label".localized)
                                 .fontWeight(.bold)
                             Spacer()
                             Text(String(format: "%.0f円", order.total_amount ?? calculateTotalPrice()))
@@ -52,36 +50,34 @@ struct DraftOrderView: View {
                         }
                     }
                 }
-
+                .listStyle(PlainListStyle())
+                .scrollContentBackground(.hidden)
                 actionButtons()
-
             } else {
                 VStack(spacing: 20) {
-                    Text("No items added to this order yet.")
+                    Text("no_items_in_order_text".localized)
                         .foregroundColor(.secondary)
-                        .padding()
-                    
-                    Button("Add Items") {
+                        .padding(16)
+                    Button("add_items_button_title".localized) {
                         dismiss()
                     }
                     .buttonStyle(.borderedProminent)
-                    .accessibilityLabel("Add menu items to order")
-                    .accessibilityHint("Tap to return to menu and add items to this order")
+                    .accessibilityLabel("add_menu_items_accessibility_label".localized)
+                    .accessibilityHint("add_menu_items_accessibility_hint".localized)
                 }
                 Spacer()
             }
         }
-        .navigationTitle("Draft: Table \(table.name)")
+        .navigationTitle("draft_order_title_prefix".localized + table.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Back to Menu") {
+                Button("back_to_menu_button_title".localized) {
                     dismiss()
                 }
-                .accessibilityLabel("Return to menu")
-                .accessibilityHint("Tap to go back to the restaurant menu")
+                .accessibilityLabel("return_to_menu_accessibility_label".localized)
+                .accessibilityHint("return_to_menu_accessibility_hint".localized)
             }
-            
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     Task { await fetchDraftOrderDetails() }
@@ -89,33 +85,33 @@ struct DraftOrderView: View {
                     Image(systemName: "arrow.clockwise")
                 }
                 .disabled(isLoading || isProcessingOrder)
-                .accessibilityLabel("Refresh order details")
-                .accessibilityHint("Tap to reload the current order information")
+                .accessibilityLabel("refresh_order_details_accessibility_label".localized)
+                .accessibilityHint("refresh_order_details_accessibility_hint".localized)
             }
         }
         .task {
             await fetchDraftOrderDetails()
         }
-        .alert("Error", isPresented: $showingErrorAlert) {
-            Button("OK") {}
+        .alert("error_alert_title".localized, isPresented: $showingErrorAlert) {
+            Button("ok_button_title".localized) {}
         } message: {
-            Text(errorMessage ?? "An unknown error occurred.")
+            Text(errorMessage ?? "error_alert_default_message".localized)
         }
-        .alert("Confirm Cancellation", isPresented: $showingCancelConfirmAlert) {
-            Button("Yes, Cancel Order", role: .destructive) { 
+        .alert("confirm_cancel_title".localized, isPresented: $showingCancelConfirmAlert) {
+            Button("yes_cancel_order_button_title".localized, role: .destructive) { 
                 Task { await cancelEntireOrder() } 
             }
-            Button("No", role: .cancel) {}
+            Button("no_button_title".localized, role: .cancel) {}
         } message: {
-            Text("Are you sure you want to cancel this entire draft order? This cannot be undone.")
+            Text("confirm_cancel_message".localized)
         }
-        .alert("Order Confirmed", isPresented: $showOrderConfirmedAlert) {
-            Button("OK") {
+        .alert("order_confirmed_alert_title".localized, isPresented: $showOrderConfirmedAlert) {
+            Button("ok_button_title".localized) {
                 onOrderConfirmed?()
                 dismiss()
             }
         } message: {
-            Text("Order has been successfully sent to the kitchen!")
+            Text("order_confirmed_alert_message".localized)
         }
         .disabled(isProcessingOrder)
     }
@@ -124,14 +120,12 @@ struct DraftOrderView: View {
     private func orderItemRow(_ item: OrderItem) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.menu_item?.displayName ?? "Unknown Item")
-                    .font(.headline)
-
-                Text("Qty: \(item.quantity)")
-                    .font(.subheadline)
-
+                Text(item.menu_item?.displayName ?? "unknown_item_text".localized)
+                    .font(.cardTitle)
+                Text("qty_label".localized + ": \(item.quantity)")
+                    .font(.bodyMedium)
                 if let notes = item.notes, !notes.isEmpty {
-                    Text("Notes: \(notes)")
+                    Text("notes_label".localized + ": \(notes)")
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
@@ -140,7 +134,7 @@ struct DraftOrderView: View {
             Text(String(format: "%.0f円", item.price_at_order * Double(item.quantity)))
                 .fontWeight(.medium)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
 
     @ViewBuilder
@@ -151,7 +145,7 @@ struct DraftOrderView: View {
             } label: {
                 HStack {
                     Image(systemName: "paperplane.fill")
-                    Text("Confirm Order to Kitchen")
+                    Text("confirm_order_to_kitchen_button_title".localized)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -159,19 +153,19 @@ struct DraftOrderView: View {
             .tint(.green)
             .controlSize(.large)
             .disabled(isProcessingOrder || draftOrder == nil || draftOrder?.order_items?.isEmpty == true)
-            .accessibilityLabel("Confirm order to kitchen")
-            .accessibilityHint("Tap to send this order to the kitchen for preparation")
+            .accessibilityLabel("confirm_order_to_kitchen_accessibility_label".localized)
+            .accessibilityHint("confirm_order_to_kitchen_accessibility_hint".localized)
 
-            Button("Cancel Entire Order", role: .destructive) {
+            Button("cancel_entire_order_button_title".localized, role: .destructive) {
                 showingCancelConfirmAlert = true
             }
             .buttonStyle(.bordered)
             .controlSize(.large)
             .disabled(isProcessingOrder || draftOrder == nil)
-            .accessibilityLabel("Cancel entire order")
-            .accessibilityHint("Tap to cancel this entire order permanently")
+            .accessibilityLabel("cancel_entire_order_accessibility_label".localized)
+            .accessibilityHint("cancel_entire_order_accessibility_hint".localized)
         }
-        .padding()
+        .padding(16)
     }
 
     // MARK: - Data Functions
