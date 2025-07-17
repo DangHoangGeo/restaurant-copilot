@@ -152,6 +152,17 @@ public struct DestructiveButtonStyle: ButtonStyle {
     }
 }
 
+public struct IconButtonStyle: ButtonStyle {
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.title2)
+            .foregroundColor(.appPrimary)
+            .frame(width: 44, height: 44)
+            .background(Color.appPrimary.opacity(configuration.isPressed ? 0.2 : 0))
+            .clipShape(Circle())
+    }
+}
+
 // MARK: - TextField Style
 public struct AppTextFieldStyle: TextFieldStyle {
     public let isError: Bool

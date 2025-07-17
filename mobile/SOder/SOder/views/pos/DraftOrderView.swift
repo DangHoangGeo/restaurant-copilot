@@ -143,24 +143,17 @@ struct DraftOrderView: View {
             Button {
                 Task { await confirmOrderToKitchen() }
             } label: {
-                HStack {
-                    Image(systemName: "paperplane.fill")
-                    Text("confirm_order_to_kitchen_button_title".localized)
-                }
-                .frame(maxWidth: .infinity)
+                Label("confirm_order_to_kitchen_button_title".localized, systemImage: "paperplane.fill")
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
-            .controlSize(.large)
+            .buttonStyle(PrimaryButtonStyle())
             .disabled(isProcessingOrder || draftOrder == nil || draftOrder?.order_items?.isEmpty == true)
             .accessibilityLabel("confirm_order_to_kitchen_accessibility_label".localized)
             .accessibilityHint("confirm_order_to_kitchen_accessibility_hint".localized)
 
-            Button("cancel_entire_order_button_title".localized, role: .destructive) {
+            Button("cancel_entire_order_button_title".localized) {
                 showingCancelConfirmAlert = true
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
+            .buttonStyle(DestructiveButtonStyle())
             .disabled(isProcessingOrder || draftOrder == nil)
             .accessibilityLabel("cancel_entire_order_accessibility_label".localized)
             .accessibilityHint("cancel_entire_order_accessibility_hint".localized)

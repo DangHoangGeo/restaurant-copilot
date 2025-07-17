@@ -123,29 +123,11 @@ struct MenuSelectionView: View {
         VStack(spacing: 0) {
             // Search and Filter Bar
             VStack(spacing: 12) {
-                // Search Bar
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                    
-                    TextField("Search by name or code...", text: $searchText)
-                        .textFieldStyle(PlainTextFieldStyle())
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                    
-                    if !searchText.isEmpty {
-                        Button("Clear") {
-                            searchText = ""
-                        }
-                        .foregroundColor(.blue)
-                        .font(.caption)
-                    }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                
+                TextField("Search by name or code...", text: $searchText)
+                    .textFieldStyle(AppTextFieldStyle())
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+
                 // Category Filter
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -170,7 +152,7 @@ struct MenuSelectionView: View {
                 }
             }
             .padding()
-            .background(Color(.systemGroupedBackground))
+            .background(Color.appBackground)
             
             // Menu Items List
             if isLoading {
@@ -323,67 +305,33 @@ struct MenuItemRowView: View {
     let onCustomize: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(item.displayName)
-                        .font(.cardTitle)
-                        .fontWeight(.semibold)
-                    Spacer()
-                    if let code = item.code, !code.isEmpty {
-                        Text("#\(code)")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.appPrimary.opacity(0.1))
-                            .foregroundColor(.appPrimary)
-                            .cornerRadius(4)
-                    }
-                }
+        HStack(spacing: Spacing.md) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(item.displayName)
+                    .font(.cardTitle)
                 if let description = item.displayDescription, !description.isEmpty {
                     Text(description)
                         .font(.bodyMedium)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextSecondary)
                         .lineLimit(2)
                 }
-                HStack {
-                    Text("¥\(String(format: "%.0f", item.price))")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                    Spacer()
-                    let categoryName = item.categoryDisplayName
-                    if !categoryName.isEmpty && categoryName != item.category_id {
-                        Text(categoryName)
-                            .font(.caption)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.orange.opacity(0.1))
-                            .foregroundColor(.orange)
-                            .cornerRadius(4)
-                    }
-                }
-            }
-            Button(action: onAdd) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.title2)
+                Text(String(format: "%.0f円", item.price))
+                    .font(.sectionHeader)
                     .foregroundColor(.appPrimary)
             }
-            .buttonStyle(BorderlessButtonStyle())
+            Spacer()
+            Button(action: onAdd) {
+                Image(systemName: "plus")
+            }
+            .buttonStyle(IconButtonStyle())
             .accessibilityLabel("add_item_to_order_accessibility_label".localized + item.displayName)
             Button(action: onCustomize) {
                 Image(systemName: "slider.horizontal.3")
-                    .font(.title2)
-                    .foregroundColor(.appPrimary)
             }
-            .buttonStyle(BorderlessButtonStyle())
+            .buttonStyle(IconButtonStyle())
             .accessibilityLabel("customize_item_accessibility_label".localized + item.displayName)
         }
-        .padding()
-        .background(Color.appSurface)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .cardStyle()
     }
 }
 
@@ -395,14 +343,8 @@ struct CategoryFilterButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isSelected ? Color.appPrimary : Color(.systemGray6))
-                .foregroundColor(isSelected ? .white : .primary)
-                .cornerRadius(8)
         }
+        .filterChipStyle(isSelected: isSelected)
     }
 }
 
