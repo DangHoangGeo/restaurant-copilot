@@ -1,5 +1,11 @@
 import Foundation
 
+// MARK: - Typealiases for ID types
+
+typealias ToppingId = String
+// If you want to be explicit, you can also add:
+typealias MenuItemSizeId = String
+
 // MARK: - Order Models
 struct Order: Codable, Identifiable, Equatable, Hashable { // Changed to Codable
     let id: String

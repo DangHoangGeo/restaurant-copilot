@@ -7,48 +7,48 @@ struct ConnectionStatusBar: View {
     @EnvironmentObject var printerManager: PrinterManager
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.sm) {
             // Database Connection Status
-            HStack(spacing: 4) {
+            HStack(spacing: Spacing.xxs) {
                 Circle()
-                    .fill(supabaseManager.isAuthenticated ? Color.green : Color.red)
+                    .fill(supabaseManager.isAuthenticated ? Color.appSuccess : Color.appError)
                     .frame(width: 8, height: 8)
                 Text("connection_status_database".localized)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextSecondary)
             }
             
             // Real-time Status
-            HStack(spacing: 4) {
+            HStack(spacing: Spacing.xxs) {
                 Circle()
-                    .fill(orderManager.isRealtimeConnected ? Color.green : Color.orange)
+                    .fill(orderManager.isRealtimeConnected ? Color.appSuccess : Color.appWarning)
                     .frame(width: 8, height: 8)
                 Text("connection_status_live_updates".localized)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextSecondary)
             }
             
             // Printer Status
-            HStack(spacing: 4) {
+            HStack(spacing: Spacing.xxs) {
                 Circle()
-                    .fill(printerManager.isConnected ? Color.green : Color.gray)
+                    .fill(printerManager.isConnected ? Color.appSuccess : Color.appTextSecondary)
                     .frame(width: 8, height: 8)
                 Text("connection_status_printer".localized)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextSecondary)
             }
             
             Spacer()
             
             if let restaurant = supabaseManager.currentRestaurant {
-                Text(restaurant.name ?? "Unknown Restaurant")
-                    .font(.caption)
+                Text(restaurant.name ?? "connection_status_unknown_restaurant".localized)
+                    .font(.captionRegular)
                     .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.appTextPrimary)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Color(.systemGray6))
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(Color.appSurface)
     }
 }

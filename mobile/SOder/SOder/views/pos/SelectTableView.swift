@@ -13,15 +13,15 @@ extension TableStatus {
 
     // Convert the string color from the canonical model to a SwiftUI.Color
     var swiftUIColor: Color {
-        switch self.color { // self.color refers to the String property from canonical TableStatus
-        case "green": return .green
-        case "orange": return .orange
+        switch self.color {
+        case "green": return .appSuccess
+        case "orange": return .appWarning
         case "purple": return .purple
-        case "gray": return .gray
-        case "red": return .red
-        case "blue": return .blue
-        case "teal": return .teal // Added from OrderStatus, might be useful
-        default: return .yellow // Fallback for unknown string colors
+        case "gray": return .appTextSecondary
+        case "red": return .appError
+        case "blue": return .appPrimary
+        case "teal": return .teal
+        default: return .appAccent
         }
     }
 }
@@ -118,34 +118,34 @@ struct SelectTableView: View {
 
         VStack(alignment: .center, spacing: 8) {
             Text(table.name)
-                .font(.headline)
+                .font(.sectionHeader)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(.appTextPrimary)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
 
             HStack {
                 Image(systemName: status.isSelectableForNewOrder ? "checkmark.circle.fill" : "info.circle.fill")
-                    .foregroundColor(status.swiftUIColor) // Use swiftUIColor
+                    .foregroundColor(status.swiftUIColor)
                 Text(status.displayName)
-                    .font(.subheadline)
+                    .font(.bodyMedium)
                     .fontWeight(.medium)
-                    .foregroundColor(status.swiftUIColor) // Use swiftUIColor
+                    .foregroundColor(status.swiftUIColor)
             }
 
             Text("Capacity: \(table.capacity)")
-                .font(.caption)
-                .foregroundColor(.gray)
+                .font(.captionRegular)
+                .foregroundColor(.appTextSecondary)
         }
-        .padding()
-        .frame(minHeight: 120) // Give a minimum height for consistency
+        .padding(Spacing.md)
+        .frame(minHeight: 120)
         .frame(maxWidth: .infinity)
-        .background(Color(UIColor.secondarySystemGroupedBackground)) // Adapts to light/dark mode
+        .background(Color.appSurface)
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.1), radius: 3, x: 1, y: 2)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(status.swiftUIColor.opacity(0.7), lineWidth: status.isSelectableForNewOrder ? 2 : 0.5) // Use swiftUIColor
+                .stroke(status.swiftUIColor.opacity(0.7), lineWidth: status.isSelectableForNewOrder ? 2 : 0.5)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(table.name), Status: \(status.displayName), Capacity: \(table.capacity)")

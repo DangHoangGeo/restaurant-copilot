@@ -359,6 +359,8 @@
 "orders_unknown_time" = "Unknown";
 "orders_more_items" = "and {count} more...";
 "orders_unknown_item" = "Unknown";
+"order_items_section_title" = "Order items";
+"order_items_new_label" = "New";
 
 // MARK: - Printer Settings View Localization
 "printer_settings_title" = "Printer Settings";
@@ -559,3 +561,49 @@
 "bold_text_desc" = "Bold text";
 "separator_desc" = "Horizontal line";
 "cut_paper_desc" = "Cut paper";
+
+// 
+"table_title_prefix" = "Table ";
+"cart_panel_accessibility_label" = "Cart panel";
+"view_cart_items_accessibility_label" = "View cart, ";
+"view_cart_empty_accessibility_label" = "View cart, empty";
+"loading_menu_items_text" = "Loading menu items...";
+"no_items_found_for_search_text" = "No items found for ";
+"try_different_search_term_text" = "Try a different search term";
+"no_items_in_category_text" = "No items in this category";
+"no_menu_items_available_text" = "No menu items available";
+"add_item_to_order_accessibility_label" = "Add ";
+"customize_item_accessibility_label" = "Customize ";
+"error_alert_title" = "Error";
+"ok_button_title" = "OK";
+"error_alert_default_message" = "An unknown error occurred.";
+"items_section_title" = "Items";
+"order_summary_section_title" = "Order Summary";
+"total_items_label" = "Total Items:";
+"total_price_label" = "Total Price:";
+"no_items_in_order_text" = "No items added to this order yet.";
+"add_items_button_title" = "Add Items";
+"add_menu_items_accessibility_label" = "Add menu items to order";
+"add_menu_items_accessibility_hint" = "Tap to return to menu and add items to this order";
+"draft_order_title_prefix" = "Draft: Table ";
+"back_to_menu_button_title" = "Back to Menu";
+"return_to_menu_accessibility_label" = "Return to menu";
+"return_to_menu_accessibility_hint" = "Tap to go back to the restaurant menu";
+"refresh_order_details_accessibility_label" = "Refresh order details";
+"refresh_order_details_accessibility_hint" = "Tap to reload the current order information";
+"confirm_cancel_title" = "Confirm Cancellation";
+"yes_cancel_order_button_title" = "Yes, Cancel Order";
+"no_button_title" = "No";
+"confirm_cancel_message" = "Are you sure you want to cancel this entire draft order? This cannot be undone.";
+"order_confirmed_alert_title" = "Order Confirmed";
+"order_confirmed_alert_message" = "Order has been successfully sent to the kitchen!";
+"qty_label" = "Qty";
+"notes_label" = "Notes";
+"unknown_item_text" = "Unknown Item";
+"confirm_order_to_kitchen_button_title" = "Confirm Order to Kitchen";
+"confirm_order_to_kitchen_accessibility_label" = "Confirm order to kitchen";
+"confirm_order_to_kitchen_accessibility_hint" = "Tap to send this order to the kitchen for preparation";
+"cancel_entire_order_button_title" = "Cancel Entire Order";
+"cancel_entire_order_accessibility_label" = "Cancel entire order";
+"cancel_entire_order_accessibility_hint" = "Tap to cancel this entire order permanently";
+"remove_item_action_label" = "Remove";

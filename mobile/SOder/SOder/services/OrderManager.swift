@@ -104,7 +104,7 @@ class OrderManager: ObservableObject {
     struct NewOrderPayload: Codable {
         let restaurant_id: String
         let table_id: String
-        let user_id: String // Assuming user_id is the UUID of the authenticated user
+        let session_id: String
         let guest_count: Int?
         var status: String
         var total_amount: Double = 0 // Initial total price
@@ -148,7 +148,7 @@ class OrderManager: ObservableObject {
         guard let restaurantId = supabaseManager.currentRestaurantId else {
             throw OrderManagerError.missingRestaurantId
         }
-        guard let userId = supabaseManager.currentUser?.id.uuidString else {
+        guard let userId = supabaseManager.currentUser?.id else {
             // In a real app, user ID should always be available after login.
             // This might indicate an issue with session management or user data fetching.
             throw OrderManagerError.missingUserId
@@ -157,7 +157,7 @@ class OrderManager: ObservableObject {
         let newOrderPayload = NewOrderPayload(
             restaurant_id: restaurantId,
             table_id: tableId,
-            user_id: userId, // Assuming current authenticated user is placing the order
+            session_id: userId.uuidString,
             guest_count: guestCount,
             status: ORDER_STATUS_DRAFT
         )
@@ -434,17 +434,22 @@ class OrderManager: ObservableObject {
         }
         print("Fetching draft order \(orderId) from database.")
         do {
-            let orderResponse: Order = try await supabaseManager.client
+            let orderResponse: [Order] = try await supabaseManager.client
                 .from("orders")
                 .select("*, table:tables(*), order_items(*, menu_item:menu_items(*, category:categories(*)), menu_item_size:menu_item_sizes(*))") // Added category to menu_item
                 .eq("id", value: orderId)
                 .eq("status", value: "draft") // Ensure it's still a draft
-                .single() // Use single instead of maybeSingle
+                .limit(1)
                 .execute()
                 .value
 
-            self.currentDraftOrder = orderResponse
-            return orderResponse
+            if let order = orderResponse.first {
+                self.currentDraftOrder = order
+                return order
+            } else {
+                // No draft order found, which is a valid case.
+                return nil
+            }
         } catch {
             print("Error fetching draft order \(orderId): \(error)")
             throw OrderManagerError.generalError("Failed to fetch draft order \(orderId): \(error.localizedDescription)")

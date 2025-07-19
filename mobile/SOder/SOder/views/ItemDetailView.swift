@@ -18,7 +18,6 @@ struct ItemDetailView: View {
                 .onTapGesture {
                     onComplete()
                 }
-            
             // Detail dialog
             VStack(spacing: 0) {
                 // Header
@@ -26,7 +25,7 @@ struct ItemDetailView: View {
                 
                 // Content
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: Spacing.md) {
                         // Item summary
                         itemSummarySection
                         
@@ -38,13 +37,13 @@ struct ItemDetailView: View {
                     }
                     .padding()
                 }
-                .background(Color(.systemGroupedBackground))
+                .background(Color.appBackground)
             }
-            .frame(maxWidth: 600) // Limit width for iPad
-            .frame(maxHeight: UIScreen.main.bounds.height * 0.8) // Limit height
-            .background(Color(.systemBackground))
-            .cornerRadius(20)
-            .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
+            .frame(maxWidth: 600)
+            .frame(maxHeight: UIScreen.main.bounds.height * 0.8)
+            .background(Color.appSurface)
+            .cornerRadius(CornerRadius.lg)
+            .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
             .padding()
         }
     }
@@ -53,10 +52,11 @@ struct ItemDetailView: View {
     
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(item.itemName)
-                    .font(.headline)
+                    .font(.cardTitle)
                     .fontWeight(.bold)
+                    .foregroundColor(.appTextPrimary)
                 
                 HStack(spacing: 16) {
                     Label("×\(item.quantity)", systemImage: "number.circle")
@@ -85,32 +85,33 @@ struct ItemDetailView: View {
             
             Spacer()
             
-            Button("Close") {
+            Button("item_detail_close_button".localized) {
                 onComplete()
             }
-            .font(.subheadline)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color(.systemGray5))
-            .cornerRadius(8)
+            .font(.bodyMedium)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
+            .background(Color.appSurface)
+            .cornerRadius(CornerRadius.sm)
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color.appSurface)
         .overlay(
             Rectangle()
                 .frame(height: 1)
-                .foregroundColor(Color(.systemGray4)),
+                .foregroundColor(Color.appBorder),
             alignment: .bottom
         )
     }
     
     private var itemSummarySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Item Details")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("item_detail_item_details_title".localized)
+                .font(.sectionHeader)
                 .fontWeight(.semibold)
+                .foregroundColor(.appTextPrimary)
             
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 // Name and size
                 HStack {
                     Text("Name:")
@@ -200,18 +201,19 @@ struct ItemDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
     private var statusManagementSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Status Management")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("item_detail_status_management_title".localized)
+                .font(.sectionHeader)
                 .fontWeight(.semibold)
+                .foregroundColor(.appTextPrimary)
             
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.sm) {
                 // Current status display
                 HStack {
                     Circle()
@@ -261,13 +263,13 @@ struct ItemDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
     private var actionButtonsSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.sm) {
         
             Button(action: {
                 Task {
@@ -287,8 +289,8 @@ struct ItemDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
@@ -302,12 +304,12 @@ struct ItemDetailView: View {
     
     private var statusColor: Color {
         switch item.status {
-        case .draft: return .gray
-        case .ordered: return .blue
-        case .preparing: return .orange
-        case .ready: return .green
-        case .served: return .gray
-        case .cancelled: return .red
+        case .draft: return .appTextSecondary
+        case .ordered: return .appInfo
+        case .preparing: return .appWarning
+        case .ready: return .appSuccess
+        case .served: return .appTextSecondary
+        case .cancelled: return .appError
         }
     }
     

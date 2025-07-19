@@ -180,8 +180,8 @@ struct KitchenBoardView: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.orange)
                         Text(errorMessage)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                         Spacer()
                         Button("kitchen_retry".localized) {
                             Task {
@@ -191,11 +191,11 @@ struct KitchenBoardView: View {
                                 }
                             }
                         }
-                        .font(.caption)
-                        .foregroundColor(.blue)
+                        .font(.captionRegular)
+                        .foregroundColor(.appInfo)
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color.appSurface)
                 }
             }
             

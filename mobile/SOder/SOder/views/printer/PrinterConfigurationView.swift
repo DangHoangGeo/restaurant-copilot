@@ -16,14 +16,14 @@ struct PrinterConfigurationView: View {
                 Section("printer_config_status_title".localized) {
                     HStack {
                         Image(systemName: settingsManager.hasUserConfiguredPrinters() ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                            .foregroundColor(settingsManager.hasUserConfiguredPrinters() ? .green : .orange)
+                            .foregroundColor(settingsManager.hasUserConfiguredPrinters() ? .appSuccess : .appWarning)
                         
                         VStack(alignment: .leading) {
                             Text(settingsManager.hasUserConfiguredPrinters() ? "printer_config_status_configured_title".localized : "printer_config_status_default_title".localized)
-                                .font(.headline)
+                                .font(.sectionHeader)
                             Text(settingsManager.isUsingDefaultPrinter() ? "printer_config_status_default_subtitle".localized : "printer_config_status_custom_subtitle".localized)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextSecondary)
                         }
                         
                         Spacer()
@@ -201,32 +201,32 @@ struct PrinterConfigRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Image(systemName: printer.printerType.icon)
-                        .foregroundColor(isActive ? .green : .blue)
+                        .foregroundColor(isActive ? .appSuccess : .appPrimary)
                     Text(printer.name)
-                        .font(.headline)
+                        .font(.sectionHeader)
                     if isActive {
                         Text("printer_config_row_active_badge".localized)
-                            .font(.caption)
+                            .font(.captionBold)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(.green.opacity(0.2))
-                            .foregroundColor(.green)
+                            .background(Color.appSuccess.opacity(0.2))
+                            .foregroundColor(.appSuccess)
                             .clipShape(Capsule())
                     }
                 }
                 
                 Text(printer.printerType.displayName)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextSecondary)
                 
                 Text("\(printer.ipAddress):\(printer.port)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextSecondary)
                 
                 if let notes = printer.notes, !notes.isEmpty {
                     Text(notes)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.captionRegular)
+                        .foregroundColor(.appTextSecondary)
                         .italic()
                 }
             }
@@ -238,21 +238,21 @@ struct PrinterConfigRowView: View {
                     onEdit()
                 }
                 .buttonStyle(.bordered)
-                .font(.caption)
+                .font(.captionRegular)
                 
                 if isActive {
                     Button("printer_config_row_deactivate_button".localized) {
                         onDeactivate?()
                     }
                     .buttonStyle(.bordered)
-                    .font(.caption)
-                    .foregroundColor(.orange)
+                    .font(.captionRegular)
+                    .foregroundColor(.appWarning)
                 } else {
                     Button("printer_config_row_activate_button".localized) {
                         onActivate?()
                     }
                     .buttonStyle(.borderedProminent)
-                    .font(.caption)
+                    .font(.captionRegular)
                 }
                 
                 if !isActive, let onDelete = onDelete {
@@ -260,8 +260,8 @@ struct PrinterConfigRowView: View {
                         onDelete()
                     }
                     .buttonStyle(.bordered)
-                    .font(.caption)
-                    .foregroundColor(.red)
+                    .font(.captionRegular)
+                    .foregroundColor(.appError)
                 }
             }
         }

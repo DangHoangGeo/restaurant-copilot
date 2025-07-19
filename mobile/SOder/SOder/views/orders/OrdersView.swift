@@ -35,11 +35,11 @@ struct OrdersView: View {
         
         var color: Color {
             switch self {
-            case .active: return .blue
-            case .new: return .blue
-            case .serving: return .orange
-            case .completed: return .gray
-            case .canceled: return .red
+            case .active: return .appPrimary
+            case .new: return .appInfo
+            case .serving: return .appWarning
+            case .completed: return .appTextSecondary
+            case .canceled: return .appError
             }
         }
     }
@@ -77,6 +77,7 @@ struct OrdersView: View {
                 }
             }
         }
+        .background(Color.appBackground) // Explicit background
         .task {
             await orderManager.fetchActiveOrders()
             if showAllOrders {
@@ -110,17 +111,17 @@ struct OrdersView: View {
                     }
                     showingNewOrderFlow = false
                 })
-                    .environmentObject(orderManager)
-                    .environmentObject(supabaseManager)
-                    .environmentObject(printerManager)
-                    .environmentObject(localizationManager)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button("Cancel") {
-                                showingNewOrderFlow = false
-                            }
+                .environmentObject(orderManager)
+                .environmentObject(supabaseManager)
+                .environmentObject(printerManager)
+                .environmentObject(localizationManager)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            showingNewOrderFlow = false
                         }
                     }
+                }
             }
         }
     }
@@ -129,11 +130,11 @@ struct OrdersView: View {
     private var orderSidebar: some View {
         VStack(spacing: 0) {
             // Header with toggle
-            VStack(spacing: 16) {
+            VStack(spacing: Spacing.lg) {
                 HStack {
                     Text("orders".localized)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                        .font(.sectionHeader)
+                        .foregroundColor(.appTextPrimary)
                     Spacer()
                     
                     // Auto-print status indicator
@@ -168,7 +169,7 @@ struct OrdersView: View {
                                     Spacer()
                                     if orderManager.autoPrintingEnabled {
                                         Image(systemName: "checkmark")
-                                            .foregroundColor(.green)
+                                            .foregroundColor(.appSuccess)
                                     }
                                 }
                             }
@@ -217,7 +218,7 @@ struct OrdersView: View {
                 
                 // Filter Pills
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: Spacing.md) {
                         ForEach(OrderFilter.allCases, id: \.self) { filter in
                             FilterChip(
                                 title: filter.displayName,
@@ -238,18 +239,19 @@ struct OrdersView: View {
                 }) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
-                        Text("New Order")
+                        Text("tab_new_order".localized)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.blue)
+                    .font(.buttonMedium)
                     .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .padding(.vertical, Spacing.md)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.appPrimary)
+                    .cornerRadius(CornerRadius.md)
                 }
                 .padding(.horizontal)
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(Color.appSurface)
             
             // Orders List
             if orderManager.isLoading {
@@ -463,14 +465,14 @@ struct OrdersView: View {
                 }) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
-                        Text("New Order")
+                        Text("tab_new_order".localized)
                     }
                 }
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
-                    Button("Refresh Orders") {
+                    Button("orders_refresh".localized) {
                         Task {
                             await orderManager.fetchActiveOrders()
                         }
@@ -545,58 +547,59 @@ struct SidebarOrderRowView: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
                     HStack {
-                        HStack(spacing: 6){
+                        HStack(spacing: Spacing.xxs){
                             Text(order.table?.name ?? "Table \(order.table_id)")
-                                .font(.headline)
+                                .font(.cardTitle)
+                                .foregroundColor(.appTextPrimary)
                                 .fontWeight(.bold)
                             
                             Text("ID: \(order.id.prefix(6).uppercased())")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .font(.bodyRegular)
+                                .foregroundColor(.appTextSecondary)
                         }
                         if isNew {
                             Text("NEW")
-                                .font(.caption2)
+                                .font(.captionBold)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 6)
+                                .padding(.horizontal, Spacing.xs)
                                 .padding(.vertical, 2)
-                                .background(Color.red)
-                                .cornerRadius(4)
+                                .background(Color.appError)
+                                .cornerRadius(CornerRadius.xs)
                         }
                         
                         if order.order_items?.contains(where: { $0.status.rawValue == "ordered" }) == true {
                             Image(systemName: "circle.fill")
-                                .font(.caption2)
-                                .foregroundColor(.red)
+                                .font(.captionRegular)
+                                .foregroundColor(.appError)
                         }
                         
                         Spacer()
                     }
                     
-                    HStack(spacing: 12) {
+                    HStack(spacing: Spacing.xxs) {
                         Label("\(order.guest_count)", systemImage: "person.2")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                         
                         Label(formatTime(order.created_at), systemImage: "clock")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                     }
                 }
                 
-                VStack(alignment: .trailing, spacing: 4) {
+                VStack(alignment: .trailing, spacing: Spacing.xxs) {
                     EnhancedStatusBadge(status: order.status)
                     
                     if let total = order.total_amount {
                         Text("¥\(String(format: "%.0f", total))")
-                            .font(.subheadline)
+                            .font(.bodyMedium)
                             .fontWeight(.semibold)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.appTextPrimary)
                     }
                 }
             }
@@ -606,27 +609,27 @@ struct SidebarOrderRowView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(Array(items), id: \.id) { item in
                         Text("\(item.quantity)× \(item.menu_item?.displayName ?? "Unknown")")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                             .lineLimit(1)
                     }
                     
                     if let totalItems = order.order_items?.count, totalItems > 3 {
                         Text("and \(totalItems - 3) more...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                             .italic()
                     }
                 }
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(isSelected ? Color.blue.opacity(0.1) : Color(.systemBackground))
-        .cornerRadius(12)
+        .padding(.vertical, Spacing.sm)
+        .padding(.horizontal, Spacing.md)
+        .background(isSelected ? Color.appPrimary.opacity(0.1) : Color.appSurface)
+        .cornerRadius(CornerRadius.md)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(isSelected ? Color.appPrimary : Color.clear, lineWidth: 2)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
