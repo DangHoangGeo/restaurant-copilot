@@ -398,6 +398,8 @@
 "orders_unknown_time" = "Không xác định";
 "orders_more_items" = "và {count} món khác...";
 "orders_unknown_item" = "Không xác định";
+"order_items_section_title" = "Danh sách gọi món";
+"order_items_new_label" = "Mới";
 
 // MARK: - Order Detail
 "orders_not_found" = "Không tìm thấy đơn hàng";

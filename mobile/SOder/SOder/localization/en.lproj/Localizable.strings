@@ -359,6 +359,8 @@
 "orders_unknown_time" = "Unknown";
 "orders_more_items" = "and {count} more...";
 "orders_unknown_item" = "Unknown";
+"order_items_section_title" = "Order items";
+"order_items_new_label" = "New";
 
 // MARK: - Printer Settings View Localization
 "printer_settings_title" = "Printer Settings";

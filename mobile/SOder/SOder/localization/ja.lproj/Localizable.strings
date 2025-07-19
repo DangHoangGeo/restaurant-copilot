@@ -394,6 +394,8 @@
 "orders_unknown_time" = "不明";
 "orders_more_items" = "他{count}件...";
 "orders_unknown_item" = "不明";
+"order_items_section_title" = "注文リスト";
+"order_items_new_label" = "新";
 
 // MARK: - Order Detail
 "orders_not_found" = "注文が見つかりません";
