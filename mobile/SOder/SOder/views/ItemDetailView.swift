@@ -305,7 +305,7 @@ struct ItemDetailView: View {
     private var statusColor: Color {
         switch item.status {
         case .draft: return .appTextSecondary
-        case .ordered: return .appInfo
+        case .new: return .appInfo
         case .preparing: return .appWarning
         case .ready: return .appSuccess
         case .served: return .appTextSecondary
@@ -316,7 +316,7 @@ struct ItemDetailView: View {
     private var statusIcon: String {
         switch item.status {
         case .draft: return "doc.plaintext"
-        case .ordered: return "flame"
+        case .new: return "flame"
         case .preparing: return "checkmark.circle"
         case .ready: return "checkmark.circle.fill"
         case .served: return "checkmark.seal.fill"
@@ -327,7 +327,7 @@ struct ItemDetailView: View {
     private var nextStatusText: String {
         switch item.status {
         case .draft: return "Ordered"
-        case .ordered: return "Preparing"
+        case .new: return "Preparing"
         case .preparing: return "Ready"
         case .ready: return "Served"
         case .served: return "Completed"
@@ -401,7 +401,7 @@ struct OrderItemDetailRow: View {
     private var statusColor: Color {
         switch orderItem.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -413,7 +413,7 @@ struct OrderItemDetailRow: View {
 struct StatusProgressView: View {
     let currentStatus: OrderItemStatus
     
-    private let allStatuses: [OrderItemStatus] = [.ordered, .preparing, .ready, .served]
+    private let allStatuses: [OrderItemStatus] = [.new, .preparing, .ready, .served]
     
     var body: some View {
         HStack(spacing: 8) {
@@ -444,7 +444,7 @@ struct StatusProgressView: View {
     private func statusColor(for status: OrderItemStatus) -> Color {
         switch status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray

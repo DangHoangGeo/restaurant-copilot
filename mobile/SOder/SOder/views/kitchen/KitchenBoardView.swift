@@ -36,7 +36,7 @@ struct KitchenBoardView: View {
                     guard let menuItem = orderItem.menu_item else { continue }
                     
                     // Only show active items (new, preparing)
-                    guard orderItem.status == .ordered || orderItem.status == .preparing else { continue }
+                    guard orderItem.status == .new || orderItem.status == .preparing else { continue }
                     
                     // Use the individual order item's creation time, not the order's creation time
                     let itemTime = dateFromString(orderItem.created_at)
@@ -338,7 +338,7 @@ struct KitchenBoardView: View {
                 guard let menuItem = orderItem.menu_item else { continue }
                 
                 // Only show active items (new, preparing)
-                guard orderItem.status == .ordered || orderItem.status == .preparing else { continue }
+                guard orderItem.status == .new || orderItem.status == .preparing else { continue }
                 
                 // Use the individual order item's creation time, not the order's creation time
                 let itemTime = dateFromString(orderItem.created_at)
@@ -388,8 +388,8 @@ struct KitchenBoardView: View {
                 
                 switch groupedItem.status {
                     case .draft:
-                        newStatus = .ordered
-                    case .ordered:
+                        newStatus = .new
+                    case .new:
                         newStatus = .preparing
                     case .preparing:
                         newStatus = .ready

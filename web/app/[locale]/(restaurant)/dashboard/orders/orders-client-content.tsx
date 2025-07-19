@@ -189,7 +189,7 @@ export function OrdersClientContent() {
 
   const getItemStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case "ordered": return "default";
+      case "new": return "default";
       case "preparing": return "secondary";
       case "ready": return "outline";
       case "served": return "default";

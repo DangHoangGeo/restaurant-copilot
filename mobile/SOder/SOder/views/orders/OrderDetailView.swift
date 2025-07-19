@@ -41,7 +41,7 @@ struct OrderDetailView: View {
     
     private func statusPriority(_ status: String) -> Int {
         switch status {
-        case "ordered": return 1
+        case "new": return 1
         case "preparing": return 2
         case "ready": return 3
         case "served": return 4
@@ -222,7 +222,7 @@ struct OrderDetailView: View {
                     .fontWeight(.semibold)
                     .foregroundColor(.appTextPrimary)
                 Spacer()
-                if sortedItems.contains(where: { $0.status.rawValue == "ordered" }) {
+                if sortedItems.contains(where: { $0.status.rawValue == "new" }) {
                     HStack {
                         Image(systemName: "circle.fill")
                             .font(.captionRegular)

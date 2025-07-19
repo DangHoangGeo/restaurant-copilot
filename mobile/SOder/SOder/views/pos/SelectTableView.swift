@@ -149,21 +149,33 @@ struct SelectTableView: View {
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(table.name), Status: \(status.displayName), Capacity: \(table.capacity)")
-        .accessibilityHint(status.isSelectableForNewOrder ? "Tap to start a new order for this table." : "This table is currently \(status.displayName).")
+        .accessibilityHint(status.isSelectableForNewOrder ? "Tap to start a new order for this table." : status == .occupied ? "Tap to add items to the existing order for this table." : "This table is currently \(status.displayName).")
         .onTapGesture {
             if status.isSelectableForNewOrder {
                 print("Selected available table: \(table.name)")
-                // Create a new draft order ID
-                newOrderId = UUID().uuidString
+                // Create a new draft order session locally (not in database yet)
+                let localOrderId = UUID().uuidString
+                Task {
+                    await orderManager.createLocalDraftOrder(orderId: localOrderId, table: table)
+                }
+                newOrderId = localOrderId
                 selectedTable = table
+            } else if status == .occupied {
+                print("Selected occupied table: \(table.name)")
+                // Find the active order for this table and allow adding items
+                Task {
+                    if let activeOrder = await findActiveOrderForTable(table) {
+                        newOrderId = activeOrder.id
+                        selectedTable = table
+                    }
+                }
             } else {
                 print("Selected non-available table: \(table.name), Status: \(status.displayName)")
-                // Optionally, show an alert or navigate to existing order details if occupied/reserved
-                // For this subtask, non-available tables are not interactive for new orders.
+                // For reserved tables or other statuses, no action
             }
         }
-        .disabled(!status.isSelectableForNewOrder) // Visually and functionally disable non-selectable tables
-        .opacity(status.isSelectableForNewOrder ? 1.0 : 0.7) // Dim non-selectable tables
+        .disabled(!status.isSelectableForNewOrder && status != .occupied) // Allow interaction with available and occupied tables
+        .opacity((status.isSelectableForNewOrder || status == .occupied) ? 1.0 : 0.7) // Dim only reserved/unavailable tables
     }
 
     @MainActor
@@ -195,6 +207,15 @@ struct SelectTableView: View {
         }
 
         isLoading = false
+    }
+
+    @MainActor
+    private func findActiveOrderForTable(_ table: Table) async -> Order? {
+        // Check if there's an active order for this table
+        let activeOrders = orderManager.orders
+        return activeOrders.first { order in
+            order.table_id == table.id && (order.status == .new || order.status == .serving)
+        }
     }
 }
 

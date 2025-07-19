@@ -112,8 +112,9 @@ struct MenuSelectionView: View {
             Text(errorMessage ?? "error_alert_default_message".localized)
         }
         .onAppear {
+            // No need to ensure draft order exists for new orders - it's created locally
             Task {
-                await ensureDraftOrderExists()
+                await updateDraftOrderSummary()
             }
         }
     }
@@ -218,15 +219,33 @@ struct MenuSelectionView: View {
             let defaultSizeId = item.availableSizes?.first?.id
             let defaultToppingIds: [ToppingId]? = nil
             let price = item.price
-            _ = try await orderManager.addItemToDraftOrder(
-                orderId: orderId,
-                menuItemId: item.id,
-                quantity: 1,
-                notes: nil,
-                selectedSizeId: defaultSizeId,
-                selectedToppingIds: defaultToppingIds,
-                priceAtOrder: price
-            )
+            
+            // Check if this is a local draft order or existing database order
+            if orderManager.localDraftOrders[orderId] != nil {
+                // Local draft order - use local method
+                _ = try await orderManager.addItemToLocalDraftOrder(
+                    orderId: orderId,
+                    menuItemId: item.id,
+                    quantity: 1,
+                    notes: nil,
+                    selectedSizeId: defaultSizeId,
+                    selectedToppingIds: defaultToppingIds,
+                    priceAtOrder: price,
+                    menuItem: item
+                )
+            } else {
+                // Existing database order - use database method
+                _ = try await orderManager.addItemToDraftOrder(
+                    orderId: orderId,
+                    menuItemId: item.id,
+                    quantity: 1,
+                    notes: nil,
+                    selectedSizeId: defaultSizeId,
+                    selectedToppingIds: defaultToppingIds,
+                    priceAtOrder: price
+                )
+            }
+            
             await updateDraftOrderSummary()
         } catch {
             errorMessage = error.localizedDescription
@@ -265,22 +284,6 @@ struct MenuSelectionView: View {
         isLoading = false
     }
 
-    // MARK: - Ensure Draft Order Exists
-    private func ensureDraftOrderExists() async {
-        do {
-            // Try to fetch the draft order
-            if let order = try? await orderManager.getDraftOrder(orderId: orderId) {
-                draftOrder = order
-            } else {
-                // If not found, create a new draft order
-                let newOrder = try await orderManager.startNewOrder(tableId: table.id, guestCount: table.capacity)
-                draftOrder = newOrder
-            }
-        } catch {
-            errorMessage = error.localizedDescription
-            showingErrorAlert = true
-        }
-    }
 
     @MainActor
     private func updateDraftOrderSummary() async {
@@ -515,15 +518,33 @@ struct CustomizeMenuItemSheet: View {
             let sizeId = selectedSize?.id
             let toppingIds = Array(selectedToppings)
             let price = priceForOneItemWithOptions
-            _ = try await orderManager.addItemToDraftOrder(
-                orderId: orderId,
-                menuItemId: menuItem.id,
-                quantity: quantity,
-                notes: notes.isEmpty ? nil : notes,
-                selectedSizeId: sizeId,
-                selectedToppingIds: toppingIds.isEmpty ? nil : toppingIds,
-                priceAtOrder: price
-            )
+            
+            // Check if this is a local draft order or existing database order
+            if orderManager.localDraftOrders[orderId] != nil {
+                // Local draft order - use local method
+                _ = try await orderManager.addItemToLocalDraftOrder(
+                    orderId: orderId,
+                    menuItemId: menuItem.id,
+                    quantity: quantity,
+                    notes: notes.isEmpty ? nil : notes,
+                    selectedSizeId: sizeId,
+                    selectedToppingIds: toppingIds.isEmpty ? nil : toppingIds,
+                    priceAtOrder: price,
+                    menuItem: menuItem
+                )
+            } else {
+                // Existing database order - use database method
+                _ = try await orderManager.addItemToDraftOrder(
+                    orderId: orderId,
+                    menuItemId: menuItem.id,
+                    quantity: quantity,
+                    notes: notes.isEmpty ? nil : notes,
+                    selectedSizeId: sizeId,
+                    selectedToppingIds: toppingIds.isEmpty ? nil : toppingIds,
+                    priceAtOrder: price
+                )
+            }
+            
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

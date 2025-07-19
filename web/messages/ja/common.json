@@ -51,6 +51,7 @@
     "canceled": "キャンセル済み"
   },
   "order_item_status": {
+    "new": "新規",
     "ordered": "注文済み",
     "preparing": "準備中",
     "ready": "準備完了",

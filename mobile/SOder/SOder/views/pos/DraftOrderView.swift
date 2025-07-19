@@ -8,7 +8,15 @@ struct DraftOrderView: View {
     @EnvironmentObject var orderManager: OrderManager
     @Environment(\.dismiss) var dismiss
 
-    @State private var draftOrder: Order? = nil
+    // Use computed property to get current draft order from OrderManager
+    private var draftOrder: Order? {
+        // First check if OrderManager has the current draft order for this orderId
+        if let currentDraft = orderManager.currentDraftOrder, currentDraft.id == orderId {
+            return currentDraft
+        }
+        // Check local draft orders
+        return orderManager.localDraftOrders[orderId]
+    }
     @State private var isLoading = false
     @State private var isProcessingOrder = false
     @State private var errorMessage: String? = nil
@@ -21,49 +29,56 @@ struct DraftOrderView: View {
             if isLoading {
                 ProgressView("loading_draft_order_text".localized)
                     .padding(16)
-            } else if let order = draftOrder, let items = order.order_items, !items.isEmpty {
-                List {
-                    Section(header: Text("items_section_title".localized + " (\(items.count))")) {
-                        ForEach(items) { item in
-                            orderItemRow(item)
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button(role: .destructive) {
-                                        Task { await removeOrderItem(item.id) }
-                                    } label: {
-                                        Label("remove_item_action_label".localized, systemImage: "trash.fill")
-                                    }
+            } else if let order = draftOrder {
+                // Show cart content whether items exist or not
+                VStack(spacing: 0) {
+                    if let items = order.order_items, !items.isEmpty {
+                        List {
+                            Section(header: Text("items_section_title".localized + " (\(items.count))")) {
+                                ForEach(items) { item in
+                                    orderItemRow(item)
                                 }
+                            }
+                            Section(header: Text("order_summary_section_title".localized)) {
+                                HStack {
+                                    Text("total_items_label".localized)
+                                    Spacer()
+                                    Text("\(items.reduce(0) { $0 + $1.quantity })")
+                                }
+                                HStack {
+                                    Text("total_price_label".localized)
+                                        .fontWeight(.bold)
+                                    Spacer()
+                                    Text(String(format: "%.0f円", order.total_amount ?? calculateTotalPrice()))
+                                        .fontWeight(.bold)
+                                }
+                            }
                         }
+                        .listStyle(PlainListStyle())
+                        .scrollContentBackground(.hidden)
+                    } else {
+                        // Empty cart state - show table info and empty state
+                        VStack(spacing: 16) {
+                            Text("Table: \(table.name)")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                            Text("no_items_in_order_text".localized)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding()
+                        Spacer()
                     }
-                    Section(header: Text("order_summary_section_title".localized)) {
-                        HStack {
-                            Text("total_items_label".localized)
-                            Spacer()
-                            Text("\(items.reduce(0) { $0 + $1.quantity })")
-                        }
-                        HStack {
-                            Text("total_price_label".localized)
-                                .fontWeight(.bold)
-                            Spacer()
-                            Text(String(format: "%.0f円", order.total_amount ?? calculateTotalPrice()))
-                                .fontWeight(.bold)
-                        }
-                    }
+                    
+                    // Always show action buttons
+                    actionButtons()
                 }
-                .listStyle(PlainListStyle())
-                .scrollContentBackground(.hidden)
-                actionButtons()
             } else {
+                // No draft order - show loading or error state
                 VStack(spacing: 20) {
-                    Text("no_items_in_order_text".localized)
+                    Text("Preparing order for \(table.name)...")
                         .foregroundColor(.secondary)
                         .padding(16)
-                    Button("add_items_button_title".localized) {
-                        dismiss()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .accessibilityLabel("add_menu_items_accessibility_label".localized)
-                    .accessibilityHint("add_menu_items_accessibility_hint".localized)
                 }
                 Spacer()
             }
@@ -118,37 +133,133 @@ struct DraftOrderView: View {
 
     @ViewBuilder
     private func orderItemRow(_ item: OrderItem) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.menu_item?.displayName ?? "unknown_item_text".localized)
-                    .font(.cardTitle)
-                Text("qty_label".localized + ": \(item.quantity)")
-                    .font(.bodyMedium)
-                if let notes = item.notes, !notes.isEmpty {
-                    Text("notes_label".localized + ": \(notes)")
+        VStack(spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.menu_item?.displayName ?? "unknown_item_text".localized)
+                        .font(.cardTitle)
+                        .fontWeight(.semibold)
+                    
+                    // Show size and toppings if available
+                    if item.menu_item_size_id != nil || !(item.topping_ids?.isEmpty ?? true) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            if item.menu_item_size_id != nil {
+                                Text("Size: Custom") // In real app, would show actual size name
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            if let toppingIds = item.topping_ids, !toppingIds.isEmpty {
+                                Text("+ \(toppingIds.count) toppings")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    
+                    if let notes = item.notes, !notes.isEmpty {
+                        Text("📝 \(notes)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 2)
+                    }
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(String(format: "%.0f円", item.price_at_order * Double(item.quantity)))
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    
+                    Text(String(format: "%.0f円 each", item.price_at_order))
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                 }
             }
-            Spacer()
-            Text(String(format: "%.0f円", item.price_at_order * Double(item.quantity)))
-                .fontWeight(.medium)
+            
+            // Quantity controls - compact design with gesture isolation
+            HStack {
+                // Quantity stepper section
+                HStack(spacing: 8) {
+                    Button {
+                        print("➖ Minus button pressed - item: \(item.id), current: \(item.quantity)")
+                        Task { await updateItemQuantity(item.id, newQuantity: max(1, item.quantity - 1)) }
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.appError)
+                    }
+                    .disabled(item.quantity <= 1)
+                    .buttonStyle(.plain)
+                    .frame(width: 32, height: 32)
+                    .background(Color.clear)
+                    
+                    Text("\(item.quantity)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .frame(minWidth: 24)
+                    
+                    Button {
+                        let newQty = item.quantity + 1
+                        print("🔥 Plus button pressed - item: \(item.id), current: \(item.quantity), new: \(newQty)")
+                        Task { await updateItemQuantity(item.id, newQuantity: newQty) }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.appPrimary)
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 32, height: 32)
+                    .background(Color.clear)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
+                
+                Spacer()
+                
+                // Delete button - isolated with different styling
+                Button {
+                    print("🗑️ Delete button pressed - item: \(item.id)")
+                    Task { await removeOrderItem(item.id) }
+                } label: {
+                    Image(systemName: "trash.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.appError)
+                }
+                .buttonStyle(.plain)
+                .frame(width: 36, height: 36)
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(8)
+            }
         }
         .padding(.vertical, 8)
+        .padding(.horizontal, 4)
     }
 
     @ViewBuilder
     private func actionButtons() -> some View {
+        let hasItems = draftOrder?.order_items?.isEmpty == false
+        
         VStack(spacing: 12) {
             Button {
-                Task { await confirmOrderToKitchen() }
+                if hasItems {
+                    Task { await confirmOrderToKitchen() }
+                } else {
+                    dismiss() // Go back to menu to add items
+                }
             } label: {
-                Label("confirm_order_to_kitchen_button_title".localized, systemImage: "paperplane.fill")
+                if hasItems {
+                    Label("confirm_order_to_kitchen_button_title".localized, systemImage: "paperplane.fill")
+                } else {
+                    Label("Add items to continue", systemImage: "plus.circle.fill")
+                }
             }
             .buttonStyle(PrimaryButtonStyle())
-            .disabled(isProcessingOrder || draftOrder == nil || draftOrder?.order_items?.isEmpty == true)
-            .accessibilityLabel("confirm_order_to_kitchen_accessibility_label".localized)
-            .accessibilityHint("confirm_order_to_kitchen_accessibility_hint".localized)
+            .disabled(isProcessingOrder || draftOrder == nil)
+            .accessibilityLabel(hasItems ? "confirm_order_to_kitchen_accessibility_label".localized : "Add items before placing order")
+            .accessibilityHint(hasItems ? "confirm_order_to_kitchen_accessibility_hint".localized : "Tap to add menu items")
 
             Button("cancel_entire_order_button_title".localized) {
                 showingCancelConfirmAlert = true
@@ -168,9 +279,12 @@ struct DraftOrderView: View {
         isLoading = true
         errorMessage = nil
         do {
-            self.draftOrder = try await orderManager.getDraftOrder(orderId: orderId)
-            if self.draftOrder == nil {
-                print("Draft order \(orderId) not found or is empty.")
+            // For local draft orders, no need to fetch from database
+            if orderManager.localDraftOrders[orderId] != nil {
+                print("Local draft order found for: \(orderId)")
+            } else {
+                // Fetch from database for existing orders
+                _ = try await orderManager.getDraftOrder(orderId: orderId)
             }
         } catch {
             print("Error fetching draft order: \(error.localizedDescription)")
@@ -186,10 +300,34 @@ struct DraftOrderView: View {
         errorMessage = nil
         do {
             try await orderManager.removeDraftOrderItem(orderItemId: orderItemId)
-            await fetchDraftOrderDetails()
+            // No need to fetch - the computed property will automatically update
         } catch {
             print("Error removing order item: \(error.localizedDescription)")
             self.errorMessage = "Failed to remove item: \(error.localizedDescription)"
+            self.showingErrorAlert = true
+        }
+        isProcessingOrder = false
+    }
+
+    @MainActor
+    private func updateItemQuantity(_ orderItemId: String, newQuantity: Int) async {
+        print("🎯 DraftOrderView.updateItemQuantity called - itemId: \(orderItemId), newQuantity: \(newQuantity)")
+        
+        guard newQuantity > 0 else {
+            print("🗑️ Quantity is <= 0, removing item")
+            await removeOrderItem(orderItemId)
+            return
+        }
+        
+        isProcessingOrder = true
+        errorMessage = nil
+        do {
+            print("🎯 Calling orderManager.updateDraftOrderItemQuantity")
+            try await orderManager.updateDraftOrderItemQuantity(orderItemId: orderItemId, newQuantity: newQuantity)
+            print("🎯 Successfully updated quantity in OrderManager")
+        } catch {
+            print("Error updating item quantity: \(error.localizedDescription)")
+            self.errorMessage = "Failed to update quantity: \(error.localizedDescription)"
             self.showingErrorAlert = true
         }
         isProcessingOrder = false

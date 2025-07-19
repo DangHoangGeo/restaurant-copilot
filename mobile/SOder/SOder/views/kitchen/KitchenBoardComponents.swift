@@ -246,7 +246,7 @@ struct KitchenItemCard: View {
     private var nextActionText: String {
         switch item.status {
         case .draft: return "kitchen_action_start".localized
-        case .ordered: return "kitchen_action_start_preparing".localized
+        case .new: return "kitchen_action_start_preparing".localized
         case .preparing: return "kitchen_action_mark_ready".localized
         case .ready: return "kitchen_action_mark_served".localized
         case .served: return "kitchen_action_completed".localized
@@ -257,7 +257,7 @@ struct KitchenItemCard: View {
     private var statusColor: Color {
         switch item.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -271,7 +271,7 @@ struct KitchenItemCard: View {
         } else {
             switch item.status {
             case .draft: return Color.gray.opacity(0.03)
-            case .ordered: return Color.blue.opacity(0.03)
+            case .new: return Color.blue.opacity(0.03)
             case .preparing: return Color.orange.opacity(0.03)
             case .ready: return Color.green.opacity(0.03)
             case .served: return Color.gray.opacity(0.03)
@@ -283,7 +283,7 @@ struct KitchenItemCard: View {
     private var priorityBorderColor: Color {
         switch item.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -300,7 +300,7 @@ struct StatusColumnsView: View {
     let onItemDetailTap: (GroupedItem) -> Void
     
     private var newItems: [GroupedItem] {
-        items.filter { $0.status == .ordered }
+        items.filter { $0.status == .new }
     }
     
     private var preparingItems: [GroupedItem] {
@@ -536,7 +536,7 @@ struct CompactKitchenItemCard: View {
     private var statusColor: Color {
         switch item.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -547,7 +547,7 @@ struct CompactKitchenItemCard: View {
     private var nextActionText: String {
         switch item.status {
         case .draft: return "kitchen_action_start".localized
-        case .ordered: return "kitchen_action_start_preparing".localized
+        case .new: return "kitchen_action_start_preparing".localized
         case .preparing: return "kitchen_action_mark_ready".localized
         case .ready: return "kitchen_action_mark_served".localized
         case .served: return "kitchen_action_completed".localized
@@ -895,7 +895,7 @@ struct HorizontalKitchenItemCard: View {
     private var statusColor: Color {
         switch item.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -906,7 +906,7 @@ struct HorizontalKitchenItemCard: View {
     private var actionText: String {
         switch item.status {
         case .draft: return "kitchen_action_start".localized
-        case .ordered: return "kitchen_action_start".localized
+        case .new: return "kitchen_action_start".localized
         case .preparing: return "kitchen_action_ready".localized
         case .ready: return "kitchen_action_serve".localized
         case .served: return "kitchen_action_done".localized
@@ -917,7 +917,7 @@ struct HorizontalKitchenItemCard: View {
     private var actionIcon: String {
         switch item.status {
         case .draft: return "doc.plaintext"
-        case .ordered: return "play.fill"
+        case .new: return "play.fill"
         case .preparing: return "checkmark.circle.fill"
         case .ready: return "hand.raised.fill"
         case .served: return "checkmark.circle.fill"

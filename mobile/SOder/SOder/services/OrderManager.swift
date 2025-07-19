@@ -57,6 +57,7 @@ class OrderManager: ObservableObject {
     internal var printedReadyItems: Set<String> = []
 
     @Published var currentDraftOrder: Order? = nil // For managing the active draft order
+    @Published var localDraftOrders: [String: Order] = [:] // Local draft orders not yet saved to database
     
     private var realtimeChannel: RealtimeChannelV2?
     private var cancellables = Set<AnyCancellable>()
@@ -144,6 +145,159 @@ class OrderManager: ObservableObject {
     // MARK: - New Order Creation & Management
 
     @MainActor
+    public func createLocalDraftOrder(orderId: String, table: Table) async {
+        guard let restaurantId = supabaseManager.currentRestaurantId else {
+            print("Cannot create local draft order - no restaurant ID")
+            return
+        }
+        
+        // Create a unique session ID for this order (following web app pattern)
+        let sessionId = UUID().uuidString
+        
+        // Create a local draft order that doesn't exist in database yet
+        let localDraftOrder = Order(
+            id: orderId,
+            restaurant_id: restaurantId,
+            table_id: table.id,
+            session_id: sessionId, // Unique session per order
+            guest_count: table.capacity,
+            status: .draft,
+            total_amount: 0.0,
+            order_number: nil, // Will be generated when saved to database
+            created_at: ISO8601DateFormatter().string(from: Date()),
+            updated_at: ISO8601DateFormatter().string(from: Date()),
+            table: table,
+            order_items: [],
+            payment_method: nil,
+            discount_amount: nil,
+            tax_amount: nil,
+            tip_amount: nil
+        )
+        
+        localDraftOrders[orderId] = localDraftOrder
+        currentDraftOrder = localDraftOrder
+        print("Created local draft order: \(orderId) for table: \(table.name)")
+    }
+
+    @MainActor
+    private func saveLocalOrderToDatabase(_ localOrder: Order) async throws -> Order {
+        guard let restaurantId = supabaseManager.currentRestaurantId else {
+            throw OrderManagerError.missingRestaurantId
+        }
+        guard let userId = supabaseManager.currentUser?.id else {
+            throw OrderManagerError.missingUserId
+        }
+
+        // First create the order in database (use 'new' since 'draft' is not allowed)
+        let newOrderPayload = NewOrderPayload(
+            restaurant_id: restaurantId,
+            table_id: localOrder.table_id,
+            session_id: localOrder.session_id ?? UUID().uuidString, // Use the same session_id from local order
+            guest_count: localOrder.guest_count,
+            status: "new" // Database only allows: 'new','serving','completed','canceled'
+        )
+
+        let createdOrder: Order = try await supabaseManager.client
+            .from("orders")
+            .insert(newOrderPayload, returning: .representation)
+            .select("*, table:tables(*)")
+            .single()
+            .execute()
+            .value
+
+        // Now save all order items
+        var savedOrderItems: [OrderItem] = []
+        if let items = localOrder.order_items {
+            print("💾 Saving \(items.count) order items to database")
+            
+            // Debug: Print all items before saving
+            for (index, item) in items.enumerated() {
+                print("🔍 Local item \(index + 1): id=\(item.id), menu_item=\(item.menu_item_id), qty=\(item.quantity), price=\(item.price_at_order)")
+            }
+            
+            for (index, item) in items.enumerated() {
+                print("💾 Saving item \(index + 1)/\(items.count): \(item.menu_item?.displayName ?? "Unknown") x\(item.quantity)")
+                
+                do {
+                    let orderItemPayload = NewOrderItemPayload(
+                        order_id: createdOrder.id,
+                        menu_item_id: item.menu_item_id,
+                        quantity: item.quantity,
+                        notes: item.notes,
+                        restaurant_id: restaurantId,
+                        price_at_order: item.price_at_order,
+                        status: "new",
+                        menu_item_size_id: item.menu_item_size_id,
+                        topping_ids: item.topping_ids ?? [] // Ensure non-nil array
+                    )
+
+                    let savedItem: OrderItem = try await supabaseManager.client
+                        .from("order_items")
+                        .insert(orderItemPayload, returning: .representation)
+                        .select("*, menu_item:menu_items(*), menu_item_size:menu_item_sizes(*)")
+                        .single()
+                        .execute()
+                        .value
+
+                    savedOrderItems.append(savedItem)
+                    print("✅ Successfully saved item \(index + 1): \(savedItem.id)")
+                    
+                } catch {
+                    print("❌ Error saving item \(index + 1): \(error)")
+                    
+                    // Try without optional fields that might cause issues
+                    struct SimplifiedOrderItemPayload: Codable {
+                        let order_id: String
+                        let menu_item_id: String
+                        let quantity: Int
+                        let restaurant_id: String
+                        let price_at_order: Double
+                        let status: String
+                    }
+                    
+                    let simplifiedPayload = SimplifiedOrderItemPayload(
+                        order_id: createdOrder.id,
+                        menu_item_id: item.menu_item_id,
+                        quantity: item.quantity,
+                        restaurant_id: restaurantId,
+                        price_at_order: item.price_at_order,
+                        status: "new"
+                    )
+                    
+                    do {
+                        print("🔄 Retrying with simplified payload for item \(index + 1)")
+                        let savedItem: OrderItem = try await supabaseManager.client
+                            .from("order_items")
+                            .insert(simplifiedPayload, returning: .representation)
+                            .select("*, menu_item:menu_items(*)")
+                            .single()
+                            .execute()
+                            .value
+                        
+                        savedOrderItems.append(savedItem)
+                        print("✅ Successfully saved item \(index + 1) with simplified payload: \(savedItem.id)")
+                    } catch let retryError {
+                        print("❌ Failed even with simplified payload for item \(index + 1): \(retryError)")
+                        // Skip this item entirely - don't add duplicates
+                        continue
+                    }
+                }
+            }
+            print("💾 Saved \(savedOrderItems.count)/\(items.count) items to database")
+        } else {
+            print("⚠️ No order items found in local order")
+        }
+
+        // Create final order with all items
+        var finalOrder = createdOrder
+        finalOrder.order_items = savedOrderItems
+        finalOrder.total_amount = localOrder.total_amount
+
+        print("Saved local draft order to database: \(finalOrder.id)")
+        return finalOrder
+    }
+
+    @MainActor
     public func startNewOrder(tableId: String, guestCount: Int?) async throws -> Order {
         guard let restaurantId = supabaseManager.currentRestaurantId else {
             throw OrderManagerError.missingRestaurantId
@@ -178,6 +332,81 @@ class OrderManager: ObservableObject {
             print("Error starting new order: \(error)")
             throw OrderManagerError.generalError("Failed to start new order: \(error.localizedDescription)")
         }
+    }
+
+    @MainActor
+    public func addItemToLocalDraftOrder(orderId: String, menuItemId: String, quantity: Int, notes: String?, selectedSizeId: MenuItemSizeId?, selectedToppingIds: [ToppingId]?, priceAtOrder: Double, menuItem: MenuItem) async throws -> OrderItem {
+        print("🍽️ Adding item to local draft: \(menuItem.displayName), price: \(priceAtOrder), menuItem.price: \(menuItem.price)")
+        // Check if this is a local draft order
+        if let localOrder = localDraftOrders[orderId] {
+            var updatedOrder = localOrder
+            if updatedOrder.order_items == nil {
+                updatedOrder.order_items = []
+            }
+            
+            // Check if there's an existing item that can be grouped
+            print("🔍 Checking for existing item to group: menuItemId=\(menuItemId), sizeId=\(selectedSizeId?.description ?? "nil"), toppings=\(selectedToppingIds?.description ?? "nil"), notes=\(notes ?? "nil")")
+            
+            let existingItemIndex = updatedOrder.order_items?.firstIndex { existingItem in
+                let matches = existingItem.menu_item_id == menuItemId &&
+                             existingItem.menu_item_size_id == selectedSizeId &&
+                             existingItem.topping_ids == selectedToppingIds &&
+                             existingItem.notes == notes
+                if matches {
+                    print("🔍 Found matching item: \(existingItem.id) with quantity \(existingItem.quantity)")
+                }
+                return matches
+            }
+            
+            print("🔍 Current order has \(updatedOrder.order_items?.count ?? 0) items")
+            
+            let resultItem: OrderItem
+            
+            if let index = existingItemIndex {
+                // Update existing item quantity
+                var existingItem = updatedOrder.order_items![index]
+                existingItem.quantity += quantity
+                existingItem.updated_at = ISO8601DateFormatter().string(from: Date())
+                updatedOrder.order_items![index] = existingItem
+                resultItem = existingItem
+                print("Updated existing item quantity: \(existingItem.id), new quantity: \(existingItem.quantity)")
+            } else {
+                // Create new item
+                let newOrderItem = OrderItem(
+                    id: UUID().uuidString,
+                    restaurant_id: localOrder.restaurant_id,
+                    order_id: orderId,
+                    menu_item_id: menuItemId,
+                    quantity: quantity,
+                    notes: notes,
+                    menu_item_size_id: selectedSizeId,
+                    topping_ids: selectedToppingIds,
+                    price_at_order: priceAtOrder,
+                    status: .draft,
+                    created_at: ISO8601DateFormatter().string(from: Date()),
+                    updated_at: ISO8601DateFormatter().string(from: Date()),
+                    menu_item: menuItem
+                )
+                updatedOrder.order_items?.append(newOrderItem)
+                resultItem = newOrderItem
+                print("Created new item: \(newOrderItem.id)")
+            }
+            
+            // Recalculate total
+            let total = updatedOrder.order_items?.reduce(0.0) { acc, item in
+                acc + (item.price_at_order * Double(item.quantity))
+            } ?? 0.0
+            updatedOrder.total_amount = total
+            
+            // Update stored order
+            localDraftOrders[orderId] = updatedOrder
+            currentDraftOrder = updatedOrder
+            
+            return resultItem
+        }
+        
+        // Fall back to database method for existing orders
+        return try await addItemToDraftOrder(orderId: orderId, menuItemId: menuItemId, quantity: quantity, notes: notes, selectedSizeId: selectedSizeId, selectedToppingIds: selectedToppingIds, priceAtOrder: priceAtOrder)
     }
 
     @MainActor
@@ -282,8 +511,94 @@ class OrderManager: ObservableObject {
         }
     }
 
+    // Add a set to track items being updated to prevent race conditions
+    private var itemsBeingUpdated: Set<String> = []
+    
+    @MainActor
+    public func updateDraftOrderItemQuantity(orderItemId: String, newQuantity: Int) async throws {
+        print("🔍 updateDraftOrderItemQuantity called - itemId: \(orderItemId), newQuantity: \(newQuantity)")
+        
+        // Prevent concurrent updates to the same item
+        guard !itemsBeingUpdated.contains(orderItemId) else {
+            print("⚠️ Item \(orderItemId) is already being updated, skipping")
+            return
+        }
+        
+        itemsBeingUpdated.insert(orderItemId)
+        defer { itemsBeingUpdated.remove(orderItemId) }
+        
+        // Check if this is a local draft order item
+        for orderId in localDraftOrders.keys {
+            guard var localOrder = localDraftOrders[orderId] else { continue }
+            
+            if let itemIndex = localOrder.order_items?.firstIndex(where: { $0.id == orderItemId }) {
+                print("🔍 Found item at index \(itemIndex), current quantity: \(localOrder.order_items?[itemIndex].quantity ?? 0)")
+                
+                // Ensure we have a mutable copy of the items array
+                guard var items = localOrder.order_items else { 
+                    print("❌ No order items found")
+                    return 
+                }
+                
+                print("🔍 Before update - Item ID: \(items[itemIndex].id), Quantity: \(items[itemIndex].quantity)")
+                items[itemIndex].quantity = newQuantity
+                items[itemIndex].updated_at = ISO8601DateFormatter().string(from: Date())
+                print("🔍 After update - Item ID: \(items[itemIndex].id), Quantity: \(items[itemIndex].quantity)")
+                localOrder.order_items = items
+                
+                // Recalculate total
+                print("🔍 Recalculating total for \(items.count) items:")
+                let total = items.reduce(0.0) { acc, item in
+                    let itemTotal = item.price_at_order * Double(item.quantity)
+                    print("🔍   Item: \(item.menu_item?.displayName ?? "Unknown") - price: \(item.price_at_order) x qty: \(item.quantity) = \(itemTotal)")
+                    return acc + itemTotal
+                }
+                print("🔍 Final total: \(total)")
+                localOrder.total_amount = total
+                
+                // Update both the dictionary and current draft
+                localDraftOrders[orderId] = localOrder
+                if currentDraftOrder?.id == orderId {
+                    currentDraftOrder = localOrder
+                }
+                
+                print("✅ Updated item quantity - itemId: \(orderItemId), new quantity: \(newQuantity), new total: \(total)")
+                return
+            }
+        }
+        
+        print("🔍 Item not found in local orders, trying database")
+        // Fall back to database method for existing orders
+        try await updateDraftOrderItem(orderItemId: orderItemId, newQuantity: newQuantity, newNotes: nil)
+    }
+
     @MainActor
     public func removeDraftOrderItem(orderItemId: String) async throws {
+        // Check if this is a local draft order item
+        for orderId in localDraftOrders.keys {
+            guard var localOrder = localDraftOrders[orderId] else { continue }
+            
+            if let itemIndex = localOrder.order_items?.firstIndex(where: { $0.id == orderItemId }) {
+                localOrder.order_items?.remove(at: itemIndex)
+                
+                // Recalculate total
+                let total = localOrder.order_items?.reduce(0.0) { acc, item in
+                    acc + (item.price_at_order * Double(item.quantity))
+                } ?? 0.0
+                localOrder.total_amount = total
+                
+                // Update both the dictionary and current draft
+                localDraftOrders[orderId] = localOrder
+                if currentDraftOrder?.id == orderId {
+                    currentDraftOrder = localOrder
+                }
+                
+                print("Removed item from local draft order: \(orderItemId)")
+                return
+            }
+        }
+        
+        // Fall back to database removal for existing orders
         do {
             try await supabaseManager.client
                 .from("order_items")
@@ -303,6 +618,16 @@ class OrderManager: ObservableObject {
 
     @MainActor
     public func clearDraftOrder(orderId: String) async throws {
+        // Check if this is a local draft order
+        if localDraftOrders[orderId] != nil {
+            localDraftOrders.removeValue(forKey: orderId)
+            if currentDraftOrder?.id == orderId {
+                currentDraftOrder = nil
+            }
+            print("Cleared local draft order: \(orderId)")
+            return
+        }
+        
         // Ensure this order is the current draft before clearing locally
         if currentDraftOrder?.id != orderId {
              _ = try? await getDraftOrder(orderId: orderId) // Load it if not current
@@ -339,7 +664,13 @@ class OrderManager: ObservableObject {
     public func confirmOrderToKitchen(orderId: String) async throws -> Order {
         var orderToConfirm: Order
         
-        if let currentOrder = currentDraftOrder, currentOrder.id == orderId {
+        // Check if this is a local draft order that needs to be saved to database first
+        if let localOrder = localDraftOrders[orderId] {
+            // Save local order to database
+            orderToConfirm = try await saveLocalOrderToDatabase(localOrder)
+            // Remove from local storage
+            localDraftOrders.removeValue(forKey: orderId)
+        } else if let currentOrder = currentDraftOrder, currentOrder.id == orderId {
             orderToConfirm = currentOrder
         } else {
             // Fetch the order from database
@@ -370,7 +701,7 @@ class OrderManager: ObservableObject {
             let confirmedOrder: Order = try await supabaseManager.client
                 .from("orders")
                 .update(updatePayload)
-                .eq("id", value: orderId)
+                .eq("id", value: orderToConfirm.id) // Use the correct order ID
                 .select("*, table:tables(*), order_items(*, menu_item:menu_items(*), menu_item_size:menu_item_sizes(*))")
                 .single()
                 .execute()
@@ -396,6 +727,13 @@ class OrderManager: ObservableObject {
 
     @MainActor
     public func getDraftOrder(orderId: String, forceFetch: Bool = false) async throws -> Order? {
+        // First check if this is a local draft order
+        if let localOrder = localDraftOrders[orderId] {
+            print("Returning local draft order for id: \(orderId)")
+            currentDraftOrder = localOrder
+            return localOrder
+        }
+        
         if !forceFetch, let currentDraft = currentDraftOrder, currentDraft.id == orderId {
             // If we have a cached version and not forcing fetch, return it.
             // However, if its items are nil or empty, it might be an incompletely loaded order.
