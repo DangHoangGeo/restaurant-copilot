@@ -128,7 +128,31 @@ class PrintFormatter {
     }
     
     private func getSelectedEncoding() -> String.Encoding {
-        return settingsManager.receiptEncoding ?? .utf8
+        switch settingsManager.printLanguage {
+        case .vietnamese:
+            // Use Windows-1258 for Vietnamese characters - better thermal printer support
+            return String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.windowsVietnamese.rawValue)))
+        case .japanese:
+            // Use Shift-JIS for Japanese characters - standard for thermal printers
+            return .shiftJIS
+        case .english:
+            // Use Windows-1252 for English - standard thermal printer encoding
+            return .windowsCP1252
+        }
+    }
+    
+    private func getPrinterCharsetCommand() -> [UInt8] {
+        switch settingsManager.printLanguage {
+        case .vietnamese:
+            // Use Windows-1258 charset command for Vietnamese
+            return PrinterConfig.Commands.setCharsetCP1258
+        case .japanese:
+            // Use Shift-JIS charset command for Japanese
+            return PrinterConfig.Commands.setCharsetShiftJIS
+        case .english:
+            // Use Windows-1252 charset command for English
+            return PrinterConfig.Commands.setCharsetCP1252
+        }
     }
     
     private func buildOrderData(order: Order, includePrice: Bool) -> [String: Any] {
@@ -246,8 +270,13 @@ class PrintFormatter {
     private func formatForThermalPrinter(_ content: String) -> Data {
         var command = Data()
         
-        // Initialize printer
+        // Clear buffer and initialize printer
+        command.append(Data(commands.clearBuffer))
         command.append(Data(commands.initialize))
+        command.append(Data(getPrinterCharsetCommand()))
+        
+        // Add leading spacing
+        command.append("\n\n".data(using: getSelectedEncoding()) ?? Data())
         
         // Set alignment to left by default
         command.append(Data(commands.alignLeft))
@@ -255,8 +284,10 @@ class PrintFormatter {
         // Add the formatted content
         append(content, to: &command)
         
-        // Cut paper (partial cut)
-        command.append(Data(commands.cutPaperPartial))
+        // Enhanced cutting with extra spacing
+        command.append(Data(commands.paperFeedExtra)) // Extra feed for spacing
+        command.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data())
+        command.append(Data(commands.cutPaperAdvanced)) // Use advanced cutting
         
         return command
     }
@@ -264,8 +295,13 @@ class PrintFormatter {
     internal func formatForThermalPrinter(_ printContent: PrintContent) -> Data {
         var command = Data()
         
-        // Initialize printer
+        // Clear buffer and initialize printer
+        command.append(Data(commands.clearBuffer))
         command.append(Data(commands.initialize))
+        command.append(Data(getPrinterCharsetCommand()))
+        
+        // Add leading spacing
+        command.append("\n\n".data(using: getSelectedEncoding()) ?? Data())
         
         // Process each section
         for section in printContent.sections {
@@ -306,12 +342,16 @@ class PrintFormatter {
             command.append(Data(commands.resetTextStyles))
         }
         
-        // Handle cutting
+        // Handle cutting with enhanced spacing
         switch printContent.settings.cutType {
         case .partial:
+            command.append(Data(commands.paperFeedExtra)) // Extra feed for spacing
+            command.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data())
             command.append(Data(commands.cutPaperPartial))
         case .full:
-            command.append(Data(commands.cutPaperFull))
+            command.append(Data(commands.paperFeedExtra)) // Extra feed for spacing
+            command.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data())
+            command.append(Data(commands.cutPaperAdvanced)) // Use advanced cutting
         case .none:
             break
         }
@@ -865,7 +905,7 @@ class PrintFormatter {
         // Note: Website removed from receipt header - can be added back if needed
         content += "\n"
         content += centerText("Powered by SOder POS", width: 48) + "\n"
-        content += "\n\n\n"
+        content += "\n\n\n\n\n" // Extra line feeds to ensure proper separation before cutting
         
         return content
     }
@@ -896,11 +936,33 @@ class PrintFormatter {
     }
     
     private func stringToData(_ string: String) -> Data? {
-        guard let data = string.data(using: .utf8) else {
-            print("Warning: Could not encode string to UTF-8: \(string.prefix(50))")
-            return string.data(using: .ascii, allowLossyConversion: true)
+        let encoding = getSelectedEncoding()
+        
+        // For Vietnamese and Japanese, DO NOT use lossy conversion
+        switch settingsManager.printLanguage {
+        case .vietnamese:
+            // Try Windows-1258 encoding without lossy conversion
+            if let data = string.data(using: encoding) {
+                return data
+            }
+            // Don't fall back to ASCII - return nil to handle error properly
+            print("Error: Could not encode Vietnamese text: \(string.prefix(50))")
+            return nil
+            
+        case .japanese:
+            // Try Shift-JIS encoding without lossy conversion
+            if let data = string.data(using: encoding) {
+                return data
+            }
+            print("Error: Could not encode Japanese text: \(string.prefix(50))")
+            return nil
+            
+        case .english:
+            // For English, fallback is acceptable
+            return string.data(using: encoding) ?? 
+                string.data(using: .utf8) ?? 
+                string.data(using: .ascii, allowLossyConversion: true)
         }
-        return data
     }
     
     // MARK: - Private Helper Methods
@@ -964,8 +1026,13 @@ extension PrintFormatter {
     private func formatOrderForKitchenOriginal(order: Order) -> Data? {
         var outputData = Data()
         
-        // Initialize printer
+        // Clear any previous data and initialize printer
+        outputData.append(Data(PrinterConfig.Commands.clearBuffer))
         outputData.append(Data(PrinterConfig.Commands.initialize))
+        outputData.append(Data(getPrinterCharsetCommand()))
+        
+        // Add some leading spacing for better separation
+        outputData.append("\n\n".data(using: getSelectedEncoding()) ?? Data())
         
         // Header - Center aligned and bold
         outputData.append(Data(PrinterConfig.Commands.alignCenter))
@@ -1015,11 +1082,13 @@ extension PrintFormatter {
         var footer = ""
         footer += String(repeating: "=", count: PrinterConfig.Layout.receiptWidth) + "\n"
         footer += "Status: \(order.status.displayName)\n"
-        footer += "\n\n\n"
+        footer += "\n" // Extra spacing
         outputData.append(footer.data(using: getSelectedEncoding()) ?? Data())
         
-        // Cut paper
-        outputData.append(Data(PrinterConfig.Commands.cutPaperPartial))
+        // Proper paper feeding and cutting sequence - increased spacing
+        outputData.append(Data(PrinterConfig.Commands.paperFeedExtra)) // Extra feed for better spacing
+        outputData.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data()) // Additional line feeds
+        outputData.append(Data(PrinterConfig.Commands.cutPaperAdvanced)) // Advanced cut with feed
         
         return outputData
     }
@@ -1028,8 +1097,13 @@ extension PrintFormatter {
         var outputData = Data()
         let header = settingsManager.receiptHeader
         
-        // Initialize printer
+        // Clear any previous data and initialize printer
+        outputData.append(Data(PrinterConfig.Commands.clearBuffer))
         outputData.append(Data(PrinterConfig.Commands.initialize))
+        outputData.append(Data(getPrinterCharsetCommand()))
+        
+        // Add some leading spacing for better separation
+        outputData.append("\n\n".data(using: getSelectedEncoding()) ?? Data())
         
         // Header - Center aligned and bold
         outputData.append(Data(PrinterConfig.Commands.alignCenter))
@@ -1083,10 +1157,12 @@ extension PrintFormatter {
         
         outputData.append(Data(PrinterConfig.Commands.alignCenter))
         outputData.append("Thank you for your visit!\n".data(using: getSelectedEncoding()) ?? Data())
-        outputData.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data())
+        outputData.append("\n".data(using: getSelectedEncoding()) ?? Data()) // Extra spacing
         
-        // Cut paper
-        outputData.append(Data(PrinterConfig.Commands.cutPaperPartial))
+        // Proper paper feeding and cutting sequence - increased spacing
+        outputData.append(Data(PrinterConfig.Commands.paperFeedExtra)) // Extra feed for better spacing
+        outputData.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data()) // Additional line feeds
+        outputData.append(Data(PrinterConfig.Commands.cutPaperAdvanced)) // Advanced cut with feed
         
         return outputData
     }
@@ -1116,5 +1192,60 @@ extension PrintFormatter {
     
     private func formatCurrency(_ amount: Double) -> String {
         return String(format: "¥%.0f", amount)
+    }
+    
+    // MARK: - Character Conversion Methods
+    
+    private func convertSpecialCharacters(_ text: String, for language: PrintLanguage) -> String {
+        // Don't convert - return original text
+        return text
+    }
+    
+    private func convertVietnameseCharacters(_ text: String) -> String {
+        // For Vietnamese characters, we'll use a simpler approach
+        // Convert problematic characters to their closest ASCII equivalents
+        let vietnameseConversions: [String: String] = [
+            // Common Vietnamese characters to ASCII equivalents  
+            "à": "a", "á": "a", "ả": "a", "ã": "a", "ạ": "a",
+            "ă": "a", "ằ": "a", "ắ": "a", "ẳ": "a", "ẵ": "a", "ặ": "a",
+            "â": "a", "ầ": "a", "ấ": "a", "ẩ": "a", "ẫ": "a", "ậ": "a",
+            "è": "e", "é": "e", "ẻ": "e", "ẽ": "e", "ẹ": "e",
+            "ê": "e", "ề": "e", "ế": "e", "ể": "e", "ễ": "e", "ệ": "e",
+            "ì": "i", "í": "i", "ỉ": "i", "ĩ": "i", "ị": "i",
+            "ò": "o", "ó": "o", "ỏ": "o", "õ": "o", "ọ": "o",
+            "ô": "o", "ồ": "o", "ố": "o", "ổ": "o", "ỗ": "o", "ộ": "o",
+            "ơ": "o", "ờ": "o", "ớ": "o", "ở": "o", "ỡ": "o", "ợ": "o",
+            "ù": "u", "ú": "u", "ủ": "u", "ũ": "u", "ụ": "u",
+            "ư": "u", "ừ": "u", "ứ": "u", "ử": "u", "ữ": "u", "ự": "u",
+            "ỳ": "y", "ý": "y", "ỷ": "y", "ỹ": "y", "ỵ": "y",
+            "đ": "d", "Đ": "D"
+        ]
+        
+        var convertedText = text
+        for (vietnamese, ascii) in vietnameseConversions {
+            convertedText = convertedText.replacingOccurrences(of: vietnamese, with: ascii)
+        }
+        return convertedText
+    }
+    
+    private func convertJapaneseCharacters(_ text: String) -> String {
+        // For Japanese, we first try to keep the original characters for Shift-JIS
+        // But provide fallbacks for characters that might not be supported
+        let japaneseConversions: [String: String] = [
+            // Common problematic characters to ASCII/romanized equivalents
+            "＃": "#", "＄": "$", "％": "%", "＆": "&", "＊": "*",
+            "（": "(", "）": ")", "－": "-", "＋": "+", "＝": "=",
+            "｛": "{", "｝": "}", "［": "[", "］": "]", "｜": "|",
+            "＼": "\\", "：": ":", "；": ";", "＜": "<", "＞": ">",
+            "？": "?", "／": "/", "．": ".", "，": ",", "　": " ",
+            // If kanji/hiragana/katakana fail, we could add specific mappings here
+            // For now, we'll let Shift-JIS handle most Japanese characters
+        ]
+        
+        var convertedText = text
+        for (japanese, replacement) in japaneseConversions {
+            convertedText = convertedText.replacingOccurrences(of: japanese, with: replacement)
+        }
+        return convertedText
     }
 }

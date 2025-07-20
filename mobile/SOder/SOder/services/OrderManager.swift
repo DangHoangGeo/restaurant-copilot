@@ -55,6 +55,7 @@ class OrderManager: ObservableObject {
     @Published var autoPrintStats = AutoPrintStats()
     internal var printedNewOrders: Set<String> = []
     internal var printedReadyItems: Set<String> = []
+    internal var printedNewItems: Set<String> = [] // Track individual items
 
     @Published var currentDraftOrder: Order? = nil // For managing the active draft order
     @Published var localDraftOrders: [String: Order] = [:] // Local draft orders not yet saved to database
@@ -1426,14 +1427,15 @@ class OrderManager: ObservableObject {
         
         for (item, order) in newItems {
             // Skip if already printed
-            if printedNewOrders.contains(item.id) {
+            if printedNewItems.contains(item.id) {
+                print("⏭️ Skipping already printed item: \(item.id)")
                 continue
             }
             
             do {
                 // Print individual item slip
                 try await printNewItemSlip(item: item, order: order)
-                printedNewOrders.insert(item.id) // Use same tracking set
+                printedNewItems.insert(item.id) // Use dedicated tracking set
                 await MainActor.run {
                     autoPrintStats.recordNewOrderPrint()
                 }
@@ -1472,41 +1474,85 @@ class OrderManager: ObservableObject {
         let settingsManager = PrinterSettingsManager.shared
         let printerService = PrinterService.shared
         
-        // Create a focused slip for just this new item
-        var slip = ""
-        slip += "=== NEW ITEM ADDED ===\n"
-        slip += "Order: \(order.table?.name ?? "Table \(order.table_id)")\n"
-        if let orderNumber = order.order_number {
-            slip += "Order #: \(orderNumber)\n"
-        }
-        slip += "Time: \(DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short))\n"
-        slip += String(repeating: "-", count: 32) + "\n"
+        // Create proper ESC/POS formatted slip
+        var outputData = Data()
         
+        // Clear buffer and initialize printer properly
+        outputData.append(Data(PrinterConfig.Commands.clearBuffer))
+        outputData.append(Data(PrinterConfig.Commands.initialize))
+        
+        // Set charset based on print language
+        switch settingsManager.printLanguage {
+        case .vietnamese:
+            outputData.append(Data(PrinterConfig.Commands.setCharsetCP1258))
+        case .japanese:
+            outputData.append(Data(PrinterConfig.Commands.setCharsetShiftJIS))
+        case .english:
+            outputData.append(Data(PrinterConfig.Commands.setCharsetCP1252))
+        }
+        
+        // Header - Center aligned and bold
+        outputData.append(Data(PrinterConfig.Commands.alignCenter))
+        outputData.append(Data(PrinterConfig.Commands.boldOn))
+        
+        // Get encoding based on language
+        let encoding: String.Encoding
+        switch settingsManager.printLanguage {
+        case .vietnamese:
+            encoding = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.windowsVietnamese.rawValue)))
+        case .japanese:
+            encoding = String.Encoding.shiftJIS
+        case .english:
+            encoding = String.Encoding.windowsCP1252
+        }
+        
+        // Add leading spacing for better separation
+        outputData.append("\n\n".data(using: encoding) ?? Data())
+        
+        outputData.append("=== NEW ITEM ADDED ===\n".data(using: encoding) ?? Data())
+        outputData.append(Data(PrinterConfig.Commands.boldOff))
+        outputData.append(Data(PrinterConfig.Commands.alignLeft))
+        
+        // Order info
+        var orderInfo = ""
+        orderInfo += "Order: \(order.table?.name ?? "Table \(order.table_id)")\n"
+        if let orderNumber = order.order_number {
+            orderInfo += "Order #: \(orderNumber)\n"
+        }
+        orderInfo += "Time: \(DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short))\n"
+        orderInfo += String(repeating: "-", count: 32) + "\n"
+        outputData.append(orderInfo.data(using: encoding) ?? Data())
+        
+        // Item details
         let itemName = item.menu_item?.displayName ?? "Unknown Item"
-        slip += "\(item.quantity)x \(itemName)\n"
+        var itemText = "\(item.quantity)x \(itemName)\n"
         
         if let notes = item.notes, !notes.isEmpty {
-            slip += "Note: \(notes)\n"
+            itemText += "Note: \(notes)\n"
         }
         
         if let size = item.menu_item_size_id, !size.isEmpty {
-            slip += "Size: \(size)\n"
+            itemText += "Size: \(size)\n"
         }
         
-        slip += String(repeating: "=", count: 32) + "\n"
-        slip += "\n\n\n"
+        itemText += String(repeating: "=", count: 32) + "\n"
+        itemText += "\n" // Extra spacing after content
+        outputData.append(itemText.data(using: encoding) ?? Data())
         
-        let printData = slip.data(using: .utf8) ?? Data()
+        // Enhanced paper feeding and cutting sequence with proper spacing
+        outputData.append(Data(PrinterConfig.Commands.paperFeedExtra)) // Extra feed for better spacing
+        outputData.append("\n\n\n".data(using: encoding) ?? Data()) // Additional line feeds before cutting
+        outputData.append(Data(PrinterConfig.Commands.cutPaperAdvanced)) // Advanced cut with feed
         
         // Use kitchen printer if configured, otherwise use default
         switch settingsManager.printerMode {
         case .single:
-            try await printerService.connectAndSendData(data: printData)
+            try await printerService.connectAndSendData(data: outputData)
         case .dual:
             if let kitchenConfig = settingsManager.getKitchenPrinterConfig() {
-                try await printerService.connectAndSendData(data: printData, to: kitchenConfig)
+                try await printerService.connectAndSendData(data: outputData, to: kitchenConfig)
             } else {
-                try await printerService.connectAndSendData(data: printData)
+                try await printerService.connectAndSendData(data: outputData)
             }
         }
     }
@@ -1696,6 +1742,7 @@ class OrderManager: ObservableObject {
     func clearPrintHistory() {
         printedNewOrders.removeAll()
         printedReadyItems.removeAll()
+        printedNewItems.removeAll()
         autoPrintStats.reset()
         lastAutoPrintResult = "🔄 Print history cleared"
         print("Print history and statistics cleared")

@@ -79,10 +79,16 @@ enum PrinterError: Error, LocalizedError {
 class PrinterService {
     static let shared = PrinterService()
     
-    private var connection: NWConnection?
     private let config = PrinterConfig.shared
     private let settingsManager = PrinterSettingsManager.shared
     private let queue = DispatchQueue(label: "printer.service", qos: .userInitiated)
+    
+    // Connection management
+    private var lastConnectionTime: Date = Date.distantPast
+    private var connectionAttempts: Int = 0
+    private let minimumConnectionInterval: TimeInterval = 1.0 // Minimum 1 second between connections
+    private let maxConnectionAttempts: Int = 3
+    private let connectionResetInterval: TimeInterval = 60.0 // Reset attempt counter after 1 minute
     
     private init() {}
     
@@ -94,6 +100,9 @@ class PrinterService {
             throw PrinterError.configurationError("Printer IP Address or Port is not configured")
         }
         
+        // Implement rate limiting
+        try await enforceRateLimit()
+        
         let host = NWEndpoint.Host(printer.ipAddress)
         guard let port = NWEndpoint.Port(rawValue: UInt16(printer.port)) else {
             throw PrinterError.configurationError("Invalid printer port number")
@@ -101,7 +110,7 @@ class PrinterService {
         
         // Create a new connection for each print job
         let newConnection = NWConnection(host: host, port: port, using: .tcp)
-        self.connection = newConnection
+        // Don't store connection reference to avoid retain cycles
         
         print("PrinterService: Connecting to \(printer.ipAddress):\(printer.port)")
         
@@ -114,16 +123,22 @@ class PrinterService {
                 switch newState {
                 case .ready:
                     print("PrinterService: Connected successfully")
-                    self.sendData(connection: newConnection, data: data) { error in
+                    self.sendData(connection: newConnection, data: data) { [weak self] error in
                         if !hasResumed {
                             hasResumed = true
                             if let error = error {
                                 continuation.resume(throwing: error)
                             } else {
+                                // Reset connection attempts on successful print
+                                self?.connectionAttempts = 0
                                 continuation.resume(returning: ())
                             }
                         }
-                        self.disconnect(connection: newConnection)
+                        // Add longer delay before disconnecting to ensure data is fully transmitted
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                            // Disconnect first, then clear handler
+                            self?.disconnect(connection: newConnection)
+                        }
                     }
                     
                 case .failed(let error):
@@ -132,7 +147,7 @@ class PrinterService {
                         print("PrinterService: Connection failed - \(error.localizedDescription)")
                         continuation.resume(throwing: PrinterError.connectionFailed(error))
                     }
-                    self.connection = nil
+                    newConnection.cancel()
                     
                 case .cancelled:
                     if !hasResumed {
@@ -140,7 +155,6 @@ class PrinterService {
                         print("PrinterService: Connection cancelled")
                         continuation.resume(throwing: PrinterError.timeout)
                     }
-                    self.connection = nil
                     
                 default:
                     break
@@ -192,11 +206,39 @@ class PrinterService {
     }
     
     private func disconnect(connection: NWConnection) {
+        // Clear the state update handler to break retain cycles
+        connection.stateUpdateHandler = nil
         connection.cancel()
-        if self.connection === connection {
-            self.connection = nil
-        }
         print("PrinterService: Connection closed")
+    }
+    
+    // MARK: - Rate Limiting
+    private func enforceRateLimit() async throws {
+        let now = Date()
+        
+        // Reset connection attempts if enough time has passed
+        if now.timeIntervalSince(lastConnectionTime) > connectionResetInterval {
+            connectionAttempts = 0
+        }
+        
+        // Check if we've exceeded maximum attempts
+        if connectionAttempts >= maxConnectionAttempts {
+            throw PrinterError.printerBusy
+        }
+        
+        // Check minimum interval between connections
+        let timeSinceLastConnection = now.timeIntervalSince(lastConnectionTime)
+        if timeSinceLastConnection < minimumConnectionInterval {
+            let waitTime = minimumConnectionInterval - timeSinceLastConnection
+            print("PrinterService: Rate limiting - waiting \(waitTime) seconds")
+            try await Task.sleep(nanoseconds: UInt64(waitTime * 1_000_000_000))
+        }
+        
+        // Update tracking variables
+        lastConnectionTime = Date()
+        connectionAttempts += 1
+        
+        print("PrinterService: Connection attempt \(connectionAttempts) of \(maxConnectionAttempts)")
     }
 }
 

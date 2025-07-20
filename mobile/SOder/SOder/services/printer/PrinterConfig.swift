@@ -27,6 +27,12 @@ struct PrinterConfig {
         // Initialization
         static let initialize: [UInt8] = [0x1B, 0x40] // ESC @ (Reset printer)
         
+        // Character Encoding - Critical for Vietnamese/Japanese support
+        static let setCharsetCP1252: [UInt8] = [0x1B, 0x74, 0x10] // ESC t 16 (Windows-1252 for basic Latin)
+        static let setCharsetCP1258: [UInt8] = [0x1B, 0x74, 0x1B] // ESC t 27 (Windows-1258 for Vietnamese)
+        static let setCharsetShiftJIS: [UInt8] = [0x1B, 0x74, 0x04] // ESC t 4 (Shift-JIS for Japanese)
+        static let setCharsetUTF8: [UInt8] = [0x1B, 0x74, 0xFF] // ESC t 255 (UTF-8 if supported)
+        
         // Text Formatting
         static let fontSizeNormal: [UInt8] = [0x1D, 0x21, 0x00] // GS ! n (Normal size)
         static let fontSizeDoubleWidth: [UInt8] = [0x1D, 0x21, 0x10] // GS ! n (Double width)
@@ -44,11 +50,18 @@ struct PrinterConfig {
         static let alignCenter: [UInt8] = [0x1B, 0x61, 0x01] // ESC a n (Center align)
         static let alignRight: [UInt8] = [0x1B, 0x61, 0x02] // ESC a n (Right align)
         
-        // Paper Control
+        // Paper Control - Enhanced for better cutting
         static let lineFeed: [UInt8] = [0x0A] // LF
         static let formFeed: [UInt8] = [0x0C] // FF
-        static let cutPaperFull: [UInt8] = [0x1D, 0x56, 0x00] // GS V m (Full cut)
-        static let cutPaperPartial: [UInt8] = [0x1D, 0x56, 0x01] // GS V m (Partial cut)
+        static let paperFeed: [UInt8] = [0x1B, 0x4A, 0x08] // ESC J 8 (Feed 8 lines for cutting)
+        static let paperFeedExtra: [UInt8] = [0x1B, 0x4A, 0x0C] // ESC J 12 (Extra feed for better spacing)
+        static let cutPaperFull: [UInt8] = [0x1D, 0x56, 0x00] // GS V 0 (Full cut)
+        static let cutPaperPartial: [UInt8] = [0x1D, 0x56, 0x01] // GS V 1 (Partial cut)
+        static let cutPaperAdvanced: [UInt8] = [0x1D, 0x56, 0x30] // GS V 48 (Full cut with feed)
+        
+        // Buffer and printer control
+        static let clearBuffer: [UInt8] = [0x18] // CAN (Cancel/Clear buffer)
+        static let flushBuffer: [UInt8] = [0x0C] // FF (Form feed to flush)
         
         // QR Code Commands
         static func setQRCodeModel(_ model: UInt8 = 0x32) -> [UInt8] {
