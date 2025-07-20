@@ -1234,16 +1234,48 @@ class OrderManager: ObservableObject {
     @MainActor
     private func handleOrderChange() async {
         let previousOrders = orders
+        print("📋 Order change detected: previous=\(previousOrders.count), fetching fresh data...")
         await fetchActiveOrders()
+        print("📋 After fetch: current=\(orders.count)")
+        
+        let canAutoPrint = hasKitchenPrinter()
         
         // Check for new orders to auto-print
         if orders.count > previousOrders.count {
             triggerFeedback()
             
+            let newOrderCount = orders.count - previousOrders.count
+            print("🆕 Detected \(newOrderCount) new order(s)")
+            print("🖨️ Auto-print check: enabled=\(autoPrintingEnabled), hasKitchenPrinter=\(canAutoPrint)")
+            
             // Auto-print new orders if enabled and kitchen printer is configured
-            if autoPrintingEnabled && hasKitchenPrinter() {
+            if autoPrintingEnabled && canAutoPrint {
+                print("🖨️ Triggering auto-print for new orders")
                 await autoPrintNewOrders(previousOrders: previousOrders)
+            } else {
+                print("🖨️ Auto-print skipped - enabled: \(autoPrintingEnabled), canPrint: \(canAutoPrint)")
             }
+        } else if orders.count == previousOrders.count {
+            print("📋 No new orders detected (same count), checking for new items...")
+            
+            // Check for new items added to existing orders
+            let newItems = findNewItemsInExistingOrders(currentOrders: orders, previousOrders: previousOrders)
+            
+            if !newItems.isEmpty {
+                print("🍽️ Detected \(newItems.count) new item(s) in existing orders")
+                triggerFeedback()
+                
+                if autoPrintingEnabled && canAutoPrint {
+                    print("🖨️ Triggering auto-print for new items")
+                    await autoPrintNewItems(newItems)
+                } else {
+                    print("🖨️ Auto-print skipped for items - enabled: \(autoPrintingEnabled), canPrint: \(canAutoPrint)")
+                }
+            } else {
+                print("📋 No new items detected")
+            }
+        } else {
+            print("📋 Order count decreased (completed/cancelled orders?)")
         }
     }
     
@@ -1282,7 +1314,27 @@ class OrderManager: ObservableObject {
     
     private func hasKitchenPrinter() -> Bool {
         let settingsManager = PrinterSettingsManager.shared
-        return settingsManager.hasKitchenPrinter() || settingsManager.isUsingDefaultPrinter()
+        
+        print("🖨️ Checking printer availability:")
+        print("  - Printer mode: \(settingsManager.printerMode)")
+        print("  - Active printer: \(settingsManager.activePrinter?.name ?? "none")")
+        print("  - Configured printers count: \(settingsManager.configuredPrinters.count)")
+        print("  - Using default printer: \(settingsManager.isUsingDefaultPrinter())")
+        print("  - Has kitchen printer: \(settingsManager.hasKitchenPrinter())")
+        
+        // In single printer mode, any configured printer can print kitchen orders
+        if settingsManager.printerMode == .single {
+            let result = settingsManager.activePrinter != nil || 
+                        !settingsManager.configuredPrinters.isEmpty || 
+                        settingsManager.isUsingDefaultPrinter()
+            print("  - Single mode result: \(result)")
+            return result
+        }
+        
+        // In dual printer mode, need a specific kitchen printer
+        let result = settingsManager.hasKitchenPrinter()
+        print("  - Dual mode result: \(result)")
+        return result
     }
     
     @MainActor
@@ -1354,6 +1406,112 @@ class OrderManager: ObservableObject {
     }
     
     @MainActor
+    private func autoPrintNewItems(_ newItems: [(OrderItem, Order)]) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            autoPrintQueue.async {
+                Task {
+                    await self.performAutoPrintNewItems(newItems)
+                    continuation.resume()
+                }
+            }
+        }
+    }
+    
+    private func performAutoPrintNewItems(_ newItems: [(OrderItem, Order)]) async {
+        guard !newItems.isEmpty else { return }
+        
+        await MainActor.run {
+            autoPrintingInProgress = true
+        }
+        
+        for (item, order) in newItems {
+            // Skip if already printed
+            if printedNewOrders.contains(item.id) {
+                continue
+            }
+            
+            do {
+                // Print individual item slip
+                try await printNewItemSlip(item: item, order: order)
+                printedNewOrders.insert(item.id) // Use same tracking set
+                await MainActor.run {
+                    autoPrintStats.recordNewOrderPrint()
+                }
+                
+                let itemName = item.menu_item?.displayName ?? "Unknown Item"
+                let tableInfo = order.table?.name ?? "Table \(order.table_id)"
+                await MainActor.run {
+                    lastAutoPrintResult = "✅ Auto-printed new item: \(itemName) for \(tableInfo)"
+                }
+                print("Auto-printed new item: \(item.id) - \(itemName)")
+                
+            } catch {
+                await MainActor.run {
+                    autoPrintStats.recordPrintFailure()
+                    lastAutoPrintResult = "❌ Auto-print failed: \(error.localizedDescription)"
+                }
+                print("Auto-print failed for new item \(item.id): \(error.localizedDescription)")
+            }
+        }
+        
+        await MainActor.run {
+            autoPrintingInProgress = false
+        }
+        
+        // Clear the result message after 5 seconds
+        Task {
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            await MainActor.run {
+                lastAutoPrintResult = nil
+            }
+        }
+    }
+    
+    @MainActor
+    private func printNewItemSlip(item: OrderItem, order: Order) async throws {
+        let settingsManager = PrinterSettingsManager.shared
+        let printerService = PrinterService.shared
+        
+        // Create a focused slip for just this new item
+        var slip = ""
+        slip += "=== NEW ITEM ADDED ===\n"
+        slip += "Order: \(order.table?.name ?? "Table \(order.table_id)")\n"
+        if let orderNumber = order.order_number {
+            slip += "Order #: \(orderNumber)\n"
+        }
+        slip += "Time: \(DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short))\n"
+        slip += String(repeating: "-", count: 32) + "\n"
+        
+        let itemName = item.menu_item?.displayName ?? "Unknown Item"
+        slip += "\(item.quantity)x \(itemName)\n"
+        
+        if let notes = item.notes, !notes.isEmpty {
+            slip += "Note: \(notes)\n"
+        }
+        
+        if let size = item.menu_item_size_id, !size.isEmpty {
+            slip += "Size: \(size)\n"
+        }
+        
+        slip += String(repeating: "=", count: 32) + "\n"
+        slip += "\n\n\n"
+        
+        let printData = slip.data(using: .utf8) ?? Data()
+        
+        // Use kitchen printer if configured, otherwise use default
+        switch settingsManager.printerMode {
+        case .single:
+            try await printerService.connectAndSendData(data: printData)
+        case .dual:
+            if let kitchenConfig = settingsManager.getKitchenPrinterConfig() {
+                try await printerService.connectAndSendData(data: printData, to: kitchenConfig)
+            } else {
+                try await printerService.connectAndSendData(data: printData)
+            }
+        }
+    }
+    
+    @MainActor
     private func autoPrintReadyItems(previousOrders: [Order]) async {
         let readyItems = findItemsChangedToReady(currentOrders: orders, previousOrders: previousOrders)
         
@@ -1403,6 +1561,35 @@ class OrderManager: ObservableObject {
     internal func findNewOrders(currentOrders: [Order], previousOrders: [Order]) -> [Order] {
         let previousOrderIds = Set(previousOrders.map { $0.id })
         return currentOrders.filter { !previousOrderIds.contains($0.id) }
+    }
+    
+    internal func findNewItemsInExistingOrders(currentOrders: [Order], previousOrders: [Order]) -> [(OrderItem, Order)] {
+        var newItems: [(OrderItem, Order)] = []
+        
+        // Create lookup dictionary for previous orders
+        let previousOrderDict = Dictionary(uniqueKeysWithValues: previousOrders.map { ($0.id, $0) })
+        
+        for currentOrder in currentOrders {
+            guard let previousOrder = previousOrderDict[currentOrder.id] else {
+                // This is a new order, skip (handled by findNewOrders)
+                continue
+            }
+            
+            // Get previous item IDs for this order
+            let previousItemIds = Set(previousOrder.order_items?.map { $0.id } ?? [])
+            
+            // Find new items in current order
+            if let currentItems = currentOrder.order_items {
+                for item in currentItems {
+                    if !previousItemIds.contains(item.id) {
+                        print("🍽️ Found new item: \(item.menu_item?.displayName ?? "Unknown") in order \(currentOrder.id)")
+                        newItems.append((item, currentOrder))
+                    }
+                }
+            }
+        }
+        
+        return newItems
     }
     
     internal func findItemsChangedToReady(currentOrders: [Order], previousOrders: [Order]) -> [OrderItem] {
@@ -1469,6 +1656,41 @@ class OrderManager: ObservableObject {
         }
     }
     
+    // MARK: - Manual Testing Functions
+    
+    @MainActor
+    public func testPrintLatestOrder() async {
+        guard let latestOrder = orders.first else {
+            print("❌ No orders available to print")
+            return
+        }
+        
+        print("🧪 Testing print for order: \(latestOrder.id)")
+        do {
+            try await printerManager.printKitchenSlip(for: latestOrder)
+            print("✅ Manual print test successful")
+        } catch {
+            print("❌ Manual print test failed: \(error.localizedDescription)")
+        }
+    }
+    
+    @MainActor
+    public func testPrintNewItemSlip() async {
+        guard let latestOrder = orders.first,
+              let firstItem = latestOrder.order_items?.first else {
+            print("❌ No orders or items available to print")
+            return
+        }
+        
+        print("🧪 Testing new item slip for: \(firstItem.menu_item?.displayName ?? "Unknown")")
+        do {
+            try await printNewItemSlip(item: firstItem, order: latestOrder)
+            print("✅ Manual new item slip test successful")
+        } catch {
+            print("❌ Manual new item slip test failed: \(error.localizedDescription)")
+        }
+    }
+    
     // MARK: - Clear Print History (for testing/reset)
     
     func clearPrintHistory() {
@@ -1506,6 +1728,48 @@ class OrderManager: ObservableObject {
             group.cancelAll()
             return result
         }
+    }
+    
+    // MARK: - Order Management Methods
+    
+    @MainActor
+    public func cancelOrder(orderId: String) async throws {
+        guard let restaurantId = supabaseManager.currentRestaurantId else {
+            throw OrderManagerError.missingRestaurantId
+        }
+        
+        // Check if order exists and can be cancelled
+        let order: Order = try await supabaseManager.client
+            .from("orders")
+            .select("id, status")
+            .eq("id", value: orderId)
+            .eq("restaurant_id", value: restaurantId)
+            .single()
+            .execute()
+            .value
+        
+        guard order.status == .new || order.status == .draft || order.status == .serving else {
+            throw OrderManagerError.generalError("Order cannot be cancelled. Current status: \(order.status.displayName)")
+        }
+        
+        // Update order status to cancelled
+        try await supabaseManager.client
+            .from("orders")
+            .update(["status": "canceled"])
+            .eq("id", value: orderId)
+            .execute()
+        
+        // Update all order items to cancelled  
+        try await supabaseManager.client
+            .from("order_items")
+            .update(["status": "canceled"])
+            .eq("order_id", value: orderId)
+            .execute()
+        
+        print("✅ Cancelled order: \(orderId)")
+        
+        // Refresh orders list
+        await fetchActiveOrders()
     }
 }
 

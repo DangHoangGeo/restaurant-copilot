@@ -11,6 +11,11 @@ struct OrderDetailView: View {
     @State private var selectedItems: Set<String> = []
     @State private var showingItemActions = false
     @State private var selectedItem: OrderItem? = nil
+    @State private var showingCancelConfirmAlert = false
+    @State private var showingAddItemSheet = false
+    @State private var showingStatusUpdateSheet = false
+    @State private var errorMessage: String? = nil
+    @State private var showingErrorAlert = false
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject private var supabaseManager: SupabaseManager
@@ -74,6 +79,54 @@ struct OrderDetailView: View {
                         },
                         onPrintResult: onPrintResult
                     )
+                }
+                .sheet(isPresented: $showingAddItemSheet) {
+                    NavigationView {
+                        AddItemToOrderView(order: order)
+                            .environmentObject(orderManager)
+                            .environmentObject(supabaseManager)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("Cancel") {
+                                        showingAddItemSheet = false
+                                    }
+                                }
+                                ToolbarItem(placement: .navigationBarTrailing) {
+                                    Button("Done") {
+                                        showingAddItemSheet = false
+                                        Task {
+                                            await orderManager.fetchActiveOrders()
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                }
+                .sheet(isPresented: $showingStatusUpdateSheet) {
+                    NavigationView {
+                        OrderStatusUpdateView(order: order)
+                            .environmentObject(orderManager)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("Cancel") {
+                                        showingStatusUpdateSheet = false
+                                    }
+                                }
+                            }
+                    }
+                }
+                .alert("Cancel Order", isPresented: $showingCancelConfirmAlert) {
+                    Button("Cancel Order", role: .destructive) {
+                        Task { await cancelOrder() }
+                    }
+                    Button("Keep Order", role: .cancel) {}
+                } message: {
+                    Text("Are you sure you want to cancel this order? This action cannot be undone.")
+                }
+                .alert("Error", isPresented: $showingErrorAlert) {
+                    Button("OK") {}
+                } message: {
+                    Text(errorMessage ?? "An error occurred")
                 }
                 .toolbar {
                     if horizontalSizeClass != .regular && order.status == .completed {
@@ -157,25 +210,44 @@ struct OrderDetailView: View {
 
     private func orderActionsSection(for order: Order) -> some View {
         VStack(spacing: Spacing.sm) {
-            if order.status == .completed {
-                Button(action: {
-                    Task { await printReceipt(for: order) }
-                }) {
-                    HStack {
-                        Image(systemName: "printer")
-                        Text("orders_print_receipt".localized)
-                            .font(.buttonLarge)
-                            .fontWeight(.semibold)
+            // Primary Actions Row
+            HStack(spacing: Spacing.md) {
+                if order.status == .completed {
+                    Button(action: {
+                        Task { await printReceipt(for: order) }
+                    }) {
+                        HStack {
+                            Image(systemName: "printer")
+                            Text("orders_print_receipt".localized)
+                                .font(.buttonLarge)
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.appPrimary)
+                        .foregroundColor(.white)
+                        .cornerRadius(CornerRadius.md)
                     }
-                    .frame(maxWidth: 120)
-                    .frame(height: 44)
-                    .background(Color.appPrimary)
-                    .foregroundColor(.white)
-                    .cornerRadius(CornerRadius.md)
-                }
-                .accessibilityLabel("orders_print_receipt_accessibility".localized)
-            } else {
-                HStack(spacing: Spacing.md){
+                    .accessibilityLabel("orders_print_receipt_accessibility".localized)
+                } else {
+                    // Add Items Button
+                    Button(action: {
+                        showingAddItemSheet = true
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle")
+                            Text("Add Items")
+                                .font(.buttonLarge)
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.appInfo)
+                        .foregroundColor(.white)
+                        .cornerRadius(CornerRadius.md)
+                    }
+                    .accessibilityLabel("Add items to order")
+                    
                     if order.status == .new {
                         Button(action: {
                             Task { await updateOrderStatus(.serving) }
@@ -186,7 +258,7 @@ struct OrderDetailView: View {
                                     .font(.buttonLarge)
                                     .fontWeight(.medium)
                             }
-                            .frame(maxWidth: 256)
+                            .frame(maxWidth: .infinity)
                             .frame(height: 44)
                             .background(Color.appWarning)
                             .foregroundColor(.white)
@@ -195,6 +267,7 @@ struct OrderDetailView: View {
                         .disabled(isUpdatingStatus)
                         .accessibilityLabel("orders_mark_serving_accessibility".localized)
                     }
+                    
                     Button(action: onCheckout) {
                         HStack {
                             Image(systemName: "creditcard")
@@ -202,13 +275,56 @@ struct OrderDetailView: View {
                                 .font(.buttonLarge)
                                 .fontWeight(.semibold)
                         }
-                        .frame(maxWidth: 256)
+                        .frame(maxWidth: .infinity)
                         .frame(height: 44)
                         .background(Color.appPrimary)
                         .foregroundColor(.white)
                         .cornerRadius(CornerRadius.md)
                     }
                     .accessibilityLabel("orders_checkout_accessibility".localized)
+                }
+            }
+            
+            // Secondary Actions Row (only for active orders)
+            if order.status != .completed && order.status != .canceled {
+                HStack(spacing: Spacing.md) {
+                    // Update Status Button
+                    Button(action: {
+                        showingStatusUpdateSheet = true
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.up.circle")
+                            Text("Update Status")
+                                .font(.buttonMedium)
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 36)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.appTextPrimary)
+                        .cornerRadius(CornerRadius.sm)
+                    }
+                    .accessibilityLabel("Update order status")
+                    
+                    // Cancel Order Button (only for new orders)
+                    if order.status == .new {
+                        Button(action: {
+                            showingCancelConfirmAlert = true
+                        }) {
+                            HStack {
+                                Image(systemName: "xmark.circle")
+                                Text("Cancel Order")
+                                    .font(.buttonMedium)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 36)
+                            .background(Color.appError.opacity(0.1))
+                            .foregroundColor(.appError)
+                            .cornerRadius(CornerRadius.sm)
+                        }
+                        .accessibilityLabel("Cancel this order")
+                    }
                 }
             }
         }
@@ -271,6 +387,22 @@ struct OrderDetailView: View {
             onPrintResult("Order status updated to \(newStatus.displayName)")
         } catch {
             onPrintResult("Failed to update order status: \(error.localizedDescription)")
+        }
+        
+        isUpdatingStatus = false
+    }
+    
+    @MainActor
+    private func cancelOrder() async {
+        isUpdatingStatus = true
+        errorMessage = nil
+        
+        do {
+            try await orderManager.cancelOrder(orderId: orderId)
+            onPrintResult("Order cancelled successfully")
+        } catch {
+            errorMessage = "Failed to cancel order: \(error.localizedDescription)"
+            showingErrorAlert = true
         }
         
         isUpdatingStatus = false

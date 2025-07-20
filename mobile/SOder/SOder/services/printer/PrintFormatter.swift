@@ -962,14 +962,159 @@ extension PrintFormatter {
     
     // TODO: Add original methods here or reference them from existing code
     private func formatOrderForKitchenOriginal(order: Order) -> Data? {
-        // This would contain the original implementation
-        // For now, return nil to use template system
-        return nil
+        var outputData = Data()
+        
+        // Initialize printer
+        outputData.append(Data(PrinterConfig.Commands.initialize))
+        
+        // Header - Center aligned and bold
+        outputData.append(Data(PrinterConfig.Commands.alignCenter))
+        outputData.append(Data(PrinterConfig.Commands.boldOn))
+        outputData.append("=== KITCHEN ORDER ===\n".data(using: getSelectedEncoding()) ?? Data())
+        outputData.append(Data(PrinterConfig.Commands.boldOff))
+        outputData.append(Data(PrinterConfig.Commands.alignLeft))
+        
+        // Order info
+        var orderInfo = ""
+        if let orderNumber = order.order_number {
+            orderInfo += "Order #: \(orderNumber)\n"
+        }
+        orderInfo += "Table: \(order.table?.name ?? "Table \(order.table_id)")\n"
+        orderInfo += "Time: \(formatTime(order.created_at))\n"
+        orderInfo += "Guests: \(order.guest_count ?? 0)\n"
+        orderInfo += String(repeating: "-", count: PrinterConfig.Layout.receiptWidth) + "\n"
+        
+        outputData.append(orderInfo.data(using: getSelectedEncoding()) ?? Data())
+        
+        // Order items
+        if let items = order.order_items, !items.isEmpty {
+            outputData.append(Data(PrinterConfig.Commands.boldOn))
+            outputData.append("ITEMS:\n".data(using: getSelectedEncoding()) ?? Data())
+            outputData.append(Data(PrinterConfig.Commands.boldOff))
+            
+            var itemsText = ""
+            for item in items {
+                let itemName = item.menu_item?.displayName ?? "Unknown Item"
+                itemsText += "\(item.quantity)x \(itemName)\n"
+                
+                if let notes = item.notes, !notes.isEmpty {
+                    itemsText += "   Note: \(notes)\n"
+                }
+                
+                if let size = item.menu_item_size_id, !size.isEmpty {
+                    itemsText += "   Size: \(size)\n"
+                }
+                
+                itemsText += "\n"
+            }
+            outputData.append(itemsText.data(using: getSelectedEncoding()) ?? Data())
+        } else {
+            outputData.append("No items\n".data(using: getSelectedEncoding()) ?? Data())
+        }
+        
+        var footer = ""
+        footer += String(repeating: "=", count: PrinterConfig.Layout.receiptWidth) + "\n"
+        footer += "Status: \(order.status.displayName)\n"
+        footer += "\n\n\n"
+        outputData.append(footer.data(using: getSelectedEncoding()) ?? Data())
+        
+        // Cut paper
+        outputData.append(Data(PrinterConfig.Commands.cutPaperPartial))
+        
+        return outputData
     }
     
     private func formatCustomerReceiptOriginal(order: Order, isOfficial: Bool) -> Data? {
-        // This would contain the original implementation
-        // For now, return nil to use template system
-        return nil
+        var outputData = Data()
+        let header = settingsManager.receiptHeader
+        
+        // Initialize printer
+        outputData.append(Data(PrinterConfig.Commands.initialize))
+        
+        // Header - Center aligned and bold
+        outputData.append(Data(PrinterConfig.Commands.alignCenter))
+        outputData.append(Data(PrinterConfig.Commands.boldOn))
+        outputData.append("\(header.restaurantName)\n".data(using: getSelectedEncoding()) ?? Data())
+        outputData.append(Data(PrinterConfig.Commands.boldOff))
+        
+        var headerInfo = ""
+        headerInfo += "\(header.address)\n"
+        headerInfo += "\(header.phone)\n"
+        headerInfo += String(repeating: "=", count: PrinterConfig.Layout.receiptWidth) + "\n"
+        outputData.append(headerInfo.data(using: getSelectedEncoding()) ?? Data())
+        outputData.append(Data(PrinterConfig.Commands.alignLeft))
+        
+        // Order info
+        var orderInfo = ""
+        if let orderNumber = order.order_number {
+            orderInfo += "Order #: \(orderNumber)\n"
+        }
+        orderInfo += "Table: \(order.table?.name ?? "Table \(order.table_id)")\n"
+        orderInfo += "Date: \(formatTime(order.created_at))\n"
+        orderInfo += "Guests: \(order.guest_count ?? 0)\n"
+        orderInfo += String(repeating: "-", count: PrinterConfig.Layout.receiptWidth) + "\n"
+        outputData.append(orderInfo.data(using: getSelectedEncoding()) ?? Data())
+        
+        // Order items
+        if let items = order.order_items, !items.isEmpty {
+            var itemsText = ""
+            for item in items {
+                let itemName = item.menu_item?.displayName ?? "Unknown Item"
+                let price = formatCurrency(item.price_at_order)
+                
+                itemsText += String(format: "%-20s %3dx %8s\n", String(itemName.prefix(20)), item.quantity, price)
+                
+                if let notes = item.notes, !notes.isEmpty {
+                    itemsText += "  Note: \(notes)\n"
+                }
+            }
+            outputData.append(itemsText.data(using: getSelectedEncoding()) ?? Data())
+        }
+        
+        var footer = ""
+        footer += String(repeating: "-", count: PrinterConfig.Layout.receiptWidth) + "\n"
+        
+        // Total
+        let total = order.total_amount ?? 0
+        footer += String(format: "%-24s %8s\n", "TOTAL:", formatCurrency(total))
+        
+        footer += String(repeating: "=", count: PrinterConfig.Layout.receiptWidth) + "\n"
+        outputData.append(footer.data(using: getSelectedEncoding()) ?? Data())
+        
+        outputData.append(Data(PrinterConfig.Commands.alignCenter))
+        outputData.append("Thank you for your visit!\n".data(using: getSelectedEncoding()) ?? Data())
+        outputData.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data())
+        
+        // Cut paper
+        outputData.append(Data(PrinterConfig.Commands.cutPaperPartial))
+        
+        return outputData
+    }
+    
+    private func formatTime(_ dateString: String) -> String {
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        var date: Date?
+        
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            date = parsedDate
+        } else {
+            iso8601Formatter.formatOptions = [.withInternetDateTime]
+            date = iso8601Formatter.date(from: dateString)
+        }
+        
+        guard let finalDate = date else { 
+            return "Unknown" 
+        }
+        
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateStyle = .short
+        displayFormatter.timeStyle = .short
+        return displayFormatter.string(from: finalDate)
+    }
+    
+    private func formatCurrency(_ amount: Double) -> String {
+        return String(format: "¥%.0f", amount)
     }
 }

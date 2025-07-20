@@ -15,7 +15,7 @@ struct PrinterConfig {
     
     // Default printer configuration - should be user configurable
     let defaultPrinter = Hardware(
-        ipAddress: "192.168.1.100", // Make this configurable in app settings
+        ipAddress: "192.168.3.7", // Make this configurable in app settings
         port: 9100,
         name: "Kitchen Printer",
         connectionTimeout: 5.0,
