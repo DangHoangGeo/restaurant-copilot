@@ -21,6 +21,16 @@ class PrinterSettingsManager: ObservableObject {
     @Published var receiptEncoding: String.Encoding = .utf8
     @Published var customReceiptTemplate: String = ""
     
+    // Enhanced: Encoding strategy for UTF-8 first approach
+    @Published var encodingStrategy: PrinterConfig.EncodingUtils.Strategy?
+    
+    // Language capability storage per printer
+    @Published var printerLanguageCapabilities: [String: [PrintLanguage: Bool]] = [:]
+    
+    // Template theme selection
+    @Published var selectedReceiptTheme: TemplateTheme = .standard
+    @Published var selectedKitchenTheme: TemplateTheme = .standard
+    
     private let userDefaults = UserDefaults.standard
     private let printersKey = "configured_printers"
     private let activePrinterKey = "active_printer_id"
@@ -32,6 +42,10 @@ class PrinterSettingsManager: ObservableObject {
     private let receiptHeaderKey = "receipt_header"
     private let receiptEncodingKey = "receipt_encoding"
     private let customReceiptTemplateKey = "custom_receipt_template"
+    private let encodingStrategyKey = "encoding_strategy"
+    private let languageCapabilitiesKey = "printer_language_capabilities"
+    private let receiptThemeKey = "selected_receipt_theme"
+    private let kitchenThemeKey = "selected_kitchen_theme"
     
     private init() {
         // Initialize with default restaurant settings
@@ -47,7 +61,9 @@ class PrinterSettingsManager: ObservableObject {
         self.receiptHeader = ReceiptHeaderSettings(
             restaurantName: "SOder Restaurant",
             address: "123 Restaurant Street, City",
-            phone: "+81-xxx-xxx-xxxx"
+            phone: "+81-xxx-xxx-xxxx",
+            website: "soder-restaurant.com",
+            footerMessage: "Thank you for your visit!"
         )
         
         loadSettings()
@@ -241,6 +257,9 @@ class PrinterSettingsManager: ObservableObject {
         loadReceiptHeader()
         loadReceiptEncoding()
         loadCustomReceiptTemplate()
+        loadEncodingStrategy()
+        loadLanguageCapabilities()
+        loadTemplateThemes()
     }
     
     private func loadConfiguredPrinters() {
@@ -317,6 +336,9 @@ class PrinterSettingsManager: ObservableObject {
         savePrinterMode()
         saveReceiptEncoding()
         saveCustomReceiptTemplate()
+        saveEncodingStrategy()
+        saveLanguageCapabilities()
+        saveTemplateThemes()
     }
     
     private func saveConfiguredPrinters() {
@@ -375,6 +397,152 @@ class PrinterSettingsManager: ObservableObject {
     
     private func saveCustomReceiptTemplate() {
         userDefaults.set(customReceiptTemplate, forKey: customReceiptTemplateKey)
+    }
+    
+    private func loadEncodingStrategy() {
+        if let strategyRawValue = userDefaults.string(forKey: encodingStrategyKey) {
+            switch strategyRawValue {
+            case "utf8Primary":
+                encodingStrategy = .utf8Primary
+            case "utf8Fallback":
+                encodingStrategy = .utf8Fallback
+            case "legacyEncoding":
+                encodingStrategy = .legacyEncoding
+            default:
+                encodingStrategy = nil // Use default
+            }
+        }
+    }
+    
+    private func saveEncodingStrategy() {
+        if let strategy = encodingStrategy {
+            let strategyString: String
+            switch strategy {
+            case .utf8Primary:
+                strategyString = "utf8Primary"
+            case .utf8Fallback:
+                strategyString = "utf8Fallback"
+            case .legacyEncoding:
+                strategyString = "legacyEncoding"
+            }
+            userDefaults.set(strategyString, forKey: encodingStrategyKey)
+        } else {
+            userDefaults.removeObject(forKey: encodingStrategyKey)
+        }
+    }
+    
+    private func loadLanguageCapabilities() {
+        if let data = userDefaults.data(forKey: languageCapabilitiesKey),
+           let decoded = try? JSONDecoder().decode([String: [String: Bool]].self, from: data) {
+            // Convert string keys back to PrintLanguage enum
+            var capabilities: [String: [PrintLanguage: Bool]] = [:]
+            for (printerId, languageDict) in decoded {
+                var printerCapabilities: [PrintLanguage: Bool] = [:]
+                for (languageString, isSupported) in languageDict {
+                    if let language = PrintLanguage(rawValue: languageString) {
+                        printerCapabilities[language] = isSupported
+                    }
+                }
+                capabilities[printerId] = printerCapabilities
+            }
+            printerLanguageCapabilities = capabilities
+        }
+    }
+    
+    private func saveLanguageCapabilities() {
+        // Convert PrintLanguage enum keys to strings for JSON encoding
+        var encodableCapabilities: [String: [String: Bool]] = [:]
+        for (printerId, languageDict) in printerLanguageCapabilities {
+            var stringDict: [String: Bool] = [:]
+            for (language, isSupported) in languageDict {
+                stringDict[language.rawValue] = isSupported
+            }
+            encodableCapabilities[printerId] = stringDict
+        }
+        
+        if let data = try? JSONEncoder().encode(encodableCapabilities) {
+            userDefaults.set(data, forKey: languageCapabilitiesKey)
+        }
+    }
+    
+    // MARK: - Language Capability Management
+    func updateLanguageCapability(for printerId: String, language: PrintLanguage, isSupported: Bool) {
+        if printerLanguageCapabilities[printerId] == nil {
+            printerLanguageCapabilities[printerId] = [:]
+        }
+        printerLanguageCapabilities[printerId]?[language] = isSupported
+        saveLanguageCapabilities()
+    }
+    
+    func getLanguageCapability(for printerId: String, language: PrintLanguage) -> Bool? {
+        return printerLanguageCapabilities[printerId]?[language]
+    }
+    
+    func isLanguageSupported(for printerId: String, language: PrintLanguage) -> Bool {
+        return getLanguageCapability(for: printerId, language: language) ?? false
+    }
+    
+    func hasTestedLanguage(for printerId: String, language: PrintLanguage) -> Bool {
+        return getLanguageCapability(for: printerId, language: language) != nil
+    }
+    
+    func getSupportedLanguages(for printerId: String) -> [PrintLanguage] {
+        guard let capabilities = printerLanguageCapabilities[printerId] else { return [] }
+        return capabilities.compactMap { $0.value ? $0.key : nil }
+    }
+    
+    func getUnsupportedLanguages(for printerId: String) -> [PrintLanguage] {
+        guard let capabilities = printerLanguageCapabilities[printerId] else { return [] }
+        return capabilities.compactMap { !$0.value ? $0.key : nil }
+    }
+    
+    func getUntestedLanguages(for printerId: String) -> [PrintLanguage] {
+        guard let capabilities = printerLanguageCapabilities[printerId] else { 
+            return PrintLanguage.allCases 
+        }
+        return PrintLanguage.allCases.filter { capabilities[$0] == nil }
+    }
+    
+    func resetLanguageCapabilities(for printerId: String) {
+        printerLanguageCapabilities[printerId] = nil
+        saveLanguageCapabilities()
+    }
+    
+    // MARK: - Template Theme Management
+    private func loadTemplateThemes() {
+        if let receiptThemeString = userDefaults.string(forKey: receiptThemeKey),
+           let receiptTheme = TemplateTheme(rawValue: receiptThemeString) {
+            selectedReceiptTheme = receiptTheme
+        }
+        
+        if let kitchenThemeString = userDefaults.string(forKey: kitchenThemeKey),
+           let kitchenTheme = TemplateTheme(rawValue: kitchenThemeString) {
+            selectedKitchenTheme = kitchenTheme
+        }
+    }
+    
+    private func saveTemplateThemes() {
+        userDefaults.set(selectedReceiptTheme.rawValue, forKey: receiptThemeKey)
+        userDefaults.set(selectedKitchenTheme.rawValue, forKey: kitchenThemeKey)
+    }
+    
+    func setReceiptTheme(_ theme: TemplateTheme) {
+        selectedReceiptTheme = theme
+        saveTemplateThemes()
+    }
+    
+    func setKitchenTheme(_ theme: TemplateTheme) {
+        selectedKitchenTheme = theme
+        saveTemplateThemes()
+    }
+    
+    func getTemplateTheme(for type: TemplateType) -> TemplateTheme {
+        switch type {
+        case .receipt:
+            return selectedReceiptTheme
+        case .kitchen:
+            return selectedKitchenTheme
+        }
     }
     
     // MARK: - Validation
@@ -557,20 +725,41 @@ enum PrintLanguage: String, Codable, CaseIterable {
     }
 }
 
-// MARK: - Receipt Header Settings
+// MARK: - Receipt Customization Settings
 struct ReceiptHeaderSettings: Codable {
     var restaurantName: String
     var address: String
     var phone: String
+    var taxCode: String
+    var website: String
+    var footerMessage: String
+    var promotionalText: String
+    var showTaxCode: Bool
+    var showWebsite: Bool
+    var showPromotionalText: Bool
     
     init(
         restaurantName: String = "",
         address: String = "",
-        phone: String = ""
+        phone: String = "",
+        taxCode: String = "",
+        website: String = "",
+        footerMessage: String = "Thank you for your visit!",
+        promotionalText: String = "",
+        showTaxCode: Bool = false,
+        showWebsite: Bool = true,
+        showPromotionalText: Bool = false
     ) {
         self.restaurantName = restaurantName
         self.address = address
         self.phone = phone
+        self.taxCode = taxCode
+        self.website = website
+        self.footerMessage = footerMessage
+        self.promotionalText = promotionalText
+        self.showTaxCode = showTaxCode
+        self.showWebsite = showWebsite
+        self.showPromotionalText = showPromotionalText
     }
 }
 

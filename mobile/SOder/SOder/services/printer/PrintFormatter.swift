@@ -43,6 +43,7 @@ class PrintFormatter {
     private let numberFormatter: NumberFormatter
     private let templateRenderer = TemplateRenderer()
     private let formatProcessor = TemplateFormatProcessor()
+    private let themeManager = TemplateThemeManager.shared
     
     init() {
         numberFormatter = NumberFormatter()
@@ -63,7 +64,10 @@ class PrintFormatter {
     
     // MARK: - Convenience Methods
     func formatOrderForKitchen(order: Order) -> Data? {
-        guard let template = loadTemplate(named: "kitchen_template") else {
+        let theme = settingsManager.getTemplateTheme(for: .kitchen)
+        let language = settingsManager.printLanguage
+        
+        guard let template = themeManager.loadTemplate(type: .kitchen, language: language, theme: theme) else {
             return formatOrderForKitchenLegacy(order: order)
         }
         
@@ -73,7 +77,10 @@ class PrintFormatter {
     }
     
     func formatCustomerReceipt(order: Order, isOfficial: Bool = false) -> Data? {
-        guard let template = loadTemplate(named: "receipt_template") else {
+        let theme = settingsManager.getTemplateTheme(for: .receipt)
+        let language = settingsManager.printLanguage
+        
+        guard let template = themeManager.loadTemplate(type: .receipt, language: language, theme: theme) else {
             return formatCustomerReceiptLegacy(order: order, isOfficial: isOfficial)
         }
         
@@ -83,6 +90,9 @@ class PrintFormatter {
     }
     
     func formatTestReceipt() -> Data {
+        let theme = settingsManager.getTemplateTheme(for: .receipt)
+        let language = settingsManager.printLanguage
+        
         let testData: [String: Any] = [
             "restaurant": [
                 "name": "Test Restaurant",
@@ -113,7 +123,7 @@ class PrintFormatter {
             "total_price": 1430
         ]
         
-        let template = loadTemplate(named: "receipt_template") ?? getDefaultReceiptTemplate()
+        let template = themeManager.loadTemplate(type: .receipt, language: language, theme: theme) ?? getDefaultReceiptTemplate()
         let encoding = getSelectedEncoding()
         return format(template: template, data: testData, encoding: encoding)
     }
@@ -128,41 +138,37 @@ class PrintFormatter {
     }
     
     private func getSelectedEncoding() -> String.Encoding {
-        switch settingsManager.printLanguage {
-        case .vietnamese:
-            // Use Windows-1258 for Vietnamese characters - better thermal printer support
-            return String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.windowsVietnamese.rawValue)))
-        case .japanese:
-            // Use Shift-JIS for Japanese characters - standard for thermal printers
-            return .shiftJIS
-        case .english:
-            // Use Windows-1252 for English - standard thermal printer encoding
-            return .windowsCP1252
-        }
+        // Use UTF-8 first strategy by default, fallback to legacy if needed
+        let strategy = settingsManager.encodingStrategy ?? .utf8Primary
+        return PrinterConfig.EncodingUtils.getEncoding(for: settingsManager.printLanguage, strategy: strategy)
     }
     
     private func getPrinterCharsetCommand() -> [UInt8] {
-        switch settingsManager.printLanguage {
-        case .vietnamese:
-            // Use Windows-1258 charset command for Vietnamese
-            return PrinterConfig.Commands.setCharsetCP1258
-        case .japanese:
-            // Use Shift-JIS charset command for Japanese
-            return PrinterConfig.Commands.setCharsetShiftJIS
-        case .english:
-            // Use Windows-1252 charset command for English
-            return PrinterConfig.Commands.setCharsetCP1252
-        }
+        // Use UTF-8 first strategy with fallback
+        let strategy = settingsManager.encodingStrategy ?? .utf8Primary
+        return PrinterConfig.EncodingUtils.getCharsetCommand(for: settingsManager.printLanguage, strategy: strategy)
     }
     
     private func buildOrderData(order: Order, includePrice: Bool) -> [String: Any] {
+        let header = settingsManager.receiptHeader
+        
+        var restaurantData: [String: Any] = [
+            "name": header.restaurantName,
+            "address": header.address,
+            "phone": header.phone
+        ]
+        
+        // Add optional fields based on settings
+        if header.showTaxCode && !header.taxCode.isEmpty {
+            restaurantData["tax_code"] = header.taxCode
+        }
+        
+        if header.showWebsite && !header.website.isEmpty {
+            restaurantData["website"] = header.website
+        }
+        
         var data: [String: Any] = [
-            "restaurant": [
-                "name": settingsManager.receiptHeader.restaurantName,
-                "address": settingsManager.receiptHeader.address,
-                "phone": settingsManager.receiptHeader.phone,
-                "website": settingsManager.restaurantSettings.website
-            ],
+            "restaurant": restaurantData,
             "order": [
                 "id": order.id,
                 "table_name": order.tableName ?? "Takeout",
@@ -205,6 +211,15 @@ class PrintFormatter {
         // Add special instructions
         if let instructions = order.specialInstructions, !instructions.isEmpty {
             data["special_instructions"] = instructions
+        }
+        
+        // Add custom footer and promotional text
+        if !header.footerMessage.isEmpty {
+            data["custom_footer"] = header.footerMessage
+        }
+        
+        if header.showPromotionalText && !header.promotionalText.isEmpty {
+            data["promotional_message"] = header.promotionalText
         }
         
         return data
@@ -936,32 +951,78 @@ class PrintFormatter {
     }
     
     private func stringToData(_ string: String) -> Data? {
-        let encoding = getSelectedEncoding()
+        return stringToDataWithFallback(string)
+    }
+    
+    // Enhanced encoding with intelligent fallback
+    private func stringToDataWithFallback(_ string: String) -> Data? {
+        let language = settingsManager.printLanguage
+        let strategy = settingsManager.encodingStrategy ?? .utf8Primary
         
-        // For Vietnamese and Japanese, DO NOT use lossy conversion
-        switch settingsManager.printLanguage {
+        switch strategy {
+        case .utf8Primary:
+            // Try UTF-8 first
+            if let data = string.data(using: .utf8) {
+                return data
+            }
+            // Fallback to legacy encoding for this language
+            return tryLegacyEncoding(string, language: language)
+            
+        case .utf8Fallback:
+            // Try UTF-8 with character substitution
+            let processedString = applyCharacterFallback(string, language: language)
+            if let data = processedString.data(using: .utf8) {
+                return data
+            }
+            // Final fallback to ASCII
+            return PrinterConfig.EncodingUtils.toASCIISafe(processedString).data(using: .ascii)
+            
+        case .legacyEncoding:
+            // Use original legacy encoding approach
+            return tryLegacyEncoding(string, language: language)
+        }
+    }
+    
+    private func tryLegacyEncoding(_ string: String, language: PrintLanguage) -> Data? {
+        let encoding = PrinterConfig.EncodingUtils.getLegacyEncoding(for: language)
+        
+        switch language {
         case .vietnamese:
-            // Try Windows-1258 encoding without lossy conversion
             if let data = string.data(using: encoding) {
                 return data
             }
-            // Don't fall back to ASCII - return nil to handle error properly
-            print("Error: Could not encode Vietnamese text: \(string.prefix(50))")
-            return nil
+            print("Warning: Could not encode Vietnamese text with Windows-1258: \(string.prefix(50))")
+            // Apply Vietnamese character fallback and try again
+            let fallbackString = PrinterConfig.EncodingUtils.applyVietnameseFallback(string)
+            return fallbackString.data(using: encoding) ?? PrinterConfig.EncodingUtils.toASCIISafe(string).data(using: .ascii)
             
         case .japanese:
-            // Try Shift-JIS encoding without lossy conversion
             if let data = string.data(using: encoding) {
                 return data
             }
-            print("Error: Could not encode Japanese text: \(string.prefix(50))")
-            return nil
+            print("Warning: Could not encode Japanese text with Shift-JIS: \(string.prefix(50))")
+            // For Japanese, fall back to ASCII (losing characters but maintaining functionality)
+            return PrinterConfig.EncodingUtils.toASCIISafe(string).data(using: .ascii)
             
         case .english:
-            // For English, fallback is acceptable
-            return string.data(using: encoding) ?? 
-                string.data(using: .utf8) ?? 
-                string.data(using: .ascii, allowLossyConversion: true)
+            if let data = string.data(using: encoding) {
+                return data
+            }
+            // For English, ASCII fallback is reasonable
+            return string.data(using: .ascii, allowLossyConversion: true)
+        }
+    }
+    
+    private func applyCharacterFallback(_ string: String, language: PrintLanguage) -> String {
+        switch language {
+        case .vietnamese:
+            return PrinterConfig.EncodingUtils.applyVietnameseFallback(string)
+        case .japanese:
+            // For Japanese, we can't do meaningful character substitution, so return as-is
+            return string
+        case .english:
+            // Strip diacritics for English text that might have accented characters
+            return PrinterConfig.EncodingUtils.stripDiacritics(string)
         }
     }
     

@@ -8,64 +8,10 @@ struct PrinterModeSelectionView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Header
-            VStack(spacing: 8) {
-                Image(systemName: "printer.dotmatrix")
-                    .font(.system(size: 50))
-                    .foregroundColor(.blue)
-                
-                Text("printer_mode_selection_header_title".localized)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                Text("printer_mode_selection_header_subtitle".localized)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.top)
-            
-            // Mode Selection Cards
-            VStack(spacing: 16) {
-                ForEach(PrinterMode.allCases, id: \.self) { mode in
-                    PrinterModeCard(
-                        mode: mode,
-                        isSelected: settingsManager.printerMode == mode,
-                        canSelect: mode == .single || settingsManager.canEnableDualMode(),
-                        onTap: { selectMode(mode) }
-                    )
-                }
-            }
-            .padding(.horizontal)
-            
-            // Current Status
-            if settingsManager.printerMode == .dual {
-                DualPrinterStatusView()
-                    .padding(.horizontal)
-            }
-            
-            // Validation Errors
-            if !validationErrors.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("printer_mode_selection_issues_title".localized)
-                        .font(.headline)
-                        .foregroundColor(.red)
-                    
-                    ForEach(validationErrors, id: \.self) { error in
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.red)
-                            Text(error)
-                                .font(.caption)
-                        }
-                    }
-                }
-                .padding()
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.horizontal)
-            }
-            
+            headerSection
+            modeSelectionSection
+            statusSection
+            validationErrorsSection
             Spacer()
         }
         .navigationTitle("printer_mode_title".localized)
@@ -88,34 +34,40 @@ struct PrinterModeSelectionView: View {
         }
     }
     
-    private func selectMode(_ mode: PrinterMode) {
-        if mode == .dual && !settingsManager.canEnableDualMode() {
-            // Show error that at least 2 printers are needed
-            return
+    // MARK: - Computed Properties
+    
+    private var headerSection: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "printer.dotmatrix")
+                .font(.system(size: 50))
+                .foregroundColor(.blue)
+            
+            Text("printer_mode_selection_header_title".localized)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            
+            Text("printer_mode_selection_header_subtitle".localized)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
         }
+        .padding(.top)
+    }
+    
+    private var modeSelectionSection: some View {
+        VStack(spacing: 16) {
+            ForEach(PrinterMode.allCases, id: \.self) { mode in
+                modeCard(for: mode)
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private func modeCard(for mode: PrinterMode) -> some View {
+        let isSelected = settingsManager.printerMode == mode
+        let canSelect = mode == .single || settingsManager.canEnableDualMode()
         
-        if mode == .dual && settingsManager.printerMode == .single {
-            showingDualModeAlert = true
-        } else {
-            settingsManager.setPrinterMode(mode)
-            validateCurrentSetup()
-        }
-    }
-    
-    private func validateCurrentSetup() {
-        validationErrors = settingsManager.validateDualModeSetup()
-    }
-}
-
-struct PrinterModeCard: View {
-    @EnvironmentObject private var localizationManager: LocalizationManager
-    let mode: PrinterMode
-    let isSelected: Bool
-    let canSelect: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: canSelect ? onTap : {}) {
+        return Button(action: canSelect ? { selectMode(mode) } : {}) {
             HStack(spacing: 16) {
                 // Icon
                 Image(systemName: mode.icon)
@@ -165,7 +117,58 @@ struct PrinterModeCard: View {
         .disabled(!canSelect)
         .opacity(canSelect ? 1.0 : 0.6)
     }
+    
+    @ViewBuilder
+    private var statusSection: some View {
+        if settingsManager.printerMode == .dual {
+            DualPrinterStatusView()
+                .padding(.horizontal)
+        }
+    }
+    
+    @ViewBuilder
+    private var validationErrorsSection: some View {
+        if !validationErrors.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("printer_mode_selection_issues_title".localized)
+                    .font(.headline)
+                    .foregroundColor(.red)
+                
+                ForEach(validationErrors, id: \.self) { error in
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.red)
+                        Text(error)
+                            .font(.caption)
+                    }
+                }
+            }
+            .padding()
+            .background(Color.red.opacity(0.1))
+            .cornerRadius(12)
+            .padding(.horizontal)
+        }
+    }
+    
+    private func selectMode(_ mode: PrinterMode) {
+        if mode == .dual && !settingsManager.canEnableDualMode() {
+            // Show error that at least 2 printers are needed
+            return
+        }
+        
+        if mode == .dual && settingsManager.printerMode == .single {
+            showingDualModeAlert = true
+        } else {
+            settingsManager.setPrinterMode(mode)
+            validateCurrentSetup()
+        }
+    }
+    
+    private func validateCurrentSetup() {
+        validationErrors = settingsManager.validateDualModeSetup()
+    }
 }
+
 
 struct DualPrinterStatusView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager

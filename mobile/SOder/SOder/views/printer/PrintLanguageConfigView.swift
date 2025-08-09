@@ -4,6 +4,8 @@ struct PrintLanguageConfigView: View {
     @StateObject private var settingsManager = PrinterSettingsManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showSuccessMessage = false
+    @State private var testingLanguage: PrintLanguage?
+    @State private var testResults: [PrintLanguage: Bool] = [:]
     
     var body: some View {
         content
@@ -114,18 +116,25 @@ struct PrintLanguageConfigView: View {
             
             Spacer()
             
-            // Support status and selection indicator
+            // Language capability indicator and controls
             HStack(spacing: 8) {
-                if !language.isPrinterSupported {
-                    VStack(spacing: 2) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
+                languageCapabilityIndicator(language)
+                
+                // Test button
+                if testingLanguage == language {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                } else {
+                    Button(action: {
+                        Task {
+                            await testLanguageCapability(language)
+                        }
+                    }) {
+                        Image(systemName: "testtube.2")
+                            .foregroundColor(.blue)
                             .font(.caption)
-                        Text("print_language_fallback_mode".localized)
-                            .font(.caption2)
-                            .foregroundColor(.orange)
-                            .multilineTextAlignment(.center)
                     }
+                    .buttonStyle(BorderlessButtonStyle())
                 }
                 
                 if settingsManager.printLanguage == language {
@@ -148,6 +157,64 @@ struct PrintLanguageConfigView: View {
                     showSuccessMessage = true
                 }
             }
+        }
+    }
+    
+    @ViewBuilder
+    private func languageCapabilityIndicator(_ language: PrintLanguage) -> some View {
+        if let activePrinter = settingsManager.activePrinter {
+            let printerId = activePrinter.id
+            let hasBeenTested = settingsManager.hasTestedLanguage(for: printerId, language: language)
+            let isSupported = settingsManager.isLanguageSupported(for: printerId, language: language)
+            
+            if hasBeenTested {
+                VStack(spacing: 2) {
+                    Image(systemName: isSupported ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .foregroundColor(isSupported ? .green : .orange)
+                        .font(.caption)
+                    Text(isSupported ? "Supported" : "Fallback")
+                        .font(.caption2)
+                        .foregroundColor(isSupported ? .green : .orange)
+                        .multilineTextAlignment(.center)
+                }
+            } else {
+                VStack(spacing: 2) {
+                    Image(systemName: "questionmark.circle.fill")
+                        .foregroundColor(.gray)
+                        .font(.caption)
+                    Text("Untested")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                }
+            }
+        } else {
+            VStack(spacing: 2) {
+                Image(systemName: "printer.slash")
+                    .foregroundColor(.gray)
+                    .font(.caption)
+                Text("No Printer")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+            }
+        }
+    }
+    
+    private func testLanguageCapability(_ language: PrintLanguage) async {
+        guard let activePrinter = settingsManager.activePrinter else { return }
+        
+        await MainActor.run {
+            testingLanguage = language
+        }
+        
+        let printerService = PrinterService.shared
+        let isSupported = await printerService.testPrintSampleForPrinter(activePrinter, language: language)
+        
+        await MainActor.run {
+            settingsManager.updateLanguageCapability(for: activePrinter.id, language: language, isSupported: isSupported)
+            testResults[language] = isSupported
+            testingLanguage = nil
         }
     }
 }

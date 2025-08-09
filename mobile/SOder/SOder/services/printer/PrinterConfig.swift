@@ -27,11 +27,18 @@ struct PrinterConfig {
         // Initialization
         static let initialize: [UInt8] = [0x1B, 0x40] // ESC @ (Reset printer)
         
-        // Character Encoding - Critical for Vietnamese/Japanese support
+        // Character Encoding - Enhanced UTF-8 first strategy
+        static let setCharsetUTF8: [UInt8] = [0x1B, 0x74, 0xFF] // ESC t 255 (UTF-8 primary)
+        static let setCharsetUTF8Alt: [UInt8] = [0x1B, 0x74, 0x03] // ESC t 3 (Alternative UTF-8)
+        static let resetCharset: [UInt8] = [0x1B, 0x52, 0x00] // ESC R 0 (Reset to default charset)
+        
+        // Legacy encodings for fallback
         static let setCharsetCP1252: [UInt8] = [0x1B, 0x74, 0x10] // ESC t 16 (Windows-1252 for basic Latin)
         static let setCharsetCP1258: [UInt8] = [0x1B, 0x74, 0x1B] // ESC t 27 (Windows-1258 for Vietnamese)
         static let setCharsetShiftJIS: [UInt8] = [0x1B, 0x74, 0x04] // ESC t 4 (Shift-JIS for Japanese)
-        static let setCharsetUTF8: [UInt8] = [0x1B, 0x74, 0xFF] // ESC t 255 (UTF-8 if supported)
+        
+        // Enhanced UTF-8 initialization sequence
+        static let initializeUTF8: [UInt8] = initialize + resetCharset + setCharsetUTF8
         
         // Text Formatting
         static let fontSizeNormal: [UInt8] = [0x1D, 0x21, 0x00] // GS ! n (Normal size)
@@ -85,6 +92,106 @@ struct PrinterConfig {
         
         static let printStoredQRCode: [UInt8] = [0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30]
     }
+    
+    // MARK: - Character Encoding Utilities
+    struct EncodingUtils {
+        // UTF-8 test strings for capability detection
+        static let testStrings: [String: String] = [
+            "english": "Test Receipt 123",
+            "japanese": "テストレシート 123",
+            "vietnamese": "Biên lai thử nghiệm 123"
+        ]
+        
+        // Character fallback mappings for non-UTF-8 printers
+        static let vietnameseFallbacks: [String: String] = [
+            "á": "a", "à": "a", "ả": "a", "ã": "a", "ạ": "a",
+            "ắ": "a", "ằ": "a", "ẳ": "a", "ẵ": "a", "ặ": "a",
+            "â": "a", "ấ": "a", "ầ": "a", "ẩ": "a", "ẫ": "a", "ậ": "a",
+            "é": "e", "è": "e", "ẻ": "e", "ẽ": "e", "ẹ": "e",
+            "ê": "e", "ế": "e", "ề": "e", "ể": "e", "ễ": "e", "ệ": "e",
+            "í": "i", "ì": "i", "ỉ": "i", "ĩ": "i", "ị": "i",
+            "ó": "o", "ò": "o", "ỏ": "o", "õ": "o", "ọ": "o",
+            "ô": "o", "ố": "o", "ồ": "o", "ổ": "o", "ỗ": "o", "ộ": "o",
+            "ơ": "o", "ớ": "o", "ờ": "o", "ở": "o", "ỡ": "o", "ợ": "o",
+            "ú": "u", "ù": "u", "ủ": "u", "ũ": "u", "ụ": "u",
+            "ư": "u", "ứ": "u", "ừ": "u", "ử": "u", "ữ": "u", "ự": "u",
+            "ý": "y", "ỳ": "y", "ỷ": "y", "ỹ": "y", "ỵ": "y",
+            "đ": "d"
+        ]
+        
+        // Encoding strategy enumeration
+        enum Strategy {
+            case utf8Primary      // Try UTF-8 first
+            case utf8Fallback     // UTF-8 with character fallback
+            case legacyEncoding   // Use legacy encoding per language
+        }
+        
+        // Get encoding based on strategy and language
+        static func getEncoding(for language: PrintLanguage, strategy: Strategy = .utf8Primary) -> String.Encoding {
+            switch strategy {
+            case .utf8Primary, .utf8Fallback:
+                return .utf8
+            case .legacyEncoding:
+                return getLegacyEncoding(for: language)
+            }
+        }
+        
+        // Get legacy encoding for specific language
+        static func getLegacyEncoding(for language: PrintLanguage) -> String.Encoding {
+            switch language {
+            case .vietnamese:
+                return String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.windowsVietnamese.rawValue)))
+            case .japanese:
+                return .shiftJIS
+            case .english:
+                return .windowsCP1252
+            }
+        }
+        
+        // Get charset command based on strategy
+        static func getCharsetCommand(for language: PrintLanguage, strategy: Strategy = .utf8Primary) -> [UInt8] {
+            switch strategy {
+            case .utf8Primary, .utf8Fallback:
+                return Commands.setCharsetUTF8
+            case .legacyEncoding:
+                return getLegacyCharsetCommand(for: language)
+            }
+        }
+        
+        // Get legacy charset command
+        static func getLegacyCharsetCommand(for language: PrintLanguage) -> [UInt8] {
+            switch language {
+            case .vietnamese:
+                return Commands.setCharsetCP1258
+            case .japanese:
+                return Commands.setCharsetShiftJIS
+            case .english:
+                return Commands.setCharsetCP1252
+            }
+        }
+        
+        // Apply character fallbacks for Vietnamese text
+        static func applyVietnameseFallback(_ text: String) -> String {
+            var result = text
+            for (original, replacement) in vietnameseFallbacks {
+                result = result.replacingOccurrences(of: original, with: replacement)
+                result = result.replacingOccurrences(of: original.uppercased(), with: replacement.uppercased())
+            }
+            return result
+        }
+        
+        // Strip all diacritics as last resort
+        static func stripDiacritics(_ text: String) -> String {
+            return text.folding(options: .diacriticInsensitive, locale: nil)
+        }
+        
+        // Convert text to ASCII-safe characters
+        static func toASCIISafe(_ text: String) -> String {
+            return text.data(using: .ascii, allowLossyConversion: true)
+                      .flatMap { String(data: $0, encoding: .ascii) } ?? text
+        }
+    }
+    
     
     // MARK: - Restaurant Details
     struct RestaurantDetails {

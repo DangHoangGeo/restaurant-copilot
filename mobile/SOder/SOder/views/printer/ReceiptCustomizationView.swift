@@ -6,6 +6,7 @@ struct ReceiptCustomizationView: View {
     @State private var customTemplate: String = ""
     @State private var showingPreview = false
     @State private var isLoading = false
+    @State private var editingHeader: ReceiptHeaderSettings
     
     private let availableEncodings: [(String.Encoding, String)] = [
         (.utf8, "UTF-8"),
@@ -14,8 +15,82 @@ struct ReceiptCustomizationView: View {
         (.iso2022JP, "ISO 2022 JP")
     ]
     
+    init() {
+        _editingHeader = State(initialValue: PrinterSettingsManager.shared.receiptHeader)
+    }
+    
     var body: some View {
         Form {
+            // Restaurant Information Section
+            Section(header: headerView(icon: "building.2", title: "Restaurant Information")) {
+                TextField("Restaurant Name", text: $editingHeader.restaurantName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                TextField("Address", text: $editingHeader.address)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                TextField("Phone Number", text: $editingHeader.phone)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.phonePad)
+                
+                TextField("Website (Optional)", text: $editingHeader.website)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.URL)
+                    .autocapitalization(.none)
+                
+                Toggle("Show Website on Receipt", isOn: $editingHeader.showWebsite)
+            }
+            
+            // Tax Information Section
+            Section(header: headerView(icon: "doc.text", title: "Tax Information")) {
+                TextField("Tax Code (Optional)", text: $editingHeader.taxCode)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                Toggle("Show Tax Code on Receipt", isOn: $editingHeader.showTaxCode)
+            }
+            
+            // Footer Customization Section
+            Section(header: headerView(icon: "text.quote", title: "Footer Messages")) {
+                TextField("Thank You Message", text: $editingHeader.footerMessage)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                TextField("Promotional Text (Optional)", text: $editingHeader.promotionalText)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                Toggle("Show Promotional Text", isOn: $editingHeader.showPromotionalText)
+            }
+            
+            // Template Theme Selection Section
+            Section(header: headerView(icon: "paintbrush", title: "Receipt Theme")) {
+                Picker("Receipt Style", selection: $settingsManager.selectedReceiptTheme) {
+                    ForEach(TemplateTheme.allCases, id: \.self) { theme in
+                        VStack(alignment: .leading) {
+                            Text(theme.displayName)
+                                .font(.headline)
+                            Text(theme.description)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .tag(theme)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                
+                Picker("Kitchen Order Style", selection: $settingsManager.selectedKitchenTheme) {
+                    ForEach(TemplateTheme.allCases, id: \.self) { theme in
+                        VStack(alignment: .leading) {
+                            Text(theme.displayName)
+                                .font(.headline)
+                            Text(theme.description)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .tag(theme)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+            }
+            
                 Section("encoding_settings".localized) {
                     Picker("receipt_encoding".localized, selection: $selectedEncoding) {
                         ForEach(availableEncodings, id: \.0.rawValue) { encoding in
@@ -136,6 +211,16 @@ struct ReceiptCustomizationView: View {
     private func loadCurrentSettings() {
         selectedEncoding = settingsManager.receiptEncoding
         customTemplate = settingsManager.customReceiptTemplate
+        editingHeader = settingsManager.receiptHeader
+    }
+    
+    @ViewBuilder
+    private func headerView(icon: String, title: String) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(.blue)
+            Text(title)
+        }
     }
     
     private func loadDefaultTemplate() {
@@ -150,6 +235,7 @@ struct ReceiptCustomizationView: View {
     private func saveSettings() {
         settingsManager.receiptEncoding = selectedEncoding
         settingsManager.customReceiptTemplate = customTemplate
+        settingsManager.updateReceiptHeader(editingHeader)
         
         // Save will be handled by the settings manager's internal save mechanism
     }

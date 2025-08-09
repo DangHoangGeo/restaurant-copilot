@@ -14,16 +14,8 @@ struct PrinterSettingsView: View {
             NavigationStack {
                 mainContent
                     .navigationDestination(for: String.self) { destination in
-                        if destination == "manual-setup" {
-                            ManualPrinterSetupView(printerManager: printerManager)
-                        } else if destination == "receipt-header" {
-                            ReceiptHeaderConfigView()
-                        } else if destination == "print-language" {
-                            PrintLanguageConfigView()
-                        } else if destination == "print-queue" {
+                        if destination == "print-queue" {
                             PrintQueueView()
-                        } else if destination == "receipt-customization" {
-                            ReceiptCustomizationView()
                         }
                     }
             }
@@ -38,46 +30,81 @@ struct PrinterSettingsView: View {
     
     private var mainContent: some View {
         List {
-            // Printer Mode Selection Section
-            Section("printer_configuration_title".localized) {
-                NavigationLink(destination: PrinterModeSelectionView()) {
-                    printerModeRow
+            // Quick Setup Section - Most important first
+            Section(header: Text("Quick Setup").font(.headline).foregroundColor(.primary)) {
+                NavigationLink(destination: UnifiedPrinterSetupView().environmentObject(printerManager)) {
+                    HStack {
+                        Image(systemName: "gear.circle.fill")
+                            .foregroundColor(.blue)
+                            .font(.title2)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Printer Setup")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                            Text("Configure printers, receipts, and settings")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        setupStatusIndicator
+                        
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                            .font(.caption)
+                    }
+                    .padding(.vertical, 4)
                 }
             }
             
-            // Receipt Header Configuration Section
-            Section("receipt_header_title".localized) {
-                if #available(iOS 16.0, *) {
-                    NavigationLink(value: "receipt-header") {
+            // Current Status Section
+            Section("Current Configuration") {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Printer Mode:")
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text(settingsManager.printerMode.displayName)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    if settingsManager.printerMode == .dual {
                         HStack {
-                            Image(systemName: "doc.text")
-                                .foregroundColor(.blue)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("receipt_header_title".localized)
-                                    .font(.headline)
-                                Text(settingsManager.receiptHeader.restaurantName.isEmpty ? "receipt_header_restaurant_name_label".localized : settingsManager.receiptHeader.restaurantName)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
+                            Text("Kitchen Printer:")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text(settingsManager.kitchenPrinter?.name ?? "Not set")
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        HStack {
+                            Text("Checkout Printer:")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text(settingsManager.checkoutPrinter?.name ?? "Not set")
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        HStack {
+                            Text("Active Printer:")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text(settingsManager.activePrinter?.name ?? "Not set")
+                                .foregroundColor(.secondary)
                         }
                     }
-                } else {
-                    NavigationLink(destination: ReceiptHeaderConfigView()) {
-                        HStack {
-                            Image(systemName: "doc.text")
-                                .foregroundColor(.blue)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("receipt_header_title".localized)
-                                    .font(.headline)
-                                Text(settingsManager.receiptHeader.restaurantName.isEmpty ? "receipt_header_restaurant_name_label".localized : settingsManager.receiptHeader.restaurantName)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
+                    
+                    HStack {
+                        Text("Print Language:")
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text(settingsManager.printLanguage.displayName)
+                            .foregroundColor(.secondary)
                     }
                 }
+                .padding(.vertical, 4)
             }
             
             // Print Queue Section
@@ -145,97 +172,6 @@ struct PrinterSettingsView: View {
                 }
             }
             
-            // Print Language Configuration Section
-            Section("print_language_title".localized) {
-                if #available(iOS 16.0, *) {
-                    NavigationLink(value: "print-language") {
-                        HStack {
-                            Image(systemName: "textformat")
-                                .foregroundColor(.blue)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("print_language_selection_label".localized)
-                                    .font(.headline)
-                                Text(settingsManager.printLanguage.displayName)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            if !settingsManager.printLanguage.isPrinterSupported {
-                                Image(systemName: "exclamationmark.triangle")
-                                    .foregroundColor(.orange)
-                                    .font(.caption)
-                                    .accessibilityLabel("accessibility_printer_language_warning".localized)
-                                    .accessibilityHint("accessibility_printer_language_warning_hint".localized)
-                            }
-                        }
-                    }
-                } else {
-                    NavigationLink(destination: PrintLanguageConfigView()) {
-                        HStack {
-                            Image(systemName: "textformat")
-                                .foregroundColor(.blue)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("print_language_selection_label".localized)
-                                    .font(.headline)
-                                Text(settingsManager.printLanguage.displayName)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            if !settingsManager.printLanguage.isPrinterSupported {
-                                Image(systemName: "exclamationmark.triangle")
-                                    .foregroundColor(.orange)
-                                    .font(.caption)
-                                    .accessibilityLabel("accessibility_printer_language_warning".localized)
-                                    .accessibilityHint("accessibility_printer_language_warning_hint".localized)
-                            }
-                        }
-                    }
-                    .accessibilityLabel("accessibility_printer_language_config_label".localized)
-                    .accessibilityHint("accessibility_printer_language_config_hint".localized)
-                }
-            }
-            
-            // Receipt Customization Section
-            Section("receipt_customization_title".localized) {
-                if #available(iOS 16.0, *) {
-                    NavigationLink(value: "receipt-customization") {
-                        HStack {
-                            Image(systemName: "doc.text.fill")
-                                .foregroundColor(.blue)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("receipt_template_encoding_title".localized)
-                                    .font(.headline)
-                                Text("receipt_template_encoding_description".localized)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                } else {
-                    NavigationLink(destination: ReceiptCustomizationView()) {
-                        HStack {
-                            Image(systemName: "doc.text.fill")
-                                .foregroundColor(.blue)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("receipt_template_encoding_title".localized)
-                                    .font(.headline)
-                                Text("receipt_template_encoding_description".localized)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                }
-            }
             
             // Current Printer Status Section
             Section("printer_current_status_title".localized) {
@@ -370,24 +306,6 @@ struct PrinterSettingsView: View {
                 }
             }
             
-            // Manual Printer Setup Section
-            Section("printer_manual_setup_title".localized) {
-                if #available(iOS 16.0, *) {
-                    NavigationLink(value: "manual-setup") {
-                        HStack {
-                            Image(systemName: "plus")
-                            Text("printer_add_network_printer_button".localized)
-                        }
-                    }
-                } else {
-                    NavigationLink(destination: ManualPrinterSetupView(printerManager: printerManager)) {
-                        HStack {
-                            Image(systemName: "plus")
-                            Text("printer_add_network_printer_button".localized)
-                        }
-                    }
-                }
-            }
             
             // Error Message
             if let errorMessage = printerManager.errorMessage {
@@ -422,6 +340,45 @@ struct PrinterSettingsView: View {
     }
     
     // MARK: - Computed Properties
+    
+    private var setupStatusIndicator: some View {
+        let hasPrinters = !settingsManager.configuredPrinters.isEmpty
+        let hasActivePrinter = settingsManager.activePrinter != nil
+        
+        return Group {
+            if hasActivePrinter {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.caption)
+                    Text("Setup Complete")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                        .fontWeight(.medium)
+                }
+            } else if hasPrinters {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                        .font(.caption)
+                    Text("Needs Setup")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                        .fontWeight(.medium)
+                }
+            } else {
+                HStack(spacing: 4) {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundColor(.blue)
+                        .font(.caption)
+                    Text("Get Started")
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                        .fontWeight(.medium)
+                }
+            }
+        }
+    }
     
     private var printerModeRow: some View {
         HStack {
