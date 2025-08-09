@@ -1,7 +1,6 @@
-"use client";
-import React, { useState, useEffect } from 'react';
-import { useLocale } from 'next-intl';
-import "../globals.css";
+import { headers } from "next/headers";
+import { getSubdomainFromHost } from "@/lib/utils";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import {
   ThemeProviderLanding,
   LandingPageHeader,
@@ -14,31 +13,52 @@ import {
   FaqSection,
   CallToActionSection,
   FooterSection,
-} from '@/components/home';
-import { getSubdomainFromHost } from '@/lib/utils';
-import { NewHomePage } from '@/components/features/customer/homepage';
+} from "@/components/home";
+import { NewHomePage } from "@/components/features/customer/homepage";
+import { setRequestLocale } from "next-intl/server";
 
-// Main Landing Page Component
-export default function Page() {
-  const [subdomain, setSubdomain] = useState<string | null>(null);
-  const locale = useLocale();
-  
-  useEffect(() => {
-    const host = window.location.hostname;
-    const detectedSubdomain = getSubdomainFromHost(host);
-    setSubdomain(detectedSubdomain);
-  }, []);
+async function getHomepageData(subdomain: string) {
+  const { data, error } = await supabaseAdmin
+    .rpc("get_restaurant_homepage_data", {
+      restaurant_subdomain: subdomain,
+    })
+    .single();
 
-  // If subdomain is detected, show restaurant homepage instead of general landing
+  if (error) {
+    console.error("Error fetching homepage data:", error);
+    return null;
+  }
+  return data;
+}
+
+export default async function Page({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  setRequestLocale(params.locale);
+  const headersList = headers();
+  const host = headersList.get("host");
+  const subdomain = getSubdomainFromHost(host || "");
+
   if (subdomain) {
-    return <NewHomePage subdomain={subdomain} locale={locale} />;
+    const homepageData = await getHomepageData(subdomain);
+
+    if (homepageData) {
+      return (
+        <NewHomePage
+          subdomain={subdomain}
+          locale={params.locale}
+          homepageData={homepageData}
+        />
+      );
+    }
   }
 
-  // Original generic landing page content
   return (
     <ThemeProviderLanding>
       <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased">
-        <LandingPageHeader locale={locale} />
+        <LandingPageHeader locale={params.locale} />
         <main>
           <HeroSection />
           <SocialProofSection />
@@ -49,9 +69,8 @@ export default function Page() {
           <FaqSection />
           <CallToActionSection />
         </main>
-        <FooterSection locale={locale} />
+        <FooterSection locale={params.locale} />
       </div>
     </ThemeProviderLanding>
   );
 }
-
