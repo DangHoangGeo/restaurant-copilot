@@ -12,6 +12,55 @@ const nextIntl = createNextIntlMiddleware(routing);
 // const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'baoan.jp';
 // const W_ROOT_DOMAIN = `www.${ROOT_DOMAIN}`; // Not used in the current logic
 
+/**
+ * Add security headers to the response
+ */
+function addSecurityHeaders(response: NextResponse, request: NextRequest) {
+  // Content Security Policy
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  
+  // Build CSP based on environment and features
+  const cspDirectives = [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.googletagmanager.com https://analytics.google.com`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+    `font-src 'self' https://fonts.gstatic.com data:`,
+    `img-src 'self' data: blob: https: ${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/*`,
+    `media-src 'self' blob: ${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/*`,
+    `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://api.stripe.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com wss://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')}`,
+    "frame-src 'self' https://js.stripe.com https://www.google.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests",
+  ];
+
+  // Join directives with semicolons
+  const csp = cspDirectives.join('; ');
+
+  // Set security headers
+  response.headers.set('Content-Security-Policy', csp);
+  response.headers.set('X-DNS-Prefetch-Control', 'on');
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  
+  // Add nonce to allow specific inline scripts (if needed)
+  response.headers.set('X-CSP-Nonce', nonce);
+  
+  // Cache control for sensitive pages
+  const pathname = request.nextUrl.pathname;
+  if (pathname.includes('/dashboard') || pathname.includes('/login') || pathname.includes('/admin')) {
+    response.headers.set('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+  }
+}
+
 // This function is adapted from the core logic of the previous web/lib/supabase/middleware.ts
 // It will handle Supabase session, RLS, and initial auth check.
 async function handleSupabaseAndRls(
@@ -132,6 +181,10 @@ export async function middleware(req: NextRequest) {
             apiRewriteResponse.headers.set(key, value);
         }
     });
+    
+    // Add security headers for API responses
+    addSecurityHeaders(apiRewriteResponse, req);
+    
     return apiRewriteResponse; // Return for API routes, skipping further i18n page processing
   }
 
@@ -313,6 +366,9 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Add security headers
+  addSecurityHeaders(response, req);
+  
   return response; // Return the final response
 }
 

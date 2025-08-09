@@ -49,46 +49,25 @@ export function DashboardClientContent() {
     setError(null);
     
     try {
-      const [metricsRes, ordersRes, popularItemsRes, salesDataRes, lowStockRes] = await Promise.all([
-        fetch('/api/v1/owner/dashboard/metrics', { 
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include' 
-        }),
-        fetch('/api/v1/owner/dashboard/recent-orders', { 
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include' 
-        }),
-        fetch('/api/v1/owner/dashboard/popular-items', { 
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include' 
-        }),
-        fetch('/api/v1/owner/dashboard/sales-over-time', { 
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include' 
-        }),
-        fetch('/api/v1/owner/dashboard/low-stock', { 
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include' 
-        })
-      ]);
+      const response = await fetch('/api/v1/owner/dashboard/aggregate', { 
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include' 
+      });
 
-      if (!metricsRes.ok || !ordersRes.ok) {
+      if (!response.ok) {
         throw new Error('Failed to load dashboard data');
       }
 
-      const [metricsData, ordersData, popularItemsData, salesChartData, lowStockData] = await Promise.all([
-        metricsRes.json(),
-        ordersRes.json(),
-        popularItemsRes.ok ? popularItemsRes.json() : [],
-        salesDataRes.ok ? salesDataRes.json() : [],
-        lowStockRes.ok ? lowStockRes.json() : { data: [] }
-      ]);
+      const result = await response.json();
+      
+      // Handle both old format (direct data) and new format (with success wrapper)
+      const data = result.success ? result.data : result;
 
-      setMetrics(metricsData);
-      setRecentOrders(ordersData);
-      setPopularItems(popularItemsData);
-      setSalesData(salesChartData);
-      setLowStockItems(lowStockData.data || []);
+      setMetrics(data.metrics);
+      setRecentOrders(data.recentOrders || []);
+      setPopularItems(data.popularItems || []);
+      setSalesData(data.salesOverTime || []);
+      setLowStockItems(data.lowStockItems || []);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       setError(err instanceof Error ? err.message : t('errors.fetch_failed'));

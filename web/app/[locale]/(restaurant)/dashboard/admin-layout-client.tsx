@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { useState, ReactNode, useMemo } from 'react';
 import { AdminHeader } from '@/components/features/admin/dashboard/layout/admin-header';
 import { AdminSidebar } from '@/components/features/admin/dashboard/layout/admin-sidebar';
 import { RestaurantProvider, RestaurantSettings } from '@/contexts/RestaurantContext';
-import { cn } from '@/lib/utils';
+import { createThemeProperties, sanitizeHexColor } from '@/lib/utils/colors';
 
 interface AdminLayoutClientProps {
   children: ReactNode;
@@ -25,6 +25,12 @@ interface AdminLayoutClientProps {
 export function AdminLayoutClient({ children, restaurantSettings, locale }: AdminLayoutClientProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedLocale, setSelectedLocale] = useState(locale);
+
+  // Create safe theme properties
+  const themeProperties = useMemo(() => {
+    if (!restaurantSettings.primaryColor) return {};
+    return createThemeProperties(restaurantSettings.primaryColor);
+  }, [restaurantSettings.primaryColor]);
 
   // Transform layout restaurant settings to full settings format for context
   const fullRestaurantSettings: RestaurantSettings = {
@@ -62,19 +68,11 @@ export function AdminLayoutClient({ children, restaurantSettings, locale }: Admi
 
   return (
     <RestaurantProvider initialSettings={fullRestaurantSettings}>
-      <div className={cn(
-        "flex h-screen bg-background text-foreground",
-        restaurantSettings.primaryColor ? `theme-${restaurantSettings.subdomain}` : ''
-      )}>
-        {/* Inject dynamic theme variables if needed */}
-        <style jsx global>{`
-          ${restaurantSettings.primaryColor && restaurantSettings.subdomain ? `
-            .theme-${restaurantSettings.subdomain} {
-              --brand-color: ${restaurantSettings.primaryColor};
-              --primary: ${restaurantSettings.primaryColor};
-            }
-          ` : ''}
-        `}</style>
+      <div 
+        className="flex h-screen bg-background text-foreground"
+        style={themeProperties}
+        data-theme-color={sanitizeHexColor(restaurantSettings.primaryColor)}
+      >
         
         <AdminSidebar
           restaurantSettings={restaurantSettings}

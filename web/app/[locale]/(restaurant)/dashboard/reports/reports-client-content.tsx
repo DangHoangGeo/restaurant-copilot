@@ -8,11 +8,31 @@ import { AlertTriangle, DollarSign, ShoppingCart, TrendingUp, AlertCircle } from
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AdvancedAnalyticsCharts } from '@/components/features/admin/reports/advanced-analytics-charts';
+import dynamic from 'next/dynamic';
 import { DateRangeSelector, DateRange } from '@/components/features/admin/reports/date-range-selector';
 import { ItemsReportTab } from '@/components/features/admin/reports/items-report-tab';
 import { ReportExportService } from '@/lib/export-utils';
 import { subDays } from 'date-fns';
+
+// Dynamic import for heavy chart components to reduce initial bundle size
+const AdvancedAnalyticsCharts = dynamic(
+  () => import('@/components/features/admin/reports/advanced-analytics-charts').then(mod => ({ default: mod.AdvancedAnalyticsCharts })),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <div className="border rounded-lg bg-card text-card-foreground shadow-sm">
+          <div className="p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface ReportsData {
   todaySales: number;
