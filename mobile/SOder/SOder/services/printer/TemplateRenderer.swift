@@ -10,8 +10,8 @@ class TemplateRenderer {
         // Replace simple placeholders like {{order.id}}
         result = replacePlaceholders(in: result, with: data)
         
-        // Process loops like {{#items}}...{{/items}}
-        result = processLoops(in: result, with: data)
+        // Process loops and conditional sections like {{#items}}...{{/items}} or {{#restaurant.phone}}...{{/restaurant.phone}}
+        result = processSections(in: result, with: data)
         
         return result
     }
@@ -33,7 +33,7 @@ class TemplateRenderer {
             if let keyNSRange = Range(keyRange, in: result),
                let placeholderNSRange = Range(placeholderRange, in: result) {
                 let key = String(result[keyNSRange])
-                let value = getValue(for: key, from: data)
+                let value = getDisplayString(for: key, from: data)
                 result.replaceSubrange(placeholderNSRange, with: value)
             }
         }
@@ -41,74 +41,84 @@ class TemplateRenderer {
         return result
     }
     
-    private func processLoops(in template: String, with data: [String: Any]) -> String {
+    // Support array sections and simple conditionals (truthy values)
+    private func processSections(in template: String, with data: [String: Any]) -> String {
         var result = template
         
-        // Find all {{#array}}...{{/array}} patterns
-        let loopPattern = "\\{\\{#([^}]+)\\}\\}([\\s\\S]*?)\\{\\{/\\1\\}\\}"
-        let regex = try! NSRegularExpression(pattern: loopPattern, options: [])
+        // Find all {{#key}}...{{/key}} patterns
+        let sectionPattern = "\\{\\{#([^}]+)\\}\\}([\\s\\S]*?)\\{\\{/\\1\\}\\}"
+        let regex = try! NSRegularExpression(pattern: sectionPattern, options: [])
         let matches = regex.matches(in: result, options: [], range: NSRange(result.startIndex..., in: result))
         
-        // Process loops from back to front
         for match in matches.reversed() {
             let fullRange = match.range
             let keyRange = match.range(at: 1)
             let contentRange = match.range(at: 2)
             
-            if let keyNSRange = Range(keyRange, in: result),
-               let contentNSRange = Range(contentRange, in: result),
-               let fullNSRange = Range(fullRange, in: result) {
-                
-                let key = String(result[keyNSRange])
-                let contentTemplate = String(result[contentNSRange])
-                
-                let loopContent = processLoop(key: key, template: contentTemplate, data: data)
-                result.replaceSubrange(fullNSRange, with: loopContent)
+            guard let keyNSRange = Range(keyRange, in: result),
+                  let contentNSRange = Range(contentRange, in: result),
+                  let fullNSRange = Range(fullRange, in: result) else { continue }
+            
+            let key = String(result[keyNSRange])
+            let contentTemplate = String(result[contentNSRange])
+            
+            if let raw = getRawValue(for: key, from: data) {
+                if let array = raw as? [[String: Any]] {
+                    // Array section: render content for each item
+                    var rendered = ""
+                    for item in array {
+                        rendered += replacePlaceholders(in: contentTemplate, with: item)
+                    }
+                    result.replaceSubrange(fullNSRange, with: rendered)
+                } else if let boolVal = raw as? Bool {
+                    // Boolean: render if true
+                    let rendered = boolVal ? replacePlaceholders(in: contentTemplate, with: data) : ""
+                    result.replaceSubrange(fullNSRange, with: rendered)
+                } else if let strVal = raw as? String {
+                    // String: render if non-empty
+                    let rendered = strVal.isEmpty ? "" : replacePlaceholders(in: contentTemplate, with: data)
+                    result.replaceSubrange(fullNSRange, with: rendered)
+                } else if let numVal = raw as? NSNumber {
+                    // Numbers: render if non-zero
+                    let rendered = numVal.doubleValue == 0 ? "" : replacePlaceholders(in: contentTemplate, with: data)
+                    result.replaceSubrange(fullNSRange, with: rendered)
+                } else {
+                    // Unsupported type: remove section
+                    result.replaceSubrange(fullNSRange, with: "")
+                }
+            } else {
+                // Key not found: remove section
+                result.replaceSubrange(fullNSRange, with: "")
             }
         }
         
         return result
     }
     
-    private func processLoop(key: String, template: String, data: [String: Any]) -> String {
-        guard let arrayData = data[key] as? [[String: Any]] else {
-            return ""
-        }
-        
-        var result = ""
-        for item in arrayData {
-            let itemContent = replacePlaceholders(in: template, with: item)
-            result += itemContent
-        }
-        
-        return result
-    }
-    
-    private func getValue(for key: String, from data: [String: Any]) -> String {
-        // Handle nested keys like "order.id"
+    // MARK: - Data helpers
+    private func getRawValue(for key: String, from data: [String: Any]) -> Any? {
         let keys = key.split(separator: ".").map(String.init)
-        
         var current: Any = data
         for keyComponent in keys {
-            if let dict = current as? [String: Any] {
-                current = dict[keyComponent] ?? ""
+            if let dict = current as? [String: Any], let next = dict[keyComponent] {
+                current = next
             } else {
-                return ""
+                return nil
             }
         }
-        
-        // Convert to string
-        if let stringValue = current as? String {
-            return stringValue
-        } else if let intValue = current as? Int {
-            return String(intValue)
-        } else if let doubleValue = current as? Double {
-            return String(format: "%.0f", doubleValue)
-        } else if let boolValue = current as? Bool {
-            return boolValue ? "true" : "false"
-        } else {
-            return String(describing: current)
+        return current
+    }
+    
+    private func getDisplayString(for key: String, from data: [String: Any]) -> String {
+        // Handle nested keys like "order.id"
+        if let raw = getRawValue(for: key, from: data) {
+            if let stringValue = raw as? String { return stringValue }
+            if let intValue = raw as? Int { return String(intValue) }
+            if let doubleValue = raw as? Double { return String(format: "%.0f", doubleValue) }
+            if let boolValue = raw as? Bool { return boolValue ? "true" : "false" }
+            return String(describing: raw)
         }
+        return ""
     }
 }
 

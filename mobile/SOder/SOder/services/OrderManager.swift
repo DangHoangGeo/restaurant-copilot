@@ -55,8 +55,10 @@ class OrderManager: ObservableObject {
     @Published var autoPrintStats = AutoPrintStats()
     internal var printedNewOrders: Set<String> = []
     internal var printedReadyItems: Set<String> = []
+    internal var printedNewItems: Set<String> = [] // Track individual items
 
     @Published var currentDraftOrder: Order? = nil // For managing the active draft order
+    @Published var localDraftOrders: [String: Order] = [:] // Local draft orders not yet saved to database
     
     private var realtimeChannel: RealtimeChannelV2?
     private var cancellables = Set<AnyCancellable>()
@@ -144,6 +146,159 @@ class OrderManager: ObservableObject {
     // MARK: - New Order Creation & Management
 
     @MainActor
+    public func createLocalDraftOrder(orderId: String, table: Table) async {
+        guard let restaurantId = supabaseManager.currentRestaurantId else {
+            print("Cannot create local draft order - no restaurant ID")
+            return
+        }
+        
+        // Create a unique session ID for this order (following web app pattern)
+        let sessionId = UUID().uuidString
+        
+        // Create a local draft order that doesn't exist in database yet
+        let localDraftOrder = Order(
+            id: orderId,
+            restaurant_id: restaurantId,
+            table_id: table.id,
+            session_id: sessionId, // Unique session per order
+            guest_count: table.capacity,
+            status: .draft,
+            total_amount: 0.0,
+            order_number: nil, // Will be generated when saved to database
+            created_at: ISO8601DateFormatter().string(from: Date()),
+            updated_at: ISO8601DateFormatter().string(from: Date()),
+            table: table,
+            order_items: [],
+            payment_method: nil,
+            discount_amount: nil,
+            tax_amount: nil,
+            tip_amount: nil
+        )
+        
+        localDraftOrders[orderId] = localDraftOrder
+        currentDraftOrder = localDraftOrder
+        print("Created local draft order: \(orderId) for table: \(table.name)")
+    }
+
+    @MainActor
+    private func saveLocalOrderToDatabase(_ localOrder: Order) async throws -> Order {
+        guard let restaurantId = supabaseManager.currentRestaurantId else {
+            throw OrderManagerError.missingRestaurantId
+        }
+        guard let userId = supabaseManager.currentUser?.id else {
+            throw OrderManagerError.missingUserId
+        }
+
+        // First create the order in database (use 'new' since 'draft' is not allowed)
+        let newOrderPayload = NewOrderPayload(
+            restaurant_id: restaurantId,
+            table_id: localOrder.table_id,
+            session_id: localOrder.session_id ?? UUID().uuidString, // Use the same session_id from local order
+            guest_count: localOrder.guest_count,
+            status: "new" // Database only allows: 'new','serving','completed','canceled'
+        )
+
+        let createdOrder: Order = try await supabaseManager.client
+            .from("orders")
+            .insert(newOrderPayload, returning: .representation)
+            .select("*, table:tables(*)")
+            .single()
+            .execute()
+            .value
+
+        // Now save all order items
+        var savedOrderItems: [OrderItem] = []
+        if let items = localOrder.order_items {
+            print("💾 Saving \(items.count) order items to database")
+            
+            // Debug: Print all items before saving
+            for (index, item) in items.enumerated() {
+                print("🔍 Local item \(index + 1): id=\(item.id), menu_item=\(item.menu_item_id), qty=\(item.quantity), price=\(item.price_at_order)")
+            }
+            
+            for (index, item) in items.enumerated() {
+                print("💾 Saving item \(index + 1)/\(items.count): \(item.menu_item?.displayName ?? "Unknown") x\(item.quantity)")
+                
+                do {
+                    let orderItemPayload = NewOrderItemPayload(
+                        order_id: createdOrder.id,
+                        menu_item_id: item.menu_item_id,
+                        quantity: item.quantity,
+                        notes: item.notes,
+                        restaurant_id: restaurantId,
+                        price_at_order: item.price_at_order,
+                        status: "new",
+                        menu_item_size_id: item.menu_item_size_id,
+                        topping_ids: item.topping_ids ?? [] // Ensure non-nil array
+                    )
+
+                    let savedItem: OrderItem = try await supabaseManager.client
+                        .from("order_items")
+                        .insert(orderItemPayload, returning: .representation)
+                        .select("*, menu_item:menu_items(*), menu_item_size:menu_item_sizes(*)")
+                        .single()
+                        .execute()
+                        .value
+
+                    savedOrderItems.append(savedItem)
+                    print("✅ Successfully saved item \(index + 1): \(savedItem.id)")
+                    
+                } catch {
+                    print("❌ Error saving item \(index + 1): \(error)")
+                    
+                    // Try without optional fields that might cause issues
+                    struct SimplifiedOrderItemPayload: Codable {
+                        let order_id: String
+                        let menu_item_id: String
+                        let quantity: Int
+                        let restaurant_id: String
+                        let price_at_order: Double
+                        let status: String
+                    }
+                    
+                    let simplifiedPayload = SimplifiedOrderItemPayload(
+                        order_id: createdOrder.id,
+                        menu_item_id: item.menu_item_id,
+                        quantity: item.quantity,
+                        restaurant_id: restaurantId,
+                        price_at_order: item.price_at_order,
+                        status: "new"
+                    )
+                    
+                    do {
+                        print("🔄 Retrying with simplified payload for item \(index + 1)")
+                        let savedItem: OrderItem = try await supabaseManager.client
+                            .from("order_items")
+                            .insert(simplifiedPayload, returning: .representation)
+                            .select("*, menu_item:menu_items(*)")
+                            .single()
+                            .execute()
+                            .value
+                        
+                        savedOrderItems.append(savedItem)
+                        print("✅ Successfully saved item \(index + 1) with simplified payload: \(savedItem.id)")
+                    } catch let retryError {
+                        print("❌ Failed even with simplified payload for item \(index + 1): \(retryError)")
+                        // Skip this item entirely - don't add duplicates
+                        continue
+                    }
+                }
+            }
+            print("💾 Saved \(savedOrderItems.count)/\(items.count) items to database")
+        } else {
+            print("⚠️ No order items found in local order")
+        }
+
+        // Create final order with all items
+        var finalOrder = createdOrder
+        finalOrder.order_items = savedOrderItems
+        finalOrder.total_amount = localOrder.total_amount
+
+        print("Saved local draft order to database: \(finalOrder.id)")
+        return finalOrder
+    }
+
+    @MainActor
     public func startNewOrder(tableId: String, guestCount: Int?) async throws -> Order {
         guard let restaurantId = supabaseManager.currentRestaurantId else {
             throw OrderManagerError.missingRestaurantId
@@ -178,6 +333,81 @@ class OrderManager: ObservableObject {
             print("Error starting new order: \(error)")
             throw OrderManagerError.generalError("Failed to start new order: \(error.localizedDescription)")
         }
+    }
+
+    @MainActor
+    public func addItemToLocalDraftOrder(orderId: String, menuItemId: String, quantity: Int, notes: String?, selectedSizeId: MenuItemSizeId?, selectedToppingIds: [ToppingId]?, priceAtOrder: Double, menuItem: MenuItem) async throws -> OrderItem {
+        print("🍽️ Adding item to local draft: \(menuItem.displayName), price: \(priceAtOrder), menuItem.price: \(menuItem.price)")
+        // Check if this is a local draft order
+        if let localOrder = localDraftOrders[orderId] {
+            var updatedOrder = localOrder
+            if updatedOrder.order_items == nil {
+                updatedOrder.order_items = []
+            }
+            
+            // Check if there's an existing item that can be grouped
+            print("🔍 Checking for existing item to group: menuItemId=\(menuItemId), sizeId=\(selectedSizeId?.description ?? "nil"), toppings=\(selectedToppingIds?.description ?? "nil"), notes=\(notes ?? "nil")")
+            
+            let existingItemIndex = updatedOrder.order_items?.firstIndex { existingItem in
+                let matches = existingItem.menu_item_id == menuItemId &&
+                             existingItem.menu_item_size_id == selectedSizeId &&
+                             existingItem.topping_ids == selectedToppingIds &&
+                             existingItem.notes == notes
+                if matches {
+                    print("🔍 Found matching item: \(existingItem.id) with quantity \(existingItem.quantity)")
+                }
+                return matches
+            }
+            
+            print("🔍 Current order has \(updatedOrder.order_items?.count ?? 0) items")
+            
+            let resultItem: OrderItem
+            
+            if let index = existingItemIndex {
+                // Update existing item quantity
+                var existingItem = updatedOrder.order_items![index]
+                existingItem.quantity += quantity
+                existingItem.updated_at = ISO8601DateFormatter().string(from: Date())
+                updatedOrder.order_items![index] = existingItem
+                resultItem = existingItem
+                print("Updated existing item quantity: \(existingItem.id), new quantity: \(existingItem.quantity)")
+            } else {
+                // Create new item
+                let newOrderItem = OrderItem(
+                    id: UUID().uuidString,
+                    restaurant_id: localOrder.restaurant_id,
+                    order_id: orderId,
+                    menu_item_id: menuItemId,
+                    quantity: quantity,
+                    notes: notes,
+                    menu_item_size_id: selectedSizeId,
+                    topping_ids: selectedToppingIds,
+                    price_at_order: priceAtOrder,
+                    status: .draft,
+                    created_at: ISO8601DateFormatter().string(from: Date()),
+                    updated_at: ISO8601DateFormatter().string(from: Date()),
+                    menu_item: menuItem
+                )
+                updatedOrder.order_items?.append(newOrderItem)
+                resultItem = newOrderItem
+                print("Created new item: \(newOrderItem.id)")
+            }
+            
+            // Recalculate total
+            let total = updatedOrder.order_items?.reduce(0.0) { acc, item in
+                acc + (item.price_at_order * Double(item.quantity))
+            } ?? 0.0
+            updatedOrder.total_amount = total
+            
+            // Update stored order
+            localDraftOrders[orderId] = updatedOrder
+            currentDraftOrder = updatedOrder
+            
+            return resultItem
+        }
+        
+        // Fall back to database method for existing orders
+        return try await addItemToDraftOrder(orderId: orderId, menuItemId: menuItemId, quantity: quantity, notes: notes, selectedSizeId: selectedSizeId, selectedToppingIds: selectedToppingIds, priceAtOrder: priceAtOrder)
     }
 
     @MainActor
@@ -282,8 +512,94 @@ class OrderManager: ObservableObject {
         }
     }
 
+    // Add a set to track items being updated to prevent race conditions
+    private var itemsBeingUpdated: Set<String> = []
+    
+    @MainActor
+    public func updateDraftOrderItemQuantity(orderItemId: String, newQuantity: Int) async throws {
+        print("🔍 updateDraftOrderItemQuantity called - itemId: \(orderItemId), newQuantity: \(newQuantity)")
+        
+        // Prevent concurrent updates to the same item
+        guard !itemsBeingUpdated.contains(orderItemId) else {
+            print("⚠️ Item \(orderItemId) is already being updated, skipping")
+            return
+        }
+        
+        itemsBeingUpdated.insert(orderItemId)
+        defer { itemsBeingUpdated.remove(orderItemId) }
+        
+        // Check if this is a local draft order item
+        for orderId in localDraftOrders.keys {
+            guard var localOrder = localDraftOrders[orderId] else { continue }
+            
+            if let itemIndex = localOrder.order_items?.firstIndex(where: { $0.id == orderItemId }) {
+                print("🔍 Found item at index \(itemIndex), current quantity: \(localOrder.order_items?[itemIndex].quantity ?? 0)")
+                
+                // Ensure we have a mutable copy of the items array
+                guard var items = localOrder.order_items else { 
+                    print("❌ No order items found")
+                    return 
+                }
+                
+                print("🔍 Before update - Item ID: \(items[itemIndex].id), Quantity: \(items[itemIndex].quantity)")
+                items[itemIndex].quantity = newQuantity
+                items[itemIndex].updated_at = ISO8601DateFormatter().string(from: Date())
+                print("🔍 After update - Item ID: \(items[itemIndex].id), Quantity: \(items[itemIndex].quantity)")
+                localOrder.order_items = items
+                
+                // Recalculate total
+                print("🔍 Recalculating total for \(items.count) items:")
+                let total = items.reduce(0.0) { acc, item in
+                    let itemTotal = item.price_at_order * Double(item.quantity)
+                    print("🔍   Item: \(item.menu_item?.displayName ?? "Unknown") - price: \(item.price_at_order) x qty: \(item.quantity) = \(itemTotal)")
+                    return acc + itemTotal
+                }
+                print("🔍 Final total: \(total)")
+                localOrder.total_amount = total
+                
+                // Update both the dictionary and current draft
+                localDraftOrders[orderId] = localOrder
+                if currentDraftOrder?.id == orderId {
+                    currentDraftOrder = localOrder
+                }
+                
+                print("✅ Updated item quantity - itemId: \(orderItemId), new quantity: \(newQuantity), new total: \(total)")
+                return
+            }
+        }
+        
+        print("🔍 Item not found in local orders, trying database")
+        // Fall back to database method for existing orders
+        try await updateDraftOrderItem(orderItemId: orderItemId, newQuantity: newQuantity, newNotes: nil)
+    }
+
     @MainActor
     public func removeDraftOrderItem(orderItemId: String) async throws {
+        // Check if this is a local draft order item
+        for orderId in localDraftOrders.keys {
+            guard var localOrder = localDraftOrders[orderId] else { continue }
+            
+            if let itemIndex = localOrder.order_items?.firstIndex(where: { $0.id == orderItemId }) {
+                localOrder.order_items?.remove(at: itemIndex)
+                
+                // Recalculate total
+                let total = localOrder.order_items?.reduce(0.0) { acc, item in
+                    acc + (item.price_at_order * Double(item.quantity))
+                } ?? 0.0
+                localOrder.total_amount = total
+                
+                // Update both the dictionary and current draft
+                localDraftOrders[orderId] = localOrder
+                if currentDraftOrder?.id == orderId {
+                    currentDraftOrder = localOrder
+                }
+                
+                print("Removed item from local draft order: \(orderItemId)")
+                return
+            }
+        }
+        
+        // Fall back to database removal for existing orders
         do {
             try await supabaseManager.client
                 .from("order_items")
@@ -303,6 +619,16 @@ class OrderManager: ObservableObject {
 
     @MainActor
     public func clearDraftOrder(orderId: String) async throws {
+        // Check if this is a local draft order
+        if localDraftOrders[orderId] != nil {
+            localDraftOrders.removeValue(forKey: orderId)
+            if currentDraftOrder?.id == orderId {
+                currentDraftOrder = nil
+            }
+            print("Cleared local draft order: \(orderId)")
+            return
+        }
+        
         // Ensure this order is the current draft before clearing locally
         if currentDraftOrder?.id != orderId {
              _ = try? await getDraftOrder(orderId: orderId) // Load it if not current
@@ -339,7 +665,13 @@ class OrderManager: ObservableObject {
     public func confirmOrderToKitchen(orderId: String) async throws -> Order {
         var orderToConfirm: Order
         
-        if let currentOrder = currentDraftOrder, currentOrder.id == orderId {
+        // Check if this is a local draft order that needs to be saved to database first
+        if let localOrder = localDraftOrders[orderId] {
+            // Save local order to database
+            orderToConfirm = try await saveLocalOrderToDatabase(localOrder)
+            // Remove from local storage
+            localDraftOrders.removeValue(forKey: orderId)
+        } else if let currentOrder = currentDraftOrder, currentOrder.id == orderId {
             orderToConfirm = currentOrder
         } else {
             // Fetch the order from database
@@ -370,7 +702,7 @@ class OrderManager: ObservableObject {
             let confirmedOrder: Order = try await supabaseManager.client
                 .from("orders")
                 .update(updatePayload)
-                .eq("id", value: orderId)
+                .eq("id", value: orderToConfirm.id) // Use the correct order ID
                 .select("*, table:tables(*), order_items(*, menu_item:menu_items(*), menu_item_size:menu_item_sizes(*))")
                 .single()
                 .execute()
@@ -396,6 +728,13 @@ class OrderManager: ObservableObject {
 
     @MainActor
     public func getDraftOrder(orderId: String, forceFetch: Bool = false) async throws -> Order? {
+        // First check if this is a local draft order
+        if let localOrder = localDraftOrders[orderId] {
+            print("Returning local draft order for id: \(orderId)")
+            currentDraftOrder = localOrder
+            return localOrder
+        }
+        
         if !forceFetch, let currentDraft = currentDraftOrder, currentDraft.id == orderId {
             // If we have a cached version and not forcing fetch, return it.
             // However, if its items are nil or empty, it might be an incompletely loaded order.
@@ -896,16 +1235,48 @@ class OrderManager: ObservableObject {
     @MainActor
     private func handleOrderChange() async {
         let previousOrders = orders
+        print("📋 Order change detected: previous=\(previousOrders.count), fetching fresh data...")
         await fetchActiveOrders()
+        print("📋 After fetch: current=\(orders.count)")
+        
+        let canAutoPrint = hasKitchenPrinter()
         
         // Check for new orders to auto-print
         if orders.count > previousOrders.count {
             triggerFeedback()
             
+            let newOrderCount = orders.count - previousOrders.count
+            print("🆕 Detected \(newOrderCount) new order(s)")
+            print("🖨️ Auto-print check: enabled=\(autoPrintingEnabled), hasKitchenPrinter=\(canAutoPrint)")
+            
             // Auto-print new orders if enabled and kitchen printer is configured
-            if autoPrintingEnabled && hasKitchenPrinter() {
+            if autoPrintingEnabled && canAutoPrint {
+                print("🖨️ Triggering auto-print for new orders")
                 await autoPrintNewOrders(previousOrders: previousOrders)
+            } else {
+                print("🖨️ Auto-print skipped - enabled: \(autoPrintingEnabled), canPrint: \(canAutoPrint)")
             }
+        } else if orders.count == previousOrders.count {
+            print("📋 No new orders detected (same count), checking for new items...")
+            
+            // Check for new items added to existing orders
+            let newItems = findNewItemsInExistingOrders(currentOrders: orders, previousOrders: previousOrders)
+            
+            if !newItems.isEmpty {
+                print("🍽️ Detected \(newItems.count) new item(s) in existing orders")
+                triggerFeedback()
+                
+                if autoPrintingEnabled && canAutoPrint {
+                    print("🖨️ Triggering auto-print for new items")
+                    await autoPrintNewItems(newItems)
+                } else {
+                    print("🖨️ Auto-print skipped for items - enabled: \(autoPrintingEnabled), canPrint: \(canAutoPrint)")
+                }
+            } else {
+                print("📋 No new items detected")
+            }
+        } else {
+            print("📋 Order count decreased (completed/cancelled orders?)")
         }
     }
     
@@ -944,7 +1315,27 @@ class OrderManager: ObservableObject {
     
     private func hasKitchenPrinter() -> Bool {
         let settingsManager = PrinterSettingsManager.shared
-        return settingsManager.hasKitchenPrinter() || settingsManager.isUsingDefaultPrinter()
+        
+        print("🖨️ Checking printer availability:")
+        print("  - Printer mode: \(settingsManager.printerMode)")
+        print("  - Active printer: \(settingsManager.activePrinter?.name ?? "none")")
+        print("  - Configured printers count: \(settingsManager.configuredPrinters.count)")
+        print("  - Using default printer: \(settingsManager.isUsingDefaultPrinter())")
+        print("  - Has kitchen printer: \(settingsManager.hasKitchenPrinter())")
+        
+        // In single printer mode, any configured printer can print kitchen orders
+        if settingsManager.printerMode == .single {
+            let result = settingsManager.activePrinter != nil || 
+                        !settingsManager.configuredPrinters.isEmpty || 
+                        settingsManager.isUsingDefaultPrinter()
+            print("  - Single mode result: \(result)")
+            return result
+        }
+        
+        // In dual printer mode, need a specific kitchen printer
+        let result = settingsManager.hasKitchenPrinter()
+        print("  - Dual mode result: \(result)")
+        return result
     }
     
     @MainActor
@@ -1016,6 +1407,157 @@ class OrderManager: ObservableObject {
     }
     
     @MainActor
+    private func autoPrintNewItems(_ newItems: [(OrderItem, Order)]) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            autoPrintQueue.async {
+                Task {
+                    await self.performAutoPrintNewItems(newItems)
+                    continuation.resume()
+                }
+            }
+        }
+    }
+    
+    private func performAutoPrintNewItems(_ newItems: [(OrderItem, Order)]) async {
+        guard !newItems.isEmpty else { return }
+        
+        await MainActor.run {
+            autoPrintingInProgress = true
+        }
+        
+        for (item, order) in newItems {
+            // Skip if already printed
+            if printedNewItems.contains(item.id) {
+                print("⏭️ Skipping already printed item: \(item.id)")
+                continue
+            }
+            
+            do {
+                // Print individual item slip
+                try await printNewItemSlip(item: item, order: order)
+                printedNewItems.insert(item.id) // Use dedicated tracking set
+                await MainActor.run {
+                    autoPrintStats.recordNewOrderPrint()
+                }
+                
+                let itemName = item.menu_item?.displayName ?? "Unknown Item"
+                let tableInfo = order.table?.name ?? "Table \(order.table_id)"
+                await MainActor.run {
+                    lastAutoPrintResult = "✅ Auto-printed new item: \(itemName) for \(tableInfo)"
+                }
+                print("Auto-printed new item: \(item.id) - \(itemName)")
+                
+            } catch {
+                await MainActor.run {
+                    autoPrintStats.recordPrintFailure()
+                    lastAutoPrintResult = "❌ Auto-print failed: \(error.localizedDescription)"
+                }
+                print("Auto-print failed for new item \(item.id): \(error.localizedDescription)")
+            }
+        }
+        
+        await MainActor.run {
+            autoPrintingInProgress = false
+        }
+        
+        // Clear the result message after 5 seconds
+        Task {
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            await MainActor.run {
+                lastAutoPrintResult = nil
+            }
+        }
+    }
+    
+    @MainActor
+    private func printNewItemSlip(item: OrderItem, order: Order) async throws {
+        let settingsManager = PrinterSettingsManager.shared
+        let printerService = PrinterService.shared
+        
+        // Create proper ESC/POS formatted slip
+        var outputData = Data()
+        
+        // Clear buffer and initialize printer properly
+        outputData.append(Data(PrinterConfig.Commands.clearBuffer))
+        outputData.append(Data(PrinterConfig.Commands.initialize))
+        
+        // Set charset based on print language
+        switch settingsManager.printLanguage {
+        case .vietnamese:
+            outputData.append(Data(PrinterConfig.Commands.setCharsetCP1258))
+        case .japanese:
+            outputData.append(Data(PrinterConfig.Commands.setCharsetShiftJIS))
+        case .english:
+            outputData.append(Data(PrinterConfig.Commands.setCharsetCP1252))
+        }
+        
+        // Header - Center aligned and bold
+        outputData.append(Data(PrinterConfig.Commands.alignCenter))
+        outputData.append(Data(PrinterConfig.Commands.boldOn))
+        
+        // Get encoding based on language
+        let encoding: String.Encoding
+        switch settingsManager.printLanguage {
+        case .vietnamese:
+            encoding = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.windowsVietnamese.rawValue)))
+        case .japanese:
+            encoding = String.Encoding.shiftJIS
+        case .english:
+            encoding = String.Encoding.windowsCP1252
+        }
+        
+        // Add leading spacing for better separation
+        outputData.append("\n\n".data(using: encoding) ?? Data())
+        
+        outputData.append("=== NEW ITEM ADDED ===\n".data(using: encoding) ?? Data())
+        outputData.append(Data(PrinterConfig.Commands.boldOff))
+        outputData.append(Data(PrinterConfig.Commands.alignLeft))
+        
+        // Order info
+        var orderInfo = ""
+        orderInfo += "Order: \(order.table?.name ?? "Table \(order.table_id)")\n"
+        if let orderNumber = order.order_number {
+            orderInfo += "Order #: \(orderNumber)\n"
+        }
+        orderInfo += "Time: \(DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short))\n"
+        orderInfo += String(repeating: "-", count: 32) + "\n"
+        outputData.append(orderInfo.data(using: encoding) ?? Data())
+        
+        // Item details
+        let itemName = item.menu_item?.displayName ?? "Unknown Item"
+        var itemText = "\(item.quantity)x \(itemName)\n"
+        
+        if let notes = item.notes, !notes.isEmpty {
+            itemText += "Note: \(notes)\n"
+        }
+        
+        if let size = item.menu_item_size_id, !size.isEmpty {
+            itemText += "Size: \(size)\n"
+        }
+        
+        itemText += String(repeating: "=", count: 32) + "\n"
+        itemText += "\n" // Extra spacing after content
+        outputData.append(itemText.data(using: encoding) ?? Data())
+        
+        // Enhanced paper feeding and cutting sequence with proper spacing
+        outputData.append(Data(PrinterConfig.Commands.paperFeedExtra)) // Extra feed for better spacing
+        outputData.append("\n\n\n".data(using: encoding) ?? Data()) // Additional line feeds before cutting
+        outputData.append(Data(PrinterConfig.Commands.cutPaperAdvanced)) // Advanced cut with feed
+        
+        // Use kitchen printer if configured, otherwise use default
+        switch settingsManager.printerMode {
+        case .single:
+            try await printerService.connectAndSendData(data: outputData)
+        case .dual:
+            if let kitchenConfig = settingsManager.getKitchenPrinterConfig() {
+                try await printerService.connectAndSendData(data: outputData, to: kitchenConfig)
+            } else {
+                try await printerService.connectAndSendData(data: outputData)
+            }
+        }
+    }
+    
+    @MainActor
     private func autoPrintReadyItems(previousOrders: [Order]) async {
         let readyItems = findItemsChangedToReady(currentOrders: orders, previousOrders: previousOrders)
         
@@ -1065,6 +1607,35 @@ class OrderManager: ObservableObject {
     internal func findNewOrders(currentOrders: [Order], previousOrders: [Order]) -> [Order] {
         let previousOrderIds = Set(previousOrders.map { $0.id })
         return currentOrders.filter { !previousOrderIds.contains($0.id) }
+    }
+    
+    internal func findNewItemsInExistingOrders(currentOrders: [Order], previousOrders: [Order]) -> [(OrderItem, Order)] {
+        var newItems: [(OrderItem, Order)] = []
+        
+        // Create lookup dictionary for previous orders
+        let previousOrderDict = Dictionary(uniqueKeysWithValues: previousOrders.map { ($0.id, $0) })
+        
+        for currentOrder in currentOrders {
+            guard let previousOrder = previousOrderDict[currentOrder.id] else {
+                // This is a new order, skip (handled by findNewOrders)
+                continue
+            }
+            
+            // Get previous item IDs for this order
+            let previousItemIds = Set(previousOrder.order_items?.map { $0.id } ?? [])
+            
+            // Find new items in current order
+            if let currentItems = currentOrder.order_items {
+                for item in currentItems {
+                    if !previousItemIds.contains(item.id) {
+                        print("🍽️ Found new item: \(item.menu_item?.displayName ?? "Unknown") in order \(currentOrder.id)")
+                        newItems.append((item, currentOrder))
+                    }
+                }
+            }
+        }
+        
+        return newItems
     }
     
     internal func findItemsChangedToReady(currentOrders: [Order], previousOrders: [Order]) -> [OrderItem] {
@@ -1131,11 +1702,47 @@ class OrderManager: ObservableObject {
         }
     }
     
+    // MARK: - Manual Testing Functions
+    
+    @MainActor
+    public func testPrintLatestOrder() async {
+        guard let latestOrder = orders.first else {
+            print("❌ No orders available to print")
+            return
+        }
+        
+        print("🧪 Testing print for order: \(latestOrder.id)")
+        do {
+            try await printerManager.printKitchenSlip(for: latestOrder)
+            print("✅ Manual print test successful")
+        } catch {
+            print("❌ Manual print test failed: \(error.localizedDescription)")
+        }
+    }
+    
+    @MainActor
+    public func testPrintNewItemSlip() async {
+        guard let latestOrder = orders.first,
+              let firstItem = latestOrder.order_items?.first else {
+            print("❌ No orders or items available to print")
+            return
+        }
+        
+        print("🧪 Testing new item slip for: \(firstItem.menu_item?.displayName ?? "Unknown")")
+        do {
+            try await printNewItemSlip(item: firstItem, order: latestOrder)
+            print("✅ Manual new item slip test successful")
+        } catch {
+            print("❌ Manual new item slip test failed: \(error.localizedDescription)")
+        }
+    }
+    
     // MARK: - Clear Print History (for testing/reset)
     
     func clearPrintHistory() {
         printedNewOrders.removeAll()
         printedReadyItems.removeAll()
+        printedNewItems.removeAll()
         autoPrintStats.reset()
         lastAutoPrintResult = "🔄 Print history cleared"
         print("Print history and statistics cleared")
@@ -1168,6 +1775,48 @@ class OrderManager: ObservableObject {
             group.cancelAll()
             return result
         }
+    }
+    
+    // MARK: - Order Management Methods
+    
+    @MainActor
+    public func cancelOrder(orderId: String) async throws {
+        guard let restaurantId = supabaseManager.currentRestaurantId else {
+            throw OrderManagerError.missingRestaurantId
+        }
+        
+        // Check if order exists and can be cancelled
+        let order: Order = try await supabaseManager.client
+            .from("orders")
+            .select("id, status")
+            .eq("id", value: orderId)
+            .eq("restaurant_id", value: restaurantId)
+            .single()
+            .execute()
+            .value
+        
+        guard order.status == .new || order.status == .draft || order.status == .serving else {
+            throw OrderManagerError.generalError("Order cannot be cancelled. Current status: \(order.status.displayName)")
+        }
+        
+        // Update order status to cancelled
+        try await supabaseManager.client
+            .from("orders")
+            .update(["status": "canceled"])
+            .eq("id", value: orderId)
+            .execute()
+        
+        // Update all order items to cancelled  
+        try await supabaseManager.client
+            .from("order_items")
+            .update(["status": "canceled"])
+            .eq("order_id", value: orderId)
+            .execute()
+        
+        print("✅ Cancelled order: \(orderId)")
+        
+        // Refresh orders list
+        await fetchActiveOrders()
     }
 }
 

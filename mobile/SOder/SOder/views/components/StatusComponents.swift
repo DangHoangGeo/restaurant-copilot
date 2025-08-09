@@ -88,8 +88,8 @@ struct OrderItemStatusBadge: View {
         switch status {
         case .draft:
             return ("Draft", .gray, "doc.text")
-        case .ordered:
-            return ("Ordered", .blue, "doc.text")
+        case .new:
+            return ("New", .blue, "doc.text")
         case .preparing:
             return ("Preparing", .orange, "flame.fill")
         case .ready:
@@ -387,10 +387,10 @@ struct EnhancedOrderItemView: View {
     }
     
     private func getNextStatus() -> OrderItemStatus {
-        switch OrderItemStatus(rawValue: item.status.rawValue) ?? .ordered {
+        switch OrderItemStatus(rawValue: item.status.rawValue) ?? .new {
         case .draft:
-            return .ordered
-        case .ordered:
+            return .new
+        case .new:
             return .preparing
         case .preparing:
             return .ready

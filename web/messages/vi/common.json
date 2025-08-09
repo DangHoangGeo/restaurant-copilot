@@ -51,6 +51,7 @@
     "canceled": "Đã hủy"
   },
   "order_item_status": {
+    "new": "Mới",
     "ordered": "Đã đặt hàng",
     "preparing": "Đang chuẩn bị",
     "ready": "Sẵn sàng",

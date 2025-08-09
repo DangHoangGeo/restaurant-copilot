@@ -572,7 +572,7 @@ struct SidebarOrderRowView: View {
                                 .cornerRadius(CornerRadius.xs)
                         }
                         
-                        if order.order_items?.contains(where: { $0.status.rawValue == "ordered" }) == true {
+                        if order.order_items?.contains(where: { $0.status.rawValue == "new" }) == true {
                             Image(systemName: "circle.fill")
                                 .font(.captionRegular)
                                 .foregroundColor(.appError)

@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       menu_item_id: item.menu_item_id,
       quantity: item.quantity,
       notes: item.notes || null,
-      status: "ordered" as const,
+      status: "new" as const,
     }));
 
     const { error: itemsError } = await supabaseAdmin

@@ -55,7 +55,7 @@ struct KitchenItemsListView: View {
             }
             
             // Then by status
-            let statusOrder: [OrderItemStatus] = [.ordered, .preparing, .ready, .served, .cancelled]
+            let statusOrder: [OrderItemStatus] = [.new, .preparing, .ready, .served, .cancelled]
             let lhsIndex = statusOrder.firstIndex(of: lhs.status) ?? 0
             let rhsIndex = statusOrder.firstIndex(of: rhs.status) ?? 0
             if lhsIndex != rhsIndex {

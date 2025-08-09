@@ -21,7 +21,7 @@ export interface OrderItem {
 	id: string;
 	quantity: number;
 	notes?: string;
-	status: 'ordered' | 'preparing' | 'ready' | 'served';
+	status: 'new' | 'preparing' | 'ready' | 'served';
 	created_at: string;
 	name_en: string;
 	name_ja: string;
@@ -51,5 +51,5 @@ export interface OrderHistoryResponse {
   order: Order;
 }
 
-export type OrderStatus = 'new' | 'preparing' | 'ready' | 'completed' | 'canceled';
-export type OrderItemStatus = 'ordered' | 'preparing' | 'ready' | 'served' | 'cancelled';
+export type OrderStatus = 'new' | 'serving' | 'ready' | 'completed' | 'canceled';
+export type OrderItemStatus = 'new' | 'preparing' | 'ready' | 'served' | 'cancelled';

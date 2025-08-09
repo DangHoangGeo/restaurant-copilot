@@ -212,7 +212,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   const getStatusColor = (status: OrderStatus): string => {
     switch (status) {
       case 'new': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'preparing': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'serving': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       case 'ready': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
       case 'completed': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
       case 'canceled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
@@ -403,15 +403,15 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('subtotal')}</span>
-                    <span>¥{Math.round((historyData.order?.total_amount || 0) / 1.1)}</span>
+                    <span>¥{Math.round((historyData.order?.total_amount || 0))}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('tax')} (10%)</span>
-                    <span>¥{Math.round((historyData.order?.total_amount || 0) * 0.1 / 1.1)}</span>
+                    <span>¥{Math.round((historyData.order?.total_amount || 0) * 0.1)}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between font-semibold">
                     <span>{t('total')}</span>
-                    <span>¥{historyData.order?.total_amount || 0}</span>
+                    <span>¥{(historyData.order?.total_amount + Math.round((historyData.order?.total_amount || 0) * 0.1)|| 0)}</span>
                   </div>
                   <div className="text-right text-xs text-gray-500 dark:text-gray-400">
                     {historyData.order?.items?.length || 0} {t('items_count')}

@@ -107,7 +107,7 @@ struct OrderItem: Codable, Identifiable, Equatable, Hashable { // Changed to Cod
 
 enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to Codable
     case draft = "draft_item" // Added from OrderManager
-    case ordered = "ordered"
+    case new = "new"
     case preparing = "preparing"
     case ready = "ready"
     case served = "served"
@@ -116,7 +116,7 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
     var displayName: String {
         switch self {
         case .draft: return "Draft Item"
-        case .ordered: return "Ordered"
+        case .new: return "New"
         case .preparing: return "Preparing"
         case .ready: return "Ready"
         case .served: return "Served"
@@ -127,7 +127,7 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
     var color: String {
         switch self {
         case .draft: return "purple" // Example color
-        case .ordered: return "blue"
+        case .new: return "blue"
         case .preparing: return "orange"
         case .ready: return "green"
         case .served: return "gray"
@@ -137,7 +137,7 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
     
     // Comparable conformance - defines ordering for status progression
     static func < (lhs: OrderItemStatus, rhs: OrderItemStatus) -> Bool {
-        let order: [OrderItemStatus] = [.draft, .ordered, .preparing, .ready, .served, .cancelled]
+        let order: [OrderItemStatus] = [.draft, .new, .preparing, .ready, .served, .cancelled]
         guard let lhsIndex = order.firstIndex(of: lhs),
               let rhsIndex = order.firstIndex(of: rhs) else {
             return false
@@ -427,7 +427,7 @@ struct OrderItemWithMenuResponse: Decodable { // Should remain Decodable
             menu_item_size_id: menu_item_size_id,
             topping_ids: topping_ids,
             price_at_order: price_at_order,
-            status: OrderItemStatus(rawValue: status) ?? .ordered,
+            status: OrderItemStatus(rawValue: status) ?? .new,
             created_at: created_at,
             updated_at: created_at,
             menu_item: menu_item.toMenuItem(),
