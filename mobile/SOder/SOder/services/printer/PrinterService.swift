@@ -177,7 +177,7 @@ class PrinterService {
     
     func testConnection(to printerConfig: PrinterConfig.Hardware? = nil) async -> Bool {
         let printer = printerConfig ?? settingsManager.getCurrentPrinterConfig()
-        let testData = "Test connection".data(using: .utf8) ?? Data()
+        let testData = "Test connection\r\n".data(using: .ascii) ?? Data()
         do {
             try await connectAndSendData(data: testData, to: printer)
             return true
@@ -194,7 +194,7 @@ class PrinterService {
             return
         }
         
-        // Prepend UTF-8 initialization and charset commands
+        // Respect payload that may already contain init/charset; otherwise prepend legacy-safe init
         let enhancedData = prepareDataWithEncoding(data)
         
         connection.send(content: enhancedData, completion: .contentProcessed { error in
@@ -208,26 +208,26 @@ class PrinterService {
         })
     }
     
+    private func payloadHasInit(_ data: Data) -> Bool {
+        // Looks for ESC @ (1B 40) near the beginning
+        return data.prefix(8).contains(0x1B) && data.prefix(8).contains(0x40)
+    }
+    
     private func prepareDataWithEncoding(_ originalData: Data) -> Data {
         var enhancedData = Data()
         
-        // Get current language and encoding strategy
-        let language = settingsManager.printLanguage
-        let strategy = settingsManager.encodingStrategy ?? .utf8Primary
-        
-        // Add initialization commands based on strategy
-        switch strategy {
-        case .utf8Primary, .utf8Fallback:
-            // Use enhanced UTF-8 initialization sequence
-            enhancedData.append(Data(PrinterConfig.Commands.initializeUTF8))
-            // Add an additional charset reset to ensure UTF-8 is properly set
-            enhancedData.append(Data(PrinterConfig.Commands.setCharsetUTF8))
-            
-        case .legacyEncoding:
-            // Use legacy initialization and charset commands
-            enhancedData.append(Data(PrinterConfig.Commands.initialize))
-            enhancedData.append(Data(PrinterConfig.EncodingUtils.getLegacyCharsetCommand(for: language)))
+        // If payload already initializes printer/charset, pass through
+        if payloadHasInit(originalData) {
+            return originalData
         }
+        
+        // Per M2: Avoid non-standard UTF-8 (ESC t 255). Use legacy per-language by default.
+        let strategy: PrinterConfig.EncodingUtils.Strategy = .legacyEncoding
+        let language = settingsManager.selectedReceiptLanguage // default if unknown
+        
+        // Add initialization and charset selection
+        enhancedData.append(Data(PrinterConfig.Commands.initialize))
+        enhancedData.append(Data(PrinterConfig.EncodingUtils.getCharsetCommand(for: language, strategy: strategy)))
         
         // Append the original formatted data
         enhancedData.append(originalData)
@@ -371,9 +371,44 @@ extension PrinterService {
     // MARK: - Language Capability Testing
     func testPrintSample(language: PrintLanguage, printerConfig: PrinterConfig.Hardware? = nil) async -> Bool {
         do {
-            let testString = PrinterConfig.EncodingUtils.testStrings[language.rawValue] ?? "Test Receipt 123"
-            let testData = createLanguageTestData(text: testString, language: language)
-            try await connectAndSendData(data: testData, to: printerConfig)
+            let testText: String
+            switch language {
+            case .english: testText = "Test Receipt 123"
+            case .japanese: testText = "日本語テスト 123"
+            case .vietnamese: testText = "Biên lai thử nghiệm 123"
+            }
+            var data = Data()
+            // Always use legacy encoding per M2 for capability probes
+            data.append(Data(PrinterConfig.Commands.initialize))
+            data.append(Data(PrinterConfig.EncodingUtils.getLegacyCharsetCommand(for: language)))
+            data.append("\r\n\r\n".data(using: .ascii)!)
+            data.append(Data(PrinterConfig.Commands.alignCenter))
+            data.append(Data(PrinterConfig.Commands.boldOn))
+            data.append("Language Test\r\n".data(using: .ascii)!)
+            data.append(Data(PrinterConfig.Commands.boldOff))
+            data.append("\r\n".data(using: .ascii)!)
+            
+            switch language {
+            case .japanese:
+                data.append(Data(PrinterConfig.Commands.enterKanjiMode))
+                data.append(testText.data(using: .shiftJIS) ?? PrinterConfig.EncodingUtils.toASCIISafe(testText).data(using: .ascii)!)
+                data.append("\r\n".data(using: .ascii)!)
+                data.append(Data(PrinterConfig.Commands.exitKanjiMode))
+            case .vietnamese:
+                if let enc = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.windowsVietnamese.rawValue))) as String.Encoding? {
+                    let vText = testText.data(using: enc) ?? PrinterConfig.EncodingUtils.applyVietnameseFallback(testText).data(using: enc)
+                    data.append(vText ?? PrinterConfig.EncodingUtils.toASCIISafe(testText).data(using: .ascii)!)
+                    data.append("\r\n".data(using: .ascii)!)
+                }
+            case .english:
+                data.append(testText.data(using: .windowsCP1252) ?? testText.data(using: .ascii)!)
+                data.append("\r\n".data(using: .ascii)!)
+            }
+            
+            data.append(Data(PrinterConfig.Commands.paperFeed))
+            data.append(Data(PrinterConfig.Commands.cutPaperPartial))
+            
+            try await connectAndSendData(data: data, to: printerConfig)
             return true
         } catch {
             print("Language test failed for \(language.rawValue): \(error.localizedDescription)")
@@ -402,50 +437,6 @@ extension PrinterService {
         }
         
         return results
-    }
-    
-    private func createLanguageTestData(text: String, language: PrintLanguage) -> Data {
-        var testData = Data()
-        
-        // Get current encoding strategy
-        let strategy = settingsManager.encodingStrategy ?? .utf8Primary
-        
-        // Add initialization commands
-        switch strategy {
-        case .utf8Primary, .utf8Fallback:
-            testData.append(Data(PrinterConfig.Commands.initializeUTF8))
-        case .legacyEncoding:
-            testData.append(Data(PrinterConfig.Commands.initialize))
-            testData.append(Data(PrinterConfig.EncodingUtils.getLegacyCharsetCommand(for: language)))
-        }
-        
-        // Add header
-        testData.append("\n\n".data(using: .utf8) ?? Data())
-        testData.append(Data(PrinterConfig.Commands.alignCenter))
-        testData.append(Data(PrinterConfig.Commands.boldOn))
-        testData.append("Language Test\n".data(using: .utf8) ?? Data())
-        testData.append(Data(PrinterConfig.Commands.boldOff))
-        testData.append("\n".data(using: .utf8) ?? Data())
-        
-        // Add test content with encoding based on strategy
-        let encoding = PrinterConfig.EncodingUtils.getEncoding(for: language, strategy: strategy)
-        let contentText = "\(language.displayName)\n\(text)\n"
-        
-        if let contentData = contentText.data(using: encoding) {
-            testData.append(contentData)
-        } else {
-            // Fallback to ASCII if encoding fails
-            let fallbackText = PrinterConfig.EncodingUtils.toASCIISafe(contentText)
-            testData.append(fallbackText.data(using: .ascii) ?? Data())
-        }
-        
-        // Add footer and cut
-        testData.append("\n".data(using: .utf8) ?? Data())
-        testData.append(Data(PrinterConfig.Commands.alignLeft))
-        testData.append(Data(PrinterConfig.Commands.paperFeed))
-        testData.append(Data(PrinterConfig.Commands.cutPaperPartial))
-        
-        return testData
     }
     
     // MARK: - Dual Printer Order Processing

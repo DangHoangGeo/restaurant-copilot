@@ -37,6 +37,10 @@ struct PrinterConfig {
         static let setCharsetCP1258: [UInt8] = [0x1B, 0x74, 0x1B] // ESC t 27 (Windows-1258 for Vietnamese)
         static let setCharsetShiftJIS: [UInt8] = [0x1B, 0x74, 0x04] // ESC t 4 (Shift-JIS for Japanese)
         
+        // Japanese Kanji mode (Epson-compatible)
+        static let enterKanjiMode: [UInt8] = [0x1C, 0x26] // FS & (Enter Kanji mode)
+        static let exitKanjiMode: [UInt8]  = [0x1C, 0x2E] // FS . (Leave Kanji mode)
+        
         // Enhanced UTF-8 initialization sequence
         static let initializeUTF8: [UInt8] = initialize + resetCharset + setCharsetUTF8
         

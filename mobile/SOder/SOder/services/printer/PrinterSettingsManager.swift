@@ -896,3 +896,20 @@ extension PrinterSettingsManager {
         }
     }
 }
+
+// MARK: - Encoding Strategy Helpers (per target)
+extension PrinterSettingsManager {
+    enum PrintTarget { case receipt, kitchen }
+    
+    func getSelectedLanguage(for target: PrintTarget) -> PrintLanguage {
+        switch target {
+        case .receipt: return selectedReceiptLanguage
+        case .kitchen: return selectedKitchenLanguage
+        }
+    }
+    
+    func getStrategy(for printerId: String? = nil, target: PrintTarget) -> PrinterConfig.EncodingUtils.Strategy {
+        // For M2: use a global strategy for now; in M3 this can consult per-printer capability
+        return encodingStrategy ?? .legacyEncoding
+    }
+}

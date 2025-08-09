@@ -41,18 +41,18 @@ M1. UX Simplification (Setup-first)
 - [x] Bugfix: Language Diagnostics should navigate directly to diagnostics (avoid intermediate Print Queue)
 
 M2. Encoding Strategy (per printer, per target: kitchen vs receipt)
-- [ ] Determine strategy by target and selected language
-- [ ] Default rules per language (model-agnostic via standard ESC/POS):
+- [x] Determine strategy by target and selected language
+- [x] Default rules per language (model-agnostic via standard ESC/POS):
       - English: Windows-1252 (CP1252) via ESC t 16; encode text with .windowsCP1252
       - Japanese: Shift-JIS with Kanji mode (FS & enter / FS . leave), optional ESC t 0x04
       - Vietnamese: try CP1258 (ESC t 27); if unsupported, fallback
 - [ ] Notes (free text) handling:
-      - Try to encode with the selected language’s encoding
-      - If encoding fails or printer rejects:
-        - Kitchen: apply diacritic/character fallbacks (ASCII-safe) to preserve speed/legibility
-        - Receipt: rasterize the note line(s) to monochrome image and print as image (optional toggle)
-- [ ] Ensure CRLF line endings in raw-text segments
-- [ ] Avoid sending non-standard UTF-8 commands (ESC t 255) to this printer class
+      - [x] Try to encode with the selected language’s encoding
+      - [x] If encoding fails or printer rejects:
+        - [x] Kitchen: apply diacritic/character fallbacks (ASCII-safe) to preserve speed/legibility
+        - [ ] Receipt: rasterize the note line(s) to monochrome image and print as image (optional toggle)
+- [x] Ensure CRLF line endings in raw-text segments
+- [x] Avoid sending non-standard UTF-8 commands (ESC t 255) to this printer class
 
 M3. Capability Detection and Tests
 - [ ] Extend PrinterService.testPrintSample to probe per language: EN (CP1252), JA (Shift-JIS+Kanji), VI (CP1258)

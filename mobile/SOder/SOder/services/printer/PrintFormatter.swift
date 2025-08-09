@@ -58,40 +58,37 @@ class PrintFormatter {
         // Render template with data
         let renderedText = templateRenderer.render(template: template, data: data)
         
+        // Ensure CRLF line endings as required by M2
+        let crlfText = normalizeToCRLF(renderedText)
+        
         // Process format tags and convert to printer commands
-        return formatProcessor.processFormatTags(in: renderedText, encoding: encoding)
+        return formatProcessor.processFormatTags(in: crlfText, encoding: encoding)
     }
     
     // MARK: - Convenience Methods
     func formatOrderForKitchen(order: Order) -> Data? {
-        let theme = settingsManager.getTemplateTheme(for: .kitchen)
-        let language = settingsManager.printLanguage
-        
-        guard let template = themeManager.loadTemplate(type: .kitchen, language: language, theme: theme) else {
-            return formatOrderForKitchenLegacy(order: order)
-        }
-        
-        let data = buildOrderData(order: order, includePrice: false)
-        let encoding = getSelectedEncoding()
-        return format(template: template, data: data, encoding: encoding)
+        return formatOrderForKitchen(order: order, target: .kitchen)
     }
     
     func formatCustomerReceipt(order: Order, isOfficial: Bool = false) -> Data? {
-        let theme = settingsManager.getTemplateTheme(for: .receipt)
-        let language = settingsManager.printLanguage
-        
-        guard let template = themeManager.loadTemplate(type: .receipt, language: language, theme: theme) else {
-            return formatCustomerReceiptLegacy(order: order, isOfficial: isOfficial)
-        }
-        
-        let data = buildOrderData(order: order, includePrice: true)
-        let encoding = getSelectedEncoding()
-        return format(template: template, data: data, encoding: encoding)
+        return formatCustomerReceipt(order: order, isOfficial: isOfficial, target: .receipt)
+    }
+
+    // New target-aware overloads
+    func formatOrderForKitchen(order: Order, target: PrinterSettingsManager.PrintTarget) -> Data? {
+        let content = generateKitchenOrderContent(order: order)
+        return formatForThermalPrinter(content, target: target)
+    }
+    
+    func formatCustomerReceipt(order: Order, isOfficial: Bool, target: PrinterSettingsManager.PrintTarget) -> Data? {
+        let content = generateCustomerReceiptContent(order: order, isOfficial: isOfficial)
+        return formatForThermalPrinter(content, target: target)
     }
     
     func formatTestReceipt() -> Data {
+        // Use current receipt target language
         let theme = settingsManager.getTemplateTheme(for: .receipt)
-        let language = settingsManager.printLanguage
+        let language = settingsManager.getSelectedLanguage(for: .receipt)
         
         let testData: [String: Any] = [
             "restaurant": [
@@ -124,7 +121,7 @@ class PrintFormatter {
         ]
         
         let template = themeManager.loadTemplate(type: .receipt, language: language, theme: theme) ?? getDefaultReceiptTemplate()
-        let encoding = getSelectedEncoding()
+        let encoding = getSelectedEncoding(for: .receipt)
         return format(template: template, data: testData, encoding: encoding)
     }
     
@@ -137,16 +134,16 @@ class PrintFormatter {
         return content
     }
     
-    private func getSelectedEncoding() -> String.Encoding {
-        // Use UTF-8 first strategy by default, fallback to legacy if needed
-        let strategy = settingsManager.encodingStrategy ?? .utf8Primary
-        return PrinterConfig.EncodingUtils.getEncoding(for: settingsManager.printLanguage, strategy: strategy)
+    private func getSelectedEncoding(for target: PrinterSettingsManager.PrintTarget) -> String.Encoding {
+        let language = settingsManager.getSelectedLanguage(for: target)
+        let strategy = settingsManager.getStrategy(for: nil, target: target)
+        return PrinterConfig.EncodingUtils.getEncoding(for: language, strategy: strategy)
     }
     
-    private func getPrinterCharsetCommand() -> [UInt8] {
-        // Use UTF-8 first strategy with fallback
-        let strategy = settingsManager.encodingStrategy ?? .utf8Primary
-        return PrinterConfig.EncodingUtils.getCharsetCommand(for: settingsManager.printLanguage, strategy: strategy)
+    private func getPrinterCharsetCommand(for target: PrinterSettingsManager.PrintTarget) -> [UInt8] {
+        let language = settingsManager.getSelectedLanguage(for: target)
+        let strategy = settingsManager.getStrategy(for: nil, target: target)
+        return PrinterConfig.EncodingUtils.getCharsetCommand(for: language, strategy: strategy)
     }
     
     private func buildOrderData(order: Order, includePrice: Bool) -> [String: Any] {
@@ -261,62 +258,62 @@ class PrintFormatter {
     
     func formatKitchenSummary(_ group: GroupedItem) -> Data {
         let content = generateKitchenSummaryContent(group: group)
-        return formatForThermalPrinter(content)
+        return formatForThermalPrinter(content, target: .kitchen)
     }
     
     func formatKitchenTestReceipt() -> Data {
         let content = generateKitchenTestContent()
-        return formatForThermalPrinter(content)
+        return formatForThermalPrinter(content, target: .kitchen)
     }
     
     func formatCheckoutTestReceipt() -> Data {
         let content = generateCheckoutTestContent()
-        return formatForThermalPrinter(content)
+        return formatForThermalPrinter(content, target: .receipt)
     }
     
     // MARK: - Checkout Receipt Formatting
     func formatCheckoutReceipt(_ receiptData: CheckoutReceiptData) -> Data {
         let content = generateCheckoutReceiptPrintContent(receiptData)
-        return formatForThermalPrinter(content)
+        return formatForThermalPrinter(content, target: .receipt)
     }
     
     // MARK: - Unified Thermal Printer Formatter
     
-    private func formatForThermalPrinter(_ content: String) -> Data {
+    private func formatForThermalPrinter(_ content: String, target: PrinterSettingsManager.PrintTarget) -> Data {
         var command = Data()
         
         // Clear buffer and initialize printer
         command.append(Data(commands.clearBuffer))
         command.append(Data(commands.initialize))
-        command.append(Data(getPrinterCharsetCommand()))
+        command.append(Data(getPrinterCharsetCommand(for: target)))
         
         // Add leading spacing
-        command.append("\n\n".data(using: getSelectedEncoding()) ?? Data())
+        command.append("\r\n\r\n".data(using: getSelectedEncoding(for: target)) ?? Data())
         
         // Set alignment to left by default
         command.append(Data(commands.alignLeft))
         
-        // Add the formatted content
-        append(content, to: &command)
+        // Add the formatted content (CRLF ensured)
+        append(content, to: &command, target: target)
         
         // Enhanced cutting with extra spacing
         command.append(Data(commands.paperFeedExtra)) // Extra feed for spacing
-        command.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data())
+        command.append("\r\n\r\n\r\n".data(using: getSelectedEncoding(for: target)) ?? Data())
         command.append(Data(commands.cutPaperAdvanced)) // Use advanced cutting
         
         return command
     }
     
-    internal func formatForThermalPrinter(_ printContent: PrintContent) -> Data {
+    internal func formatForThermalPrinter(_ printContent: PrintContent, target: PrinterSettingsManager.PrintTarget) -> Data {
         var command = Data()
         
         // Clear buffer and initialize printer
         command.append(Data(commands.clearBuffer))
         command.append(Data(commands.initialize))
-        command.append(Data(getPrinterCharsetCommand()))
+        command.append(Data(getPrinterCharsetCommand(for: target)))
         
         // Add leading spacing
-        command.append("\n\n".data(using: getSelectedEncoding()) ?? Data())
+        command.append("\r\n\r\n".data(using: getSelectedEncoding(for: target)) ?? Data())
         
         // Process each section
         for section in printContent.sections {
@@ -348,7 +345,7 @@ class PrintFormatter {
             }
             
             // Add content
-            append(section.content, to: &command)
+            append(section.content, to: &command, target: target)
             
             // Reset styles after each section
             if section.style.isBold {
@@ -361,11 +358,11 @@ class PrintFormatter {
         switch printContent.settings.cutType {
         case .partial:
             command.append(Data(commands.paperFeedExtra)) // Extra feed for spacing
-            command.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data())
+            command.append("\r\n\r\n\r\n".data(using: getSelectedEncoding(for: target)) ?? Data())
             command.append(Data(commands.cutPaperPartial))
         case .full:
             command.append(Data(commands.paperFeedExtra)) // Extra feed for spacing
-            command.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data())
+            command.append("\r\n\r\n\r\n".data(using: getSelectedEncoding(for: target)) ?? Data())
             command.append(Data(commands.cutPaperAdvanced)) // Use advanced cutting
         case .none:
             break
@@ -939,77 +936,62 @@ class PrintFormatter {
     }
     
     private func append(_ data: Data?, to commandData: inout Data) {
-        if let data = data {
+        if let data = data { commandData.append(data) }
+    }
+    
+    private func append(_ string: String, to commandData: inout Data, target: PrinterSettingsManager.PrintTarget) {
+        // Ensure CRLF newlines
+        let crlf = normalizeToCRLF(string)
+        if let data = stringToData(crlf, target: target) {
             commandData.append(data)
         }
     }
     
-    private func append(_ string: String, to commandData: inout Data) {
-        if let data = stringToData(string) {
-            commandData.append(data)
-        }
+    private func stringToData(_ string: String, target: PrinterSettingsManager.PrintTarget) -> Data? {
+        return stringToDataWithFallback(string, target: target)
     }
     
-    private func stringToData(_ string: String) -> Data? {
-        return stringToDataWithFallback(string)
-    }
-    
-    // Enhanced encoding with intelligent fallback
-    private func stringToDataWithFallback(_ string: String) -> Data? {
-        let language = settingsManager.printLanguage
-        let strategy = settingsManager.encodingStrategy ?? .utf8Primary
+    // Enhanced encoding with intelligent fallback (per target)
+    private func stringToDataWithFallback(_ string: String, target: PrinterSettingsManager.PrintTarget) -> Data? {
+        let language = settingsManager.getSelectedLanguage(for: target)
+        let strategy = settingsManager.getStrategy(for: nil, target: target)
         
         switch strategy {
         case .utf8Primary:
-            // Try UTF-8 first
-            if let data = string.data(using: .utf8) {
-                return data
-            }
-            // Fallback to legacy encoding for this language
-            return tryLegacyEncoding(string, language: language)
-            
+            if let data = string.data(using: .utf8) { return data }
+            return tryLegacyEncoding(string, language: language, target: target)
         case .utf8Fallback:
-            // Try UTF-8 with character substitution
             let processedString = applyCharacterFallback(string, language: language)
-            if let data = processedString.data(using: .utf8) {
-                return data
-            }
-            // Final fallback to ASCII
+            if let data = processedString.data(using: .utf8) { return data }
             return PrinterConfig.EncodingUtils.toASCIISafe(processedString).data(using: .ascii)
-            
         case .legacyEncoding:
-            // Use original legacy encoding approach
-            return tryLegacyEncoding(string, language: language)
+            return tryLegacyEncoding(string, language: language, target: target)
         }
     }
     
-    private func tryLegacyEncoding(_ string: String, language: PrintLanguage) -> Data? {
+    private func tryLegacyEncoding(_ string: String, language: PrintLanguage, target: PrinterSettingsManager.PrintTarget) -> Data? {
         let encoding = PrinterConfig.EncodingUtils.getLegacyEncoding(for: language)
         
         switch language {
         case .vietnamese:
-            if let data = string.data(using: encoding) {
-                return data
-            }
-            print("Warning: Could not encode Vietnamese text with Windows-1258: \(string.prefix(50))")
-            // Apply Vietnamese character fallback and try again
+            if let data = string.data(using: encoding) { return data }
             let fallbackString = PrinterConfig.EncodingUtils.applyVietnameseFallback(string)
             return fallbackString.data(using: encoding) ?? PrinterConfig.EncodingUtils.toASCIISafe(string).data(using: .ascii)
-            
         case .japanese:
+            // Wrap Japanese text with Kanji mode commands when using legacy encoding
+            let sjisData: Data?
             if let data = string.data(using: encoding) {
-                return data
+                sjisData = data
+            } else {
+                sjisData = PrinterConfig.EncodingUtils.toASCIISafe(string).data(using: .ascii)
             }
-            print("Warning: Could not encode Japanese text with Shift-JIS: \(string.prefix(50))")
-            // For Japanese, fall back to ASCII (losing characters but maintaining functionality)
-            return PrinterConfig.EncodingUtils.toASCIISafe(string).data(using: .ascii)
-            
+            var wrapped = Data()
+            wrapped.append(Data(PrinterConfig.Commands.enterKanjiMode))
+            if let sjisData = sjisData { wrapped.append(sjisData) }
+            wrapped.append(Data(PrinterConfig.Commands.exitKanjiMode))
+            return wrapped
         case .english:
-            if let data = string.data(using: encoding) {
-                return data
-            }
-            // For English, ASCII fallback is reasonable
-            return string.data(using: .ascii, allowLossyConversion: true)
+            return string.data(using: encoding) ?? string.data(using: .ascii, allowLossyConversion: true)
         }
     }
     
@@ -1018,28 +1000,29 @@ class PrintFormatter {
         case .vietnamese:
             return PrinterConfig.EncodingUtils.applyVietnameseFallback(string)
         case .japanese:
-            // For Japanese, we can't do meaningful character substitution, so return as-is
             return string
         case .english:
-            // Strip diacritics for English text that might have accented characters
             return PrinterConfig.EncodingUtils.stripDiacritics(string)
         }
+    }
+    
+    private func normalizeToCRLF(_ text: String) -> String {
+        // Replace lone CR or LF with CRLF, and normalize existing CRLF
+        let replaced = text.replacingOccurrences(of: "\r\n", with: "\n")
+                           .replacingOccurrences(of: "\r", with: "\n")
+        return replaced.replacingOccurrences(of: "\n", with: "\r\n")
     }
     
     // MARK: - Private Helper Methods
     
     private func getItemDisplayName(for item: OrderItem) -> String {
+        // Preserve existing behavior; language selection migrated in M4
         let menuItem = item.menu_item
-        
-        // Check if the current print language is supported by the printer
         if !settingsManager.printLanguage.isPrinterSupported {
-            // Fall back to item code if available
             if let code = menuItem?.code, !code.isEmpty {
                 return code
             }
         }
-        
-        // Use the appropriate language name based on settings
         switch settingsManager.printLanguage {
         case .english:
             return menuItem?.name_en ?? menuItem?.code ?? "Unknown Item"
@@ -1090,15 +1073,15 @@ extension PrintFormatter {
         // Clear any previous data and initialize printer
         outputData.append(Data(PrinterConfig.Commands.clearBuffer))
         outputData.append(Data(PrinterConfig.Commands.initialize))
-        outputData.append(Data(getPrinterCharsetCommand()))
+        outputData.append(Data(getPrinterCharsetCommand(for: .kitchen)))
         
         // Add some leading spacing for better separation
-        outputData.append("\n\n".data(using: getSelectedEncoding()) ?? Data())
+        outputData.append("\n\n".data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
         
         // Header - Center aligned and bold
         outputData.append(Data(PrinterConfig.Commands.alignCenter))
         outputData.append(Data(PrinterConfig.Commands.boldOn))
-        outputData.append("=== KITCHEN ORDER ===\n".data(using: getSelectedEncoding()) ?? Data())
+        outputData.append("=== KITCHEN ORDER ===\n".data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
         outputData.append(Data(PrinterConfig.Commands.boldOff))
         outputData.append(Data(PrinterConfig.Commands.alignLeft))
         
@@ -1107,49 +1090,37 @@ extension PrintFormatter {
         if let orderNumber = order.order_number {
             orderInfo += "Order #: \(orderNumber)\n"
         }
-        orderInfo += "Table: \(order.table?.name ?? "Table \(order.table_id)")\n"
-        orderInfo += "Time: \(formatTime(order.created_at))\n"
-        orderInfo += "Guests: \(order.guest_count ?? 0)\n"
-        orderInfo += String(repeating: "-", count: PrinterConfig.Layout.receiptWidth) + "\n"
+        if let table = order.table?.name {
+            orderInfo += "Table: \(table)\n"
+        }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = settingsManager.restaurantSettings.dateTimeFormat
+        orderInfo += "Time: \(dateFormatter.string(from: Date()))\n"
+        outputData.append(orderInfo.data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
         
-        outputData.append(orderInfo.data(using: getSelectedEncoding()) ?? Data())
-        
-        // Order items
+        // Items list
         if let items = order.order_items, !items.isEmpty {
-            outputData.append(Data(PrinterConfig.Commands.boldOn))
-            outputData.append("ITEMS:\n".data(using: getSelectedEncoding()) ?? Data())
-            outputData.append(Data(PrinterConfig.Commands.boldOff))
-            
+            outputData.append("ITEMS:\n".data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
             var itemsText = ""
-            for item in items {
-                let itemName = item.menu_item?.displayName ?? "Unknown Item"
-                itemsText += "\(item.quantity)x \(itemName)\n"
-                
+            for item in items where item.status.rawValue != "cancelled" {
+                let itemName = getItemDisplayName(for: item)
+                itemsText += "- \(itemName) x\(item.quantity)\n"
                 if let notes = item.notes, !notes.isEmpty {
-                    itemsText += "   Note: \(notes)\n"
+                    itemsText += "  Notes: \(notes)\n"
                 }
-                
-                if let size = item.menu_item_size_id, !size.isEmpty {
-                    itemsText += "   Size: \(size)\n"
-                }
-                
-                itemsText += "\n"
             }
-            outputData.append(itemsText.data(using: getSelectedEncoding()) ?? Data())
+            outputData.append(itemsText.data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
         } else {
-            outputData.append("No items\n".data(using: getSelectedEncoding()) ?? Data())
+            outputData.append("No items\n".data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
         }
         
-        var footer = ""
-        footer += String(repeating: "=", count: PrinterConfig.Layout.receiptWidth) + "\n"
-        footer += "Status: \(order.status.displayName)\n"
-        footer += "\n" // Extra spacing
-        outputData.append(footer.data(using: getSelectedEncoding()) ?? Data())
+        // Footer
+        outputData.append("\n---\n".data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
+        outputData.append("Printed by SOder POS\n".data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
         
-        // Proper paper feeding and cutting sequence - increased spacing
-        outputData.append(Data(PrinterConfig.Commands.paperFeedExtra)) // Extra feed for better spacing
-        outputData.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data()) // Additional line feeds
-        outputData.append(Data(PrinterConfig.Commands.cutPaperAdvanced)) // Advanced cut with feed
+        // Add trailing spacing and cut
+        outputData.append("\n\n\n".data(using: getSelectedEncoding(for: .kitchen)) ?? Data()) // Additional line feeds
+        outputData.append(Data(PrinterConfig.Commands.cutPaperPartial))
         
         return outputData
     }
@@ -1161,152 +1132,65 @@ extension PrintFormatter {
         // Clear any previous data and initialize printer
         outputData.append(Data(PrinterConfig.Commands.clearBuffer))
         outputData.append(Data(PrinterConfig.Commands.initialize))
-        outputData.append(Data(getPrinterCharsetCommand()))
+        outputData.append(Data(getPrinterCharsetCommand(for: .receipt)))
         
-        // Add some leading spacing for better separation
-        outputData.append("\n\n".data(using: getSelectedEncoding()) ?? Data())
+        // Add some leading space
+        outputData.append("\n\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
         
-        // Header - Center aligned and bold
+        // Restaurant header
         outputData.append(Data(PrinterConfig.Commands.alignCenter))
         outputData.append(Data(PrinterConfig.Commands.boldOn))
-        outputData.append("\(header.restaurantName)\n".data(using: getSelectedEncoding()) ?? Data())
+        outputData.append("\(header.restaurantName)\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
         outputData.append(Data(PrinterConfig.Commands.boldOff))
         
-        var headerInfo = ""
-        headerInfo += "\(header.address)\n"
-        headerInfo += "\(header.phone)\n"
-        headerInfo += String(repeating: "=", count: PrinterConfig.Layout.receiptWidth) + "\n"
-        outputData.append(headerInfo.data(using: getSelectedEncoding()) ?? Data())
-        outputData.append(Data(PrinterConfig.Commands.alignLeft))
-        
-        // Order info
-        var orderInfo = ""
-        if let orderNumber = order.order_number {
-            orderInfo += "Order #: \(orderNumber)\n"
+        var headerInfo = "\(header.address)\n"
+        if !header.phone.isEmpty {
+            headerInfo += "Tel: \(header.phone)\n"
         }
-        orderInfo += "Table: \(order.table?.name ?? "Table \(order.table_id)")\n"
-        orderInfo += "Date: \(formatTime(order.created_at))\n"
-        orderInfo += "Guests: \(order.guest_count ?? 0)\n"
-        orderInfo += String(repeating: "-", count: PrinterConfig.Layout.receiptWidth) + "\n"
-        outputData.append(orderInfo.data(using: getSelectedEncoding()) ?? Data())
+        outputData.append(headerInfo.data(using: getSelectedEncoding(for: .receipt)) ?? Data())
         
-        // Order items
-        if let items = order.order_items, !items.isEmpty {
+        // Official title if needed
+        if isOfficial {
+            outputData.append(Data(PrinterConfig.Commands.boldOn))
+            outputData.append(Data(PrinterConfig.Commands.fontSizeDoubleWidth))
+            outputData.append("領 収 証\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+            outputData.append(Data(PrinterConfig.Commands.fontSizeNormal))
+            outputData.append(Data(PrinterConfig.Commands.boldOff))
+        }
+        
+        // Order information
+        outputData.append(Data(PrinterConfig.Commands.alignLeft))
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = settingsManager.restaurantSettings.dateTimeFormat
+        let tableInfo = order.table?.name ?? "Table \(order.table?.name ?? "T00")"
+        let orderInfo = "Order #: \(order.id.prefix(8))\nTable: \(tableInfo)\nGuests: \(order.guest_count)\nDate: \(dateFormatter.string(from: Date()))\n"
+        outputData.append(orderInfo.data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+        
+        // Items
+        outputData.append(String(repeating: "=", count: layout.receiptWidth).appending("\n").data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+        if let items = order.order_items {
             var itemsText = ""
-            for item in items {
-                let itemName = item.menu_item?.displayName ?? "Unknown Item"
-                let price = formatCurrency(item.price_at_order)
-                
-                itemsText += String(format: "%-20s %3dx %8s\n", String(itemName.prefix(20)), item.quantity, price)
-                
+            for item in items where item.status.rawValue != "cancelled" {
+                let itemName = getItemDisplayName(for: item)
+                itemsText += "\(itemName) x\(item.quantity)\n"
                 if let notes = item.notes, !notes.isEmpty {
-                    itemsText += "  Note: \(notes)\n"
+                    itemsText += "  Notes: \(notes)\n"
                 }
             }
-            outputData.append(itemsText.data(using: getSelectedEncoding()) ?? Data())
+            outputData.append(itemsText.data(using: getSelectedEncoding(for: .receipt)) ?? Data())
         }
         
-        var footer = ""
-        footer += String(repeating: "-", count: PrinterConfig.Layout.receiptWidth) + "\n"
+        // Footer
+        outputData.append(String(repeating: "=", count: layout.receiptWidth).appending("\n").data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+        var footer = "Thank you for your visit!\nありがとうございました！\n"
+        if !settingsManager.restaurantSettings.website.isEmpty {
+            footer += "\(settingsManager.restaurantSettings.website)\n"
+        }
+        outputData.append(footer.data(using: getSelectedEncoding(for: .receipt)) ?? Data())
         
-        // Total
-        let total = order.total_amount ?? 0
-        footer += String(format: "%-24s %8s\n", "TOTAL:", formatCurrency(total))
-        
-        footer += String(repeating: "=", count: PrinterConfig.Layout.receiptWidth) + "\n"
-        outputData.append(footer.data(using: getSelectedEncoding()) ?? Data())
-        
-        outputData.append(Data(PrinterConfig.Commands.alignCenter))
-        outputData.append("Thank you for your visit!\n".data(using: getSelectedEncoding()) ?? Data())
-        outputData.append("\n".data(using: getSelectedEncoding()) ?? Data()) // Extra spacing
-        
-        // Proper paper feeding and cutting sequence - increased spacing
-        outputData.append(Data(PrinterConfig.Commands.paperFeedExtra)) // Extra feed for better spacing
-        outputData.append("\n\n\n".data(using: getSelectedEncoding()) ?? Data()) // Additional line feeds
-        outputData.append(Data(PrinterConfig.Commands.cutPaperAdvanced)) // Advanced cut with feed
+        // Cut paper
+        outputData.append(Data(PrinterConfig.Commands.cutPaperAdvanced))
         
         return outputData
-    }
-    
-    private func formatTime(_ dateString: String) -> String {
-        let iso8601Formatter = ISO8601DateFormatter()
-        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
-        var date: Date?
-        
-        if let parsedDate = iso8601Formatter.date(from: dateString) {
-            date = parsedDate
-        } else {
-            iso8601Formatter.formatOptions = [.withInternetDateTime]
-            date = iso8601Formatter.date(from: dateString)
-        }
-        
-        guard let finalDate = date else { 
-            return "Unknown" 
-        }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .short
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: finalDate)
-    }
-    
-    private func formatCurrency(_ amount: Double) -> String {
-        return String(format: "¥%.0f", amount)
-    }
-    
-    // MARK: - Character Conversion Methods
-    
-    private func convertSpecialCharacters(_ text: String, for language: PrintLanguage) -> String {
-        // Don't convert - return original text
-        return text
-    }
-    
-    private func convertVietnameseCharacters(_ text: String) -> String {
-        // For Vietnamese characters, we'll use a simpler approach
-        // Convert problematic characters to their closest ASCII equivalents
-        let vietnameseConversions: [String: String] = [
-            // Common Vietnamese characters to ASCII equivalents  
-            "à": "a", "á": "a", "ả": "a", "ã": "a", "ạ": "a",
-            "ă": "a", "ằ": "a", "ắ": "a", "ẳ": "a", "ẵ": "a", "ặ": "a",
-            "â": "a", "ầ": "a", "ấ": "a", "ẩ": "a", "ẫ": "a", "ậ": "a",
-            "è": "e", "é": "e", "ẻ": "e", "ẽ": "e", "ẹ": "e",
-            "ê": "e", "ề": "e", "ế": "e", "ể": "e", "ễ": "e", "ệ": "e",
-            "ì": "i", "í": "i", "ỉ": "i", "ĩ": "i", "ị": "i",
-            "ò": "o", "ó": "o", "ỏ": "o", "õ": "o", "ọ": "o",
-            "ô": "o", "ồ": "o", "ố": "o", "ổ": "o", "ỗ": "o", "ộ": "o",
-            "ơ": "o", "ờ": "o", "ớ": "o", "ở": "o", "ỡ": "o", "ợ": "o",
-            "ù": "u", "ú": "u", "ủ": "u", "ũ": "u", "ụ": "u",
-            "ư": "u", "ừ": "u", "ứ": "u", "ử": "u", "ữ": "u", "ự": "u",
-            "ỳ": "y", "ý": "y", "ỷ": "y", "ỹ": "y", "ỵ": "y",
-            "đ": "d", "Đ": "D"
-        ]
-        
-        var convertedText = text
-        for (vietnamese, ascii) in vietnameseConversions {
-            convertedText = convertedText.replacingOccurrences(of: vietnamese, with: ascii)
-        }
-        return convertedText
-    }
-    
-    private func convertJapaneseCharacters(_ text: String) -> String {
-        // For Japanese, we first try to keep the original characters for Shift-JIS
-        // But provide fallbacks for characters that might not be supported
-        let japaneseConversions: [String: String] = [
-            // Common problematic characters to ASCII/romanized equivalents
-            "＃": "#", "＄": "$", "％": "%", "＆": "&", "＊": "*",
-            "（": "(", "）": ")", "－": "-", "＋": "+", "＝": "=",
-            "｛": "{", "｝": "}", "［": "[", "］": "]", "｜": "|",
-            "＼": "\\", "：": ":", "；": ";", "＜": "<", "＞": ">",
-            "？": "?", "／": "/", "．": ".", "，": ",", "　": " ",
-            // If kanji/hiragana/katakana fail, we could add specific mappings here
-            // For now, we'll let Shift-JIS handle most Japanese characters
-        ]
-        
-        var convertedText = text
-        for (japanese, replacement) in japaneseConversions {
-            convertedText = convertedText.replacingOccurrences(of: japanese, with: replacement)
-        }
-        return convertedText
     }
 }

@@ -34,7 +34,7 @@ struct ReceiptCustomizationView: View {
                             .foregroundColor(.secondary)
                     }
                     Spacer()
-                    Picker("receipt_language_title".localized, selection: $settingsManager.selectedReceiptLanguage) {
+                    Picker("", selection: $settingsManager.selectedReceiptLanguage) {
                         ForEach(PrintLanguage.allCases, id: \.self) { lang in
                             Text(lang.displayName).tag(lang)
                         }
@@ -52,7 +52,7 @@ struct ReceiptCustomizationView: View {
                             .foregroundColor(.secondary)
                     }
                     Spacer()
-                    Picker("kitchen_language_title".localized, selection: $settingsManager.selectedKitchenLanguage) {
+                    Picker("", selection: $settingsManager.selectedKitchenLanguage) {
                         ForEach(PrintLanguage.allCases, id: \.self) { lang in
                             Text(lang.displayName).tag(lang)
                         }
