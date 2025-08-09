@@ -8,17 +8,17 @@ enum TemplateTheme: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .standard: return "Standard"
-        case .minimal: return "Minimal"
-        case .elegant: return "Elegant"
+        case .standard: return "template_theme_standard_name".localized
+        case .minimal:  return "template_theme_minimal_name".localized
+        case .elegant:  return "template_theme_elegant_name".localized
         }
     }
     
     var description: String {
         switch self {
-        case .standard: return "Balanced layout with all details"
-        case .minimal: return "Clean, essential information only"
-        case .elegant: return "Enhanced formatting with decorative elements"
+        case .standard: return "template_theme_standard_desc".localized
+        case .minimal:  return "template_theme_minimal_desc".localized
+        case .elegant:  return "template_theme_elegant_desc".localized
         }
     }
 }
@@ -29,8 +29,8 @@ enum TemplateType: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .receipt: return "Receipt"
-        case .kitchen: return "Kitchen Order"
+        case .receipt: return "template_type_receipt".localized
+        case .kitchen: return "template_type_kitchen".localized
         }
     }
 }
@@ -39,7 +39,7 @@ enum TemplateType: String, CaseIterable {
 class TemplateThemeManager {
     static let shared = TemplateThemeManager()
     
-    private init() {}
+    init() {}
     
     // MARK: - Template Loading
     func loadTemplate(type: TemplateType, language: PrintLanguage, theme: TemplateTheme) -> String? {
@@ -90,15 +90,15 @@ class TemplateThemeManager {
         [CENTER][BOLD]{{restaurant.name}}[/BOLD][/CENTER]
         [CENTER]{{restaurant.address}}[/CENTER]
         [CENTER]{{restaurant.phone}}[/CENTER]
-        {{#restaurant.tax_code}}[CENTER]Tax Code: {{restaurant.tax_code}}[/CENTER]{{/restaurant.tax_code}}
+        {{#restaurant.tax_code}}[CENTER]{{i18n.tax_code}}: {{restaurant.tax_code}}[/CENTER]{{/restaurant.tax_code}}
         
         [SEPARATOR]
         
-        [CENTER][BOLD]Receipt[/BOLD][/CENTER]
-        Order: {{order.id}}
-        Table: {{order.table_name}}
-        Date: {{order.date}}
-        Time: {{order.time}}
+        [CENTER][BOLD]{{i18n.receipt}}[/BOLD][/CENTER]
+        {{i18n.order}}: {{order.id}}
+        {{i18n.table}}: {{order.table_name}}
+        {{i18n.date}}: {{order.date}}
+        {{i18n.time}}: {{order.time}}
         
         [SEPARATOR]
         
@@ -108,27 +108,27 @@ class TemplateThemeManager {
         [COL_RIGHT]¥{{price}}[/COL_RIGHT]
         [/ROW]
         {{#notes}}
-          Note: {{notes}}
+          {{i18n.note}}: {{notes}}
         {{/notes}}
         {{/items}}
         
         [SEPARATOR]
         
         [ROW]
-        [COL_LEFT]Subtotal:[/COL_LEFT]
+        [COL_LEFT]{{i18n.subtotal}}:[/COL_LEFT]
         [COL_RIGHT]¥{{subtotal}}[/COL_RIGHT]
         [/ROW]
         
         {{#tax}}
         [ROW]
-        [COL_LEFT]Tax:[/COL_LEFT]
+        [COL_LEFT]{{i18n.tax}}:[/COL_LEFT]
         [COL_RIGHT]¥{{tax}}[/COL_RIGHT]
         [/ROW]
         {{/tax}}
         
         {{#discount}}
         [ROW]
-        [COL_LEFT]Discount:[/COL_LEFT]
+        [COL_LEFT]{{i18n.discount}}:[/COL_LEFT]
         [COL_RIGHT]-¥{{discount}}[/COL_RIGHT]
         [/ROW]
         {{/discount}}
@@ -136,13 +136,13 @@ class TemplateThemeManager {
         [SEPARATOR]
         
         [ROW]
-        [COL_LEFT][BOLD]Total:[/BOLD][/COL_LEFT]
+        [COL_LEFT][BOLD]{{i18n.total}}:[/BOLD][/COL_LEFT]
         [COL_RIGHT][BOLD]¥{{total_price}}[/BOLD][/COL_RIGHT]
         [/ROW]
         
         [SEPARATOR]
         
-        [CENTER]{{#custom_footer}}{{custom_footer}}{{/custom_footer}}{{^custom_footer}}Thank you for your visit!{{/custom_footer}}[/CENTER]
+        [CENTER]{{#custom_footer}}{{custom_footer}}{{/custom_footer}}{{^custom_footer}}{{i18n.thank_you}}{{/custom_footer}}[/CENTER]
         {{#restaurant.website}}[CENTER]{{restaurant.website}}[/CENTER]{{/restaurant.website}}
         {{#promotional_message}}[CENTER]{{promotional_message}}[/CENTER]{{/promotional_message}}
         
@@ -155,7 +155,7 @@ class TemplateThemeManager {
         [CENTER][BOLD]{{restaurant.name}}[/BOLD][/CENTER]
         [CENTER]{{restaurant.phone}}[/CENTER]
         
-        Order: {{order.id}} | {{order.table_name}}
+        {{i18n.order}}: {{order.id}} | {{i18n.table}}: {{order.table_name}}
         {{order.date}} {{order.time}}
         
         [SEPARATOR]
@@ -165,9 +165,9 @@ class TemplateThemeManager {
         {{/items}}
         
         [SEPARATOR]
-        [BOLD]Total: ¥{{total_price}}[/BOLD]
+        [BOLD]{{i18n.total}}: ¥{{total_price}}[/BOLD]
         
-        [CENTER]Thank you![/CENTER]
+        [CENTER]{{i18n.thank_you_short}}[/CENTER]
         [CUT]
         """
     }
@@ -178,15 +178,15 @@ class TemplateThemeManager {
         [CENTER][BOLD]{{restaurant.name}}[/BOLD][/CENTER]
         [CENTER]{{restaurant.address}}[/CENTER]
         [CENTER]{{restaurant.phone}}[/CENTER]
-        {{#restaurant.tax_code}}[CENTER]Tax Code: {{restaurant.tax_code}}[/CENTER]{{/restaurant.tax_code}}
+        {{#restaurant.tax_code}}[CENTER]{{i18n.tax_code}}: {{restaurant.tax_code}}[/CENTER]{{/restaurant.tax_code}}
         [CENTER]═══════════════════════════[/CENTER]
         
-        [CENTER][BOLD]✧ RECEIPT ✧[/BOLD][/CENTER]
+        [CENTER][BOLD]✧ {{i18n.receipt}} ✧[/BOLD][/CENTER]
         
-        Order No: {{order.id}}
-        Table: {{order.table_name}}
-        Date: {{order.date}}
-        Time: {{order.time}}
+        {{i18n.order}}: {{order.id}}
+        {{i18n.table}}: {{order.table_name}}
+        {{i18n.date}}: {{order.date}}
+        {{i18n.time}}: {{order.time}}
         
         [CENTER]───────────────────────────[/CENTER]
         
@@ -203,32 +203,32 @@ class TemplateThemeManager {
         [CENTER]───────────────────────────[/CENTER]
         
         [ROW]
-        [COL_LEFT]Subtotal[/COL_LEFT]
+        [COL_LEFT]{{i18n.subtotal}}[/COL_LEFT]
         [COL_RIGHT]¥{{subtotal}}[/COL_RIGHT]
         [/ROW]
         
         {{#tax}}
         [ROW]
-        [COL_LEFT]Tax[/COL_LEFT]
+        [COL_LEFT]{{i18n.tax}}[/COL_LEFT]
         [COL_RIGHT]¥{{tax}}[/COL_RIGHT]
         [/ROW]
         {{/tax}}
         
         {{#discount}}
         [ROW]
-        [COL_LEFT]Discount[/COL_LEFT]
+        [COL_LEFT]{{i18n.discount}}[/COL_LEFT]
         [COL_RIGHT]-¥{{discount}}[/COL_RIGHT]
         [/ROW]
         {{/discount}}
         
         [CENTER]═══════════════════════════[/CENTER]
         [ROW]
-        [COL_LEFT][BOLD]✧ TOTAL ✧[/BOLD][/COL_LEFT]
+        [COL_LEFT][BOLD]✧ {{i18n.total}} ✧[/BOLD][/COL_LEFT]
         [COL_RIGHT][BOLD]¥{{total_price}}[/BOLD][/COL_RIGHT]
         [/ROW]
         [CENTER]═══════════════════════════[/CENTER]
         
-        [CENTER]{{#custom_footer}}{{custom_footer}}{{/custom_footer}}{{^custom_footer}}✧ Thank you for dining with us! ✧{{/custom_footer}}[/CENTER]
+        [CENTER]{{#custom_footer}}{{custom_footer}}{{/custom_footer}}{{^custom_footer}}✧ {{i18n.thank_you_dining}} ✧{{/custom_footer}}[/CENTER]
         {{#restaurant.website}}[CENTER]{{restaurant.website}}[/CENTER]{{/restaurant.website}}
         {{#promotional_message}}[CENTER]✦ {{promotional_message}} ✦[/CENTER]{{/promotional_message}}
         
@@ -239,14 +239,14 @@ class TemplateThemeManager {
     // MARK: - Kitchen Templates
     private func getStandardKitchenTemplate() -> String {
         return """
-        [CENTER][BOLD]KITCHEN ORDER[/BOLD][/CENTER]
+        [CENTER][BOLD]{{i18n.kitchen_order}}[/BOLD][/CENTER]
         [CENTER]{{restaurant.name}}[/CENTER]
         
         [SEPARATOR]
         
-        Order: {{order.id}}
-        Table: {{order.table_name}}
-        Time: {{order.time}}
+        {{i18n.order}}: {{order.id}}
+        {{i18n.table}}: {{order.table_name}}
+        {{i18n.time}}: {{order.time}}
         
         [SEPARATOR]
         
@@ -260,19 +260,19 @@ class TemplateThemeManager {
         
         {{#special_instructions}}
         [SEPARATOR]
-        [BOLD]SPECIAL INSTRUCTIONS:[/BOLD]
+        [BOLD]{{i18n.special_instructions}}[/BOLD]
         {{special_instructions}}
         {{/special_instructions}}
         
         [SEPARATOR]
-        [CENTER]Prepared by: _____________[/CENTER]
+        [CENTER]{{i18n.prepared_by}} _____________[/CENTER]
         [CUT]
         """
     }
     
     private func getMinimalKitchenTemplate() -> String {
         return """
-        [BOLD]ORDER {{order.id}} - {{order.table_name}}[/BOLD]
+        [BOLD]{{i18n.order}} {{order.id}} - {{order.table_name}}[/BOLD]
         {{order.time}}
         
         {{#items}}
@@ -281,7 +281,7 @@ class TemplateThemeManager {
         {{/items}}
         
         {{#special_instructions}}
-        NOTE: {{special_instructions}}
+        {{i18n.special_notes}}: {{special_instructions}}
         {{/special_instructions}}
         
         [CUT]
@@ -291,15 +291,15 @@ class TemplateThemeManager {
     private func getElegantKitchenTemplate() -> String {
         return """
         [CENTER]▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄[/CENTER]
-        [CENTER][BOLD]🍽️ KITCHEN ORDER 🍽️[/BOLD][/CENTER]
+        [CENTER][BOLD]🍽️ {{i18n.kitchen_order}} 🍽️[/BOLD][/CENTER]
         [CENTER]{{restaurant.name}}[/CENTER]
         [CENTER]▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄[/CENTER]
         
-        Order: {{order.id}}
-        Table: {{order.table_name}}
-        Time: {{order.time}}
+        {{i18n.order}}: {{order.id}}
+        {{i18n.table}}: {{order.table_name}}
+        {{i18n.time}}: {{order.time}}
         
-        [CENTER]▬▬▬▬▬▬▬▬ ITEMS ▬▬▬▬▬▬▬▬[/CENTER]
+        [CENTER]▬▬▬▬▬▬▬▬ {{i18n.items}} ▬▬▬▬▬▬▬▬[/CENTER]
         
         {{#items}}
         [BOLD]{{quantity}}× {{name}}[/BOLD]
@@ -310,12 +310,12 @@ class TemplateThemeManager {
         {{/items}}
         
         {{#special_instructions}}
-        [CENTER]▬▬▬▬▬▬ SPECIAL NOTES ▬▬▬▬▬▬[/CENTER]
+        [CENTER]▬▬▬▬▬▬ {{i18n.special_notes}} ▬▬▬▬▬▬[/CENTER]
         🔥 {{special_instructions}}
         {{/special_instructions}}
         
         [CENTER]▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄[/CENTER]
-        [CENTER]Chef: _____________ ✓[/CENTER]
+        [CENTER]{{i18n.prepared_by}} _____________ ✓[/CENTER]
         [CUT]
         """
     }

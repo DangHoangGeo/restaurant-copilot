@@ -102,6 +102,25 @@ struct PrinterSettingsView: View {
                 }
                 .padding(.vertical, 4)
             }
+
+            // Printing format section
+            Section("Printing Format") {
+                NavigationLink(destination: ReceiptCustomizationView()) {
+                    HStack {
+                        Image(systemName: "doc.badge.gearshape")
+                            .foregroundColor(.appPrimary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("receipt_customization".localized)
+                                .font(.bodyMedium)
+                                .fontWeight(.medium)
+                            Text("configure_header_footer_templates_languages".localized)
+                                .font(.caption)
+                                .foregroundColor(.appTextSecondary)
+                        }
+                    }
+                    .accessibilityLabel("receipt_customization".localized)
+                }
+            }
             
             // Print Queue Section
             Section("Print Queue") {

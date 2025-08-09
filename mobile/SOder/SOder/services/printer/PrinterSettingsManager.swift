@@ -17,11 +17,11 @@ class PrinterSettingsManager: ObservableObject {
     
     // New: Print language and receipt header settings
     @Published var printLanguage: PrintLanguage = .english // legacy single language (kept for compatibility)
-    @Published var selectedReceiptLanguage: PrintLanguage = .english // NEW
-    @Published var selectedKitchenLanguage: PrintLanguage = .english // NEW
+    @Published var selectedReceiptLanguage: PrintLanguage = .english { didSet { saveSelectedLanguages() } }
+    @Published var selectedKitchenLanguage: PrintLanguage = .english { didSet { saveSelectedLanguages() } }
     @Published var receiptHeader: ReceiptHeaderSettings
-    @Published var receiptEncoding: String.Encoding = .utf8
-    @Published var customReceiptTemplate: String = ""
+    @Published var receiptEncoding: String.Encoding = .utf8 { didSet { saveReceiptEncoding() } }
+    @Published var customReceiptTemplate: String = "" { didSet { saveCustomReceiptTemplate() } }
     
     // Enhanced: Encoding strategy for UTF-8 first approach
     @Published var encodingStrategy: PrinterConfig.EncodingUtils.Strategy?
@@ -30,8 +30,8 @@ class PrinterSettingsManager: ObservableObject {
     @Published var printerLanguageCapabilities: [String: [PrintLanguage: Bool]] = [:]
     
     // Template theme selection
-    @Published var selectedReceiptTheme: TemplateTheme = .standard
-    @Published var selectedKitchenTheme: TemplateTheme = .standard
+    @Published var selectedReceiptTheme: TemplateTheme = .standard { didSet { saveTemplateThemes() } }
+    @Published var selectedKitchenTheme: TemplateTheme = .standard { didSet { saveTemplateThemes() } }
     
     private let userDefaults = UserDefaults.standard
     private let printersKey = "configured_printers"

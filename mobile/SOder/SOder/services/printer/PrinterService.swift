@@ -110,7 +110,6 @@ class PrinterService {
         
         // Create a new connection for each print job
         let newConnection = NWConnection(host: host, port: port, using: .tcp)
-        // Don't store connection reference to avoid retain cycles
         
         print("PrinterService: Connecting to \(printer.ipAddress):\(printer.port)")
         
@@ -123,20 +122,19 @@ class PrinterService {
                 switch newState {
                 case .ready:
                     print("PrinterService: Connected successfully")
-                    self.sendData(connection: newConnection, data: data) { [weak self] error in
+                    // Prepare data (no target hint)
+                    let prepared = self.prepareDataWithEncoding(data, for: nil)
+                    self.sendData(connection: newConnection, data: prepared) { [weak self] error in
                         if !hasResumed {
                             hasResumed = true
                             if let error = error {
                                 continuation.resume(throwing: error)
                             } else {
-                                // Reset connection attempts on successful print
                                 self?.connectionAttempts = 0
                                 continuation.resume(returning: ())
                             }
                         }
-                        // Add longer delay before disconnecting to ensure data is fully transmitted
                         DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                            // Disconnect first, then clear handler
                             self?.disconnect(connection: newConnection)
                         }
                     }
@@ -175,6 +173,76 @@ class PrinterService {
         }
     }
     
+    // New: Target-aware overload (M4)
+    func connectAndSendData(data: Data, target: PrinterSettingsManager.PrintTarget, to printerConfig: PrinterConfig.Hardware? = nil) async throws {
+        let printer = printerConfig ?? settingsManager.getCurrentPrinterConfig()
+        
+        guard !printer.ipAddress.isEmpty, printer.port > 0 else {
+            throw PrinterError.configurationError("Printer IP Address or Port is not configured")
+        }
+        
+        try await enforceRateLimit()
+        
+        let host = NWEndpoint.Host(printer.ipAddress)
+        guard let port = NWEndpoint.Port(rawValue: UInt16(printer.port)) else {
+            throw PrinterError.configurationError("Invalid printer port number")
+        }
+        
+        let newConnection = NWConnection(host: host, port: port, using: .tcp)
+        print("PrinterService: Connecting to \(printer.ipAddress):\(printer.port) [target=\(target)]")
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            var hasResumed = false
+            
+            newConnection.stateUpdateHandler = { [weak self] newState in
+                guard let self = self, !hasResumed else { return }
+                switch newState {
+                case .ready:
+                    print("PrinterService: Connected successfully")
+                    // Prepare with target hint
+                    let prepared = self.prepareDataWithEncoding(data, for: target)
+                    self.sendData(connection: newConnection, data: prepared) { [weak self] error in
+                        if !hasResumed {
+                            hasResumed = true
+                            if let error = error {
+                                continuation.resume(throwing: error)
+                            } else {
+                                self?.connectionAttempts = 0
+                                continuation.resume(returning: ())
+                            }
+                        }
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                            self?.disconnect(connection: newConnection)
+                        }
+                    }
+                case .failed(let error):
+                    if !hasResumed {
+                        hasResumed = true
+                        continuation.resume(throwing: PrinterError.connectionFailed(error))
+                    }
+                    newConnection.cancel()
+                case .cancelled:
+                    if !hasResumed {
+                        hasResumed = true
+                        continuation.resume(throwing: PrinterError.timeout)
+                    }
+                default:
+                    break
+                }
+            }
+            
+            newConnection.start(queue: queue)
+            
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + printer.connectionTimeout) {
+                if !hasResumed {
+                    hasResumed = true
+                    newConnection.cancel()
+                    continuation.resume(throwing: PrinterError.timeout)
+                }
+            }
+        }
+    }
+    
     func testConnection(to printerConfig: PrinterConfig.Hardware? = nil) async -> Bool {
         let printer = printerConfig ?? settingsManager.getCurrentPrinterConfig()
         let testData = "Test connection\r\n".data(using: .ascii) ?? Data()
@@ -194,15 +262,12 @@ class PrinterService {
             return
         }
         
-        // Respect payload that may already contain init/charset; otherwise prepend legacy-safe init
-        let enhancedData = prepareDataWithEncoding(data)
-        
-        connection.send(content: enhancedData, completion: .contentProcessed { error in
+        connection.send(content: data, completion: .contentProcessed { error in
             if let error = error {
                 print("PrinterService: Send failed - \(error.localizedDescription)")
                 completion(PrinterError.sendFailed(error))
             } else {
-                print("PrinterService: Data sent successfully (\(enhancedData.count) bytes)")
+                print("PrinterService: Data sent successfully (\(data.count) bytes)")
                 completion(nil)
             }
         })
@@ -213,25 +278,25 @@ class PrinterService {
         return data.prefix(8).contains(0x1B) && data.prefix(8).contains(0x40)
     }
     
-    private func prepareDataWithEncoding(_ originalData: Data) -> Data {
-        var enhancedData = Data()
-        
+    private func prepareDataWithEncoding(_ originalData: Data, for target: PrinterSettingsManager.PrintTarget?) -> Data {
         // If payload already initializes printer/charset, pass through
         if payloadHasInit(originalData) {
             return originalData
         }
         
-        // Per M2: Avoid non-standard UTF-8 (ESC t 255). Use legacy per-language by default.
-        let strategy: PrinterConfig.EncodingUtils.Strategy = .legacyEncoding
-        let language = settingsManager.selectedReceiptLanguage // default if unknown
+        var enhancedData = Data()
         
-        // Add initialization and charset selection
+        // Determine language/strategy per target (fallback to receipt)
+        let tgt = target ?? .receipt
+        let language = settingsManager.getSelectedLanguage(for: tgt)
+        let strategy = settingsManager.getStrategy(for: nil, target: tgt)
+        
+        // Init + Charset selection
         enhancedData.append(Data(PrinterConfig.Commands.initialize))
         enhancedData.append(Data(PrinterConfig.EncodingUtils.getCharsetCommand(for: language, strategy: strategy)))
         
-        // Append the original formatted data
+        // Append original
         enhancedData.append(originalData)
-        
         return enhancedData
     }
     
@@ -327,7 +392,7 @@ extension PrinterService {
         
         // Use kitchen printer if configured, otherwise fallback to default
         let printerConfig = PrinterSettingsManager.shared.getKitchenPrinterConfig()
-        try await connectAndSendData(data: printData, to: printerConfig)
+        try await connectAndSendData(data: printData, target: .kitchen, to: printerConfig)
     }
     
     func printCustomerReceipt(_ order: Order, isOfficial: Bool = false) async throws {
@@ -338,13 +403,13 @@ extension PrinterService {
         
         // Use checkout printer if configured, otherwise fallback to default
         let printerConfig = PrinterSettingsManager.shared.getCheckoutPrinterConfig()
-        try await connectAndSendData(data: printData, to: printerConfig)
+        try await connectAndSendData(data: printData, target: .receipt, to: printerConfig)
     }
     
     func printTestReceipt() async throws {
         let formatter = PrintFormatter()
         let printData = formatter.formatTestReceipt()
-        try await connectAndSendData(data: printData)
+        try await connectAndSendData(data: printData, target: .receipt)
     }
     
     // MARK: - Dual Printer Test Functions
@@ -355,7 +420,7 @@ extension PrinterService {
         
         let formatter = PrintFormatter()
         let testData = formatter.formatKitchenTestReceipt()
-        try await connectAndSendData(data: testData, to: kitchenConfig)
+        try await connectAndSendData(data: testData, target: .kitchen, to: kitchenConfig)
     }
     
     func testCheckoutPrinter() async throws {
@@ -365,7 +430,7 @@ extension PrinterService {
         
         let formatter = PrintFormatter()
         let testData = formatter.formatCheckoutTestReceipt()
-        try await connectAndSendData(data: testData, to: checkoutConfig)
+        try await connectAndSendData(data: testData, target: .receipt, to: checkoutConfig)
     }
     
     // MARK: - Language Capability Testing
@@ -450,12 +515,12 @@ extension PrinterService {
             
             // Print kitchen order first
             if let kitchenData = formatter.formatOrderForKitchen(order: order) {
-                try await connectAndSendData(data: kitchenData)
+                try await connectAndSendData(data: kitchenData, target: .kitchen)
             }
             
             // Then print customer receipt
             if let receiptData = formatter.formatCustomerReceipt(order: order, isOfficial: false) {
-                try await connectAndSendData(data: receiptData)
+                try await connectAndSendData(data: receiptData, target: .receipt)
             }
             
         case .dual:

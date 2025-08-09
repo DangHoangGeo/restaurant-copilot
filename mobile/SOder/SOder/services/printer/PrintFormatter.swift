@@ -90,7 +90,7 @@ class PrintFormatter {
         let theme = settingsManager.getTemplateTheme(for: .receipt)
         let language = settingsManager.getSelectedLanguage(for: .receipt)
         
-        let testData: [String: Any] = [
+        var testData: [String: Any] = [
             "restaurant": [
                 "name": "Test Restaurant",
                 "address": "123 Test Street",
@@ -119,6 +119,9 @@ class PrintFormatter {
             "tax": 130,
             "total_price": 1430
         ]
+        
+        // Inject i18n labels for the template
+        testData["i18n"] = buildTemplateI18n(for: language)
         
         let template = themeManager.loadTemplate(type: .receipt, language: language, theme: theme) ?? getDefaultReceiptTemplate()
         let encoding = getSelectedEncoding(for: .receipt)
@@ -223,15 +226,19 @@ class PrintFormatter {
     }
     
     private func getDefaultReceiptTemplate() -> String {
+        // Localized default template using i18n keys
         return """
         [CENTER][BOLD]{{restaurant.name}}[/BOLD][/CENTER]
         [CENTER]{{restaurant.address}}[/CENTER]
+        {{#restaurant.phone}}[CENTER]{{restaurant.phone}}[/CENTER]{{/restaurant.phone}}
+        {{#restaurant.website}}[CENTER]{{restaurant.website}}[/CENTER]{{/restaurant.website}}
         
         [SEPARATOR]
         
-        Order: {{order.id}}
-        Table: {{order.table_name}}
-        Time: {{order.time}}
+        {{i18n.order}}: {{order.id}}
+        {{i18n.table}}: {{order.table_name}}
+        {{i18n.date}}: {{order.date}}
+        {{i18n.time}}: {{order.time}}
         
         [SEPARATOR]
         
@@ -245,13 +252,38 @@ class PrintFormatter {
         [SEPARATOR]
         
         [ROW]
-        [COL_LEFT][BOLD]Total:[/BOLD][/COL_LEFT]
+        [COL_LEFT][BOLD]{{i18n.total}}:[/BOLD][/COL_LEFT]
         [COL_RIGHT][BOLD]¥{{total_price}}[/BOLD][/COL_RIGHT]
         [/ROW]
         
-        [CENTER]Thank you![/CENTER]
+        [CENTER]{{i18n.thank_you_short}}[/CENTER]
         [CUT]
         """
+    }
+    
+    // Localize a key for a specific printer language without changing UI language
+    private func tr(_ key: String, for language: PrintLanguage) -> String {
+        if let path = Bundle.main.path(forResource: language.rawValue, ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            return NSLocalizedString(key, bundle: bundle, comment: "")
+        }
+        // Fallback to English
+        if let path = Bundle.main.path(forResource: "en", ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            return NSLocalizedString(key, bundle: bundle, comment: "")
+        }
+        return key
+    }
+    
+    private func buildTemplateI18n(for language: PrintLanguage) -> [String: String] {
+        let keys = [
+            "receipt", "order", "table", "date", "time", "note", "subtotal", "tax", "discount", "total",
+            "thank_you", "thank_you_short", "thank_you_dining", "tax_code", "kitchen_order", "special_instructions",
+            "prepared_by", "special_notes", "items", "guests"
+        ]
+        var dict: [String: String] = [:]
+        for k in keys { dict[k] = tr("tpl_\(k)", for: language) }
+        return dict
     }
     
     // MARK: - Public Formatting Methods (using PrintContent system)
@@ -375,17 +407,22 @@ class PrintFormatter {
     
     private func generateKitchenOrderContent(order: Order) -> PrintContent {
         var sections: [PrintSection] = []
+        let lang = settingsManager.getSelectedLanguage(for: .kitchen)
         
-        // Header
-        let tableInfo = order.table?.name ?? "Table \(order.table?.name ?? "T00")"
+        // Header (Table)
+        let tableLabel = tr("tpl_table", for: lang)
+        let tableName = order.table?.name ?? "T00"
+        let tableInfo = "\(tableLabel): \(tableName)\n"
         sections.append(PrintSection(
-            content: "\n\(tableInfo)\n",
+            content: "\n\(tableInfo)",
             alignment: .center,
             style: PrintStyle(isBold: true, fontSize: .doubleWidthAndHeight)
         ))
         
         // Order info
-        let orderInfo = "Order #: \(order.id.prefix(8))\nGuests: \(order.guest_count)\n"
+        let orderLabel = tr("tpl_order", for: lang)
+        let guestsLabel = tr("tpl_guests", for: lang)
+        let orderInfo = "\(orderLabel) #: \(order.id.prefix(8))\n\(guestsLabel): \(order.guest_count)\n"
         sections.append(PrintSection(
             content: orderInfo,
             alignment: .center,
@@ -406,10 +443,10 @@ class PrintFormatter {
             for item in items where item.status.rawValue != "cancelled" {
                 let itemName = getItemDisplayName(for: item)
                 itemsContent += "\(itemName)\n"
-                itemsContent += "  Qty: \(item.quantity)\n"
+                itemsContent += "  \(tr("tpl_qty", for: lang)): \(item.quantity)\n"
                 
                 if let notes = item.notes, !notes.isEmpty {
-                    itemsContent += "    NOTES: \(notes)\n"
+                    itemsContent += "    \(tr("tpl_notes", for: lang)): \(notes)\n"
                 }
                 itemsContent += "-\n"
             }
@@ -430,7 +467,8 @@ class PrintFormatter {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = settingsManager.restaurantSettings.dateTimeFormat
-        let timestamp = "Printed: \(dateFormatter.string(from: Date()))\n\n\n"
+        let printedLabel = tr("tpl_printed", for: lang)
+        let timestamp = "\(printedLabel): \(dateFormatter.string(from: Date()))\n\n\n"
         sections.append(PrintSection(
             content: timestamp,
             alignment: .left,
@@ -445,10 +483,11 @@ class PrintFormatter {
     
     private func generateKitchenSummaryContent(group: GroupedItem) -> PrintContent {
         var sections: [PrintSection] = []
+        let lang = settingsManager.getSelectedLanguage(for: .kitchen)
         
         // Header
         sections.append(PrintSection(
-            content: "KITCHEN SUMMARY\n",
+            content: "\(tr("tpl_kitchen_summary", for: lang))\n",
             alignment: .center,
             style: PrintStyle(isBold: true, fontSize: .doubleWidthAndHeight)
         ))
@@ -463,7 +502,7 @@ class PrintFormatter {
         // Time
         let dateFormatter = DateFormatter()
         dateFormatter.timeStyle = .short
-        let timeInfo = "Time: \(dateFormatter.string(from: Date()))\n\n"
+        let timeInfo = "\(tr("tpl_time", for: lang)): \(dateFormatter.string(from: Date()))\n\n"
         sections.append(PrintSection(
             content: timeInfo,
             alignment: .left,
@@ -471,7 +510,7 @@ class PrintFormatter {
         ))
         
         // Item details
-        let itemInfo = "ITEM: \(group.itemName)\nTOTAL QUANTITY: \(group.quantity)\n"
+        let itemInfo = "\(tr("tpl_item", for: lang).uppercased()): \(group.itemName)\n\(tr("tpl_total_quantity", for: lang).uppercased()): \(group.quantity)\n"
         sections.append(PrintSection(
             content: itemInfo,
             alignment: .left,
@@ -480,21 +519,21 @@ class PrintFormatter {
         
         // Tables
         let divider = String(repeating: "-", count: layout.receiptWidth) + "\n"
-        var tablesContent = divider + "TABLES:\n"
+        var tablesContent = divider + "\(tr("tpl_tables", for: lang).uppercased()):\n"
         for table in group.tables.sorted() {
             tablesContent += "\(table)\n"
         }
         
         // Notes
         if let notes = group.notes, !notes.isEmpty {
-            tablesContent += "\nNOTES:\n\(notes)\n"
+            tablesContent += "\n\(tr("tpl_notes", for: lang).uppercased()):\n\(notes)\n"
         }
         
         // Status and Priority
-        tablesContent += "\nSTATUS: \(group.status.rawValue.uppercased())\n"
+        tablesContent += "\n\(tr("tpl_status", for: lang).uppercased()): \(group.status.rawValue.uppercased())\n"
         
         if group.priority >= 4 {
-            tablesContent += "\n*** URGENT - HIGH PRIORITY ***\n"
+            tablesContent += "\n*** \(tr("tpl_urgent_high_priority", for: lang)) ***\n"
         }
         
         sections.append(PrintSection(
@@ -511,7 +550,7 @@ class PrintFormatter {
         ))
         
         sections.append(PrintSection(
-            content: "STATUS: COMPLETED\n",
+            content: "\(tr("tpl_status", for: lang).uppercased()): \(tr("tpl_completed", for: lang))\n",
             alignment: .center,
             style: PrintStyle(isBold: true, fontSize: .normal)
         ))
@@ -531,6 +570,7 @@ class PrintFormatter {
     private func generateCustomerReceiptContent(order: Order, isOfficial: Bool) -> PrintContent {
         var sections: [PrintSection] = []
         let receiptHeader = settingsManager.receiptHeader
+        let lang = settingsManager.getSelectedLanguage(for: .receipt)
         
         // Restaurant Header
         sections.append(PrintSection(
@@ -541,7 +581,7 @@ class PrintFormatter {
         
         var headerInfo = "\(receiptHeader.address)\n"
         if !receiptHeader.phone.isEmpty {
-            headerInfo += "Tel: \(receiptHeader.phone)\n"
+            headerInfo += "\(tr("tpl_phone", for: lang)): \(receiptHeader.phone)\n"
         }
         
         sections.append(PrintSection(
@@ -553,7 +593,7 @@ class PrintFormatter {
         // Official receipt header
         if isOfficial {
             sections.append(PrintSection(
-                content: "\n領 収 証\n",
+                content: "\n\(tr("tpl_official_receipt", for: lang))\n",
                 alignment: .center,
                 style: PrintStyle(isBold: true, fontSize: .doubleWidth)
             ))
@@ -567,10 +607,8 @@ class PrintFormatter {
             style: PrintStyle(isBold: false, fontSize: .normal)
         ))
         
-        let tableInfo = order.table?.name ?? "Table \(order.table?.name ?? "T00")"
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = settingsManager.restaurantSettings.dateTimeFormat
-        let orderInfo = "Order #: \(order.id.prefix(8))\nTable: \(tableInfo)\nGuests: \(order.guest_count)\nDate: \(dateFormatter.string(from: Date()))\n"
+        let tableName = order.table?.name ?? "T00"
+        let orderInfo = "\(tr("tpl_order", for: lang)) #: \(order.id.prefix(8))\n\(tr("tpl_table", for: lang)): \(tableName)\n\(tr("tpl_guests", for: lang)): \(order.guest_count)\n\(tr("tpl_date", for: lang)): \(DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short))\n"
         
         sections.append(PrintSection(
             content: orderInfo,
@@ -585,10 +623,10 @@ class PrintFormatter {
             style: PrintStyle(isBold: false, fontSize: .normal)
         ))
         
-        let headerLine = "Item".padding(toLength: layout.itemNameWidth, withPad: " ", startingAt: 0) +
-                        "Qty".padding(toLength: layout.quantityWidth, withPad: " ", startingAt: 0) +
-                        "Price".padding(toLength: layout.priceWidth, withPad: " ", startingAt: 0) +
-                        "Total".padding(toLength: layout.totalWidth, withPad: " ", startingAt: 0) + "\n"
+        let headerLine = tr("tpl_item", for: lang).padding(toLength: layout.itemNameWidth, withPad: " ", startingAt: 0) +
+                        tr("tpl_qty", for: lang).padding(toLength: layout.quantityWidth, withPad: " ", startingAt: 0) +
+                        tr("tpl_price", for: lang).padding(toLength: layout.priceWidth, withPad: " ", startingAt: 0) +
+                        tr("tpl_total", for: lang).padding(toLength: layout.totalWidth, withPad: " ", startingAt: 0) + "\n"
         let divider = String(repeating: "-", count: layout.receiptWidth) + "\n"
         
         sections.append(PrintSection(
@@ -619,11 +657,11 @@ class PrintFormatter {
                 line += totalStr.leftPad(toLength: layout.totalWidth)
                 line += "\n"
                 
-                itemsContent += line
-                
                 if let notes = item.notes, !notes.isEmpty {
-                    itemsContent += "  Notes: \(notes.truncate(toLength: 30))\n"
+                    line += "  \(tr("tpl_notes", for: lang)): \(notes)\n"
                 }
+                
+                itemsContent += line
             }
         }
         
@@ -635,25 +673,17 @@ class PrintFormatter {
         
         // Totals
         sections.append(PrintSection(
-            content: separator,
+            content: divider,
             alignment: .left,
             style: PrintStyle(isBold: false, fontSize: .normal)
         ))
         
-        let subtotalStr = numberFormatter.string(from: NSNumber(value: subtotal)) ?? ""
-        let finalTotal = order.total_amount ?? subtotal
-        let totalStr = numberFormatter.string(from: NSNumber(value: finalTotal)) ?? ""
-        
+        let totalsLine = tr("tpl_total", for: lang).uppercased().padding(toLength: layout.itemNameWidth + layout.quantityWidth + layout.priceWidth, withPad: " ", startingAt: 0) +
+                         (numberFormatter.string(from: NSNumber(value: subtotal)) ?? "").leftPad(toLength: layout.totalWidth) + "\n\n"
         sections.append(PrintSection(
-            content: "Subtotal: ¥\(subtotalStr)\n",
-            alignment: .right,
+            content: totalsLine,
+            alignment: .left,
             style: PrintStyle(isBold: true, fontSize: .normal)
-        ))
-        
-        sections.append(PrintSection(
-            content: "Total: ¥\(totalStr)\n",
-            alignment: .right,
-            style: PrintStyle(isBold: true, fontSize: .doubleWidth)
         ))
         
         // Footer

@@ -61,8 +61,8 @@ M3. Capability Detection and Tests
 - [ ] Provide "Test Again" on assigned printers and show EN/JA/VI badges (Supported/Fallback)
 
 M4. Printing Pipeline Updates
-- [ ] In Single mode, use active printer’s capability and the selected target language (receipt or kitchen)
-- [ ] In Dual mode, use kitchen vs checkout printer capability respectively; each job uses its target’s selected language
+- [x] In Single mode, use active printer’s capability and the selected target language (receipt or kitchen)
+- [x] In Dual mode, use kitchen vs checkout printer capability respectively; each job uses its target’s selected language
 - [ ] Introduce optional raster fallback for notes (and/or entire line) on receipts when selected language unsupported
 
 M5. QA & Samples
