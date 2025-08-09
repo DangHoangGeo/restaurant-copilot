@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(req: NextRequest) {
   const subdomain = req.nextUrl.searchParams.get("subdomain") || "";
+  const includeMenu = req.nextUrl.searchParams.get("includeMenu") === "1";
 
   if (!subdomain) {
     return NextResponse.json({ error: "missing_subdomain" }, { status: 400 });
@@ -33,48 +34,61 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Fetch menu items grouped by category (for backward compatibility)
-    const { data: categories, error: categoriesError } = await supabaseAdmin
-      .from("categories")
-      .select(`
-        id,
-        name_en,
-        name_ja,
-        name_vi,
-        position,
-        menu_items (
+    // Fetch menu items grouped by category (only if requested)
+    let categories = null;
+    if (includeMenu) {
+      const { data: categoriesData, error: categoriesError } = await supabaseAdmin
+        .from("categories")
+        .select(`
           id,
           name_en,
           name_ja,
           name_vi,
-          description_en,
-          description_ja,
-          description_vi,
-          price,
-          image_url,
-          category_id,
-          is_signature
-        )
-      `)
-      .eq("restaurant_id", homepageData.restaurant.id)
-      .order("position", { ascending: true })
-      .order("position", { foreignTable: "menu_items", ascending: true });
+          position,
+          menu_items (
+            id,
+            name_en,
+            name_ja,
+            name_vi,
+            description_en,
+            description_ja,
+            description_vi,
+            price,
+            image_url,
+            category_id,
+            is_signature
+          )
+        `)
+        .eq("restaurant_id", homepageData.restaurant.id)
+        .order("position", { ascending: true })
+        .order("position", { foreignTable: "menu_items", ascending: true });
 
-    if (categoriesError) {
-      console.error("Error fetching categories:", categoriesError);
-      return NextResponse.json(
-        { error: categoriesError.message },
-        { status: 500 }
-      );
+      if (categoriesError) {
+        console.error("Error fetching categories:", categoriesError);
+        return NextResponse.json(
+          { error: categoriesError.message },
+          { status: 500 }
+        );
+      }
+      
+      categories = categoriesData;
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       restaurant: homepageData.restaurant,
       menu: categories,
       owners: homepageData.owners,
       gallery: homepageData.gallery,
       signature_dishes: homepageData.signature_dishes
     });
+
+    // Add cache-control headers
+    // Homepage data can be cached longer (10 minutes) when menu is not included
+    // With menu, cache for shorter duration (3 minutes)
+    const maxAge = includeMenu ? 180 : 600; // 3 minutes with menu, 10 minutes without
+    response.headers.set('Cache-Control', `public, max-age=${maxAge}, s-maxage=${maxAge}, stale-while-revalidate=120`);
+    
+    return response;
   } catch (error) {
     console.error("Error fetching restaurant data:", error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
