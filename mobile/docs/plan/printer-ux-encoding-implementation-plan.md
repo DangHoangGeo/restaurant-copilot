@@ -5,8 +5,9 @@ Date: 2025-08-09
 Branch: ios-app-improvement-high-priority
 
 Context
-- Device: EPSON ESC/POS compatible
-- UTF-8: Not supported
+- Device: EPSON ESC/POS compatible (and other ESC/POS vendors)
+- SaaS requirement: model-agnostic. Do not rely on specific printer models; probe capabilities at runtime and adapt.
+- UTF-8: Not supported on many legacy devices
 - Japanese: JIS X0208-1990 supported (Shift-JIS + Kanji mode)
 - Chinese: Supported
 - Requirement: Owner selects ONE receipt language; entire receipt (header, items, footer) prints in that language (no mixing per receipt)
@@ -17,11 +18,11 @@ Context
 Goals
 1) Simplify setup and daily usage for restaurant owners
 2) Make language output reliable: EN/JA/VI on non-UTF8 printers (with per-language fallbacks)
-3) Reduce support load by auto-detecting and persisting per-printer capabilities
+3) Reduce support load by auto-detecting and persisting per-printer capabilities (model-agnostic)
 4) Ensure the selected language applies to all printed content for that job: header, item names, notes, and footer
 
 Scope
-- UX changes (PrinterSettingsView, UnifiedPrinterSetupView)
+- UX changes (PrinterSettingsView, UnifiedPrinterSetupView, ReceiptCustomizationView)
 - Encoding pipeline changes (PrinterService/PrintFormatter/PrinterSettingsManager)
 - Language testing and per-printer capability storage
 - Non-breaking changes for existing users; migrations not required
@@ -29,18 +30,19 @@ Scope
 Milestones
 
 M1. UX Simplification (Setup-first)
-- [ ] PrinterSettingsView: remove discovery/connect duplication; keep status + CTA to setup
-- [ ] UnifiedPrinterSetupView: wizard-like grouping (Mode -> Printers -> Assign -> Test -> Done)
-- [ ] Consolidate Add/Edit printer into a single component; reuse everywhere
-- [ ] Demote Logs/Queue/Advanced from the primary path; keep links
-- [ ] Language controls:
-      - [ ] Receipt Language (EN/JA/VI) – applies to all receipts
-      - [ ] Kitchen Ticket Language (EN/JA/VI) – applies to kitchen prints
-      - [ ] Explain that the entire print uses the selected language; menu names localized accordingly; notes are best-effort
+- [x] PrinterSettingsView: remove discovery/connect duplication; keep status + CTA to setup
+- [x] UnifiedPrinterSetupView: wizard-like grouping (Mode -> Printers -> Assign -> Test -> Done)
+- [x] Consolidate Add/Edit printer into a single component; reuse everywhere
+- [x] Demote Logs/Queue/Advanced from the primary path; keep links
+- [x] Add printers list (Edit/Test/Assign/Delete) and auto-assign post-add
+- [x] Add navigation to Receipt Customization from setup
+- [x] Move language selection (Receipt + Kitchen) to Receipt Customization view
+- [x] Receipt Customization: header/footer (already supported), template/theme controls
+- [x] Bugfix: Language Diagnostics should navigate directly to diagnostics (avoid intermediate Print Queue)
 
 M2. Encoding Strategy (per printer, per target: kitchen vs receipt)
 - [ ] Determine strategy by target and selected language
-- [ ] Default rules per language:
+- [ ] Default rules per language (model-agnostic via standard ESC/POS):
       - English: Windows-1252 (CP1252) via ESC t 16; encode text with .windowsCP1252
       - Japanese: Shift-JIS with Kanji mode (FS & enter / FS . leave), optional ESC t 0x04
       - Vietnamese: try CP1258 (ESC t 27); if unsupported, fallback
@@ -75,7 +77,7 @@ A. ESC/POS sequences
 - Alignment: ESC a n
 - Font: GS ! n, Bold on/off, etc.
 - Cut: GS V m
-- JA Kanji mode (Epson):
+- JA Kanji mode (Epson-compatible):
   - Enter Kanji: FS &  (1C 26)
   - Cancel Kanji: FS . (1C 2E)
   - Use Shift-JIS bytes for content printed in Japanese
@@ -92,7 +94,7 @@ B. Encoding rules (single language per print target)
 
 C. Data flow changes
 - PrinterSettingsManager:
-  - Add selectedReceiptLanguage and selectedKitchenLanguage (PrintLanguage)
+  - selectedReceiptLanguage and selectedKitchenLanguage (PrintLanguage)
   - Store per-printer language capabilities and chosen strategies per target when relevant
   - Expose getters: getStrategy(for printerId, target: .receipt/.kitchen)
 - PrintFormatter:

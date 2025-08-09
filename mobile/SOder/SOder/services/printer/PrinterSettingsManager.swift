@@ -16,7 +16,9 @@ class PrinterSettingsManager: ObservableObject {
     @Published var printerMode: PrinterMode = .single
     
     // New: Print language and receipt header settings
-    @Published var printLanguage: PrintLanguage = .english
+    @Published var printLanguage: PrintLanguage = .english // legacy single language (kept for compatibility)
+    @Published var selectedReceiptLanguage: PrintLanguage = .english // NEW
+    @Published var selectedKitchenLanguage: PrintLanguage = .english // NEW
     @Published var receiptHeader: ReceiptHeaderSettings
     @Published var receiptEncoding: String.Encoding = .utf8
     @Published var customReceiptTemplate: String = ""
@@ -38,7 +40,9 @@ class PrinterSettingsManager: ObservableObject {
     private let checkoutPrinterKey = "checkout_printer_id"
     private let printerModeKey = "printer_mode"
     private let restaurantSettingsKey = "restaurant_settings"
-    private let printLanguageKey = "print_language"
+    private let printLanguageKey = "print_language" // legacy
+    private let receiptLanguageKey = "selected_receipt_language" // NEW
+    private let kitchenLanguageKey = "selected_kitchen_language" // NEW
     private let receiptHeaderKey = "receipt_header"
     private let receiptEncodingKey = "receipt_encoding"
     private let customReceiptTemplateKey = "custom_receipt_template"
@@ -225,10 +229,24 @@ class PrinterSettingsManager: ObservableObject {
         saveRestaurantSettings()
     }
     
-    // MARK: - Print Language Management
+    // MARK: - Print Language Management (legacy)
     func setPrintLanguage(_ language: PrintLanguage) {
         printLanguage = language
+        // Keep legacy behavior mapped to receipt language to avoid breaking callers
+        selectedReceiptLanguage = language
         savePrintLanguage()
+        saveSelectedLanguages()
+    }
+    
+    // NEW: Separate setters
+    func setReceiptLanguage(_ language: PrintLanguage) {
+        selectedReceiptLanguage = language
+        saveSelectedLanguages()
+    }
+    
+    func setKitchenLanguage(_ language: PrintLanguage) {
+        selectedKitchenLanguage = language
+        saveSelectedLanguages()
     }
     
     // MARK: - Receipt Header Management
@@ -254,6 +272,7 @@ class PrinterSettingsManager: ObservableObject {
         loadPrinterMode()
         loadRestaurantSettings()
         loadPrintLanguage()
+        loadSelectedLanguages() // NEW
         loadReceiptHeader()
         loadReceiptEncoding()
         loadCustomReceiptTemplate()
@@ -311,6 +330,23 @@ class PrinterSettingsManager: ObservableObject {
         }
     }
     
+    private func loadSelectedLanguages() { // NEW
+        if let receiptLangRaw = userDefaults.string(forKey: receiptLanguageKey),
+           let receiptLang = PrintLanguage(rawValue: receiptLangRaw) {
+            selectedReceiptLanguage = receiptLang
+        } else {
+            // fallback to legacy
+            selectedReceiptLanguage = printLanguage
+        }
+        
+        if let kitchenLangRaw = userDefaults.string(forKey: kitchenLanguageKey),
+           let kitchenLang = PrintLanguage(rawValue: kitchenLangRaw) {
+            selectedKitchenLanguage = kitchenLang
+        } else {
+            selectedKitchenLanguage = printLanguage
+        }
+    }
+    
     private func loadReceiptHeader() {
         if let data = userDefaults.data(forKey: receiptHeaderKey),
            let header = try? JSONDecoder().decode(ReceiptHeaderSettings.self, from: data) {
@@ -339,6 +375,7 @@ class PrinterSettingsManager: ObservableObject {
         saveEncodingStrategy()
         saveLanguageCapabilities()
         saveTemplateThemes()
+        saveSelectedLanguages() // NEW
     }
     
     private func saveConfiguredPrinters() {
@@ -383,6 +420,11 @@ class PrinterSettingsManager: ObservableObject {
     
     private func savePrintLanguage() {
         userDefaults.set(printLanguage.rawValue, forKey: printLanguageKey)
+    }
+    
+    private func saveSelectedLanguages() { // NEW
+        userDefaults.set(selectedReceiptLanguage.rawValue, forKey: receiptLanguageKey)
+        userDefaults.set(selectedKitchenLanguage.rawValue, forKey: kitchenLanguageKey)
     }
     
     private func saveReceiptHeader() {
@@ -501,11 +543,6 @@ class PrinterSettingsManager: ObservableObject {
             return PrintLanguage.allCases 
         }
         return PrintLanguage.allCases.filter { capabilities[$0] == nil }
-    }
-    
-    func resetLanguageCapabilities(for printerId: String) {
-        printerLanguageCapabilities[printerId] = nil
-        saveLanguageCapabilities()
     }
     
     // MARK: - Template Theme Management

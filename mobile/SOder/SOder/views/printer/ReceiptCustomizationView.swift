@@ -21,6 +21,49 @@ struct ReceiptCustomizationView: View {
     
     var body: some View {
         Form {
+            // Languages Section (moved here from setup)
+            Section(header: headerView(icon: "globe", title: "languages_section_title".localized)) {
+                HStack {
+                    Image(systemName: "doc.text")
+                        .foregroundColor(.blue)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("receipt_language_title".localized)
+                            .fontWeight(.medium)
+                        Text(settingsManager.selectedReceiptLanguage.displayName)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Picker("receipt_language_title".localized, selection: $settingsManager.selectedReceiptLanguage) {
+                        ForEach(PrintLanguage.allCases, id: \.self) { lang in
+                            Text(lang.displayName).tag(lang)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                }
+                HStack {
+                    Image(systemName: "list.clipboard")
+                        .foregroundColor(.blue)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("kitchen_language_title".localized)
+                            .fontWeight(.medium)
+                        Text(settingsManager.selectedKitchenLanguage.displayName)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Picker("kitchen_language_title".localized, selection: $settingsManager.selectedKitchenLanguage) {
+                        ForEach(PrintLanguage.allCases, id: \.self) { lang in
+                            Text(lang.displayName).tag(lang)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                }
+                Text("languages_section_help".localized)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
             // Restaurant Information Section
             Section(header: headerView(icon: "building.2", title: "Restaurant Information")) {
                 TextField("Restaurant Name", text: $editingHeader.restaurantName)
@@ -236,8 +279,7 @@ struct ReceiptCustomizationView: View {
         settingsManager.receiptEncoding = selectedEncoding
         settingsManager.customReceiptTemplate = customTemplate
         settingsManager.updateReceiptHeader(editingHeader)
-        
-        // Save will be handled by the settings manager's internal save mechanism
+        // Languages persist via Published + UserDefaults in settings manager
     }
     
     private func getDefaultTemplate() -> String {

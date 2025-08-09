@@ -548,12 +548,11 @@
 "test_template" = "テンプレートテスト";
 "load_default_template" = "デフォルトテンプレートを読み込む";
 "reset_to_default" = "デフォルトにリセット";
-"receipt_customization" = "レシート設定";
-"save" = "保存";
-"receipt_preview" = "レシートプレビュー";
-"generating_preview" = "プレビュー生成中...";
-"done" = "完了";
-"preview_not_available" = "プレビューが利用できません";
+"receipt_customization" = "レシートのカスタマイズ";
+"configure_header_footer_templates_languages" = "ヘッダー、フッター、テンプレートと言語を設定";
+"receipt_language_title" = "レシートの言語";
+"kitchen_language_title" = "キッチン伝票の言語";
+"languages_section_help" = "印刷全体は選択した言語で出力されます。メニュー名は選択言語の名称を使用し、メモは可能な範囲で表示します。";
 
 // Variable descriptions
 "restaurant_name_desc" = "レストラン名";

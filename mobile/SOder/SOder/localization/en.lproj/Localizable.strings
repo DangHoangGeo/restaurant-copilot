@@ -542,6 +542,10 @@
 "load_default_template" = "Load Default Template";
 "reset_to_default" = "Reset to Default";
 "receipt_customization" = "Receipt Customization";
+"configure_header_footer_templates_languages" = "Configure header, footer, templates, and languages";
+"receipt_language_title" = "Receipt Language";
+"kitchen_language_title" = "Kitchen Ticket Language";
+"languages_section_help" = "Entire print uses the selected language. Menu names will use their localized values; notes are best-effort.";
 "save" = "Save";
 "receipt_preview" = "Receipt Preview";
 "generating_preview" = "Generating Preview...";

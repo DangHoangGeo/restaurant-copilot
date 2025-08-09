@@ -50,16 +50,12 @@ struct PrinterSettingsView: View {
                         Spacer()
                         
                         setupStatusIndicator
-                        
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.gray)
-                            .font(.caption)
                     }
                     .padding(.vertical, 4)
                 }
             }
             
-            // Current Status Section
+            // Current Configuration Section
             Section("Current Configuration") {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -203,56 +199,7 @@ struct PrinterSettingsView: View {
                 .padding(.vertical, 4)
             }
             
-            // Available Printers Section
-            Section("printer_available_printers_title".localized) {
-                if printerManager.availablePrinters.isEmpty {
-                    VStack(alignment: .center) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.largeTitle)
-                            .foregroundColor(.gray)
-                            .padding(.bottom, 2)
-                            .accessibilityHidden(true)
-                        Text("printer_no_printers_found".localized)
-                            .foregroundColor(.secondary)
-                        Text("printer_scans_for_network_and_bluetooth".localized) // New localized string
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("accessibility_no_printers_found_label".localized)
-                } else {
-                    ForEach(printerManager.availablePrinters) { printer in
-                        PrinterRowView(
-                            printer: printer,
-                            isSelected: printerManager.selectedPrinter?.id == printer.id,
-                            isConnecting: isConnecting
-                        ) {
-                            connectToPrinter(printer)
-                        }
-                    }
-                }
-                
-                // Unified and styled refresh button
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        printerManager.checkAvailablePrinters()
-                    }) {
-                        Label("printer_refresh_printers_button".localized, systemImage: "arrow.clockwise")
-                    }
-                    .buttonStyle(.bordered)
-                    .accessibilityLabel("accessibility_refresh_printers_label".localized)
-                    .accessibilityHint("accessibility_refresh_printers_hint".localized)
-                    .foregroundColor(.blue)
-                    Spacer()
-                }
-                .padding(.top, printerManager.availablePrinters.isEmpty ? 4 : 8) // Adjust padding based on content
-            }
-            
-            // Test Printing Section
+            // Test Printing Section (kept for convenience when connected)
             if printerManager.isConnected {
                 Section("printer_test_printing_title".localized) {
                     Button(action: {
@@ -332,7 +279,8 @@ struct PrinterSettingsView: View {
             Text(connectionMessage)
         }
         .onAppear{
-            printerManager.checkAvailablePrinters()
+            // Keep discovery solely inside setup flow to reduce duplication
+            // printerManager.checkAvailablePrinters()
         }
         .sheet(isPresented: $showingAllLogs) { // Add sheet modifier
             AllPrintLogsView(printerManager: printerManager)
