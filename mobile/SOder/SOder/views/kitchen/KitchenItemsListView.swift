@@ -55,7 +55,7 @@ struct KitchenItemsListView: View {
             }
             
             // Then by status
-            let statusOrder: [OrderItemStatus] = [.ordered, .preparing, .ready, .served, .cancelled]
+            let statusOrder: [OrderItemStatus] = [.new, .preparing, .ready, .served, .cancelled]
             let lhsIndex = statusOrder.firstIndex(of: lhs.status) ?? 0
             let rhsIndex = statusOrder.firstIndex(of: rhs.status) ?? 0
             if lhsIndex != rhsIndex {
@@ -111,22 +111,21 @@ struct KitchenHeaderView: View {
                 // Simplified title with urgent indicator
                 HStack(spacing: 8) {
                     Text("kitchen".localized)
-                        .font(.title2)
+                        .font(.sectionHeader)
                         .fontWeight(.semibold)
+                        .foregroundColor(.appTextPrimary)
                     
                     if urgentItemsCount > 0 {
                         HStack(spacing: 4) {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.red)
+                                .foregroundColor(.appError)
                             Text("\(urgentItemsCount)")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .foregroundColor(.red)
+                                .font(.captionRegular)
+                                .foregroundColor(.appError)
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(8)
+                        .padding(Spacing.xs)
+                        .background(Color.appError.opacity(0.1))
+                        .cornerRadius(CornerRadius.sm)
                     }
                 }
                 
@@ -144,7 +143,7 @@ struct KitchenHeaderView: View {
                                 if viewMode == mode {
                                     Spacer()
                                     Image(systemName: "checkmark")
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(.appInfo)
                                 }
                             }
                         }
@@ -172,7 +171,7 @@ struct KitchenHeaderView: View {
                                 Spacer()
                                 if orderManager.autoPrintingEnabled {
                                     Image(systemName: "checkmark")
-                                        .foregroundColor(.green)
+                                        .foregroundColor(.appSuccess)
                                 }
                             }
                         }
@@ -197,7 +196,7 @@ struct KitchenHeaderView: View {
                         // Show auto-print indicator
                         if orderManager.autoPrintingEnabled {
                             Image(systemName: "printer.fill")
-                                .foregroundColor(.green)
+                                .foregroundColor(.appSuccess)
                                 .font(.caption)
                         }
                     }
@@ -232,7 +231,7 @@ struct KitchenHeaderView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
+        .background(Color.appSurface)
     }
     
     private func countForCategory(_ category: String) -> Int {

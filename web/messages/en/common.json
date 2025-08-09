@@ -51,6 +51,7 @@
     "canceled": "Canceled"
   },
   "order_item_status": {
+    "new": "New",
     "ordered": "Ordered",
     "preparing": "Preparing",
     "ready": "Ready",

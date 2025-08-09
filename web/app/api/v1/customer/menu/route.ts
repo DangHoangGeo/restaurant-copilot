@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   try {
     // Check if restaurantId is provided directly (preferred method)
     const restaurantIdParam = req.nextUrl.searchParams.get("restaurantId");
+    const lite = req.nextUrl.searchParams.get("lite") === "1";
     
     let restaurantId: string;
     
@@ -47,56 +48,65 @@ export async function GET(req: NextRequest) {
       restaurantId = restaurant.id;
     }
 
-    // Fetch menu categories with items, sizes, and toppings
-    const { data: categories, error: categoriesError } = await supabaseAdmin
-      .from("categories")
-      .select(`
+    // Fetch menu categories with items, optionally including sizes and toppings
+    const baseSelectQuery = `
+      id,
+      name_en,
+      name_ja,
+      name_vi,
+      position,
+      restaurant_id,
+      menu_items (
         id,
         name_en,
         name_ja,
         name_vi,
+        description_en,
+        description_ja,
+        description_vi,
+        price,
+        image_url,
+        available,
+        weekday_visibility,
         position,
-        restaurant_id,
-        menu_items (
+        category_id,
+        tags,
+        stock_level${lite ? '' : `,
+        menu_item_sizes (
+          id,
+          size_key,
+          name_en,
+          name_ja,
+          name_vi,
+          price,
+          position
+        ),
+        toppings (
           id,
           name_en,
           name_ja,
           name_vi,
-          description_en,
-          description_ja,
-          description_vi,
           price,
-          image_url,
-          available,
-          weekday_visibility,
-          position,
-          category_id,
-          tags,
-          stock_level,
-          menu_item_sizes (
-            id,
-            size_key,
-            name_en,
-            name_ja,
-            name_vi,
-            price,
-            position
-          ),
-          toppings (
-            id,
-            name_en,
-            name_ja,
-            name_vi,
-            price,
-            position
-          )
-        )
-      `)
+          position
+        )`}
+      )
+    `;
+
+    let query = supabaseAdmin
+      .from("categories")
+      .select(baseSelectQuery)
       .eq("restaurant_id", restaurantId)
       .order("position", { ascending: true })
-      .order("position", { foreignTable: "menu_items", ascending: true })
-      .order("position", { foreignTable: "menu_items.menu_item_sizes", ascending: true })
-      .order("position", { foreignTable: "menu_items.toppings", ascending: true });
+      .order("position", { foreignTable: "menu_items", ascending: true });
+
+    // Only add ordering for sizes and toppings if not lite mode
+    if (!lite) {
+      query = query
+        .order("position", { foreignTable: "menu_items.menu_item_sizes", ascending: true })
+        .order("position", { foreignTable: "menu_items.toppings", ascending: true });
+    }
+
+    const { data: categories, error: categoriesError } = await query;
 
     if (categoriesError) {
       console.error("Error fetching menu categories:", categoriesError);
@@ -106,10 +116,18 @@ export async function GET(req: NextRequest) {
       }, { status: 500 });
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       categories: categories || []
     });
+
+    // Add cache-control headers
+    // Lite version can be cached longer (5 minutes) as it's less likely to change frequently
+    // Full version with sizes/toppings cached for 2 minutes
+    const maxAge = lite ? 300 : 120; // 5 minutes for lite, 2 minutes for full
+    response.headers.set('Cache-Control', `public, max-age=${maxAge}, s-maxage=${maxAge}, stale-while-revalidate=60`);
+    
+    return response;
 
   } catch (error) {
     console.error("Unexpected error in customer menu API:", error);

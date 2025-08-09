@@ -394,6 +394,8 @@
 "orders_unknown_time" = "不明";
 "orders_more_items" = "他{count}件...";
 "orders_unknown_item" = "不明";
+"order_items_section_title" = "注文リスト";
+"order_items_new_label" = "新";
 
 // MARK: - Order Detail
 "orders_not_found" = "注文が見つかりません";
@@ -430,7 +432,7 @@
 "printer_done_button" = "完了";
 "printer_connect_button" = "接続";
 "printer_cancel_button" = "キャンセル";
-
+"tab_new_order" = "注文";
 // MARK: - Receipt Header Configuration
 "receipt_header_title" = "レシートヘッダー";
 "receipt_header_config_title" = "レシートヘッダー設定";
@@ -546,12 +548,11 @@
 "test_template" = "テンプレートテスト";
 "load_default_template" = "デフォルトテンプレートを読み込む";
 "reset_to_default" = "デフォルトにリセット";
-"receipt_customization" = "レシート設定";
-"save" = "保存";
-"receipt_preview" = "レシートプレビュー";
-"generating_preview" = "プレビュー生成中...";
-"done" = "完了";
-"preview_not_available" = "プレビューが利用できません";
+"receipt_customization" = "レシートのカスタマイズ";
+"configure_header_footer_templates_languages" = "ヘッダー、フッター、テンプレートと言語を設定";
+"receipt_language_title" = "レシートの言語";
+"kitchen_language_title" = "キッチン伝票の言語";
+"languages_section_help" = "印刷全体は選択した言語で出力されます。メニュー名は選択言語の名称を使用し、メモは可能な範囲で表示します。";
 
 // Variable descriptions
 "restaurant_name_desc" = "レストラン名";
@@ -567,3 +568,176 @@
 "separator_desc" = "水平線";
 "cut_paper_desc" = "紙カット";
 
+// 
+"table_title_prefix" = "Table ";
+"cart_panel_accessibility_label" = "Cart panel";
+"view_cart_items_accessibility_label" = "View cart, ";
+"view_cart_empty_accessibility_label" = "View cart, empty";
+"loading_menu_items_text" = "Loading menu items...";
+"no_items_found_for_search_text" = "No items found for ";
+"try_different_search_term_text" = "Try a different search term";
+"no_items_in_category_text" = "No items in this category";
+"no_menu_items_available_text" = "No menu items available";
+"add_item_to_order_accessibility_label" = "Add ";
+"customize_item_accessibility_label" = "Customize ";
+"error_alert_title" = "Error";
+"ok_button_title" = "OK";
+"error_alert_default_message" = "An unknown error occurred.";
+"items_section_title" = "Items";
+"order_summary_section_title" = "Order Summary";
+"total_items_label" = "Total Items:";
+"total_price_label" = "Total Price:";
+"no_items_in_order_text" = "No items added to this order yet.";
+"add_items_button_title" = "Add Items";
+"add_menu_items_accessibility_label" = "Add menu items to order";
+"add_menu_items_accessibility_hint" = "Tap to return to menu and add items to this order";
+"draft_order_title_prefix" = "Draft: Table ";
+"back_to_menu_button_title" = "Back to Menu";
+"return_to_menu_accessibility_label" = "Return to menu";
+"return_to_menu_accessibility_hint" = "Tap to go back to the restaurant menu";
+"refresh_order_details_accessibility_label" = "Refresh order details";
+"refresh_order_details_accessibility_hint" = "Tap to reload the current order information";
+"confirm_cancel_title" = "Confirm Cancellation";
+"yes_cancel_order_button_title" = "Yes, Cancel Order";
+"no_button_title" = "No";
+"confirm_cancel_message" = "Are you sure you want to cancel this entire draft order? This cannot be undone.";
+"order_confirmed_alert_title" = "Order Confirmed";
+"order_confirmed_alert_message" = "Order has been successfully sent to the kitchen!";
+"qty_label" = "Qty";
+"notes_label" = "Notes";
+"unknown_item_text" = "Unknown Item";
+"confirm_order_to_kitchen_button_title" = "Confirm Order to Kitchen";
+"confirm_order_to_kitchen_accessibility_label" = "Confirm order to kitchen";
+"confirm_order_to_kitchen_accessibility_hint" = "Tap to send this order to the kitchen for preparation";
+"cancel_entire_order_button_title" = "Cancel Entire Order";
+"cancel_entire_order_accessibility_label" = "Cancel entire order";
+"cancel_entire_order_accessibility_hint" = "Tap to cancel this entire order permanently";
+"remove_item_action_label" = "Remove";
+
+// MARK: - Unified Printer Setup View (new)
+"printer_setup_title" = "プリンター設定";
+"printer_setup_mode_subtitle" = "モード";
+"add_or_configure_printers" = "プリンターを追加または設定";
+"assignments_title" = "割り当て";
+"assignments_subtitle" = "アクティブまたは役割のプリンターを選択";
+"test_and_customize_title" = "テスト＆カスタマイズ";
+"test_and_customize_subtitle" = "レシートを確認・設定";
+"advanced_title" = "詳細";
+"advanced_subtitle" = "キューと診断";
+"test_printer_title" = "テスト印刷";
+"test_printer_message" = "接続確認のためテスト印刷を送信しますか？";
+"delete_printer_title" = "プリンターを削除";
+"delete_printer_message" = "このプリンター設定を削除してもよろしいですか？";
+"no_printers_configured" = "設定されたプリンターがありません。";
+"using_default_placeholder_printer" = "デフォルトのプレースホルダープリンターを使用中。追加すると設定を保存・編集できます。";
+"set_active" = "アクティブに設定";
+"assign_to_kitchen" = "キッチンに割り当て";
+"assign_to_checkout" = "会計に割り当て";
+"add_role_format" = "%@ を追加";
+"tap_to_configure_network_printer" = "タップしてネットワークプリンターを設定";
+"test_assigned_printers" = "割り当てたプリンターをテスト";
+"language_diagnostics_title" = "言語診断";
+"language_diagnostics_subtitle" = "プリンターの言語対応 (EN/JA/VI) を確認";
+"main_printer" = "メインプリンター";
+"kitchen_printer" = "キッチンプリンター";
+"checkout_printer" = "会計プリンター";
+"test_kitchen_printer" = "キッチンをテスト";
+"test_checkout_printer" = "会計をテスト";
+
+// MARK: - Receipt Customization (new keys)
+"languages_section_title" = "言語";
+"restaurant_information_title" = "レストラン情報";
+"restaurant_name_placeholder" = "レストラン名";
+"address_placeholder" = "住所";
+"phone_number_placeholder" = "電話番号";
+"website_optional_placeholder" = "ウェブサイト（任意）";
+"show_website_on_receipt" = "レシートにウェブサイトを表示";
+"tax_information_title" = "税情報";
+"tax_code_optional_placeholder" = "税コード（任意）";
+"show_tax_code_on_receipt" = "レシートに税コードを表示";
+"footer_messages_title" = "フッターメッセージ";
+"thank_you_message_placeholder" = "感謝メッセージ";
+"promotional_text_optional_placeholder" = "プロモーション文（任意）";
+"show_promotional_text" = "プロモーション文を表示";
+"receipt_theme_title" = "レシートテーマ";
+"receipt_style_label" = "レシートスタイル";
+"kitchen_order_style_label" = "キッチン伝票スタイル";
+"encoding_accessibility_hint" = "レシート印刷の文字エンコーディングを選択";
+"template_accessibility_hint" = "テンプレート構文を使ってカスタムテンプレートを入力";
+"preview_accessibility_hint" = "現在の設定でのレシート表示をプレビュー";
+"load_default_accessibility_hint" = "カスタマイズ用のデフォルトテンプレートを読み込む";
+"reset_default_accessibility_hint" = "テンプレートとエンコーディングをデフォルトにリセット";
+"receipt_settings_saved_title" = "設定を保存しました";
+"receipt_settings_saved_message" = "レシートのカスタマイズが保存されました。";
+"template_theme_standard_name" = "スタンダード";
+"template_theme_minimal_name" = "ミニマル";
+"template_theme_elegant_name" = "エレガント";
+"template_theme_standard_desc" = "詳細を含むバランスの取れたレイアウト";
+"template_theme_minimal_desc" = "必要最小限の情報でシンプル";
+"template_theme_elegant_desc" = "装飾を用いた強調フォーマット";
+"template_type_receipt" = "レシート";
+"template_type_kitchen" = "キッチン伝票";
+"template_theme_help" = "テーマは印刷のレイアウトとスタイルを変更します。印刷前にプレビューで違いを確認してください。";
+
+// MARK: - Save & Preview Action
+"save_and_preview" = "保存してプレビュー";
+"save_and_preview_hint" = "変更を保存して結果をプレビュー";
+
+// MARK: - Receipt Preview Test Data
+"test_restaurant_name" = "テストレストラン";
+"test_restaurant_address" = "東京都渋谷区テスト通り1-2-3";
+"test_restaurant_phone" = "03-1234-5678";
+"test_restaurant_website" = "www.test-restaurant.jp";
+"test_order_id" = "注文001";
+"test_table_name" = "テーブル5";
+"test_item_1_name" = "鶏の照り焼き定食";
+"test_item_2_name" = "味噌汁";
+"test_item_3_name" = "緑茶";
+"test_item_1_notes" = "ソース多め";
+"test_special_instructions" = "お箸ではなくフォークでお願いします";
+"test_thank_you_message" = "ご利用ありがとうございました！";
+"test_promotional_message" = "次回10%割引クーポンをご利用ください";
+"test_tax_code" = "T123456789";
+"receipt_preview_simulation" = "プレビュー - 実際の印刷はプリンター設定により異なる場合があります";
+
+// MARK: - Encoding Strategy
+"receipt_encoding_strategy" = "レシート文字エンコーディング";
+"encoding_strategy_description" = "エンコーディングはレシート言語とプリンター性能に基づいて自動的に選択されます。";
+"encoding_strategy_utf8_primary" = "UTF-8 優先";
+"encoding_strategy_utf8_fallback" = "UTF-8 フォールバック付き";
+"encoding_strategy_legacy" = "従来言語エンコーディング";
+
+// MARK: - Template Labels (Receipt/Kitchen)
+"tpl_receipt" = "レシート";
+"tpl_order" = "注文";
+"tpl_table" = "テーブル";
+"tpl_date" = "日付";
+"tpl_time" = "時間";
+"tpl_note" = "備考";
+"tpl_subtotal" = "小計";
+"tpl_tax" = "税金";
+"tpl_discount" = "割引";
+"tpl_total" = "合計";
+"tpl_thank_you" = "ご来店ありがとうございました！";
+"tpl_thank_you_short" = "ありがとうございます";
+"tpl_thank_you_dining" = "ご利用いただきありがとうございます！";
+"tpl_tax_code" = "税コード";
+"tpl_kitchen_order" = "キッチン伝票";
+"tpl_special_instructions" = "特記事項:";
+"tpl_prepared_by" = "担当";
+"tpl_special_notes" = "特記事項";
+"tpl_items" = "品目";
+"tpl_guests" = "ゲスト";
+"tpl_qty" = "数量";
+"tpl_notes" = "備考";
+"tpl_item" = "品目";
+"tpl_price" = "価格";
+"tpl_total_quantity" = "合計数量";
+"tpl_tables" = "テーブル";
+"tpl_status" = "ステータス";
+"tpl_urgent_high_priority" = "至急・高優先度";
+"tpl_completed" = "完了";
+"tpl_kitchen_summary" = "キッチンサマリー";
+"tpl_phone" = "電話";
+"tpl_official_receipt" = "領収証";
+"tpl_printed" = "印刷日時";

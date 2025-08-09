@@ -1,50 +1,68 @@
 ---
 applyTo: 'mobile/**'
 ---
-## Mobile Application (Swift, SwiftUI) Development Rules
+## **SOder iOS App: Simple Development Rules**
 
-When generating code for the mobile application, adhere to the following standards to ensure code quality, consistency, and maintainability.
+Follow these simple rules when writing or changing code. This keeps our app high-quality and easy to maintain.
 
-### 1. Architecture and Code Organization
-- **Architecture**: Use the MVVM (Model-View-ViewModel) architecture for all new features.
-  - **Model**: Represents the data and business logic. Should be simple structs or classes.
-  - **View**: The UI of the application, built with SwiftUI. Views should be as dumb as possible, reacting to state changes from the ViewModel.
-  - **ViewModel**: Acts as a bridge between the Model and the View. It contains the presentation logic and state for the view.
-- **File Structure**:
-  - Organize files by feature. Each feature should have its own folder containing its Model, View, and ViewModel files.
-  - Place reusable views in a `Shared/Views` directory.
-  - Place utility functions and extensions in a `Shared/Utils` directory.
+### **1. How We Build Features (Our App's Structure)**
 
-### 2. Coding Style and Conventions
-- **Swift**:
-  - Follow the Swift API Design Guidelines.
-  - Use `let` for constants and `var` for variables. Prefer `let` over `var` where possible.
-  - Use optional types (`?` and `!`) appropriately. Avoid force unwrapping (`!`) unless you are certain the value is not nil.
-  - Use clear and descriptive names for variables, functions, and types.
-- **SwiftUI**:
-  - Keep views small and focused on a single responsibility.
-  - Use `@State` for transient view-specific state.
-  - Use `@StateObject` and `@ObservedObject` to manage the lifecycle of ViewModels.
-  - Use `@EnvironmentObject` for data that needs to be shared across many views in the hierarchy.
+-   **Model**: Simple `Codable` structs for our data (like `Order` or `MenuItem`). Find them in the `models/` folder.
+-   **View**: SwiftUI files that show the UI. Views should only be for showing things and getting user taps. **No business logic in Views.** Break big views into smaller ones.
+-   **Manager (The "Brain")**: These are the brains for each feature (like `OrderManager`, `PrinterManager`). They hold the data and do the work.
+    -   **Rule**: Always use shared managers with `@EnvironmentObject`. Do not create new ones like `OrderManager()`.
 
-### 3. UI/UX and Styling
-- **Styling**: Define colors, fonts, and other style constants in a central place (e.g., an extension on `Color` or a dedicated `Theme` struct) to ensure a consistent look and feel.
-- **Layout**: Use SwiftUI layout containers like `VStack`, `HStack`, `ZStack`, and `Grid` to build responsive layouts that adapt to different screen sizes and orientations.
-- **Accessibility**: Ensure all UI elements are accessible. Provide labels for controls, and support Dynamic Type.
+### **2. How to Style the UI (Our Design Rules)**
 
-### 4. Asynchronous Operations
-- **Concurrency**: Use Swift's modern concurrency features (`async/await`) for all asynchronous operations, such as network requests.
-- **Main Thread**: Ensure all UI updates are performed on the main thread by using `@MainActor`.
+We must have a consistent UI. All new code **must** use our design system.
 
-### 5. Error Handling
-- Use Swift's error handling model (`do-catch`, `try?`, `try!`).
-- Provide meaningful error messages to the user when an operation fails.
+-   **Colors**:
+    -   **Rule**: **NEVER** use hardcoded colors like `Color.blue` or `Color.red`.
+    -   **Rule**: Always use our app's color palette from `DesignSystem.swift`. For example: `Color.appPrimary`, `Color.appSurface`.
+-   **Fonts**:
+    -   **Rule**: **NEVER** use custom font sizes like `.font(.system(size: 15))`.
+    -   **Rule**: Always use a font from `DesignSystem.swift`. For example: `.font(.cardTitle)`, `.font(.bodyMedium)`.
+-   **Spacing**:
+    -   **Rule**: Use multiples of 8 for all padding and spacing (e.g., `.padding(16)`). This keeps the layout clean.
+-   **Layout**:
+    -   **Rule**: Make sure the layout works well on both iPhone and iPad. Use `@Environment(\.horizontalSizeClass)` to make different layouts if needed.
+    -   **Rule**: For long lists of items, always use `LazyVStack` or `LazyVGrid` for good performance.
 
-### 6. Testing
-- Write unit tests for ViewModels and business logic.
-- Write UI tests for critical user flows.
-- Use XCTest for both unit and UI testing.
+### **3. State and Data Handling**
 
-### 7. Dependencies
-- Manage dependencies using Swift Package Manager.
-- Add new dependencies only when necessary and with explicit approval.
+-   **Property Wrappers**:
+    -   `@State`: For simple state inside **one** View (like showing an alert).
+    -   `@EnvironmentObject`: To use a **shared manager** for the whole app (like `OrderManager`).
+-   **Async Code (Networking)**:
+    -   **Rule**: Use `async/await` for all network requests or slow tasks.
+    -   **Rule**: All UI updates **must** happen on the main thread. Use `@MainActor` on your functions to ensure this.
+
+### **4. Code Quality**
+
+-   **Previews**: Every View **must** have a `#Preview` block so we can see how it looks without running the whole app.
+-   **Accessibility**: Make the app easy for everyone to use.
+    -   **Rule**: All buttons and controls must have an `.accessibilityLabel("a_clear_description_key".localized)`.
+
+### **5. Localization (The Most Important Rule)**
+
+This is the most important rule for our UI.
+
+-   **Golden Rule**: **NO** user-facing text is allowed to be hardcoded in the Views. You cannot write `Text("Hello World")`.
+
+-   **The Correct Process**:
+    1.  Open the file: `mobile/SOder/SOder/resources/en.lproj/Localizable.strings`.
+    2.  Find a key that matches what you need.
+    3.  If a key does not exist, **add a new one**. For example:
+        ```
+        "my_new_button_title" = "My New Button";
+        ```
+    4.  In your Swift code, use the key with the `.localized` extension.
+        ```swift
+        // Correct way
+        Text("my_new_button_title".localized)
+        
+        // WRONG WAY
+        // Text("My New Button") 
+        ```
+
+-   **Final Check**: Before you finish, search your changed files for any plain text in `Text("...")` to make sure you have followed this rule.

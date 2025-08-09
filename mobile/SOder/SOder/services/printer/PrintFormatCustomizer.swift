@@ -287,7 +287,7 @@ extension PrintFormatter {
             customFooter: settings.customFooterMessages.first
         )
         
-        return formatForThermalPrinter(content)
+        return formatForThermalPrinter(content, target: .kitchen)
     }
     
     func formatCustomerReceiptWithCustomization(_ order: Order, settings: PrintFormatSettings) -> Data {
@@ -300,6 +300,6 @@ extension PrintFormatter {
             customMessages: settings.customFooterMessages
         )
         
-        return formatForThermalPrinter(content)
+        return formatForThermalPrinter(content, target: .receipt)
     }
 }

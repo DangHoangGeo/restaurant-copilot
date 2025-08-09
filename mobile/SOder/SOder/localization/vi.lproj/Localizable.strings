@@ -398,6 +398,8 @@
 "orders_unknown_time" = "Không xác định";
 "orders_more_items" = "và {count} món khác...";
 "orders_unknown_item" = "Không xác định";
+"order_items_section_title" = "Danh sách gọi món";
+"order_items_new_label" = "Mới";
 
 // MARK: - Order Detail
 "orders_not_found" = "Không tìm thấy đơn hàng";
@@ -474,6 +476,7 @@
 "print_language_changed_success" = "Ngôn ngữ in đã được cập nhật thành công!";
 "print_language_fallback_note" = "Nếu máy in không hỗ trợ ngôn ngữ đã chọn, mã món hàng sẽ được sử dụng thay vì tên.";
 
+"tab_new_order" = "Thêm order";
 // MARK: - Manual Printer Setup Localization
 "manual_printer_setup_title" = "Thêm Máy in Mạng";
 "manual_printer_setup_printer_info_title" = "Thông tin Máy in";
@@ -562,24 +565,135 @@
 "test_template" = "Kiểm tra mẫu";
 "load_default_template" = "Tải mẫu mặc định";
 "reset_to_default" = "Đặt lại mặc định";
-"receipt_customization" = "Tùy chỉnh hóa đơn";
-"save" = "Lưu";
-"receipt_preview" = "Xem trước hóa đơn";
-"generating_preview" = "Đang tạo xem trước...";
-"done" = "Xong";
-"preview_not_available" = "Xem trước không khả dụng";
+"receipt_customization" = "Tùy chỉnh Biên lai";
+"configure_header_footer_templates_languages" = "Cấu hình tiêu đề, chân trang, mẫu và ngôn ngữ";
+"receipt_language_title" = "Ngôn ngữ Biên lai";
+"kitchen_language_title" = "Ngôn ngữ Phiếu bếp";
+"languages_section_title" = "Ngôn ngữ";
+"languages_section_help" = "Toàn bộ bản in sử dụng ngôn ngữ đã chọn. Tên món dùng bản dịch; ghi chú cố gắng hiển thị tốt nhất.";
 
-// Variable descriptions
-"restaurant_name_desc" = "Tên nhà hàng";
-"order_id_desc" = "ID đơn hàng";
-"table_name_desc" = "Tên bàn";
-"items_loop_desc" = "Lặp qua các mục đơn hàng";
-"item_quantity_desc" = "Số lượng mục (trong vòng lặp mục)";
-"item_name_desc" = "Tên mục (trong vòng lặp mục)";
-"item_price_desc" = "Giá mục (trong vòng lặp mục)";
-"order_total_desc" = "Tổng đơn hàng";
-"center_align_desc" = "Căn giữa văn bản";
-"bold_text_desc" = "Văn bản đậm";
-"separator_desc" = "Đường ngang";
-"cut_paper_desc" = "Cắt giấy";
+// MARK: - Unified Printer Setup View (new)
+"printer_setup_title" = "Cài đặt Máy in";
+"printer_setup_mode_subtitle" = "Chế độ";
+"add_or_configure_printers" = "Thêm hoặc cấu hình máy in";
+"assignments_title" = "Gán";
+"assignments_subtitle" = "Chọn máy in hoạt động hoặc theo vai trò";
+"test_and_customize_title" = "Kiểm tra & Tùy chỉnh";
+"test_and_customize_subtitle" = "Xác minh và cấu hình hóa đơn";
+"advanced_title" = "Nâng cao";
+"advanced_subtitle" = "Hàng đợi và chẩn đoán";
+"test_printer_title" = "Kiểm tra Máy in";
+"test_printer_message" = "Gửi bản in thử để kiểm tra kết nối?";
+"delete_printer_title" = "Xóa Máy in";
+"delete_printer_message" = "Bạn có chắc muốn xóa cấu hình máy in này?";
+"no_printers_configured" = "Chưa cấu hình máy in.";
+"using_default_placeholder_printer" = "Đang dùng máy in mặc định. Thêm máy in để lưu và chỉnh sửa cài đặt.";
+"set_active" = "Đặt làm Hoạt động";
+"assign_to_kitchen" = "Gán cho Bếp";
+"assign_to_checkout" = "Gán cho Thu ngân";
+"add_role_format" = "Thêm %@";
+"tap_to_configure_network_printer" = "Nhấn để cấu hình máy in mạng";
+"test_assigned_printers" = "Kiểm tra Máy in đã gán";
+"language_diagnostics_title" = "Chẩn đoán Ngôn ngữ";
+"language_diagnostics_subtitle" = "Kiểm tra hỗ trợ ngôn ngữ của máy in (EN/JA/VI)";
+"main_printer" = "Máy in Chính";
+"kitchen_printer" = "Máy in Bếp";
+"checkout_printer" = "Máy in Thu ngân";
+"test_kitchen_printer" = "Kiểm tra Máy in Bếp";
+"test_checkout_printer" = "Kiểm tra Máy in Thu ngân";
 
+// MARK: - Receipt Customization (new keys)
+"languages_section_title" = "Ngôn ngữ";
+"restaurant_information_title" = "Thông tin Nhà hàng";
+"restaurant_name_placeholder" = "Tên Nhà hàng";
+"address_placeholder" = "Địa chỉ";
+"phone_number_placeholder" = "Số điện thoại";
+"website_optional_placeholder" = "Website (Tùy chọn)";
+"show_website_on_receipt" = "Hiển thị website trên hóa đơn";
+"tax_information_title" = "Thông tin Thuế";
+"tax_code_optional_placeholder" = "Mã số thuế (Tùy chọn)";
+"show_tax_code_on_receipt" = "Hiển thị MST trên hóa đơn";
+"footer_messages_title" = "Thông điệp chân trang";
+"thank_you_message_placeholder" = "Lời cảm ơn";
+"promotional_text_optional_placeholder" = "Nội dung khuyến mãi (Tùy chọn)";
+"show_promotional_text" = "Hiển thị khuyến mãi";
+"receipt_theme_title" = "Chủ đề Hóa đơn";
+"receipt_style_label" = "Kiểu Hóa đơn";
+"kitchen_order_style_label" = "Kiểu Phiếu bếp";
+"encoding_accessibility_hint" = "Chọn mã hóa ký tự cho in hóa đơn";
+"template_accessibility_hint" = "Nhập mẫu tùy chỉnh dùng cú pháp template";
+"preview_accessibility_hint" = "Xem trước hóa đơn với cài đặt hiện tại";
+"load_default_accessibility_hint" = "Tải mẫu mặc định để tùy chỉnh";
+"reset_default_accessibility_hint" = "Đặt lại mẫu và mã hóa về mặc định";
+"receipt_settings_saved_title" = "Đã lưu cài đặt";
+"receipt_settings_saved_message" = "Tùy chỉnh hóa đơn của bạn đã được lưu.";
+"template_theme_standard_name" = "Chuẩn";
+"template_theme_minimal_name" = "Tối giản";
+"template_theme_elegant_name" = "Thanh lịch";
+"template_theme_standard_desc" = "Bố cục cân bằng, đầy đủ thông tin";
+"template_theme_minimal_desc" = "Gọn gàng, chỉ thông tin cần thiết";
+"template_theme_elegant_desc" = "Định dạng đẹp với phần trang trí";
+"template_type_receipt" = "Hóa đơn";
+"template_type_kitchen" = "Phiếu bếp";
+"save_and_preview" = "Lưu & Xem trước";
+"save_and_preview_hint" = "Lưu thay đổi và xem trước kết quả";
+"template_theme_help" = "Chủ đề thay đổi bố cục và kiểu dáng của bản in. Sử dụng Xem trước để thấy sự khác biệt trước khi in.";
+
+// MARK: - Receipt Preview Test Data
+"test_restaurant_name" = "Nhà hàng Test";
+"test_restaurant_address" = "123 Phố Test, Tokyo, Nhật Bản";
+"test_restaurant_phone" = "03-1234-5678";
+"test_restaurant_website" = "www.test-restaurant.vn";
+"test_order_id" = "ĐH001";
+"test_table_name" = "Bàn 5";
+"test_item_1_name" = "Cơm gà teriyaki";
+"test_item_2_name" = "Súp miso";
+"test_item_3_name" = "Trà xanh";
+"test_item_1_notes" = "Thêm nước sốt";
+"test_special_instructions" = "Vui lòng cung cấp nĩa thay vì đũa";
+"test_thank_you_message" = "Cảm ơn quý khách đã ghé thăm!";
+"test_promotional_message" = "Sử dụng coupon này để được giảm 10% lần ghé thăm tiếp theo";
+"test_tax_code" = "T123456789";
+"receipt_preview_simulation" = "Xem trước - Bản in thực tế có thể khác tùy theo cài đặt máy in";
+
+// MARK: - Encoding Strategy
+"receipt_encoding_strategy" = "Mã hóa hóa đơn";
+"encoding_strategy_description" = "Mã hóa được tự động chọn dựa trên ngôn ngữ hóa đơn và khả năng máy in.";
+"encoding_strategy_utf8_primary" = "UTF-8 Ưu tiên";
+"encoding_strategy_utf8_fallback" = "UTF-8 với Dự phòng";
+"encoding_strategy_legacy" = "Mã hóa Ngôn ngữ Cũ";
+
+// MARK: - Template Labels (Receipt/Kitchen)
+"tpl_receipt" = "Hóa đơn";
+"tpl_order" = "Đơn";
+"tpl_table" = "Bàn";
+"tpl_date" = "Ngày";
+"tpl_time" = "Giờ";
+"tpl_note" = "Ghi chú";
+"tpl_subtotal" = "Tạm tính";
+"tpl_tax" = "Thuế";
+"tpl_discount" = "Giảm giá";
+"tpl_total" = "Tổng";
+"tpl_thank_you" = "Cảm ơn quý khách!";
+"tpl_thank_you_short" = "Xin cảm ơn!";
+"tpl_thank_you_dining" = "Cảm ơn quý khách đã dùng bữa!";
+"tpl_tax_code" = "Mã số thuế";
+"tpl_kitchen_order" = "PHIẾU BẾP";
+"tpl_special_instructions" = "LƯU Ý ĐẶC BIỆT:";
+"tpl_prepared_by" = "Chuẩn bị bởi:";
+"tpl_special_notes" = "Ghi chú";
+"tpl_items" = "Món";
+"tpl_guests" = "Khách";
+"tpl_qty" = "SL";
+"tpl_notes" = "Ghi chú";
+"tpl_item" = "Món";
+"tpl_price" = "Giá";
+"tpl_total_quantity" = "Tổng số lượng";
+"tpl_tables" = "Bàn";
+"tpl_status" = "Trạng thái";
+"tpl_urgent_high_priority" = "KHẨN CẤP - ƯU TIÊN CAO";
+"tpl_completed" = "ĐÃ HOÀN THÀNH";
+"tpl_kitchen_summary" = "TỔNG HỢP BẾP";
+"tpl_phone" = "Điện thoại";
+"tpl_official_receipt" = "HÓA ĐƠN CHÍNH THỨC";
+"tpl_printed" = "In lúc";

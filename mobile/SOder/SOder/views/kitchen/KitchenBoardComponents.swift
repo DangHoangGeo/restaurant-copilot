@@ -12,26 +12,25 @@ struct CategoryFilterChip: View {
     
     var body: some View {
         Button(action: action) {
-            HStack {
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.medium)
+            HStack {            Text(title)
+                .font(.captionBold)
+                .fontWeight(.medium)
                 
                 if count > 0 {
                     Text("\(count)")
-                        .font(.caption2)
+                        .font(.captionBold)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
-                        .padding(4)
+                        .padding(Spacing.xxs)
                         .background(color)
                         .clipShape(Circle())
                 }
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Spacing.md)
             .padding(.vertical, 6)
-            .background(isSelected ? color.opacity(0.8) : Color(.systemGray5))
-            .foregroundColor(isSelected ? .white : .primary)
-            .cornerRadius(16)
+            .background(isSelected ? color.opacity(0.8) : Color.appSurface)
+            .foregroundColor(isSelected ? .white : .appTextPrimary)
+            .cornerRadius(CornerRadius.md)
         }
     }
 }
@@ -47,17 +46,17 @@ struct KitchenStatCard: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.title2)
+                .font(.cardTitle)
                 .fontWeight(.bold)
                 .foregroundColor(color)
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.captionRegular)
+                .foregroundColor(.appTextSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
+        .padding(.vertical, Spacing.sm)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.sm)
     }
 }
 
@@ -80,11 +79,10 @@ struct KitchenItemCard: View {
                             .font(.caption)
                             .fontWeight(.bold)
                     }
-                    .foregroundColor(.red)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color.red.opacity(0.2))
-                    .cornerRadius(8)
+                    .foregroundColor(.appError)
+                    .padding(Spacing.xs)
+                    .background(Color.appError.opacity(0.2))
+                    .cornerRadius(CornerRadius.sm)
                 }
                 
                 Spacer()
@@ -92,7 +90,7 @@ struct KitchenItemCard: View {
                 Text(timeAgoText)
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
             }
             
             // Item name and prominent quantity
@@ -108,7 +106,7 @@ struct KitchenItemCard: View {
                         Text("kitchen_size".localized + " \(size)")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                     }
                 }
                 
@@ -130,7 +128,7 @@ struct KitchenItemCard: View {
                     Text("kitchen_modifications".localized)
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextSecondary)
                     
                     ForEach(item.toppings.prefix(3), id: \.self) { topping in
                         Text("• \(topping)")
@@ -141,7 +139,7 @@ struct KitchenItemCard: View {
                     if item.toppings.count > 3 {
                         Text("+ \(item.toppings.count - 3) more...")
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                             .italic()
                     }
                 }
@@ -204,14 +202,14 @@ struct KitchenItemCard: View {
                         
                         Text("kitchen_tap_to".localized + " \(nextActionText)")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextSecondary)
                 }
                 .padding(16)
                 .background(Color(.systemGray6))
@@ -248,7 +246,7 @@ struct KitchenItemCard: View {
     private var nextActionText: String {
         switch item.status {
         case .draft: return "kitchen_action_start".localized
-        case .ordered: return "kitchen_action_start_preparing".localized
+        case .new: return "kitchen_action_start_preparing".localized
         case .preparing: return "kitchen_action_mark_ready".localized
         case .ready: return "kitchen_action_mark_served".localized
         case .served: return "kitchen_action_completed".localized
@@ -259,7 +257,7 @@ struct KitchenItemCard: View {
     private var statusColor: Color {
         switch item.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -273,7 +271,7 @@ struct KitchenItemCard: View {
         } else {
             switch item.status {
             case .draft: return Color.gray.opacity(0.03)
-            case .ordered: return Color.blue.opacity(0.03)
+            case .new: return Color.blue.opacity(0.03)
             case .preparing: return Color.orange.opacity(0.03)
             case .ready: return Color.green.opacity(0.03)
             case .served: return Color.gray.opacity(0.03)
@@ -285,7 +283,7 @@ struct KitchenItemCard: View {
     private var priorityBorderColor: Color {
         switch item.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -302,7 +300,7 @@ struct StatusColumnsView: View {
     let onItemDetailTap: (GroupedItem) -> Void
     
     private var newItems: [GroupedItem] {
-        items.filter { $0.status == .ordered }
+        items.filter { $0.status == .new }
     }
     
     private var preparingItems: [GroupedItem] {
@@ -422,7 +420,7 @@ struct CompactKitchenItemCard: View {
                         Text("kitchen_size".localized + " \(size)")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                     }
                 }
                 
@@ -444,7 +442,7 @@ struct CompactKitchenItemCard: View {
                     Text("kitchen_tables".localized)
                         .font(.caption)
                         .fontWeight(.medium)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextSecondary)
                     
                     Text(Array(item.tables.sorted()).joined(separator: ", "))
                         .font(.headline)
@@ -538,7 +536,7 @@ struct CompactKitchenItemCard: View {
     private var statusColor: Color {
         switch item.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -549,7 +547,7 @@ struct CompactKitchenItemCard: View {
     private var nextActionText: String {
         switch item.status {
         case .draft: return "kitchen_action_start".localized
-        case .ordered: return "kitchen_action_start_preparing".localized
+        case .new: return "kitchen_action_start_preparing".localized
         case .preparing: return "kitchen_action_mark_ready".localized
         case .ready: return "kitchen_action_mark_served".localized
         case .served: return "kitchen_action_completed".localized
@@ -592,7 +590,7 @@ struct CategoryGroupView: View {
                 
                 Text("kitchen_items_count".localized.replacingOccurrences(of: "{count}", with: "\(categoryGroup.items.count)"))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color(.systemGray5))
@@ -637,17 +635,17 @@ struct KitchenEmptyStateView: View {
                 
                 Text("kitchen_empty_no_items".localized)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
             }
             
             if orderCount > 0 {
                 Text("kitchen_empty_total_orders".localized.replacingOccurrences(of: "{count}", with: "\(orderCount)"))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
             } else {
                 Text("kitchen_empty_no_orders".localized)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -705,7 +703,7 @@ struct ImprovedCategoryGroupView: View {
                 Text("kitchen_items_count".localized.replacingOccurrences(of: "{count}", with: "\(categoryGroup.items.count)"))
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.appTextSecondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color(.systemGray5))
@@ -897,7 +895,7 @@ struct HorizontalKitchenItemCard: View {
     private var statusColor: Color {
         switch item.status {
         case .draft: return .gray
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
@@ -908,7 +906,7 @@ struct HorizontalKitchenItemCard: View {
     private var actionText: String {
         switch item.status {
         case .draft: return "kitchen_action_start".localized
-        case .ordered: return "kitchen_action_start".localized
+        case .new: return "kitchen_action_start".localized
         case .preparing: return "kitchen_action_ready".localized
         case .ready: return "kitchen_action_serve".localized
         case .served: return "kitchen_action_done".localized
@@ -919,7 +917,7 @@ struct HorizontalKitchenItemCard: View {
     private var actionIcon: String {
         switch item.status {
         case .draft: return "doc.plaintext"
-        case .ordered: return "play.fill"
+        case .new: return "play.fill"
         case .preparing: return "checkmark.circle.fill"
         case .ready: return "hand.raised.fill"
         case .served: return "checkmark.circle.fill"

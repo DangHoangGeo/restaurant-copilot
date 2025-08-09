@@ -4,7 +4,6 @@ import { SmartMenu } from '@/components/features/customer/menu/SmartMenu';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
-import type { Category } from '@/shared/types/menu';
 import { useCustomerData } from '@/components/features/customer/layout/CustomerDataContext';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -24,7 +23,6 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   // Local state
   const [tableId, setTableId] = useState<string | null>(sessionParams.tableId || null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [categories, setCategories] = useState<Category[]>([]);
 
   // Session dialog states
   const [guestCount, setGuestCount] = useState<number>(1);
@@ -36,24 +34,6 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const [pendingSessionId, setPendingSessionId] = useState<string>('');
   const [requirePasscode, setRequirePasscode] = useState<boolean>(false);
 
-  // Fetch menu data
-  useEffect(() => {
-    const fetchMenuData = async () => {
-      if (!restaurantSettings?.id) return;
-      
-      try {
-        const response = await fetch(`/api/v1/customer/menu?restaurantId=${restaurantSettings.id}`);
-        const data = await response.json();
-        if (data.success) {
-          setCategories(data.categories || []);
-        }
-      } catch (error) {
-        console.error('Error fetching menu data:', error);
-      }
-    };
-
-    fetchMenuData();
-  }, [restaurantSettings]);
 
   // Handle session resolution for QR codes and session parameters
   useEffect(() => {
@@ -259,7 +239,6 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   return (
     <>
       <SmartMenu
-        categories={categories}
         locale={locale}
         sessionId={sessionData.sessionId || ''}
         tableNumber={sessionData.tableNumber || ''}

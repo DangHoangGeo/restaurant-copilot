@@ -64,7 +64,7 @@ export function OrdersListView({
 
   // Group items by status
   const groupedItems = {
-    ordered: orderItemsWithContext.filter(item => item.status === 'new'),
+    new: orderItemsWithContext.filter(item => item.status === 'new'),
     preparing: orderItemsWithContext.filter(item => item.status === 'preparing'),
     ready: orderItemsWithContext.filter(item => item.status === 'ready'),
     served: orderItemsWithContext.filter(item => item.status === 'served')
@@ -89,7 +89,7 @@ export function OrdersListView({
     
     // Map the column IDs to actual status values
     const statusMap = {
-      ordered: 'new',
+      new: 'new',
       preparing: 'preparing',
       ready: 'ready',
       served: 'served'
@@ -103,7 +103,7 @@ export function OrdersListView({
 
   const getColumnIcon = (status: string) => {
     switch (status) {
-      case 'ordered': return <Clock className="h-4 w-4" />;
+      case 'new': return <Clock className="h-4 w-4" />;
       case 'preparing': return <ChefHat className="h-4 w-4" />;
       case 'ready': return <CheckCircle className="h-4 w-4" />;
       case 'served': return <CheckCircle className="h-4 w-4" />;
@@ -113,7 +113,7 @@ export function OrdersListView({
 
   const getColumnColor = (status: string) => {
     switch (status) {
-      case 'ordered': return 'bg-blue-50 border-blue-200';
+      case 'new': return 'bg-blue-50 border-blue-200';
       case 'preparing': return 'bg-yellow-50 border-yellow-200';
       case 'ready': return 'bg-green-50 border-green-200';
       case 'served': return 'bg-gray-50 border-gray-200';
@@ -173,24 +173,24 @@ export function OrdersListView({
 
         <div className="grid grid-cols-3 gap-6">
           {/* New Orders Column */}
-          <div className={`rounded-lg border-2 ${getColumnColor('ordered')} ${isDragging ? 'border-dashed' : ''}`}>
+          <div className={`rounded-lg border-2 ${getColumnColor('new')} ${isDragging ? 'border-dashed' : ''}`}>
             <div className="p-4 border-b">
               <div className="flex items-center gap-2">
-                {getColumnIcon('ordered')}
+                {getColumnIcon('new')}
                 <h3 className="font-medium">{t('new')}</h3>
                 <Badge variant="secondary" className="ml-auto">
-                  {groupedItems.ordered.length}
+                  {groupedItems.new.length}
                 </Badge>
               </div>
             </div>
-            <Droppable droppableId="ordered">
+            <Droppable droppableId="new">
               {(provided, snapshot) => (
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                   className={`p-4 space-y-3 min-h-[200px] ${snapshot.isDraggingOver ? 'bg-blue-100' : ''}`}
                 >
-                  {groupedItems.ordered.map((item, index) => (
+                  {groupedItems.new.map((item, index) => (
                     <Draggable key={item.id} draggableId={item.id} index={index}>
                       {(provided, snapshot) => (
                         <div

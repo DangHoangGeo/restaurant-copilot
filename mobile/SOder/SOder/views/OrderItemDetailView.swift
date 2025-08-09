@@ -22,7 +22,6 @@ struct OrderItemDetailView: View {
                 .onTapGesture {
                     onComplete()
                 }
-            
             // Detail dialog
             VStack(spacing: 0) {
                 // Header
@@ -30,7 +29,7 @@ struct OrderItemDetailView: View {
                 
                 // Content
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: Spacing.md) {
                         // Item summary
                         itemSummarySection
                         
@@ -45,13 +44,13 @@ struct OrderItemDetailView: View {
                     }
                     .padding()
                 }
-                .background(Color(.systemGroupedBackground))
+                .background(Color.appBackground)
             }
             .frame(maxWidth: 600) // Limit width for iPad
             .frame(maxHeight: UIScreen.main.bounds.height * 0.8) // Limit height
-            .background(Color(.systemBackground))
-            .cornerRadius(20)
-            .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
+            .background(Color.appSurface)
+            .cornerRadius(CornerRadius.lg)
+            .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
             .padding()
         }
         .onAppear {
@@ -73,10 +72,11 @@ struct OrderItemDetailView: View {
     
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(item.menu_item?.displayName ?? "Unknown Item")
-                    .font(.headline)
+                    .font(.cardTitle)
                     .fontWeight(.bold)
+                    .foregroundColor(.appTextPrimary)
                 
                 HStack(spacing: 16) {
                     Label("×\(item.quantity)", systemImage: "number.circle")
@@ -94,29 +94,30 @@ struct OrderItemDetailView: View {
             Button("Close") {
                 onComplete()
             }
-            .font(.subheadline)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color(.systemGray5))
-            .cornerRadius(8)
+            .font(.bodyMedium)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
+            .background(Color.appSurface)
+            .cornerRadius(CornerRadius.sm)
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color.appSurface)
         .overlay(
             Rectangle()
                 .frame(height: 1)
-                .foregroundColor(Color(.systemGray4)),
+                .foregroundColor(Color.appBorder),
             alignment: .bottom
         )
     }
     
     private var itemSummarySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Item Details")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("item_detail_item_details_title".localized)
+                .font(.sectionHeader)
                 .fontWeight(.semibold)
+                .foregroundColor(.appTextPrimary)
             
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 // Name and quantity
                 HStack {
                     Text("Name:")
@@ -157,17 +158,18 @@ struct OrderItemDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
     private var notesSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Text("Special Notes")
                     .font(.headline)
                     .fontWeight(.semibold)
+                    .foregroundColor(.appTextPrimary)
                 
                 Spacer()
                 
@@ -215,18 +217,19 @@ struct OrderItemDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
     private var statusManagementSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Status Management")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("item_detail_status_management_title".localized)
+                .font(.sectionHeader)
                 .fontWeight(.semibold)
+                .foregroundColor(.appTextPrimary)
             
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.sm) {
                 // Current status display
                 HStack {
                     Circle()
@@ -299,13 +302,13 @@ struct OrderItemDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
     private var actionButtonsSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.sm) {
             Button(action: {
                 Task {
                     await printKitchenSlip()
@@ -324,8 +327,8 @@ struct OrderItemDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
@@ -342,19 +345,19 @@ struct OrderItemDetailView: View {
     
     private var statusColor: Color {
         switch item.status {
-        case .draft: return .purple
-        case .ordered: return .blue
-        case .preparing: return .orange
-        case .ready: return .green
-        case .served: return .gray
-        case .cancelled: return .red
+        case .draft: return .appTextSecondary
+        case .new: return .appInfo
+        case .preparing: return .appWarning
+        case .ready: return .appSuccess
+        case .served: return .appTextSecondary
+        case .cancelled: return .appError
         }
     }
     
     private var statusIcon: String {
         switch item.status {
         case .draft: return "doc.text.fill"
-        case .ordered: return "flame"
+        case .new: return "flame"
         case .preparing: return "checkmark.circle"
         case .ready: return "checkmark.circle.fill"
         case .served: return "checkmark.seal.fill"
@@ -365,7 +368,7 @@ struct OrderItemDetailView: View {
     private var nextStatusText: String {
         switch item.status {
         case .draft: return "Order"
-        case .ordered: return "Preparing"
+        case .new: return "New"
         case .preparing: return "Ready"
         case .ready: return "Served"
         case .served: return "Completed"
@@ -433,8 +436,8 @@ struct OrderItemDetailView: View {
     private func getNextStatus() -> OrderItemStatus {
         switch item.status {
         case .draft:
-            return .ordered
-        case .ordered:
+            return .new
+        case .new:
             return .preparing
         case .preparing:
             return .ready
@@ -453,7 +456,7 @@ struct OrderItemDetailView: View {
 struct OrderItemStatusProgressView: View {
     let currentStatus: OrderItemStatus
     
-    private let allStatuses: [OrderItemStatus] = [.ordered, .preparing, .ready, .served]
+    private let allStatuses: [OrderItemStatus] = [.new, .preparing, .ready, .served]
     
     var body: some View {
         HStack(spacing: 8) {
@@ -497,7 +500,7 @@ struct OrderItemStatusProgressView: View {
     private func statusColor(for status: OrderItemStatus) -> Color {
         switch status {
         case .draft: return .purple
-        case .ordered: return .blue
+        case .new: return .blue
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray

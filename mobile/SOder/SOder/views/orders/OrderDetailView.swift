@@ -11,6 +11,11 @@ struct OrderDetailView: View {
     @State private var selectedItems: Set<String> = []
     @State private var showingItemActions = false
     @State private var selectedItem: OrderItem? = nil
+    @State private var showingCancelConfirmAlert = false
+    @State private var showingAddItemSheet = false
+    @State private var showingStatusUpdateSheet = false
+    @State private var errorMessage: String? = nil
+    @State private var showingErrorAlert = false
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject private var supabaseManager: SupabaseManager
@@ -41,7 +46,7 @@ struct OrderDetailView: View {
     
     private func statusPriority(_ status: String) -> Int {
         switch status {
-        case "ordered": return 1
+        case "new": return 1
         case "preparing": return 2
         case "ready": return 3
         case "served": return 4
@@ -75,6 +80,54 @@ struct OrderDetailView: View {
                         onPrintResult: onPrintResult
                     )
                 }
+                .sheet(isPresented: $showingAddItemSheet) {
+                    NavigationView {
+                        AddItemToOrderView(order: order)
+                            .environmentObject(orderManager)
+                            .environmentObject(supabaseManager)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("Cancel") {
+                                        showingAddItemSheet = false
+                                    }
+                                }
+                                ToolbarItem(placement: .navigationBarTrailing) {
+                                    Button("Done") {
+                                        showingAddItemSheet = false
+                                        Task {
+                                            await orderManager.fetchActiveOrders()
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                }
+                .sheet(isPresented: $showingStatusUpdateSheet) {
+                    NavigationView {
+                        OrderStatusUpdateView(order: order)
+                            .environmentObject(orderManager)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("Cancel") {
+                                        showingStatusUpdateSheet = false
+                                    }
+                                }
+                            }
+                    }
+                }
+                .alert("Cancel Order", isPresented: $showingCancelConfirmAlert) {
+                    Button("Cancel Order", role: .destructive) {
+                        Task { await cancelOrder() }
+                    }
+                    Button("Keep Order", role: .cancel) {}
+                } message: {
+                    Text("Are you sure you want to cancel this order? This action cannot be undone.")
+                }
+                .alert("Error", isPresented: $showingErrorAlert) {
+                    Button("OK") {}
+                } message: {
+                    Text(errorMessage ?? "An error occurred")
+                }
                 .toolbar {
                     if horizontalSizeClass != .regular && order.status == .completed {
                         ToolbarItem(placement: .navigationBarTrailing) {
@@ -105,142 +158,197 @@ struct OrderDetailView: View {
     }
     
     private func orderHeader(for order: Order) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             HStack {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     HStack {
-                        Text(order.table?.name ?? "Table \(order.table_id)")
-                            .font(.title2)
+                        Text(order.table?.name ?? String(format: "order_detail_table_fallback".localized, order.table_id))
+                            .font(.cardTitle)
+                            .foregroundColor(.appTextPrimary)
                             .fontWeight(.bold)
-                        
                         Spacer()
-                        
                         EnhancedStatusBadge(status: order.status)
                     }
-                    
-                    HStack(spacing: 20) {
-                        Label("\(order.guest_count ?? 0)", systemImage: "person.2") // Handle optional guest_count
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
+                    HStack(spacing: Spacing.md) {
+                        Label("\(order.guest_count ?? 0)", systemImage: "person.2")
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                         Label(formatTime(order.created_at), systemImage: "clock")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        if let sessionId = order.session_id, !sessionId.isEmpty { // Handle optional session_id
-                            Label("ID: \(order.id.prefix(6).uppercased())", systemImage: "number") // Displaying order.id, condition on session_id
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
+                        if let sessionId = order.session_id, !sessionId.isEmpty {
+                            Label(String(format: "order_detail_id_label".localized, order.id.prefix(6).uppercased()), systemImage: "number")
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextSecondary)
                         }
                     }
                 }
             }
-            
-            // Order Actions Section
             orderActionsSection(for: order)
-            
             if let total = order.total_amount {
                 HStack {
                     Text("orders_total_amount".localized)
-                        .font(.headline)
+                        .font(.bodyMedium)
                         .fontWeight(.semibold)
-                    
+                        .foregroundColor(.appTextPrimary)
                     Spacer()
-                    
                     Text("¥\(String(format: "%.0f", total))")
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.appPrimary)
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .padding(Spacing.md)
+                .background(Color.appSurface)
+                .cornerRadius(CornerRadius.md)
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .padding(Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
+
     private func orderActionsSection(for order: Order) -> some View {
-        VStack(spacing: 12) {
-            if order.status == .completed {
-                // Show only print receipt for completed orders
-                Button(action: {
-                    Task { await printReceipt(for: order) }
-                }) {
-                    HStack {
-                        Image(systemName: "printer")
-                        Text("orders_print_receipt".localized)
-                            .fontWeight(.semibold)
+        VStack(spacing: Spacing.sm) {
+            // Primary Actions Row
+            HStack(spacing: Spacing.md) {
+                if order.status == .completed {
+                    Button(action: {
+                        Task { await printReceipt(for: order) }
+                    }) {
+                        HStack {
+                            Image(systemName: "printer")
+                            Text("orders_print_receipt".localized)
+                                .font(.buttonLarge)
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.appPrimary)
+                        .foregroundColor(.white)
+                        .cornerRadius(CornerRadius.md)
                     }
-                    .frame(maxWidth: 120)
-                    .frame(height: 44)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                }
-            } else {
-                // Show checkout for non-completed orders
-                HStack(spacing: 16){
-                    // Status progression buttons
+                    .accessibilityLabel("orders_print_receipt_accessibility".localized)
+                } else {
+                    // Add Items Button
+                    Button(action: {
+                        showingAddItemSheet = true
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle")
+                            Text("Add Items")
+                                .font(.buttonLarge)
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.appInfo)
+                        .foregroundColor(.white)
+                        .cornerRadius(CornerRadius.md)
+                    }
+                    .accessibilityLabel("Add items to order")
+                    
                     if order.status == .new {
                         Button(action: {
                             Task { await updateOrderStatus(.serving) }
                         }) {
                             HStack {
                                 Image(systemName: "fork.knife")
-                                Text("Mark as Serving")
+                                Text("orders_mark_serving".localized)
+                                    .font(.buttonLarge)
                                     .fontWeight(.medium)
                             }
-                            .frame(maxWidth: 256)
+                            .frame(maxWidth: .infinity)
                             .frame(height: 44)
-                            .background(Color.orange)
+                            .background(Color.appWarning)
                             .foregroundColor(.white)
-                            .cornerRadius(8)
+                            .cornerRadius(CornerRadius.md)
                         }
                         .disabled(isUpdatingStatus)
+                        .accessibilityLabel("orders_mark_serving_accessibility".localized)
                     }
                     
                     Button(action: onCheckout) {
                         HStack {
                             Image(systemName: "creditcard")
-                            Text("Checkout")
+                            Text("orders_checkout".localized)
+                                .font(.buttonLarge)
                                 .fontWeight(.semibold)
                         }
-                        .frame(maxWidth: 256)
+                        .frame(maxWidth: .infinity)
                         .frame(height: 44)
-                        .background(Color.blue)
+                        .background(Color.appPrimary)
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .cornerRadius(CornerRadius.md)
+                    }
+                    .accessibilityLabel("orders_checkout_accessibility".localized)
+                }
+            }
+            
+            // Secondary Actions Row (only for active orders)
+            if order.status != .completed && order.status != .canceled {
+                HStack(spacing: Spacing.md) {
+                    // Update Status Button
+                    Button(action: {
+                        showingStatusUpdateSheet = true
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.up.circle")
+                            Text("Update Status")
+                                .font(.buttonMedium)
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 36)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.appTextPrimary)
+                        .cornerRadius(CornerRadius.sm)
+                    }
+                    .accessibilityLabel("Update order status")
+                    
+                    // Cancel Order Button (only for new orders)
+                    if order.status == .new {
+                        Button(action: {
+                            showingCancelConfirmAlert = true
+                        }) {
+                            HStack {
+                                Image(systemName: "xmark.circle")
+                                Text("Cancel Order")
+                                    .font(.buttonMedium)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 36)
+                            .background(Color.appError.opacity(0.1))
+                            .foregroundColor(.appError)
+                            .cornerRadius(CornerRadius.sm)
+                        }
+                        .accessibilityLabel("Cancel this order")
                     }
                 }
             }
         }
     }
-    
+
     private func orderItemsSection(for order: Order) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
-                Text("Order Items (\(sortedItems.count))")
-                    .font(.headline)
+                Text(String(format: "order_items_section_title".localized, sortedItems.count))
+                    .font(.bodyMedium)
                     .fontWeight(.semibold)
-                
+                    .foregroundColor(.appTextPrimary)
                 Spacer()
-                
-                if sortedItems.contains(where: { $0.status.rawValue == "ordered" }) {
+                if sortedItems.contains(where: { $0.status.rawValue == "new" }) {
                     HStack {
                         Image(systemName: "circle.fill")
-                            .font(.caption)
-                            .foregroundColor(.red)
-                        Text("New items")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appError)
+                        Text("order_items_new_label".localized)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                     }
                 }
             }
-            
             VStack(spacing: 0) {
                 ForEach(Array(sortedItems.enumerated()), id: \.element.id) { index, item in
                     EnhancedOrderItemView(
@@ -254,20 +362,18 @@ struct OrderDetailView: View {
                     .onTapGesture {
                         selectedItem = item
                     }
-                    
-                    // Add separator between items (except for the last item)
                     if index < sortedItems.count - 1 {
                         Divider()
-                            .padding(.leading, 16)
-                            .padding(.trailing, 16)
-                            .padding(.vertical, 8)
+                            .padding(.leading, Spacing.md)
+                            .padding(.trailing, Spacing.md)
+                            .padding(.vertical, Spacing.xs)
                     }
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
+        .padding(Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
@@ -281,6 +387,22 @@ struct OrderDetailView: View {
             onPrintResult("Order status updated to \(newStatus.displayName)")
         } catch {
             onPrintResult("Failed to update order status: \(error.localizedDescription)")
+        }
+        
+        isUpdatingStatus = false
+    }
+    
+    @MainActor
+    private func cancelOrder() async {
+        isUpdatingStatus = true
+        errorMessage = nil
+        
+        do {
+            try await orderManager.cancelOrder(orderId: orderId)
+            onPrintResult("Order cancelled successfully")
+        } catch {
+            errorMessage = "Failed to cancel order: \(error.localizedDescription)"
+            showingErrorAlert = true
         }
         
         isUpdatingStatus = false
