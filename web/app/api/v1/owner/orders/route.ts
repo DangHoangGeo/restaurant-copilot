@@ -3,8 +3,17 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { z } from "zod";
 import { randomUUID } from "crypto";
+import { ordersGetQuerySchema, createPaginationMeta, calculateDateRange } from "@/lib/utils/validation";
+import { createApiSuccess, handleApiError } from "@/lib/server/apiError";
+import { protectEndpoint, RATE_LIMIT_CONFIGS } from "@/lib/server/rateLimit";
 
 // Define types for the database response
+// Type for SQL function result
+interface OrderCreationResult {
+  order_id: string;
+  total_amount: number;
+  created_at: string;
+}
 interface OrderItem {
   id: string;
   restaurant_id: string;
@@ -104,8 +113,22 @@ const createOrderSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const requestId = randomUUID();
+  let user: Awaited<ReturnType<typeof getUserFromRequest>> | null = null;
+  
+  // Apply rate limiting and CSRF protection
+  const protectionResult = await protectEndpoint(
+    req,
+    RATE_LIMIT_CONFIGS.MUTATION,
+    'orders-post'
+  );
+  
+  if (protectionResult) {
+    return protectionResult;
+  }
+
   try {
-    const user = await getUserFromRequest();
+    user = await getUserFromRequest();
     if (!user || !user.restaurantId) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
@@ -125,231 +148,108 @@ export async function POST(req: NextRequest) {
 
     const { table_id, guest_count, order_items } = validatedData.data;
 
-    // Verify table belongs to restaurant
-    const { data: table, error: tableError } = await supabaseAdmin
-      .from("tables")
-      .select("id")
-      .eq("id", table_id)
-      .eq("restaurant_id", user.restaurantId)
-      .single();
-
-    if (tableError || !table) {
-      return NextResponse.json(
-        { success: false, error: "Table not found" },
-        { status: 404 }
-      );
-    }
-
-    // Verify menu items belong to restaurant and calculate total
-    let total_amount = 0;
-    const itemPrices = new Map<string, number>(); // Store calculated price for each item
-    
-    for (const item of order_items) {
-      const { data: menuItem, error: menuError } = await supabaseAdmin
-        .from("menu_items")
-        .select("price")
-        .eq("id", item.menu_item_id)
-        .eq("restaurant_id", user.restaurantId)
-        .single();
-
-      if (menuError || !menuItem) {
-        return NextResponse.json(
-          { success: false, error: `Menu item ${item.menu_item_id} not found` },
-          { status: 404 }
-        );
-      }
-
-      let itemPrice = menuItem.price;
-
-      // Add size price if specified
-      if (item.menu_item_size_id) {
-        const { data: sizeData, error: sizeError } = await supabaseAdmin
-          .from("menu_item_sizes")
-          .select("price")
-          .eq("id", item.menu_item_size_id)
-          .eq("restaurant_id", user.restaurantId)
-          .single();
-
-        if (sizeError || !sizeData) {
-          return NextResponse.json(
-            { success: false, error: `Menu item size ${item.menu_item_size_id} not found` },
-            { status: 404 }
-          );
-        }
-
-        itemPrice = sizeData.price; // Size price replaces base price
-      }
-
-      // Add toppings price if specified
-      if (item.topping_ids && item.topping_ids.length > 0) {
-        const { data: toppingsData, error: toppingsError } = await supabaseAdmin
-          .from("toppings")
-          .select("price")
-          .in("id", item.topping_ids)
-          .eq("restaurant_id", user.restaurantId);
-
-        if (toppingsError || !toppingsData) {
-          return NextResponse.json(
-            { success: false, error: "Invalid toppings specified" },
-            { status: 404 }
-          );
-        }
-
-        // Validate all toppings exist
-        if (toppingsData.length !== item.topping_ids.length) {
-          return NextResponse.json(
-            { success: false, error: "Some toppings not found" },
-            { status: 404 }
-          );
-        }
-
-        const toppingsPrice = toppingsData.reduce((sum, topping) => sum + topping.price, 0);
-        itemPrice += toppingsPrice;
-      }
-
-      // Store the calculated price for this item
-      const itemKey = `${item.menu_item_id}-${item.menu_item_size_id || 'no-size'}-${(item.topping_ids || []).sort().join(',')}`;
-      itemPrices.set(itemKey, itemPrice);
-      
-      total_amount += itemPrice * item.quantity;
-    }
-
-    // Create the order
-    const { data: newOrder, error: orderError } = await supabaseAdmin
-      .from("orders")
-      .insert({
-        restaurant_id: user.restaurantId,
-        table_id,
-        session_id: randomUUID(),
-        guest_count,
-        status: "new",
-        total_amount,
+    // Use the transactional database function to create the order atomically
+    const { data: orderResult, error: createError } = await supabaseAdmin
+      .rpc('create_order', {
+        p_restaurant_id: user.restaurantId,
+        p_table_id: table_id,
+        p_guest_count: guest_count,
+        p_items: JSON.stringify(order_items)
       })
-      .select()
       .single();
 
-    if (orderError || !newOrder) {
-      console.error("Error creating order:", orderError);
-      return NextResponse.json(
-        { success: false, error: "Failed to create order" },
-        { status: 500 }
-      );
+    if (createError || !orderResult) {
+      throw new Error(createError?.message || 'Failed to create order');
     }
 
-    // Create order items
-    const orderItemsToInsert = order_items.map(item => {
-      // Generate the same key used during price calculation
-      const itemKey = `${item.menu_item_id}-${item.menu_item_size_id || 'no-size'}-${(item.topping_ids || []).sort().join(',')}`;
-      const priceAtOrder = itemPrices.get(itemKey) || 0;
-      
-      return {
-        restaurant_id: user.restaurantId,
-        order_id: newOrder.id,
-        menu_item_id: item.menu_item_id,
-        quantity: item.quantity,
-        notes: item.notes || null,
-        menu_item_size_id: item.menu_item_size_id || null,
-        topping_ids: item.topping_ids || null,
-        price_at_order: priceAtOrder,
-        status: "new" as const,
-      };
-    });
-
-    const { error: itemsError } = await supabaseAdmin
-      .from("order_items")
-      .insert(orderItemsToInsert);
-
-    if (itemsError) {
-      console.error("Error creating order items:", itemsError);
-      // Rollback order creation
-      await supabaseAdmin.from("orders").delete().eq("id", newOrder.id);
-      return NextResponse.json(
-        { success: false, error: "Failed to create order items" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ success: true, order_id: newOrder.id });
-  } catch (error) {
-    console.error("Error in order creation:", error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
+      createApiSuccess({ 
+        order_id: (orderResult as unknown as OrderCreationResult).order_id,
+        total_amount: (orderResult as unknown as OrderCreationResult).total_amount,
+        created_at: (orderResult as unknown as OrderCreationResult).created_at
+      }, requestId),
+      { status: 201 }
+    );
+    
+  } catch (error) {
+    return await handleApiError(
+      error,
+      'orders-post',
+      user?.restaurantId || undefined,
+      user?.userId || undefined,
+      requestId
     );
   }
 }
 
 export async function GET(request: Request) {
+  const requestId = randomUUID();
+  let user: Awaited<ReturnType<typeof getUserFromRequest>> | null = null;
+  
   try {
-    const user = await getUserFromRequest();
+    user = await getUserFromRequest();
     
     if (!user?.restaurantId) {
       return NextResponse.json(
-        { error: "Restaurant ID not found" },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    // Parse query parameters for filtering
+    // Parse and validate query parameters
     const url = new URL(request.url);
-    const fromDate = url.searchParams.get('fromDate');
-    const toDate = url.searchParams.get('toDate');
-    const statusFilter = url.searchParams.get('status'); // Can be comma-separated list
-    const period = url.searchParams.get('period'); // today, yesterday, thisWeek, etc.
-
-    // Calculate date range
-    let startDate: string;
-    let endDate: string;
-
-    if (fromDate && toDate) {
-      // Use custom date range
-      startDate = new Date(fromDate).toISOString();
-      endDate = new Date(toDate + 'T23:59:59.999Z').toISOString();
-    } else if (period) {
-      // Use predefined period
-      const now = new Date();
-      switch (period) {
-        case 'today':
-          startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-          endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
-          break;
-        case 'yesterday':
-          const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-          startDate = new Date(yesterday.setHours(0, 0, 0, 0)).toISOString();
-          endDate = new Date(yesterday.setHours(23, 59, 59, 999)).toISOString();
-          break;
-        case 'thisWeek':
-          const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-          startDate = new Date(startOfWeek.setHours(0, 0, 0, 0)).toISOString();
-          endDate = new Date().toISOString();
-          break;
-        case 'last7days':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-          endDate = new Date().toISOString();
-          break;
-        case 'last30days':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-          endDate = new Date().toISOString();
-          break;
-        default:
-          // Default to today if no valid period
-          startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-          endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
-      }
-    } else {
-      // Default to today
-      const now = new Date();
-      startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-      endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+    const queryParams = Object.fromEntries(url.searchParams);
+    
+    const validationResult = ordersGetQuerySchema.safeParse(queryParams);
+    if (!validationResult.success) {
+      // Log validation details for debugging
+      console.log('Query params:', queryParams);
+      console.log('Validation errors:', validationResult.error.flatten().fieldErrors);
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid query parameters',
+            requestId,
+            details: validationResult.error.flatten().fieldErrors,
+          },
+        },
+        { status: 400 }
+      );
     }
 
-    // Parse status filter
-    const statusArray = statusFilter 
-      ? statusFilter.split(',').map(s => s.trim())
-      : ['new', 'serving']; // Default to active orders
+    const {
+      fromDate,
+      toDate,
+      status: statusArray,
+      period,
+      page,
+      pageSize,
+    } = validationResult.data;
 
-    // Use manual query with date and status filtering since RPC function is limited
-    const query = supabaseAdmin
+    // Calculate date range using validated inputs
+    const { startDate, endDate } = calculateDateRange(period, fromDate, toDate);
+
+    // Calculate pagination offset
+    const offset = (page - 1) * pageSize;
+
+    // Get total count for pagination
+    const { count: totalCount, error: countError } = await supabaseAdmin
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('restaurant_id', user.restaurantId)
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+      .in('status', statusArray || ['new', 'serving']);
+
+    if (countError) {
+      throw new Error(`Failed to get orders count: ${countError.message}`);
+    }
+
+    // Execute paginated query with optimized select to reduce data transfer
+    const { data: ordersData, error: ordersError } = await supabaseAdmin
       .from('orders')
       .select(`
         id,
@@ -405,14 +305,12 @@ export async function GET(request: Request) {
       .eq('restaurant_id', user.restaurantId)
       .gte('created_at', startDate)
       .lte('created_at', endDate)
-      .in('status', statusArray)
-      .order('created_at', { ascending: false });
-
-    const { data: ordersData, error: ordersError } = await query;
+      .in('status', statusArray || ['new', 'serving'])
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
 
     if (ordersError) {
-      console.error('Database error:', ordersError);
-      return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+      throw new Error(`Failed to fetch orders: ${ordersError.message}`);
     }
 
     // Fetch toppings for orders that have them
@@ -516,23 +414,38 @@ export async function GET(request: Request) {
     if (tablesResult.error) throw tablesResult.error;
     if (categoriesResult.error) throw categoriesResult.error;
 
-    // Return structured data
-    return NextResponse.json({
+    // Create pagination metadata
+    const pagination = createPaginationMeta(page, pageSize, totalCount || 0);
+
+    // Return structured data with pagination
+    const responseData = {
       orders,
+      pagination,
       tables: tablesResult.data || [],
       categories: categoriesResult.data || [],
-      dateRange: { from: startDate, to: endDate },
-      statusFilter: statusArray
-    });
+      filters: {
+        dateRange: { from: startDate, to: endDate },
+        status: statusArray || ['new', 'serving'],
+      },
+    };
+
+    return NextResponse.json(
+      createApiSuccess(responseData, requestId),
+      { 
+        status: 200,
+        headers: {
+          'Cache-Control': 'private, max-age=30', // Short cache for orders data
+        },
+      }
+    );
 
   } catch (error) {
-    console.error("Error fetching orders data:", error);
-    return NextResponse.json(
-      { 
-        error: "Failed to fetch orders data",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
-      { status: 500 }
+    return await handleApiError(
+      error,
+      'orders-get',
+      user?.restaurantId || undefined,
+      user?.userId || undefined,
+      requestId
     );
   }
 }
