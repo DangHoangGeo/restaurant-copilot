@@ -59,6 +59,7 @@ interface NewHomePageProps {
   locale?: string;
   isAdmin?: boolean;
   isAdminPreview?: boolean;
+  initialData?: HomepageData | null;
 }
 
 // Helper functions
@@ -90,14 +91,19 @@ function isOpenNow(hours: Record<string, { isClosed?: boolean; openTime?: string
   }
 }
 
-export function NewHomePage({ subdomain, locale = 'en', isAdmin = false, isAdminPreview = false }: NewHomePageProps) {
-  const [homepageData, setHomepageData] = useState<HomepageData | null>(null);
-  const [loading, setLoading] = useState(true);
+export function NewHomePage({ subdomain, locale = 'en', isAdmin = false, isAdminPreview = false, initialData = null }: NewHomePageProps) {
+  const [homepageData, setHomepageData] = useState<HomepageData | null>(initialData);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
   
   const t = useTranslations("customer.home");
 
   useEffect(() => {
+    // Skip fetch if we already have initial data
+    if (initialData) {
+      return;
+    }
+
     const fetchHomepageData = async () => {
       try {
         setLoading(true);
@@ -140,7 +146,7 @@ export function NewHomePage({ subdomain, locale = 'en', isAdmin = false, isAdmin
     if (subdomain || isAdminPreview) {
       fetchHomepageData();
     }
-  }, [subdomain, isAdminPreview]);
+  }, [subdomain, isAdminPreview, initialData]);
 
   // Apply restaurant brand color to CSS custom property
   useEffect(() => {

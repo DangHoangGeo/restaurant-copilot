@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Apply Perf Plan with Claude",
+			"command": "claude",
+			"args": [
+				"--apply-plan",
+				"web/docs/perf-plan-20250809.md"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

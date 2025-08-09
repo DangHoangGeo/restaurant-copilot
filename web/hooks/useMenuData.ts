@@ -32,14 +32,14 @@ interface MenuDataResponse {
   lastUpdated: string;
 }
 
-// Trim menu data for performance - remove heavy fields until detail view
+// Process menu data for performance - lite variant excludes sizes/toppings
 const trimMenuItems = (categories: Category[]): Category[] => {
   return categories.map(category => ({
     ...category,
     menu_items: category.menu_items.map(item => ({
       ...item,
-      // Keep descriptions full-length for detail modal functionality
-      // Only other heavy fields could be trimmed if needed in the future
+      // Lite variant from API already excludes sizes/toppings
+      // Sizes and toppings are loaded on-demand via fetchItemDetails
     }))
   }));
 };
@@ -58,7 +58,10 @@ const fetchMenuData = async (params: MenuDataParams): Promise<MenuDataResponse> 
       searchParams.set('restaurantId', restaurantId);
     }
     
-    // Use the existing customer menu API
+    // Add lite=1 parameter for faster loading (excludes sizes/toppings)
+    searchParams.set('lite', '1');
+    
+    // Use the existing customer menu API with lite variant
     const menuResponse = await fetch(`/api/v1/customer/menu?${searchParams.toString()}`, {
       method: 'GET',
       headers: {
