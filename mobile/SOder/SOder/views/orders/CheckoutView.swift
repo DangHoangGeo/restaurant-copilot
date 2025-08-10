@@ -2,10 +2,11 @@ import SwiftUI
 
 struct CheckoutView: View {
     let order: Order
-    let orderManager: OrderManager
-    let printerManager: PrinterManager
     let onComplete: () -> Void
     
+    @EnvironmentObject var orderManager: OrderManager
+    @EnvironmentObject var printerManager: PrinterManager
+
     @State private var discountCode = ""
     @State private var discountPercentage: Double = 0
     @State private var customDiscountAmount: Double = 0
@@ -102,7 +103,7 @@ struct CheckoutView: View {
                 }
                 .padding()
             }
-            .navigationTitle(order.table?.name ?? "Table \(order.table_id)")
+            .navigationTitle("checkout".localized)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -204,12 +205,12 @@ struct CheckoutView: View {
             if paymentMethod == .cash {
                 VStack(spacing: Spacing.xs) {
                     HStack {
-                        Text("total".localized + ":")
+                        Text("checkout_total_label".localized)
                             .font(.captionRegular)
                             .fontWeight(.medium)
                             .foregroundColor(.appTextPrimary)
                         Spacer()
-                        Text("¥\(String(format: "%.0f", totalAmount))")
+                        Text(String(format: "price_format".localized, totalAmount))
                             .font(.bodyMedium)
                             .fontWeight(.bold)
                             .foregroundColor(.appPrimary)
@@ -220,12 +221,12 @@ struct CheckoutView: View {
                             .fontWeight(.medium)
                             .foregroundColor(.appTextPrimary)
                         TextField("0", value: $receivedAmount, format: .currency(code: "JPY"))
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .textFieldStyle(AppTextFieldStyle())
                             .keyboardType(.decimalPad)
                     }
                     if changeAmount > 0 {
                         HStack {
-                            Text("change".localized + ":")
+                            Text("checkout_change_label".localized)
                                 .font(.captionRegular)
                                 .fontWeight(.medium)
                                 .foregroundColor(.appTextPrimary)
@@ -281,7 +282,7 @@ struct CheckoutView: View {
             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
         .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel("apply_discount_accessibility".localized)
+        .accessibilityLabel("checkout_apply_discount_accessibility".localized)
     }
 
     private var discountSection: some View {
@@ -309,7 +310,7 @@ struct CheckoutView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.appTextPrimary)
                     TextField("checkout_discount_code_placeholder".localized, text: $discountCode)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .textFieldStyle(AppTextFieldStyle())
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                 }
@@ -337,7 +338,7 @@ struct CheckoutView: View {
                             .font(.captionRegular)
                             .foregroundColor(.appTextPrimary)
                         TextField("¥0", value: $customDiscountAmount, format: .currency(code: "JPY"))
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .textFieldStyle(AppTextFieldStyle())
                             .keyboardType(.decimalPad)
                     }
                 }
@@ -356,7 +357,7 @@ struct CheckoutView: View {
                     .font(.captionRegular)
                     .foregroundColor(.appTextPrimary)
                 Spacer()
-                Text("¥\(String(format: "%.0f", subtotal))")
+                Text(String(format: "price_format".localized, subtotal))
                     .font(.captionRegular)
                     .foregroundColor(.appTextPrimary)
             }
@@ -366,7 +367,7 @@ struct CheckoutView: View {
                         .font(.captionRegular)
                         .foregroundColor(.appSuccess)
                     Spacer()
-                    Text("-¥\(String(format: "%.0f", discountAmount))")
+                    Text(String(format: "-%@", String(format: "price_format".localized, discountAmount)))
                         .font(.captionRegular)
                         .foregroundColor(.appSuccess)
                 }
@@ -375,7 +376,7 @@ struct CheckoutView: View {
                         .font(.captionRegular)
                         .foregroundColor(.appTextPrimary)
                     Spacer()
-                    Text("¥\(String(format: "%.0f", afterDiscountAmount))")
+                    Text(String(format: "price_format".localized, afterDiscountAmount))
                         .font(.captionRegular)
                         .foregroundColor(.appTextPrimary)
                 }
@@ -385,18 +386,18 @@ struct CheckoutView: View {
                     .font(.captionRegular)
                     .foregroundColor(.appTextPrimary)
                 Spacer()
-                Text("¥\(String(format: "%.0f", taxAmount))")
+                Text(String(format: "price_format".localized, taxAmount))
                     .font(.captionRegular)
                     .foregroundColor(.appTextPrimary)
             }
             Divider()
             HStack {
-                Text("total".localized)
+                Text("checkout_total_label".localized)
                     .font(.bodyMedium)
                     .fontWeight(.bold)
                     .foregroundColor(.appTextPrimary)
                 Spacer()
-                Text("¥\(String(format: "%.0f", totalAmount))")
+                Text(String(format: "price_format".localized, totalAmount))
                     .font(.bodyMedium)
                     .fontWeight(.bold)
                     .foregroundColor(.appPrimary)
@@ -472,7 +473,7 @@ struct CheckoutView: View {
             
             showingSuccess = true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = "checkout_error_process_failed".localized
             showingError = true
         }
         
@@ -494,7 +495,7 @@ struct CheckoutView: View {
         do {
             try await printerManager.printCheckoutReceipt(receiptData)
         } catch {
-            errorMessage = "Failed to print receipt: \(error.localizedDescription)"
+            errorMessage = "receipt_print_failure_message".localized
             showingError = true
         }
     }
@@ -587,3 +588,25 @@ struct CheckoutReceiptData {
     let totalAmount: Double
     let timestamp: Date
 }
+
+#if DEBUG
+#Preview {
+    // Mock Environment Objects
+    let orderManager = OrderManager.shared
+    let printerManager = PrinterManager.shared
+    let localizationManager = LocalizationManager.shared
+
+    // Populate with mock data for preview
+    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Đồ uống", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Cà phê nóng", price: 5.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 5.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let mockTable = Table(id: "1", restaurant_id: "1", name: "Table 1", status: .occupied, capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil, created_at: "", updated_at: "")
+    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "1", guest_count: 2, status: .new, total_amount: 10.0, order_number: 1, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [mockOrderItem], payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil)
+
+    return CheckoutView(order: mockOrder, onComplete: {})
+        .environmentObject(orderManager)
+        .environmentObject(printerManager)
+        .environmentObject(localizationManager)
+        .environmentObject(SupabaseManager.shared)
+}
+#endif

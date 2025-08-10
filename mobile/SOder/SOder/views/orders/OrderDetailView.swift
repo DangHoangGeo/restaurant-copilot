@@ -2,11 +2,12 @@ import SwiftUI
 
 struct OrderDetailView: View {
     let orderId: String
-    let orderManager: OrderManager
-    let printerManager: PrinterManager
     let onCheckout: () -> Void
     let onPrintResult: (String) -> Void
     
+    @EnvironmentObject var orderManager: OrderManager
+    @EnvironmentObject var printerManager: PrinterManager
+
     @State private var isUpdatingStatus = false
     @State private var selectedItems: Set<String> = []
     @State private var showingItemActions = false
@@ -87,12 +88,12 @@ struct OrderDetailView: View {
                             .environmentObject(supabaseManager)
                             .toolbar {
                                 ToolbarItem(placement: .navigationBarLeading) {
-                                    Button("Cancel") {
+                                    Button("cancel".localized) {
                                         showingAddItemSheet = false
                                     }
                                 }
                                 ToolbarItem(placement: .navigationBarTrailing) {
-                                    Button("Done") {
+                                    Button("done".localized) {
                                         showingAddItemSheet = false
                                         Task {
                                             await orderManager.fetchActiveOrders()
@@ -108,25 +109,25 @@ struct OrderDetailView: View {
                             .environmentObject(orderManager)
                             .toolbar {
                                 ToolbarItem(placement: .navigationBarLeading) {
-                                    Button("Cancel") {
+                                    Button("cancel".localized) {
                                         showingStatusUpdateSheet = false
                                     }
                                 }
                             }
                     }
                 }
-                .alert("Cancel Order", isPresented: $showingCancelConfirmAlert) {
-                    Button("Cancel Order", role: .destructive) {
+                .alert("order_detail_cancel_alert_title".localized, isPresented: $showingCancelConfirmAlert) {
+                    Button("order_detail_cancel_button".localized, role: .destructive) {
                         Task { await cancelOrder() }
                     }
-                    Button("Keep Order", role: .cancel) {}
+                    Button("order_detail_keep_button".localized, role: .cancel) {}
                 } message: {
-                    Text("Are you sure you want to cancel this order? This action cannot be undone.")
+                    Text("order_detail_cancel_alert_message".localized)
                 }
-                .alert("Error", isPresented: $showingErrorAlert) {
-                    Button("OK") {}
+                .alert("error".localized, isPresented: $showingErrorAlert) {
+                    Button("ok".localized) {}
                 } message: {
-                    Text(errorMessage ?? "An error occurred")
+                    Text(errorMessage ?? "order_detail_generic_error_message".localized)
                 }
                 .toolbar {
                     if horizontalSizeClass != .regular && order.status == .completed {
@@ -236,7 +237,7 @@ struct OrderDetailView: View {
                     }) {
                         HStack {
                             Image(systemName: "plus.circle")
-                            Text("Add Items")
+                            Text("order_detail_add_items_button".localized)
                                 .font(.buttonLarge)
                                 .fontWeight(.medium)
                         }
@@ -246,7 +247,7 @@ struct OrderDetailView: View {
                         .foregroundColor(.white)
                         .cornerRadius(CornerRadius.md)
                     }
-                    .accessibilityLabel("Add items to order")
+                    .accessibilityLabel("order_detail_add_items_accessibility".localized)
                     
                     if order.status == .new {
                         Button(action: {
@@ -294,17 +295,17 @@ struct OrderDetailView: View {
                     }) {
                         HStack {
                             Image(systemName: "arrow.up.circle")
-                            Text("Update Status")
+                            Text("order_detail_update_status_button".localized)
                                 .font(.buttonMedium)
                                 .fontWeight(.medium)
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 36)
-                        .background(Color.gray.opacity(0.2))
+                        .background(Color.appTextSecondary.opacity(0.1))
                         .foregroundColor(.appTextPrimary)
                         .cornerRadius(CornerRadius.sm)
                     }
-                    .accessibilityLabel("Update order status")
+                    .accessibilityLabel("order_detail_update_status_accessibility".localized)
                     
                     // Cancel Order Button (only for new orders)
                     if order.status == .new {
@@ -313,7 +314,7 @@ struct OrderDetailView: View {
                         }) {
                             HStack {
                                 Image(systemName: "xmark.circle")
-                                Text("Cancel Order")
+                                Text("order_detail_cancel_order_button".localized)
                                     .font(.buttonMedium)
                                     .fontWeight(.medium)
                             }
@@ -323,7 +324,7 @@ struct OrderDetailView: View {
                             .foregroundColor(.appError)
                             .cornerRadius(CornerRadius.sm)
                         }
-                        .accessibilityLabel("Cancel this order")
+                        .accessibilityLabel("order_detail_cancel_order_accessibility".localized)
                     }
                 }
             }
@@ -384,9 +385,10 @@ struct OrderDetailView: View {
         
         do {
             try await orderManager.updateOrderStatus(orderId: orderId, newStatus: newStatus)
-            onPrintResult("Order status updated to \(newStatus.displayName)")
+            let localizedStatus = newStatus.displayName.localized
+            onPrintResult(String(format: "order_status_update_success_message".localized, localizedStatus))
         } catch {
-            onPrintResult("Failed to update order status: \(error.localizedDescription)")
+            onPrintResult("order_status_update_failure_message".localized)
         }
         
         isUpdatingStatus = false
@@ -399,9 +401,9 @@ struct OrderDetailView: View {
         
         do {
             try await orderManager.cancelOrder(orderId: orderId)
-            onPrintResult("Order cancelled successfully")
+            onPrintResult("order_cancel_success_message".localized)
         } catch {
-            errorMessage = "Failed to cancel order: \(error.localizedDescription)"
+            errorMessage = "order_cancel_failure_message".localized
             showingErrorAlert = true
         }
         
@@ -424,9 +426,9 @@ struct OrderDetailView: View {
         
         do {
             try await printerManager.printCheckoutReceipt(receiptData)
-            onPrintResult("Receipt printed successfully")
+            onPrintResult("receipt_print_success_message".localized)
         } catch {
-            onPrintResult("Failed to print receipt: \(error.localizedDescription)")
+            onPrintResult("receipt_print_failure_message".localized)
         }
     }
     
@@ -462,3 +464,27 @@ struct OrderDetailView: View {
         return displayFormatter.string(from: finalDate)
     }
 }
+
+#if DEBUG
+#Preview {
+    // Mock Environment Objects
+    let orderManager = OrderManager.shared
+    let printerManager = PrinterManager.shared
+    let localizationManager = LocalizationManager.shared
+
+    // Populate with mock data for preview
+    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Đồ uống", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Cà phê nóng", price: 5.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 5.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let mockTable = Table(id: "1", restaurant_id: "1", name: "Table 1", status: .occupied, capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil, created_at: "", updated_at: "")
+    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "1", guest_count: 2, status: .new, total_amount: 10.0, order_number: 1, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [mockOrderItem], payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil)
+
+    orderManager.orders = [mockOrder]
+
+    return OrderDetailView(orderId: "1", onCheckout: {}, onPrintResult: { _ in })
+        .environmentObject(orderManager)
+        .environmentObject(printerManager)
+        .environmentObject(localizationManager)
+        .environmentObject(SupabaseManager.shared)
+}
+#endif

@@ -44,21 +44,25 @@ struct OrdersView: View {
         }
     }
     
-    private var filteredOrders: [Order] {
+    private var filteredOrderGroups: [OrderFilter: [Order]] {
         let baseOrders = showAllOrders ? orderManager.allOrders : orderManager.orders
+        var groups: [OrderFilter: [Order]] = [:]
         
-        switch selectedFilter {
-        case .active:
-            return baseOrders.filter { $0.status != .completed && $0.status != .canceled }
-        case .new:
-            return baseOrders.filter { $0.status == .new }
-        case .serving:
-            return baseOrders.filter { $0.status == .serving }
-        case .completed:
-            return baseOrders.filter { $0.status == .completed }
-        case .canceled:
-            return baseOrders.filter { $0.status == .canceled }
-        }
+        let byStatus = Dictionary(grouping: baseOrders, by: { $0.status })
+
+        groups[.new] = byStatus[.new] ?? []
+        groups[.serving] = byStatus[.serving] ?? []
+        groups[.completed] = byStatus[.completed] ?? []
+        groups[.canceled] = byStatus[.canceled] ?? []
+
+        // Active is a combination of new and serving
+        groups[.active] = (groups[.new] ?? []) + (groups[.serving] ?? [])
+
+        return groups
+    }
+
+    private var filteredOrders: [Order] {
+        filteredOrderGroups[selectedFilter] ?? []
     }
 
     var body: some View {
@@ -78,10 +82,11 @@ struct OrdersView: View {
             }
         }
         .background(Color.appBackground) // Explicit background
-        .task {
-            await orderManager.fetchActiveOrders()
+        .task(id: showAllOrders) {
             if showAllOrders {
                 await orderManager.fetchAllOrders()
+            } else {
+                await orderManager.fetchActiveOrders()
             }
         }
         .alert("orders_system_message".localized, isPresented: $showingPrintAlert) {
@@ -93,8 +98,6 @@ struct OrdersView: View {
             if let order = selectedOrder {
                 CheckoutView(
                     order: order,
-                    orderManager: orderManager,
-                    printerManager: printerManager,
                     onComplete: {
                         showingCheckout = false
                         selectedOrder = nil
@@ -117,7 +120,7 @@ struct OrdersView: View {
                 .environmentObject(localizationManager)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button("cancel".localized) {
                             showingNewOrderFlow = false
                         }
                     }
@@ -150,9 +153,10 @@ struct OrdersView: View {
                     Menu {
                         Button("orders_refresh".localized) {
                             Task {
-                                await orderManager.fetchActiveOrders()
                                 if showAllOrders {
                                     await orderManager.fetchAllOrders()
+                                } else {
+                                    await orderManager.fetchActiveOrders()
                                 }
                             }
                         }
@@ -180,7 +184,7 @@ struct OrdersView: View {
                             .disabled(!orderManager.autoPrintingEnabled)
                             
                             if orderManager.autoPrintStats.totalNewOrdersPrinted > 0 || orderManager.autoPrintStats.totalReadyItemsPrinted > 0 {
-                                Button("View Statistics") {
+                                Button("orders_view_statistics".localized) {
                                     // Show detailed statistics
                                 }
                                 .disabled(true) // TODO: Implement detailed stats view
@@ -203,18 +207,11 @@ struct OrdersView: View {
                 }
                 
                 // Order Type Toggle
-                Picker("Order Type", selection: $showAllOrders) {
+                Picker("orders_order_type_picker".localized, selection: $showAllOrders) {
                     Text("orders_active_orders".localized).tag(false)
                     Text("orders_all_orders".localized).tag(true)
                 }
                 .pickerStyle(.segmented)
-                .onChange(of: showAllOrders) { newValue in
-                    Task {
-                        if newValue {
-                            await orderManager.fetchAllOrders()
-                        }
-                    }
-                }
                 
                 // Filter Pills
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -256,12 +253,12 @@ struct OrdersView: View {
             // Orders List
             if orderManager.isLoading {
                 Spacer()
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.md) {
                     ProgressView()
                         .scaleEffect(1.2)
-                    Text("Loading orders...")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    Text("orders_loading".localized)
+                        .font(.bodyMedium)
+                        .foregroundColor(.appTextSecondary)
                 }
                 Spacer()
             } else if filteredOrders.isEmpty {
@@ -285,9 +282,10 @@ struct OrdersView: View {
                 .listStyle(PlainListStyle())
                 .scrollContentBackground(.hidden)
                 .refreshable {
-                    await orderManager.fetchActiveOrders()
                     if showAllOrders {
                         await orderManager.fetchAllOrders()
+                    } else {
+                        await orderManager.fetchActiveOrders()
                     }
                 }
                 .onChange(of: selectedOrder) { newOrder in
@@ -299,24 +297,24 @@ struct OrdersView: View {
             if let errorMessage = orderManager.errorMessage {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.appWarning)
                     Text(errorMessage)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Button("Retry") {
+                    Button("orders_retry".localized) {
                         Task {
                             await orderManager.fetchActiveOrders()
                         }
                     }
                     .font(.caption)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.appPrimary)
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(Color.appSurface)
             }
         }
-        .navigationTitle("Orders")
+        .navigationTitle("orders".localized)
         .navigationBarHidden(true)
     }
     
@@ -326,8 +324,6 @@ struct OrdersView: View {
             if let order = selectedOrder {
                 OrderDetailView(
                     orderId: order.id,
-                    orderManager: orderManager,
-                    printerManager: printerManager,
                     onCheckout: {
                         showingCheckout = true
                     },
@@ -340,20 +336,20 @@ struct OrdersView: View {
                 VStack(spacing: 20) {
                     Image(systemName: "list.bullet.rectangle")
                         .font(.system(size: 60))
-                        .foregroundColor(.gray.opacity(0.6))
+                        .foregroundColor(Color.appTextSecondary.opacity(0.6))
                     
-                    Text("Select an Order")
+                    Text("orders_select_order".localized)
                         .font(.title2)
                         .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.appTextPrimary)
                     
-                    Text("Choose an order from the sidebar to view details")
+                    Text("orders_select_order_desc".localized)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextSecondary)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemGroupedBackground))
+                .background(Color.appBackground)
             }
         }
     }
@@ -377,17 +373,17 @@ struct OrdersView: View {
                 }
                 .padding(.horizontal)
             }
-            .padding(.vertical, 8)
-            .background(Color(.systemGray6))
+            .padding(.vertical, Spacing.sm)
+            .background(Color.appSurface)
             
             // Content
             if orderManager.isLoading {
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.md) {
                     ProgressView()
                         .scaleEffect(1.2)
-                    Text("Loading orders...")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    Text("orders_loading".localized)
+                        .font(.bodyMedium)
+                        .foregroundColor(.appTextSecondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if filteredOrders.isEmpty {
@@ -399,8 +395,6 @@ struct OrdersView: View {
                             ForEach(groupedOrders[key] ?? []) { order in
                                 NavigationLink(destination: OrderDetailView(
                                     orderId: order.id,
-                                    orderManager: orderManager,
-                                    printerManager: printerManager,
                                     onCheckout: {
                                         selectedOrder = order
                                         showingCheckout = true
@@ -439,24 +433,24 @@ struct OrdersView: View {
             if let errorMessage = orderManager.errorMessage {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.appWarning)
                     Text(errorMessage)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Button("Retry") {
+                    Button("orders_retry".localized) {
                         Task {
                             await orderManager.fetchActiveOrders()
                         }
                     }
                     .font(.caption)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.appPrimary)
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(Color.appSurface)
             }
         }
-        .navigationTitle("Orders")
+        .navigationTitle("orders".localized)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -481,21 +475,21 @@ struct OrdersView: View {
                     Divider()
                     
                     // Auto-printing controls
-                    Section("Auto-Printing") {
+                    Section("orders_auto_printing".localized) {
                         Button(action: {
                             orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
                         }) {
                             HStack {
-                                Text("Auto-Print New Orders")
+                                Text("orders_auto_print_new_orders".localized)
                                 Spacer()
                                 if orderManager.autoPrintingEnabled {
                                     Image(systemName: "checkmark")
-                                        .foregroundColor(.green)
+                                        .foregroundColor(.appSuccess)
                                 }
                             }
                         }
                         
-                        Button("Clear Print History") {
+                        Button("orders_clear_print_history".localized) {
                             orderManager.clearPrintHistory()
                         }
                         .disabled(!orderManager.autoPrintingEnabled)
@@ -503,7 +497,7 @@ struct OrdersView: View {
                     
                     Divider()
                     
-                    Button("Sign Out") {
+                    Button("orders_sign_out".localized) {
                         Task {
                             try? await supabaseManager.signOut()
                         }
@@ -518,24 +512,11 @@ struct OrdersView: View {
     }
     
     private var groupedOrders: [String: [Order]] {
-        Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? "Table \($0.table_id)" })
+        Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? "\("orders_table_prefix".localized) \($0.table_id)" })
     }
     
     private func countForFilter(_ filter: OrderFilter) -> Int {
-        let baseOrders = showAllOrders ? orderManager.allOrders : orderManager.orders
-        
-        switch filter {
-        case .active:
-            return baseOrders.filter { $0.status != .completed && $0.status != .canceled }.count
-        case .new:
-            return baseOrders.filter { $0.status == .new }.count
-        case .serving:
-            return baseOrders.filter { $0.status == .serving }.count
-        case .completed:
-            return baseOrders.filter { $0.status == .completed }.count
-        case .canceled:
-            return baseOrders.filter { $0.status == .canceled }.count
-        }
+        filteredOrderGroups[filter]?.count ?? 0
     }
 }
 
@@ -552,17 +533,17 @@ struct SidebarOrderRowView: View {
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     HStack {
                         HStack(spacing: Spacing.xxs){
-                            Text(order.table?.name ?? "Table \(order.table_id)")
+                            Text(order.table?.name ?? "\("orders_table_prefix".localized) \(order.table_id)")
                                 .font(.cardTitle)
                                 .foregroundColor(.appTextPrimary)
                                 .fontWeight(.bold)
                             
-                            Text("ID: \(order.id.prefix(6).uppercased())")
+                            Text("\("orders_id_prefix".localized): \(order.id.prefix(6).uppercased())")
                                 .font(.bodyRegular)
                                 .foregroundColor(.appTextSecondary)
                         }
                         if isNew {
-                            Text("NEW")
+                            Text("orders_new_badge".localized)
                                 .font(.captionBold)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
@@ -596,7 +577,7 @@ struct SidebarOrderRowView: View {
                     EnhancedStatusBadge(status: order.status)
                     
                     if let total = order.total_amount {
-                        Text("¥\(String(format: "%.0f", total))")
+                        Text(String(format: "price_format".localized, total))
                             .font(.bodyMedium)
                             .fontWeight(.semibold)
                             .foregroundColor(.appTextPrimary)
@@ -608,14 +589,14 @@ struct SidebarOrderRowView: View {
             if let items = order.order_items?.prefix(3) {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(Array(items), id: \.id) { item in
-                        Text("\(item.quantity)× \(item.menu_item?.displayName ?? "Unknown")")
+                        Text("\(item.quantity)× \(item.menu_item?.displayName ?? "orders_unknown_item".localized)")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
                             .lineLimit(1)
                     }
                     
                     if let totalItems = order.order_items?.count, totalItems > 3 {
-                        Text("and \(totalItems - 3) more...")
+                        Text(String(format: "orders_more_items".localized, totalItems - 3))
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
                             .italic()
@@ -631,7 +612,7 @@ struct SidebarOrderRowView: View {
             RoundedRectangle(cornerRadius: CornerRadius.md)
                 .stroke(isSelected ? Color.appPrimary : Color.clear, lineWidth: 2)
         )
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
     }
     
     private func formatTime(_ dateString: String) -> String {
@@ -658,7 +639,7 @@ struct SidebarOrderRowView: View {
         
         guard let finalDate = date else { 
             print("Failed to parse date string: \(dateString)")
-            return "Unknown" 
+            return "orders_unknown_time".localized
         }
         
         let displayFormatter = DateFormatter()
@@ -668,3 +649,28 @@ struct SidebarOrderRowView: View {
 }
 
 // Keep existing FilterChip, EmptyOrdersView, OrderRowView, EnhancedStatusBadge, StatusActionButton, PrintButton, EnhancedOrderItemView, and StatusBadge views
+
+#if DEBUG
+#Preview {
+    // Mock Environment Objects
+    let orderManager = OrderManager.shared
+    let printerManager = PrinterManager.shared
+    let localizationManager = LocalizationManager.shared
+
+    // Populate with mock data for preview
+    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Đồ uống", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Cà phê nóng", price: 5.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 5.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let mockTable = Table(id: "1", restaurant_id: "1", name: "Table 1", status: .occupied, capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil, created_at: "", updated_at: "")
+    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "1", guest_count: 2, status: .new, total_amount: 10.0, order_number: 1, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [mockOrderItem], payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil)
+
+    orderManager.orders = [mockOrder]
+    orderManager.allOrders = [mockOrder]
+
+    return OrdersView()
+        .environmentObject(orderManager)
+        .environmentObject(printerManager)
+        .environmentObject(localizationManager)
+        .environmentObject(SupabaseManager.shared)
+}
+#endif
