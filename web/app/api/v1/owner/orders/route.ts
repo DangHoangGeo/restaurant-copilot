@@ -386,34 +386,6 @@ export async function GET(request: Request) {
       }))
     })) || [];
 
-    // Fetch additional data that components may need
-    const [tablesResult, categoriesResult] = await Promise.all([
-      // Fetch available tables
-      supabaseAdmin
-        .from("tables")
-        .select("id, name, status")
-        .eq("restaurant_id", user.restaurantId)
-        .order("name"),
-
-      // Fetch menu categories and items with sizes and toppings
-      supabaseAdmin
-        .from("categories")
-        .select(`
-          id, name_en, name_ja, name_vi, position,
-          menu_items(
-            id, name_en, name_ja, name_vi, price, available, position,
-            menu_item_sizes(id, size_key, name_en, name_ja, name_vi, price, position),
-            toppings(id, name_en, name_ja, name_vi, price, position)
-          )
-        `)
-        .eq("restaurant_id", user.restaurantId)
-        .order("position")
-    ]);
-
-    // Check for errors
-    if (tablesResult.error) throw tablesResult.error;
-    if (categoriesResult.error) throw categoriesResult.error;
-
     // Create pagination metadata
     const pagination = createPaginationMeta(page, pageSize, totalCount || 0);
 
@@ -421,8 +393,6 @@ export async function GET(request: Request) {
     const responseData = {
       orders,
       pagination,
-      tables: tablesResult.data || [],
-      categories: categoriesResult.data || [],
       filters: {
         dateRange: { from: startDate, to: endDate },
         status: statusArray || ['new', 'serving'],

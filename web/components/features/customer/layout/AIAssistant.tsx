@@ -30,7 +30,7 @@ export function AIAssistant({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Pre-defined responses for quick implementation
-  const responses = {
+  const responses = React.useMemo(() => ({
     greeting: `Hi! I'm your dining assistant at ${restaurantName}. How can I help you today?`,
     menuHelp: "I can help you find the perfect dish! What are you in the mood for?",
     popular: "Our most popular items are our signature burgers, fresh salads, and house special pasta.",
@@ -38,7 +38,7 @@ export function AIAssistant({
     recommendation: "Based on popular choices right now, I'd recommend trying our chef's special.",
     orderHelp: "Need help with your order? I can assist with special requests or answer questions about any dish.",
     thankYou: "You're welcome! Enjoy your meal at " + restaurantName + "!"
-  };
+  }), [restaurantName]);
 
   // Scroll to bottom of messages when new messages arrive
   useEffect(() => {
@@ -59,7 +59,7 @@ export function AIAssistant({
         }
       ]);
     }
-  }, [isOpen, restaurantName]);
+  }, [isOpen, messages.length, responses]);
 
   // Context-aware suggested prompts based on current view
   const getSuggestedPrompts = () => {

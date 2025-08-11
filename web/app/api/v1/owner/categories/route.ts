@@ -91,11 +91,6 @@ export async function GET(request: Request) {
       position
     `;
 
-    // Add counts if requested
-    if (include.includes('counts')) {
-      // We'll compute counts separately for better performance
-    }
-
     // Add nested data if requested
     if (include.includes('items')) {
       selectQuery += `,
@@ -182,29 +177,22 @@ export async function GET(request: Request) {
 
     // Add counts if requested
     let enhancedCategories: unknown[] | null = categories;
-    if (include.includes('counts') && categories && Array.isArray(categories)) {
+    if (include.includes('counts') && categories && Array.isArray(categories) && categories.length > 0) {
       const categoryIds = categories.map(cat => (cat as unknown as CategoryWithItems).id);
       
-      if (categoryIds.length > 0) {
-        // Get item counts for each category
-        const { data: itemCounts } = await supabaseAdmin
-          .from('menu_items')
-          .select('category_id')
-          .in('category_id', categoryIds)
-          .eq('restaurant_id', restaurantId);
+      const { data: itemCounts, error: countsError } = await supabaseAdmin
+        .rpc('get_item_counts_for_categories', { p_category_ids: categoryIds });
 
-        // Create count map
-        const countMap = new Map();
-        itemCounts?.forEach(item => {
-          countMap.set(item.category_id, (countMap.get(item.category_id) || 0) + 1);
-        });
-
-        // Add counts to categories
-        enhancedCategories = categories.map(category => ({
-          ...(category as unknown as CategoryWithItems),
-          items_count: countMap.get((category as unknown as CategoryWithItems).id) || 0,
-        }));
+      if (countsError) {
+        throw new Error(`Failed to get item counts: ${countsError.message}`);
       }
+
+      const countMap = new Map(itemCounts.map((c: { category_id: string; item_count: number }) => [c.category_id, c.item_count]));
+
+      enhancedCategories = categories.map(category => ({
+        ...(category as unknown as CategoryWithItems),
+        items_count: countMap.get((category as unknown as CategoryWithItems).id) || 0,
+      }));
     }
 
     // Return legacy format for backward compatibility
