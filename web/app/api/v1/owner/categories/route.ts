@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { createApiSuccess } from '@/lib/server/apiError';
-import { createApiHandler, ApiHandlerContext } from '@/lib/server/apiHandler';
-import { categoryCreateSchema, CategoryCreateData } from '@/shared/schemas/owner';
+import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
+import { checkAuthorization } from '@/lib/server/rolePermissions';
+import { protectEndpoint, RATE_LIMIT_CONFIGS } from '@/lib/server/rateLimit';
+import { handleApiError } from '@/lib/server/apiError';
+import { categoryCreateSchema } from '@/shared/schemas/owner';
 import { categoriesGetQuerySchema, createPaginationMeta } from '@/lib/utils/validation';
+import { randomUUID } from 'crypto';
 
 interface CategoryWithItems {
   id: string;
@@ -11,14 +15,37 @@ interface CategoryWithItems {
   [key: string]: unknown;
 }
 
-// Refactored GET handler with restored functionality
-export const GET = createApiHandler(
-  {
-    resource: 'categories',
-    operation: 'SELECT',
-  },
+// GET handler with restored functionality
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  const requestId = randomUUID();
+  let user: AuthUser | null = null;
 
-  async ({ user, req, requestId }: ApiHandlerContext<Record<string, unknown>>) => {
+  try {
+    // 1. Rate Limiting & CSRF Protection
+    const protectionError = await protectEndpoint(req, RATE_LIMIT_CONFIGS.QUERY, 'categories', requestId);
+    if (protectionError) {
+      return protectionError;
+    }
+
+    // 2. Authentication
+    user = await getUserFromRequest();
+    if (!user || !user.restaurantId) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated or missing restaurant ID',
+          requestId,
+        },
+      }, { status: 401 });
+    }
+
+    // 3. Authorization
+    const authError = await checkAuthorization(user, 'categories', 'SELECT');
+    if (authError) {
+      return authError;
+    }
+    // 4. Parse query parameters
     const url = new URL(req.url);
     const queryParams = Object.fromEntries(url.searchParams);
 
@@ -130,7 +157,6 @@ export const GET = createApiHandler(
           items_count: countMap.get((category as unknown as CategoryWithItems).id) || 0,
         }));
       }
-
     }
 
     const pagination = createPaginationMeta(page, pageSize, totalCount || 0);
@@ -152,18 +178,68 @@ export const GET = createApiHandler(
       createApiSuccess({ categories: enhancedCategories, pagination, filters: { include } }, requestId),
       { status: 200, headers: { 'Cache-Control': 'private, max-age=120' } }
     );
-  }
-);
 
-// Refactored POST handler (no changes needed here)
-export const POST = createApiHandler(
-  {
-    schema: categoryCreateSchema,
-    resource: 'categories',
-    operation: 'INSERT',
-  },
-  async ({ user, validatedData, requestId }: ApiHandlerContext<CategoryCreateData>) => {
-    const { name_en, name_ja, name_vi, position } = validatedData;
+  } catch (error) {
+    return await handleApiError(
+      error,
+      'categories-select',
+      user?.restaurantId || undefined,
+      user?.userId,
+      requestId
+    );
+  }
+}
+
+// POST handler
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const requestId = randomUUID();
+  let user: AuthUser | null = null;
+
+  try {
+    // 1. Rate Limiting & CSRF Protection
+    const protectionError = await protectEndpoint(req, RATE_LIMIT_CONFIGS.MUTATION, 'categories', requestId);
+    if (protectionError) {
+      return protectionError;
+    }
+
+    // 2. Authentication
+    user = await getUserFromRequest();
+    if (!user || !user.restaurantId) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated or missing restaurant ID',
+          requestId,
+        },
+      }, { status: 401 });
+    }
+
+    // 3. Authorization
+    const authError = await checkAuthorization(user, 'categories', 'INSERT');
+    if (authError) {
+      return authError;
+    }
+
+    // 4. Validate request data
+    const requestData = await req.json();
+    const validationResult = categoryCreateSchema.safeParse(requestData);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid request data',
+            requestId,
+            details: validationResult.error.flatten().fieldErrors,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    const { name_en, name_ja, name_vi, position } = validationResult.data;
 
     const categoryData: Record<string, unknown> = {
       restaurant_id: user.restaurantId,
@@ -188,5 +264,14 @@ export const POST = createApiHandler(
     }
 
     return NextResponse.json(createApiSuccess({ category: data }, requestId), { status: 201 });
+
+  } catch (error) {
+    return await handleApiError(
+      error,
+      'categories-insert',
+      user?.restaurantId || undefined,
+      user?.userId,
+      requestId
+    );
   }
-);
+}

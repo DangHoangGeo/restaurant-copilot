@@ -26,13 +26,21 @@ export interface ApiHandlerOptions<T extends ZodSchema> {
   rateLimitConfig?: RateLimitConfig;
 }
 
+// Type for Next.js route context (compatible with Next.js 15)
+type RouteContext = {
+  params: Promise<Record<string, string>>;
+};
+
 export function createApiHandler<T extends ZodSchema>(
   options: ApiHandlerOptions<T>,
   logic: ApiLogic<z.infer<T>>
 ) {
-  return async (req: NextRequest, { params }: { params: Record<string, string> }): Promise<NextResponse> => {
+  return async (req: NextRequest, context: RouteContext = { params: Promise.resolve({}) }): Promise<NextResponse> => {
     const requestId = randomUUID();
     let user: AuthUser | null = null;
+    
+    // Handle params - they will be a Promise (Next.js 15)
+    const params: Record<string, string> = await context.params;
 
     try {
       // 1. Rate Limiting & CSRF Protection
@@ -95,7 +103,7 @@ export function createApiHandler<T extends ZodSchema>(
       return await handleApiError(
         error,
         `${options.resource}-${options.operation.toLowerCase()}`,
-        user?.restaurantId,
+        user?.restaurantId || undefined,
         user?.userId,
         requestId
       );
