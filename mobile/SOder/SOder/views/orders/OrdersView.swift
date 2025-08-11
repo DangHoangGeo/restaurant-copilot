@@ -512,7 +512,7 @@ struct OrdersView: View {
     }
     
     private var groupedOrders: [String: [Order]] {
-        Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? "\("orders_table_prefix".localized) \($0.table_id)" })
+        Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? String(format: "orders_table_format".localized, $0.table_id) })
     }
     
     private func countForFilter(_ filter: OrderFilter) -> Int {
@@ -533,12 +533,12 @@ struct SidebarOrderRowView: View {
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     HStack {
                         HStack(spacing: Spacing.xxs){
-                            Text(order.table?.name ?? "\("orders_table_prefix".localized) \(order.table_id)")
+                            Text(order.table?.name ?? String(format: "orders_table_format".localized, order.table_id))
                                 .font(.cardTitle)
                                 .foregroundColor(.appTextPrimary)
                                 .fontWeight(.bold)
                             
-                            Text("\("orders_id_prefix".localized): \(order.id.prefix(6).uppercased())")
+                            Text(String(format: "orders_id_format".localized, order.id.prefix(6).uppercased()))
                                 .font(.bodyRegular)
                                 .foregroundColor(.appTextSecondary)
                         }
@@ -566,6 +566,7 @@ struct SidebarOrderRowView: View {
                         Label("\(order.guest_count)", systemImage: "person.2")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
+                            .accessibilityLabel(String(format: "orders_guest_count_accessibility".localized, order.guest_count ?? 1))
                         
                         Label(formatTime(order.created_at), systemImage: "clock")
                             .font(.captionRegular)
@@ -637,7 +638,7 @@ struct SidebarOrderRowView: View {
             date = fallbackFormatter.date(from: dateString)
         }
         
-        guard let finalDate = date else { 
+        guard let finalDate = date else {
             print("Failed to parse date string: \(dateString)")
             return "orders_unknown_time".localized
         }

@@ -125,7 +125,7 @@ struct AddItemToOrderView: View {
                                         .lineLimit(2)
                                 }
                                 
-                                Text(String(format: "currency_format".localized, item.price))
+                                Text(String(format: "price_format".localized, item.price))
                                     .font(.bodyMedium)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.appPrimary)

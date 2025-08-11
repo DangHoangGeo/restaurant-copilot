@@ -68,7 +68,7 @@ struct OrderDetailView: View {
                     }
                     .padding()
                 }
-                .navigationTitle(order.table?.name ?? "Table \(order.table_id)")
+                .navigationTitle(order.table?.name ?? String(format: "order_detail_table_fallback".localized, order.table_id))
                 .navigationBarTitleDisplayMode(horizontalSizeClass == .regular ? .inline : .large)
                 .sheet(item: $selectedItem) { item in
                     OrderItemDetailView(
@@ -174,6 +174,7 @@ struct OrderDetailView: View {
                         Label("\(order.guest_count ?? 0)", systemImage: "person.2")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
+                            .accessibilityLabel(String(format: "order_detail_guest_count_accessibility".localized, order.guest_count ?? 0))
                         Label(formatTime(order.created_at), systemImage: "clock")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
@@ -193,7 +194,7 @@ struct OrderDetailView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.appTextPrimary)
                     Spacer()
-                    Text("¥\(String(format: "%.0f", total))")
+                    Text(String(format: "price_format".localized, total))
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.appPrimary)
@@ -454,9 +455,9 @@ struct OrderDetailView: View {
             date = fallbackFormatter.date(from: dateString)
         }
         
-        guard let finalDate = date else { 
+        guard let finalDate = date else {
             print("Failed to parse date string: \(dateString)")
-            return "Unknown" 
+            return "orders_unknown_time".localized
         }
         
         let displayFormatter = DateFormatter()

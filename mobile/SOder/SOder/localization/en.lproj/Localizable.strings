@@ -1,10 +1,10 @@
 /* 
   Localizable.strings (English)
-  SOder
+  Cooder.ai
 */
 
 // MARK: - App General
-"app_name" = "SOder";
+"app_name" = "Cooder.ai";
 "app_subtitle" = "Restaurant Order Management";
 
 // MARK: - Login Screen
@@ -84,6 +84,12 @@
 "checkout_price_tax_label" = "Tax (%d%%)";
 "checkout_total_label" = "Total:";
 "checkout_change_label" = "Change:";
+
+// MARK: - Checkout View
+"checkout_custom_discount_placeholder" = "¥0";
+"checkout_guest_count_accessibility" = "%d guests";
+"checkout_received_amount_placeholder" = "0";
+"item_quantity_format" = "×%d";
 
 // MARK: - Checkout Accessibility
 "checkout_apply_discount_accessibility" = "Apply a discount to the order";
@@ -406,6 +412,9 @@
 "order_items_section_title" = "Order items";
 "order_items_new_label" = "New";
 
+// MARK: - Order Detail View
+"order_detail_guest_count_accessibility" = "%d guests";
+
 // MARK: - Printer Settings View Localization
 "printer_settings_title" = "Printer Settings";
 "printer_configuration_title" = "Printer Configuration";
@@ -535,6 +544,23 @@
 "add_items_error_load_failed" = "Failed to load menu data. Please check your connection and try again.";
 "add_items_error_add_failed" = "Failed to add the item to your order. Please try again.";
 
+// MARK: - Order Status Update View
+"order_status_update_button" = "Update Status";
+"order_status_update_current_status_format" = "Current: %@";
+"order_status_update_default_error" = "Failed to update status";
+"order_status_update_item_current_status_label" = "Current:";
+"order_status_update_item_quantity_format" = "Qty: %d";
+"order_status_update_item_status_picker" = "Status";
+"order_status_update_item_status_section_header" = "Individual Item Status";
+"order_status_update_new_status_picker" = "New Status";
+"order_status_update_section_header" = "Order Status";
+"order_status_update_title" = "Update Status";
+"order_status_update_unsaved_changes_warning" = "⚠️ You have unsaved changes";
+
+// MARK: - Orders View
+"orders_guest_count_accessibility" = "%d guests";
+"orders_id_format" = "ID: %@";
+"orders_table_format" = "Table %@";
 
 // MARK: - POS Flow Tab
 "tab_new_order" = "New Order";

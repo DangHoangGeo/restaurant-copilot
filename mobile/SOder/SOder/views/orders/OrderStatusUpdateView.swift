@@ -21,13 +21,13 @@ struct OrderStatusUpdateView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Order Status")) {
+                Section(header: Text("order_status_update_section_header".localized)) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Current: \(order.status.displayName)")
+                        Text(String(format: "order_status_update_current_status_format".localized, order.status.displayName))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
-                        Picker("New Status", selection: $newOrderStatus) {
+                        Picker("order_status_update_new_status_picker".localized, selection: $newOrderStatus) {
                             ForEach(OrderStatus.allCases, id: \.self) { status in
                                 HStack {
                                     Circle()
@@ -46,7 +46,7 @@ struct OrderStatusUpdateView: View {
                 }
                 
                 if let orderItems = order.order_items, !orderItems.isEmpty {
-                    Section(header: Text("Individual Item Status")) {
+                    Section(header: Text("order_status_update_item_status_section_header".localized)) {
                         ForEach(orderItems) { item in
                             orderItemStatusRow(item)
                         }
@@ -56,7 +56,7 @@ struct OrderStatusUpdateView: View {
                 Section {
                     VStack(spacing: 12) {
                         if hasChanges {
-                            Text("⚠️ You have unsaved changes")
+                            Text("order_status_update_unsaved_changes_warning".localized)
                                 .font(.caption)
                                 .foregroundColor(.orange)
                         }
@@ -71,7 +71,7 @@ struct OrderStatusUpdateView: View {
                                         .padding(.trailing, 4)
                                 }
                                 Image(systemName: "checkmark.circle.fill")
-                                Text("Update Status")
+                                Text("order_status_update_button".localized)
                             }
                             .frame(maxWidth: .infinity)
                         }
@@ -80,41 +80,19 @@ struct OrderStatusUpdateView: View {
                     }
                 }
             }
-            .navigationTitle("Update Status")
+            .navigationTitle("order_status_update_title".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("cancel".localized) {
                         dismiss()
                     }
                 }
-
-#if DEBUG
-#Preview {
-    // Mock Environment Objects
-    let orderManager = OrderManager.shared
-    let printerManager = PrinterManager.shared
-    let localizationManager = LocalizationManager.shared
-
-    // Populate with mock data for preview
-    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Đồ uống", position: 1)
-    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Cà phê nóng", price: 5.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
-    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 5.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
-    let mockTable = Table(id: "1", restaurant_id: "1", name: "Table 1", status: .occupied, capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil, created_at: "", updated_at: "")
-    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "1", guest_count: 2, status: .new, total_amount: 10.0, order_number: 1, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [mockOrderItem], payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil)
-
-    return OrderStatusUpdateView(order: mockOrder)
-        .environmentObject(orderManager)
-        .environmentObject(printerManager)
-        .environmentObject(localizationManager)
-        .environmentObject(SupabaseManager.shared)
-}
-#endif
             }
-            .alert("Error", isPresented: $showingErrorAlert) {
-                Button("OK") {}
+            .alert("error".localized, isPresented: $showingErrorAlert) {
+                Button("ok".localized) {}
             } message: {
-                Text(errorMessage ?? "Failed to update status")
+                Text(errorMessage ?? "order_status_update_default_error".localized)
             }
         }
         .onAppear {
@@ -126,10 +104,10 @@ struct OrderStatusUpdateView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.menu_item?.displayName ?? "Unknown Item")
+                    Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
                         .font(.headline)
                     
-                    Text("Qty: \(item.quantity)")
+                    Text(String(format: "order_status_update_item_quantity_format".localized, item.quantity))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -137,7 +115,7 @@ struct OrderStatusUpdateView: View {
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("Current:")
+                    Text("order_status_update_item_current_status_label".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
@@ -151,7 +129,7 @@ struct OrderStatusUpdateView: View {
                 }
             }
             
-            Picker("Status", selection: Binding(
+            Picker("order_status_update_item_status_picker".localized, selection: Binding(
                 get: { itemStatusUpdates[item.id] ?? item.status },
                 set: { newStatus in
                     itemStatusUpdates[item.id] = newStatus

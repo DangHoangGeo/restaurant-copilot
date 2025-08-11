@@ -142,6 +142,7 @@ struct CheckoutView: View {
                         Label("\(order.guest_count ?? 0)", systemImage: "person.2")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
+                            .accessibilityLabel(String(format: "checkout_guest_count_accessibility".localized, order.guest_count ?? 0))
                         Label(formatTime(order.created_at), systemImage: "clock")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
@@ -220,7 +221,7 @@ struct CheckoutView: View {
                             .font(.captionRegular)
                             .fontWeight(.medium)
                             .foregroundColor(.appTextPrimary)
-                        TextField("0", value: $receivedAmount, format: .currency(code: "JPY"))
+                        TextField("checkout_received_amount_placeholder".localized, value: $receivedAmount, format: .currency(code: "JPY"))
                             .textFieldStyle(AppTextFieldStyle())
                             .keyboardType(.decimalPad)
                     }
@@ -231,7 +232,7 @@ struct CheckoutView: View {
                                 .fontWeight(.medium)
                                 .foregroundColor(.appTextPrimary)
                             Spacer()
-                            Text("¥\(String(format: "%.0f", changeAmount))")
+                            Text(String(format: "price_format".localized, changeAmount))
                                 .font(.bodyMedium)
                                 .fontWeight(.bold)
                                 .foregroundColor(.appSuccess)
@@ -337,7 +338,7 @@ struct CheckoutView: View {
                         Text("discount_amount".localized)
                             .font(.captionRegular)
                             .foregroundColor(.appTextPrimary)
-                        TextField("¥0", value: $customDiscountAmount, format: .currency(code: "JPY"))
+                        TextField("checkout_custom_discount_placeholder".localized, value: $customDiscountAmount, format: .currency(code: "JPY"))
                             .textFieldStyle(AppTextFieldStyle())
                             .keyboardType(.decimalPad)
                     }
@@ -522,9 +523,9 @@ struct CheckoutView: View {
             date = fallbackFormatter.date(from: dateString)
         }
         
-        guard let finalDate = date else { 
+        guard let finalDate = date else {
             print("Failed to parse date string: \(dateString)")
-            return "Unknown" 
+            return "orders_unknown_time".localized
         }
         
         let displayFormatter = DateFormatter()
@@ -541,7 +542,7 @@ struct CheckoutItemRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.menu_item?.displayName ?? "Unknown Item")
+                Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
@@ -561,12 +562,12 @@ struct CheckoutItemRow: View {
             Spacer()
             
             VStack(alignment: .trailing, spacing: 4) {
-                Text("×\(item.quantity)")
+                Text(String(format: "item_quantity_format".localized, item.quantity))
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
                 if let price = item.menu_item?.price {
-                    Text("¥\(String(format: "%.0f", price * Double(item.quantity)))")
+                    Text(String(format: "price_format".localized, price * Double(item.quantity)))
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
