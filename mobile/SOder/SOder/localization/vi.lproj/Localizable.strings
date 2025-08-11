@@ -48,6 +48,49 @@
 "tax" = "Thuế";
 "discount" = "Giảm giá";
 
+// MARK: - POS Interface
+"pos_search_placeholder" = "Tìm theo tên hoặc mã...";
+"pos_filter_all" = "Tất cả";
+"pos_loading_menu" = "Đang tải thực đơn...";
+"pos_empty_search_format" = "Không tìm thấy món nào cho '%@'";
+"pos_empty_try_different" = "Hãy thử từ khóa khác.";
+"pos_empty_category" = "Không có món nào trong danh mục này.";
+"pos_empty_all" = "Không có món nào.";
+"pos_done" = "Xong";
+"pos_view_cart" = "Xem giỏ hàng";
+"pos_items_count_format" = "%d món";
+"pos_view_cart_accessibility" = "Xem giỏ hàng có %d món, tổng %@";
+"pos_available" = "Có sẵn";
+"pos_out_of_stock" = "Hết hàng";
+"pos_quick_add" = "Thêm nhanh";
+"pos_customize_item" = "Tùy chỉnh món";
+"pos_more_options" = "Tùy chọn khác";
+"pos_menu_title" = "Thực đơn";
+"pos_menu_subtitle" = "Chọn món để thêm vào đơn hàng";
+"price_format" = "%.0f₫";
+
+// MARK: - Add Items
+"add_item_to_order" = "Thêm %@ vào đơn hàng";
+"add_items_title" = "Thêm món";
+"add_items_subtitle" = "Chọn món để thêm vào đơn hàng";
+"pos_add_item_error" = "Không thể thêm món vào đơn hàng";
+"pos_item_added" = "Đã thêm món thành công";
+"pos_item_customized" = "Đã thêm món tùy chỉnh thành công";
+"add_items_error_no_restaurant" = "Không xác định được nhà hàng";
+"add_items_error_load_failed" = "Không thể tải danh sách món";
+
+// MARK: - Customization
+"pos_customize_title" = "Tùy chỉnh món";
+"pos_size_section_title" = "Kích thước";
+"pos_toppings_section_title" = "Topping";
+"pos_quantity_section_title" = "Số lượng";
+"pos_quantity_label" = "Số lượng";
+"pos_notes_section_title" = "Ghi chú";
+"pos_notes_placeholder" = "Yêu cầu đặc biệt...";
+"pos_total_price_label" = "Tổng cộng";
+"pos_add_to_order_button" = "Thêm vào đơn hàng";
+"pos_additional_price_format" = "+%.0f₫";
+
 // MARK: - Kitchen
 "kitchen" = "Bếp";
 "kitchen_board" = "Bảng Bếp";

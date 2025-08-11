@@ -48,6 +48,49 @@
 "tax" = "税金";
 "discount" = "割引";
 
+// MARK: - POS Interface
+"pos_search_placeholder" = "商品名またはコードで検索...";
+"pos_filter_all" = "すべて";
+"pos_loading_menu" = "メニューを読み込み中...";
+"pos_empty_search_format" = "'%@'に該当する商品が見つかりません";
+"pos_empty_try_different" = "別の検索語句をお試しください。";
+"pos_empty_category" = "このカテゴリには商品がありません。";
+"pos_empty_all" = "利用可能な商品がありません。";
+"pos_done" = "完了";
+"pos_view_cart" = "カートを見る";
+"pos_items_count_format" = "%d 点";
+"pos_view_cart_accessibility" = "%d 点、合計 %@ のカートを見る";
+"pos_available" = "利用可能";
+"pos_out_of_stock" = "在庫切れ";
+"pos_quick_add" = "クイック追加";
+"pos_customize_item" = "商品をカスタマイズ";
+"pos_more_options" = "その他のオプション";
+"pos_menu_title" = "メニュー";
+"pos_menu_subtitle" = "ご注文に追加する商品を選択";
+"price_format" = "¥%.0f";
+
+// MARK: - Add Items
+"add_item_to_order" = "%@ を注文に追加";
+"add_items_title" = "商品を追加";
+"add_items_subtitle" = "注文に追加する商品を選択";
+"pos_add_item_error" = "商品の追加に失敗しました";
+"pos_item_added" = "商品が正常に追加されました";
+"pos_item_customized" = "カスタマイズされた商品が追加されました";
+"add_items_error_no_restaurant" = "レストランが識別されていません";
+"add_items_error_load_failed" = "メニュー項目の読み込みに失敗しました";
+
+// MARK: - Customization
+"pos_customize_title" = "商品をカスタマイズ";
+"pos_size_section_title" = "サイズ";
+"pos_toppings_section_title" = "トッピング";
+"pos_quantity_section_title" = "数量";
+"pos_quantity_label" = "数量";
+"pos_notes_section_title" = "備考";
+"pos_notes_placeholder" = "特別なご指示...";
+"pos_total_price_label" = "合計";
+"pos_add_to_order_button" = "注文に追加";
+"pos_additional_price_format" = "+¥%.0f";
+
 // MARK: - Kitchen
 "kitchen" = "キッチン";
 "kitchen_board" = "キッチンボード";

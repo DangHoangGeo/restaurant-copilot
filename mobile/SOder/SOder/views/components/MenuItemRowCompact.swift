@@ -3,7 +3,7 @@
 //  SOder
 //
 //  Created by Claude Code on 2025/08/11.
-//  Shared compact menu item row for consistent add-item UIs
+//  Legacy compact menu item row - use MenuItemRowCompactUnified for new implementations
 //
 
 import SwiftUI

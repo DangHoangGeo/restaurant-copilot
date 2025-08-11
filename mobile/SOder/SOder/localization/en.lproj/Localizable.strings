@@ -48,6 +48,49 @@
 "tax" = "Tax";
 "discount" = "Discount";
 
+// MARK: - POS Interface
+"pos_search_placeholder" = "Search by name or code...";
+"pos_filter_all" = "All";
+"pos_loading_menu" = "Loading menu...";
+"pos_empty_search_format" = "No items found for '%@'";
+"pos_empty_try_different" = "Try a different search term.";
+"pos_empty_category" = "No items in this category.";
+"pos_empty_all" = "No items available.";
+"pos_done" = "Done";
+"pos_view_cart" = "View Cart";
+"pos_items_count_format" = "%d items";
+"pos_view_cart_accessibility" = "View cart with %d items, total %@";
+"pos_available" = "Available";
+"pos_out_of_stock" = "Out of stock";
+"pos_quick_add" = "Quick add";
+"pos_customize_item" = "Customize item";
+"pos_more_options" = "More options";
+"pos_menu_title" = "Menu";
+"pos_menu_subtitle" = "Select items to add to your order";
+"price_format" = "¥%.0f";
+
+// MARK: - Add Items
+"add_item_to_order" = "Add %@ to order";
+"add_items_title" = "Add Items";
+"add_items_subtitle" = "Select items to add to the order";
+"pos_add_item_error" = "Failed to add item to order";
+"pos_item_added" = "Item added successfully";
+"pos_item_customized" = "Customized item added successfully";
+"add_items_error_no_restaurant" = "Restaurant not identified";
+"add_items_error_load_failed" = "Failed to load menu items";
+
+// MARK: - Customization
+"pos_customize_title" = "Customize Item";
+"pos_size_section_title" = "Size";
+"pos_toppings_section_title" = "Toppings";
+"pos_quantity_section_title" = "Quantity";
+"pos_quantity_label" = "Quantity";
+"pos_notes_section_title" = "Notes";
+"pos_notes_placeholder" = "Special instructions...";
+"pos_total_price_label" = "Total";
+"pos_add_to_order_button" = "Add to Order";
+"pos_additional_price_format" = "+¥%.0f";
+
 // MARK: - Kitchen
 "kitchen" = "Kitchen";
 "kitchen_board" = "Kitchen Board";

@@ -13,6 +13,26 @@ class SupabaseManager: ObservableObject {
     
     // Internal property to store restaurant ID from JWT
     private var restaurantIdFromToken: String?
+    
+    // MARK: - In-Memory Cache
+    private struct CacheItem<T> {
+        let data: T
+        let timestamp: Date
+        let ttl: TimeInterval
+        
+        var isValid: Bool {
+            Date().timeIntervalSince(timestamp) < ttl
+        }
+    }
+    
+    private var categoriesCache: CacheItem<[Category]>?
+    private var menuItemsCache: CacheItem<[MenuItem]>?
+    private var menuItemDetailsCache: [String: CacheItem<MenuItem>] = [:]
+    private let cacheTTL: TimeInterval = 60.0 // 60 seconds TTL as specified in plan
+    
+    // Search debounce
+    private var searchDebounceTimer: Timer?
+    private let searchDebounceDelay: TimeInterval = 0.3 // 300ms as specified in plan
 
     var currentRestaurantId: String? {
         // Prioritize ID from token if available, otherwise from loaded restaurant
@@ -76,6 +96,8 @@ class SupabaseManager: ObservableObject {
         isAuthenticated = false
         userRole = nil // Clear role
         restaurantIdFromToken = nil // Clear token-derived restaurant ID
+        // Clear cache on sign out
+        clearCache()
     }
     
     @MainActor
@@ -192,6 +214,64 @@ class SupabaseManager: ObservableObject {
         isAuthenticated = false
         userRole = nil
         restaurantIdFromToken = nil
+        // Clear cache when auth fails
+        clearCache()
+    }
+    
+    // MARK: - Cache Management
+    
+    /// Clear all cached data
+    func clearCache() {
+        print("🧹 Clearing all cache")
+        categoriesCache = nil
+        menuItemsCache = nil
+        menuItemDetailsCache.removeAll()
+    }
+    
+    /// Clear specific cache entries
+    func clearMenuCache() {
+        print("🧹 Clearing menu cache")
+        menuItemsCache = nil
+        menuItemDetailsCache.removeAll()
+    }
+    
+    func clearCategoriesCache() {
+        print("🧹 Clearing categories cache")
+        categoriesCache = nil
+    }
+    
+    /// Check if cache has valid data
+    func hasCachedCategories() -> Bool {
+        return categoriesCache?.isValid == true
+    }
+    
+    func hasCachedMenuItems() -> Bool {
+        return menuItemsCache?.isValid == true
+    }
+    
+    /// Get cache statistics for debugging
+    func getCacheStats() -> String {
+        let categoriesStatus = categoriesCache?.isValid == true ? "✅ Valid" : "❌ Invalid/Empty"
+        let menuItemsStatus = menuItemsCache?.isValid == true ? "✅ Valid" : "❌ Invalid/Empty" 
+        let detailsCount = menuItemDetailsCache.values.filter { $0.isValid }.count
+        
+        return """
+        📊 Cache Status:
+        Categories: \(categoriesStatus)
+        Menu Items: \(menuItemsStatus)
+        Item Details: \(detailsCount) cached
+        TTL: \(cacheTTL)s
+        """
+    }
+    
+    // MARK: - Search Debounce (Optional Implementation)
+    
+    /// Debounced search function - call this instead of direct search to reduce API calls
+    func debouncedSearch(query: String, completion: @escaping (String) -> Void) {
+        searchDebounceTimer?.invalidate()
+        searchDebounceTimer = Timer.scheduledTimer(withTimeInterval: searchDebounceDelay, repeats: false) { _ in
+            completion(query)
+        }
     }
     
     // MARK: - Data Fetching (New POS Flow Related)
@@ -234,11 +314,19 @@ class SupabaseManager: ObservableObject {
     }
 
     func fetchAllCategories() async throws -> [Category] {
+        // Check cache first
+        if let cachedCategories = categoriesCache, cachedCategories.isValid {
+            print("📱 Using cached categories")
+            return cachedCategories.data
+        }
+        
         guard let restaurantId = self.currentRestaurantId else {
             print("Error: Missing restaurantId in fetchAllCategories")
             throw SupabaseManagerError.missingRestaurantId
         }
+        
         do {
+            print("🌐 Fetching categories from database")
             let categories: [Category] = try await client
                 .from("categories")
                 .select() // Assuming category model has restaurant_id or RLS is in place
@@ -246,6 +334,11 @@ class SupabaseManager: ObservableObject {
                 .order("position", ascending: true) // Assuming 'position' for ordering
                 .execute()
                 .value
+            
+            // Cache the result
+            categoriesCache = CacheItem(data: categories, timestamp: Date(), ttl: cacheTTL)
+            print("✅ Cached \(categories.count) categories")
+            
             return categories
         } catch {
             print("Error fetching categories: \(error.localizedDescription)")
@@ -275,11 +368,19 @@ class SupabaseManager: ObservableObject {
     }
 
     func fetchAllMenuItems() async throws -> [MenuItem] {
+        // Check cache first
+        if let cachedMenuItems = menuItemsCache, cachedMenuItems.isValid {
+            print("📱 Using cached menu items")
+            return cachedMenuItems.data
+        }
+        
         guard let restaurantId = self.currentRestaurantId else {
             print("Error: Missing restaurantId in fetchAllMenuItems")
             throw SupabaseManagerError.missingRestaurantId
         }
+        
         do {
+            print("🌐 Fetching menu items from database")
             let menuItems: [MenuItem] = try await client
                 .from("menu_items")
                 .select("*, category:categories(*)") // Join category details for filtering
@@ -288,6 +389,11 @@ class SupabaseManager: ObservableObject {
                 .order("position", ascending: true)
                 .execute()
                 .value
+            
+            // Cache the result
+            menuItemsCache = CacheItem(data: menuItems, timestamp: Date(), ttl: cacheTTL)
+            print("✅ Cached \(menuItems.count) menu items")
+            
             return menuItems
         } catch {
             print("Error fetching all menu items: \(error.localizedDescription)")
@@ -297,7 +403,14 @@ class SupabaseManager: ObservableObject {
 
     // Fetch menu item details including available sizes and toppings
     func fetchMenuItemDetails(menuItemId: String) async throws -> MenuItem {
+        // Check cache first
+        if let cachedItem = menuItemDetailsCache[menuItemId], cachedItem.isValid {
+            print("📱 Using cached menu item details for \(menuItemId)")
+            return cachedItem.data
+        }
+        
         do {
+            print("🌐 Fetching menu item details from database for \(menuItemId)")
             let menuItem: MenuItem = try await client
                 .from("menu_items")
                 .select("*, category:categories(*), availableSizes:menu_item_sizes(*), availableToppings:toppings(*)")
@@ -305,6 +418,11 @@ class SupabaseManager: ObservableObject {
                 .single()
                 .execute()
                 .value
+            
+            // Cache the result
+            menuItemDetailsCache[menuItemId] = CacheItem(data: menuItem, timestamp: Date(), ttl: cacheTTL)
+            print("✅ Cached menu item details for \(menuItemId)")
+            
             return menuItem
         } catch {
             print("Error fetching menu item details for \(menuItemId): \(error.localizedDescription)")
