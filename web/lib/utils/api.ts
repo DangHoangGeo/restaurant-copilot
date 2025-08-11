@@ -31,7 +31,7 @@ export const extractErrorMessage = (errorData: unknown, fallbackMessage: string)
 export const fetchCategoriesWithIncludes = async (): Promise<Category[]> => {
   const url = new URL('/api/v1/owner/categories', window.location.origin);
   url.searchParams.set('page', '1');
-  url.searchParams.set('pageSize', '1000'); // Get all categories
+  url.searchParams.set('pageSize', '200'); // Get all categories (most restaurants won't have more than 200)
   url.searchParams.set('include', 'items,sizes,toppings,counts'); // Include all nested data
   
   const response = await fetch(url.toString(), {
