@@ -90,18 +90,53 @@ export async function rateLimit(
  * CSRF protection - validates origin header for same-site requests
  */
 export function validateCSRF(request: NextRequest): boolean {
-    const origin = request.headers.get('origin');
-
     // Allow requests in dev environment for easier testing
     if (process.env.NODE_ENV === 'development') return true;
 
-    if (!origin) return false;
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+    const host = request.headers.get('host');
 
-    // Compare origin host with the host header
+    // If no origin header, check referer as fallback (some requests don't send origin)
+    const sourceUrl = origin || referer;
+    
+    if (!sourceUrl || !host) {
+        // Allow requests without origin/referer for certain cases (like direct API calls)
+        // This could be from server-side requests or certain browser configurations
+        return true;
+    }
+
     try {
-        const originUrl = new URL(origin);
-        const host = request.headers.get('host');
-        return originUrl.host === host;
+        const sourceUrlObj = new URL(sourceUrl);
+        const sourceHost = sourceUrlObj.host;
+        
+        // Allow exact host match
+        if (sourceHost === host) {
+            return true;
+        }
+
+        // Allow subdomain requests within the same root domain
+        const rootDomain = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+        
+        // Check if both hosts belong to the same root domain
+        const hostEndsWithRoot = host.endsWith(`.${rootDomain}`) || host === rootDomain;
+        const sourceEndsWithRoot = sourceHost.endsWith(`.${rootDomain}`) || sourceHost === rootDomain;
+        
+        if (hostEndsWithRoot && sourceEndsWithRoot) {
+            return true;
+        }
+
+        // Allow localhost for development/testing
+        if (host.includes('localhost') && sourceHost.includes('localhost')) {
+            return true;
+        }
+
+        // Allow Vercel preview URLs
+        if (host.includes('vercel.app') && sourceHost.includes('vercel.app')) {
+            return true;
+        }
+
+        return false;
     } catch {
         return false;
     }
