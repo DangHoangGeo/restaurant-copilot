@@ -118,7 +118,7 @@ export async function protectEndpoint(
 ) {
 
   // Check CSRF protection first
-  if (!validateCSRFToken(request)) {
+  if (!validateCSRF(request)) {
     return handleCsrfError(
       endpoint,
       request,

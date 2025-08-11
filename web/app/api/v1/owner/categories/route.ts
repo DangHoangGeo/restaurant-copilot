@@ -17,27 +17,42 @@ export const GET = createApiHandler(
     resource: 'categories',
     operation: 'SELECT',
   },
-  async ({ user, req, requestId }: ApiHandlerContext<never>) => {
+
+  async ({ user, req, requestId }: ApiHandlerContext<Record<string, unknown>>) => {
     const url = new URL(req.url);
     const queryParams = Object.fromEntries(url.searchParams);
 
-    const validationResult = categoriesGetQuerySchema.safeParse(queryParams);
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid query parameters',
-            requestId,
-            details: validationResult.error.flatten().fieldErrors,
+    // Check if this is a legacy request (no query params) for backward compatibility
+    const isLegacyRequest = Object.keys(queryParams).length === 0;
+    
+    let validatedParams;
+    if (isLegacyRequest) {
+      // Use defaults for legacy requests
+      validatedParams = {
+        page: 1,
+        pageSize: 1000, // Large number to get all categories
+        include: ['items', 'sizes', 'toppings'], // Include everything like before
+      };
+    } else {
+      const validationResult = categoriesGetQuerySchema.safeParse(queryParams);
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid query parameters',
+              requestId,
+              details: validationResult.error.flatten().fieldErrors,
+            },
           },
-        },
-        { status: 400 }
-      );
+          { status: 400 }
+        );
+      }
+      validatedParams = validationResult.data;
     }
 
-    const { page, pageSize, include } = validationResult.data;
+    const { page, pageSize, include } = validatedParams;
     const restaurantId = user.restaurantId;
     const offset = (page - 1) * pageSize;
 
@@ -97,7 +112,7 @@ export const GET = createApiHandler(
     // Restore item counts logic
     let enhancedCategories: unknown[] | null = categories;
     if (include.includes('counts') && categories && Array.isArray(categories)) {
-      const categoryIds = categories.map(cat => (cat as CategoryWithItems).id);
+      const categoryIds = categories.map(cat => (cat as unknown as CategoryWithItems).id);
       if (categoryIds.length > 0) {
         const { data: itemCounts } = await supabaseAdmin
           .from('menu_items')
@@ -111,20 +126,27 @@ export const GET = createApiHandler(
         });
 
         enhancedCategories = categories.map(category => ({
-          ...(category as CategoryWithItems),
-          items_count: countMap.get((category as CategoryWithItems).id) || 0,
+          ...(category as unknown as CategoryWithItems),
+          items_count: countMap.get((category as unknown as CategoryWithItems).id) || 0,
         }));
       }
 
-      const countMap = new Map(itemCounts.map((c: { category_id: string; item_count: number }) => [c.category_id, c.item_count]));
-
-      enhancedCategories = categories.map(category => ({
-        ...(category as unknown as CategoryWithItems),
-        items_count: countMap.get((category as unknown as CategoryWithItems).id) || 0,
-      }));
     }
 
     const pagination = createPaginationMeta(page, pageSize, totalCount || 0);
+
+    // Return legacy format for backward compatibility
+    if (isLegacyRequest) {
+      return NextResponse.json(
+        { categories: enhancedCategories },
+        { 
+          status: 200,
+          headers: {
+            'Cache-Control': 'private, max-age=120', // Cache for 2 minutes
+          },
+        }
+      );
+    }
 
     return NextResponse.json(
       createApiSuccess({ categories: enhancedCategories, pagination, filters: { include } }, requestId),
