@@ -159,7 +159,8 @@
       "toggle_aria_label": "Toggle sidebar navigation",
       "close_aria_label": "Close sidebar"
     },
-    "user_menu": {
+  "bottom_nav_aria_label": "Primary navigation",
+  "user_menu": {
       "admin_user_placeholder": "Admin User",
       "my_account_label": "My Account",
       "profile_link": "Profile",
