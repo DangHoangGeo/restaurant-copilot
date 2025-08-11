@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { handleRateLimitError } from '@/lib/server/apiError';
+import { handleRateLimitError, handleCsrfError } from '@/lib/server/apiError';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
@@ -113,18 +113,17 @@ export function validateCSRF(request: NextRequest): boolean {
 export async function protectEndpoint(
   request: NextRequest,
   config: RateLimitConfig,
-  endpoint: string = 'api'
+  endpoint: string = 'api',
+  requestId?: string
 ) {
-  // Check CSRF protection first for unsafe methods
-  if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method.toUpperCase())) {
-    if (!validateCSRF(request)) {
-      return handleRateLimitError(
-        endpoint,
-        'csrf-validation-failed',
-        0,
-        60000
-      );
-    }
+
+  // Check CSRF protection first
+  if (!validateCSRFToken(request)) {
+    return handleCsrfError(
+      endpoint,
+      request,
+      requestId
+    );
   }
 
   // Then apply rate limiting
