@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { handleRateLimitError } from '@/lib/server/apiError';
+import { handleRateLimitError, handleCsrfError } from '@/lib/server/apiError';
 
 /**
  * Rate limiter configuration
@@ -223,15 +223,15 @@ export function validateCSRFToken(request: NextRequest): boolean {
 export async function protectEndpoint(
   request: NextRequest,
   config: RateLimitConfig,
-  endpoint: string = 'api'
+  endpoint: string = 'api',
+  requestId?: string
 ) {
   // Check CSRF protection first
   if (!validateCSRFToken(request)) {
-    return handleRateLimitError(
+    return handleCsrfError(
       endpoint,
-      'csrf-validation',
-      config.max,
-      config.windowMs
+      request,
+      requestId
     );
   }
 

@@ -257,3 +257,32 @@ export function withRequestId<T>(data: T, requestId?: string): T & { requestId?:
   }
   return { ...data } as T & { requestId?: string };
 }
+
+/**
+ * Creates a CSRF error response
+ */
+export async function handleCsrfError(
+  endpoint: string,
+  request: Request,
+  requestId?: string
+): Promise<NextResponse> {
+  const id = requestId || randomUUID();
+
+  await logger.warn(endpoint, 'CSRF validation failed', {
+    requestId: id,
+    origin: request.headers.get('origin'),
+    referer: request.headers.get('referer'),
+    host: request.headers.get('host'),
+  });
+
+  const apiError = createApiError(
+    'FORBIDDEN',
+    'Invalid request origin. Please try again.',
+    undefined,
+    id
+  );
+
+  return NextResponse.json(apiError, {
+    status: ERROR_STATUS_CODES.FORBIDDEN,
+  });
+}
