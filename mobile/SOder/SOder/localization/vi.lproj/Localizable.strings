@@ -34,6 +34,7 @@
 "loading" = "Đang tải";
 "error" = "Lỗi";
 "success" = "Thành công";
+"close" = "Đóng";
 
 // MARK: - Order Management
 "orders" = "Đơn hàng";
@@ -375,9 +376,9 @@
 "kitchen_empty_orders_count" = "Đơn hàng đang hoạt động: %d";
 
 // MARK: - Debug
-"debug_item_name" = "GỠ LỖI";
-"debug_quantity" = "Số lượng GỠ LỖI";
-"debug_tables" = "Bàn GỠ LỖI";
+"debug_item_name" = "GỬ LỖI";
+"debug_quantity" = "Số lượng GỬ LỖI";
+"debug_tables" = "Bàn GỬ LỖI";
 "debug_tap_change_status" = "CHẠM ĐỂ THAY ĐỔI TRẠNG THÁI";
 
 // MARK: - Orders Filter
@@ -386,6 +387,9 @@
 "orders_filter_serving" = "Đang phục vụ";
 "orders_filter_completed" = "Đã hoàn tất";
 "orders_filter_canceled" = "Đã hủy";
+
+// MARK: - Order Status Keys
+"order_status_draft" = "Nháp";
 
 // MARK: - Orders UI
 "orders_system_message" = "Thông báo Hệ thống";
@@ -852,3 +856,26 @@
 "tpl_phone" = "Điện thoại";
 "tpl_official_receipt" = "BIÊN LAI CHÍNH THỨC";
 "tpl_printed" = "Đã In";
+
+// MARK: - Missing Keys Added
+"add_item_to_order" = "Thêm %@ vào đơn hàng";
+
+// MARK: - Empty State Messages
+"empty_active_orders_title" = "Không có Đơn hàng Hoạt động";
+"empty_active_orders_message" = "Khi có đơn hàng mới, chúng sẽ xuất hiện ở đây.";
+"empty_new_orders_title" = "Không có Đơn hàng Mới";
+"empty_new_orders_message" = "Tất cả đơn hàng đang được xử lý.";
+"empty_serving_orders_title" = "Không có gì đang được Phục vụ";
+"empty_serving_orders_message" = "Không có đơn hàng nào đang được phục vụ.";
+"empty_completed_orders_title" = "Không có Đơn hàng Hoàn thành";
+"empty_completed_orders_message" = "Không có đơn hàng hoàn thành nào để hiển thị.";
+"empty_canceled_orders_title" = "Không có Đơn hàng Bị hủy";
+"empty_canceled_orders_message" = "Không có đơn hàng bị hủy nào để hiển thị.";
+
+/* Bổ sung khóa trạng thái món */
+"order_item_status_draft" = "Nháp";
+"order_item_status_new" = "Mới";
+"order_item_status_preparing" = "Đang chuẩn bị";
+"order_item_status_ready" = "Sẵn sàng";
+"order_item_status_served" = "Đã phục vụ";
+"order_item_status_cancelled" = "Đã hủy";

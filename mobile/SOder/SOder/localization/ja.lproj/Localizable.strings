@@ -34,6 +34,7 @@
 "loading" = "読み込み中";
 "error" = "エラー";
 "success" = "成功";
+"close" = "閉じる";
 
 // MARK: - Order Management
 "orders" = "注文";
@@ -386,6 +387,9 @@
 "orders_filter_serving" = "提供中";
 "orders_filter_completed" = "完了";
 "orders_filter_canceled" = "キャンセル済み";
+
+// MARK: - Order Status Keys
+"order_status_draft" = "下書き";
 
 // MARK: - Orders UI
 "orders_system_message" = "システムメッセージ";
@@ -852,3 +856,26 @@
 "tpl_phone" = "電話";
 "tpl_official_receipt" = "公式レシート";
 "tpl_printed" = "印刷済み";
+
+// MARK: - Missing Keys Added
+"add_item_to_order" = "%@を注文に追加";
+
+// MARK: - Empty State Messages
+"empty_active_orders_title" = "アクティブな注文がありません";
+"empty_active_orders_message" = "新しい注文が入ると、ここに表示されます。";
+"empty_new_orders_title" = "新しい注文がありません";
+"empty_new_orders_message" = "すべての注文は処理中です。";
+"empty_serving_orders_title" = "提供中のものがありません";
+"empty_serving_orders_message" = "現在提供中の注文はありません。";
+"empty_completed_orders_title" = "完了した注文がありません";
+"empty_completed_orders_message" = "表示する完了した注文がありません。";
+"empty_canceled_orders_title" = "キャンセルされた注文がありません";
+"empty_canceled_orders_message" = "表示するキャンセルされた注文がありません。";
+
+/* Additional localized keys for item statuses */
+"order_item_status_draft" = "ドラフト";
+"order_item_status_new" = "新規";
+"order_item_status_preparing" = "準備中";
+"order_item_status_ready" = "提供準備完了";
+"order_item_status_served" = "提供済み";
+"order_item_status_cancelled" = "キャンセル";

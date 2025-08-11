@@ -32,121 +32,186 @@ struct AddItemToOrderView: View {
         return items.sorted { $0.displayName < $1.displayName }
     }
     
+    // Group items by category for headers
+    private var groupedItems: [(category: Category?, items: [MenuItem])] {
+        let items = filteredItems
+        let map = Dictionary(grouping: items, by: { item in
+            categories.first(where: { $0.id == item.category_id })
+        })
+        // Sort categories by their position if available, else by name
+        let sortedKeys = map.keys.sorted { lhs, rhs in
+            switch (lhs?.position, rhs?.position) {
+            case let (l?, r?): return l < r
+            case (_?, nil): return true
+            case (nil, _?): return false
+            default:
+                let lName = lhs?.displayName ?? ""
+                let rName = rhs?.displayName ?? ""
+                return lName.localizedCompare(rName) == .orderedAscending
+            }
+        }
+        return sortedKeys.map { key in (category: key, items: map[key] ?? []) }
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            VStack(alignment: .leading, spacing: 8) {
-                Text("add_items_title".localized)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+            // Enhanced Sticky Search Header
+            VStack(spacing: Spacing.md) {
+                HStack {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("add_items_title".localized)
+                            .font(.sectionHeader)
+                            .fontWeight(.bold)
+                            .foregroundColor(.appTextPrimary)
+                        Text("add_items_subtitle".localized)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                    Spacer()
+                }
                 
-                let tableName = order.table?.name ?? "orders_unknown_table".localized
-                let orderNumber = order.order_number ?? 0
-                Text(String(format: "add_items_subtitle_format".localized, tableName, orderNumber))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding()
-            .background(Color.appSurface)
-            
-            // Search and Filter
-            VStack(spacing: 12) {
-                TextField("add_items_search_placeholder".localized, text: $searchText)
-                    .textFieldStyle(AppTextFieldStyle())
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                // Enhanced search field with better styling
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .font(.subheadline)
+                        .foregroundColor(.appTextTertiary)
+                    
+                    TextField("add_items_search_placeholder".localized, text: $searchText)
+                        .font(.bodyMedium)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                    
+                    if !searchText.isEmpty {
+                        Button(action: { searchText = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.subheadline)
+                                .foregroundColor(.appTextTertiary)
+                        }
+                    }
+                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
+                .background(Color.appSurfaceSecondary)
+                .cornerRadius(CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(Color.appBorderLight, lineWidth: 1)
+                )
                 
-                // Category Filter
+                // Enhanced Category Filter with better visual hierarchy
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Spacing.sm) {
-                        // All Categories button
-                        Button(action: { selectedCategoryId = nil }) {
-                            Text("add_items_all_categories".localized)
-                        }
-                        .modifier(FilterChipStyle(isSelected: selectedCategoryId == nil, color: .appPrimary))
-
+                        FilterChip(
+                            title: "add_items_all_categories".localized,
+                            count: menuItems.count,
+                            isSelected: selectedCategoryId == nil,
+                            color: .appPrimary
+                        ) { selectedCategoryId = nil }
+                        
                         ForEach(categories) { category in
-                            Button(action: {
+                            FilterChip(
+                                title: category.displayName,
+                                count: menuItems.filter { $0.category_id == category.id }.count,
+                                isSelected: selectedCategoryId == category.id,
+                                color: .appAccent
+                            ) {
                                 selectedCategoryId = selectedCategoryId == category.id ? nil : category.id
-                            }) {
-                                Text(category.displayName)
                             }
-                            .modifier(FilterChipStyle(isSelected: selectedCategoryId == category.id, color: .appPrimary))
                         }
                     }
                     .padding(.horizontal)
                 }
             }
             .padding()
+            .background(Color.appSurfaceElevated)
+            .shadow(color: Elevation.level2.color, radius: Elevation.level2.radius, x: 0, y: Elevation.level2.y)
             
-            // Menu Items List
+            // Enhanced Content Area
             if isLoading {
-                VStack(spacing: Spacing.md) {
+                VStack(spacing: Spacing.lg) {
                     ProgressView()
-                        .scaleEffect(1.2)
+                        .scaleEffect(1.5)
+                        .tint(.appPrimary)
                     Text("add_items_loading".localized)
                         .font(.bodyMedium)
                         .foregroundColor(.appTextSecondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.appBackground)
             } else if filteredItems.isEmpty {
-                VStack(spacing: Spacing.md) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 50))
-                        .foregroundColor(.appTextSecondary)
+                VStack(spacing: Spacing.lg) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.appSurfaceSecondary)
+                            .frame(width: 80, height: 80)
+                        Image(systemName: searchText.isEmpty ? "tray" : "magnifyingglass")
+                            .font(.system(size: 32))
+                            .foregroundColor(.appTextTertiary)
+                    }
                     
-                    if !searchText.isEmpty {
-                        Text(String(format: "add_items_no_results_format".localized, searchText))
-                            .font(.sectionHeader)
-                        Text("add_items_no_results_suggestion".localized)
-                            .font(.bodyMedium)
-                            .foregroundColor(.appTextSecondary)
-                    } else if selectedCategoryId != nil {
-                        Text("add_items_no_items_in_category".localized)
-                            .font(.sectionHeader)
-                    } else {
-                        Text("add_items_no_items_available".localized)
-                            .font(.sectionHeader)
+                    VStack(spacing: Spacing.xs) {
+                        if !searchText.isEmpty {
+                            Text(String(format: "add_items_no_results_format".localized, searchText))
+                                .font(.sectionHeader)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.appTextPrimary)
+                            Text("add_items_no_results_suggestion".localized)
+                                .font(.bodyMedium)
+                                .foregroundColor(.appTextSecondary)
+                                .multilineTextAlignment(.center)
+                        } else if selectedCategoryId != nil {
+                            Text("add_items_no_items_in_category".localized)
+                                .font(.sectionHeader)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.appTextPrimary)
+                        } else {
+                            Text("add_items_no_items_available".localized)
+                                .font(.sectionHeader)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.appTextPrimary)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.appBackground)
             } else {
-                List {
-                    ForEach(filteredItems) { item in
-                        HStack(spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(item.displayName)
-                                    .font(.headline)
-                                
-                                if let description = item.displayDescription, !description.isEmpty {
-                                    Text(description)
+                ScrollView {
+                    LazyVStack(spacing: Spacing.sm) {
+                        ForEach(0..<groupedItems.count, id: \.self) { idx in
+                            let group = groupedItems[idx]
+                            
+                            // Category header with better styling
+                            if let category = group.category, !searchText.isEmpty == false {
+                                HStack {
+                                    Text(category.displayName)
                                         .font(.bodyMedium)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.appTextPrimary)
+                                    
+                                    Text("(\(group.items.count))")
+                                        .font(.captionRegular)
                                         .foregroundColor(.appTextSecondary)
-                                        .lineLimit(2)
+                                    
+                                    Spacer()
                                 }
-                                
-                                Text(String(format: "price_format".localized, item.price))
-                                    .font(.bodyMedium)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.appPrimary)
+                                .padding(.horizontal)
+                                .padding(.top, idx == 0 ? Spacing.sm : Spacing.md)
+                                .padding(.bottom, Spacing.xs)
                             }
                             
-                            Spacer()
-                            
-                            Button {
-                                Task { await addItemToOrder(item) }
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
+                            // Items in this category
+                            ForEach(group.items) { item in
+                                MenuItemRowCompact(menuItem: item) {
+                                    Task { await addItemToOrder(item) }
+                                }
+                                .disabled(isAddingItem)
+                                .padding(.horizontal)
                             }
-                            .buttonStyle(IconButtonStyle())
-                            .disabled(isAddingItem)
                         }
-                        .padding(.vertical, Spacing.sm)
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
                     }
+                    .padding(.bottom, Spacing.lg)
                 }
-                .listStyle(PlainListStyle())
+                .background(Color.appBackground)
             }
         }
         .navigationTitle("add_items_title".localized)

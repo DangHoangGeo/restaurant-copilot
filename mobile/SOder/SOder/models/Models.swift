@@ -55,11 +55,11 @@ enum OrderStatus: String, Codable, CaseIterable { // Changed to Codable
     
     var displayName: String {
         switch self {
-        case .draft: return "Draft"
-        case .new: return "New"
-        case .serving: return "Serving"
-        case .completed: return "Completed"
-        case .canceled: return "Canceled"
+        case .draft: return "order_status_draft".localized
+        case .new: return "orders_filter_new".localized
+        case .serving: return "orders_filter_serving".localized
+        case .completed: return "orders_filter_completed".localized
+        case .canceled: return "orders_filter_canceled".localized
         }
     }
     
@@ -115,12 +115,12 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
     
     var displayName: String {
         switch self {
-        case .draft: return "Draft Item"
-        case .new: return "New"
-        case .preparing: return "Preparing"
-        case .ready: return "Ready"
-        case .served: return "Served"
-        case .cancelled: return "Cancelled"
+        case .draft: return "order_item_status_draft".localized
+        case .new: return "order_item_status_new".localized
+        case .preparing: return "order_item_status_preparing".localized
+        case .ready: return "order_item_status_ready".localized
+        case .served: return "order_item_status_served".localized
+        case .cancelled: return "order_item_status_cancelled".localized
         }
     }
     
@@ -154,10 +154,16 @@ struct Category: Codable, Identifiable, Hashable { // Changed to Codable, added 
     let name_vi: String? // Made optional for flexibility
     let position: Int? // Often categories have a display order
     
-    // Helper to get localized name (defaulting to English)
+    // Helper to get localized name (with fallback)
     var displayName: String {
-        // TODO: Integrate with LocalizationManager
-        return name_en
+        switch LocalizationManager.shared.currentLanguage {
+        case "ja":
+            return name_ja ?? name_en
+        case "vi":
+            return name_vi ?? name_en
+        default:
+            return name_en
+        }
     }
 
     // Hashable
@@ -193,15 +199,27 @@ struct MenuItem: Codable, Identifiable, Hashable { // Changed to Codable, added 
     var availableSizes: [MenuItemSize]?
     var availableToppings: [Topping]?
 
-    // Helper to get localized name (defaulting to English)
+    // Helper to get localized name (with fallback)
     var displayName: String {
-        // TODO: Integrate with LocalizationManager
-        return name_en
+        switch LocalizationManager.shared.currentLanguage {
+        case "ja":
+            return name_ja ?? name_en
+        case "vi":
+            return name_vi ?? name_en
+        default:
+            return name_en
+        }
     }
     
     var displayDescription: String? {
-        // TODO: Integrate with LocalizationManager
-        return description_en
+        switch LocalizationManager.shared.currentLanguage {
+        case "ja":
+            return description_ja ?? description_en
+        case "vi":
+            return description_vi ?? description_en
+        default:
+            return description_en
+        }
     }
     
     // Helper to get category name with fallback
@@ -230,8 +248,14 @@ struct MenuItemSize: Codable, Identifiable, Hashable { // Changed to Codable, ad
     let updated_at: String
 
     var displayName: String {
-        // TODO: Integrate with LocalizationManager
-        return name_en
+        switch LocalizationManager.shared.currentLanguage {
+        case "ja":
+            return name_ja ?? name_en
+        case "vi":
+            return name_vi ?? name_en
+        default:
+            return name_en
+        }
     }
     // In previous stubs, MenuItemSize was sometimes used as just a String ID.
     // This struct makes it a full model. If OrderItem.menu_item_size_id refers to this,
@@ -256,8 +280,14 @@ struct Topping: Codable, Identifiable, Hashable { // Changed to Codable, added H
     let updated_at: String
 
     var displayName: String {
-        // TODO: Integrate with LocalizationManager
-        return name_en
+        switch LocalizationManager.shared.currentLanguage {
+        case "ja":
+            return name_ja ?? name_en
+        case "vi":
+            return name_vi ?? name_en
+        default:
+            return name_en
+        }
     }
 
     // Hashable
@@ -602,7 +632,7 @@ extension Order {
 
 extension OrderItem {
     var name: String {
-        return menu_item?.name_en ?? "Unknown Item"
+        return menu_item?.displayName ?? "Unknown Item"
     }
     
     var price: Double {

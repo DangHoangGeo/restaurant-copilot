@@ -199,19 +199,22 @@ struct OrdersView: View {
                             }
                         }
                     } label: {
-                        HStack {
-                            Image(systemName: "ellipsis.circle")
-                                .font(.title2)
-                        }
+                        HStack { Image(systemName: "ellipsis.circle") .font(.title2) }
                     }
                 }
                 
                 // Order Type Toggle
-                Picker("orders_order_type_picker".localized, selection: $showAllOrders) {
-                    Text("orders_active_orders".localized).tag(false)
-                    Text("orders_all_orders".localized).tag(true)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Spacing.sm) {
+                        SegmentedPill(title: "orders_active_orders".localized, isSelected: !showAllOrders) {
+                            showAllOrders = false
+                        }
+                        SegmentedPill(title: "orders_all_orders".localized, isSelected: showAllOrders) {
+                            showAllOrders = true
+                        }
+                    }
+                    .padding(.horizontal)
                 }
-                .pickerStyle(.segmented)
                 
                 // Filter Pills
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -222,45 +225,40 @@ struct OrdersView: View {
                                 count: countForFilter(filter),
                                 isSelected: selectedFilter == filter,
                                 color: filter.color
-                            ) {
-                                selectedFilter = filter
-                            }
+                            ) { selectedFilter = filter }
                         }
                     }
                     .padding(.horizontal)
                 }
                 
                 // New Order Button
-                Button(action: {
-                    showingNewOrderFlow = true
-                }) {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                        Text("tab_new_order".localized)
-                    }
-                    .font(.buttonMedium)
-                    .foregroundColor(.white)
-                    .padding(.vertical, Spacing.md)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.appPrimary)
-                    .cornerRadius(CornerRadius.md)
+                Button(action: { showingNewOrderFlow = true }) {
+                    HStack { Image(systemName: "plus.circle") ; Text("tab_new_order".localized) }
+                        .font(.buttonMedium)
+                        .foregroundColor(.white)
+                        .padding(.vertical, Spacing.md)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.appPrimary)
+                        .cornerRadius(CornerRadius.md)
+                        .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
                 }
                 .padding(.horizontal)
             }
             .padding()
             .background(Color.appSurface)
+            .overlay(Divider(), alignment: .bottom)
             
             // Orders List
             if orderManager.isLoading {
-                Spacer()
-                VStack(spacing: Spacing.md) {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                    Text("orders_loading".localized)
-                        .font(.bodyMedium)
-                        .foregroundColor(.appTextSecondary)
+                VStack(spacing: Spacing.sm) {
+                    ForEach(0..<3) { _ in
+                        SkeletonOrderRow()
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    }
                 }
-                Spacer()
+                .redacted(reason: .placeholder)
             } else if filteredOrders.isEmpty {
                 Spacer()
                 EmptyOrdersView(filter: selectedFilter)
@@ -275,24 +273,17 @@ struct OrdersView: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    .onTapGesture {
-                        selectedOrder = order
-                    }
+                    .onTapGesture { selectedOrder = order }
                 }
                 .listStyle(PlainListStyle())
                 .scrollContentBackground(.hidden)
-                .refreshable {
-                    if showAllOrders {
-                        await orderManager.fetchAllOrders()
-                    } else {
-                        await orderManager.fetchActiveOrders()
-                    }
-                }
+                .id("\(selectedFilter.rawValue)-\(showAllOrders)")
+                .animation(.easeInOut(duration: Motion.medium), value: selectedFilter)
+                .refreshable { if showAllOrders { await orderManager.fetchAllOrders() } else { await orderManager.fetchActiveOrders() } }
                 .onChange(of: selectedOrder) { newOrder in
                     print("Selected order changed to: \(newOrder?.id ?? "nil")")
                 }
             }
-            
             // Error Message
             if let errorMessage = orderManager.errorMessage {
                 HStack {
@@ -366,26 +357,27 @@ struct OrdersView: View {
                             count: countForFilter(filter),
                             isSelected: selectedFilter == filter,
                             color: filter.color
-                        ) {
-                            selectedFilter = filter
-                        }
+                        ) { selectedFilter = filter }
                     }
                 }
                 .padding(.horizontal)
             }
             .padding(.vertical, Spacing.sm)
             .background(Color.appSurface)
+            .overlay(Divider(), alignment: .bottom)
             
             // Content
             if orderManager.isLoading {
-                VStack(spacing: Spacing.md) {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                    Text("orders_loading".localized)
-                        .font(.bodyMedium)
-                        .foregroundColor(.appTextSecondary)
+                List {
+                    ForEach(0..<4) { _ in
+                        SkeletonOrderRow()
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .listStyle(PlainListStyle())
+                .redacted(reason: .placeholder)
             } else if filteredOrders.isEmpty {
                 EmptyOrdersView(filter: selectedFilter)
             } else {
@@ -418,12 +410,37 @@ struct OrdersView: View {
                                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(Color.clear)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    // Print action - always available
+                                    Button {
+                                        Task {
+                                            await printOrderReceipt(order)
+                                        }
+                                    } label: {
+                                        Label("print".localized, systemImage: "printer")
+                                    }
+                                    .tint(.appInfo)
+                                    
+                                    // Mark as Serving action - only for new orders
+                                    if order.status == .new {
+                                        Button {
+                                            Task {
+                                                await markOrderAsServing(order)
+                                            }
+                                        } label: {
+                                            Label("orders_mark_as_serving".localized, systemImage: "fork.knife")
+                                        }
+                                        .tint(.appWarning)
+                                    }
+                                }
                             }
                         }
                     }
                 }
                 .listStyle(PlainListStyle())
                 .scrollContentBackground(.hidden)
+                .id("\(selectedFilter.rawValue)")
+                .animation(.easeInOut(duration: Motion.medium), value: selectedFilter)
                 .refreshable {
                     await orderManager.fetchActiveOrders()
                 }
@@ -454,13 +471,8 @@ struct OrdersView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    showingNewOrderFlow = true
-                }) {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                        Text("tab_new_order".localized)
-                    }
+                Button(action: { showingNewOrderFlow = true }) {
+                    HStack { Image(systemName: "plus.circle") ; Text("tab_new_order".localized) }
                 }
             }
             
@@ -518,6 +530,30 @@ struct OrdersView: View {
     private func countForFilter(_ filter: OrderFilter) -> Int {
         filteredOrderGroups[filter]?.count ?? 0
     }
+    
+    // MARK: - Swipe Actions
+    
+    @MainActor
+    private func printOrderReceipt(_ order: Order) async {
+        do {
+            try await printerManager.printOrderReceipt(order)
+            printMessage = "receipt_print_success_message".localized
+        } catch {
+            printMessage = "receipt_print_failure_message".localized
+        }
+        showingPrintAlert = true
+    }
+    
+    @MainActor
+    private func markOrderAsServing(_ order: Order) async {
+        do {
+            _ = try await orderManager.updateOrderStatus(orderId: order.id, newStatus: .serving)
+            printMessage = String(format: "order_status_update_success_message".localized, OrderStatus.serving.displayName)
+        } catch {
+            printMessage = "order_status_update_failure_message".localized
+        }
+        showingPrintAlert = true
+    }
 }
 
 // MARK: - Supporting Views
@@ -545,25 +581,24 @@ struct SidebarOrderRowView: View {
                         if isNew {
                             Text("orders_new_badge".localized)
                                 .font(.captionBold)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
+                                .foregroundColor(.appSurface)
                                 .padding(.horizontal, Spacing.xs)
                                 .padding(.vertical, 2)
-                                .background(Color.appError)
+                                .background(Color.appInfo)
                                 .cornerRadius(CornerRadius.xs)
                         }
                         
                         if order.order_items?.contains(where: { $0.status.rawValue == "new" }) == true {
                             Image(systemName: "circle.fill")
                                 .font(.captionRegular)
-                                .foregroundColor(.appError)
+                                .foregroundColor(.appInfo)
                         }
                         
                         Spacer()
                     }
                     
                     HStack(spacing: Spacing.xxs) {
-                        Label("\(order.guest_count)", systemImage: "person.2")
+                        Label("\(order.guest_count ?? 0)", systemImage: "person.2")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
                             .accessibilityLabel(String(format: "orders_guest_count_accessibility".localized, order.guest_count ?? 1))
@@ -590,10 +625,22 @@ struct SidebarOrderRowView: View {
             if let items = order.order_items?.prefix(3) {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(Array(items), id: \.id) { item in
-                        Text("\(item.quantity)× \(item.menu_item?.displayName ?? "orders_unknown_item".localized)")
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextSecondary)
-                            .lineLimit(1)
+                        HStack(spacing: Spacing.xxs) {
+                            if let code = item.menu_item?.code, !code.isEmpty {
+                                Text(code)
+                                    .font(.captionBold)
+                                    .foregroundColor(.appTextSecondary)
+                                
+                                Text("•")
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appTextSecondary)
+                            }
+                            
+                            Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextSecondary)
+                                .lineLimit(1)
+                        }
                     }
                     
                     if let totalItems = order.order_items?.count, totalItems > 3 {
@@ -614,6 +661,27 @@ struct SidebarOrderRowView: View {
                 .stroke(isSelected ? Color.appPrimary : Color.clear, lineWidth: 2)
         )
         .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityLabel(accessibilityLabel)
+    }
+    
+    private var accessibilityLabel: String {
+        let tableName = order.table?.name ?? String(format: "orders_table_format".localized, order.table_id)
+        let orderId = String(order.id.prefix(6).uppercased())
+        let status = order.status.displayName
+        let guestCount = order.guest_count ?? 1
+        let timeString = formatTime(order.created_at)
+        let totalString = order.total_amount.map { String(format: "price_format".localized, $0) } ?? ""
+        
+        var label = "\(tableName), \(orderId), \(status), \(guestCount) guests, \(timeString)"
+        if !totalString.isEmpty {
+            label += ", \(totalString)"
+        }
+        if isNew {
+            label += ", \("orders_new_badge".localized)"
+        }
+        return label
     }
     
     private func formatTime(_ dateString: String) -> String {
@@ -650,6 +718,23 @@ struct SidebarOrderRowView: View {
 }
 
 // Keep existing FilterChip, EmptyOrdersView, OrderRowView, EnhancedStatusBadge, StatusActionButton, PrintButton, EnhancedOrderItemView, and StatusBadge views
+
+private struct SegmentedPill: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.captionBold)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, 8)
+                .background(isSelected ? Color.appPrimary : Color.appPrimary.opacity(0.1))
+                .foregroundColor(isSelected ? .white : .appPrimary)
+                .cornerRadius(20)
+        }.buttonStyle(.plain)
+    }
+}
 
 #if DEBUG
 #Preview {

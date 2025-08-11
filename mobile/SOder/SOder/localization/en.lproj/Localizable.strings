@@ -34,6 +34,7 @@
 "loading" = "Loading";
 "error" = "Error";
 "success" = "Success";
+"close" = "Close";
 
 // MARK: - Order Management
 "orders" = "Orders";
@@ -387,6 +388,9 @@
 "orders_filter_completed" = "Completed";
 "orders_filter_canceled" = "Canceled";
 
+// MARK: - Order Status Keys
+"order_status_draft" = "Draft";
+
 // MARK: - Orders UI
 "orders_system_message" = "System Message";
 "orders_ok" = "OK";
@@ -575,6 +579,19 @@
 "navigate_to_draft_order" = "Navigate to Draft Order";
 "would_navigate_to_draft_order_view_for_order_%%@._items:_%%d" = "Would navigate to Draft Order View for order %@. Items: %d";
 "add_%%@_to_order" = "Add %@ to order";
+"add_item_to_order" = "Add %@ to order";
+
+// MARK: - Empty State Messages
+"empty_active_orders_title" = "No Active Orders";
+"empty_active_orders_message" = "When new orders come in, they'll appear here.";
+"empty_new_orders_title" = "No New Orders";
+"empty_new_orders_message" = "All orders are being processed.";
+"empty_serving_orders_title" = "Nothing Being Served";
+"empty_serving_orders_message" = "No orders are currently being served.";
+"empty_completed_orders_title" = "No Completed Orders";
+"empty_completed_orders_message" = "No completed orders to show.";
+"empty_canceled_orders_title" = "No Canceled Orders";
+"empty_canceled_orders_message" = "No canceled orders to show.";
 
 // MARK: - Accessibility Labels and Hints
 "accessibility_printer_language_warning" = "Warning: Print language not supported by printer";
@@ -852,3 +869,11 @@
 "tpl_phone" = "Tel";
 "tpl_official_receipt" = "OFFICIAL RECEIPT";
 "tpl_printed" = "Printed";
+
+// MARK: - Order Item Status
+"order_item_status_draft" = "Draft Item";
+"order_item_status_new" = "New";
+"order_item_status_preparing" = "Preparing";
+"order_item_status_ready" = "Ready";
+"order_item_status_served" = "Served";
+"order_item_status_cancelled" = "Cancelled";
