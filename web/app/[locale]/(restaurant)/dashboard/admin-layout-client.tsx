@@ -3,6 +3,7 @@
 import { useState, ReactNode, useMemo } from 'react';
 import { AdminHeader } from '@/components/features/admin/dashboard/layout/admin-header';
 import { AdminSidebar } from '@/components/features/admin/dashboard/layout/admin-sidebar';
+import { AdminBottomNav } from '@/components/features/admin/dashboard/layout/admin-bottom-nav';
 import { RestaurantProvider, RestaurantSettings } from '@/contexts/RestaurantContext';
 import { createThemeProperties, sanitizeHexColor } from '@/lib/utils/colors';
 
@@ -81,15 +82,16 @@ export function AdminLayoutClient({ children, restaurantSettings, locale }: Admi
         />
         
         <div className="flex-1 flex flex-col overflow-hidden">
-          <AdminHeader 
-            toggleSidebar={() => setIsSidebarOpen(prev => !prev)} 
+          <AdminHeader
+            toggleSidebar={() => setIsSidebarOpen(prev => !prev)}
             restaurantSettings={restaurantSettings}
             currentLocale={selectedLocale}
             onLocaleChange={setSelectedLocale}
           />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8 pb-20">
             {children}
           </main>
+          <AdminBottomNav />
         </div>
       </div>
     </RestaurantProvider>
