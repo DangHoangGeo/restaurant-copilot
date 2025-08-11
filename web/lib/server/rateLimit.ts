@@ -1,5 +1,19 @@
 import { NextRequest } from 'next/server';
 import { handleRateLimitError, handleCsrfError } from '@/lib/server/apiError';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+// Initialize Upstash Redis client only if env vars are present
+let redis: Redis | undefined;
+
+if (process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN) {
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_URL,
+    token: process.env.UPSTASH_REDIS_TOKEN,
+  });
+} else {
+  console.warn('Upstash Redis environment variables not set. Rate limiting will be disabled.');
+}
 
 /**
  * Rate limiter configuration
@@ -7,96 +21,33 @@ import { handleRateLimitError, handleCsrfError } from '@/lib/server/apiError';
 export interface RateLimitConfig {
   /** Maximum requests allowed within the window */
   max: number;
-  /** Time window in milliseconds */
-  windowMs: number;
-  /** Whether to skip rate limiting for certain conditions */
-  skip?: (request: NextRequest) => boolean;
-  /** Custom identifier function (defaults to IP + user agent) */
-  keyGenerator?: (request: NextRequest) => string;
+  /** Time window in seconds, e.g., "60s" */
+  window: `${number}s` | `${number}m` | `${number}h` | `${number}d`;
 }
 
 /**
- * Rate limit record
+ * Predefined rate limit configurations
  */
-interface RateLimitRecord {
-  count: number;
-  resetTime: number;
-}
+export const RATE_LIMIT_CONFIGS = {
+  // For state-changing operations (POST, PUT, PATCH, DELETE)
+  MUTATION: { max: 20, window: '60s' },
+  // For data fetching operations (GET)
+  QUERY: { max: 100, window: '60s' },
+  // For authentication endpoints
+  AUTH: { max: 10, window: '15m' },
+  // For file uploads
+  UPLOAD: { max: 5, window: '60s' },
+} as const;
+
 
 /**
- * In-memory rate limiting store
- * NOTE: In production, this should be replaced with Redis for multi-instance support
- */
-class MemoryRateLimitStore {
-  private store = new Map<string, RateLimitRecord>();
-
-  // Clean up expired entries every 5 minutes
-  private cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [key, record] of this.store.entries()) {
-      if (record.resetTime < now) {
-        this.store.delete(key);
-      }
-    }
-  }, 5 * 60 * 1000);
-
-  get(key: string): RateLimitRecord | undefined {
-    const record = this.store.get(key);
-    if (record && record.resetTime < Date.now()) {
-      this.store.delete(key);
-      return undefined;
-    }
-    return record;
-  }
-
-  set(key: string, record: RateLimitRecord): void {
-    this.store.set(key, record);
-  }
-
-  increment(key: string, windowMs: number): RateLimitRecord {
-    const now = Date.now();
-    const existing = this.get(key);
-    
-    if (existing) {
-      existing.count++;
-      return existing;
-    } else {
-      const newRecord: RateLimitRecord = {
-        count: 1,
-        resetTime: now + windowMs,
-      };
-      this.set(key, newRecord);
-      return newRecord;
-    }
-  }
-
-  cleanup(): void {
-    clearInterval(this.cleanupInterval);
-    this.store.clear();
-  }
-}
-
-// Global store instance
-const rateLimitStore = new MemoryRateLimitStore();
-
-/**
- * Default key generator - uses IP address and user agent
+ * Default key generator - uses IP address
  */
 function defaultKeyGenerator(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  const ip = forwarded ? forwarded.split(',')[0] : request.headers.get('x-real-ip') || 'unknown';
-  const userAgent = request.headers.get('user-agent') || 'unknown';
-  
-  // Create a simple hash of IP + user agent for privacy
-  const combined = `${ip}:${userAgent}`;
-  let hash = 0;
-  for (let i = 0; i < combined.length; i++) {
-    const char = combined.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  
-  return `rl:${Math.abs(hash).toString(16)}`;
+  const ip = request.headers.get('x-forwarded-for')
+    ?? request.headers.get('x-real-ip')
+    ?? '127.0.0.1';
+  return ip;
 }
 
 /**
@@ -107,25 +58,28 @@ export async function rateLimit(
   config: RateLimitConfig,
   endpoint: string = 'api'
 ) {
-  // Skip rate limiting if configured
-  if (config.skip && config.skip(request)) {
+  // Do not rate limit in development or if Redis is not configured
+  if (process.env.NODE_ENV === 'development' || !redis) {
     return null;
   }
 
-  // Generate key for this request
-  const keyGenerator = config.keyGenerator || defaultKeyGenerator;
-  const key = `${endpoint}:${keyGenerator(request)}`;
+  // Create a new ratelimiter instance for each request configuration
+  const ratelimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(config.max, config.window),
+    prefix: `ratelimit:${endpoint}`,
+  });
 
-  // Get/increment the count
-  const record = rateLimitStore.increment(key, config.windowMs);
+  const identifier = defaultKeyGenerator(request);
 
-  // Check if limit exceeded
-  if (record.count > config.max) {
+  const { success, limit, remaining: _remaining, reset } = await ratelimiter.limit(identifier);
+
+  if (!success) {
     return handleRateLimitError(
       endpoint,
-      key,
-      config.max,
-      config.windowMs
+      identifier,
+      limit,
+      reset - Date.now()
     );
   }
 
@@ -133,88 +87,24 @@ export async function rateLimit(
 }
 
 /**
- * Predefined rate limit configurations
+ * CSRF protection - validates origin header for same-site requests
  */
-export const RATE_LIMIT_CONFIGS = {
-  // For state-changing operations (POST, PUT, PATCH, DELETE)
-  MUTATION: {
-    max: 10,
-    windowMs: 60 * 1000, // 1 minute
-  },
-  // For data fetching operations (GET)
-  QUERY: {
-    max: 60,
-    windowMs: 60 * 1000, // 1 minute
-  },
-  // For authentication endpoints
-  AUTH: {
-    max: 5,
-    windowMs: 15 * 60 * 1000, // 15 minutes
-  },
-  // For file uploads
-  UPLOAD: {
-    max: 3,
-    windowMs: 60 * 1000, // 1 minute
-  },
-} as const;
+export function validateCSRF(request: NextRequest): boolean {
+    const origin = request.headers.get('origin');
 
-/**
- * CSRF protection - validates origin and referrer headers
- */
-export function validateCSRFHeaders(request: NextRequest): boolean {
-  const origin = request.headers.get('origin');
-  const referer = request.headers.get('referer');
-  const host = request.headers.get('host');
-  
-  // Allow same-origin requests
-  if (origin && host) {
+    // Allow requests in dev environment for easier testing
+    if (process.env.NODE_ENV === 'development') return true;
+
+    if (!origin) return false;
+
+    // Compare origin host with the host header
     try {
-      const originUrl = new URL(origin);
-      const expectedOrigin = `${originUrl.protocol}//${host}`;
-      if (origin === expectedOrigin) {
-        return true;
-      }
+        const originUrl = new URL(origin);
+        const host = request.headers.get('host');
+        return originUrl.host === host;
     } catch {
-      // Invalid origin URL
-      return false;
+        return false;
     }
-  }
-
-  // Fallback to referer check
-  if (referer && host) {
-    try {
-      const refererUrl = new URL(referer);
-      if (refererUrl.host === host) {
-        return true;
-      }
-    } catch {
-      // Invalid referer URL
-      return false;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Check for required CSRF token header for unsafe methods
- */
-export function validateCSRFToken(request: NextRequest): boolean {
-  const method = request.method.toUpperCase();
-  
-  // Only check CSRF token for unsafe methods
-  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    return true;
-  }
-
-  // Check for custom CSRF header (simple approach)
-  const csrfHeader = request.headers.get('x-owner-csrf');
-  if (csrfHeader === 'owner-request') {
-    return true;
-  }
-
-  // Validate same-origin request
-  return validateCSRFHeaders(request);
 }
 
 /**
@@ -226,6 +116,7 @@ export async function protectEndpoint(
   endpoint: string = 'api',
   requestId?: string
 ) {
+
   // Check CSRF protection first
   if (!validateCSRFToken(request)) {
     return handleCsrfError(
@@ -239,9 +130,4 @@ export async function protectEndpoint(
   return rateLimit(request, config, endpoint);
 }
 
-/**
- * Cleanup function for graceful shutdown
- */
-export function cleanupRateLimit(): void {
-  rateLimitStore.cleanup();
-}
+// No cleanup function needed for Upstash Redis client

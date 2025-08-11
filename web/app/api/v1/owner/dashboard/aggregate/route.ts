@@ -5,6 +5,8 @@ import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { createApiSuccess, handleApiError } from '@/lib/server/apiError';
 import { randomUUID } from 'crypto';
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
 // Type for table relationship
 interface TableRelation {
   name?: string;
@@ -29,7 +31,6 @@ export interface AggregateDashboardData {
     id: string;
     name: string;
     totalOrdered: number;
-    revenue: number;
   }>;
   salesOverTime: Array<{
     date: string;
@@ -108,29 +109,11 @@ export async function GET() {
         .order('created_at', { ascending: false })
         .limit(10),
 
-      // 4. Popular items (last 7 days)
-      supabaseAdmin
-        .from('order_items')
-        .select(`
-          menu_item_id,
-          quantity,
-          price_at_order,
-          menu_items (
-            name_en,
-            name_ja,
-            name_vi
-          ),
-          orders!inner (
-            created_at,
-            restaurant_id,
-            status
-          )
-        `)
-        .eq('orders.restaurant_id', restaurantId)
-        .eq('orders.status', 'completed')
-        .gte('orders.created_at', `${sevenDaysAgo}T00:00:00.000Z`)
-        .lte('orders.created_at', `${today}T23:59:59.999Z`)
-        .limit(100),
+      // 4. Popular items (last 7 days) - using RPC
+      supabaseAdmin.rpc('get_top_sellers_7days', {
+        p_restaurant_id: restaurantId,
+        p_limit: 5,
+      }),
 
       // 5. Sales over time (last 7 days)
       supabaseAdmin
@@ -150,18 +133,11 @@ export async function GET() {
             .eq('restaurant_id', restaurantId)
         : Promise.resolve({ data: [], error: null }),
 
-      // 7. Top seller today
-      supabaseAdmin
-        .from('order_items')
-        .select(`
-          quantity,
-          menu_items!inner (id, name_en, name_ja, name_vi),
-          orders!inner (created_at, restaurant_id)
-        `)
-        .eq('orders.restaurant_id', restaurantId)
-        .gte('orders.created_at', `${today}T00:00:00.000Z`)
-        .lte('orders.created_at', `${today}T23:59:59.999Z`)
-        .limit(50)
+      // 7. Top seller today - using RPC
+      supabaseAdmin.rpc('get_top_seller_for_day', {
+        p_restaurant_id: restaurantId,
+        p_date: today,
+      }),
     ]);
 
     // Process results
@@ -185,35 +161,13 @@ export async function GET() {
         }))
       : [];
 
-    // Process popular items
+    // Process popular items from RPC
     const popularItems = popularItemsData.status === 'fulfilled' && popularItemsData.value.data
-      ? (() => {
-          const itemStats: Record<string, {
-            id: string;
-            name: string;
-            totalOrdered: number;
-            revenue: number;
-          }> = {};
-
-          popularItemsData.value.data.forEach(item => {
-            if (item.menu_items) {
-              const menuItem = Array.isArray(item.menu_items) ? item.menu_items[0] : item.menu_items;
-              const id = item.menu_item_id;
-              const name = menuItem.name_en || menuItem.name_ja || menuItem.name_vi || 'Unknown Item';
-
-              if (!itemStats[id]) {
-                itemStats[id] = { id, name, totalOrdered: 0, revenue: 0 };
-              }
-              
-              itemStats[id].totalOrdered += item.quantity;
-              itemStats[id].revenue += (item.price_at_order || 0) * item.quantity;
-            }
-          });
-
-          return Object.values(itemStats)
-            .sort((a, b) => b.totalOrdered - a.totalOrdered)
-            .slice(0, 5);
-        })()
+      ? popularItemsData.value.data.map((item: { menu_item_id: string; name_en: string; name_ja: string; name_vi: string; total_sold: number; }) => ({
+          id: item.menu_item_id,
+          name: item.name_en || item.name_ja || item.name_vi || 'Unknown Item',
+          totalOrdered: Number(item.total_sold),
+      }))
       : [];
 
     // Process sales over time
@@ -221,14 +175,12 @@ export async function GET() {
       ? (() => {
           const dailySales: Record<string, number> = {};
           
-          // Initialize all 7 days with 0
           for (let i = 6; i >= 0; i--) {
             const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
             const dateStr = date.toISOString().split('T')[0];
             dailySales[dateStr] = 0;
           }
 
-          // Aggregate sales by date
           salesOverTimeData.value.data.forEach(order => {
             const date = new Date(order.created_at).toISOString().split('T')[0];
             if (dailySales.hasOwnProperty(date)) {
@@ -259,37 +211,18 @@ export async function GET() {
           .slice(0, 5)
       : [];
 
-    // Process top seller today
+    // Process top seller today from RPC
     let topSellerToday: { name: string; metricValue: string } | null = null;
     if (topSellerData.status === 'fulfilled' && topSellerData.value.data && topSellerData.value.data.length > 0) {
-      const itemCounts: Record<string, { name: string; count: number }> = {};
-      
-      topSellerData.value.data.forEach(item => {
-        if (item.menu_items) {
-          const menuItem = Array.isArray(item.menu_items) ? item.menu_items[0] : item.menu_items;
-          const id = menuItem.id;
-          const name = menuItem.name_en || menuItem.name_ja || menuItem.name_vi || 'Unknown Item';
-          
-          if (!itemCounts[id]) {
-            itemCounts[id] = { name, count: 0 };
-          }
-          itemCounts[id].count += item.quantity;
-        }
-      });
-
-      const sortedItems = Object.values(itemCounts).sort((a, b) => b.count - a.count);
-      if (sortedItems.length > 0) {
-        const topItem = sortedItems[0];
-        topSellerToday = { 
-          name: topItem.name, 
-          metricValue: `${topItem.count} sold` 
-        };
-      }
-    }
-
-    if (!topSellerToday) {
+      const topItem = topSellerData.value.data[0];
+      topSellerToday = {
+        name: topItem.name_en || topItem.name_ja || topItem.name_vi || 'Unknown Item',
+        metricValue: `${topItem.total_sold} sold`,
+      };
+    } else {
       topSellerToday = { name: 'No sales today', metricValue: '' };
     }
+
 
     const aggregateData: AggregateDashboardData = {
       metrics: {
@@ -308,9 +241,6 @@ export async function GET() {
       createApiSuccess(aggregateData, requestId),
       {
         status: 200,
-        headers: {
-          'Cache-Control': 'private, max-age=60', // Cache for 1 minute
-        },
       }
     );
 

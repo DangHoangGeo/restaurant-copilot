@@ -41,8 +41,15 @@ export const GET = createApiHandler(
     const restaurantId = user.restaurantId;
     const offset = (page - 1) * pageSize;
 
-    // Restore complex select query
-    let selectQuery = 'id, name_en, name_ja, name_vi, position';
+    // Build select query based on include parameters
+    let selectQuery = `
+      id,
+      name_en,
+      name_ja,
+      name_vi,
+      position
+    `;
+
     if (include.includes('items')) {
       selectQuery += `, menu_items(id, name_en, name_ja, name_vi, description_en, description_ja, description_vi, price, image_url, available, weekday_visibility, stock_level, position`;
       if (include.includes('sizes')) {
@@ -108,6 +115,13 @@ export const GET = createApiHandler(
           items_count: countMap.get((category as CategoryWithItems).id) || 0,
         }));
       }
+
+      const countMap = new Map(itemCounts.map((c: { category_id: string; item_count: number }) => [c.category_id, c.item_count]));
+
+      enhancedCategories = categories.map(category => ({
+        ...(category as unknown as CategoryWithItems),
+        items_count: countMap.get((category as unknown as CategoryWithItems).id) || 0,
+      }));
     }
 
     const pagination = createPaginationMeta(page, pageSize, totalCount || 0);
