@@ -69,43 +69,39 @@ struct KitchenItemCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             // Header with priority and time
             HStack {
                 if item.priority >= KitchenBoardConfig.urgentThreshold {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Spacing.xs) {
                         Image(systemName: "exclamationmark.triangle.fill")
                         Text("kitchen_urgent".localized)
-                            .font(.caption)
-                            .fontWeight(.bold)
+                            .font(.captionBold)
                     }
                     .foregroundColor(.appError)
                     .padding(Spacing.xs)
-                    .background(Color.appError.opacity(0.2))
+                    .background(Color.appError.opacity(0.1))
                     .cornerRadius(CornerRadius.sm)
                 }
                 
                 Spacer()
                 
                 Text(timeAgoText)
-                    .font(.caption)
-                    .fontWeight(.medium)
+                    .font(.captionRegular)
                     .foregroundColor(.appTextSecondary)
             }
             
             // Item name and prominent quantity
             HStack {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(item.itemName)
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .font(.cardTitle)
                         .lineLimit(2)
                     
                     // Size if available
                     if let size = item.size {
                         Text("kitchen_size".localized + " \(size)")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .font(.bodyMedium)
                             .foregroundColor(.appTextSecondary)
                     }
                 }
@@ -113,76 +109,71 @@ struct KitchenItemCard: View {
                 Spacer()
                 
                 Text("×\(item.quantity)")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.orange)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color.orange.opacity(0.2))
-                    .cornerRadius(16)
+                    .font(.displayTitle)
+                    .foregroundColor(.appWarning)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.sm)
+                    .background(Color.appWarning.opacity(0.1))
+                    .cornerRadius(CornerRadius.md)
             }
             
             // Toppings/modifications
             if !item.toppings.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text("kitchen_modifications".localized)
-                        .font(.subheadline)
+                        .font(.bodyMedium)
                         .fontWeight(.semibold)
                         .foregroundColor(.appTextSecondary)
                     
                     ForEach(item.toppings.prefix(3), id: \.self) { topping in
                         Text("• \(topping)")
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
+                            .font(.bodyMedium)
+                            .foregroundColor(.appInfo)
                     }
                     
                     if item.toppings.count > 3 {
                         Text("+ \(item.toppings.count - 3) more...")
-                            .font(.subheadline)
+                            .font(.bodyMedium)
                             .foregroundColor(.appTextSecondary)
                             .italic()
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(12)
+                .padding(Spacing.md)
+                .background(Color.appInfo.opacity(0.1))
+                .cornerRadius(CornerRadius.sm)
             }
             
             // Notes
             if !item.displayNotes.isEmpty {
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     Image(systemName: "note.text")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.appInfo)
                     Text(item.displayNotes)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.blue)
+                        .font(.bodyMedium)
+                        .foregroundColor(.appInfo)
                         .lineLimit(2)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(12)
+                .padding(Spacing.md)
+                .background(Color.appInfo.opacity(0.1))
+                .cornerRadius(CornerRadius.sm)
             }
             
             // Tables with enhanced display
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text("kitchen_tables".localized)
-                    .font(.headline)
-                    .fontWeight(.semibold)
+                    .font(.sectionHeader)
                 
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: Spacing.sm) {
                         ForEach(Array(item.tables.sorted()), id: \.self) { table in
                             Text(table)
-                                .font(.subheadline)
+                                .font(.bodyMedium)
                                 .fontWeight(.bold)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Color.blue.opacity(0.2))
-                                .foregroundColor(.blue)
-                                .cornerRadius(12)
+                                .padding(.horizontal, Spacing.sm)
+                                .padding(.vertical, Spacing.xs)
+                                .background(Color.appPrimary.opacity(0.1))
+                                .foregroundColor(.appPrimary)
+                                .cornerRadius(CornerRadius.sm)
                         }
                     }
                 }
@@ -190,36 +181,36 @@ struct KitchenItemCard: View {
             
             // Status and action button with clear instruction
             Button(action: onStatusTap) {
-                HStack(spacing: 12) {
+                HStack(spacing: Spacing.md) {
                     Circle()
                         .fill(statusColor)
                         .frame(width: 16, height: 16)
                     
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text("kitchen_status".localized + " \(currentStatusText)")
-                            .font(.subheadline)
+                            .font(.bodyMedium)
                             .fontWeight(.semibold)
                         
                         Text("kitchen_tap_to".localized + " \(nextActionText)")
-                            .font(.caption)
+                            .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .font(.subheadline)
+                        .font(.bodyMedium)
                         .foregroundColor(.appTextSecondary)
                 }
-                .padding(16)
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .padding(Spacing.md)
+                .background(Color.appSurface)
+                .cornerRadius(CornerRadius.md)
             }
             .buttonStyle(PlainButtonStyle())
         }
-        .padding(20)
+        .padding(Spacing.lg)
         .background(priorityBackgroundColor)
-        .cornerRadius(16)
+        .cornerRadius(CornerRadius.lg)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(priorityBorderColor, lineWidth: item.priority >= KitchenBoardConfig.urgentThreshold ? 2 : 1)
@@ -256,39 +247,28 @@ struct KitchenItemCard: View {
     
     private var statusColor: Color {
         switch item.status {
-        case .draft: return .gray
-        case .new: return .blue
-        case .preparing: return .orange
-        case .ready: return .green
-        case .served: return .gray
-		case .cancelled: return .red
+        case .draft: return .appTextSecondary
+        case .new: return .appInfo
+        case .preparing: return .appWarning
+        case .ready: return .appSuccess
+        case .served: return .appTextSecondary
+        case .cancelled: return .appError
         }
     }
     
     private var priorityBackgroundColor: Color {
         if item.priority >= KitchenBoardConfig.urgentThreshold {
-            return Color.red.opacity(0.1)
+            return Color.appError.opacity(0.1)
         } else {
-            switch item.status {
-            case .draft: return Color.gray.opacity(0.03)
-            case .new: return Color.blue.opacity(0.03)
-            case .preparing: return Color.orange.opacity(0.03)
-            case .ready: return Color.green.opacity(0.03)
-            case .served: return Color.gray.opacity(0.03)
-			case .cancelled: return Color.red.opacity(0.03)
-            }
+            return Color.appSurface
         }
     }
     
     private var priorityBorderColor: Color {
-        switch item.status {
-        case .draft: return .gray
-        case .new: return .blue
-        case .preparing: return .orange
-        case .ready: return .green
-        case .served: return .gray
-		case .cancelled: return .red
+        if item.priority >= KitchenBoardConfig.urgentThreshold {
+            return .appError
         }
+        return statusColor.opacity(0.5)
     }
 }
 
@@ -308,13 +288,13 @@ struct StatusColumnsView: View {
     }
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.md) {
             // New Orders Column
-            VStack(alignment: .leading, spacing: 12) {
-                StatusColumnHeader(title: "kitchen_status_new_orders".localized, count: newItems.count, color: .blue)
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                StatusColumnHeader(title: "kitchen_status_new".localized, count: newItems.count, color: .appInfo)
                 
                 ScrollView {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: Spacing.md) {
                         ForEach(newItems) { item in
                             CompactKitchenItemCard(
                                 item: item,
@@ -323,19 +303,19 @@ struct StatusColumnsView: View {
                             )
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, Spacing.sm)
                 }
             }
             .frame(maxWidth: .infinity)
-            .background(Color.blue.opacity(0.05))
-            .cornerRadius(12)
+            .background(Color.appInfo.opacity(0.05))
+            .cornerRadius(CornerRadius.md)
             
             // Preparing Orders Column
-            VStack(alignment: .leading, spacing: 12) {
-                StatusColumnHeader(title: "kitchen_status_preparing".localized, count: preparingItems.count, color: .orange)
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                StatusColumnHeader(title: "kitchen_status_preparing".localized, count: preparingItems.count, color: .appWarning)
                 
                 ScrollView {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: Spacing.md) {
                         ForEach(preparingItems) { item in
                             CompactKitchenItemCard(
                                 item: item,
@@ -344,12 +324,12 @@ struct StatusColumnsView: View {
                             )
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, Spacing.sm)
                 }
             }
             .frame(maxWidth: .infinity)
-            .background(Color.orange.opacity(0.05))
-            .cornerRadius(12)
+            .background(Color.appWarning.opacity(0.05))
+            .cornerRadius(CornerRadius.md)
         }
         .padding()
     }
@@ -365,20 +345,18 @@ struct StatusColumnHeader: View {
     var body: some View {
         HStack {
             Text(title)
-                .font(.headline)
-                .fontWeight(.semibold)
+                .font(.sectionHeader)
                 .foregroundColor(color)
             
             Spacer()
             
             Text("\(count)")
-                .font(.caption)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .font(.captionBold)
+                .foregroundColor(.appSurface)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
                 .background(color)
-                .cornerRadius(12)
+                .cornerRadius(CornerRadius.lg)
         }
         .padding(.horizontal)
         .padding(.top)
@@ -394,23 +372,22 @@ struct CompactKitchenItemCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             // Item name - always visible
             
             HStack {
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
 					HStack {
 						Text(timeAgoText)
-							.font(.caption)
-							.fontWeight(.medium)
+							.font(.captionRegular)
 							.foregroundColor(timeColor)
-							.padding(.vertical, 2)
-							.padding(.horizontal, 2)
-							.background(timeColor.opacity(0.15))
-							.cornerRadius(6)
+							.padding(.vertical, Spacing.xxs)
+							.padding(.horizontal, Spacing.xs)
+							.background(timeColor.opacity(0.1))
+							.cornerRadius(CornerRadius.xs)
 
 						Text(item.itemName)
-							.font(.headline)                            .fontWeight(.bold)
+							.font(.sectionHeader)
 							.lineLimit(2)
 							.multilineTextAlignment(.leading)
 							.fixedSize(horizontal: false, vertical: true)
@@ -418,8 +395,7 @@ struct CompactKitchenItemCard: View {
                     // Size if available
                     if let size = item.size {
                         Text("kitchen_size".localized + " \(size)")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .font(.bodyMedium)
                             .foregroundColor(.appTextSecondary)
                     }
                 }
@@ -427,27 +403,25 @@ struct CompactKitchenItemCard: View {
                 Spacer()
                 
                 Text("×\(item.quantity)")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.orange)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color.orange.opacity(0.2))
-                    .cornerRadius(16)
+                    .font(.sectionHeader)
+                    .foregroundColor(.appWarning)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.sm)
+                    .background(Color.appWarning.opacity(0.1))
+                    .cornerRadius(CornerRadius.md)
             }
             
             // Tables - compact display
             if !item.tables.isEmpty {
                 HStack {
                     Text("kitchen_tables".localized)
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(.captionRegular)
                         .foregroundColor(.appTextSecondary)
                     
                     Text(Array(item.tables.sorted()).joined(separator: ", "))
-                        .font(.headline)
+                        .font(.bodyMedium)
                         .fontWeight(.semibold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.appPrimary)
                         .lineLimit(1)
                 }
             }
@@ -455,13 +429,13 @@ struct CompactKitchenItemCard: View {
             // Notes - if any
             if !item.displayNotes.isEmpty {
                 Text(item.displayNotes)
-                    .font(.caption)
-                    .foregroundColor(.blue)
+                    .font(.captionRegular)
+                    .foregroundColor(.appInfo)
                     .lineLimit(1)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(6)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Color.appInfo.opacity(0.1))
+                    .cornerRadius(CornerRadius.xs)
             }
             
             Spacer(minLength: 0)
@@ -474,26 +448,25 @@ struct CompactKitchenItemCard: View {
                         .frame(width: 8, height: 8)
                     
                     Text(nextActionText)
-                        .font(.caption)
-                        .fontWeight(.semibold)
+                        .font(.captionBold)
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .font(.caption2)
+                        .font(.captionRegular)
                 }
                 .foregroundColor(statusColor)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 12)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.sm)
                 .background(statusColor.opacity(0.1))
-                .cornerRadius(8)
+                .cornerRadius(CornerRadius.sm)
             }
         }
-        .padding(12)
+        .padding(Spacing.md)
         .frame(minHeight: 160)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.md)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -525,22 +498,22 @@ struct CompactKitchenItemCard: View {
         let minutes = Int(interval / 60)
         
         if minutes < 10 {
-            return .green
+            return .appSuccess
         } else if minutes < 20 {
-            return .orange
+            return .appWarning
         } else {
-            return .red
+            return .appError
         }
     }
     
     private var statusColor: Color {
         switch item.status {
-        case .draft: return .gray
-        case .new: return .blue
-        case .preparing: return .orange
-        case .ready: return .green
-        case .served: return .gray
-		case .cancelled: return .red
+        case .draft: return .appTextSecondary
+        case .new: return .appInfo
+        case .preparing: return .appWarning
+        case .ready: return .appSuccess
+        case .served: return .appTextSecondary
+        case .cancelled: return .appError
         }
     }
     
@@ -557,12 +530,34 @@ struct CompactKitchenItemCard: View {
     
     private var priorityBorderColor: Color {
         if item.priority >= KitchenBoardConfig.urgentThreshold {
-            return .red
+            return .appError
         } else {
             return statusColor.opacity(0.3)
         }
     }
 }
+
+#if DEBUG
+#Preview("KitchenItemCard") {
+    let mockCategory = Category(id: "1", name_en: "Main", name_ja: "メイン", name_vi: "Món chính", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Steak", name_ja: "ステーキ", name_vi: "Bò bít tết", code: "STK", description_en: "A juicy steak", description_ja: "ジューシーなステーキ", description_vi: "Bò bít tết ngon ngọt", price: 25.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 1, notes: "Medium rare", menu_item_size_id: nil, topping_ids: [], price_at_order: 25.0, status: .preparing, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let mockGroupedItem = GroupedItem(itemId: "1", itemName: "Steak", quantity: 1, tables: ["Table 1"], orderItems: [mockOrderItem], categoryName: "Main", notes: "Medium rare", orderTime: Date().addingTimeInterval(-300), priority: 5, status: .preparing)
+
+    return KitchenItemCard(item: mockGroupedItem, onStatusTap: {}, onDetailTap: {})
+        .environmentObject(LocalizationManager.shared)
+}
+
+#Preview("CompactKitchenItemCard") {
+    let mockCategory = Category(id: "1", name_en: "Main", name_ja: "メイン", name_vi: "Món chính", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Steak", name_ja: "ステーキ", name_vi: "Bò bít tết", code: "STK", description_en: "A juicy steak", description_ja: "ジューシーなステーキ", description_vi: "Bò bít tết ngon ngọt", price: 25.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 1, notes: "Medium rare", menu_item_size_id: nil, topping_ids: [], price_at_order: 25.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let mockGroupedItem = GroupedItem(itemId: "1", itemName: "Steak", quantity: 1, tables: ["Table 1"], orderItems: [mockOrderItem], categoryName: "Main", notes: "Medium rare", orderTime: Date(), priority: 1, status: .new)
+
+    return CompactKitchenItemCard(item: mockGroupedItem, onStatusTap: {}, onDetailTap: {})
+        .environmentObject(LocalizationManager.shared)
+}
+#endif
 
 // MARK: - Category Group View
 
@@ -579,26 +574,25 @@ struct CategoryGroupView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             // Category Header
             HStack {
                 Text(categoryGroup.categoryName)
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(.cardTitle)
                 
                 Spacer()
                 
-                Text("kitchen_items_count".localized.replacingOccurrences(of: "{count}", with: "\(categoryGroup.items.count)"))
-                    .font(.caption)
-                    .foregroundColor(.appTextSecondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(12)
+                Text(String(format: "kitchen_items_count_format".localized, categoryGroup.items.count))
+                    .font(.captionBold)
+                    .foregroundColor(.appTextPrimary)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Color.appSurface)
+                    .cornerRadius(CornerRadius.lg)
             }
             
             // Items Grid
-            LazyVGrid(columns: columns, spacing: 16) {
+            LazyVGrid(columns: columns, spacing: Spacing.md) {
                 ForEach(categoryGroup.items) { item in
                     KitchenItemCard(
                         item: item,
@@ -609,9 +603,9 @@ struct CategoryGroupView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+        .background(Color.appBackground)
+        .cornerRadius(CornerRadius.lg)
+        .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
     }
 }
 
@@ -623,28 +617,27 @@ struct KitchenEmptyStateView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: Spacing.lg) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 60))
-                .foregroundColor(.green)
+                .foregroundColor(.appSuccess)
             
-            VStack(spacing: 8) {
+            VStack(spacing: Spacing.sm) {
                 Text("kitchen_empty_all_caught_up".localized)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                    .font(.cardTitle)
                 
                 Text("kitchen_empty_no_items".localized)
-                    .font(.subheadline)
+                    .font(.bodyMedium)
                     .foregroundColor(.appTextSecondary)
             }
             
             if orderCount > 0 {
-                Text("kitchen_empty_total_orders".localized.replacingOccurrences(of: "{count}", with: "\(orderCount)"))
-                    .font(.caption)
+                Text(String(format: "kitchen_empty_total_orders_format".localized, orderCount))
+                    .font(.captionRegular)
                     .foregroundColor(.appTextSecondary)
             } else {
                 Text("kitchen_empty_no_orders".localized)
-                    .font(.caption)
+                    .font(.captionRegular)
                     .foregroundColor(.appTextSecondary)
             }
         }
@@ -691,27 +684,26 @@ struct ImprovedCategoryGroupView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             // Category Header
             HStack {
                 Text(categoryGroup.categoryName)
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(.cardTitle)
                 
                 Spacer()
                 
-                Text("kitchen_items_count".localized.replacingOccurrences(of: "{count}", with: "\(categoryGroup.items.count)"))
-                    .font(.subheadline)
+                Text(String(format: "kitchen_items_count_format".localized, categoryGroup.items.count))
+                    .font(.bodyMedium)
                     .fontWeight(.medium)
                     .foregroundColor(.appTextSecondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(12)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Color.appSurface)
+                    .cornerRadius(CornerRadius.lg)
             }
             
             // Items Grid with proper spacing and padding
-            LazyVGrid(columns: columns, spacing: 16) {
+            LazyVGrid(columns: columns, spacing: Spacing.md) {
                 ForEach(categoryGroup.items) { item in
                     CompactKitchenItemCard(
                         item: item,
@@ -720,12 +712,12 @@ struct ImprovedCategoryGroupView: View {
                     )
                 }
             }
-            .padding(.horizontal, 4) // Additional padding for grid items
+            .padding(.horizontal, Spacing.xs) // Additional padding for grid items
         }
-        .padding(20)
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+        .padding(Spacing.lg)
+        .background(Color.appBackground)
+        .cornerRadius(CornerRadius.lg)
+        .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
     }
 }
 
@@ -761,40 +753,37 @@ struct HorizontalKitchenItemCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.md) {
             // Status indicator
-            VStack(spacing: 4) {
+            VStack(spacing: Spacing.xs) {
                 Circle()
                     .fill(statusColor)
                     .frame(width: 16, height: 16)
                 
                 Text(timeAgoText)
-                    .font(.caption)
-                    .fontWeight(.medium)
+                    .font(.captionRegular)
                     .foregroundColor(timeColor)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(timeColor.opacity(0.15))
-                    .cornerRadius(6)
+                    .padding(.horizontal, Spacing.xs)
+                    .padding(.vertical, Spacing.xxs)
+                    .background(timeColor.opacity(0.1))
+                    .cornerRadius(CornerRadius.xs)
             }
             
             // Main content
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 // Title with quantity next to it
                 HStack {
                     Text(item.itemName)
-                        .font(.headline)
-                        .fontWeight(.bold)
+                        .font(.sectionHeader)
                         .lineLimit(1)
                     
                     Text("x\(item.quantity)")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(.orange)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.orange.opacity(0.2))
-                        .cornerRadius(8)
+                        .font(.cardTitle)
+                        .foregroundColor(.appWarning)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.xs)
+                        .background(Color.appWarning.opacity(0.1))
+                        .cornerRadius(CornerRadius.sm)
                     
                     Spacer()
                 }
@@ -803,56 +792,55 @@ struct HorizontalKitchenItemCard: View {
                 if !item.tables.isEmpty {
                     HStack {
                         Text("kitchen_tables".localized)
-                            .font(.subheadline)
+                            .font(.bodyMedium)
                             .fontWeight(.semibold)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.appTextPrimary)
                         
                         Text(Array(item.tables.sorted()).joined(separator: ", "))
-                            .font(.subheadline)
+                            .font(.bodyMedium)
                             .fontWeight(.bold)
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(8)
+                            .foregroundColor(.appPrimary)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xs)
+                            .background(Color.appPrimary.opacity(0.1))
+                            .cornerRadius(CornerRadius.sm)
                     }
                 }
                 
                 // Notes if any
                 if !item.displayNotes.isEmpty {
                     Text(item.displayNotes)
-                        .font(.caption)
-                        .foregroundColor(.blue)
+                        .font(.captionRegular)
+                        .foregroundColor(.appInfo)
                         .lineLimit(2)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(8)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.xs)
+                        .background(Color.appInfo.opacity(0.1))
+                        .cornerRadius(CornerRadius.sm)
                 }
             }
             
             // Action button with clear instruction
             Button(action: onStatusTap) {
-                VStack(spacing: 6) {
+                VStack(spacing: Spacing.xs) {
                     Image(systemName: actionIcon)
-                        .font(.title2)
+                        .font(.cardTitle)
                     Text("kitchen_tap_to".localized)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(.captionRegular)
+                        .foregroundColor(.appSurface.opacity(0.8))
                     Text(actionText)
-                        .font(.caption)
-                        .fontWeight(.bold)
+                        .font(.captionBold)
                 }
-                .foregroundColor(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .foregroundColor(.appSurface)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
                 .background(statusColor)
-                .cornerRadius(12)
+                .cornerRadius(CornerRadius.md)
             }
         }
-        .padding(16)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
+        .padding(Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.md)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

@@ -85,19 +85,19 @@ class OrderManager: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .notImplemented:
-                return "This feature is not yet implemented."
+                return "error_not_implemented".localized
             case .generalError(let message):
                 return message
             case .missingRestaurantId:
-                return "Restaurant ID is missing. Cannot perform operation."
+                return "error_missing_restaurant_id".localized
             case .missingUserId:
-                return "User ID is missing. Cannot create order."
+                return "error_missing_user_id".localized
             case .itemFetchFailed(let menuItemId):
-                return "Failed to fetch details for menu item \(menuItemId)."
+                return String(format: "error_item_fetch_failed".localized, menuItemId)
             case .orderUpdateFailed(let orderId):
-                return "Failed to update order \(orderId)."
+                return String(format: "error_order_update_failed".localized, orderId)
             case .orderItemUpdateFailed(let orderItemId):
-                return "Failed to update order item \(orderItemId)."
+                return String(format: "error_order_item_update_failed".localized, orderItemId)
             }
         }
     }
@@ -331,7 +331,7 @@ class OrderManager: ObservableObject {
             return createdOrder
         } catch {
             print("Error starting new order: \(error)")
-            throw OrderManagerError.generalError("Failed to start new order: \(error.localizedDescription)")
+            throw OrderManagerError.generalError("error_start_order".localized)
         }
     }
 
@@ -457,7 +457,7 @@ class OrderManager: ObservableObject {
             return createdOrderItem
         } catch {
             print("Error adding item to draft order: \(error)")
-            throw OrderManagerError.generalError("Failed to add item: \(error.localizedDescription)")
+            throw OrderManagerError.generalError("error_add_item".localized)
         }
     }
 
@@ -613,7 +613,7 @@ class OrderManager: ObservableObject {
             print("Draft order item removed: \(orderItemId)")
         } catch {
             print("Error removing draft order item: \(error)")
-            throw OrderManagerError.generalError("Failed to remove item: \(error.localizedDescription)")
+            throw OrderManagerError.generalError("error_remove_item".localized)
         }
     }
 
@@ -657,7 +657,7 @@ class OrderManager: ObservableObject {
             }
         } catch {
             print("Error clearing draft order: \(error)")
-            throw OrderManagerError.generalError("Failed to clear draft order: \(error.localizedDescription)")
+            throw OrderManagerError.generalError("error_clear_draft".localized)
         }
     }
 
@@ -791,7 +791,7 @@ class OrderManager: ObservableObject {
             }
         } catch {
             print("Error fetching draft order \(orderId): \(error)")
-            throw OrderManagerError.generalError("Failed to fetch draft order \(orderId): \(error.localizedDescription)")
+            throw OrderManagerError.generalError(String(format: "error_get_draft".localized, orderId))
         }
     }
     
@@ -836,7 +836,7 @@ class OrderManager: ObservableObject {
         print("Authentication lost - cleaning up OrderManager")
         await cleanupRealtimeSubscription()
         orders = []
-        errorMessage = "Authentication required"
+        errorMessage = "error_not_authenticated".localized
         isRealtimeConnected = false
     }
     
@@ -844,13 +844,13 @@ class OrderManager: ObservableObject {
     @MainActor
     func fetchActiveOrders() async {
         guard supabaseManager.isAuthenticated else {
-            errorMessage = "User not authenticated"
+            errorMessage = "error_not_authenticated".localized
             print("Cannot fetch orders - user not authenticated")
             return
         }
         
         guard let restaurantId = supabaseManager.currentRestaurantId else {
-            errorMessage = "No restaurant ID available"
+            errorMessage = "error_no_restaurant_id".localized
             print("Cannot fetch orders - no restaurant ID")
             return
         }
@@ -901,8 +901,8 @@ class OrderManager: ObservableObject {
             print("Fetched \(orders.count) active orders using RPC")
             
         } catch {
-            errorMessage = "Failed to fetch orders: \(error.localizedDescription)"
-            print("Error fetching orders: \(error)")
+            print("Error fetching active orders: \(error)")
+            errorMessage = "error_fetch_active_orders".localized
         }
         
         isLoading = false
@@ -912,13 +912,13 @@ class OrderManager: ObservableObject {
     @MainActor
     func fetchAllOrders() async {
         guard supabaseManager.isAuthenticated else {
-            errorMessage = "User not authenticated"
+            errorMessage = "error_not_authenticated".localized
             print("Cannot fetch all orders - user not authenticated")
             return
         }
         
         guard let restaurantId = supabaseManager.currentRestaurantId else {
-            errorMessage = "No restaurant ID available"
+            errorMessage = "error_no_restaurant_id".localized
             print("Cannot fetch all orders - no restaurant ID")
             return
         }
@@ -955,8 +955,8 @@ class OrderManager: ObservableObject {
             print("Fetched \(allOrders.count) total orders")
             
         } catch {
-            errorMessage = "Failed to fetch all orders: \(error.localizedDescription)"
             print("Error fetching all orders: \(error)")
+            errorMessage = "error_fetch_all_orders".localized
         }
         
         isLoading = false
@@ -1041,8 +1041,8 @@ class OrderManager: ObservableObject {
             print("Updated order item notes")
             
         } catch {
-            errorMessage = "Failed to update order item notes: \(error.localizedDescription)"
             print("Error updating order item notes: \(error)")
+            errorMessage = "error_update_item_notes".localized
         }
     }
     
@@ -1088,8 +1088,8 @@ class OrderManager: ObservableObject {
             print("Cancelled order item: \(orderItemId)")
             
         } catch {
-            errorMessage = "Failed to cancel order item: \(error.localizedDescription)"
             print("Error cancelling order item: \(error)")
+            errorMessage = "error_cancel_item".localized
         }
     }
 
@@ -1133,8 +1133,8 @@ class OrderManager: ObservableObject {
             print("Updated order item status to \(newStatus.rawValue)")
             
         } catch {
-            errorMessage = "Failed to update order item status: \(error.localizedDescription)"
             print("Error updating order item status: \(error)")
+            errorMessage = "error_update_item_status".localized
         }
     }
     
@@ -1378,18 +1378,18 @@ class OrderManager: ObservableObject {
                     autoPrintStats.recordNewOrderPrint()
                 }
                 
-                let tableInfo = order.table?.name ?? "Table \(order.table_id)"
+                let tableInfo = order.table?.name ?? String(format: "orders_table_prefix".localized, order.table_id)
                 await MainActor.run {
-                    lastAutoPrintResult = "✅ Auto-printed new order for \(tableInfo)"
+                    lastAutoPrintResult = String(format: "autoprint_success_new_order".localized, tableInfo)
                 }
                 print("Auto-printed new order: \(order.id) for \(tableInfo)")
                 
             } catch {
                 await MainActor.run {
                     autoPrintStats.recordPrintFailure()
-                    lastAutoPrintResult = "❌ Auto-print failed: \(error.localizedDescription)"
+                    lastAutoPrintResult = "autoprint_failure".localized
                 }
-                print("Auto-print failed for new order \(order.id): \(error.localizedDescription)")
+                print("Auto-print failed for new order \(order.id): \(error)")
             }
         }
         
@@ -1440,19 +1440,19 @@ class OrderManager: ObservableObject {
                     autoPrintStats.recordNewOrderPrint()
                 }
                 
-                let itemName = item.menu_item?.displayName ?? "Unknown Item"
-                let tableInfo = order.table?.name ?? "Table \(order.table_id)"
+                let itemName = item.menu_item?.displayName ?? "orders_unknown_item".localized
+                let tableInfo = order.table?.name ?? String(format: "orders_table_prefix".localized, order.table_id)
                 await MainActor.run {
-                    lastAutoPrintResult = "✅ Auto-printed new item: \(itemName) for \(tableInfo)"
+                    lastAutoPrintResult = String(format: "autoprint_success_new_item".localized, itemName, tableInfo)
                 }
                 print("Auto-printed new item: \(item.id) - \(itemName)")
                 
             } catch {
                 await MainActor.run {
                     autoPrintStats.recordPrintFailure()
-                    lastAutoPrintResult = "❌ Auto-print failed: \(error.localizedDescription)"
+                    lastAutoPrintResult = "autoprint_failure".localized
                 }
-                print("Auto-print failed for new item \(item.id): \(error.localizedDescription)")
+                print("Auto-print failed for new item \(item.id): \(error)")
             }
         }
         
@@ -1590,8 +1590,8 @@ class OrderManager: ObservableObject {
                 
             } catch {
                 autoPrintStats.recordPrintFailure()
-                lastAutoPrintResult = "❌ Auto-print failed: \(error.localizedDescription)"
-                print("Auto-print failed for ready item \(item.id): \(error.localizedDescription)")
+                lastAutoPrintResult = "autoprint_failure".localized
+                print("Auto-print failed for ready item \(item.id): \(error)")
             }
         }
         
@@ -1716,7 +1716,7 @@ class OrderManager: ObservableObject {
             try await printerManager.printKitchenSlip(for: latestOrder)
             print("✅ Manual print test successful")
         } catch {
-            print("❌ Manual print test failed: \(error.localizedDescription)")
+            print("❌ Manual print test failed: \(error)")
         }
     }
     
@@ -1733,7 +1733,7 @@ class OrderManager: ObservableObject {
             try await printNewItemSlip(item: firstItem, order: latestOrder)
             print("✅ Manual new item slip test successful")
         } catch {
-            print("❌ Manual new item slip test failed: \(error.localizedDescription)")
+            print("❌ Manual new item slip test failed: \(error)")
         }
     }
     
@@ -1796,7 +1796,7 @@ class OrderManager: ObservableObject {
             .value
         
         guard order.status == .new || order.status == .draft || order.status == .serving else {
-            throw OrderManagerError.generalError("Order cannot be cancelled. Current status: \(order.status.displayName)")
+            throw OrderManagerError.generalError(String(format: "error_cancel_order_status".localized, order.status.displayName))
         }
         
         // Update order status to cancelled

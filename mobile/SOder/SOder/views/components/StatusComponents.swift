@@ -13,16 +13,17 @@ struct StatusBadge: View {
         case "new":
             return ("New", .appInfo, "sparkles")
         case "serving":
-            return ("Serving", .appWarning, "fork.knife")
+            // Consistently green for Serving
+            return ("Serving", .appSuccess, "fork.knife")
         case "completed":
-            return ("Completed", .appSuccess, "checkmark.seal.fill")
+            return ("Completed", .appTextSecondary, "checkmark.seal")
         case "canceled":
-            return ("Canceled", .appError, "xmark.circle.fill")
+            return ("Canceled", .appError, "xmark.circle")
         // Booking Statuses
         case "pending":
             return ("Pending", .appTextSecondary, "hourglass")
         case "confirmed":
-            return ("Confirmed", .appSuccess, "checkmark.seal.fill")
+            return ("Confirmed", .appSuccess, "checkmark.seal")
         default:
             return (status.capitalized, .appTextSecondary, "questionmark.circle")
         }
@@ -48,34 +49,40 @@ struct StatusBadge: View {
 struct EnhancedStatusBadge: View {
     let status: OrderStatus
     
-    private var display: (text: String, color: Color, icon: String) {
+    private var display: (text: String, color: Color, backgroundColor: Color, icon: String) {
         switch status {
         case .draft:
-            return ("Draft", .gray, "doc.text")
+            return (status.displayName, .appTextSecondary, .appSurfaceSecondary, "doc.text")
         case .new:
-            return ("New", .blue, "sparkles")
+            return (status.displayName, .appInfo, .appInfoLight, "sparkles")
         case .serving:
-            return ("Serving", .orange, "fork.knife")
+            // Serving switched to green for better scannability
+            return (status.displayName, .appSuccess, .appSuccessLight, "fork.knife")
         case .completed:
-            return ("Completed", .gray, "checkmark.seal.fill")
+            return (status.displayName, .appSuccess, .appSuccessLight, "checkmark.seal")
         case .canceled:
-            return ("Canceled", .red, "xmark.circle.fill")
+            return (status.displayName, .appError, .appErrorLight, "xmark.circle")
         }
     }
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 6) {
             Image(systemName: display.icon)
                 .font(.caption2)
+                .fontWeight(.semibold)
             Text(display.text)
-                .fontWeight(.medium)
+                .fontWeight(.semibold)
         }
         .font(.caption)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(display.color.opacity(0.15))
+        .padding(.horizontal, Spacing.sm)
+        .padding(.vertical, 6)
+        .background(display.backgroundColor)
         .foregroundColor(display.color)
-        .cornerRadius(20)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(display.color.opacity(0.2), lineWidth: 1)
+        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Status: \(display.text)")
     }
@@ -84,20 +91,20 @@ struct EnhancedStatusBadge: View {
 struct OrderItemStatusBadge: View {
     let status: OrderItemStatus
     
-    private var display: (text: String, color: Color, icon: String) {
+    private var display: (text: String, color: Color, backgroundColor: Color, icon: String) {
         switch status {
         case .draft:
-            return ("Draft", .gray, "doc.text")
+            return (status.displayName, .appTextSecondary, .appSurfaceSecondary, "doc.text")
         case .new:
-            return ("New", .blue, "doc.text")
+            return (status.displayName, .appInfo, .appInfoLight, "sparkles")
         case .preparing:
-            return ("Preparing", .orange, "flame.fill")
+            return (status.displayName, .appWarning, .appWarningLight, "flame")
         case .ready:
-            return ("Ready", .green, "checkmark.circle.fill")
+            return (status.displayName, .appSuccess, .appSuccessLight, "checkmark.circle")
         case .served:
-            return ("Served", .gray, "checkmark.seal.fill")
+            return (status.displayName, .appTextSecondary, .appSurfaceSecondary, "checkmark.seal")
         case .cancelled:
-            return ("Cancelled", .red, "xmark.circle.fill")
+            return (status.displayName, .appError, .appErrorLight, "xmark.circle")
         }
     }
     
@@ -105,15 +112,20 @@ struct OrderItemStatusBadge: View {
         HStack(spacing: 4) {
             Image(systemName: display.icon)
                 .font(.caption2)
+                .fontWeight(.medium)
             Text(display.text)
                 .fontWeight(.medium)
         }
         .font(.caption)
-        .padding(.horizontal, 8)
+        .padding(.horizontal, Spacing.xs)
         .padding(.vertical, 4)
-        .background(display.color.opacity(0.15))
+        .background(display.backgroundColor)
         .foregroundColor(display.color)
-        .cornerRadius(20)
+        .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(display.color.opacity(0.2), lineWidth: 0.5)
+        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Status: \(display.text)")
     }
@@ -130,26 +142,41 @@ struct FilterChip: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: Spacing.xs) {
                 Text(title)
-                    .fontWeight(.medium)
+                    .fontWeight(.semibold)
                 
                 if count > 0 {
                     Text("\(count)")
                         .font(.captionBold)
                         .foregroundColor(isSelected ? .white : color)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, Spacing.xs)
                         .padding(.vertical, 2)
-                        .background(isSelected ? .white.opacity(0.3) : color.opacity(0.2))
-                        .cornerRadius(8)
+                        .background(
+                            Capsule()
+                                .fill(isSelected ? .white.opacity(0.25) : color.opacity(0.15))
+                        )
                 }
             }
             .font(.buttonMedium)
             .padding(.horizontal, Spacing.md)
             .padding(.vertical, Spacing.sm)
-            .background(isSelected ? color : color.opacity(0.1))
+            .background(
+                Capsule()
+                    .fill(isSelected ? color : Color.appSurface)
+                    .shadow(
+                        color: isSelected ? color.opacity(0.3) : Elevation.level1.color,
+                        radius: isSelected ? 3 : Elevation.level1.radius,
+                        y: isSelected ? 2 : Elevation.level1.y
+                    )
+            )
             .foregroundColor(isSelected ? .white : color)
-            .cornerRadius(20)
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? Color.clear : color.opacity(0.3), lineWidth: 1)
+            )
+            .scaleEffect(isSelected ? 1.0 : 0.95)
+            .animation(.easeInOut(duration: Motion.fast), value: isSelected)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -196,30 +223,30 @@ struct EmptyOrdersView: View {
     private var emptyStateTitle: String {
         switch filter {
         case .active:
-            return "No Active Orders"
+            return "empty_active_orders_title".localized
         case .new:
-            return "No New Orders"
+            return "empty_new_orders_title".localized
         case .serving:
-            return "Nothing Being Served"
+            return "empty_serving_orders_title".localized
         case .completed:
-            return "No Completed Orders"
+            return "empty_completed_orders_title".localized
         case .canceled:
-            return "No Canceled Orders"
+            return "empty_canceled_orders_title".localized
         }
     }
     
     private var emptyStateMessage: String {
         switch filter {
         case .active:
-            return "When new orders come in, they'll appear here."
+            return "empty_active_orders_message".localized
         case .new:
-            return "All orders are being processed."
+            return "empty_new_orders_message".localized
         case .serving:
-            return "No orders are currently being served."
+            return "empty_serving_orders_message".localized
         case .completed:
-            return "No completed orders to show."
+            return "empty_completed_orders_message".localized
         case .canceled:
-            return "No canceled orders to show."
+            return "empty_canceled_orders_message".localized
         }
     }
 }
@@ -234,94 +261,213 @@ struct OrderRowView: View {
     let onPrintResult: (String) -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(order.table?.name ?? "Table \(order.table_id)")
-                            .font(.headline)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            // Header with table info and status
+            HStack(alignment: .top, spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    // Table name and new badge
+                    HStack(spacing: Spacing.sm) {
+                        Text(order.table?.name ?? String(format: "orders_table_format".localized, order.table_id))
+                            .font(.cardTitle)
                             .fontWeight(.bold)
+                            .foregroundColor(.appTextPrimary)
                         
                         if isNew {
-                            Text("NEW")
-                                .font(.caption2)
-                                .fontWeight(.bold)
+                            Text("orders_new_badge".localized)
+                                .font(.captionBold)
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.red)
-                                .cornerRadius(4)
+                                .padding(.horizontal, Spacing.sm)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.appInfo)
+                                        .shadow(color: Color.appInfo.opacity(0.3), radius: 2, y: 1)
+                                )
                         }
                         
                         Spacer()
                     }
                     
-                    HStack(spacing: 16) {
-                        Label("\(order.guest_count)", systemImage: "person.2")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    // Order metadata
+                    HStack(spacing: Spacing.md) {
+                        Label("\(order.guest_count ?? 1)", systemImage: "person.2")
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextTertiary)
                         
                         Label(formatTime(order.created_at), systemImage: "clock")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextTertiary)
+                        
+                        // Order ID for staff reference
+                        Text(String(format: "orders_id_format".localized, String(order.id.prefix(6).uppercased())))
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextTertiary)
+                            .padding(.horizontal, Spacing.xs)
+                            .padding(.vertical, 2)
+                            .background(Color.appBackground)
+                            .cornerRadius(4)
                     }
                 }
                 
-                VStack(alignment: .trailing, spacing: 8) {
+                VStack(alignment: .trailing, spacing: Spacing.xs) {
                     EnhancedStatusBadge(status: order.status)
                     
                     if let total = order.total_amount {
-                        Text("¥\(String(format: "%.0f", total))")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.primary)
+                        Text(String(format: "price_format".localized, total))
+                            .font(.bodyMedium)
+                            .fontWeight(.bold)
+                            .foregroundColor(.appTextPrimary)
                     }
                 }
             }
             
-            // Order items preview
+            // Order items preview with better styling
             if let items = order.order_items?.prefix(2) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     ForEach(Array(items), id: \.id) { item in
-                        HStack {
-                            Text("\(item.quantity)×")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(.secondary)
+                        HStack(spacing: Spacing.sm) {
+                            // Quantity badge
+                            Text("\(item.quantity)")
+                                .font(.captionBold)
+                                .foregroundColor(.appTextSecondary)
+                                .frame(width: 20, height: 20)
+                                .background(Circle().fill(Color.appSurfaceSecondary))
                             
-                            Text(item.menu_item?.displayName ?? "Unknown")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
+                            // Item info
+                            HStack(spacing: Spacing.xs) {
+                                if let code = item.menu_item?.code, !code.isEmpty {
+                                    Text(code)
+                                        .font(.captionBold)
+                                        .foregroundColor(.appPrimary)
+                                }
+                                
+                                Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appTextSecondary)
+                                    .lineLimit(1)
+                            }
                             
                             Spacer()
                             
                             OrderItemStatusBadge(status: item.status)
                         }
+                        .padding(.vertical, 2)
                     }
                     
+                    // Show more items indicator
                     if let totalItems = order.order_items?.count, totalItems > 2 {
-                        Text("and \(totalItems - 2) more items...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .italic()
+                        HStack {
+                            Image(systemName: "ellipsis")
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextTertiary)
+                            Text(String(format: "orders_more_items".localized, totalItems - 2))
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextTertiary)
+                                .italic()
+                            Spacer()
+                        }
+                        .padding(.top, Spacing.xs)
                     }
                 }
+                .padding(Spacing.sm)
+                .background(Color.appSurfaceSecondary)
+                .cornerRadius(CornerRadius.sm)
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .elevatedCardStyle(padding: Spacing.md, cornerRadius: CornerRadius.md)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel)
+    }
+    
+    private var accessibilityLabel: String {
+        let tableName = order.table?.name ?? String(format: "orders_table_format".localized, order.table_id)
+        let status = order.status.displayName
+        let guestCount = order.guest_count ?? 1
+        let timeString = formatTime(order.created_at)
+        let totalString = order.total_amount.map { String(format: "price_format".localized, $0) } ?? ""
+        
+        var label = "\(tableName), \(status), \(guestCount) guests, \(timeString)"
+        if !totalString.isEmpty {
+            label += ", \(totalString)"
+        }
+        if isNew {
+            label += ", \("orders_new_badge".localized)"
+        }
+        return label
     }
     
     private func formatTime(_ dateString: String) -> String {
         let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else { return "Unknown" }
+        guard let date = formatter.date(from: dateString) else { return "orders_unknown_time".localized }
         
         let displayFormatter = DateFormatter()
         displayFormatter.timeStyle = .short
         return displayFormatter.string(from: date)
+    }
+}
+
+// MARK: - Skeleton Loading Components
+
+struct SkeletonOrderRow: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    HStack {
+                        Text("Table 12")
+                            .font(.cardTitle)
+                            .foregroundColor(.appTextPrimary)
+                        
+                        Text("ID: ABC123")
+                            .font(.bodyRegular)
+                            .foregroundColor(.appTextSecondary)
+                        
+                        Spacer()
+                    }
+                    
+                    HStack(spacing: Spacing.xxs) {
+                        Label("4", systemImage: "person.2")
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
+                        
+                        Label("12:34 PM", systemImage: "clock")
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                }
+                
+                VStack(alignment: .trailing, spacing: Spacing.xxs) {
+                    Text("New")
+                        .font(.captionBold)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, 4)
+                        .background(Color.appInfo.opacity(0.15))
+                        .foregroundColor(.appInfo)
+                        .cornerRadius(20)
+                    
+                    Text("¥1,500")
+                        .font(.bodyMedium)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.appTextPrimary)
+                }
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("2× Chicken Teriyaki")
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextSecondary)
+                
+                Text("1× Miso Soup")
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextSecondary)
+            }
+        }
+        .padding(.vertical, Spacing.sm)
+        .padding(.horizontal, Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.md)
+        .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
+        .accessibilityHidden(true)
     }
 }
 
@@ -365,7 +511,7 @@ struct EnhancedOrderItemView: View {
                 HStack {
                     Spacer()
                     
-                    Button("Update Status") {
+                    Button("order_detail_update_status_button".localized) {
                         Task {
                             await updateItemStatus()
                         }

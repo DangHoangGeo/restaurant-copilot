@@ -2,10 +2,11 @@ import SwiftUI
 
 struct CheckoutView: View {
     let order: Order
-    let orderManager: OrderManager
-    let printerManager: PrinterManager
     let onComplete: () -> Void
     
+    @EnvironmentObject var orderManager: OrderManager
+    @EnvironmentObject var printerManager: PrinterManager
+
     @State private var discountCode = ""
     @State private var discountPercentage: Double = 0
     @State private var customDiscountAmount: Double = 0
@@ -21,6 +22,9 @@ struct CheckoutView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var supabaseManager: SupabaseManager
+    
+    // Focus state for cash input
+    @FocusState private var isReceivedAmountFocused: Bool
     
     enum PaymentMethod: String, CaseIterable {
         case cash = "cash"
@@ -83,8 +87,8 @@ struct CheckoutView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 10) {
-                    // Payment Selection
+                VStack(spacing: Spacing.lg) {
+                    // Enhanced Payment Selection
                     paymentSection
                     
                     // Discount Section (only if showing)
@@ -94,25 +98,29 @@ struct CheckoutView: View {
                         discountToggleSection
                     }
                     
-                    // Price Breakdown
+                    // Enhanced Price Breakdown
                     priceBreakdown
                     
-                    // Action Buttons
+                    // Enhanced Action Buttons
                     actionButtons
                 }
-                .padding()
+                .padding(Spacing.md)
             }
-            .navigationTitle(order.table?.name ?? "Table \(order.table_id)")
+            .background(Color.appBackground)
+            .navigationTitle("checkout".localized)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("cancel".localized) {
-                        dismiss()
-                    }
-                }
+                ToolbarItem(placement: .navigationBarLeading) { Button("cancel".localized) { dismiss() } }
             }
             .task {
                 receivedAmount = totalAmount
+                // Auto focus cash input if cash is selected
+                if paymentMethod == .cash {
+                    // Delay to ensure view has appeared before focusing
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        isReceivedAmountFocused = true
+                    }
+                }
             }
         }
         .alert("error".localized, isPresented: $showingError) {
@@ -141,6 +149,7 @@ struct CheckoutView: View {
                         Label("\(order.guest_count ?? 0)", systemImage: "person.2")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
+                            .accessibilityLabel(String(format: "checkout_guest_count_accessibility".localized, order.guest_count ?? 0))
                         Label(formatTime(order.created_at), systemImage: "clock")
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
@@ -158,111 +167,211 @@ struct CheckoutView: View {
 
     private var paymentSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
+            // Enhanced order header
             HStack {
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(order.table?.name ?? "Table \(order.table_id)")
+                        .font(.cardTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.appTextPrimary)
+                    
                     HStack(spacing: Spacing.md) {
-                        Label("\(order.guest_count ?? 0)", systemImage: "person.2")
+                        Label("\(order.guest_count ?? 0)", systemImage: "person.2.fill")
                             .font(.captionRegular)
-                            .foregroundColor(.appTextSecondary)
-                        Label(formatTime(order.created_at), systemImage: "clock")
+                            .foregroundColor(.appTextTertiary)
+                        Label(formatTime(order.created_at), systemImage: "clock.fill")
                             .font(.captionRegular)
-                            .foregroundColor(.appTextSecondary)
+                            .foregroundColor(.appTextTertiary)
+                        Label("ID: \(String(order.id.prefix(6).uppercased()))", systemImage: "number")
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextTertiary)
                     }
                 }
                 Spacer()
                 EnhancedStatusBadge(status: order.status)
             }
+            
             Divider()
-            Text("payment_method".localized)
-                .font(.bodyMedium)
-                .fontWeight(.semibold)
-                .foregroundColor(.appTextPrimary)
-            HStack(spacing: Spacing.xs) {
+            
+            // Enhanced payment method section
+            HStack {
+                Image(systemName: "creditcard.fill")
+                    .font(.title3)
+                    .foregroundColor(.appPrimary)
+                Text("payment_method".localized)
+                    .font(.sectionHeader)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.appTextPrimary)
+                Spacer()
+            }
+            
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: Spacing.sm) {
                 ForEach(PaymentMethod.allCases, id: \.self) { method in
                     Button(action: {
                         paymentMethod = method
-                        if method != .cash {
-                            receivedAmount = totalAmount
-                        }
+                        if method != .cash { receivedAmount = totalAmount }
                     }) {
-                        HStack(spacing: Spacing.xxs) {
-                            Image(systemName: method.icon)
-                                .font(.captionRegular)
+                        VStack(spacing: Spacing.xs) {
+                            ZStack {
+                                Circle()
+                                    .fill(paymentMethod == method ? Color.appPrimary : Color.appSurfaceSecondary)
+                                    .frame(width: 44, height: 44)
+                                    .shadow(
+                                        color: paymentMethod == method ? Color.appPrimary.opacity(0.3) : Color.clear,
+                                        radius: paymentMethod == method ? 4 : 0,
+                                        y: paymentMethod == method ? 2 : 0
+                                    )
+                                
+                                Image(systemName: method.icon)
+                                    .font(.title3)
+                                    .foregroundColor(paymentMethod == method ? .white : .appTextSecondary)
+                            }
+                            
                             Text(method.displayName)
-                                .font(.captionRegular)
-                                .fontWeight(.medium)
+                                .font(.captionBold)
+                                .foregroundColor(paymentMethod == method ? .appPrimary : .appTextSecondary)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 40)
-                        .background(paymentMethod == method ? Color.appPrimary : Color.appSurface)
-                        .foregroundColor(paymentMethod == method ? .white : .appTextPrimary)
-                        .cornerRadius(CornerRadius.sm)
+                        .padding(.vertical, Spacing.sm)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.md)
+                                .fill(paymentMethod == method ? Color.appPrimary.opacity(0.1) : Color.appSurface)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                                        .stroke(paymentMethod == method ? Color.appPrimary : Color.appBorderLight, lineWidth: paymentMethod == method ? 2 : 1)
+                                )
+                        )
                     }
+                    .scaleEffect(paymentMethod == method ? 1.05 : 1.0)
+                    .animation(.easeInOut(duration: Motion.fast), value: paymentMethod)
                     .accessibilityLabel(String(format: "checkout_payment_method_accessibility".localized, method.displayName))
                 }
             }
+            // Enhanced cash payment section
             if paymentMethod == .cash {
-                VStack(spacing: Spacing.xs) {
+                VStack(spacing: Spacing.md) {
+                    Divider()
+                    
                     HStack {
-                        Text("total".localized + ":")
-                            .font(.captionRegular)
-                            .fontWeight(.medium)
+                        Image(systemName: "yensign.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.appPrimary)
+                        Text("checkout_cash_details".localized)
+                            .font(.bodyMedium)
+                            .fontWeight(.semibold)
                             .foregroundColor(.appTextPrimary)
                         Spacer()
-                        Text("¥\(String(format: "%.0f", totalAmount))")
-                            .font(.bodyMedium)
-                            .fontWeight(.bold)
-                            .foregroundColor(.appPrimary)
                     }
-                    VStack(alignment: .leading, spacing: Spacing.xxs) {
-                        Text("received_amount".localized)
-                            .font(.captionRegular)
-                            .fontWeight(.medium)
-                            .foregroundColor(.appTextPrimary)
-                        TextField("0", value: $receivedAmount, format: .currency(code: "JPY"))
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
-                    }
-                    if changeAmount > 0 {
+                    
+                    VStack(spacing: Spacing.sm) {
+                        // Total amount display
                         HStack {
-                            Text("change".localized + ":")
-                                .font(.captionRegular)
+                            Text("checkout_total_label".localized)
+                                .font(.bodyMedium)
                                 .fontWeight(.medium)
                                 .foregroundColor(.appTextPrimary)
                             Spacer()
-                            Text("¥\(String(format: "%.0f", changeAmount))")
-                                .font(.bodyMedium)
+                            Text(String(format: "price_format".localized, totalAmount))
+                                .font(.title3)
                                 .fontWeight(.bold)
-                                .foregroundColor(.appSuccess)
+                                .foregroundColor(.appPrimary)
                         }
-                        .padding(Spacing.xs)
-                        .background(Color.appSuccess.opacity(0.1))
-                        .cornerRadius(CornerRadius.xs)
-                    } else if paymentMethod == .cash && receivedAmount > 0 && receivedAmount < totalAmount {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.appWarning)
-                            Text("insufficient_amount".localized)
-                                .font(.captionRegular)
-                                .foregroundColor(.appWarning)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.sm)
+                        .background(Color.appPrimary.opacity(0.1))
+                        .cornerRadius(CornerRadius.md)
+                        
+                        // Received amount input with better styling
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("received_amount".localized)
+                                .font(.captionBold)
+                                .foregroundColor(.appTextSecondary)
+                            
+                            HStack {
+                                Image(systemName: "banknote")
+                                    .foregroundColor(.appTextTertiary)
+                                
+                                TextField("checkout_received_amount_placeholder".localized, value: $receivedAmount, format: .currency(code: "JPY"))
+                                    .font(.bodyMedium)
+                                    .fontWeight(.medium)
+                                    .keyboardType(.decimalPad)
+                                    .focused($isReceivedAmountFocused)
+                                
+                                // Quick set buttons
+                                Button(action: { receivedAmount = totalAmount }) {
+                                    Text("checkout_exact_amount".localized)
+                                        .font(.captionBold)
+                                        .foregroundColor(.appPrimary)
+                                        .padding(.horizontal, Spacing.xs)
+                                        .padding(.vertical, 4)
+                                        .background(Color.appPrimary.opacity(0.1))
+                                        .cornerRadius(4)
+                                }
+                            }
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.vertical, Spacing.sm)
+                            .background(Color.appSurfaceSecondary)
+                            .cornerRadius(CornerRadius.md)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.md)
+                                    .stroke(Color.appBorderLight, lineWidth: 1)
+                            )
                         }
-                        .padding(Spacing.xs)
-                        .background(Color.appWarning.opacity(0.1))
-                        .cornerRadius(CornerRadius.xs)
+                        
+                        // Change calculation with enhanced styling
+                        if changeAmount > 0 {
+                            HStack {
+                                Image(systemName: "arrow.clockwise.circle.fill")
+                                    .foregroundColor(.appSuccess)
+                                Text("checkout_change_label".localized)
+                                    .font(.bodyMedium)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.appTextPrimary)
+                                Spacer()
+                                Text(String(format: "price_format".localized, changeAmount))
+                                    .font(.bodyMedium)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.appSuccess)
+                            }
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.sm)
+                            .background(Color.appSuccessLight)
+                            .cornerRadius(CornerRadius.md)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.md)
+                                    .stroke(Color.appSuccess.opacity(0.3), lineWidth: 1)
+                            )
+                        } else if receivedAmount > 0 && receivedAmount < totalAmount {
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.appWarning)
+                                Text("insufficient_amount".localized)
+                                    .font(.bodyMedium)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.appWarning)
+                                Spacer()
+                                Text(String(format: "price_format".localized, totalAmount - receivedAmount))
+                                    .font(.captionBold)
+                                    .foregroundColor(.appWarning)
+                            }
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.sm)
+                            .background(Color.appWarningLight)
+                            .cornerRadius(CornerRadius.md)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.md)
+                                    .stroke(Color.appWarning.opacity(0.3), lineWidth: 1)
+                            )
+                        }
                     }
                 }
             }
         }
-        .padding(Spacing.md)
-        .background(Color.appSurface)
-        .cornerRadius(CornerRadius.md)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .elevatedCardStyle()
     }
 
     private var discountToggleSection: some View {
-        Button(action: {
-            showingDiscount = true
-        }) {
+        Button(action: { showingDiscount = true }) {
             HStack {
                 Image(systemName: "percent")
                     .font(.title3)
@@ -281,7 +390,7 @@ struct CheckoutView: View {
             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
         .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel("apply_discount_accessibility".localized)
+        .accessibilityLabel("checkout_apply_discount_accessibility".localized)
     }
 
     private var discountSection: some View {
@@ -309,7 +418,7 @@ struct CheckoutView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.appTextPrimary)
                     TextField("checkout_discount_code_placeholder".localized, text: $discountCode)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .textFieldStyle(AppTextFieldStyle())
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                 }
@@ -336,8 +445,8 @@ struct CheckoutView: View {
                         Text("discount_amount".localized)
                             .font(.captionRegular)
                             .foregroundColor(.appTextPrimary)
-                        TextField("¥0", value: $customDiscountAmount, format: .currency(code: "JPY"))
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        TextField("checkout_custom_discount_placeholder".localized, value: $customDiscountAmount, format: .currency(code: "JPY"))
+                            .textFieldStyle(AppTextFieldStyle())
                             .keyboardType(.decimalPad)
                     }
                 }
@@ -350,91 +459,177 @@ struct CheckoutView: View {
     }
 
     private var priceBreakdown: some View {
-        VStack(spacing: Spacing.xs) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
-                Text("subtotal".localized)
-                    .font(.captionRegular)
-                    .foregroundColor(.appTextPrimary)
-                Spacer()
-                Text("¥\(String(format: "%.0f", subtotal))")
-                    .font(.captionRegular)
-                    .foregroundColor(.appTextPrimary)
-            }
-            if discountAmount > 0 {
-                HStack {
-                    Text("discount".localized)
-                        .font(.captionRegular)
-                        .foregroundColor(.appSuccess)
-                    Spacer()
-                    Text("-¥\(String(format: "%.0f", discountAmount))")
-                        .font(.captionRegular)
-                        .foregroundColor(.appSuccess)
-                }
-                HStack {
-                    Text("checkout_price_after_discount_label".localized)
-                        .font(.captionRegular)
-                        .foregroundColor(.appTextPrimary)
-                    Spacer()
-                    Text("¥\(String(format: "%.0f", afterDiscountAmount))")
-                        .font(.captionRegular)
-                        .foregroundColor(.appTextPrimary)
-                }
-            }
-            HStack {
-                Text(String(format: "checkout_price_tax_label".localized, Int(taxRate * 100)))
-                    .font(.captionRegular)
-                    .foregroundColor(.appTextPrimary)
-                Spacer()
-                Text("¥\(String(format: "%.0f", taxAmount))")
-                    .font(.captionRegular)
-                    .foregroundColor(.appTextPrimary)
-            }
-            Divider()
-            HStack {
-                Text("total".localized)
-                    .font(.bodyMedium)
-                    .fontWeight(.bold)
-                    .foregroundColor(.appTextPrimary)
-                Spacer()
-                Text("¥\(String(format: "%.0f", totalAmount))")
-                    .font(.bodyMedium)
-                    .fontWeight(.bold)
+                Image(systemName: "receipt.fill")
+                    .font(.title3)
                     .foregroundColor(.appPrimary)
+                Text("checkout_price_breakdown".localized)
+                    .font(.sectionHeader)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.appTextPrimary)
+                Spacer()
+            }
+            
+            VStack(spacing: Spacing.sm) {
+                // Subtotal
+                HStack {
+                    Text("subtotal".localized)
+                        .font(.bodyMedium)
+                        .foregroundColor(.appTextPrimary)
+                    Spacer()
+                    Text(String(format: "price_format".localized, subtotal))
+                        .font(.bodyMedium)
+                        .fontWeight(.medium)
+                        .foregroundColor(.appTextPrimary)
+                }
+                
+                // Discount (if applied)
+                if discountAmount > 0 {
+                    HStack {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "minus.circle.fill")
+                                .font(.captionRegular)
+                                .foregroundColor(.appSuccess)
+                            Text("discount".localized)
+                                .font(.bodyMedium)
+                                .foregroundColor(.appSuccess)
+                            if !discountCode.isEmpty {
+                                Text("(\(discountCode))")
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appTextTertiary)
+                            }
+                        }
+                        Spacer()
+                        Text(String(format: "-%@", String(format: "price_format".localized, discountAmount)))
+                            .font(.bodyMedium)
+                            .fontWeight(.medium)
+                            .foregroundColor(.appSuccess)
+                    }
+                    
+                    HStack {
+                        Text("checkout_price_after_discount_label".localized)
+                            .font(.bodyMedium)
+                            .foregroundColor(.appTextPrimary)
+                        Spacer()
+                        Text(String(format: "price_format".localized, afterDiscountAmount))
+                            .font(.bodyMedium)
+                            .fontWeight(.medium)
+                            .foregroundColor(.appTextPrimary)
+                    }
+                }
+                
+                // Tax
+                HStack {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "percent")
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
+                        Text(String(format: "checkout_price_tax_label".localized, Int(taxRate * 100)))
+                            .font(.bodyMedium)
+                            .foregroundColor(.appTextPrimary)
+                    }
+                    Spacer()
+                    Text(String(format: "price_format".localized, taxAmount))
+                        .font(.bodyMedium)
+                        .fontWeight(.medium)
+                        .foregroundColor(.appTextPrimary)
+                }
+                
+                Divider()
+                    .background(Color.appPrimary.opacity(0.3))
+                
+                // Total with enhanced styling
+                HStack {
+                    Text("checkout_total_label".localized)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.appTextPrimary)
+                    Spacer()
+                    Text(String(format: "price_format".localized, totalAmount))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.appPrimary)
+                }
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.sm)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .fill(Color.appPrimary.opacity(0.05))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.md)
+                                .stroke(Color.appPrimary.opacity(0.2), lineWidth: 2)
+                        )
+                )
             }
         }
-        .padding(Spacing.md)
-        .background(Color.appSurface)
-        .cornerRadius(CornerRadius.md)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .elevatedCardStyle()
     }
 
     private var actionButtons: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.md) {
+            // Main checkout button with enhanced styling
             Button(action: processCheckout) {
-                HStack {
-                    if isProcessing {
+                HStack(spacing: Spacing.sm) {
+                    if isProcessing { 
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .scaleEffect(0.8)
-                    } else {
+                            .scaleEffect(0.9)
+                    } else { 
                         Image(systemName: paymentMethod.icon)
+                            .font(.title3)
                     }
-                    Text(isProcessing ? "processing".localized : "complete_checkout".localized)
-                        .fontWeight(.semibold)
+                    
+                    VStack(spacing: 2) {
+                        Text(isProcessing ? "checkout_processing".localized : "complete_checkout".localized)
+                            .fontWeight(.bold)
+                        
+                        if !isProcessing {
+                            Text(paymentMethod.displayName)
+                                .font(.captionRegular)
+                                .opacity(0.9)
+                        }
+                    }
+                    
+                    if !isProcessing && canCompleteCheckout {
+                        Spacer()
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.title3)
+                    }
                 }
             }
-            .buttonStyle(PrimaryButtonStyle(isEnabled: canCompleteCheckout))
+            .buttonStyle(PrimaryButtonStyle(isEnabled: canCompleteCheckout && !isProcessing))
             .disabled(isProcessing || !canCompleteCheckout)
             
+            // Print receipt only button with better styling
             Button(action: printReceiptOnly) {
                 HStack {
-                    Image(systemName: "printer")
+                    Image(systemName: "printer.fill")
+                        .font(.title3)
                     Text("print_receipt_only".localized)
                         .fontWeight(.medium)
+                    Spacer()
+                    Image(systemName: "arrow.right")
+                        .font(.captionRegular)
                 }
             }
-            .buttonStyle(SecondaryButtonStyle())
+            .buttonStyle(SecondaryButtonStyle(isEnabled: !isProcessing))
             .disabled(isProcessing)
+            
+            // Helper text for payment validation
+            if !canCompleteCheckout && paymentMethod == .cash {
+                HStack {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(.appInfo)
+                    Text("checkout_insufficient_cash_hint".localized)
+                        .font(.captionRegular)
+                        .foregroundColor(.appInfo)
+                }
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
+                .background(Color.appInfoLight)
+                .cornerRadius(CornerRadius.sm)
+            }
         }
     }
     
@@ -472,7 +667,7 @@ struct CheckoutView: View {
             
             showingSuccess = true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = "checkout_error_process_failed".localized
             showingError = true
         }
         
@@ -494,7 +689,7 @@ struct CheckoutView: View {
         do {
             try await printerManager.printCheckoutReceipt(receiptData)
         } catch {
-            errorMessage = "Failed to print receipt: \(error.localizedDescription)"
+            errorMessage = "receipt_print_failure_message".localized
             showingError = true
         }
     }
@@ -521,9 +716,9 @@ struct CheckoutView: View {
             date = fallbackFormatter.date(from: dateString)
         }
         
-        guard let finalDate = date else { 
+        guard let finalDate = date else {
             print("Failed to parse date string: \(dateString)")
-            return "Unknown" 
+            return "orders_unknown_time".localized
         }
         
         let displayFormatter = DateFormatter()
@@ -540,7 +735,7 @@ struct CheckoutItemRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.menu_item?.displayName ?? "Unknown Item")
+                Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
@@ -560,12 +755,12 @@ struct CheckoutItemRow: View {
             Spacer()
             
             VStack(alignment: .trailing, spacing: 4) {
-                Text("×\(item.quantity)")
+                Text(String(format: "item_quantity_format".localized, item.quantity))
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
                 if let price = item.menu_item?.price {
-                    Text("¥\(String(format: "%.0f", price * Double(item.quantity)))")
+                    Text(String(format: "price_format".localized, price * Double(item.quantity)))
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
@@ -587,3 +782,25 @@ struct CheckoutReceiptData {
     let totalAmount: Double
     let timestamp: Date
 }
+
+#if DEBUG
+#Preview {
+    // Mock Environment Objects
+    let orderManager = OrderManager.shared
+    let printerManager = PrinterManager.shared
+    let localizationManager = LocalizationManager.shared
+
+    // Populate with mock data for preview
+    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Đồ uống", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Cà phê nóng", price: 5.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 5.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let mockTable = Table(id: "1", restaurant_id: "1", name: "Table 1", status: .occupied, capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil, created_at: "", updated_at: "")
+    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "1", guest_count: 2, status: .new, total_amount: 10.0, order_number: 1, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [mockOrderItem], payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil)
+
+    return CheckoutView(order: mockOrder, onComplete: {})
+        .environmentObject(orderManager)
+        .environmentObject(printerManager)
+        .environmentObject(localizationManager)
+        .environmentObject(SupabaseManager.shared)
+}
+#endif

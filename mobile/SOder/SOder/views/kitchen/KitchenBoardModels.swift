@@ -11,9 +11,9 @@ enum KitchenViewMode: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .statusColumns: return "Status Columns"
-        case .categoryGrid: return "Category Grid"
-        case .list: return "List View"
+        case .statusColumns: return "kitchen_view_mode_status".localized
+        case .categoryGrid: return "kitchen_view_mode_category".localized
+        case .list: return "kitchen_view_mode_list".localized
         }
     }
     
@@ -117,11 +117,11 @@ struct KitchenBoardConfig {
     
     static func colorForCategory(_ categoryName: String) -> Color {
         switch categoryName {
-        case "🥤 Drinks": return .blue
-        case "🥗 Appetizers": return .green
-        case "🍽️ Main Dishes": return .orange
-        case "🍰 Desserts": return .purple
-        default: return .gray
+        case "🥤 Drinks": return .appInfo
+        case "🥗 Appetizers": return .appSuccess
+        case "🍽️ Main Dishes": return .appWarning
+        case "🍰 Desserts": return .appPrimary
+        default: return .appTextSecondary
         }
     }
 }

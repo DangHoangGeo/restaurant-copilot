@@ -1,10 +1,10 @@
 /* 
   Localizable.strings (English)
-  SOder
+  Cooder.ai
 */
 
 // MARK: - App General
-"app_name" = "SOder";
+"app_name" = "Cooder.ai";
 "app_subtitle" = "Restaurant Order Management";
 
 // MARK: - Login Screen
@@ -34,6 +34,7 @@
 "loading" = "Loading";
 "error" = "Error";
 "success" = "Success";
+"close" = "Close";
 
 // MARK: - Order Management
 "orders" = "Orders";
@@ -46,6 +47,49 @@
 "subtotal" = "Subtotal";
 "tax" = "Tax";
 "discount" = "Discount";
+
+// MARK: - POS Interface
+"pos_search_placeholder" = "Search by name or code...";
+"pos_filter_all" = "All";
+"pos_loading_menu" = "Loading menu...";
+"pos_empty_search_format" = "No items found for '%@'";
+"pos_empty_try_different" = "Try a different search term.";
+"pos_empty_category" = "No items in this category.";
+"pos_empty_all" = "No items available.";
+"pos_done" = "Done";
+"pos_view_cart" = "View Cart";
+"pos_items_count_format" = "%d items";
+"pos_view_cart_accessibility" = "View cart with %d items, total %@";
+"pos_available" = "Available";
+"pos_out_of_stock" = "Out of stock";
+"pos_quick_add" = "Quick add";
+"pos_customize_item" = "Customize item";
+"pos_more_options" = "More options";
+"pos_menu_title" = "Menu";
+"pos_menu_subtitle" = "Select items to add to your order";
+"price_format" = "¥%.0f";
+
+// MARK: - Add Items
+"add_item_to_order" = "Add %@ to order";
+"add_items_title" = "Add Items";
+"add_items_subtitle" = "Select items to add to the order";
+"pos_add_item_error" = "Failed to add item to order";
+"pos_item_added" = "Item added successfully";
+"pos_item_customized" = "Customized item added successfully";
+"add_items_error_no_restaurant" = "Restaurant not identified";
+"add_items_error_load_failed" = "Failed to load menu items";
+
+// MARK: - Customization
+"pos_customize_title" = "Customize Item";
+"pos_size_section_title" = "Size";
+"pos_toppings_section_title" = "Toppings";
+"pos_quantity_section_title" = "Quantity";
+"pos_quantity_label" = "Quantity";
+"pos_notes_section_title" = "Notes";
+"pos_notes_placeholder" = "Special instructions...";
+"pos_total_price_label" = "Total";
+"pos_add_to_order_button" = "Add to Order";
+"pos_additional_price_format" = "+¥%.0f";
 
 // MARK: - Kitchen
 "kitchen" = "Kitchen";
@@ -82,7 +126,22 @@
 "checkout_discount_type_fixed" = "Fixed Amount";
 "checkout_price_after_discount_label" = "After Discount";
 "checkout_price_tax_label" = "Tax (%d%%)";
-"checkout_total_label" = "Total";
+"checkout_total_label" = "Total:";
+"checkout_change_label" = "Change:";
+
+// MARK: - Checkout View
+"checkout_custom_discount_placeholder" = "¥0";
+"checkout_guest_count_accessibility" = "%d guests";
+"checkout_received_amount_placeholder" = "0";
+"item_quantity_format" = "×%d";
+
+// MARK: - Checkout Accessibility
+"checkout_apply_discount_accessibility" = "Apply a discount to the order";
+"checkout_remove_discount_accessibility" = "Remove the applied discount";
+"checkout_payment_method_accessibility" = "Select %@ as payment method";
+
+// MARK: - Checkout Errors
+"checkout_error_process_failed" = "Failed to process checkout. Please try again.";
 
 // MARK: - Printer
 "printer" = "Printer";
@@ -248,6 +307,34 @@
 "server_error" = "Server error occurred";
 "unknown_error" = "Unknown error occurred";
 
+// MARK: - Error Messages (Manager Level)
+"error_not_implemented" = "This feature is not yet implemented.";
+"error_missing_restaurant_id" = "Restaurant ID is missing. Cannot perform operation.";
+"error_missing_user_id" = "User ID is missing. Cannot create order.";
+"error_item_fetch_failed" = "Failed to fetch details for menu item %@.";
+"error_order_update_failed" = "Failed to update order %@.";
+"error_order_item_update_failed" = "Failed to update order item %@.";
+"error_start_order" = "Failed to start a new order. Please try again.";
+"error_add_item" = "Failed to add the item to the order. Please try again.";
+"error_remove_item" = "Failed to remove the item from the order. Please try again.";
+"error_clear_draft" = "Failed to clear the draft order. Please try again.";
+"error_get_draft" = "Failed to retrieve draft order %@. Please try again.";
+"error_not_authenticated" = "User not authenticated. Please sign in.";
+"error_no_restaurant_id" = "No restaurant is selected. Please check your settings.";
+"error_fetch_active_orders" = "Failed to load active orders. Please check your connection and try again.";
+"error_fetch_all_orders" = "Failed to load all orders. Please check your connection and try again.";
+"error_update_item_notes" = "Failed to update item notes. Please try again.";
+"error_cancel_item" = "Failed to cancel the item. Please try again.";
+"error_update_item_status" = "Failed to update item status. Please try again.";
+"error_cancel_order_status" = "Order cannot be cancelled. Current status: %@";
+"kitchen_print_failure" = "Failed to print kitchen summary. Please check printer connection.";
+"kitchen_item_print_failure" = "Failed to print kitchen item. Please check printer connection.";
+
+// MARK: - Auto-Printing Messages
+"autoprint_success_new_order" = "✅ Auto-printed new order for %@";
+"autoprint_failure" = "❌ Auto-print failed.";
+"autoprint_success_new_item" = "✅ Auto-printed new item: %@ for %@";
+
 // MARK: - Kitchen Board Additional
 "kitchen_all" = "All";
 "kitchen_loading_data" = "Loading kitchen data...";
@@ -287,14 +374,19 @@
 // MARK: - Kitchen Empty States
 "kitchen_empty_all_caught_up" = "All Caught Up!";
 "kitchen_empty_no_items" = "No items need preparation";
-"kitchen_empty_total_orders" = "There are {count} total orders";
+"kitchen_empty_total_orders_format" = "There are %d total active orders.";
 "kitchen_empty_no_orders" = "Looks like there are no orders yet.";
+
+// MARK: - Kitchen View Modes
+"kitchen_view_mode_status" = "Status Columns";
+"kitchen_view_mode_category" = "Category Grid";
+"kitchen_view_mode_list" = "List View";
 
 // MARK: - Kitchen Status
 "kitchen_status_new_orders" = "New Orders";
 
 // MARK: - Kitchen Items Count
-"kitchen_items_count" = "{count} items";
+"kitchen_items_count_format" = "%d items";
 
 // MARK: - Kitchen Action Labels (Short)
 "kitchen_action_start" = "Start";
@@ -339,6 +431,9 @@
 "orders_filter_completed" = "Completed";
 "orders_filter_canceled" = "Canceled";
 
+// MARK: - Order Status Keys
+"order_status_draft" = "Draft";
+
 // MARK: - Orders UI
 "orders_system_message" = "System Message";
 "orders_ok" = "OK";
@@ -357,10 +452,15 @@
 "orders_id_prefix" = "ID";
 "orders_new_badge" = "NEW";
 "orders_unknown_time" = "Unknown";
-"orders_more_items" = "and {count} more...";
+"orders_more_items" = "and %d more...";
 "orders_unknown_item" = "Unknown";
+"orders_view_statistics" = "View Statistics";
+"orders_order_type_picker" = "Order Type";
 "order_items_section_title" = "Order items";
 "order_items_new_label" = "New";
+
+// MARK: - Order Detail View
+"order_detail_guest_count_accessibility" = "%d guests";
 
 // MARK: - Printer Settings View Localization
 "printer_settings_title" = "Printer Settings";
@@ -447,6 +547,68 @@
 "orders_mark_as_serving" = "Mark as Serving";
 "orders_checkout" = "Checkout";
 
+// MARK: - Order Detail View
+"order_detail_table_fallback" = "Table %d";
+"order_detail_id_label" = "ID: %@";
+"order_detail_cancel_alert_title" = "Cancel Order";
+"order_detail_cancel_button" = "Cancel Order";
+"order_detail_keep_button" = "Keep Order";
+"order_detail_cancel_alert_message" = "Are you sure you want to cancel this order? This action cannot be undone.";
+"order_detail_generic_error_message" = "An unknown error occurred. Please try again.";
+"order_detail_add_items_button" = "Add Items";
+"order_detail_add_items_accessibility" = "Add items to this order";
+"order_detail_update_status_button" = "Update Status";
+"order_detail_update_status_accessibility" = "Update the status of the order";
+"order_detail_cancel_order_button" = "Cancel Order";
+"order_detail_cancel_order_accessibility" = "Cancel this entire order";
+"orders_print_receipt_accessibility" = "Print customer receipt";
+"orders_mark_serving_accessibility" = "Mark order as currently serving";
+"orders_checkout_accessibility" = "Proceed to checkout for this order";
+
+// MARK: - Order Detail User Messages
+"order_status_update_success_message" = "Order status updated to %@.";
+"order_status_update_failure_message" = "Failed to update order status. Please try again.";
+"order_cancel_success_message" = "Order was successfully cancelled.";
+"order_cancel_failure_message" = "Failed to cancel the order. Please try again.";
+"receipt_print_success_message" = "Receipt printed successfully.";
+"receipt_print_failure_message" = "Failed to print receipt. Please check printer connection and try again.";
+
+// MARK: - Add Items View
+"add_items_title" = "Add Items";
+"add_items_subtitle_format" = "Table: %@ • Order #%d";
+"orders_unknown_table" = "Unknown Table";
+"add_items_search_placeholder" = "Search menu items...";
+"add_items_all_categories" = "All";
+"add_items_loading" = "Loading menu items...";
+"add_items_no_results_format" = "No items found for '%@'";
+"add_items_no_results_suggestion" = "Try a different search term.";
+"add_items_no_items_in_category" = "There are no items in this category.";
+"add_items_no_items_available" = "No menu items are currently available.";
+"price_format" = "¥%.0f";
+
+// MARK: - Add Items Errors
+"add_items_error_no_restaurant" = "Could not identify the restaurant. Please restart the app.";
+"add_items_error_load_failed" = "Failed to load menu data. Please check your connection and try again.";
+"add_items_error_add_failed" = "Failed to add the item to your order. Please try again.";
+
+// MARK: - Order Status Update View
+"order_status_update_button" = "Update Status";
+"order_status_update_current_status_format" = "Current: %@";
+"order_status_update_default_error" = "Failed to update status";
+"order_status_update_item_current_status_label" = "Current:";
+"order_status_update_item_quantity_format" = "Qty: %d";
+"order_status_update_item_status_picker" = "Status";
+"order_status_update_item_status_section_header" = "Individual Item Status";
+"order_status_update_new_status_picker" = "New Status";
+"order_status_update_section_header" = "Order Status";
+"order_status_update_title" = "Update Status";
+"order_status_update_unsaved_changes_warning" = "⚠️ You have unsaved changes";
+
+// MARK: - Orders View
+"orders_guest_count_accessibility" = "%d guests";
+"orders_id_format" = "ID: %@";
+"orders_table_format" = "Table %@";
+
 // MARK: - POS Flow Tab
 "tab_new_order" = "New Order";
 
@@ -460,6 +622,19 @@
 "navigate_to_draft_order" = "Navigate to Draft Order";
 "would_navigate_to_draft_order_view_for_order_%%@._items:_%%d" = "Would navigate to Draft Order View for order %@. Items: %d";
 "add_%%@_to_order" = "Add %@ to order";
+"add_item_to_order" = "Add %@ to order";
+
+// MARK: - Empty State Messages
+"empty_active_orders_title" = "No Active Orders";
+"empty_active_orders_message" = "When new orders come in, they'll appear here.";
+"empty_new_orders_title" = "No New Orders";
+"empty_new_orders_message" = "All orders are being processed.";
+"empty_serving_orders_title" = "Nothing Being Served";
+"empty_serving_orders_message" = "No orders are currently being served.";
+"empty_completed_orders_title" = "No Completed Orders";
+"empty_completed_orders_message" = "No completed orders to show.";
+"empty_canceled_orders_title" = "No Canceled Orders";
+"empty_canceled_orders_message" = "No canceled orders to show.";
 
 // MARK: - Accessibility Labels and Hints
 "accessibility_printer_language_warning" = "Warning: Print language not supported by printer";
@@ -737,3 +912,11 @@
 "tpl_phone" = "Tel";
 "tpl_official_receipt" = "OFFICIAL RECEIPT";
 "tpl_printed" = "Printed";
+
+// MARK: - Order Item Status
+"order_item_status_draft" = "Draft Item";
+"order_item_status_new" = "New";
+"order_item_status_preparing" = "Preparing";
+"order_item_status_ready" = "Ready";
+"order_item_status_served" = "Served";
+"order_item_status_cancelled" = "Cancelled";

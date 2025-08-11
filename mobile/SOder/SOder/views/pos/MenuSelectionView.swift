@@ -27,19 +27,33 @@ struct MenuSelectionView: View {
     @State private var itemToCustomize: MenuItem? = nil
     @State private var draftOrder: Order? = nil
 
-    // Filtered items based on search and category
+    // Enhanced filtered items with multi-language search support
     private var filteredItems: [MenuItem] {
         var items = menuItems
+        
+        // Filter by category
         if let categoryId = selectedCategoryId {
             items = items.filter { $0.category_id == categoryId }
         }
+        
+        // Multi-language search across names, descriptions, and code
         if !searchText.isEmpty {
             items = items.filter { item in
-                item.displayName.localizedCaseInsensitiveContains(searchText) ||
-                (item.displayDescription?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                // Search in all language names
+                item.name_en.localizedCaseInsensitiveContains(searchText) ||
+                (item.name_ja?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                (item.name_vi?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                
+                // Search in all language descriptions
+                (item.description_en?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                (item.description_ja?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                (item.description_vi?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                
+                // Search in code
                 (item.code?.localizedCaseInsensitiveContains(searchText) ?? false)
             }
         }
+        
         return items.sorted { $0.displayName < $1.displayName }
     }
 
@@ -103,8 +117,17 @@ struct MenuSelectionView: View {
             await loadInitialData()
         }
         .sheet(item: $itemToCustomize) { menuItem in
-            CustomizeMenuItemSheet(menuItemId: menuItem.id, orderId: orderId, table: table)
-                .environmentObject(orderManager)
+            CustomizeMenuItemSheet(
+                menuItem: menuItem,
+                orderId: orderId,
+                coordinator: AddToOrderCoordinator(),
+                onComplete: {
+                    itemToCustomize = nil
+                    Task {
+                        await updateDraftOrderSummary()
+                    }
+                }
+            )
         }
         .alert("error_alert_title".localized, isPresented: $showingErrorAlert) {
             Button("ok_button_title".localized) {}
@@ -122,94 +145,60 @@ struct MenuSelectionView: View {
     // MARK: - Menu List View
     private var menuListView: some View {
         VStack(spacing: 0) {
-            // Search and Filter Bar
-            VStack(spacing: 12) {
-                TextField("Search by name or code...", text: $searchText)
-                    .textFieldStyle(AppTextFieldStyle())
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-
-                // Category Filter
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        // All Categories button
-                        CategoryFilterButton(
-                            title: "All",
-                            isSelected: selectedCategoryId == nil
-                        ) {
-                            selectedCategoryId = nil
-                        }
-                        
-                        ForEach(categories) { category in
-                            CategoryFilterButton(
-                                title: category.displayName,
-                                isSelected: selectedCategoryId == category.id
-                            ) {
-                                selectedCategoryId = selectedCategoryId == category.id ? nil : category.id
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-            }
+            // Unified Search Header
+            MenuSearchHeader(
+                searchText: $searchText,
+                selectedCategoryId: $selectedCategoryId,
+                categories: categories,
+                menuItems: menuItems,
+                title: "pos_menu_title".localized,
+                subtitle: "pos_menu_subtitle".localized
+            )
             .padding()
             .background(Color.appBackground)
             
-            // Menu Items List
+            // Unified Menu Items List
             if isLoading {
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.lg) {
                     ProgressView()
                         .scaleEffect(1.2)
-                    Text("loading_menu_items_text".localized)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .tint(.appPrimary)
+                    Text("pos_loading_menu".localized)
+                        .font(.bodyMedium)
+                        .foregroundColor(.appTextSecondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if filteredItems.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 50))
-                        .foregroundColor(Color.appPrimary.opacity(0.6))
-                    
-                    if !searchText.isEmpty {
-                        Text("no_items_found_for_search_text".localized + "'\(searchText)'")
-                            .font(.title3)
-                            .fontWeight(.medium)
-                        Text("try_different_search_term_text".localized)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    } else if selectedCategoryId != nil {
-                        Text("no_items_in_category_text".localized)
-                            .font(.title3)
-                            .fontWeight(.medium)
-                    } else {
-                        Text("no_menu_items_available_text".localized)
-                            .font(.title3)
-                            .fontWeight(.medium)
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.appBackground)
             } else {
-                List {
-                    // Use LazyVStack for menu items list for performance and design system compliance
-                    LazyVStack(spacing: 8) {
-                        ForEach(filteredItems) { item in
-                            MenuItemRowView(
-                                item: item,
-                                onAdd: { Task { await addItemQuick(item) } },
-                                onCustomize: { itemToCustomize = item }
-                            )
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
+                MenuItemsList(
+                    menuItems: filteredItems,
+                    categories: categories,
+                    searchText: searchText,
+                    showCategoryHeaders: true,
+                    isAddingItem: isAddingItem,
+                    onItemTap: { item in
+                        // For new orders, show customization if available
+                        if hasCustomizationOptions(item) {
+                            itemToCustomize = item
+                        } else {
+                            Task { await addItemQuick(item) }
                         }
+                    },
+                    onQuickAdd: { item in
+                        Task { await addItemQuick(item) }
+                    },
+                    onCustomize: { item in
+                        itemToCustomize = item
                     }
-                }
-                .listStyle(PlainListStyle())
-                .scrollContentBackground(.hidden)
+                )
             }
         }
         .background(Color.appSurface)
+    }
+    
+    // Helper to check if item has customization options
+    private func hasCustomizationOptions(_ item: MenuItem) -> Bool {
+        return (item.availableSizes?.isEmpty == false) || (item.availableToppings?.isEmpty == false)
     }
 
     // MARK: - Add Item Quick
@@ -395,164 +384,6 @@ struct DraggableCartSheet<Content: View>: View {
     }
 }
 
-// MARK: - New sheet view for customization
-struct CustomizeMenuItemSheet: View {
-    let menuItemId: String
-    let orderId: String
-    let table: Table
-    @EnvironmentObject var orderManager: OrderManager
-    @EnvironmentObject var supabaseManager: SupabaseManager
-    @Environment(\.dismiss) var dismiss
-    @State private var menuItem: MenuItem? = nil
-    @State private var isLoading: Bool = true
-    @State private var errorMessage: String? = nil
-    @State private var selectedSize: MenuItemSize? = nil
-    @State private var selectedToppings: Set<ToppingId> = Set()
-    @State private var quantity: Int = 1
-    @State private var notes: String = ""
-    @State private var isAddingItem = false
-    @State private var showingErrorAlert = false
-
-    var priceForOneItemWithOptions: Double {
-        guard let menuItem = menuItem else { return 0 }
-        var currentItemPrice = menuItem.price
-        if let size = selectedSize {
-            currentItemPrice += size.price
-        }
-        for toppingId in selectedToppings {
-            if let topping = menuItem.availableToppings?.first(where: { $0.id == toppingId }) {
-                currentItemPrice += topping.price
-            }
-        }
-        return currentItemPrice
-    }
-
-    var currentLineItemTotalPrice: Double {
-        priceForOneItemWithOptions * Double(quantity)
-    }
-
-    var body: some View {
-        NavigationView {
-            if isLoading {
-                ProgressView("loading_menu_item_details_text".localized)
-            } else if let menuItem = menuItem {
-                Form {
-                    if let sizes = menuItem.availableSizes, !sizes.isEmpty {
-                        Section(header: Text("size_section_title".localized)) {
-                            Picker("size_picker_label".localized, selection: $selectedSize) {
-                                ForEach(sizes) { size in
-                                    Text(size.displayName).tag(Optional(size))
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                        }
-                    }
-                    if let toppings = menuItem.availableToppings, !toppings.isEmpty {
-                        Section(header: Text("toppings_section_title".localized)) {
-                            ForEach(toppings) { topping in
-                                Toggle(isOn: Binding(
-                                    get: { selectedToppings.contains(topping.id) },
-                                    set: { checked in
-                                        if checked { selectedToppings.insert(topping.id) } else { selectedToppings.remove(topping.id) }
-                                    }
-                                )) {
-                                    Text(topping.displayName)
-                                }
-                            }
-                        }
-                    }
-                    Section(header: Text("quantity_section_title".localized)) {
-                        Stepper(value: $quantity, in: 1...99) {
-                            Text("quantity_label".localized + ": \(quantity)")
-                        }
-                    }
-                    Section(header: Text("notes_section_title".localized)) {
-                        TextField("notes_placeholder".localized, text: $notes)
-                    }
-                    Section(header: Text("total_price_section_title".localized)) {
-                        Text(String(format: "%.0f円", currentLineItemTotalPrice))
-                            .font(.title3)
-                            .fontWeight(.bold)
-                    }
-                    Section {
-                        Button(action: { Task { await addItemToOrder(menuItem) } }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                Text("add_to_order_button_title".localized)
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(isAddingItem)
-                        .accessibilityLabel("add_to_order_accessibility_label".localized)
-                    }
-                }
-            } else {
-                Text("error_loading_menu_item_details_text".localized)
-            }
-        }
-        .onAppear {
-            Task { await loadMenuItemDetails() }
-        }
-        .alert("error_alert_title".localized, isPresented: $showingErrorAlert) {
-            Button("ok_button_title".localized) {}
-        } message: {
-            Text(errorMessage ?? "error_alert_default_message".localized)
-        }
-    }
-
-    private func loadMenuItemDetails() async {
-        isLoading = true
-        do {
-            menuItem = try await supabaseManager.fetchMenuItemDetails(menuItemId: menuItemId)
-        } catch {
-            errorMessage = error.localizedDescription
-            showingErrorAlert = true
-        }
-        isLoading = false
-    }
-
-    private func addItemToOrder(_ menuItem: MenuItem) async {
-        isAddingItem = true
-        do {
-            let sizeId = selectedSize?.id
-            let toppingIds = Array(selectedToppings)
-            let price = priceForOneItemWithOptions
-            
-            // Check if this is a local draft order or existing database order
-            if orderManager.localDraftOrders[orderId] != nil {
-                // Local draft order - use local method
-                _ = try await orderManager.addItemToLocalDraftOrder(
-                    orderId: orderId,
-                    menuItemId: menuItem.id,
-                    quantity: quantity,
-                    notes: notes.isEmpty ? nil : notes,
-                    selectedSizeId: sizeId,
-                    selectedToppingIds: toppingIds.isEmpty ? nil : toppingIds,
-                    priceAtOrder: price,
-                    menuItem: menuItem
-                )
-            } else {
-                // Existing database order - use database method
-                _ = try await orderManager.addItemToDraftOrder(
-                    orderId: orderId,
-                    menuItemId: menuItem.id,
-                    quantity: quantity,
-                    notes: notes.isEmpty ? nil : notes,
-                    selectedSizeId: sizeId,
-                    selectedToppingIds: toppingIds.isEmpty ? nil : toppingIds,
-                    priceAtOrder: price
-                )
-            }
-            
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
-            showingErrorAlert = true
-        }
-        isAddingItem = false
-    }
-}
 
 // MARK: - Preview
 

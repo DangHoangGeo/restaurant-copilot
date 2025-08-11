@@ -20,79 +20,191 @@ struct OrderStatusUpdateView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Order Status")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Current: \(order.status.displayName)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Picker("New Status", selection: $newOrderStatus) {
-                            ForEach(OrderStatus.allCases, id: \.self) { status in
-                                HStack {
-                                    Circle()
-                                        .fill(Color(status.color))
-                                        .frame(width: 12, height: 12)
-                                    Text(status.displayName)
+            ScrollView {
+                VStack(spacing: Spacing.lg) {
+                    // Enhanced Order Header
+                    VStack(spacing: Spacing.md) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text(order.table?.name ?? "Table \(order.table_id)")
+                                    .font(.cardTitle)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.appTextPrimary)
+                                
+                                HStack(spacing: Spacing.md) {
+                                    Label("\(order.guest_count ?? 1)", systemImage: "person.2.fill")
+                                        .font(.captionRegular)
+                                        .foregroundColor(.appTextTertiary)
+                                    
+                                    Label("ID: \(String(order.id.prefix(6).uppercased()))", systemImage: "number")
+                                        .font(.captionRegular)
+                                        .foregroundColor(.appTextTertiary)
                                 }
-                                .tag(status)
                             }
-                        }
-                        .pickerStyle(.menu)
-                        .onChange(of: newOrderStatus) { _, _ in
-                            hasChanges = true
+                            Spacer()
+                            EnhancedStatusBadge(status: order.status)
                         }
                     }
-                }
-                
-                if let orderItems = order.order_items, !orderItems.isEmpty {
-                    Section(header: Text("Individual Item Status")) {
-                        ForEach(orderItems) { item in
-                            orderItemStatusRow(item)
-                        }
-                    }
-                }
-                
-                Section {
-                    VStack(spacing: 12) {
-                        if hasChanges {
-                            Text("⚠️ You have unsaved changes")
-                                .font(.caption)
-                                .foregroundColor(.orange)
+                    .elevatedCardStyle()
+                    
+                    // Enhanced Order Status Section
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        HStack {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.title3)
+                                .foregroundColor(.appPrimary)
+                            Text("order_status_update_section_header".localized)
+                                .font(.sectionHeader)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.appTextPrimary)
+                            Spacer()
                         }
                         
-                        Button {
-                            Task { await updateStatuses() }
-                        } label: {
+                        VStack(spacing: Spacing.sm) {
                             HStack {
-                                if isUpdating {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                        .padding(.trailing, 4)
-                                }
-                                Image(systemName: "checkmark.circle.fill")
-                                Text("Update Status")
+                                Text("order_status_update_current_status_label".localized)
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appTextSecondary)
+                                Spacer()
+                                EnhancedStatusBadge(status: order.status)
                             }
-                            .frame(maxWidth: .infinity)
+                            
+                            Divider()
+                            
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text("order_status_update_new_status_label".localized)
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appTextSecondary)
+                                
+                                Menu {
+                                    ForEach(OrderStatus.allCases, id: \.self) { status in
+                                        Button(action: { 
+                                            newOrderStatus = status
+                                            hasChanges = true
+                                        }) {
+                                            HStack {
+                                                Circle()
+                                                    .fill(statusColor(for: status))
+                                                    .frame(width: 12, height: 12)
+                                                Text(status.displayName)
+                                                Spacer()
+                                                if newOrderStatus == status {
+                                                    Image(systemName: "checkmark")
+                                                        .foregroundColor(.appPrimary)
+                                                }
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    HStack {
+                                        Circle()
+                                            .fill(statusColor(for: newOrderStatus))
+                                            .frame(width: 16, height: 16)
+                                        Text(newOrderStatus.displayName)
+                                            .font(.bodyMedium)
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.appTextPrimary)
+                                        Spacer()
+                                        Image(systemName: "chevron.down")
+                                            .font(.captionRegular)
+                                            .foregroundColor(.appTextSecondary)
+                                    }
+                                    .padding()
+                                    .background(Color.appSurfaceSecondary)
+                                    .cornerRadius(CornerRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: CornerRadius.md)
+                                            .stroke(Color.appBorderLight, lineWidth: 1)
+                                    )
+                                }
+                            }
                         }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!hasChanges || isUpdating)
                     }
+                    .elevatedCardStyle()
+                    
+                    // Enhanced Individual Items Section
+                    if let orderItems = order.order_items, !orderItems.isEmpty {
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            HStack {
+                                Image(systemName: "list.bullet.circle")
+                                    .font(.title3)
+                                    .foregroundColor(.appPrimary)
+                                Text("order_status_update_item_status_section_header".localized)
+                                    .font(.sectionHeader)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.appTextPrimary)
+                                Spacer()
+                                Text("(\(orderItems.count))")
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appTextSecondary)
+                            }
+                            
+                            VStack(spacing: Spacing.sm) {
+                                ForEach(orderItems) { item in
+                                    enhancedOrderItemStatusRow(item)
+                                }
+                            }
+                        }
+                        .elevatedCardStyle()
+                    }
+                    
+                    // Enhanced Action Section
+                    VStack(spacing: Spacing.md) {
+                        if hasChanges {
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.appWarning)
+                                Text("order_status_update_unsaved_changes_warning".localized)
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appWarning)
+                                Spacer()
+                            }
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xs)
+                            .background(Color.appWarningLight)
+                            .cornerRadius(CornerRadius.sm)
+                        }
+                        
+                        Button { Task { await updateStatuses() } } label: {
+                            HStack {
+                                if isUpdating { 
+                                    ProgressView()
+                                        .scaleEffect(0.9)
+                                        .padding(.trailing, 4) 
+                                } else { 
+                                    Image(systemName: "checkmark.circle.fill") 
+                                }
+                                Text(isUpdating ? "order_status_update_updating".localized : "order_status_update_button".localized)
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                        .buttonStyle(PrimaryButtonStyle(isEnabled: hasChanges && !isUpdating))
+                        .disabled(!hasChanges || isUpdating)
+                        
+                        if !hasChanges {
+                            Text("order_status_update_disabled_hint".localized)
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextTertiary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .padding()
                 }
+                .padding()
             }
-            .navigationTitle("Update Status")
+            .background(Color.appBackground)
+            .navigationTitle("order_status_update_title".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
+                    Button("cancel".localized) { dismiss() }
+                        .foregroundColor(.appTextSecondary)
                 }
             }
-            .alert("Error", isPresented: $showingErrorAlert) {
-                Button("OK") {}
+            .alert("error".localized, isPresented: $showingErrorAlert) {
+                Button("ok".localized) {}
             } message: {
-                Text(errorMessage ?? "Failed to update status")
+                Text(errorMessage ?? "order_status_update_default_error".localized)
             }
         }
         .onAppear {
@@ -100,55 +212,110 @@ struct OrderStatusUpdateView: View {
         }
     }
     
-    private func orderItemStatusRow(_ item: OrderItem) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private func enhancedOrderItemStatusRow(_ item: OrderItem) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.menu_item?.displayName ?? "Unknown Item")
-                        .font(.headline)
+                // Quantity badge
+                Text("\(item.quantity)")
+                    .font(.captionBold)
+                    .foregroundColor(.appTextSecondary)
+                    .frame(width: 24, height: 24)
+                    .background(Circle().fill(Color.appSurfaceSecondary))
+                
+                // Item info
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
+                        .font(.bodyMedium)
+                        .fontWeight(.medium)
+                        .foregroundColor(.appTextPrimary)
                     
-                    Text("Qty: \(item.quantity)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if let code = item.menu_item?.code, !code.isEmpty {
+                        Text(code)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextTertiary)
+                    }
                 }
                 
                 Spacer()
                 
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("Current:")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(item.status.displayName)
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color(item.status.color).opacity(0.2))
-                        .foregroundColor(Color(item.status.color))
-                        .cornerRadius(4)
-                }
+                // Current status
+                OrderItemStatusBadge(status: item.status)
             }
             
-            Picker("Status", selection: Binding(
-                get: { itemStatusUpdates[item.id] ?? item.status },
-                set: { newStatus in
-                    itemStatusUpdates[item.id] = newStatus
-                    hasChanges = true
-                }
-            )) {
-                ForEach(OrderItemStatus.allCases, id: \.self) { status in
-                    HStack {
-                        Circle()
-                            .fill(Color(status.color))
-                            .frame(width: 10, height: 10)
-                        Text(status.displayName)
+            // Status picker with enhanced design
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("order_status_update_item_new_status_label".localized)
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextSecondary)
+                
+                Menu {
+                    ForEach(OrderItemStatus.allCases, id: \.self) { status in
+                        Button(action: { 
+                            itemStatusUpdates[item.id] = status
+                            hasChanges = true
+                        }) {
+                            HStack {
+                                Circle()
+                                    .fill(itemStatusColor(for: status))
+                                    .frame(width: 12, height: 12)
+                                Text(status.displayName)
+                                Spacer()
+                                if (itemStatusUpdates[item.id] ?? item.status) == status {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.appPrimary)
+                                }
+                            }
+                        }
                     }
-                    .tag(status)
+                } label: {
+                    HStack {
+                        let currentStatus = itemStatusUpdates[item.id] ?? item.status
+                        Circle()
+                            .fill(itemStatusColor(for: currentStatus))
+                            .frame(width: 14, height: 14)
+                        Text(currentStatus.displayName)
+                            .font(.captionBold)
+                            .foregroundColor(.appTextPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .font(.caption2)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Color.appSurfaceSecondary)
+                    .cornerRadius(CornerRadius.sm)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.sm)
+                            .stroke(Color.appBorderLight, lineWidth: 0.5)
+                    )
                 }
             }
-            .pickerStyle(.menu)
         }
-        .padding(.vertical, 4)
+        .padding(Spacing.sm)
+        .background(Color.appSurfaceSecondary)
+        .cornerRadius(CornerRadius.sm)
+    }
+    
+    private func statusColor(for status: OrderStatus) -> Color {
+        switch status {
+        case .draft: return .appTextSecondary
+        case .new: return .appInfo
+        case .serving: return .appWarning
+        case .completed: return .appSuccess
+        case .canceled: return .appError
+        }
+    }
+    
+    private func itemStatusColor(for status: OrderItemStatus) -> Color {
+        switch status {
+        case .draft: return .appTextSecondary
+        case .new: return .appInfo
+        case .preparing: return .appWarning
+        case .ready: return .appSuccess
+        case .served: return .appTextSecondary
+        case .cancelled: return .appError
+        }
     }
     
     private func initializeItemStatuses() {
