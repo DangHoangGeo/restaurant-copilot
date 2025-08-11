@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { getLocalizedText } from '@/lib/utils';
+import { fetchCategoriesWithIncludes, extractErrorMessage } from '@/lib/utils/api';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -384,20 +385,10 @@ export function MenuClientContent() {
         setIsInitialLoading(true);
         setError(null);
         
-        const response = await fetch('/api/v1/owner/categories', {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include', // Include cookies for authentication
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Failed to fetch categories');
-        }
-
-        const { categories } = await response.json();
-        setMenuData(categories || []);
+        // Use the new API with explicit includes for better performance and flexibility
+        // This approach allows for future pagination and selective data loading
+        const categories = await fetchCategoriesWithIncludes();
+        setMenuData(categories);
       } catch (error) {
         console.error('Error loading menu data:', error);
         setError(error instanceof Error ? error.message : 'Failed to load menu data');
@@ -412,15 +403,8 @@ export function MenuClientContent() {
   // Reload data after mutations
   const reloadData = async () => {
     try {
-      const response = await fetch('/api/v1/owner/categories', {
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const { categories } = await response.json();
-        setMenuData(categories || []);
-      }
+      const categories = await fetchCategoriesWithIncludes();
+      setMenuData(categories);
     } catch (error) {
       console.error('Error reloading data:', error);
     }
@@ -658,7 +642,9 @@ export function MenuClientContent() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save category');
+        // Handle both new API error format and legacy format
+        const errorMessage = extractErrorMessage(errorData, 'Failed to save category');
+        throw new Error(errorMessage);
       }
 
       toast.success(data.id ? t('category.update_success') : t('category.create_success'));
@@ -666,7 +652,7 @@ export function MenuClientContent() {
       await reloadData();
     } catch (error) {
       console.error('Error saving category:', error);
-      toast.error(t('category.save_error'));
+      toast.error(error instanceof Error ? error.message : t('category.save_error'));
     } finally {
       setIsLoading(false);
     }
@@ -714,7 +700,9 @@ export function MenuClientContent() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || t('category.delete_error_fallback'));
+        // Handle both new API error format and legacy format
+        const errorMessage = extractErrorMessage(errorData, t('category.delete_error_fallback'));
+        throw new Error(errorMessage);
       }
       toast.success(t('category.delete_success'));
       await reloadData();

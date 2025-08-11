@@ -101,8 +101,8 @@ struct KitchenHeaderView: View {
     let onPrintSummary: () -> Void
     let onSignOut: () -> Void
     
-    // Add orderManager to access auto-printing controls
-    @ObservedObject var orderManager: OrderManager
+    // Access orderManager via EnvironmentObject as per app rules
+    @EnvironmentObject var orderManager: OrderManager
     
     var body: some View {
         VStack(spacing: 8) {
@@ -239,3 +239,25 @@ struct KitchenHeaderView: View {
         return 0 // Placeholder - should be computed from groupedByCategory
     }
 }
+
+#if DEBUG
+#Preview {
+    // Mock Environment Objects
+    let orderManager = OrderManager.shared
+    let printerManager = PrinterManager.shared
+    let localizationManager = LocalizationManager.shared
+
+    // Populate with mock data for preview
+    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Đồ uống", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Cà phê nóng", price: 5.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 5.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let mockGroupedItem = GroupedItem(itemId: "1", itemName: "Coffee", quantity: 2, tables: ["Table 1"], orderItems: [mockOrderItem], categoryName: "Drinks", notes: "Extra hot", orderTime: Date(), priority: 1, status: .new)
+    let mockCategoryGroup = CategoryGroup(categoryName: "Drinks", items: [mockGroupedItem])
+
+    return KitchenItemsListView(groupedByCategory: [mockCategoryGroup], selectedCategoryFilter: "All", orderCount: 1, viewMode: .list, onItemStatusTap: { _ in }, onItemDetailTap: { _ in })
+        .environmentObject(orderManager)
+        .environmentObject(printerManager)
+        .environmentObject(localizationManager)
+        .environmentObject(SupabaseManager.shared)
+}
+#endif

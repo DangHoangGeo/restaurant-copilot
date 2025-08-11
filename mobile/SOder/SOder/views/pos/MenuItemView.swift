@@ -22,16 +22,37 @@ struct MenuItemView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading items for \(category.displayName)...")
+                VStack(spacing: Spacing.md) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("loading_items_for_%@...".localized(with: category.displayName))
+                        .font(.bodyMedium)
+                        .foregroundColor(.appTextSecondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if menuItems.isEmpty {
-                Text("No menu items found in \(category.displayName).")
-                    .foregroundColor(.secondary)
+                VStack(spacing: Spacing.md) {
+                    Image(systemName: "tray")
+                        .font(.system(size: 50))
+                        .foregroundColor(.appTextSecondary)
+                    Text("no_menu_items_found_in_%@.".localized(with: category.displayName))
+                        .font(.sectionHeader)
+                        .foregroundColor(.appTextPrimary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
                     ForEach(menuItems) { item in
-                        menuItemRow(for: item)
+                        MenuItemRowCompact(menuItem: item) {
+                            print("Selected item: \(item.displayName)")
+                            selectedMenuItem = item
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
                     }
                 }
+                .listStyle(PlainListStyle())
             }
         }
         .navigationTitle(category.displayName)
@@ -45,16 +66,16 @@ struct MenuItemView: View {
                         Image(systemName: "cart")
                         if draftOrderItemsCount > 0 {
                             Text("\(draftOrderItemsCount)")
-                                .font(.caption2)
-                                .padding(5)
-                                .background(Color.red)
+                                .font(.captionBold)
+                                .padding(Spacing.xs)
+                                .background(Color.appError)
                                 .clipShape(Circle())
-                                .foregroundColor(.white)
+                                .foregroundColor(.appSurface)
                                 .offset(x: -5, y: -5)
                         }
                     }
                 }
-                .accessibilityLabel(draftOrderItemsCount > 0 ? "View draft order, \(draftOrderItemsCount) items" : "View draft order, empty")
+                .accessibilityLabel(draftOrderItemsCount > 0 ? "view_draft_order_,_%%d_items".localized(with: draftOrderItemsCount) : "view_draft_order,_empty".localized)
             }
         }
         .task {
@@ -71,45 +92,13 @@ struct MenuItemView: View {
             }
         }
         // Alert for data fetching errors
-        .alert("Error", isPresented: $showingErrorAlert) {
-            Button("OK") {}
+        .alert("error_alert_title".localized, isPresented: $showingErrorAlert) {
+            Button("ok_button_title".localized) {}
         } message: {
-            Text(errorMessage ?? "An unknown error occurred.")
+            Text(errorMessage ?? "error_alert_default_message".localized)
         }
     }
 
-    @ViewBuilder
-    private func menuItemRow(for item: MenuItem) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.displayName)
-                    .font(.headline)
-                if let description = item.displayDescription, !description.isEmpty {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .lineLimit(2)
-                }
-                Text(String(format: "%.0f%@", item.price, "円")) // Assuming JPY for now, adapt as needed
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-            }
-
-            Spacer()
-
-            Button(action: {
-                print("Selected item: \(item.displayName)")
-                selectedMenuItem = item
-            }) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.title2)
-                    .foregroundColor(.blue)
-            }
-            .buttonStyle(BorderlessButtonStyle()) // To ensure it doesn't interfere with List row tap if any
-            .accessibilityLabel("Add \(item.displayName) to order")
-        }
-        .padding(.vertical, 8)
-    }
 
     @MainActor
     private func loadInitialData() async {
@@ -120,7 +109,7 @@ struct MenuItemView: View {
             // Ensure SupabaseManager has a valid restaurant ID before fetching
             // (fetchMenuItems in SupabaseManager already checks this, but good practice)
             guard supabaseManager.currentRestaurantId != nil else {
-                self.errorMessage = "Restaurant not identified for fetching menu items."
+                self.errorMessage = "add_items_error_no_restaurant".localized
                 self.showingErrorAlert = true
                 self.isLoading = false
                 self.menuItems = []
@@ -129,7 +118,7 @@ struct MenuItemView: View {
             self.menuItems = try await supabaseManager.fetchMenuItems(categoryId: category.id)
         } catch {
             print("Error fetching menu items for category \(category.id): \(error.localizedDescription)")
-            self.errorMessage = "Failed to load menu items: \(error.localizedDescription)"
+            self.errorMessage = "add_items_error_load_failed".localized
             self.showingErrorAlert = true
             self.menuItems = [] // Clear items on error
         }

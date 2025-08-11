@@ -100,7 +100,7 @@ export const categoriesGetQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int()
     .min(VALIDATION_LIMITS.MIN_PAGE_SIZE)
-    .max(50) // Categories have lower limit
+    .max(200) // Allow higher limit for categories to support "get all" use case
     .default(VALIDATION_LIMITS.DEFAULT_PAGE_SIZE),
   include: z.string().optional().transform((val) => 
     val ? val.split(',').map(s => s.trim()) : []

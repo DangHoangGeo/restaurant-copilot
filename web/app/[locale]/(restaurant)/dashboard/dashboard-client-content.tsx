@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { StatCard } from '@/components/features/admin/dashboard/StatCard';
 import { MobileStatsCards } from '@/components/features/admin/dashboard/MobileStatsCards';
 import { QuickActions } from '@/components/features/admin/dashboard/QuickActions';
 import { RecentOrdersTable, RecentOrder } from '@/components/features/admin/dashboard/RecentOrdersTable';
 import { PopularItemsList, PopularItem } from '@/components/features/admin/dashboard/PopularItemsList';
-import { SalesOverTimeChart, SalesDataPoint } from '@/components/features/admin/dashboard/SalesOverTimeChart';
 import { LowStockAlerts, LowStockItem } from '@/components/features/admin/dashboard/LowStockAlerts';
+import { ChartSkeleton } from '@/components/ui/skeletons/chart-skeleton';
 import { DollarSign, ShoppingCart, TrendingUp, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +23,16 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
 // Define the dashboard metrics interface
+import { SalesDataPoint } from '@/components/features/admin/dashboard/SalesOverTimeChart';
+
+const SalesOverTimeChart = dynamic(
+  () => import('@/components/features/admin/dashboard/SalesOverTimeChart').then(mod => mod.SalesOverTimeChart),
+  {
+    ssr: false,
+    loading: () => <ChartSkeleton />,
+  }
+);
+
 export interface DashboardData {
   todaySales: number;
   activeOrdersCount: number;

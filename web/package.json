@@ -36,6 +36,8 @@
     "@types/qrcode": "^1.5.5",
     "@types/uuid": "^10.0.0",
     "@vercel/analytics": "^1.5.0",
+    "@upstash/ratelimit": "^2.0.6",
+    "@upstash/redis": "^1.35.3",
     "autoprefixer": "^10.4.21",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
@@ -86,6 +88,12 @@
     "prettier": "^3.5.3",
     "tailwindcss": "^4.1.8",
     "tw-animate-css": "^1.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
+    "ts-jest": "^29.4.1"
   }
 }

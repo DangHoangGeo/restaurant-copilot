@@ -51,7 +51,7 @@ This is the most important rule for our UI.
 -   **Golden Rule**: **NO** user-facing text is allowed to be hardcoded in the Views. You cannot write `Text("Hello World")`.
 
 -   **The Correct Process**:
-    1.  Open the file: `mobile/SOder/SOder/resources/en.lproj/Localizable.strings`.
+    1.  Open the file: `mobile/SOder/SOder/localization/en.lproj/Localizable.strings`.
     2.  Find a key that matches what you need.
     3.  If a key does not exist, **add a new one**. For example:
         ```
