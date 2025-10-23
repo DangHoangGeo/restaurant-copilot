@@ -44,7 +44,7 @@
 7. 032_platform_admin_rls_policies.sql - Cross-tenant RLS policies and audit logging
 
 
-### Phase 1 – API surface (Next.js App Router)
+### Phase 1 – API surface (Next.js App Router) [x]
 - Namespace under `web/app/api/v1/platform/*`.  
   - `GET /restaurants`: filter by status/trial/plan/search.  
   - `PATCH /restaurants/:id/verify`: mark verified, optional welcome email trigger.  
