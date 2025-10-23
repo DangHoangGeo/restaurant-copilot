@@ -9,13 +9,13 @@ struct CategoryFilterChip: View {
     let color: Color
     let action: () -> Void
     @EnvironmentObject private var localizationManager: LocalizationManager
-    
+
     var body: some View {
         Button(action: action) {
             HStack {            Text(title)
                 .font(.captionBold)
                 .fontWeight(.medium)
-                
+
                 if count > 0 {
                     Text("\(count)")
                         .font(.captionBold)
@@ -31,6 +31,22 @@ struct CategoryFilterChip: View {
             .background(isSelected ? color.opacity(0.8) : Color.appSurface)
             .foregroundColor(isSelected ? .white : .appTextPrimary)
             .cornerRadius(CornerRadius.md)
+        }
+        .accessibilityLabel(accessibilityLabelText)
+        .accessibilityValue(accessibilityValueText)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint("kitchen_category_filter_hint".localized)
+    }
+
+    private var accessibilityLabelText: String {
+        return title
+    }
+
+    private var accessibilityValueText: String {
+        if count > 0 {
+            return String(format: "kitchen_category_count_format".localized, count)
+        } else {
+            return "kitchen_category_no_items".localized
         }
     }
 }
@@ -870,24 +886,24 @@ struct HorizontalKitchenItemCard: View {
     private var timeColor: Color {
         let interval = Date().timeIntervalSince(item.orderTime)
         let minutes = Int(interval / 60)
-        
+
         if minutes < 10 {
-            return .green
+            return .appSuccess
         } else if minutes < 20 {
-            return .orange
+            return .appWarning
         } else {
-            return .red
+            return .appError
         }
     }
-    
+
     private var statusColor: Color {
         switch item.status {
-        case .draft: return .gray
-        case .new: return .blue
-        case .preparing: return .orange
-        case .ready: return .green
-        case .served: return .gray
-		case .cancelled: return .red
+        case .draft: return .appTextSecondary
+        case .new: return .appInfo
+        case .preparing: return .appWarning
+        case .ready: return .appSuccess
+        case .served: return .appTextSecondary
+		case .cancelled: return .appError
         }
     }
     
@@ -915,7 +931,7 @@ struct HorizontalKitchenItemCard: View {
     
     private var priorityBorderColor: Color {
         if item.priority >= KitchenBoardConfig.urgentThreshold {
-            return .red
+            return .appError
         } else {
             return statusColor.opacity(0.3)
         }

@@ -413,6 +413,11 @@
 "kitchen_status_preparing" = "Preparing";
 "kitchen_status_ready" = "Ready";
 
+// Kitchen Category Filter Accessibility
+"kitchen_category_filter_hint" = "Double tap to filter by this category";
+"kitchen_category_count_format" = "%d items";
+"kitchen_category_no_items" = "No items";
+
 // Empty State
 "kitchen_empty_title" = "All caught up!";
 "kitchen_empty_subtitle" = "No items need preparation";
@@ -802,6 +807,28 @@
 "delete_printer_title" = "Delete Printer";
 "delete_printer_message" = "Are you sure you want to delete this printer configuration?";
 "no_printers_configured" = "No printers configured.";
+
+// Printer Settings View - Quick Setup Section
+"printer_quick_setup_title" = "Quick Setup";
+"printer_quick_setup_button" = "Printer Setup";
+"printer_quick_setup_subtitle" = "Configure printers, receipts, and settings";
+"printer_quick_setup_view_manage" = "View and manage print jobs";
+"printer_setup_complete" = "Setup Complete";
+"printer_setup_needs_setup" = "Needs Setup";
+"printer_setup_get_started" = "Get Started";
+
+// Printer Settings View - Current Configuration Section
+"printer_current_config_title" = "Current Configuration";
+"printer_current_config_mode" = "Printer Mode:";
+"printer_current_config_kitchen" = "Kitchen Printer:";
+"printer_current_config_checkout" = "Checkout Printer:";
+"printer_current_config_active" = "Active Printer:";
+"printer_current_config_language" = "Print Language:";
+"printer_current_config_not_set" = "Not set";
+
+// Printer Settings View - Sections
+"printer_printing_format_title" = "Printing Format";
+"printer_print_queue_title" = "Print Queue";
 "using_default_placeholder_printer" = "Using a default placeholder printer. Add a printer to save and edit settings.";
 "set_active" = "Set Active";
 "assign_to_kitchen" = "Assign to Kitchen";

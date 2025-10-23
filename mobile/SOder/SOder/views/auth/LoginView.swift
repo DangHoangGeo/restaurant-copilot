@@ -13,9 +13,22 @@ struct LoginView: View {
     @State private var showLanguageSelector = false
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color.appBackground.ignoresSafeArea()
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                contentView
+            }
+        } else {
+            NavigationView {
+                contentView
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+        }
+    }
+
+    private var contentView: some View {
+        ZStack {
+            Color.appBackground.ignoresSafeArea()
+            ScrollView {
                 VStack(spacing: 24) {
                     // Language Selector
                     HStack {
@@ -120,23 +133,25 @@ struct LoginView: View {
                         .foregroundColor(.appTextSecondary)
                         .padding(.bottom, 20)
                 }
+                .frame(maxHeight: .infinity)
             }
-            .navigationBarHidden(true)
-            .alert("login_error".localized, isPresented: $showError) {
-                Button("ok".localized) { }
-            } message: {
-                Text(errorMessage)
-            }
-            .sheet(isPresented: $showLanguageSelector) {
-                LanguageSelectorView()
-                    .environmentObject(localizationManager)
-            }
-            .onAppear {
-                // Load previously used credentials for convenience
-                subdomain = UserDefaults.standard.string(forKey: "lastSubdomain") ?? ""
-                email = UserDefaults.standard.string(forKey: "lastEmail") ?? ""
-                loadCredentials()
-            }
+            .scrollDismissesKeyboard(.interactively)
+        }
+        .navigationBarHidden(true)
+        .alert("login_error".localized, isPresented: $showError) {
+            Button("ok".localized) { }
+        } message: {
+            Text(errorMessage)
+        }
+        .sheet(isPresented: $showLanguageSelector) {
+            LanguageSelectorView()
+                .environmentObject(localizationManager)
+        }
+        .onAppear {
+            // Load previously used credentials for convenience
+            subdomain = UserDefaults.standard.string(forKey: "lastSubdomain") ?? ""
+            email = UserDefaults.standard.string(forKey: "lastEmail") ?? ""
+            loadCredentials()
         }
     }
     

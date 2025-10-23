@@ -413,6 +413,11 @@
 "kitchen_status_preparing" = "Đang Chuẩn bị";
 "kitchen_status_ready" = "Sẵn sàng";
 
+// Kitchen Category Filter Accessibility
+"kitchen_category_filter_hint" = "Nhấn đúp để lọc theo danh mục này";
+"kitchen_category_count_format" = "%d món";
+"kitchen_category_no_items" = "Không có món";
+
 // Empty State
 "kitchen_empty_title" = "Đã hoàn tất!";
 "kitchen_empty_subtitle" = "Không có món nào cần chuẩn bị";
@@ -789,6 +794,29 @@
 "delete_printer_title" = "Xóa Máy in";
 "delete_printer_message" = "Bạn có chắc chắn muốn xóa cấu hình máy in này không?";
 "no_printers_configured" = "Chưa có máy in nào được cấu hình.";
+
+// Printer Settings View - Quick Setup Section
+"printer_quick_setup_title" = "Thiết lập Nhanh";
+"printer_quick_setup_button" = "Thiết lập Máy in";
+"printer_quick_setup_subtitle" = "Cấu hình máy in, hóa đơn và cài đặt";
+"printer_quick_setup_view_manage" = "Xem và quản lý công việc in";
+"printer_setup_complete" = "Thiết lập Hoàn tất";
+"printer_setup_needs_setup" = "Cần Thiết lập";
+"printer_setup_get_started" = "Bắt đầu";
+
+// Printer Settings View - Current Configuration Section
+"printer_current_config_title" = "Cấu hình Hiện tại";
+"printer_current_config_mode" = "Chế độ Máy in:";
+"printer_current_config_kitchen" = "Máy in Bếp:";
+"printer_current_config_checkout" = "Máy in Thanh toán:";
+"printer_current_config_active" = "Máy in Hoạt động:";
+"printer_current_config_language" = "Ngôn ngữ In:";
+"printer_current_config_not_set" = "Chưa thiết lập";
+
+// Printer Settings View - Sections
+"printer_printing_format_title" = "Định dạng In";
+"printer_print_queue_title" = "Hàng đợi In";
+
 "using_default_placeholder_printer" = "Sử dụng máy in placeholder mặc định. Thêm máy in để lưu và chỉnh sửa cài đặt.";
 "set_active" = "Đặt Hoạt động";
 "assign_to_kitchen" = "Gán cho Bếp";
