@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PrinterSettingsView: View {
     @EnvironmentObject private var printerManager: PrinterManager
-    @StateObject private var settingsManager = PrinterSettingsManager.shared
+    @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @State private var showingConnectionAlert = false
     @State private var connectionMessage = ""
     @State private var isConnecting = false

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 // MARK: - Printer Settings Manager
 class PrinterSettingsManager: ObservableObject {
@@ -28,7 +29,10 @@ class PrinterSettingsManager: ObservableObject {
     
     // Language capability storage per printer
     @Published var printerLanguageCapabilities: [String: [PrintLanguage: Bool]] = [:]
-    
+
+    // Connection status tracking per printer
+    @Published var printerConnectionStatus: [String: ConnectionStatus] = [:]
+
     // Template theme selection
     @Published var selectedReceiptTheme: TemplateTheme = .standard { didSet { saveTemplateThemes() } }
     @Published var selectedKitchenTheme: TemplateTheme = .standard { didSet { saveTemplateThemes() } }
@@ -897,6 +901,41 @@ extension PrinterSettingsManager {
     }
 }
 
+// MARK: - Connection Status Model
+enum ConnectionStatus: Codable {
+    case unknown
+    case connected
+    case disconnected
+    case error(String)
+
+    var displayName: String {
+        switch self {
+        case .unknown: return "connection_status_unknown".localized
+        case .connected: return "connection_status_connected".localized
+        case .disconnected: return "connection_status_disconnected".localized
+        case .error: return "connection_status_error".localized
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .unknown: return .appTextSecondary
+        case .connected: return .appSuccess
+        case .disconnected: return .appWarning
+        case .error: return .appError
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .unknown: return "questionmark.circle"
+        case .connected: return "checkmark.circle.fill"
+        case .disconnected: return "xmark.circle"
+        case .error: return "exclamationmark.triangle.fill"
+        }
+    }
+}
+
 // MARK: - Encoding Strategy Helpers (per target)
 extension PrinterSettingsManager {
     enum PrintTarget { case receipt, kitchen }
@@ -911,5 +950,18 @@ extension PrinterSettingsManager {
     func getStrategy(for printerId: String? = nil, target: PrintTarget) -> PrinterConfig.EncodingUtils.Strategy {
         // For M2: use a global strategy for now; in M3 this can consult per-printer capability
         return encodingStrategy ?? .legacyEncoding
+    }
+
+    // MARK: - Connection Status Management
+    func updateConnectionStatus(for printerId: String, status: ConnectionStatus) {
+        printerConnectionStatus[printerId] = status
+    }
+
+    func getConnectionStatus(for printerId: String) -> ConnectionStatus {
+        return printerConnectionStatus[printerId] ?? .unknown
+    }
+
+    func clearConnectionStatus(for printerId: String) {
+        printerConnectionStatus.removeValue(forKey: printerId)
     }
 }

@@ -689,6 +689,58 @@
 "print_queue_clear_all_confirmation" = "This will remove all print jobs from the queue. This action cannot be undone.";
 "print_queue_no_jobs" = "No Print Jobs";
 "print_queue_no_jobs_description" = "Print jobs will appear here when you print orders or receipts";
+"print_queue_retry" = "Retry";
+"print_queue_attempts_format" = "• Attempts: %d";
+"print_queue_job_in_progress" = "Print job in progress";
+
+// MARK: - Printer Test Feedback
+"printer_test_in_progress" = "Testing printer connection...";
+"printer_test_result_title" = "Test Result";
+"printer_test_success_message" = "✓ Successfully printed to %@";
+"printer_test_failed_message" = "✗ Failed to print to %@";
+"printer_test_failed_suggestion" = "Check printer connection, power, and network settings";
+"printer_test_suggestion" = "Suggestion";
+"printer_test_view_logs" = "View Logs";
+
+// MARK: - Connection Status
+"connection_status_unknown" = "Unknown";
+"connection_status_connected" = "Connected";
+"connection_status_disconnected" = "Disconnected";
+"connection_status_error" = "Error";
+
+// MARK: - Print Queue Remediation
+"print_queue_help" = "Help";
+"print_queue_remediation_title" = "Troubleshoot Print Failure";
+"print_queue_remediation_message" = "Select an option to diagnose and fix the print issue";
+"print_queue_view_logs" = "View Printer Logs";
+"print_queue_reconfigure_printer" = "Reconfigure Printer";
+
+// MARK: - Printer Logs
+"printer_logs_title" = "Printer Logs";
+"printer_logs_empty_title" = "No Logs";
+"printer_logs_empty_description" = "Printer activity logs will appear here";
+"printer_logs_clear" = "Clear Logs";
+
+// MARK: - Bluetooth Printer Setup
+"bluetooth_printer_setup_title" = "Bluetooth Printer";
+"bluetooth_printer_setup_subtitle" = "Configure Bluetooth printer connection";
+"bluetooth_status_section" = "Connection Status";
+"bluetooth_connection_status" = "Status";
+"bluetooth_scanning_status" = "Scanning for devices...";
+"bluetooth_scan_section" = "Scanner";
+"bluetooth_start_scan" = "Start Scanning";
+"bluetooth_stop_scan" = "Stop Scanning";
+"bluetooth_disconnect" = "Disconnect";
+"bluetooth_discovered_devices_section" = "Discovered Devices";
+"bluetooth_unnamed_device" = "Unnamed Device";
+"bluetooth_no_devices_title" = "No Devices Found";
+"bluetooth_no_devices_description" = "Start scanning to discover nearby Bluetooth printers";
+"bluetooth_help_section" = "Setup Instructions";
+"bluetooth_help_step1" = "Turn on your Bluetooth printer";
+"bluetooth_help_step2" = "Tap 'Start Scanning' to discover nearby devices";
+"bluetooth_help_step3" = "Select your printer from the discovered devices list";
+"bluetooth_help_step4" = "Wait for connection to establish";
+
 "receipt_customization_title" = "Receipt Customization";
 "receipt_template_encoding_title" = "Receipt Template & Encoding";
 "receipt_template_encoding_description" = "Customize receipt format and encoding";

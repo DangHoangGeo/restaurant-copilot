@@ -34,13 +34,13 @@ struct PrintJob: Identifiable, Codable {
         var color: Color {
             switch self {
             case .pending:
-                return .orange
+                return .appWarning
             case .printing:
-                return .blue
+                return .appInfo
             case .failed:
-                return .red
+                return .appError
             case .completed:
-                return .green
+                return .appSuccess
             }
         }
     }
@@ -296,7 +296,32 @@ extension PrinterService {
         guard !job.data.isEmpty else {
             throw PrinterError.invalidJobData
         }
-        
-        try await connectAndSendData(data: job.data)
+
+        // Determine the target printer based on job type
+        let target = job.jobType.printTarget
+
+        // Get the appropriate printer configuration
+        let printerConfig: PrinterConfig.Hardware?
+        switch target {
+        case .kitchen:
+            printerConfig = PrinterSettingsManager.shared.getKitchenPrinterConfig()
+        case .receipt:
+            printerConfig = PrinterSettingsManager.shared.getCheckoutPrinterConfig()
+        }
+
+        // Execute the print job with the appropriate target and configuration
+        try await connectAndSendData(data: job.data, target: target, to: printerConfig)
+    }
+}
+
+// MARK: - PrintJob.JobType Extension
+extension PrintJob.JobType {
+    var printTarget: PrinterSettingsManager.PrintTarget {
+        switch self {
+        case .kitchenOrder, .kitchenTest:
+            return .kitchen
+        case .customerReceipt, .testReceipt:
+            return .receipt
+        }
     }
 }
