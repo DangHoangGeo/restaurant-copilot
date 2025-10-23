@@ -54,6 +54,34 @@
   - `GET /logs`: paginated, filter by level/restaurant. Consider streaming via Supabase channel for live updates.  
   - `GET /support-tickets`, `POST /support-tickets/:id/reply`, `PATCH /support-tickets/:id`: update status/priority.
 - All routes must perform role checks, sanitize inputs with Zod, and respond with typed payloads in `web/types/platform`.
+[x] Phase 1 complete! I've created the complete API surface for the platform admin dashboard:
+Created Files
+## Core Infrastructure
+- web/lib/platform-admin.ts - Platform admin middleware, auth helpers, and audit logging
+- web/shared/schemas/platform.ts - Zod validation schemas for all platform API endpoints
+- web/shared/types/platform.ts - TypeScript types for platform API responses
+
+## API Endpoints (/api/v1/platform/)
+### Restaurants:
+- restaurants/route.ts - GET with filters (status, plan, verified, search)
+- restaurants/[id]/verify/route.ts - PATCH to verify restaurants
+- restaurants/[id]/suspend/route.ts - PATCH to suspend/unsuspend
+### Subscriptions:
+- subscriptions/route.ts - GET with filters
+- subscriptions/[id]/route.ts - PATCH to update plan/status/trial
+### Usage & Monitoring:
+- usage/route.ts - GET aggregated metrics and trends
+- logs/route.ts - GET logs with filtering and pagination
+### Support:
+- support-tickets/route.ts - GET with filters
+- support-tickets/[id]/route.ts - GET single ticket + PATCH to update
+- support-tickets/[id]/reply/route.ts - POST to reply
+### All endpoints include:
+- Platform admin authentication checks
+- Zod validation
+- Comprehensive error handling
+- Audit logging
+- Type-safe responses
 
 ### Phase 2 – UI/UX (route group `[locale]/(coorder)/platform`)
 - **Layout:** Protected layout with a left nav (Overview, Pending Approvals, Subscriptions, Accounts, Usage, Logs, Support). Provide locale switcher and admin profile menu.
