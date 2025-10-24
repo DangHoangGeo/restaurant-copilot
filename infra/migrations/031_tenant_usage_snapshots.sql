@@ -50,7 +50,7 @@ ALTER TABLE tenant_usage_snapshots ENABLE ROW LEVEL SECURITY;
 -- RLS Policy: Restaurants can read their own usage
 CREATE POLICY tenant_usage_snapshots_restaurant_read ON tenant_usage_snapshots
   FOR SELECT
-  USING (restaurant_id = auth.jwt()->>'restaurant_id'::UUID);
+  USING (restaurant_id = (auth.jwt()->>'restaurant_id')::UUID);
 
 -- RLS Policy: Platform admins can read all usage
 CREATE POLICY tenant_usage_snapshots_platform_admin_all ON tenant_usage_snapshots

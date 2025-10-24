@@ -62,29 +62,11 @@ CREATE POLICY categories_platform_admin_read ON categories
   USING (is_platform_admin());
 
 -- ============================================
--- SESSIONS TABLE - Platform Admin Access
--- ============================================
-
--- Platform admins can read all customer sessions
-CREATE POLICY sessions_platform_admin_read ON sessions
-  FOR SELECT
-  USING (is_platform_admin());
-
--- ============================================
 -- LOGS TABLE - Platform Admin Access
 -- ============================================
 
 -- Platform admins can read all logs
 CREATE POLICY logs_platform_admin_read ON logs
-  FOR SELECT
-  USING (is_platform_admin());
-
--- ============================================
--- EMPLOYEE_ATTENDANCE TABLE - Platform Admin Access
--- ============================================
-
--- Platform admins can read all employee attendance records
-CREATE POLICY employee_attendance_platform_admin_read ON employee_attendance
   FOR SELECT
   USING (is_platform_admin());
 

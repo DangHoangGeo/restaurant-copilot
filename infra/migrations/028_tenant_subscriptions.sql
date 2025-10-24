@@ -55,7 +55,7 @@ ALTER TABLE tenant_subscriptions ENABLE ROW LEVEL SECURITY;
 -- RLS Policy: Restaurants can read their own subscription
 CREATE POLICY tenant_subscriptions_restaurant_read ON tenant_subscriptions
   FOR SELECT
-  USING (restaurant_id = auth.jwt()->>'restaurant_id'::UUID);
+  USING (restaurant_id = (auth.jwt()->>'restaurant_id')::UUID);
 
 -- RLS Policy: Platform admins can read all subscriptions
 CREATE POLICY tenant_subscriptions_platform_admin_read ON tenant_subscriptions

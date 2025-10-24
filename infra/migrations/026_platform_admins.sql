@@ -23,43 +23,8 @@ CREATE TABLE IF NOT EXISTS platform_admins (
 CREATE INDEX idx_platform_admins_user_id ON platform_admins(user_id) WHERE is_active = true;
 CREATE INDEX idx_platform_admins_email ON platform_admins(email) WHERE is_active = true;
 
--- Enable RLS
-ALTER TABLE platform_admins ENABLE ROW LEVEL SECURITY;
-
--- RLS Policy: Platform admins can read all platform admin records
-CREATE POLICY platform_admins_read_policy ON platform_admins
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM platform_admins pa
-      WHERE pa.user_id = auth.uid()
-      AND pa.is_active = true
-    )
-  );
-
--- RLS Policy: Platform admins can insert new platform admins
-CREATE POLICY platform_admins_insert_policy ON platform_admins
-  FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM platform_admins pa
-      WHERE pa.user_id = auth.uid()
-      AND pa.is_active = true
-    )
-  );
-
--- RLS Policy: Platform admins can update platform admin records
-CREATE POLICY platform_admins_update_policy ON platform_admins
-  FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM platform_admins pa
-      WHERE pa.user_id = auth.uid()
-      AND pa.is_active = true
-    )
-  );
-
 -- Create helper function to check if user is platform admin
+-- This MUST be created BEFORE enabling RLS to avoid circular dependency
 CREATE OR REPLACE FUNCTION is_platform_admin(check_user_id UUID DEFAULT auth.uid())
 RETURNS BOOLEAN AS $$
 BEGIN
@@ -70,6 +35,33 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create helper function for RLS to avoid infinite recursion
+CREATE OR REPLACE FUNCTION check_is_platform_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN is_platform_admin(auth.uid());
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Enable RLS
+ALTER TABLE platform_admins ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policy: Platform admins can read all platform admin records
+-- Uses SECURITY DEFINER function to bypass RLS recursion
+CREATE POLICY platform_admins_read_policy ON platform_admins
+  FOR SELECT
+  USING (check_is_platform_admin());
+
+-- RLS Policy: Platform admins can insert new platform admins
+CREATE POLICY platform_admins_insert_policy ON platform_admins
+  FOR INSERT
+  WITH CHECK (check_is_platform_admin());
+
+-- RLS Policy: Platform admins can update platform admin records
+CREATE POLICY platform_admins_update_policy ON platform_admins
+  FOR UPDATE
+  USING (check_is_platform_admin());
 
 -- Create helper function to get platform admin permissions
 CREATE OR REPLACE FUNCTION get_platform_admin_permissions(check_user_id UUID DEFAULT auth.uid())

@@ -1,0 +1,255 @@
+{
+  "nav": {
+    "overview": "Overview",
+    "approvals": "Pending Approvals",
+    "subscriptions": "Subscriptions",
+    "accounts": "Accounts",
+    "usage": "Resource Usage",
+    "logs": "Logs",
+    "support": "Support",
+    "settings": "Settings"
+  },
+  "header": {
+    "title": "Platform Admin",
+    "admin_badge": "Admin",
+    "notifications": "Notifications",
+    "no_notifications": "No new notifications",
+    "language": "Language",
+    "account": "Account",
+    "logout": "Logout"
+  },
+  "overview": {
+    "title": "Platform Overview",
+    "period_selector": {
+      "today": "Today",
+      "7days": "Last 7 Days",
+      "30days": "Last 30 Days",
+      "90days": "Last 90 Days"
+    },
+    "tenants": {
+      "title": "Tenants",
+      "total": "Total Tenants",
+      "on_trial": "On Trial",
+      "active": "Active Subscribers",
+      "suspended": "Suspended",
+      "new_signups": "New Signups"
+    },
+    "revenue": {
+      "title": "Revenue",
+      "mrr": "MRR",
+      "arr": "ARR",
+      "churn_rate": "Churn Rate"
+    },
+    "support": {
+      "title": "Support",
+      "total_tickets": "Total Tickets",
+      "new_tickets": "New Tickets",
+      "unresolved": "Unresolved",
+      "sla_breached": "SLA Breached"
+    },
+    "usage": {
+      "title": "Usage",
+      "total_orders": "Total Orders",
+      "total_customers": "Total Customers",
+      "ai_calls": "AI Calls",
+      "avg_orders": "Avg Orders/Tenant"
+    },
+    "trends": {
+      "title": "Trends",
+      "signups": "Signups",
+      "orders": "Orders",
+      "revenue": "Revenue"
+    }
+  },
+  "approvals": {
+    "title": "Pending Approvals",
+    "subtitle": "Review and approve new restaurant signups",
+    "table": {
+      "restaurant": "Restaurant",
+      "email": "Email",
+      "created_at": "Signup Date",
+      "plan": "Plan",
+      "actions": "Actions"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "view_details": "View Details"
+    },
+    "approve_dialog": {
+      "title": "Approve Restaurant",
+      "description": "Are you sure you want to approve this restaurant?",
+      "notes_label": "Notes (optional)",
+      "notes_placeholder": "Add any notes about this approval...",
+      "cancel": "Cancel",
+      "confirm": "Approve"
+    },
+    "reject_dialog": {
+      "title": "Reject Restaurant",
+      "description": "Please provide a reason for rejection.",
+      "reason_label": "Reason",
+      "reason_placeholder": "Explain why this application is being rejected...",
+      "cancel": "Cancel",
+      "confirm": "Reject"
+    },
+    "empty": "No pending approvals",
+    "loading": "Loading approvals..."
+  },
+  "subscriptions": {
+    "title": "Subscriptions",
+    "subtitle": "Manage tenant subscriptions and billing",
+    "table": {
+      "restaurant": "Restaurant",
+      "plan": "Plan",
+      "status": "Status",
+      "billing_cycle": "Billing",
+      "current_period_end": "Renewal Date",
+      "seats_used": "Seats Used",
+      "actions": "Actions"
+    },
+    "status": {
+      "trial": "Trial",
+      "active": "Active",
+      "past_due": "Past Due",
+      "canceled": "Canceled",
+      "paused": "Paused",
+      "expired": "Expired"
+    },
+    "actions": {
+      "upgrade": "Upgrade",
+      "downgrade": "Downgrade",
+      "extend_trial": "Extend Trial",
+      "cancel": "Cancel",
+      "view_details": "View Details"
+    },
+    "filters": {
+      "all_status": "All Status",
+      "all_plans": "All Plans",
+      "search_placeholder": "Search restaurants..."
+    },
+    "empty": "No subscriptions found",
+    "loading": "Loading subscriptions..."
+  },
+  "accounts": {
+    "title": "Accounts",
+    "subtitle": "Manage restaurant accounts and users",
+    "table": {
+      "restaurant": "Restaurant",
+      "owner": "Owner",
+      "staff_count": "Staff",
+      "last_active": "Last Active",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view_details": "View Details",
+      "suspend": "Suspend",
+      "unsuspend": "Unsuspend"
+    },
+    "empty": "No accounts found",
+    "loading": "Loading accounts..."
+  },
+  "usage": {
+    "title": "Resource Usage",
+    "subtitle": "Monitor platform resource consumption",
+    "metrics": {
+      "orders": "Orders",
+      "storage": "Storage",
+      "ai_calls": "AI Calls",
+      "api_calls": "API Calls"
+    },
+    "filters": {
+      "all_restaurants": "All Restaurants",
+      "date_range": "Date Range"
+    },
+    "empty": "No usage data available",
+    "loading": "Loading usage data..."
+  },
+  "logs": {
+    "title": "System Logs",
+    "subtitle": "View and search system logs",
+    "table": {
+      "timestamp": "Timestamp",
+      "level": "Level",
+      "restaurant": "Restaurant",
+      "endpoint": "Endpoint",
+      "message": "Message",
+      "actions": "Actions"
+    },
+    "filters": {
+      "all_levels": "All Levels",
+      "all_restaurants": "All Restaurants",
+      "search_placeholder": "Search logs..."
+    },
+    "actions": {
+      "export": "Export to CSV",
+      "view_details": "View Details"
+    },
+    "empty": "No logs found",
+    "loading": "Loading logs..."
+  },
+  "support": {
+    "title": "Support Tickets",
+    "subtitle": "Manage customer support requests",
+    "tabs": {
+      "all": "All",
+      "new": "New",
+      "investigating": "Investigating",
+      "waiting": "Waiting",
+      "resolved": "Resolved"
+    },
+    "table": {
+      "ticket_number": "Ticket #",
+      "subject": "Subject",
+      "restaurant": "Restaurant",
+      "priority": "Priority",
+      "status": "Status",
+      "created_at": "Created",
+      "actions": "Actions"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "status": {
+      "new": "New",
+      "investigating": "Investigating",
+      "waiting_customer": "Waiting",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "actions": {
+      "reply": "Reply",
+      "assign": "Assign",
+      "resolve": "Resolve",
+      "close": "Close"
+    },
+    "filters": {
+      "all_priorities": "All Priorities",
+      "all_status": "All Status",
+      "search_placeholder": "Search tickets..."
+    },
+    "empty": "No tickets found",
+    "loading": "Loading tickets..."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Operation successful",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "export": "Export",
+    "refresh": "Refresh",
+    "view": "View",
+    "actions": "Actions"
+  }
+}

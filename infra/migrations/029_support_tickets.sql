@@ -73,12 +73,12 @@ ALTER TABLE support_ticket_messages ENABLE ROW LEVEL SECURITY;
 -- RLS Policy: Restaurants can read their own tickets
 CREATE POLICY support_tickets_restaurant_read ON support_tickets
   FOR SELECT
-  USING (restaurant_id = auth.jwt()->>'restaurant_id'::UUID);
+  USING (restaurant_id = (auth.jwt()->>'restaurant_id')::UUID);
 
 -- RLS Policy: Restaurants can create tickets
 CREATE POLICY support_tickets_restaurant_insert ON support_tickets
   FOR INSERT
-  WITH CHECK (restaurant_id = auth.jwt()->>'restaurant_id'::UUID);
+  WITH CHECK (restaurant_id = (auth.jwt()->>'restaurant_id')::UUID);
 
 -- RLS Policy: Platform admins can read all tickets
 CREATE POLICY support_tickets_platform_admin_all ON support_tickets
@@ -92,7 +92,7 @@ CREATE POLICY support_ticket_messages_restaurant_read ON support_ticket_messages
     EXISTS (
       SELECT 1 FROM support_tickets st
       WHERE st.id = ticket_id
-      AND st.restaurant_id = auth.jwt()->>'restaurant_id'::UUID
+      AND st.restaurant_id = (auth.jwt()->>'restaurant_id')::UUID
     )
     AND is_internal_note = false
   );
@@ -104,7 +104,7 @@ CREATE POLICY support_ticket_messages_restaurant_insert ON support_ticket_messag
     EXISTS (
       SELECT 1 FROM support_tickets st
       WHERE st.id = ticket_id
-      AND st.restaurant_id = auth.jwt()->>'restaurant_id'::UUID
+      AND st.restaurant_id = (auth.jwt()->>'restaurant_id')::UUID
     )
   );
 

@@ -83,7 +83,7 @@ Created Files
 - Audit logging
 - Type-safe responses
 
-### Phase 2 – UI/UX (route group `[locale]/(coorder)/platform`)
+### Phase 2 – UI/UX (route group `[locale]/(coorder)/platform`) [x]
 - **Layout:** Protected layout with a left nav (Overview, Pending Approvals, Subscriptions, Accounts, Usage, Logs, Support). Provide locale switcher and admin profile menu.
 - **Overview page:** Metric cards (tenants on trial, active subscribers, churn risk, unresolved tickets). Trend charts using `recharts`.
 - **Pending approvals:** Data table (TanStack) showing new signups with quick actions (approve, reject, view details). Column-level filters, bulk approve.

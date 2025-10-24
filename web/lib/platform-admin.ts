@@ -2,7 +2,7 @@
 // Provides authentication and authorization for platform-level operations
 
 import { createClient } from '@/lib/supabase/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * Check if the current user is a platform admin
@@ -56,7 +56,7 @@ export async function getPlatformAdmin() {
  * Middleware to require platform admin authentication
  * Use this in API routes to ensure only platform admins can access
  */
-export async function requirePlatformAdmin(request: NextRequest) {
+export async function requirePlatformAdmin() {
   const isAdmin = await isPlatformAdmin();
 
   if (!isAdmin) {
