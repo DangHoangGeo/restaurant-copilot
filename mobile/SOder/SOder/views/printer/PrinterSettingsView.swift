@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PrinterSettingsView: View {
     @EnvironmentObject private var printerManager: PrinterManager
-    @StateObject private var settingsManager = PrinterSettingsManager.shared
+    @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @State private var showingConnectionAlert = false
     @State private var connectionMessage = ""
     @State private var isConnecting = false
@@ -31,69 +31,69 @@ struct PrinterSettingsView: View {
     private var mainContent: some View {
         List {
             // Quick Setup Section - Most important first
-            Section(header: Text("Quick Setup").font(.headline).foregroundColor(.primary)) {
+            Section(header: Text("printer_quick_setup_title".localized).font(.headline).foregroundColor(.primary)) {
                 NavigationLink(destination: UnifiedPrinterSetupView().environmentObject(printerManager)) {
                     HStack {
                         Image(systemName: "gear.circle.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.appPrimary)
                             .font(.title2)
-                        
+
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Printer Setup")
+                            Text("printer_quick_setup_button".localized)
                                 .font(.headline)
                                 .fontWeight(.semibold)
-                            Text("Configure printers, receipts, and settings")
+                            Text("printer_quick_setup_subtitle".localized)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                        
+
                         Spacer()
-                        
+
                         setupStatusIndicator
                     }
                     .padding(.vertical, 4)
                 }
             }
-            
+
             // Current Configuration Section
-            Section("Current Configuration") {
+            Section("printer_current_config_title".localized) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("Printer Mode:")
+                        Text("printer_current_config_mode".localized)
                             .fontWeight(.medium)
                         Spacer()
                         Text(settingsManager.printerMode.displayName)
                             .foregroundColor(.secondary)
                     }
-                    
+
                     if settingsManager.printerMode == .dual {
                         HStack {
-                            Text("Kitchen Printer:")
+                            Text("printer_current_config_kitchen".localized)
                                 .fontWeight(.medium)
                             Spacer()
-                            Text(settingsManager.kitchenPrinter?.name ?? "Not set")
+                            Text(settingsManager.kitchenPrinter?.name ?? "printer_current_config_not_set".localized)
                                 .foregroundColor(.secondary)
                         }
-                        
+
                         HStack {
-                            Text("Checkout Printer:")
+                            Text("printer_current_config_checkout".localized)
                                 .fontWeight(.medium)
                             Spacer()
-                            Text(settingsManager.checkoutPrinter?.name ?? "Not set")
+                            Text(settingsManager.checkoutPrinter?.name ?? "printer_current_config_not_set".localized)
                                 .foregroundColor(.secondary)
                         }
                     } else {
                         HStack {
-                            Text("Active Printer:")
+                            Text("printer_current_config_active".localized)
                                 .fontWeight(.medium)
                             Spacer()
-                            Text(settingsManager.activePrinter?.name ?? "Not set")
+                            Text(settingsManager.activePrinter?.name ?? "printer_current_config_not_set".localized)
                                 .foregroundColor(.secondary)
                         }
                     }
-                    
+
                     HStack {
-                        Text("Print Language:")
+                        Text("printer_current_config_language".localized)
                             .fontWeight(.medium)
                         Spacer()
                         Text(settingsManager.printLanguage.displayName)
@@ -104,7 +104,7 @@ struct PrinterSettingsView: View {
             }
 
             // Printing format section
-            Section("Printing Format") {
+            Section("printer_printing_format_title".localized) {
                 NavigationLink(destination: ReceiptCustomizationView()) {
                     HStack {
                         Image(systemName: "doc.badge.gearshape")
@@ -123,17 +123,17 @@ struct PrinterSettingsView: View {
             }
             
             // Print Queue Section
-            Section("Print Queue") {
+            Section("printer_print_queue_title".localized) {
                 if #available(iOS 16.0, *) {
                     NavigationLink(value: "print-queue") {
                         HStack {
                             Image(systemName: "tray")
-                                .foregroundColor(.blue)
+                                .foregroundColor(.appPrimary)
                             
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("accessibility_print_queue_label".localized)
                                     .font(.headline)
-                                Text("View and manage print jobs")
+                                Text("printer_quick_setup_view_manage".localized)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -147,7 +147,7 @@ struct PrinterSettingsView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 2)
-                                    .background(Color.orange)
+                                    .background(Color.appWarning)
                                     .cornerRadius(10)
                             }
                         }
@@ -158,12 +158,12 @@ struct PrinterSettingsView: View {
                     NavigationLink(destination: PrintQueueView()) {
                         HStack {
                             Image(systemName: "tray")
-                                .foregroundColor(.blue)
+                                .foregroundColor(.appPrimary)
                             
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("accessibility_print_queue_label".localized)
                                     .font(.headline)
-                                Text("View and manage print jobs")
+                                Text("printer_quick_setup_view_manage".localized)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -177,7 +177,7 @@ struct PrinterSettingsView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 2)
-                                    .background(Color.orange)
+                                    .background(Color.appWarning)
                                     .cornerRadius(10)
                             }
                         }
@@ -192,7 +192,7 @@ struct PrinterSettingsView: View {
             Section("printer_current_status_title".localized) {
                 HStack {
                     Image(systemName: printerManager.isConnected ? "printer.fill" : "printer")
-                        .foregroundColor(printerManager.isConnected ? .green : .gray)
+                        .foregroundColor(printerManager.isConnected ? .appSuccess : .appTextSecondary)
                         .accessibilityLabel(printerManager.isConnected ? "accessibility_printer_connected_label".localized : "accessibility_printer_disconnected_label".localized)
                     
                     VStack(alignment: .leading) {
@@ -200,7 +200,7 @@ struct PrinterSettingsView: View {
                             .font(.headline)
                         Text(printerManager.printerStatus)
                             .font(.subheadline)
-                            .foregroundColor(printerManager.isConnected ? .green : .secondary)
+                            .foregroundColor(printerManager.isConnected ? .appSuccess : .appTextSecondary)
                     }
                     
                     Spacer()
@@ -210,7 +210,7 @@ struct PrinterSettingsView: View {
                             printerManager.disconnectPrinter()
                         }
                         .buttonStyle(.bordered)
-                        .foregroundColor(.red)
+                        .foregroundColor(.appError)
                         .accessibilityLabel("accessibility_disconnect_printer_label".localized)
                         .accessibilityHint("accessibility_disconnect_printer_hint".localized)
                     }
@@ -311,36 +311,36 @@ struct PrinterSettingsView: View {
     private var setupStatusIndicator: some View {
         let hasPrinters = !settingsManager.configuredPrinters.isEmpty
         let hasActivePrinter = settingsManager.activePrinter != nil
-        
+
         return Group {
             if hasActivePrinter {
                 HStack(spacing: 4) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        .foregroundColor(.appSuccess)
                         .font(.caption)
-                    Text("Setup Complete")
+                    Text("printer_setup_complete".localized)
                         .font(.caption)
-                        .foregroundColor(.green)
+                        .foregroundColor(.appSuccess)
                         .fontWeight(.medium)
                 }
             } else if hasPrinters {
                 HStack(spacing: 4) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.appWarning)
                         .font(.caption)
-                    Text("Needs Setup")
+                    Text("printer_setup_needs_setup".localized)
                         .font(.caption)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.appWarning)
                         .fontWeight(.medium)
                 }
             } else {
                 HStack(spacing: 4) {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.appInfo)
                         .font(.caption)
-                    Text("Get Started")
+                    Text("printer_setup_get_started".localized)
                         .font(.caption)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.appInfo)
                         .fontWeight(.medium)
                 }
             }
@@ -471,7 +471,7 @@ struct PrinterRowView: View {
                     onConnect()
                 }
                 .buttonStyle(.bordered)
-                .foregroundColor(.blue)
+                .foregroundColor(.appPrimary)
             }
         }
         .padding(.vertical, 4)

@@ -54,7 +54,7 @@
     "preparing": "準備中",
     "ready": "準備完了",
     "served": "提供済み",
-    "cancelled": "キャンセル"
+    "canceled": "キャンセル"
   },
   "order_details": {
     "order_number": "注文番号：#{orderId}",
@@ -181,7 +181,7 @@
       "preparing": "準備中",
       "ready": "準備完了",
       "served": "提供済み",
-      "cancelled": "キャンセル"
+      "canceled": "キャンセル"
     }
   }
 }

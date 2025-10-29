@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export * from './common';
 
 // Schema for creating a category
 export const categoryCreateSchema = z.object({

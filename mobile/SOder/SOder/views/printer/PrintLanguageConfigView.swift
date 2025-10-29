@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PrintLanguageConfigView: View {
-    @StateObject private var settingsManager = PrinterSettingsManager.shared
+    @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showSuccessMessage = false
     @State private var testingLanguage: PrintLanguage?

@@ -1,39 +1,39 @@
 import SwiftUI
 
 struct PrintQueueView: View {
-    @StateObject private var queueManager = PrintQueueManager.shared
+    @ObservedObject private var queueManager = PrintQueueManager.shared
     @State private var showingClearAlert = false
     
     var body: some View {
             List {
                 if queueManager.jobs.isEmpty {
                     ContentUnavailableView(
-                        "No Print Jobs",
+                        "print_queue_no_jobs".localized,
                         systemImage: "tray",
-                        description: Text("Print jobs will appear here when you print orders or receipts")
+                        description: Text("print_queue_no_jobs_description".localized)
                     )
                 } else {
                     // Queue Statistics
-                    Section("Queue Statistics") {
+                    Section("print_queue_statistics".localized) {
                         StatisticsRow(
-                            label: "Pending Jobs",
+                            label: "print_queue_pending_jobs".localized,
                             value: queueManager.pendingJobsCount,
-                            color: .orange
+                            color: .appWarning
                         )
                         StatisticsRow(
-                            label: "Failed Jobs",
+                            label: "print_queue_failed_jobs".localized,
                             value: queueManager.failedJobsCount,
-                            color: .red
+                            color: .appError
                         )
                         StatisticsRow(
-                            label: "Completed Jobs",
+                            label: "print_queue_completed_jobs".localized,
                             value: queueManager.completedJobsCount,
-                            color: .green
+                            color: .appSuccess
                         )
                     }
-                    
+
                     // Print Jobs
-                    Section("Print Jobs") {
+                    Section("print_queue_title".localized) {
                         ForEach(queueManager.jobs.sorted(by: { $0.creationDate > $1.creationDate })) { job in
                             PrintJobRow(job: job) {
                                 queueManager.retryJob(withId: job.id)
@@ -49,12 +49,12 @@ struct PrintQueueView: View {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     if !queueManager.jobs.isEmpty {
                         Menu {
-                            Button("Clear Completed Jobs") {
+                            Button("print_queue_clear_completed".localized) {
                                 queueManager.clearCompletedJobs()
                             }
                             .disabled(queueManager.completedJobsCount == 0)
-                            
-                            Button("Clear All Jobs", role: .destructive) {
+
+                            Button("print_queue_clear_all".localized, role: .destructive) {
                                 showingClearAlert = true
                             }
                         } label: {
@@ -63,13 +63,13 @@ struct PrintQueueView: View {
                     }
                 }
             }
-            .alert("Clear All Jobs", isPresented: $showingClearAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Clear All", role: .destructive) {
+            .alert("print_queue_clear_all".localized, isPresented: $showingClearAlert) {
+                Button("cancel".localized, role: .cancel) { }
+                Button("print_queue_clear_all".localized, role: .destructive) {
                     queueManager.clearAllJobs()
                 }
             } message: {
-                Text("This will remove all print jobs from the queue. This action cannot be undone.")
+                Text("print_queue_clear_all_confirmation".localized)
             }
     }
     
@@ -84,7 +84,8 @@ struct PrintQueueView: View {
 struct PrintJobRow: View {
     let job: PrintJob
     let onRetry: () -> Void
-    
+    @State private var showingRemediationOptions = false
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -113,41 +114,69 @@ struct PrintJobRow: View {
                     Text(job.creationDate.formatted(.dateTime.hour().minute()))
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    
+
                     if job.attempts > 0 {
-                        Text("• Attempts: \(job.attempts)")
+                        Text(String(format: "print_queue_attempts_format".localized, job.attempts))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                 }
-                
+
                 if let errorMessage = job.errorMessage, job.status == .failed {
                     Text(errorMessage)
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundColor(.appError)
                         .lineLimit(2)
                 }
             }
-            
+
             Spacer()
-            
+
             if job.status == .failed {
-                Button("Retry") {
-                    onRetry()
+                VStack(spacing: 4) {
+                    Button("print_queue_retry".localized) {
+                        onRetry()
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.appInfo)
+                    .accessibilityLabel("accessibility_retry_print_job_label".localized)
+                    .accessibilityHint("accessibility_retry_print_job_hint".localized)
+
+                    Button(action: {
+                        showingRemediationOptions = true
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "wrench.and.screwdriver")
+                                .font(.caption)
+                            Text("print_queue_help".localized)
+                                .font(.caption)
+                        }
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundColor(.appTextSecondary)
                 }
-                .buttonStyle(.bordered)
-                .foregroundColor(.blue)
-                .accessibilityLabel("accessibility_retry_print_job_label".localized)
-                .accessibilityHint("accessibility_retry_print_job_hint".localized)
             } else if job.status == .printing {
                 ProgressView()
                     .scaleEffect(0.8)
-                    .accessibilityLabel("Print job in progress")
+                    .accessibilityLabel("print_queue_job_in_progress".localized)
             }
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(job.description), \(job.jobType.displayName), \(job.status.displayName)")
+        .confirmationDialog("print_queue_remediation_title".localized, isPresented: $showingRemediationOptions) {
+            NavigationLink(destination: PrinterLogsView()) {
+                Label("print_queue_view_logs".localized, systemImage: "doc.text.magnifyingglass")
+            }
+
+            NavigationLink(destination: UnifiedPrinterSetupView()) {
+                Label("print_queue_reconfigure_printer".localized, systemImage: "printer")
+            }
+
+            Button("cancel".localized, role: .cancel) { }
+        } message: {
+            Text("print_queue_remediation_message".localized)
+        }
     }
 }
 

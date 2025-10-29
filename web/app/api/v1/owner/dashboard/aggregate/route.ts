@@ -24,7 +24,7 @@ export interface AggregateDashboardData {
     customerName: string;
     itemsCount: number;
     totalAmount: number;
-    status: 'new' | 'confirmed' | 'preparing' | 'ready' | 'serving' | 'completed' | 'cancelled';
+    status: 'new' | 'confirmed' | 'preparing' | 'ready' | 'serving' | 'completed' | 'canceled';
     createdAt: string;
   }>;
   popularItems: Array<{
@@ -86,7 +86,7 @@ export async function GET() {
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('restaurant_id', restaurantId)
-        .not('status', 'in', '("completed", "cancelled")'),
+        .not('status', 'in', '("completed", "canceled")'),
 
       // 3. Recent orders (last 10)
       supabaseAdmin

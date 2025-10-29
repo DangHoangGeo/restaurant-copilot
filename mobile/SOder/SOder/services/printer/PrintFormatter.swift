@@ -440,7 +440,7 @@ class PrintFormatter {
         // Items
         var itemsContent = ""
         if let items = order.order_items {
-            for item in items where item.status.rawValue != "cancelled" {
+            for item in items where item.status.rawValue != "canceled" {
                 let itemName = getItemDisplayName(for: item)
                 itemsContent += "\(itemName)\n"
                 itemsContent += "  \(tr("tpl_qty", for: lang)): \(item.quantity)\n"
@@ -640,7 +640,7 @@ class PrintFormatter {
         var subtotal: Double = 0
         
         if let items = order.order_items {
-            for item in items where item.status.rawValue != "cancelled" {
+            for item in items where item.status.rawValue != "canceled" {
                 let itemName = getItemDisplayName(for: item)
                 let price = item.menu_item?.price ?? 0
                 let total = price * Double(item.quantity)
@@ -1132,7 +1132,7 @@ extension PrintFormatter {
         if let items = order.order_items, !items.isEmpty {
             outputData.append("ITEMS:\n".data(using: getSelectedEncoding(for: .kitchen)) ?? Data())
             var itemsText = ""
-            for item in items where item.status.rawValue != "cancelled" {
+            for item in items where item.status.rawValue != "canceled" {
                 let itemName = getItemDisplayName(for: item)
                 itemsText += "- \(itemName) x\(item.quantity)\n"
                 if let notes = item.notes, !notes.isEmpty {
@@ -1200,7 +1200,7 @@ extension PrintFormatter {
         outputData.append(String(repeating: "=", count: layout.receiptWidth).appending("\n").data(using: getSelectedEncoding(for: .receipt)) ?? Data())
         if let items = order.order_items {
             var itemsText = ""
-            for item in items where item.status.rawValue != "cancelled" {
+            for item in items where item.status.rawValue != "canceled" {
                 let itemName = getItemDisplayName(for: item)
                 itemsText += "\(itemName) x\(item.quantity)\n"
                 if let notes = item.notes, !notes.isEmpty {

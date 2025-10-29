@@ -54,7 +54,7 @@
     "preparing": "Đang chuẩn bị",
     "ready": "Sẵn sàng",
     "served": "Đã phục vụ",
-    "cancelled": "Đã hủy"
+    "canceled": "Đã hủy"
   },
   "order_details": {
     "order_number": "Đơn #{orderId}",
@@ -181,7 +181,7 @@
       "preparing": "Đang chuẩn bị",
       "ready": "Sẵn sàng",
       "served": "Đã phục vụ",
-      "cancelled": "Đã hủy"
+      "canceled": "Đã hủy"
     }
   }
 }

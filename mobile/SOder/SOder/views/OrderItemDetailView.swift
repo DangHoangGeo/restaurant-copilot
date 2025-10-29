@@ -247,7 +247,7 @@ struct OrderItemDetailView: View {
                 OrderItemStatusProgressView(currentStatus: item.status)
                 
                 // Status advance button
-                if item.status != .served && item.status != .cancelled {
+                if item.status != .served && item.status != .canceled {
                     Button(action: {
                         Task {
                             await advanceStatus()
@@ -275,7 +275,7 @@ struct OrderItemDetailView: View {
                 }
                 
                 // Cancel button
-                if item.status != .served && item.status != .cancelled {
+                if item.status != .served && item.status != .canceled {
                     Button(action: {
                         showingCancelConfirmation = true
                     }) {
@@ -350,7 +350,7 @@ struct OrderItemDetailView: View {
         case .preparing: return .appWarning
         case .ready: return .appSuccess
         case .served: return .appTextSecondary
-        case .cancelled: return .appError
+        case .canceled: return .appError
         }
     }
     
@@ -361,7 +361,7 @@ struct OrderItemDetailView: View {
         case .preparing: return "checkmark.circle"
         case .ready: return "checkmark.circle.fill"
         case .served: return "checkmark.seal.fill"
-        case .cancelled: return "xmark.circle.fill"
+        case .canceled: return "xmark.circle.fill"
         }
     }
     
@@ -372,7 +372,7 @@ struct OrderItemDetailView: View {
         case .preparing: return "Ready"
         case .ready: return "Served"
         case .served: return "Completed"
-        case .cancelled: return "Cancelled"
+        case .canceled: return "canceled"
         }
     }
     
@@ -414,7 +414,7 @@ struct OrderItemDetailView: View {
         await orderManager.cancelOrderItem(orderItemId: item.id)
         
         isCancelling = false
-        onPrintResult("Item cancelled successfully")
+        onPrintResult("Item canceled successfully")
         
         // Close after a short delay to show feedback
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -445,8 +445,8 @@ struct OrderItemDetailView: View {
             return .served
         case .served:
             return .served
-        case .cancelled:
-            return .cancelled
+        case .canceled:
+            return .canceled
         }
     }
 }
@@ -479,14 +479,14 @@ struct OrderItemStatusProgressView: View {
                 }
             }
             
-            // Show cancelled status separately if item is cancelled
-            if currentStatus == .cancelled {
+            // Show canceled status separately if item is canceled
+            if currentStatus == .canceled {
                 VStack(spacing: 4) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.red)
                         .frame(width: 16, height: 16)
                     
-                    Text("Cancelled")
+                    Text("canceled")
                         .font(.caption2)
                         .foregroundColor(.red)
                 }
@@ -504,7 +504,7 @@ struct OrderItemStatusProgressView: View {
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
-        case .cancelled: return .red
+        case .canceled: return .red
         }
     }
 }

@@ -162,7 +162,7 @@ export function useTablesData() {
 
 /**
  * Hook for session status with auto-refresh for active orders
- * Only refreshes if session is active and not completed/cancelled
+ * Only refreshes if session is active and not completed/canceled
  */
 export function useSessionStatus(sessionId: string | null) {
   const [shouldRefresh, setShouldRefresh] = useState(false);
@@ -192,8 +192,8 @@ export function useSessionStatus(sessionId: string | null) {
   useEffect(() => {
     if (response.data?.success && response.data.sessionStatus === 'active') {
       const status = response.data.sessionData.status;
-      // Only refresh if order is not completed or cancelled
-      setShouldRefresh(!['completed', 'cancelled', 'expired'].includes(status));
+      // Only refresh if order is not completed or canceled
+      setShouldRefresh(!['completed', 'canceled', 'expired'].includes(status));
     } else {
       setShouldRefresh(false);
     }

@@ -202,10 +202,6 @@ export async function GET(request: Request) {
     
     const validationResult = ordersGetQuerySchema.safeParse(queryParams);
     if (!validationResult.success) {
-      // Log validation details for debugging
-      console.log('Query params:', queryParams);
-      console.log('Validation errors:', validationResult.error.flatten().fieldErrors);
-      
       return NextResponse.json(
         {
           success: false,

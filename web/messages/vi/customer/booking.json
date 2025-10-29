@@ -74,7 +74,7 @@
   "status": {
     "pending": "Đang Chờ Xác Nhận",
     "confirmed": "Đã Xác Nhận",
-    "cancelled": "Đã Hủy",
+    "canceled": "Đã Hủy",
     "completed": "Đã Hoàn Thành"
   },
   "actions": {

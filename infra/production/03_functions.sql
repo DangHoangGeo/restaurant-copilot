@@ -431,7 +431,7 @@ BEGIN
     LEFT JOIN menu_items mi ON oi.menu_item_id = mi.id
     
     WHERE o.restaurant_id = restaurant_uuid
-      AND o.status NOT IN ('completed','cancelled') 
+      AND o.status NOT IN ('completed','canceled') 
     
     GROUP BY 
         o.id, o.restaurant_id, o.table_id, o.session_id, o.guest_count, 
@@ -553,7 +553,7 @@ SET search_path = public
 AS $$
 BEGIN
   -- Validate status
-  IF input_status NOT IN ('new','preparing','ready','served','cancelled') THEN
+  IF input_status NOT IN ('new','preparing','ready','served','canceled') THEN
     RETURN QUERY SELECT FALSE, 'Invalid status';
     RETURN;
   END IF;
@@ -593,7 +593,7 @@ BEGIN
   INTO total_amount
   FROM order_items
   WHERE order_id = order_id_param
-    AND status != 'cancelled';
+    AND status != 'canceled';
 
   RETURN total_amount;
 END;
@@ -675,7 +675,7 @@ BEGIN
     WHERE o.restaurant_id = p_restaurant_id
       AND DATE(o.created_at) = p_date
       AND o.status != 'canceled'
-      AND oi.status != 'cancelled'
+      AND oi.status != 'canceled'
     GROUP BY oi.menu_item_id, mi.name_en
     ORDER BY total_quantity DESC
     LIMIT 1

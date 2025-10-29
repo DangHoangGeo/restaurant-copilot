@@ -103,7 +103,7 @@ struct OrderItemStatusBadge: View {
             return (status.displayName, .appSuccess, .appSuccessLight, "checkmark.circle")
         case .served:
             return (status.displayName, .appTextSecondary, .appSurfaceSecondary, "checkmark.seal")
-        case .cancelled:
+        case .canceled:
             return (status.displayName, .appError, .appErrorLight, "xmark.circle")
         }
     }
@@ -507,7 +507,7 @@ struct EnhancedOrderItemView: View {
                 }
             }
             
-            if showDetailedActions && item.status.rawValue != "served" && item.status.rawValue != "cancelled" {
+            if showDetailedActions && item.status.rawValue != "served" && item.status.rawValue != "canceled" {
                 HStack {
                     Spacer()
                     
@@ -544,8 +544,8 @@ struct EnhancedOrderItemView: View {
             return .served
         case .served:
             return .served  // No further progression
-        case .cancelled:
-            return .cancelled  // Cancelled items don't progress
+        case .canceled:
+            return .canceled  // canceled items don't progress
         }
     }
 }

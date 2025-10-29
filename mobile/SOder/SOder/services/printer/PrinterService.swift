@@ -150,7 +150,7 @@ class PrinterService {
                 case .cancelled:
                     if !hasResumed {
                         hasResumed = true
-                        print("PrinterService: Connection cancelled")
+                        print("PrinterService: Connection canceled")
                         continuation.resume(throwing: PrinterError.timeout)
                     }
                     

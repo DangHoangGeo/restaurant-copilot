@@ -3,9 +3,9 @@ import { z } from "zod";
 // Constants for validation limits
 export const VALIDATION_LIMITS = {
   MAX_PAGE_SIZE: 100,
-  MAX_DATE_RANGE_DAYS: 31,
+  MAX_DATE_RANGE_DAYS: 92, // Extended to 92 days as per phase 1 spec
   MIN_PAGE_SIZE: 1,
-  DEFAULT_PAGE_SIZE: 20,
+  DEFAULT_PAGE_SIZE: 25, // Updated to 25 as per phase 1 spec
 } as const;
 
 // Common date validation schemas
@@ -25,7 +25,7 @@ export const dateRangeSchema = z.object({
   message: `Date range cannot exceed ${VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS} days`,
 });
 
-// Pagination validation schemas
+// Pagination validation schemas (updated for Phase 1 requirements)
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int()
@@ -52,9 +52,9 @@ export const orderStatusSchema = z.enum([
   "ready", 
   "serving", 
   "completed", 
-  "cancelled",
+  "canceled",
   "canceled" // Accept both spellings
-]).transform(val => val === "canceled" ? "cancelled" : val);
+]).transform(val => val === "canceled" ? "canceled" : val);
 
 export const orderStatusArraySchema = z.array(orderStatusSchema).default(["new", "serving"]);
 
