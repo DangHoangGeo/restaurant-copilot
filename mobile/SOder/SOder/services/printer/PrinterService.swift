@@ -147,7 +147,7 @@ class PrinterService {
                     }
                     newConnection.cancel()
                     
-                case .canceled:
+                case .cancelled:
                     if !hasResumed {
                         hasResumed = true
                         print("PrinterService: Connection canceled")
@@ -221,7 +221,7 @@ class PrinterService {
                         continuation.resume(throwing: PrinterError.connectionFailed(error))
                     }
                     newConnection.cancel()
-                case .canceled:
+                case .cancelled:
                     if !hasResumed {
                         hasResumed = true
                         continuation.resume(throwing: PrinterError.timeout)
