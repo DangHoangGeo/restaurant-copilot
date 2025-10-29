@@ -309,7 +309,7 @@ struct ItemDetailView: View {
         case .preparing: return .appWarning
         case .ready: return .appSuccess
         case .served: return .appTextSecondary
-        case .cancelled: return .appError
+        case .canceled: return .appError
         }
     }
     
@@ -320,7 +320,7 @@ struct ItemDetailView: View {
         case .preparing: return "checkmark.circle"
         case .ready: return "checkmark.circle.fill"
         case .served: return "checkmark.seal.fill"
-        case .cancelled: return "xmark.seal.fill"
+        case .canceled: return "xmark.seal.fill"
         }
     }
     
@@ -331,7 +331,7 @@ struct ItemDetailView: View {
         case .preparing: return "Ready"
         case .ready: return "Served"
         case .served: return "Completed"
-        case .cancelled: return "Cancelled"
+        case .canceled: return "canceled"
         }
     }
     
@@ -405,7 +405,7 @@ struct OrderItemDetailRow: View {
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
-        case .cancelled: return .red
+        case .canceled: return .red
         }
     }
 }
@@ -448,7 +448,7 @@ struct StatusProgressView: View {
         case .preparing: return .orange
         case .ready: return .green
         case .served: return .gray
-        case .cancelled: return .red
+        case .canceled: return .red
         }
     }
 }

@@ -405,8 +405,8 @@ struct KitchenBoardView: View {
                     case .ready:
                         newStatus = .served
                     case .served:
-                        newStatus = .cancelled
-                    case .cancelled:
+                        newStatus = .canceled
+                    case .canceled:
                         return // Already completed
                 }
                 

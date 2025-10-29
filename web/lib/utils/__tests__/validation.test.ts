@@ -62,17 +62,17 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should handle both "cancelled" and "canceled"', () => {
+    it('should handle both "canceled" and "canceled"', () => {
         let result = orderStatusSchema.safeParse('canceled');
         expect(result.success).toBe(true);
         if (result.success) {
-            expect(result.data).toBe('cancelled');
+            expect(result.data).toBe('canceled');
         }
 
-        result = orderStatusSchema.safeParse('cancelled');
+        result = orderStatusSchema.safeParse('canceled');
         expect(result.success).toBe(true);
         if (result.success) {
-            expect(result.data).toBe('cancelled');
+            expect(result.data).toBe('canceled');
         }
     });
   });

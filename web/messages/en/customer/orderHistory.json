@@ -46,7 +46,7 @@
     "new": "New",
     "serving": "Serving",
     "completed": "Completed",
-    "canceled": "Cancelled"
+    "canceled": "Canceled"
   },
   "item_status": {
     "new": "New",
@@ -54,7 +54,7 @@
     "preparing": "Preparing",
     "ready": "Ready",
     "served": "Served",
-    "cancelled": "Cancelled"
+    "canceled": "Canceled"
   },
   "order_details": {
     "order_number": "Order #{orderId}",
@@ -173,7 +173,7 @@
       "new": "New",
       "serving": "Serving",
       "completed": "Completed",
-      "canceled": "Cancelled"
+      "canceled": "Canceled"
     },
     "item_status": {
       "new": "New",
@@ -181,7 +181,7 @@
       "preparing": "Preparing",
       "ready": "Ready",
       "served": "Served",
-      "cancelled": "Cancelled"
+      "canceled": "Canceled"
     }
   }
 }

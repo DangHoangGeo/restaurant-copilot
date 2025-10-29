@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       .eq("table_id", tableId)
       .eq("restaurant_id", restaurantId)
       .neq("status", "completed") // Exclude completed orders
-      .neq("status", "cancelled") // Exclude cancelled orders
+      .neq("status", "canceled") // Exclude canceled orders
       .neq("status", "expired") // Exclude expired orders
       .order("created_at", { ascending: false })
       .limit(1)

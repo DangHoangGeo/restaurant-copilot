@@ -326,7 +326,7 @@
 "error_update_item_notes" = "Failed to update item notes. Please try again.";
 "error_cancel_item" = "Failed to cancel the item. Please try again.";
 "error_update_item_status" = "Failed to update item status. Please try again.";
-"error_cancel_order_status" = "Order cannot be cancelled. Current status: %@";
+"error_cancel_order_status" = "Order cannot be canceled. Current status: %@";
 "kitchen_print_failure" = "Failed to print kitchen summary. Please check printer connection.";
 "kitchen_item_print_failure" = "Failed to print kitchen item. Please check printer connection.";
 
@@ -573,7 +573,7 @@
 // MARK: - Order Detail User Messages
 "order_status_update_success_message" = "Order status updated to %@.";
 "order_status_update_failure_message" = "Failed to update order status. Please try again.";
-"order_cancel_success_message" = "Order was successfully cancelled.";
+"order_cancel_success_message" = "Order was successfully canceled.";
 "order_cancel_failure_message" = "Failed to cancel the order. Please try again.";
 "receipt_print_success_message" = "Receipt printed successfully.";
 "receipt_print_failure_message" = "Failed to print receipt. Please check printer connection and try again.";
@@ -998,4 +998,4 @@
 "order_item_status_preparing" = "Preparing";
 "order_item_status_ready" = "Ready";
 "order_item_status_served" = "Served";
-"order_item_status_cancelled" = "Cancelled";
+"order_item_status_canceled" = "canceled";

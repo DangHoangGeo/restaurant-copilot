@@ -52,4 +52,4 @@ export interface OrderHistoryResponse {
 }
 
 export type OrderStatus = 'new' | 'serving' | 'ready' | 'completed' | 'canceled';
-export type OrderItemStatus = 'new' | 'preparing' | 'ready' | 'served' | 'cancelled';
+export type OrderItemStatus = 'new' | 'preparing' | 'ready' | 'served' | 'canceled';

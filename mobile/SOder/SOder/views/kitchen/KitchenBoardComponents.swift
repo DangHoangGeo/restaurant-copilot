@@ -257,7 +257,7 @@ struct KitchenItemCard: View {
         case .preparing: return "kitchen_action_mark_ready".localized
         case .ready: return "kitchen_action_mark_served".localized
         case .served: return "kitchen_action_completed".localized
-        case .cancelled: return "kitchen_action_cancel_order".localized
+        case .canceled: return "kitchen_action_cancel_order".localized
         }
     }
     
@@ -268,7 +268,7 @@ struct KitchenItemCard: View {
         case .preparing: return .appWarning
         case .ready: return .appSuccess
         case .served: return .appTextSecondary
-        case .cancelled: return .appError
+        case .canceled: return .appError
         }
     }
     
@@ -529,7 +529,7 @@ struct CompactKitchenItemCard: View {
         case .preparing: return .appWarning
         case .ready: return .appSuccess
         case .served: return .appTextSecondary
-        case .cancelled: return .appError
+        case .canceled: return .appError
         }
     }
     
@@ -540,7 +540,7 @@ struct CompactKitchenItemCard: View {
         case .preparing: return "kitchen_action_mark_ready".localized
         case .ready: return "kitchen_action_mark_served".localized
         case .served: return "kitchen_action_completed".localized
-        case .cancelled: return "kitchen_action_cancel_order".localized
+        case .canceled: return "kitchen_action_cancel_order".localized
         }
     }
     
@@ -903,7 +903,7 @@ struct HorizontalKitchenItemCard: View {
         case .preparing: return .appWarning
         case .ready: return .appSuccess
         case .served: return .appTextSecondary
-		case .cancelled: return .appError
+		case .canceled: return .appError
         }
     }
     
@@ -914,7 +914,7 @@ struct HorizontalKitchenItemCard: View {
         case .preparing: return "kitchen_action_ready".localized
         case .ready: return "kitchen_action_serve".localized
         case .served: return "kitchen_action_done".localized
-		case .cancelled: return "kitchen_action_reorder".localized
+		case .canceled: return "kitchen_action_reorder".localized
         }
     }
     
@@ -925,7 +925,7 @@ struct HorizontalKitchenItemCard: View {
         case .preparing: return "checkmark.circle.fill"
         case .ready: return "hand.raised.fill"
         case .served: return "checkmark.circle.fill"
-		case .cancelled: return "arrow.clockwise"
+		case .canceled: return "arrow.clockwise"
         }
     }
     

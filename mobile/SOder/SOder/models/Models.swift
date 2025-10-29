@@ -111,7 +111,7 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
     case preparing = "preparing"
     case ready = "ready"
     case served = "served"
-    case cancelled = "cancelled"
+    case canceled = "canceled"
     
     var displayName: String {
         switch self {
@@ -120,7 +120,7 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
         case .preparing: return "order_item_status_preparing".localized
         case .ready: return "order_item_status_ready".localized
         case .served: return "order_item_status_served".localized
-        case .cancelled: return "order_item_status_cancelled".localized
+        case .canceled: return "order_item_status_canceled".localized
         }
     }
     
@@ -131,13 +131,13 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
         case .preparing: return "orange"
         case .ready: return "green"
         case .served: return "gray"
-        case .cancelled: return "red"
+        case .canceled: return "red"
         }
     }
     
     // Comparable conformance - defines ordering for status progression
     static func < (lhs: OrderItemStatus, rhs: OrderItemStatus) -> Bool {
-        let order: [OrderItemStatus] = [.draft, .new, .preparing, .ready, .served, .cancelled]
+        let order: [OrderItemStatus] = [.draft, .new, .preparing, .ready, .served, .canceled]
         guard let lhsIndex = order.firstIndex(of: lhs),
               let rhsIndex = order.firstIndex(of: rhs) else {
             return false

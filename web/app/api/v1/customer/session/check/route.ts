@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       }, { status: 404 });
     }
 
-    const isActive = !['completed', 'cancelled', 'expired'].includes(data.status);
+    const isActive = !['completed', 'canceled', 'expired'].includes(data.status);
     const canAddItems = isActive && data.status !== 'served';
 
     return NextResponse.json({

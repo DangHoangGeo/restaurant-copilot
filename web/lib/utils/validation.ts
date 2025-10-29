@@ -52,9 +52,9 @@ export const orderStatusSchema = z.enum([
   "ready", 
   "serving", 
   "completed", 
-  "cancelled",
+  "canceled",
   "canceled" // Accept both spellings
-]).transform(val => val === "canceled" ? "cancelled" : val);
+]).transform(val => val === "canceled" ? "canceled" : val);
 
 export const orderStatusArraySchema = z.array(orderStatusSchema).default(["new", "serving"]);
 

@@ -949,4 +949,4 @@
 "order_item_status_preparing" = "準備中";
 "order_item_status_ready" = "提供準備完了";
 "order_item_status_served" = "提供済み";
-"order_item_status_cancelled" = "キャンセル";
+"order_item_status_canceled" = "キャンセル";

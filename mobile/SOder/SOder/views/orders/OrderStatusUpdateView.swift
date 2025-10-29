@@ -314,7 +314,7 @@ struct OrderStatusUpdateView: View {
         case .preparing: return .appWarning
         case .ready: return .appSuccess
         case .served: return .appTextSecondary
-        case .cancelled: return .appError
+        case .canceled: return .appError
         }
     }
     

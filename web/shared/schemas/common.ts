@@ -55,8 +55,8 @@ export function createSortSchema(allowedFields: readonly string[]) {
 
 // Status filters
 export const orderStatusSchema = z.enum([
-  'new', 'confirmed', 'preparing', 'ready', 'serving', 'completed', 'cancelled', 'canceled'
-]).transform(val => val === 'canceled' ? 'cancelled' : val);
+  'new', 'confirmed', 'preparing', 'ready', 'serving', 'completed', 'canceled', 'canceled'
+]).transform(val => val === 'canceled' ? 'canceled' : val);
 
 export const orderStatusArraySchema = z.array(orderStatusSchema)
   .max(VALIDATION_LIMITS.MAX_ARRAY_LENGTH)

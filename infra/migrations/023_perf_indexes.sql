@@ -4,7 +4,7 @@
 -- Orders table indexes for dashboard and order management queries
 CREATE INDEX IF NOT EXISTS idx_orders_restaurant_status_created 
 ON orders (restaurant_id, status, created_at DESC)
-WHERE status IN ('new', 'confirmed', 'preparing', 'ready', 'serving', 'completed', 'cancelled');
+WHERE status IN ('new', 'confirmed', 'preparing', 'ready', 'serving', 'completed', 'canceled');
 
 CREATE INDEX IF NOT EXISTS idx_orders_restaurant_created 
 ON orders (restaurant_id, created_at DESC);
