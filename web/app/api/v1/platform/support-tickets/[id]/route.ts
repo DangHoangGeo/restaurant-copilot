@@ -13,14 +13,14 @@ import { updateTicketSchema } from '@/shared/schemas/platform';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params }: { params: Promise<{ ticketId: string }> }
+){
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
-    const ticketId = params.id;
+    const { ticketId } = await params;
     const body = await request.json();
 
     // Validate request body
@@ -115,14 +115,14 @@ export async function PATCH(
 // Get a single support ticket with messages
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }:  { params: Promise<{ ticketId: string }> }
 ) {
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
-    const ticketId = params.id;
+    const { ticketId } = await params;
     const supabase = await createClient();
 
     // Get ticket
@@ -150,7 +150,7 @@ export async function GET(
       .order('created_at', { ascending: true });
 
     if (messagesError) {
-      console.error('Error fetching ticket messages:', error);
+      console.error('Error fetching ticket messages:', messagesError);
       return platformApiError('Failed to fetch ticket messages', 500);
     }
 

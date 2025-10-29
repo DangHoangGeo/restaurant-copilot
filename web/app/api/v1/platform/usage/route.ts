@@ -13,7 +13,7 @@ import type { UsageSnapshot, PlatformUsageSummary } from '@/shared/types/platfor
 
 export async function GET(request: NextRequest) {
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
@@ -89,7 +89,14 @@ export async function GET(request: NextRequest) {
     };
 
     // Get trend data if date range is provided
-    let trends = [];
+    interface TrendPoint {
+      date: string;
+      orders: number;
+      revenue: number;
+      customers: number;
+    }
+
+    let trends: TrendPoint[] = [];
     if (query.start_date && query.end_date) {
       const { data: trendData } = await supabase
         .from('tenant_usage_snapshots')

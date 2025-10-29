@@ -14,14 +14,14 @@ import { replyToTicketSchema } from '@/shared/schemas/platform';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
-    const ticketId = params.id;
+    const { ticketId } = await params;
     const body = await request.json();
 
     // Validate request body

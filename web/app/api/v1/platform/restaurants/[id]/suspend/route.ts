@@ -14,14 +14,14 @@ import { suspendRestaurantSchema, unsuspendRestaurantSchema } from '@/shared/sch
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params }: { params: Promise<{ restaurantId: string }> }
+){
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
-    const restaurantId = params.id;
+    const {restaurantId} = await params;
     const body = await request.json();
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action'); // 'suspend' or 'unsuspend'

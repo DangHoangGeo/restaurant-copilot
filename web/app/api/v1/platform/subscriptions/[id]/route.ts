@@ -13,14 +13,14 @@ import { updateSubscriptionSchema } from '@/shared/schemas/platform';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params }: { params: Promise<{ subscriptionId: string }> }
+){
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
-    const subscriptionId = params.id;
+    const { subscriptionId } = await params;
     const body = await request.json();
 
     // Validate request body

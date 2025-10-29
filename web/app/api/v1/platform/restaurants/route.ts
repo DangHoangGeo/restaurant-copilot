@@ -13,7 +13,7 @@ import type { RestaurantSummary, PaginatedResponse } from '@/shared/types/platfo
 
 export async function GET(request: NextRequest) {
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {

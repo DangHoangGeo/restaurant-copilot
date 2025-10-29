@@ -13,7 +13,7 @@ import type { DashboardOverview } from '@/shared/types/platform';
 
 export async function GET(request: NextRequest) {
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       ?.filter((s) => s.status === 'active')
       .forEach((s) => {
         const prices = planPriceMap.get(
-          // @ts-ignore - plan_id exists in join
+          // @ts-expect-error - plan_id exists in join
           s.plan_id || ''
         );
         if (prices) {

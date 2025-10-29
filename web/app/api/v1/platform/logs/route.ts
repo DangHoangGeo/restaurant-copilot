@@ -13,7 +13,7 @@ import type { PlatformLog, PaginatedResponse } from '@/shared/types/platform';
 
 export async function GET(request: NextRequest) {
   // Check platform admin authorization
-  const authError = await requirePlatformAdmin(request);
+  const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
