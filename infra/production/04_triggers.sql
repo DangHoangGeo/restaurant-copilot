@@ -16,9 +16,9 @@ BEGIN
         RETURN NEW;
     END IF;
     
-    -- When an order is completed or cancelled, check if table should be available
+    -- When an order is completed or canceled, check if table should be available
     IF TG_OP = 'UPDATE' THEN
-        -- If order status changed to completed or cancelled
+        -- If order status changed to completed or canceled
         IF OLD.status != NEW.status AND NEW.status IN ('completed', 'canceled') THEN
             -- Check if there are any other active orders for this table
             IF NOT EXISTS (
@@ -69,7 +69,7 @@ DECLARE
     all_items_ready BOOLEAN;
     all_items_served BOOLEAN;
     has_preparing_items BOOLEAN;
-    has_cancelled_items BOOLEAN;
+    has_canceled_items BOOLEAN;
     order_id_to_check UUID;
 BEGIN
     -- Get the order_id from the trigger
@@ -84,11 +84,11 @@ BEGIN
     
     -- Check the status of all items in this order
     SELECT 
-        NOT EXISTS(SELECT 1 FROM order_items WHERE order_id = order_id_to_check AND status NOT IN ('ready', 'served', 'cancelled')) as all_ready,
+        NOT EXISTS(SELECT 1 FROM order_items WHERE order_id = order_id_to_check AND status NOT IN ('ready', 'served', 'canceled')) as all_ready,
         NOT EXISTS(SELECT 1 FROM order_items WHERE order_id = order_id_to_check AND status != 'served') as all_served,
         EXISTS(SELECT 1 FROM order_items WHERE order_id = order_id_to_check AND status = 'preparing') as has_preparing,
-        EXISTS(SELECT 1 FROM order_items WHERE order_id = order_id_to_check AND status = 'cancelled') as has_cancelled
-    INTO all_items_ready, all_items_served, has_preparing_items, has_cancelled_items;
+        EXISTS(SELECT 1 FROM order_items WHERE order_id = order_id_to_check AND status = 'canceled') as has_canceled
+    INTO all_items_ready, all_items_served, has_preparing_items, has_canceled_items;
     
     -- Update order status based on item statuses
     IF has_preparing_items OR all_items_ready THEN
@@ -99,8 +99,8 @@ BEGIN
         WHERE id = order_id_to_check AND status = 'new';
     END IF;
     
-    -- Check if all items are cancelled (order should be cancelled)
-    IF NOT EXISTS(SELECT 1 FROM order_items WHERE order_id = order_id_to_check AND status != 'cancelled') THEN
+    -- Check if all items are canceled (order should be canceled)
+    IF NOT EXISTS(SELECT 1 FROM order_items WHERE order_id = order_id_to_check AND status != 'canceled') THEN
         UPDATE orders 
         SET status = 'canceled', 
             updated_at = now()
@@ -130,12 +130,12 @@ BEGIN
         order_id_to_update := NEW.order_id;
     END IF;
     
-    -- Calculate new total amount (excluding cancelled items)
+    -- Calculate new total amount (excluding canceled items)
     SELECT COALESCE(SUM(price_at_order * quantity), 0)
     INTO new_total
     FROM order_items 
     WHERE order_id = order_id_to_update 
-    AND status != 'cancelled';
+    AND status != 'canceled';
     
     -- Update the order total
     UPDATE orders 

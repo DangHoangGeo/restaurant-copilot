@@ -74,7 +74,7 @@
   "status": {
     "pending": "Pending Confirmation",
     "confirmed": "Confirmed", 
-    "cancelled": "Cancelled",
+    "canceled": "Canceled",
     "completed": "Completed"
   },
   "actions": {

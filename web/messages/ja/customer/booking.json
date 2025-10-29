@@ -74,7 +74,7 @@
   "status": {
     "pending": "確認待ち",
     "confirmed": "確定済み",
-    "cancelled": "キャンセル済み",
+    "canceled": "キャンセル済み",
     "completed": "完了"
   },
   "actions": {

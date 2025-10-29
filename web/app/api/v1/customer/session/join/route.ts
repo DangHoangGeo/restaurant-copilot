@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
       tableId: order.table_id,
       tableNumber: order.tables?.[0]?.name,
       guestCount: order.guest_count,
-      canAddItems: order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'expired'
+      canAddItems: order.status !== 'completed' && order.status !== 'canceled' && order.status !== 'expired'
     });
 
   } catch (error) {

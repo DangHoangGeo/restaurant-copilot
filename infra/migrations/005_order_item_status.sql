@@ -1,5 +1,5 @@
 -- Add order_item_status to track individual item preparation status
-ALTER TABLE order_items ADD COLUMN status text NOT NULL DEFAULT 'new' CHECK (status IN ('new','preparing','ready','served','cancelled'));
+ALTER TABLE order_items ADD COLUMN status text NOT NULL DEFAULT 'new' CHECK (status IN ('new','preparing','ready','served','canceled'));
 
 -- Add index for better performance when querying by status
 CREATE INDEX ON order_items (order_id, status);

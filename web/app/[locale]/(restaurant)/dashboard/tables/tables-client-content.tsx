@@ -84,13 +84,12 @@ export function TablesClientContent() {
       setError(null)
       
       const tablesRes = await fetch('/api/v1/owner/tables')
-
       if (!tablesRes.ok) {
         throw new Error(`Failed to fetch tables: ${tablesRes.status}`)
       }
 
       const tablesData = await tablesRes.json()
-      setTablesData(tablesData.tables || [])
+      setTablesData(tablesData.data.tables || [])
     } catch (err) {
       console.error('Error fetching data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load data')

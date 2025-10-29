@@ -1,5 +1,5 @@
 # For customer page
-1. After a new order is placed, the status of table still be available -> change to unavailable. Similarly, when order session is completed or cancelled, change back to available. Also remember to check table status when creating new order session.
+1. After a new order is placed, the status of table still be available -> change to unavailable. Similarly, when order session is completed or canceled, change back to available. Also remember to check table status when creating new order session.
 2. 
 
 ## For owner, staff side page.

@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   menu_item_size_id uuid REFERENCES menu_item_sizes(id),
   quantity integer NOT NULL CHECK (quantity > 0),
   notes text,
-  status text NOT NULL CHECK (status IN ('new','preparing','ready','served','cancelled')) DEFAULT 'new',
+  status text NOT NULL CHECK (status IN ('new','preparing','ready','served','canceled')) DEFAULT 'new',
   topping_ids uuid[] DEFAULT '{}',  -- Array of topping IDs
   price_at_order numeric NOT NULL, -- Store the calculated price at time of order
   created_at timestamptz DEFAULT now(),

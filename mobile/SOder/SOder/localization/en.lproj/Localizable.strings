@@ -326,7 +326,7 @@
 "error_update_item_notes" = "Failed to update item notes. Please try again.";
 "error_cancel_item" = "Failed to cancel the item. Please try again.";
 "error_update_item_status" = "Failed to update item status. Please try again.";
-"error_cancel_order_status" = "Order cannot be cancelled. Current status: %@";
+"error_cancel_order_status" = "Order cannot be canceled. Current status: %@";
 "kitchen_print_failure" = "Failed to print kitchen summary. Please check printer connection.";
 "kitchen_item_print_failure" = "Failed to print kitchen item. Please check printer connection.";
 
@@ -412,6 +412,11 @@
 "kitchen_status_new" = "New";
 "kitchen_status_preparing" = "Preparing";
 "kitchen_status_ready" = "Ready";
+
+// Kitchen Category Filter Accessibility
+"kitchen_category_filter_hint" = "Double tap to filter by this category";
+"kitchen_category_count_format" = "%d items";
+"kitchen_category_no_items" = "No items";
 
 // Empty State
 "kitchen_empty_title" = "All caught up!";
@@ -568,7 +573,7 @@
 // MARK: - Order Detail User Messages
 "order_status_update_success_message" = "Order status updated to %@.";
 "order_status_update_failure_message" = "Failed to update order status. Please try again.";
-"order_cancel_success_message" = "Order was successfully cancelled.";
+"order_cancel_success_message" = "Order was successfully canceled.";
 "order_cancel_failure_message" = "Failed to cancel the order. Please try again.";
 "receipt_print_success_message" = "Receipt printed successfully.";
 "receipt_print_failure_message" = "Failed to print receipt. Please check printer connection and try again.";
@@ -684,6 +689,58 @@
 "print_queue_clear_all_confirmation" = "This will remove all print jobs from the queue. This action cannot be undone.";
 "print_queue_no_jobs" = "No Print Jobs";
 "print_queue_no_jobs_description" = "Print jobs will appear here when you print orders or receipts";
+"print_queue_retry" = "Retry";
+"print_queue_attempts_format" = "• Attempts: %d";
+"print_queue_job_in_progress" = "Print job in progress";
+
+// MARK: - Printer Test Feedback
+"printer_test_in_progress" = "Testing printer connection...";
+"printer_test_result_title" = "Test Result";
+"printer_test_success_message" = "✓ Successfully printed to %@";
+"printer_test_failed_message" = "✗ Failed to print to %@";
+"printer_test_failed_suggestion" = "Check printer connection, power, and network settings";
+"printer_test_suggestion" = "Suggestion";
+"printer_test_view_logs" = "View Logs";
+
+// MARK: - Connection Status
+"connection_status_unknown" = "Unknown";
+"connection_status_connected" = "Connected";
+"connection_status_disconnected" = "Disconnected";
+"connection_status_error" = "Error";
+
+// MARK: - Print Queue Remediation
+"print_queue_help" = "Help";
+"print_queue_remediation_title" = "Troubleshoot Print Failure";
+"print_queue_remediation_message" = "Select an option to diagnose and fix the print issue";
+"print_queue_view_logs" = "View Printer Logs";
+"print_queue_reconfigure_printer" = "Reconfigure Printer";
+
+// MARK: - Printer Logs
+"printer_logs_title" = "Printer Logs";
+"printer_logs_empty_title" = "No Logs";
+"printer_logs_empty_description" = "Printer activity logs will appear here";
+"printer_logs_clear" = "Clear Logs";
+
+// MARK: - Bluetooth Printer Setup
+"bluetooth_printer_setup_title" = "Bluetooth Printer";
+"bluetooth_printer_setup_subtitle" = "Configure Bluetooth printer connection";
+"bluetooth_status_section" = "Connection Status";
+"bluetooth_connection_status" = "Status";
+"bluetooth_scanning_status" = "Scanning for devices...";
+"bluetooth_scan_section" = "Scanner";
+"bluetooth_start_scan" = "Start Scanning";
+"bluetooth_stop_scan" = "Stop Scanning";
+"bluetooth_disconnect" = "Disconnect";
+"bluetooth_discovered_devices_section" = "Discovered Devices";
+"bluetooth_unnamed_device" = "Unnamed Device";
+"bluetooth_no_devices_title" = "No Devices Found";
+"bluetooth_no_devices_description" = "Start scanning to discover nearby Bluetooth printers";
+"bluetooth_help_section" = "Setup Instructions";
+"bluetooth_help_step1" = "Turn on your Bluetooth printer";
+"bluetooth_help_step2" = "Tap 'Start Scanning' to discover nearby devices";
+"bluetooth_help_step3" = "Select your printer from the discovered devices list";
+"bluetooth_help_step4" = "Wait for connection to establish";
+
 "receipt_customization_title" = "Receipt Customization";
 "receipt_template_encoding_title" = "Receipt Template & Encoding";
 "receipt_template_encoding_description" = "Customize receipt format and encoding";
@@ -802,6 +859,28 @@
 "delete_printer_title" = "Delete Printer";
 "delete_printer_message" = "Are you sure you want to delete this printer configuration?";
 "no_printers_configured" = "No printers configured.";
+
+// Printer Settings View - Quick Setup Section
+"printer_quick_setup_title" = "Quick Setup";
+"printer_quick_setup_button" = "Printer Setup";
+"printer_quick_setup_subtitle" = "Configure printers, receipts, and settings";
+"printer_quick_setup_view_manage" = "View and manage print jobs";
+"printer_setup_complete" = "Setup Complete";
+"printer_setup_needs_setup" = "Needs Setup";
+"printer_setup_get_started" = "Get Started";
+
+// Printer Settings View - Current Configuration Section
+"printer_current_config_title" = "Current Configuration";
+"printer_current_config_mode" = "Printer Mode:";
+"printer_current_config_kitchen" = "Kitchen Printer:";
+"printer_current_config_checkout" = "Checkout Printer:";
+"printer_current_config_active" = "Active Printer:";
+"printer_current_config_language" = "Print Language:";
+"printer_current_config_not_set" = "Not set";
+
+// Printer Settings View - Sections
+"printer_printing_format_title" = "Printing Format";
+"printer_print_queue_title" = "Print Queue";
 "using_default_placeholder_printer" = "Using a default placeholder printer. Add a printer to save and edit settings.";
 "set_active" = "Set Active";
 "assign_to_kitchen" = "Assign to Kitchen";
@@ -919,4 +998,4 @@
 "order_item_status_preparing" = "Preparing";
 "order_item_status_ready" = "Ready";
 "order_item_status_served" = "Served";
-"order_item_status_cancelled" = "Cancelled";
+"order_item_status_canceled" = "canceled";

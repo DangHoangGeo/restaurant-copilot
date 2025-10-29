@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       error: parse.error.errors,
       body
     });
+    console.log('Order validation errors:', parse.error.errors);
     return NextResponse.json({ success: false, errors: parse.error.errors }, { status: 400 });
   }
 

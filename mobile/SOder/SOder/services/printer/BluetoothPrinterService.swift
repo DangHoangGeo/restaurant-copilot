@@ -6,9 +6,9 @@ class BluetoothPrinterService: NSObject, ObservableObject {
     static let shared = BluetoothPrinterService()
     
     private var centralManager: CBCentralManager?
-    private var printerPeripheral: CBPeripheral?
+    @Published var printerPeripheral: CBPeripheral?
     private var writableCharacteristic: CBCharacteristic?
-    
+
     @Published var isScanning = false
     @Published var isConnected = false
     @Published var discoveredPeripherals: [CBPeripheral] = []

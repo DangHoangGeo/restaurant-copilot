@@ -1050,11 +1050,11 @@ class OrderManager: ObservableObject {
     @MainActor
     func cancelOrderItem(orderItemId: String) async {
         do {
-            // Set status to cancelled
+            // Set status to canceled
             let _: OrderItem = try await supabaseManager.client
                 .from("order_items")
                 .update([
-                    "status": OrderItemStatus.cancelled.rawValue,
+                    "status": OrderItemStatus.canceled.rawValue,
                     "updated_at": ISO8601DateFormatter().string(from: Date())
                 ])
                 .eq("id", value: orderItemId)
@@ -1076,7 +1076,7 @@ class OrderManager: ObservableObject {
                         menu_item_size_id: orderItems[itemIndex].menu_item_size_id,
                         topping_ids: orderItems[itemIndex].topping_ids,
                         price_at_order: orderItems[itemIndex].price_at_order,
-                        status: .cancelled,
+                        status: .canceled,
                         created_at: orderItems[itemIndex].created_at,
                         updated_at: ISO8601DateFormatter().string(from: Date()),
                         menu_item: orderItems[itemIndex].menu_item
@@ -1085,7 +1085,7 @@ class OrderManager: ObservableObject {
                 }
             }
             
-            print("Cancelled order item: \(orderItemId)")
+            print("canceled order item: \(orderItemId)")
             
         } catch {
             print("Error cancelling order item: \(error)")
@@ -1276,7 +1276,7 @@ class OrderManager: ObservableObject {
                 print("📋 No new items detected")
             }
         } else {
-            print("📋 Order count decreased (completed/cancelled orders?)")
+            print("📋 Order count decreased (completed/canceled orders?)")
         }
     }
     
@@ -1785,7 +1785,7 @@ class OrderManager: ObservableObject {
             throw OrderManagerError.missingRestaurantId
         }
         
-        // Check if order exists and can be cancelled
+        // Check if order exists and can be canceled
         let order: Order = try await supabaseManager.client
             .from("orders")
             .select("id, status")
@@ -1799,21 +1799,21 @@ class OrderManager: ObservableObject {
             throw OrderManagerError.generalError(String(format: "error_cancel_order_status".localized, order.status.displayName))
         }
         
-        // Update order status to cancelled
+        // Update order status to canceled
         try await supabaseManager.client
             .from("orders")
             .update(["status": "canceled"])
             .eq("id", value: orderId)
             .execute()
         
-        // Update all order items to cancelled  
+        // Update all order items to canceled  
         try await supabaseManager.client
             .from("order_items")
             .update(["status": "canceled"])
             .eq("order_id", value: orderId)
             .execute()
         
-        print("✅ Cancelled order: \(orderId)")
+        print("✅ canceled order: \(orderId)")
         
         // Refresh orders list
         await fetchActiveOrders()

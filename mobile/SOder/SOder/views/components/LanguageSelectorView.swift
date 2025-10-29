@@ -27,7 +27,7 @@ struct LanguageSelectorView: View {
                             
                             if localizationManager.currentLanguage == languageCode {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.appPrimary)
                             }
                         }
                     }

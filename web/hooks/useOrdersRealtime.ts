@@ -40,7 +40,7 @@ export function useOrdersRealtime<T>(options: UseOrdersRealtimeOptions): UseOrde
       }
       
       const result = await response.json();
-      setData(result);
+      setData(result.data);
       
       // Extract restaurant ID from session if not already set
       if (!restaurantId) {

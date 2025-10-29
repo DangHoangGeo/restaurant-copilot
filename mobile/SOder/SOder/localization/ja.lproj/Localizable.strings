@@ -413,6 +413,11 @@
 "kitchen_status_preparing" = "準備中";
 "kitchen_status_ready" = "準備完了";
 
+// Kitchen Category Filter Accessibility
+"kitchen_category_filter_hint" = "ダブルタップしてこのカテゴリでフィルター";
+"kitchen_category_count_format" = "%d 件";
+"kitchen_category_no_items" = "アイテムなし";
+
 // Empty State
 "kitchen_empty_title" = "すべて完了！";
 "kitchen_empty_subtitle" = "準備が必要なアイテムはありません";
@@ -789,6 +794,29 @@
 "delete_printer_title" = "プリンター削除";
 "delete_printer_message" = "このプリンター設定を削除してもよろしいですか？";
 "no_printers_configured" = "プリンターが設定されていません。";
+
+// Printer Settings View - Quick Setup Section
+"printer_quick_setup_title" = "クイック設定";
+"printer_quick_setup_button" = "プリンター設定";
+"printer_quick_setup_subtitle" = "プリンター、レシート、設定を構成";
+"printer_quick_setup_view_manage" = "印刷ジョブを表示および管理";
+"printer_setup_complete" = "設定完了";
+"printer_setup_needs_setup" = "設定が必要";
+"printer_setup_get_started" = "開始";
+
+// Printer Settings View - Current Configuration Section
+"printer_current_config_title" = "現在の設定";
+"printer_current_config_mode" = "プリンターモード:";
+"printer_current_config_kitchen" = "キッチンプリンター:";
+"printer_current_config_checkout" = "会計プリンター:";
+"printer_current_config_active" = "アクティブプリンター:";
+"printer_current_config_language" = "印刷言語:";
+"printer_current_config_not_set" = "未設定";
+
+// Printer Settings View - Sections
+"printer_printing_format_title" = "印刷フォーマット";
+"printer_print_queue_title" = "印刷キュー";
+
 "using_default_placeholder_printer" = "デフォルトのプレースホルダープリンターを使用しています。プリンターを追加して設定を保存および編集。";
 "set_active" = "アクティブに設定";
 "assign_to_kitchen" = "キッチンに割り当て";
@@ -921,4 +949,4 @@
 "order_item_status_preparing" = "準備中";
 "order_item_status_ready" = "提供準備完了";
 "order_item_status_served" = "提供済み";
-"order_item_status_cancelled" = "キャンセル";
+"order_item_status_canceled" = "キャンセル";

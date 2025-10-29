@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ReceiptCustomizationView: View {
-    @StateObject private var settingsManager = PrinterSettingsManager.shared
+    @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @State private var showingPreview = false
     @State private var editingHeader: ReceiptHeaderSettings
     @State private var showSaveSuccessAlert = false
@@ -241,7 +241,7 @@ struct ReceiptCustomizationView: View {
 // MARK: - Preview (uses real header/footer + fake order data)
 struct ReceiptPreviewView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var settingsManager = PrinterSettingsManager.shared
+    @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @State private var previewText = ""
     @State private var isLoading = true
     

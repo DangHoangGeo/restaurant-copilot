@@ -74,7 +74,7 @@ Swift structs define the application's data structures, mirroring the database s
 -   **`Order`**: Represents an order with properties like `id`, `restaurant_id`, `table_id`, `session_id`, `guest_count`, `status` (enum `OrderStatus`), `total_amount`, `created_at`, `updated_at`, and optional linked `table` (type `Table`) and `order_items` (array of `OrderItem`).
 -   **`OrderStatus`**: Enum (`new`, `serving`, `completed`, `canceled`) with display names and colors.
 -   **`OrderItem`**: Represents an item within an order. Includes `id`, `menu_item_id`, `quantity`, `notes`, `menu_item_size_id`, `topping_ids`, `price_at_order`, `status` (enum `OrderItemStatus`), and optional linked `menu_item` (`MenuItem`), `menu_item_size` (`MenuItemSize`), `toppings` (array of `Topping`).
--   **`OrderItemStatus`**: Enum (`ordered`, `preparing`, `ready`, `served`, `cancelled`) with display names, colors, and `Comparable` conformance for status progression.
+-   **`OrderItemStatus`**: Enum (`ordered`, `preparing`, `ready`, `served`, `canceled`) with display names, colors, and `Comparable` conformance for status progression.
 -   **`MenuItem`, `Category`, `Table`, `TableStatus`, `MenuItemSize`, `Topping`**: Structs for related entities.
 -   **Response Models (e.g., `OrderWithTableResponse`, `OrderItemWithMenuResponse`)**: Structs used for decoding data from Supabase queries that involve joins, mapping directly to the structure returned by Supabase and then converted to the primary models (e.g., `Order`, `OrderItem`).
 

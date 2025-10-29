@@ -120,6 +120,7 @@ struct KitchenBoardView: View {
                     urgentItemsCount: urgentItemsCount,
                     selectedCategoryFilter: selectedCategoryFilter,
                     categories: Array(Set(groupedByCategory.map { $0.categoryName })),
+                    categoryCounts: categoryCounts,
                     viewMode: viewMode,
                     onCategoryFilterChange: { category in
                         selectedCategoryFilter = category
@@ -260,7 +261,16 @@ struct KitchenBoardView: View {
         }
         return count
     }
-    
+
+    private var categoryCounts: [String: Int] {
+        var counts: [String: Int] = [:]
+        for categoryGroup in groupedByCategory {
+            let itemCount = categoryGroup.items.reduce(0) { sum, item in sum + item.quantity }
+            counts[categoryGroup.categoryName] = itemCount
+        }
+        return counts
+    }
+
     // MARK: - Helper Methods
     
     private func dateFromString(_ dateString: String) -> Date {
@@ -395,8 +405,8 @@ struct KitchenBoardView: View {
                     case .ready:
                         newStatus = .served
                     case .served:
-                        newStatus = .cancelled
-                    case .cancelled:
+                        newStatus = .canceled
+                    case .canceled:
                         return // Already completed
                 }
                 

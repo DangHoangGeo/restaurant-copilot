@@ -1,13 +1,12 @@
 import Foundation
-import SwiftUICore
+import SwiftUI
 import Network
 import ExternalAccessory
 
 @MainActor
 class PrinterManager: ObservableObject {
     static let shared = PrinterManager()
-    
-    @EnvironmentObject private var localizationManager: LocalizationManager
+
     @Published var isConnected = false
     @Published var printerStatus = "printer_disconnected_status".localized
     @Published var availablePrinters: [PrinterInfo] = []
@@ -114,9 +113,10 @@ class PrinterManager: ObservableObject {
         let components = printer.address.components(separatedBy: ":")
         guard components.count == 2,
               let port = Int(components[1]) else {
+            settingsManager.updateConnectionStatus(for: printer.id, status: .error("printer_invalid_address_format_error".localized))
             throw PrinterError.configurationError("printer_invalid_address_format_error".localized)
         }
-        
+
         // Use configured printer settings if available, otherwise use defaults
         let printerConfig: PrinterConfig.Hardware
         if let configuredPrinter = settingsManager.configuredPrinters.first(where: { $0.id == printer.id }) {
@@ -136,10 +136,13 @@ class PrinterManager: ObservableObject {
                 maxRetries: 3
             )
         }
-        
+
         let isReachable = await printerService.testConnection(to: printerConfig)
         if !isReachable {
+            settingsManager.updateConnectionStatus(for: printer.id, status: .disconnected)
             throw PrinterError.connectionFailed(NSError(domain: "PrinterManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "printer_unable_to_reach_error".localized]))
+        } else {
+            settingsManager.updateConnectionStatus(for: printer.id, status: .connected)
         }
     }
     
@@ -205,15 +208,19 @@ class PrinterManager: ObservableObject {
     }
     
     func printKitchenSummary(_ group: GroupedItem) async -> Bool {
-        guard isConnected, let printer = selectedPrinter else {
-            errorMessage = "printer_no_printer_connected_error".localized
-            return false
-        }
-        
         do {
             let formatter = PrintFormatter()
             let printData = formatter.formatKitchenSummary(group)
-            try await printerService.connectAndSendData(data: printData)
+
+            // Use kitchen printer configuration if available
+            let kitchenConfig = settingsManager.getKitchenPrinterConfig()
+            if kitchenConfig == nil {
+                errorMessage = "printer_no_kitchen_printer_configured_error".localized
+                addLog("printer_no_kitchen_printer_configured_error".localized)
+                return false
+            }
+
+            try await printerService.connectAndSendData(data: printData, target: .kitchen, to: kitchenConfig)
             addLog(String(format: "printer_kitchen_summary_success_log".localized, group.itemName))
             return true
         } catch {
@@ -363,7 +370,7 @@ class PrinterManager: ObservableObject {
         }
     }
     
-    private func addLog(_ message: String) {
+    func addLog(_ message: String) {
         let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
         printLogs.append("[\(timestamp)] \(message)")
         
@@ -465,20 +472,21 @@ extension PrinterManager {
 // MARK: - PrinterManager Extension for Kitchen Board
 extension PrinterManager {
     func printKitchenBoardSummary(_ items: [GroupedItem]) async throws {
-        guard isConnected, let printer = selectedPrinter else {
-            throw PrinterError.notConnected
+        // Get kitchen printer configuration
+        guard let kitchenConfig = settingsManager.getKitchenPrinterConfig() else {
+            throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
-        
+
         do {
             let formatter = PrintFormatter()
-            
+
             // Create a summary text for all items
             var summaryText = "\("printer_kitchen_board_summary_title".localized)\n"
             summaryText += String(repeating: "=", count: 32) + "\n"
             summaryText += String(format: "printer_kitchen_board_items".localized, items.count) + "\n"
             summaryText += String(format: "printer_kitchen_board_time".localized, DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short)) + "\n"
             summaryText += String(repeating: "-", count: 32) + "\n"
-            
+
             for item in items {
                 summaryText += "\(item.itemName) x\(item.quantity)\n"
                 summaryText += String(format: "printer_kitchen_board_tables".localized, Array(item.tables).joined(separator: ", ")) + "\n"
@@ -488,40 +496,42 @@ extension PrinterManager {
                 }
                 summaryText += "-\n"
             }
-            
+
             summaryText += String(repeating: "=", count: 32) + "\n"
             summaryText += "\("printer_kitchen_board_end_of_summary".localized)\n\n\n"
-            
+
             let printData = Data(summaryText.utf8)
-            try await printerService.connectAndSendData(data: printData)
+            try await printerService.connectAndSendData(data: printData, target: .kitchen, to: kitchenConfig)
             addLog(String(format: "printer_kitchen_board_summary_success_log".localized, items.count))
         } catch {
             addLog(String(format: "printer_kitchen_board_summary_failed_log".localized, error.localizedDescription))
             throw error
         }
     }
-    
+
     func printKitchenItemSummary(_ item: GroupedItem) async throws {
-        guard isConnected, let printer = selectedPrinter else {
-            throw PrinterError.notConnected
+        // Get kitchen printer configuration
+        guard let kitchenConfig = settingsManager.getKitchenPrinterConfig() else {
+            throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
-        
+
         do {
             let formatter = PrintFormatter()
             let printData = formatter.formatKitchenSummary(item)
-            try await printerService.connectAndSendData(data: printData)
+            try await printerService.connectAndSendData(data: printData, target: .kitchen, to: kitchenConfig)
             addLog(String(format: "printer_kitchen_item_summary_success_log".localized, item.itemName))
         } catch {
             addLog(String(format: "printer_kitchen_item_summary_failed_log".localized, error.localizedDescription))
             throw error
         }
     }
-    
+
     func printKitchenSlip(_ item: GroupedItem) async throws {
-        guard isConnected, let printer = selectedPrinter else {
-            throw PrinterError.notConnected
+        // Get kitchen printer configuration
+        guard let kitchenConfig = settingsManager.getKitchenPrinterConfig() else {
+            throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
-        
+
         do {
             // Create a kitchen slip for this grouped item
             var slipText = "\("printer_kitchen_slip_title".localized)\n"
@@ -532,17 +542,17 @@ extension PrinterManager {
             slipText += String(format: "printer_kitchen_board_tables".localized, Array(item.tables).joined(separator: ", ")) + "\n"
             slipText += String(format: "printer_kitchen_board_status".localized, item.status.displayName) + "\n"
             slipText += String(format: "printer_kitchen_board_time".localized, DateFormatter.localizedString(from: item.orderTime, dateStyle: .none, timeStyle: .short)) + "\n"
-            
+
             if let notes = item.notes, !notes.isEmpty {
                 slipText += String(format: "printer_kitchen_slip_special_notes".localized, notes) + "\n"
             }
-            
+
             slipText += String(repeating: "-", count: 32) + "\n"
             slipText += String(format: "printer_kitchen_slip_priority".localized, item.priority >= 4 ? "printer_priority_urgent".localized : "printer_priority_normal".localized) + "\n"
             slipText += String(repeating: "=", count: 32) + "\n\n\n"
-            
+
             let printData = Data(slipText.utf8)
-            try await printerService.connectAndSendData(data: printData)
+            try await printerService.connectAndSendData(data: printData, target: .kitchen, to: kitchenConfig)
             addLog(String(format: "printer_kitchen_item_summary_success_log".localized, item.itemName))
         } catch {
             addLog(String(format: "printer_kitchen_item_summary_failed_log".localized, error.localizedDescription))

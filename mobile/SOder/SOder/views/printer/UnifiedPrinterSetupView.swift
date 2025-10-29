@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct UnifiedPrinterSetupView: View {
-    @StateObject private var settingsManager = PrinterSettingsManager.shared
+    @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @EnvironmentObject private var printerManager: PrinterManager
     @Environment(\.dismiss) private var dismiss
     
@@ -12,6 +12,9 @@ struct UnifiedPrinterSetupView: View {
     @State private var testingPrinter: ConfiguredPrinter?
     @State private var showingDeleteAlert = false
     @State private var printerToDelete: ConfiguredPrinter?
+    @State private var testResult: TestResult?
+    @State private var showingTestResult = false
+    @State private var isTesting = false
     
     var body: some View {
         Form {
@@ -69,8 +72,40 @@ struct UnifiedPrinterSetupView: View {
         }
         .alert("test_printer_title".localized, isPresented: $showingTestDialog) {
             Button("cancel".localized, role: .cancel) { }
-            Button("test".localized) { if let printer = testingPrinter { Task { await testPrinter(printer) } } }
-        } message: { Text("test_printer_message".localized) }
+            Button("test".localized) {
+                if let printer = testingPrinter {
+                    Task {
+                        isTesting = true
+                        await testPrinter(printer)
+                        isTesting = false
+                    }
+                }
+            }
+            .disabled(isTesting)
+        } message: {
+            if isTesting {
+                Text("printer_test_in_progress".localized)
+            } else {
+                Text("test_printer_message".localized)
+            }
+        }
+        .alert("printer_test_result_title".localized, isPresented: $showingTestResult) {
+            Button("ok".localized, role: .cancel) { }
+            if let result = testResult, !result.success, let suggestion = result.suggestion {
+                Button("printer_test_view_logs".localized) {
+                    // Navigate to logs - add this functionality
+                }
+            }
+        } message: {
+            if let result = testResult {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    Text(result.message)
+                    if let suggestion = result.suggestion {
+                        Text("\n\("printer_test_suggestion".localized): \(suggestion)")
+                    }
+                }
+            }
+        }
         .alert("delete_printer_title".localized, isPresented: $showingDeleteAlert) {
             Button("cancel".localized, role: .cancel) { }
             Button("delete".localized, role: .destructive) { if let printer = printerToDelete { settingsManager.removePrinter(id: printer.id) } }
@@ -290,6 +325,22 @@ struct UnifiedPrinterSetupView: View {
                 }
                 .accessibilityLabel("language_diagnostics_title".localized)
             }
+
+            Divider()
+
+            NavigationLink(destination: BluetoothPrinterSetupView()) {
+                HStack {
+                    Image(systemName: "bluetooth").foregroundColor(.appPrimary)
+                    VStack(alignment: .leading) {
+                        Text("bluetooth_printer_setup_title".localized)
+                            .fontWeight(.medium)
+                        Text("bluetooth_printer_setup_subtitle".localized)
+                            .font(.caption)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                }
+                .accessibilityLabel("bluetooth_printer_setup_title".localized)
+            }
         }
     }
     
@@ -300,17 +351,45 @@ struct UnifiedPrinterSetupView: View {
     }
     
     private func testPrinter(_ printer: ConfiguredPrinter) async {
-        do {
-            let isKitchen = settingsManager.kitchenPrinter?.id == printer.id
-            let lang = isKitchen ? settingsManager.selectedKitchenLanguage : settingsManager.selectedReceiptLanguage
-            let success = await PrinterService.shared.testPrintSampleForPrinter(printer, language: lang)
-            await MainActor.run { print(success ? "printer_test_receipt_success_log".localized : "printer_test_print_failed_log".localized) }
-        } catch {
-            await MainActor.run { print("printer_test_print_failed_log".localized) }
+        let isKitchen = settingsManager.kitchenPrinter?.id == printer.id
+        let lang = isKitchen ? settingsManager.selectedKitchenLanguage : settingsManager.selectedReceiptLanguage
+
+        let success = await PrinterService.shared.testPrintSampleForPrinter(printer, language: lang)
+
+        await MainActor.run {
+            if success {
+                testResult = TestResult(
+                    success: true,
+                    message: String(format: "printer_test_success_message".localized, printer.name),
+                    suggestion: nil
+                )
+                // Update connection status
+                settingsManager.updateConnectionStatus(for: printer.id, status: .connected)
+                // Log success
+                printerManager.addLog(String(format: "printer_test_receipt_success_log".localized, printer.name))
+            } else {
+                testResult = TestResult(
+                    success: false,
+                    message: String(format: "printer_test_failed_message".localized, printer.name),
+                    suggestion: "printer_test_failed_suggestion".localized
+                )
+                // Update connection status
+                settingsManager.updateConnectionStatus(for: printer.id, status: .disconnected)
+                // Log failure
+                printerManager.addLog(String(format: "printer_test_print_failed_log".localized, printer.name))
+            }
+            showingTestResult = true
         }
     }
     
     private func saveAndDismiss() { dismiss() }
+}
+
+// MARK: - Test Result Model
+struct TestResult {
+    let success: Bool
+    let message: String
+    let suggestion: String?
 }
 
 // MARK: - Supporting Views
@@ -362,22 +441,40 @@ struct PrinterConfigCard: View {
     let onEdit: () -> Void
     let onTest: () -> Void
     let onRemove: () -> Void
-    
+    @ObservedObject var settingsManager = PrinterSettingsManager.shared
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(role)
-                        .font(.caption)
-                        .foregroundColor(.appTextSecondary)
-                        .textCase(.uppercase)
+                    HStack(spacing: Spacing.xs) {
+                        Text(role)
+                            .font(.caption)
+                            .foregroundColor(.appTextSecondary)
+                            .textCase(.uppercase)
+
+                        // Connection status badge
+                        let status = settingsManager.getConnectionStatus(for: printer.id)
+                        HStack(spacing: 2) {
+                            Image(systemName: status.icon)
+                                .font(.caption2)
+                            Text(status.displayName)
+                                .font(.caption2)
+                        }
+                        .foregroundColor(status.color)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(status.color.opacity(0.1))
+                        .cornerRadius(4)
+                    }
+
                     Text(printer.name)
                         .font(.headline)
                     Text("\(printer.ipAddress):\(printer.port)")
                         .font(.caption)
                         .foregroundColor(.appTextSecondary)
                 }
-                
+
                 Spacer()
                 
                 HStack(spacing: Spacing.xs) {

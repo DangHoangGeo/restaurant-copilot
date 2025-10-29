@@ -79,7 +79,7 @@ The POS functionality has been successfully integrated into the Orders tab. Here
 
 ### 6. Fixed Database Constraint Issue
 - **Issue**: `OrderManager` was using `"draft_item"` status for order items in draft orders
-- **Problem**: Database constraint only allows: `('new','preparing','ready','served','cancelled')`
+- **Problem**: Database constraint only allows: `('new','preparing','ready','served','canceled')`
 - **Fix**: Changed `ORDER_ITEM_STATUS_DRAFT` from `"draft_item"` to `"new"` to comply with DB constraint
 - **Result**: Order items can now be successfully added to draft orders
 
@@ -108,7 +108,7 @@ The workflow should feel natural for restaurant staff:
 ### ✅ Database Constraint Violation
 **Error**: `PostgrestError: new row for relation "order_items" violates check constraint "order_items_status_check"`
 
-**Root Cause**: The `OrderManager` was using an invalid status value `"draft_item"` for order items, which violated the database constraint that only allows: `('new','preparing','ready','served','cancelled')`.
+**Root Cause**: The `OrderManager` was using an invalid status value `"draft_item"` for order items, which violated the database constraint that only allows: `('new','preparing','ready','served','canceled')`.
 
 **Solution**: Changed the `ORDER_ITEM_STATUS_DRAFT` constant from `"draft_item"` to `"new"` to use a valid status that complies with the database constraint.
 

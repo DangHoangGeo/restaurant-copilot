@@ -55,7 +55,7 @@ struct KitchenItemsListView: View {
             }
             
             // Then by status
-            let statusOrder: [OrderItemStatus] = [.new, .preparing, .ready, .served, .cancelled]
+            let statusOrder: [OrderItemStatus] = [.new, .preparing, .ready, .served, .canceled]
             let lhsIndex = statusOrder.firstIndex(of: lhs.status) ?? 0
             let rhsIndex = statusOrder.firstIndex(of: rhs.status) ?? 0
             if lhsIndex != rhsIndex {
@@ -94,6 +94,7 @@ struct KitchenHeaderView: View {
     let urgentItemsCount: Int
     let selectedCategoryFilter: String
     let categories: [String]
+    let categoryCounts: [String: Int]
     let viewMode: KitchenViewMode
     let onCategoryFilterChange: (String) -> Void
     let onViewModeChange: (KitchenViewMode) -> Void
@@ -206,13 +207,14 @@ struct KitchenHeaderView: View {
             // Category Filter Pills - the most important for chefs
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
+                    let allLabel = "kitchen_all".localized
                     CategoryFilterChip(
-                        title: "kitchen_all".localized,
+                        title: allLabel,
                         count: totalItemsCount,
-                        isSelected: selectedCategoryFilter == "All",
-                        color: .blue
+                        isSelected: selectedCategoryFilter == allLabel,
+                        color: .appPrimary
                     ) {
-                        onCategoryFilterChange("All")
+                        onCategoryFilterChange(allLabel)
                     }
                     
                     ForEach(categories.sorted(), id: \.self) { category in
@@ -235,8 +237,7 @@ struct KitchenHeaderView: View {
     }
     
     private func countForCategory(_ category: String) -> Int {
-        // This would be passed from parent or computed here
-        return 0 // Placeholder - should be computed from groupedByCategory
+        return categoryCounts[category] ?? 0
     }
 }
 
@@ -254,7 +255,7 @@ struct KitchenHeaderView: View {
     let mockGroupedItem = GroupedItem(itemId: "1", itemName: "Coffee", quantity: 2, tables: ["Table 1"], orderItems: [mockOrderItem], categoryName: "Drinks", notes: "Extra hot", orderTime: Date(), priority: 1, status: .new)
     let mockCategoryGroup = CategoryGroup(categoryName: "Drinks", items: [mockGroupedItem])
 
-    return KitchenItemsListView(groupedByCategory: [mockCategoryGroup], selectedCategoryFilter: "All", orderCount: 1, viewMode: .list, onItemStatusTap: { _ in }, onItemDetailTap: { _ in })
+    return KitchenItemsListView(groupedByCategory: [mockCategoryGroup], selectedCategoryFilter: "kitchen_all".localized, orderCount: 1, viewMode: .list, onItemStatusTap: { _ in }, onItemDetailTap: { _ in })
         .environmentObject(orderManager)
         .environmentObject(printerManager)
         .environmentObject(localizationManager)
