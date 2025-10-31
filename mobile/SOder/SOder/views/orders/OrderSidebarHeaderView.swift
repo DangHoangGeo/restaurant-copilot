@@ -10,24 +10,34 @@ struct OrderSidebarHeaderView: View {
     var onNewOrder: () -> Void
 
     @ObservedObject var orderManager: OrderManager
+    @ObservedObject var supabaseManager: SupabaseManager
 
     var body: some View {
         VStack(spacing: Spacing.lg) {
             header
-            orderTypeToggle
             filterPills
             newOrderButton
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.lg)
         .background(Color.appSurface)
         .overlay(Divider(), alignment: .bottom)
     }
 
     private var header: some View {
         HStack {
-            Text("orders".localized)
-                .font(.sectionHeader)
-                .foregroundColor(.appTextPrimary)
+            VStack(alignment: .leading, spacing: 4) {
+                if let restaurantName = supabaseManager.currentRestaurant?.name {
+                    Text(restaurantName)
+                        .font(.title2.weight(.bold))
+                        .foregroundColor(.appTextPrimary)
+                } else {
+                    Text("orders".localized)
+                        .font(.title2.weight(.bold))
+                        .foregroundColor(.appTextPrimary)
+                }
+            }
             Spacer()
 
             if orderManager.autoPrintingEnabled {
@@ -61,17 +71,6 @@ struct OrderSidebarHeaderView: View {
                 Button("orders_sign_out".localized, action: onSignOut)
             } label: {
                 Image(systemName: "ellipsis.circle").font(.title2)
-            }
-        }
-    }
-
-    private var orderTypeToggle: some View {
-        HStack(spacing: Spacing.sm) {
-            SegmentedPill(title: "orders_active_orders".localized, isSelected: !showAllOrders) {
-                showAllOrders = false
-            }
-            SegmentedPill(title: "orders_all_orders".localized, isSelected: showAllOrders) {
-                showAllOrders = true
             }
         }
     }

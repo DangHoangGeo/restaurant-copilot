@@ -49,7 +49,7 @@ class OrderManager: ObservableObject {
     @Published var newOrderIds: Set<String> = []
     
     // Auto-printing tracking
-    @Published var autoPrintingEnabled = true
+    @Published var autoPrintingEnabled = false
     @Published var lastAutoPrintResult: String? = nil
     @Published var autoPrintingInProgress = false
     @Published var autoPrintStats = AutoPrintStats()
@@ -798,7 +798,7 @@ class OrderManager: ObservableObject {
     // MARK: - Auto-printing Settings
     
     private func loadAutoPrintingSettings() {
-        autoPrintingEnabled = UserDefaults.standard.object(forKey: "auto_printing_enabled") as? Bool ?? true
+        autoPrintingEnabled = UserDefaults.standard.object(forKey: "auto_printing_enabled") as? Bool ?? false
     }
     
     func setAutoPrintingEnabled(_ enabled: Bool) {

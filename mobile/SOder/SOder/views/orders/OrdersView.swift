@@ -65,6 +65,10 @@ struct OrdersView: View {
         filteredOrderGroups[selectedFilter] ?? []
     }
 
+    private func countForFilter(_ filter: OrderFilter) -> Int {
+        filteredOrderGroups[filter]?.count ?? 0
+    }
+
     var body: some View {
         Group {
             if horizontalSizeClass == .regular {
@@ -87,6 +91,12 @@ struct OrdersView: View {
                 await orderManager.fetchAllOrders()
             } else {
                 await orderManager.fetchActiveOrders()
+            }
+        }
+        .onChange(of: filteredOrders) { oldValue, newValue in
+            // Auto-select first order on iPad when orders are available
+            if horizontalSizeClass == .regular && !newValue.isEmpty && selectedOrder == nil {
+                selectedOrder = newValue.first
             }
         }
         .alert("orders_system_message".localized, isPresented: $showingPrintAlert) {
@@ -152,7 +162,8 @@ struct OrdersView: View {
                     }
                 },
                 onNewOrder: { showingNewOrderFlow = true },
-                orderManager: orderManager
+                orderManager: orderManager,
+                supabaseManager: supabaseManager
             )
 
             orderList
@@ -640,7 +651,7 @@ struct SidebarOrderRowView: View {
 
 // Keep existing FilterChip, EmptyOrdersView, OrderRowView, EnhancedStatusBadge, StatusActionButton, PrintButton, EnhancedOrderItemView, and StatusBadge views
 
-private struct SegmentedPill: View {
+struct SegmentedPill: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
