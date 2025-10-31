@@ -505,6 +505,33 @@ class SupabaseManager: ObservableObject {
         isAuthenticated = true
         print("Set test restaurant: \(currentRestaurant?.name ?? "Unknown")")
     }
+
+    // MARK: - Tables Management
+
+    /// Fetches all tables for the current restaurant
+    /// - Returns: Array of Table objects
+    /// - Throws: Error if fetch fails or user is not authenticated
+    func fetchTables() async throws -> [Table] {
+        guard let restaurantId = currentRestaurantId else {
+            throw AuthError.noRestaurantAssociated
+        }
+
+        do {
+            let response: [Table] = try await client
+                .from("tables")
+                .select()
+                .eq("restaurant_id", value: restaurantId)
+                .order("name", ascending: true)
+                .execute()
+                .value
+
+            print("Fetched \(response.count) tables for restaurant \(restaurantId)")
+            return response
+        } catch {
+            print("Error fetching tables: \(error)")
+            throw error
+        }
+    }
 }
 
 // Debug model for orders

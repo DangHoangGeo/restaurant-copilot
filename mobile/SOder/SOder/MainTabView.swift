@@ -23,14 +23,22 @@ struct MainTabView: View {
                     Label("tab_kitchen".localized, systemImage: "flame")
                 }
                 .tag(1)
-            
+
+            // Tables Tab
+            TablesListView()
+                .environmentObject(printerManager)
+                .tabItem {
+                    Label("tab_tables".localized, systemImage: "table.furniture")
+                }
+                .tag(2)
+
             // Printer Settings Tab
             PrinterSettingsView()
                 .environmentObject(printerManager)
                 .tabItem {
                     Label("tab_printer_settings".localized, systemImage: "printer")
                 }
-                .tag(2)
+                .tag(3)
 
 
 

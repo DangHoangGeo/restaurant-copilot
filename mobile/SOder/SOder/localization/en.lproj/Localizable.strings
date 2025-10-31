@@ -999,3 +999,52 @@
 "order_item_status_ready" = "Ready";
 "order_item_status_served" = "Served";
 "order_item_status_canceled" = "canceled";
+
+// MARK: - Table QR Code Printing
+"tables_title" = "Tables";
+"tables_loading" = "Loading tables...";
+"tables_search_placeholder" = "Search tables...";
+"tables_print_qr" = "Print QR";
+"tables_error" = "Error";
+"tables_retry" = "Retry";
+"tables_no_results" = "No tables found";
+"tables_empty" = "No tables available";
+"tables_empty_message" = "Tables will appear here once they are created in the web dashboard.";
+
+// Table Print View
+"tables_print_title" = "Print Table QR Code";
+"tables_print_preview" = "Preview";
+"tables_print_qr_preview" = "QR Code";
+"tables_print_thank_you" = "Thank you!";
+"tables_print_info" = "Table Information";
+"tables_print_table_name" = "Table Name";
+"tables_print_capacity" = "Capacity";
+"tables_print_status" = "Status";
+"tables_print_notes" = "Notes";
+"tables_print_wifi_info" = "WiFi Information";
+"tables_print_wifi_ssid" = "WiFi SSID";
+"tables_print_wifi_password" = "Password";
+"tables_print_printer_status" = "Printer Status";
+"tables_print_printer_connected" = "Printer Connected";
+"tables_print_printer_disconnected" = "No Printer Connected";
+"tables_print_button" = "Print QR Code";
+"tables_print_printing" = "Printing...";
+"tables_print_success_title" = "Success";
+"tables_print_success_message" = "QR code printed successfully!";
+"tables_print_error_title" = "Print Error";
+"tables_print_unknown_error" = "An unknown error occurred";
+
+// Common
+"common_close" = "Close";
+"common_ok" = "OK";
+
+// Printer Logs
+"printer_table_qr_success_log" = "Table QR code for %@ printed successfully";
+"printer_table_qr_failed_log" = "Failed to print table QR code: %@";
+
+// Template Labels (Additional)
+"tpl_wifi" = "WiFi";
+"tpl_password" = "Password";
+
+// MARK: - Tab Bar
+"tab_tables" = "Tables";

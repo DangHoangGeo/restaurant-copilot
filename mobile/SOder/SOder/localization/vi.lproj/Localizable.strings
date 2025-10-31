@@ -950,3 +950,51 @@
 "order_item_status_ready" = "Sẵn sàng";
 "order_item_status_served" = "Đã phục vụ";
 "order_item_status_canceled" = "Đã hủy";
+// MARK: - Table QR Code Printing
+"tables_title" = "Bàn";
+"tables_loading" = "Đang tải bàn...";
+"tables_search_placeholder" = "Tìm kiếm bàn...";
+"tables_print_qr" = "In QR";
+"tables_error" = "Lỗi";
+"tables_retry" = "Thử lại";
+"tables_no_results" = "Không tìm thấy bàn";
+"tables_empty" = "Không có bàn";
+"tables_empty_message" = "Bàn sẽ xuất hiện ở đây sau khi được tạo trong trang quản trị web.";
+
+// Table Print View
+"tables_print_title" = "In Mã QR Bàn";
+"tables_print_preview" = "Xem trước";
+"tables_print_qr_preview" = "Mã QR";
+"tables_print_thank_you" = "Cảm ơn quý khách!";
+"tables_print_info" = "Thông tin bàn";
+"tables_print_table_name" = "Tên bàn";
+"tables_print_capacity" = "Sức chứa";
+"tables_print_status" = "Trạng thái";
+"tables_print_notes" = "Ghi chú";
+"tables_print_wifi_info" = "Thông tin WiFi";
+"tables_print_wifi_ssid" = "WiFi SSID";
+"tables_print_wifi_password" = "Mật khẩu";
+"tables_print_printer_status" = "Trạng thái máy in";
+"tables_print_printer_connected" = "Máy in đã kết nối";
+"tables_print_printer_disconnected" = "Chưa kết nối máy in";
+"tables_print_button" = "In mã QR";
+"tables_print_printing" = "Đang in...";
+"tables_print_success_title" = "Thành công";
+"tables_print_success_message" = "In mã QR thành công!";
+"tables_print_error_title" = "Lỗi in";
+"tables_print_unknown_error" = "Đã xảy ra lỗi không xác định";
+
+// Common
+"common_close" = "Đóng";
+"common_ok" = "OK";
+
+// Printer Logs
+"printer_table_qr_success_log" = "In mã QR bàn %@ thành công";
+"printer_table_qr_failed_log" = "In mã QR bàn thất bại: %@";
+
+// Template Labels (Additional)
+"tpl_wifi" = "WiFi";
+"tpl_password" = "Mật khẩu";
+
+// MARK: - Tab Bar
+"tab_tables" = "Bàn";
