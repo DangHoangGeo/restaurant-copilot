@@ -560,3 +560,63 @@ extension PrinterManager {
         }
     }
 }
+
+// MARK: - PrinterManager Extension for Table QR Code Printing
+extension PrinterManager {
+    /// Prints a table QR code with restaurant name and optional WiFi info
+    /// - Parameters:
+    ///   - table: The table to print the QR code for
+    ///   - qrCodeUrl: The full URL to encode in the QR code
+    /// - Returns: True if printing succeeded, false otherwise
+    func printTableQRCode(table: Table, qrCodeUrl: String) async -> Bool {
+        guard isConnected, selectedPrinter != nil else {
+            errorMessage = "printer_no_printer_connected_error".localized
+            return false
+        }
+
+        do {
+            let formatter = PrintFormatter()
+            let restaurantSettings = settingsManager.restaurantSettings
+
+            // Prepare WiFi info if available
+            var wifiInfo: (ssid: String, password: String)? = nil
+            if let ssid = restaurantSettings.wifiSsid, !ssid.isEmpty,
+               let password = restaurantSettings.wifiPassword, !password.isEmpty {
+                wifiInfo = (ssid: ssid, password: password)
+            }
+
+            // Format the QR code print data
+            let printData = formatter.formatTableQRCode(
+                table: table,
+                restaurantName: restaurantSettings.name,
+                qrCodeUrl: qrCodeUrl,
+                wifiInfo: wifiInfo
+            )
+
+            // Use the receipt printer configuration
+            let settingsManager = PrinterSettingsManager.shared
+
+            switch settingsManager.printerMode {
+            case .single:
+                // Use the active printer
+                try await printerService.connectAndSendData(data: printData, target: .receipt)
+
+            case .dual:
+                // Use the checkout printer specifically
+                if let checkoutConfig = settingsManager.getCheckoutPrinterConfig() {
+                    try await printerService.connectAndSendData(data: printData, target: .receipt, to: checkoutConfig)
+                } else {
+                    // Fallback to any available printer
+                    try await printerService.connectAndSendData(data: printData, target: .receipt)
+                }
+            }
+
+            addLog(String(format: "printer_table_qr_success_log".localized, table.name))
+            return true
+        } catch {
+            errorMessage = String(format: "printer_table_qr_failed_log".localized, error.localizedDescription)
+            addLog(String(format: "printer_table_qr_failed_log".localized, error.localizedDescription))
+            return false
+        }
+    }
+}

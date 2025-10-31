@@ -950,3 +950,51 @@
 "order_item_status_ready" = "提供準備完了";
 "order_item_status_served" = "提供済み";
 "order_item_status_canceled" = "キャンセル";
+// MARK: - Table QR Code Printing
+"tables_title" = "テーブル";
+"tables_loading" = "テーブルを読み込み中...";
+"tables_search_placeholder" = "テーブルを検索...";
+"tables_print_qr" = "QR印刷";
+"tables_error" = "エラー";
+"tables_retry" = "再試行";
+"tables_no_results" = "テーブルが見つかりません";
+"tables_empty" = "テーブルがありません";
+"tables_empty_message" = "Webダッシュボードで作成されたテーブルがここに表示されます。";
+
+// Table Print View
+"tables_print_title" = "テーブルQRコードを印刷";
+"tables_print_preview" = "プレビュー";
+"tables_print_qr_preview" = "QRコード";
+"tables_print_thank_you" = "ありがとうございました！";
+"tables_print_info" = "テーブル情報";
+"tables_print_table_name" = "テーブル名";
+"tables_print_capacity" = "定員";
+"tables_print_status" = "ステータス";
+"tables_print_notes" = "備考";
+"tables_print_wifi_info" = "WiFi情報";
+"tables_print_wifi_ssid" = "WiFi SSID";
+"tables_print_wifi_password" = "パスワード";
+"tables_print_printer_status" = "プリンタステータス";
+"tables_print_printer_connected" = "プリンタ接続済み";
+"tables_print_printer_disconnected" = "プリンタ未接続";
+"tables_print_button" = "QRコードを印刷";
+"tables_print_printing" = "印刷中...";
+"tables_print_success_title" = "成功";
+"tables_print_success_message" = "QRコードが正常に印刷されました！";
+"tables_print_error_title" = "印刷エラー";
+"tables_print_unknown_error" = "不明なエラーが発生しました";
+
+// Common
+"common_close" = "閉じる";
+"common_ok" = "OK";
+
+// Printer Logs
+"printer_table_qr_success_log" = "%@のテーブルQRコードが正常に印刷されました";
+"printer_table_qr_failed_log" = "テーブルQRコードの印刷に失敗しました: %@";
+
+// Template Labels (Additional)
+"tpl_wifi" = "WiFi";
+"tpl_password" = "パスワード";
+
+// MARK: - Tab Bar
+"tab_tables" = "テーブル";

@@ -1062,6 +1062,127 @@ class PrintFormatter {
             return menuItem?.name_vi ?? menuItem?.name_en ?? menuItem?.code ?? "Unknown Item"
         }
     }
+
+    // MARK: - QR Code Generation for Table QR Printing
+
+    /// Generates ESC/POS command data for printing a QR code
+    /// - Parameters:
+    ///   - string: The URL or text to encode in the QR code
+    ///   - size: QR code size (1-16, where 8 is a good default for readability)
+    /// - Returns: Data containing ESC/POS commands to print the QR code
+    func generateQRCodeData(for string: String, with size: Int) -> Data {
+        let qrCodeSize = UInt8(size)  // Size of the QR code (1-16)
+
+        guard let qrCodeContent = string.data(using: .ascii) else {
+            return Data()
+        }
+        let qrCodeContentLength = UInt16(qrCodeContent.count)
+
+        var qrCodeData = Data()
+        // Set QR code size
+        qrCodeData.append(contentsOf: [0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, qrCodeSize, 0x00])
+        // Set QR code model
+        qrCodeData.append(contentsOf: [0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x08])
+        // Set QR code error correction
+        qrCodeData.append(contentsOf: [0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31])
+
+        // Store QR code content
+        let lowByte = UInt8(qrCodeContentLength & 0xFF)
+        let highByte = UInt8((qrCodeContentLength >> 8) & 0xFF)
+        qrCodeData.append(Data([0x1D, 0x28, 0x6B, UInt8(3 + qrCodeContentLength), 0x00, 0x31, 0x50, 0x30]))
+        qrCodeData.append(qrCodeContent)
+
+        // Print QR code
+        qrCodeData.append(contentsOf: [0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30])
+        qrCodeData.append(contentsOf: [0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x52, 0x30])
+
+        // Add positioning commands to center horizontally
+        let qrCodeCenterCommand = Data([0x1B, 0x61, 0x01]) // Align center
+        qrCodeData.insert(contentsOf: qrCodeCenterCommand, at: 0)
+
+        return Data([0x1B, 0x40]) + qrCodeData + Data([0x0C])
+    }
+
+    // MARK: - Table QR Code Formatting
+
+    /// Formats a complete table QR code printout with restaurant info and WiFi details
+    /// - Parameters:
+    ///   - table: The table to print the QR code for
+    ///   - restaurantName: Name of the restaurant
+    ///   - qrCodeUrl: The full URL to encode in the QR code
+    ///   - wifiInfo: Optional tuple of (SSID, password) for WiFi information
+    /// - Returns: Data ready to send to the printer
+    func formatTableQRCode(
+        table: Table,
+        restaurantName: String,
+        qrCodeUrl: String,
+        wifiInfo: (ssid: String, password: String)? = nil
+    ) -> Data {
+        let lang = settingsManager.getSelectedLanguage(for: .receipt)
+        var command = Data()
+
+        // Clear buffer and initialize printer
+        command.append(Data(commands.clearBuffer))
+        command.append(Data(commands.initialize))
+        command.append(Data(getPrinterCharsetCommand(for: .receipt)))
+
+        // Add leading spacing
+        command.append("\r\n\r\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+
+        // Restaurant Name - Center, Bold, Large
+        command.append(Data(commands.alignCenter))
+        command.append(Data(commands.boldOn))
+        command.append(Data(commands.fontSizeDoubleHeight))
+        append(restaurantName + "\r\n", to: &command, target: .receipt)
+        command.append(Data(commands.resetTextStyles))
+        command.append(Data(commands.boldOff))
+
+        command.append("\r\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+
+        // Table Name - Center, Bold, Extra Large
+        command.append(Data(commands.boldOn))
+        command.append(Data(commands.fontSizeDoubleWidthAndHeight))
+        append(table.name + "\r\n", to: &command, target: .receipt)
+        command.append(Data(commands.resetTextStyles))
+        command.append(Data(commands.boldOff))
+
+        command.append("\r\n\r\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+
+        // QR Code - Centered
+        let qrCodeData = generateQRCodeData(for: qrCodeUrl, with: 8)
+        command.append(qrCodeData)
+
+        command.append("\r\n\r\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+
+        // Footer Section
+        command.append(Data(commands.alignCenter))
+
+        // "Thank you!" message
+        let thankYouText = tr("tpl_thank_you_short", for: lang)
+        append(thankYouText + "\r\n", to: &command, target: .receipt)
+
+        // WiFi information if provided
+        if let wifi = wifiInfo {
+            command.append("\r\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+            let wifiLabel = tr("tpl_wifi", for: lang)
+            let passwordLabel = tr("tpl_password", for: lang)
+            append("\(wifiLabel): \(wifi.ssid)\r\n", to: &command, target: .receipt)
+            append("\(passwordLabel): \(wifi.password)\r\n", to: &command, target: .receipt)
+        }
+
+        command.append("\r\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+
+        // Branding - Small text
+        command.append(Data(commands.fontSizeNormal))
+        append("powered by coorder.ai\r\n", to: &command, target: .receipt)
+
+        // Enhanced cutting with extra spacing
+        command.append(Data(commands.paperFeedExtra))
+        command.append("\r\n\r\n\r\n".data(using: getSelectedEncoding(for: .receipt)) ?? Data())
+        command.append(Data(commands.cutPaperAdvanced))
+
+        return command
+    }
 }
 
 // MARK: - String Extensions

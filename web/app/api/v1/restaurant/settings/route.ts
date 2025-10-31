@@ -44,6 +44,9 @@ const settingsSchema = z.object({
   payment_methods: z.array(z.enum(["cash", "credit_card", "mobile_payment", "paypay"])).nullable().optional(),
   delivery_options: z.array(z.enum(["pickup", "delivery", "dine_in"])).nullable().optional(),
   logo_url: z.string().url().nullable().optional(),
+  // WiFi settings for table QR codes
+  wifi_ssid: z.string().max(100).nullable().optional(),
+  wifi_password: z.string().max(100).nullable().optional(),
 });
 
 export async function GET() {
@@ -93,7 +96,9 @@ export async function GET() {
         owner_story_en,
         owner_story_ja,
         owner_story_vi,
-        owner_photo_url
+        owner_photo_url,
+        wifi_ssid,
+        wifi_password
       `)
       .eq("id", user.restaurantId) // Use authenticated user's restaurant ID
       .single();
@@ -168,10 +173,13 @@ export async function GET() {
       owner_story_ja: restaurant.owner_story_ja,
       owner_story_vi: restaurant.owner_story_vi,
       owner_photo_url: restaurant.owner_photo_url,
+      // WiFi settings
+      wifi_ssid: restaurant.wifi_ssid,
+      wifi_password: restaurant.wifi_password,
     };
 
     console.log('Restaurant settings response - onboarded:', restaurant.onboarded, 'type:', typeof restaurant.onboarded);
-    
+
     return NextResponse.json(responseData);
   } catch (error) {
     console.error("Unexpected error in restaurant settings API:", error);
