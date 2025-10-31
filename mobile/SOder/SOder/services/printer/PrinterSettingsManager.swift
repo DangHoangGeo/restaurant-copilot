@@ -683,19 +683,25 @@ struct RestaurantSettings: Codable {
     var phone: String
     var website: String
     var dateTimeFormat: String
-    
+    var wifiSsid: String?
+    var wifiPassword: String?
+
     init(
         name: String = "",
         address: String = "",
         phone: String = "",
         website: String = "",
-        dateTimeFormat: String = "yyyy-MM-dd HH:mm:ss"
+        dateTimeFormat: String = "yyyy-MM-dd HH:mm:ss",
+        wifiSsid: String? = nil,
+        wifiPassword: String? = nil
     ) {
         self.name = name
         self.address = address
         self.phone = phone
         self.website = website
         self.dateTimeFormat = dateTimeFormat
+        self.wifiSsid = wifiSsid
+        self.wifiPassword = wifiPassword
     }
 }
 
