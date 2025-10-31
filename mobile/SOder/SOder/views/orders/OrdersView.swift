@@ -187,9 +187,11 @@ struct OrdersView: View {
                 }
                 .listStyle(.plain)
                 .redacted(reason: .placeholder)
+                .transition(.opacity)
             } else if filteredOrders.isEmpty {
                 Spacer()
                 EmptyOrdersView(filter: selectedFilter)
+                    .transition(.scale.combined(with: .opacity))
                 Spacer()
             } else {
                 List(filteredOrders, selection: $selectedOrder) { order in
@@ -201,7 +203,15 @@ struct OrdersView: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    .onTapGesture { selectedOrder = order }
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: Motion.fast)) {
+                            selectedOrder = order
+                        }
+                        // Haptic feedback for order selection
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                        impactFeedback.impactOccurred()
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .trailing)))
                 }
                 .listStyle(PlainListStyle())
                 .scrollContentBackground(.hidden)
@@ -221,14 +231,24 @@ struct OrdersView: View {
     @ViewBuilder
     private var errorMessageView: some View {
         if let errorMessage = orderManager.errorMessage {
-            HStack {
+            HStack(spacing: Spacing.sm) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundColor(.appWarning)
-                Text(errorMessage)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.title3)
+                    .foregroundColor(.appError)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text("orders_error_title".localized)
+                        .font(.captionBold)
+                        .foregroundColor(.appTextPrimary)
+                    Text(errorMessage)
+                        .font(.captionRegular)
+                        .foregroundColor(.appTextSecondary)
+                        .lineLimit(2)
+                }
+
                 Spacer()
-                Button("orders_retry".localized) {
+
+                Button(action: {
                     Task {
                         if showAllOrders {
                             await orderManager.fetchAllOrders()
@@ -236,12 +256,32 @@ struct OrdersView: View {
                             await orderManager.fetchActiveOrders()
                         }
                     }
+                    // Haptic feedback for retry
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                }) {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "arrow.clockwise")
+                        Text("orders_retry".localized)
+                    }
+                    .font(.captionBold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.sm)
+                    .background(Color.appPrimary)
+                    .cornerRadius(CornerRadius.sm)
                 }
-                .font(.caption)
-                .foregroundColor(.appPrimary)
             }
-            .padding()
-            .background(Color.appSurface)
+            .padding(Spacing.md)
+            .background(Color.appErrorLight)
+            .cornerRadius(CornerRadius.md)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .stroke(Color.appError.opacity(0.3), lineWidth: 1)
+            )
+            .padding(.horizontal, Spacing.md)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .animation(.easeInOut(duration: Motion.medium), value: orderManager.errorMessage)
         }
     }
     
@@ -384,23 +424,52 @@ struct OrdersView: View {
             
             // Error Message
             if let errorMessage = orderManager.errorMessage {
-                HStack {
+                HStack(spacing: Spacing.sm) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.appWarning)
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.title3)
+                        .foregroundColor(.appError)
+
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        Text("orders_error_title".localized)
+                            .font(.captionBold)
+                            .foregroundColor(.appTextPrimary)
+                        Text(errorMessage)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
+                            .lineLimit(2)
+                    }
+
                     Spacer()
-                    Button("orders_retry".localized) {
+
+                    Button(action: {
                         Task {
                             await orderManager.fetchActiveOrders()
                         }
+                        // Haptic feedback
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
+                    }) {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "arrow.clockwise")
+                            Text("orders_retry".localized)
+                        }
+                        .font(.captionBold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.vertical, Spacing.sm)
+                        .background(Color.appPrimary)
+                        .cornerRadius(CornerRadius.sm)
                     }
-                    .font(.caption)
-                    .foregroundColor(.appPrimary)
                 }
-                .padding()
-                .background(Color.appSurface)
+                .padding(Spacing.md)
+                .background(Color.appErrorLight)
+                .cornerRadius(CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(Color.appError.opacity(0.3), lineWidth: 1)
+                )
+                .padding(.horizontal, Spacing.md)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .navigationTitle("orders".localized)
@@ -467,22 +536,42 @@ struct OrdersView: View {
     
     @MainActor
     private func printOrderReceipt(_ order: Order) async {
+        // Haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
         do {
             try await printerManager.printOrderReceipt(order)
             printMessage = "receipt_print_success_message".localized
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
         } catch {
             printMessage = "receipt_print_failure_message".localized
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
         showingPrintAlert = true
     }
-    
+
     @MainActor
     private func markOrderAsServing(_ order: Order) async {
+        // Haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
         do {
             _ = try await orderManager.updateOrderStatus(orderId: order.id, newStatus: .serving)
             printMessage = String(format: "order_status_update_success_message".localized, OrderStatus.serving.displayName)
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
         } catch {
             printMessage = "order_status_update_failure_message".localized
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
         showingPrintAlert = true
     }

@@ -83,7 +83,20 @@ struct CheckoutView: View {
         }
         return 0
     }
-    
+
+    // Quick amount suggestions based on total
+    private var quickAmounts: [Double] {
+        let roundedTotal = ceil(totalAmount / 1000) * 1000
+        return [
+            roundedTotal,
+            roundedTotal + 1000,
+            roundedTotal + 2000,
+            roundedTotal + 5000,
+            10000,
+            20000
+        ].filter { $0 >= totalAmount }
+    }
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -210,6 +223,9 @@ struct CheckoutView: View {
                     Button(action: {
                         paymentMethod = method
                         if method != .cash { receivedAmount = totalAmount }
+                        // Haptic feedback for payment method change
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
                     }) {
                         VStack(spacing: Spacing.xs) {
                             ZStack {
@@ -286,36 +302,79 @@ struct CheckoutView: View {
                             Text("received_amount".localized)
                                 .font(.captionBold)
                                 .foregroundColor(.appTextSecondary)
-                            
+
                             HStack {
-                                Image(systemName: "banknote")
+                                Image(systemName: "banknote.fill")
                                     .foregroundColor(.appTextTertiary)
-                                
+
                                 TextField("checkout_received_amount_placeholder".localized, value: $receivedAmount, format: .currency(code: "JPY"))
-                                    .font(.bodyMedium)
-                                    .fontWeight(.medium)
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
                                     .keyboardType(.decimalPad)
                                     .focused($isReceivedAmountFocused)
-                                
+                                    .onChange(of: receivedAmount) { oldValue, newValue in
+                                        // Haptic feedback when amount changes
+                                        if newValue != oldValue {
+                                            let impactFeedback = UISelectionFeedbackGenerator()
+                                            impactFeedback.selectionChanged()
+                                        }
+                                    }
+
                                 // Quick set buttons
-                                Button(action: { receivedAmount = totalAmount }) {
+                                Button(action: {
+                                    receivedAmount = totalAmount
+                                    // Haptic feedback
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                    impactFeedback.impactOccurred()
+                                }) {
                                     Text("checkout_exact_amount".localized)
                                         .font(.captionBold)
                                         .foregroundColor(.appPrimary)
-                                        .padding(.horizontal, Spacing.xs)
-                                        .padding(.vertical, 4)
-                                        .background(Color.appPrimary.opacity(0.1))
-                                        .cornerRadius(4)
+                                        .padding(.horizontal, Spacing.sm)
+                                        .padding(.vertical, Spacing.xs)
+                                        .background(Color.appPrimary.opacity(0.15))
+                                        .cornerRadius(CornerRadius.xs)
                                 }
                             }
                             .padding(.horizontal, Spacing.md)
-                            .padding(.vertical, Spacing.sm)
+                            .padding(.vertical, Spacing.md)
                             .background(Color.appSurfaceSecondary)
                             .cornerRadius(CornerRadius.md)
                             .overlay(
                                 RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appBorderLight, lineWidth: 1)
+                                    .stroke(receivedAmount < totalAmount ? Color.appWarning : Color.appBorderLight, lineWidth: receivedAmount < totalAmount ? 2 : 1)
                             )
+                        }
+
+                        // Quick amount buttons
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("checkout_quick_amounts".localized)
+                                .font(.captionBold)
+                                .foregroundColor(.appTextSecondary)
+
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: Spacing.sm) {
+                                ForEach(quickAmounts, id: \.self) { amount in
+                                    Button(action: {
+                                        receivedAmount = amount
+                                        // Haptic feedback
+                                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                        impactFeedback.impactOccurred()
+                                    }) {
+                                        Text(String(format: "¥%.0f", amount))
+                                            .font(.buttonMedium)
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.appPrimary)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, Spacing.sm)
+                                            .background(Color.appSurfaceSecondary)
+                                            .cornerRadius(CornerRadius.sm)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                                    .stroke(receivedAmount == amount ? Color.appPrimary : Color.appBorderLight, lineWidth: receivedAmount == amount ? 2 : 1)
+                                            )
+                                    }
+                                }
+                            }
                         }
                         
                         // Change calculation with enhanced styling
@@ -655,25 +714,36 @@ struct CheckoutView: View {
     @MainActor
     private func performCheckout(printReceipt: Bool = true) async {
         isProcessing = true
-        
+
+        // Haptic feedback at start
+        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+        impactFeedback.impactOccurred()
+
         do {
             // Update order status to completed
             try await orderManager.updateOrderStatus(orderId: order.id, newStatus: .completed)
-            
+
             // Print receipt if requested
             if printReceipt {
                 await self.printReceipt()
             }
-            
+
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
+
             showingSuccess = true
         } catch {
             errorMessage = "checkout_error_process_failed".localized
             showingError = true
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
-        
+
         isProcessing = false
     }
-    
+
     @MainActor
     private func printReceipt() async {
         let receiptData = CheckoutReceiptData(
@@ -685,12 +755,18 @@ struct CheckoutView: View {
             totalAmount: totalAmount,
             timestamp: Date()
         )
-        
+
         do {
             try await printerManager.printCheckoutReceipt(receiptData)
+            // Success haptic for print
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
         } catch {
             errorMessage = "receipt_print_failure_message".localized
             showingError = true
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
     }
     

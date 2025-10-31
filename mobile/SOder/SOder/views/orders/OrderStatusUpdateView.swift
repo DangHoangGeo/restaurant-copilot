@@ -333,13 +333,17 @@ struct OrderStatusUpdateView: View {
     private func updateStatuses() async {
         isUpdating = true
         errorMessage = nil
-        
+
+        // Haptic feedback at start
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
         do {
             // Update order status if changed
             if newOrderStatus != order.status {
                 try await orderManager.updateOrderStatus(orderId: order.id, newStatus: newOrderStatus)
             }
-            
+
             // Update individual item statuses if changed
             if let orderItems = order.order_items {
                 for item in orderItems {
@@ -348,15 +352,22 @@ struct OrderStatusUpdateView: View {
                     }
                 }
             }
-            
+
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
+
             // Success - dismiss the view
             dismiss()
-            
+
         } catch {
             errorMessage = "Failed to update status: \(error.localizedDescription)"
             showingErrorAlert = true
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
-        
+
         isUpdating = false
     }
 }

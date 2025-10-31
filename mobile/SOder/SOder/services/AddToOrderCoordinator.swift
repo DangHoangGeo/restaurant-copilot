@@ -70,57 +70,43 @@ class AddToOrderCoordinator: ObservableObject {
     }
     
     // MARK: - Quick Add Methods
-    
+
     /// Quick add item with default options (no customization)
     func quickAddItem(_ menuItem: MenuItem, to orderId: String, quantity: Int = 1, notes: String? = nil) async {
         guard !isAddingItem else { return }
-        
+
         isAddingItem = true
         errorMessage = nil
-        
+
         do {
             let defaultSizeId = menuItem.availableSizes?.first?.id
             let price = calculatePrice(for: menuItem, selectedSizeId: defaultSizeId, quantity: quantity)
-            
-            // Determine if this is a local draft order or existing database order
-            if orderManager.localDraftOrders[orderId] != nil {
-                // Local draft order - use local method
-                _ = try await orderManager.addItemToLocalDraftOrder(
-                    orderId: orderId,
-                    menuItemId: menuItem.id,
-                    quantity: quantity,
-                    notes: notes,
-                    selectedSizeId: defaultSizeId,
-                    selectedToppingIds: nil,
-                    priceAtOrder: price,
-                    menuItem: menuItem
-                )
-            } else {
-                // Existing database order - use database method
-                _ = try await orderManager.addItemToDraftOrder(
-                    orderId: orderId,
-                    menuItemId: menuItem.id,
-                    quantity: quantity,
-                    notes: notes,
-                    selectedSizeId: defaultSizeId,
-                    selectedToppingIds: nil,
-                    priceAtOrder: price
-                )
-            }
-            
-            print("✅ Quick added item \(menuItem.displayName) to order \(orderId)")
-            
+
+            // Always use local draft for cart-like behavior
+            _ = try await orderManager.addItemToLocalDraftOrder(
+                orderId: orderId,
+                menuItemId: menuItem.id,
+                quantity: quantity,
+                notes: notes,
+                selectedSizeId: defaultSizeId,
+                selectedToppingIds: nil,
+                priceAtOrder: price,
+                menuItem: menuItem
+            )
+
+            print("✅ Quick added item \(menuItem.displayName) to local cart for order \(orderId)")
+
         } catch {
             print("❌ Error quick adding item: \(error)")
             errorMessage = "pos_add_item_error".localized
             showingErrorAlert = true
         }
-        
+
         isAddingItem = false
     }
     
     // MARK: - Custom Add Methods
-    
+
     /// Add item with custom options (from customize sheet)
     func addItemWithOptions(
         _ menuItem: MenuItem,
@@ -131,52 +117,38 @@ class AddToOrderCoordinator: ObservableObject {
         selectedToppingIds: [String]? = nil
     ) async {
         guard !isAddingItem else { return }
-        
+
         isAddingItem = true
         errorMessage = nil
-        
+
         do {
             let price = calculatePrice(
-                for: menuItem, 
-                selectedSizeId: selectedSizeId, 
-                selectedToppingIds: selectedToppingIds, 
+                for: menuItem,
+                selectedSizeId: selectedSizeId,
+                selectedToppingIds: selectedToppingIds,
                 quantity: quantity
             )
-            
-            // Determine if this is a local draft order or existing database order
-            if orderManager.localDraftOrders[orderId] != nil {
-                // Local draft order - use local method
-                _ = try await orderManager.addItemToLocalDraftOrder(
-                    orderId: orderId,
-                    menuItemId: menuItem.id,
-                    quantity: quantity,
-                    notes: notes,
-                    selectedSizeId: selectedSizeId,
-                    selectedToppingIds: selectedToppingIds,
-                    priceAtOrder: price,
-                    menuItem: menuItem
-                )
-            } else {
-                // Existing database order - use database method
-                _ = try await orderManager.addItemToDraftOrder(
-                    orderId: orderId,
-                    menuItemId: menuItem.id,
-                    quantity: quantity,
-                    notes: notes,
-                    selectedSizeId: selectedSizeId,
-                    selectedToppingIds: selectedToppingIds,
-                    priceAtOrder: price
-                )
-            }
-            
-            print("✅ Added customized item \(menuItem.displayName) to order \(orderId)")
-            
+
+            // Always use local draft for cart-like behavior
+            _ = try await orderManager.addItemToLocalDraftOrder(
+                orderId: orderId,
+                menuItemId: menuItem.id,
+                quantity: quantity,
+                notes: notes,
+                selectedSizeId: selectedSizeId,
+                selectedToppingIds: selectedToppingIds,
+                priceAtOrder: price,
+                menuItem: menuItem
+            )
+
+            print("✅ Added customized item \(menuItem.displayName) to local cart for order \(orderId)")
+
         } catch {
             print("❌ Error adding customized item: \(error)")
             errorMessage = "pos_add_item_error".localized
             showingErrorAlert = true
         }
-        
+
         isAddingItem = false
     }
     
