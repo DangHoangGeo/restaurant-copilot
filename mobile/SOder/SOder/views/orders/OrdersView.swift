@@ -132,132 +132,49 @@ struct OrdersView: View {
     // MARK: - iPad Sidebar
     private var orderSidebar: some View {
         VStack(spacing: 0) {
-            // Header with toggle
-            VStack(spacing: Spacing.lg) {
-                HStack {
-                    Text("orders".localized)
-                        .font(.sectionHeader)
-                        .foregroundColor(.appTextPrimary)
-                    Spacer()
-                    
-                    // Auto-print status indicator
-                    if orderManager.autoPrintingEnabled {
-                        AutoPrintStatusView(
-                            isEnabled: orderManager.autoPrintingEnabled,
-                            isActivePrinting: orderManager.autoPrintingInProgress,
-                            autoPrintStats: orderManager.autoPrintStats,
-                            lastResult: orderManager.lastAutoPrintResult
-                        )
-                    }
-                    
-                    Menu {
-                        Button("orders_refresh".localized) {
-                            Task {
-                                if showAllOrders {
-                                    await orderManager.fetchAllOrders()
-                                } else {
-                                    await orderManager.fetchActiveOrders()
-                                }
-                            }
-                        }
-                        
-                        Divider()
-                        
-                        // Auto-printing controls
-                        Section("orders_auto_printing".localized) {
-                            Button(action: {
-                                orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
-                            }) {
-                                HStack {
-                                    Text("orders_auto_print_new_orders".localized)
-                                    Spacer()
-                                    if orderManager.autoPrintingEnabled {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.appSuccess)
-                                    }
-                                }
-                            }
-                            
-                            Button("orders_clear_print_history".localized) {
-                                orderManager.clearPrintHistory()
-                            }
-                            .disabled(!orderManager.autoPrintingEnabled)
-                            
-                            if orderManager.autoPrintStats.totalNewOrdersPrinted > 0 || orderManager.autoPrintStats.totalReadyItemsPrinted > 0 {
-                                Button("orders_view_statistics".localized) {
-                                    // Show detailed statistics
-                                }
-                                .disabled(true) // TODO: Implement detailed stats view
-                            }
-                        }
-                        
-                        Divider()
-                        
-                        Button("orders_sign_out".localized) {
-                            Task {
-                                try? await supabaseManager.signOut()
-                            }
-                        }
-                    } label: {
-                        HStack { Image(systemName: "ellipsis.circle") .font(.title2) }
-                    }
-                }
-                
-                // Order Type Toggle
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.sm) {
-                        SegmentedPill(title: "orders_active_orders".localized, isSelected: !showAllOrders) {
-                            showAllOrders = false
-                        }
-                        SegmentedPill(title: "orders_all_orders".localized, isSelected: showAllOrders) {
-                            showAllOrders = true
+            OrderSidebarHeaderView(
+                showAllOrders: $showAllOrders,
+                selectedFilter: $selectedFilter,
+                onRefresh: {
+                    Task {
+                        if showAllOrders {
+                            await orderManager.fetchAllOrders()
+                        } else {
+                            await orderManager.fetchActiveOrders()
                         }
                     }
-                    .padding(.horizontal)
-                }
-                
-                // Filter Pills
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.md) {
-                        ForEach(OrderFilter.allCases, id: \.self) { filter in
-                            FilterChip(
-                                title: filter.displayName,
-                                count: countForFilter(filter),
-                                isSelected: selectedFilter == filter,
-                                color: filter.color
-                            ) { selectedFilter = filter }
-                        }
+                },
+                onToggleAutoPrint: { orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled) },
+                onClearPrintHistory: { orderManager.clearPrintHistory() },
+                onSignOut: {
+                    Task {
+                        try? await supabaseManager.signOut()
                     }
-                    .padding(.horizontal)
-                }
-                
-                // New Order Button
-                Button(action: { showingNewOrderFlow = true }) {
-                    HStack { Image(systemName: "plus.circle") ; Text("tab_new_order".localized) }
-                        .font(.buttonMedium)
-                        .foregroundColor(.white)
-                        .padding(.vertical, Spacing.md)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.appPrimary)
-                        .cornerRadius(CornerRadius.md)
-                        .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
-                }
-                .padding(.horizontal)
-            }
-            .padding()
-            .background(Color.appSurface)
-            .overlay(Divider(), alignment: .bottom)
+                },
+                onNewOrder: { showingNewOrderFlow = true },
+                orderManager: orderManager
+            )
+
+            orderList
             
-            // Orders List
+            errorMessageView
+        }
+        .navigationTitle("orders".localized)
+        .navigationBarHidden(true)
+    }
+
+    private var orderList: some View {
+        Group {
             if orderManager.isLoading {
-                VStack(spacing: Spacing.sm) {
-                    ForEach(0..<3) { _ in
+                List {
+                    ForEach(0..<5) { _ in
                         SkeletonOrderRow()
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                     }
                 }
+                .listStyle(.plain)
                 .redacted(reason: .placeholder)
             } else if filteredOrders.isEmpty {
                 Spacer()
@@ -279,34 +196,42 @@ struct OrdersView: View {
                 .scrollContentBackground(.hidden)
                 .id("\(selectedFilter.rawValue)-\(showAllOrders)")
                 .animation(.easeInOut(duration: Motion.medium), value: selectedFilter)
-                .refreshable { if showAllOrders { await orderManager.fetchAllOrders() } else { await orderManager.fetchActiveOrders() } }
-                .onChange(of: selectedOrder) { newOrder in
-                    print("Selected order changed to: \(newOrder?.id ?? "nil")")
+                .refreshable {
+                    if showAllOrders {
+                        await orderManager.fetchAllOrders()
+                    } else {
+                        await orderManager.fetchActiveOrders()
+                    }
                 }
             }
-            // Error Message
-            if let errorMessage = orderManager.errorMessage {
-                HStack {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.appWarning)
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Button("orders_retry".localized) {
-                        Task {
+        }
+    }
+
+    @ViewBuilder
+    private var errorMessageView: some View {
+        if let errorMessage = orderManager.errorMessage {
+            HStack {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.appWarning)
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Button("orders_retry".localized) {
+                    Task {
+                        if showAllOrders {
+                            await orderManager.fetchAllOrders()
+                        } else {
                             await orderManager.fetchActiveOrders()
                         }
                     }
-                    .font(.caption)
-                    .foregroundColor(.appPrimary)
                 }
-                .padding()
-                .background(Color.appSurface)
+                .font(.caption)
+                .foregroundColor(.appPrimary)
             }
+            .padding()
+            .background(Color.appSurface)
         }
-        .navigationTitle("orders".localized)
-        .navigationBarHidden(true)
     }
     
     // MARK: - iPad Detail View
@@ -525,10 +450,6 @@ struct OrdersView: View {
     
     private var groupedOrders: [String: [Order]] {
         Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? String(format: "orders_table_format".localized, $0.table_id) })
-    }
-    
-    private func countForFilter(_ filter: OrderFilter) -> Int {
-        filteredOrderGroups[filter]?.count ?? 0
     }
     
     // MARK: - Swipe Actions
