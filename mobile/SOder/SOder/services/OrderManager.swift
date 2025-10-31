@@ -1818,6 +1818,24 @@ class OrderManager: ObservableObject {
         // Refresh orders list
         await fetchActiveOrders()
     }
+
+    // Add the new method here
+    func countForFilter(_ filter: OrdersView.OrderFilter, allOrders: Bool) -> Int {
+        let orders = allOrders ? self.allOrders : self.orders
+
+        switch filter {
+        case .active:
+            return orders.filter { $0.status == .new || $0.status == .serving }.count
+        case .new:
+            return orders.filter { $0.status == .new }.count
+        case .serving:
+            return orders.filter { $0.status == .serving }.count
+        case .completed:
+            return orders.filter { $0.status == .completed }.count
+        case .canceled:
+            return orders.filter { $0.status == .canceled }.count
+        }
+    }
 }
 
 struct TimeoutError: LocalizedError {
