@@ -66,7 +66,7 @@ struct OrderSummaryBar: View {
             .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
                 isPressed = pressing
             }, perform: {})
-            .accessibilityLabel(String(format: "pos_view_cart_accessibility".localized, itemsCount, totalAmount))
+            .accessibilityLabel(String(format: "pos_view_cart_accessibility".localized, itemsCount, String(format: "price_format".localized, totalAmount)))
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }

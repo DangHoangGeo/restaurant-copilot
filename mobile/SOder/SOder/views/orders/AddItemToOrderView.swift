@@ -2,11 +2,11 @@ import SwiftUI
 
 struct AddItemToOrderView: View {
     let order: Order
-    
+
     @EnvironmentObject var orderManager: OrderManager
     @EnvironmentObject var supabaseManager: SupabaseManager
     @Environment(\.dismiss) var dismiss
-    
+
     @StateObject private var coordinator = AddToOrderCoordinator()
     @State private var menuItems: [MenuItem] = []
     @State private var categories: [Category] = []
@@ -16,6 +16,14 @@ struct AddItemToOrderView: View {
     @State private var showingCustomizeSheet = false
     @State private var itemToCustomize: MenuItem? = nil
     @State private var orderSummary: (itemsCount: Int, totalAmount: Double) = (0, 0.0)
+    @State private var isSavingToDatabase = false
+    @State private var showingCartSheet = false
+    @State private var itemToEdit: OrderItem? = nil
+
+    // Use a computed property for the local draft ID to ensure uniqueness
+    private var localDraftOrderId: String {
+        "add_items_\(order.id)"
+    }
     
     // Filtered items based on search and category with multi-language support
     private var filteredItems: [MenuItem] {
@@ -82,23 +90,21 @@ struct AddItemToOrderView: View {
                     showCategoryHeaders: true,
                     isAddingItem: coordinator.isAddingItem,
                     onItemTap: { item in
-                        Task {
-                            await coordinator.handleAddItem(item, to: order.id) { menuItem in
-                                itemToCustomize = menuItem
-                                showingCustomizeSheet = true
-                            }
-                        }
+                        // Clicking the item line opens customization sheet
+                        itemToCustomize = item
+                        showingCustomizeSheet = true
                     },
                     onQuickAdd: { item in
+                        // Clicking + button quick adds to cart
                         Task {
-                            await coordinator.quickAddItem(item, to: order.id)
+                            await coordinator.quickAddItem(item, to: localDraftOrderId)
                             await updateOrderSummary()
                         }
                     }
                 )
             }
             
-            // Order Summary Bar (appears when items are added)
+            // Floating Cart Button (appears when items are added)
             if orderSummary.itemsCount > 0 {
                 VStack(spacing: 0) {
                     Divider()
@@ -107,25 +113,32 @@ struct AddItemToOrderView: View {
                         totalAmount: orderSummary.totalAmount,
                         isVisible: true,
                         onTap: {
-                            // Dismiss view to show updated order
-                            dismiss()
+                            // Haptic feedback
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                            impactFeedback.impactOccurred()
+                            // Show cart sheet
+                            showingCartSheet = true
                         }
                     )
                     .padding()
                     .background(Color.appSurfaceElevated)
+                    .shadow(color: Elevation.level3.color, radius: Elevation.level3.radius, y: -Elevation.level3.y)
                 }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: orderSummary.itemsCount)
             }
         }
         .navigationTitle("add_items_title".localized)
         .navigationBarTitleDisplayMode(.inline)
         .task {
+            await initializeLocalDraft()
             await loadMenuData()
             await updateOrderSummary()
         }
         .sheet(item: $itemToCustomize) { menuItem in
             CustomizeMenuItemSheet(
                 menuItem: menuItem,
-                orderId: order.id,
+                orderId: localDraftOrderId,
                 coordinator: coordinator,
                 onComplete: {
                     itemToCustomize = nil
@@ -136,15 +149,123 @@ struct AddItemToOrderView: View {
                 }
             )
         }
+        .sheet(isPresented: $showingCartSheet) {
+            if let localDraft = orderManager.localDraftOrders[localDraftOrderId] {
+                CartSheet(
+                    order: localDraft,
+                    onDismiss: {
+                        showingCartSheet = false
+                    },
+                    onConfirm: {
+                        showingCartSheet = false
+                        Task {
+                            await saveLocalDraftToDatabase()
+                        }
+                    },
+                    onEditItem: { item in
+                        // Close cart and open customize sheet for editing
+                        showingCartSheet = false
+                        if let menuItem = item.menu_item {
+                            itemToCustomize = menuItem
+                            showingCustomizeSheet = true
+                        }
+                    }
+                )
+            }
+        }
         .alert("error".localized, isPresented: $coordinator.showingErrorAlert) {
             Button("ok".localized) {}
         } message: {
             Text(coordinator.errorMessage ?? "order_detail_generic_error_message".localized)
         }
+        .onDisappear {
+            // Clean up local draft if user dismisses without saving
+            if orderManager.localDraftOrders[localDraftOrderId] != nil {
+                orderManager.localDraftOrders.removeValue(forKey: localDraftOrderId)
+                print("🧹 Cleaned up unsaved local draft for order \(order.id)")
+            }
+        }
     }
     
+    // MARK: - Local Draft Management
+
+    @MainActor
+    private func initializeLocalDraft() async {
+        // Create a NEW empty local order for cart-like behavior
+        // This prevents items from being immediately saved to the database
+        let localOrder = Order(
+            id: localDraftOrderId,
+            restaurant_id: order.restaurant_id,
+            table_id: order.table_id,
+            session_id: order.session_id,
+            guest_count: order.guest_count,
+            status: order.status,
+            total_amount: 0.0,
+            order_number: order.order_number,
+            created_at: order.created_at,
+            updated_at: order.updated_at,
+            table: order.table,
+            order_items: [], // Start with empty cart
+            payment_method: order.payment_method,
+            discount_amount: order.discount_amount,
+            tax_amount: order.tax_amount,
+            tip_amount: order.tip_amount
+        )
+
+        // Store in local drafts
+        orderManager.localDraftOrders[localDraftOrderId] = localOrder
+        print("✅ Initialized empty local draft cart for adding items to order \(order.id)")
+    }
+
+    @MainActor
+    private func saveLocalDraftToDatabase() async {
+        guard !isSavingToDatabase else { return }
+
+        isSavingToDatabase = true
+
+        do {
+            // Get the local draft order
+            guard let localDraft = orderManager.localDraftOrders[localDraftOrderId],
+                  let newItems = localDraft.order_items else {
+                print("⚠️ No local draft or items found")
+                dismiss()
+                return
+            }
+
+            // Add each item from the local draft to the actual database order
+            for item in newItems {
+                guard let menuItem = item.menu_item else { continue }
+
+                _ = try await orderManager.addItemToDraftOrder(
+                    orderId: order.id,
+                    menuItemId: item.menu_item_id,
+                    quantity: item.quantity,
+                    notes: item.notes,
+                    selectedSizeId: item.menu_item_size_id,
+                    selectedToppingIds: item.topping_ids,
+                    priceAtOrder: item.price_at_order
+                )
+            }
+
+            // Clean up local draft
+            orderManager.localDraftOrders.removeValue(forKey: localDraftOrderId)
+
+            print("✅ Saved \(newItems.count) items to database order \(order.id)")
+
+            // Dismiss view to show updated order
+            dismiss()
+
+        } catch {
+            print("❌ Error saving items to database: \(error)")
+            coordinator.errorMessage = "add_items_error_save_failed".localized
+            coordinator.showingErrorAlert = true
+        }
+
+        isSavingToDatabase = false
+    }
+
     // MARK: - Data Loading
-    
+
     @MainActor
     private func loadMenuData() async {
         isLoading = true
@@ -174,10 +295,10 @@ struct AddItemToOrderView: View {
     }
     
     // MARK: - Order Summary Updates
-    
+
     @MainActor
     private func updateOrderSummary() async {
-        orderSummary = await coordinator.getOrderSummary(for: order.id)
+        orderSummary = await coordinator.getOrderSummary(for: localDraftOrderId)
     }
 }
 

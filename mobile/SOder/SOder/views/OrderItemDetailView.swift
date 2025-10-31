@@ -16,29 +16,32 @@ struct OrderItemDetailView: View {
     
     var body: some View {
         ZStack {
-            // Background overlay
-            Color.black.opacity(0.3)
+            // Background overlay with blur
+            Color.black.opacity(0.4)
                 .ignoresSafeArea()
                 .onTapGesture {
+                    // Haptic feedback on dismiss
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                    impactFeedback.impactOccurred()
                     onComplete()
                 }
             // Detail dialog
             VStack(spacing: 0) {
                 // Header
                 headerSection
-                
+
                 // Content
                 ScrollView {
-                    VStack(spacing: Spacing.md) {
+                    VStack(spacing: Spacing.lg) {
                         // Item summary
                         itemSummarySection
-                        
+
                         // Notes section
                         notesSection
-                        
+
                         // Status management
                         statusManagementSection
-                        
+
                         // Action buttons
                         actionButtonsSection
                     }
@@ -47,11 +50,16 @@ struct OrderItemDetailView: View {
                 .background(Color.appBackground)
             }
             .frame(maxWidth: 600) // Limit width for iPad
-            .frame(maxHeight: UIScreen.main.bounds.height * 0.8) // Limit height
+            .frame(maxHeight: UIScreen.main.bounds.height * 0.85) // Limit height
             .background(Color.appSurface)
             .cornerRadius(CornerRadius.lg)
-            .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
+            .shadow(color: Color.black.opacity(0.2), radius: 24, x: 0, y: 12)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.lg)
+                    .stroke(Color.appBorderLight, lineWidth: 1)
+            )
             .padding()
+            .transition(.scale(scale: 0.9).combined(with: .opacity))
         }
         .onAppear {
             tempNotes = item.notes ?? ""
@@ -383,39 +391,63 @@ struct OrderItemDetailView: View {
         isUpdatingNotes = true
         let notesToSave = tempNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         let finalNotes = notesToSave.isEmpty ? nil : notesToSave
-        
+
+        // Haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+        impactFeedback.impactOccurred()
+
         await orderManager.updateOrderItemNotes(orderItemId: item.id, notes: finalNotes)
-        
+
         editingNotes = false
         isUpdatingNotes = false
         onPrintResult("Notes updated successfully")
+
+        // Success haptic
+        let notificationFeedback = UINotificationFeedbackGenerator()
+        notificationFeedback.notificationOccurred(.success)
     }
-    
+
     @MainActor
     private func advanceStatus() async {
         isUpdatingStatus = true
-        
+
+        // Haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
         let nextStatus = getNextStatus()
         await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: nextStatus)
-        
+
         isUpdatingStatus = false
         onPrintResult("Status updated to \(nextStatus.displayName)")
-        
+
+        // Success haptic
+        let notificationFeedback = UINotificationFeedbackGenerator()
+        notificationFeedback.notificationOccurred(.success)
+
         // Close after a short delay to show feedback
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             onComplete()
         }
     }
-    
+
     @MainActor
     private func cancelItem() async {
         isCancelling = true
-        
+
+        // Haptic feedback for destructive action
+        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+        impactFeedback.impactOccurred()
+
         await orderManager.cancelOrderItem(orderItemId: item.id)
-        
+
         isCancelling = false
         onPrintResult("Item canceled successfully")
-        
+
+        // Success haptic
+        let notificationFeedback = UINotificationFeedbackGenerator()
+        notificationFeedback.notificationOccurred(.success)
+
         // Close after a short delay to show feedback
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             onComplete()

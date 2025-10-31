@@ -217,30 +217,44 @@ struct OrderDetailView: View {
                 if order.status == .completed {
                     Button(action: {
                         Task { await printReceipt(for: order) }
+                        // Haptic feedback
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
                     }) {
-                        HStack {
-                            Image(systemName: "printer")
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "printer.fill")
+                                .font(.title3)
                             Text("orders_print_receipt".localized)
                                 .font(.buttonLarge)
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(Color.appPrimary)
+                        .frame(height: 50)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.appPrimary, Color.appPrimary.opacity(0.9)]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                         .foregroundColor(.white)
                         .cornerRadius(CornerRadius.md)
+                        .shadow(color: Color.appPrimary.opacity(0.3), radius: 4, y: 2)
                     }
                     .accessibilityLabel("orders_print_receipt_accessibility".localized)
                 } else {
                     // Add Items Button
                     Button(action: {
                         showingAddItemSheet = true
+                        // Haptic feedback
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                        impactFeedback.impactOccurred()
                     }) {
-                        HStack {
-                            Image(systemName: "plus.circle")
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "plus.circle.fill")
                             Text("order_detail_add_items_button".localized)
-                                .font(.buttonLarge)
-                                .fontWeight(.medium)
+                                .font(.buttonMedium)
+                                .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
@@ -249,81 +263,118 @@ struct OrderDetailView: View {
                         .cornerRadius(CornerRadius.md)
                     }
                     .accessibilityLabel("order_detail_add_items_accessibility".localized)
-                    
+
                     if order.status == .new {
                         Button(action: {
                             Task { await updateOrderStatus(.serving) }
+                            // Haptic feedback
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                            impactFeedback.impactOccurred()
                         }) {
-                            HStack {
-                                Image(systemName: "fork.knife")
-                                Text("orders_mark_serving".localized)
-                                    .font(.buttonLarge)
-                                    .fontWeight(.medium)
+                            HStack(spacing: Spacing.sm) {
+                                if isUpdatingStatus {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .scaleEffect(0.9)
+                                } else {
+                                    Image(systemName: "fork.knife")
+                                }
+                                Text(isUpdatingStatus ? "order_detail_updating".localized : "orders_mark_serving".localized)
+                                    .font(.buttonMedium)
+                                    .fontWeight(.semibold)
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 44)
-                            .background(Color.appWarning)
+                            .background(isUpdatingStatus ? Color.appTextSecondary : Color.appSuccess)
                             .foregroundColor(.white)
                             .cornerRadius(CornerRadius.md)
                         }
                         .disabled(isUpdatingStatus)
+                        .opacity(isUpdatingStatus ? 0.7 : 1.0)
                         .accessibilityLabel("orders_mark_serving_accessibility".localized)
                     }
-                    
-                    Button(action: onCheckout) {
-                        HStack {
-                            Image(systemName: "creditcard")
+
+                    Button(action: {
+                        onCheckout()
+                        // Haptic feedback
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+                        impactFeedback.impactOccurred()
+                    }) {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "creditcard.fill")
+                                .font(.title3)
                             Text("orders_checkout".localized)
                                 .font(.buttonLarge)
-                                .fontWeight(.semibold)
+                                .fontWeight(.bold)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(Color.appPrimary)
+                        .frame(height: 50)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.appPrimary, Color.appPrimary.opacity(0.9)]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                         .foregroundColor(.white)
                         .cornerRadius(CornerRadius.md)
+                        .shadow(color: Color.appPrimary.opacity(0.3), radius: 4, y: 2)
                     }
                     .accessibilityLabel("orders_checkout_accessibility".localized)
                 }
             }
-            
+
             // Secondary Actions Row (only for active orders)
             if order.status != .completed && order.status != .canceled {
                 HStack(spacing: Spacing.md) {
                     // Update Status Button
                     Button(action: {
                         showingStatusUpdateSheet = true
+                        // Haptic feedback
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                        impactFeedback.impactOccurred()
                     }) {
-                        HStack {
-                            Image(systemName: "arrow.up.circle")
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "arrow.up.circle.fill")
                             Text("order_detail_update_status_button".localized)
                                 .font(.buttonMedium)
                                 .fontWeight(.medium)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 36)
-                        .background(Color.appTextSecondary.opacity(0.1))
+                        .frame(height: 40)
+                        .background(Color.appSurfaceSecondary)
                         .foregroundColor(.appTextPrimary)
-                        .cornerRadius(CornerRadius.sm)
+                        .cornerRadius(CornerRadius.md)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.md)
+                                .stroke(Color.appBorderLight, lineWidth: 1)
+                        )
                     }
                     .accessibilityLabel("order_detail_update_status_accessibility".localized)
-                    
+
                     // Cancel Order Button (only for new orders)
                     if order.status == .new {
                         Button(action: {
                             showingCancelConfirmAlert = true
+                            // Haptic feedback for destructive action
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+                            impactFeedback.impactOccurred()
                         }) {
-                            HStack {
-                                Image(systemName: "xmark.circle")
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "xmark.circle.fill")
                                 Text("order_detail_cancel_order_button".localized)
                                     .font(.buttonMedium)
                                     .fontWeight(.medium)
                             }
                             .frame(maxWidth: .infinity)
-                            .frame(height: 36)
-                            .background(Color.appError.opacity(0.1))
+                            .frame(height: 40)
+                            .background(Color.appErrorLight)
                             .foregroundColor(.appError)
-                            .cornerRadius(CornerRadius.sm)
+                            .cornerRadius(CornerRadius.md)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.md)
+                                    .stroke(Color.appError.opacity(0.3), lineWidth: 1)
+                            )
                         }
                         .accessibilityLabel("order_detail_cancel_order_accessibility".localized)
                     }
@@ -383,34 +434,46 @@ struct OrderDetailView: View {
     @MainActor
     private func updateOrderStatus(_ newStatus: OrderStatus) async {
         isUpdatingStatus = true
-        
+
         do {
             try await orderManager.updateOrderStatus(orderId: orderId, newStatus: newStatus)
             let localizedStatus = newStatus.displayName.localized
             onPrintResult(String(format: "order_status_update_success_message".localized, localizedStatus))
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
         } catch {
             onPrintResult("order_status_update_failure_message".localized)
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
-        
+
         isUpdatingStatus = false
     }
-    
+
     @MainActor
     private func cancelOrder() async {
         isUpdatingStatus = true
         errorMessage = nil
-        
+
         do {
             try await orderManager.cancelOrder(orderId: orderId)
             onPrintResult("order_cancel_success_message".localized)
+            // Success haptic for cancellation
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
         } catch {
             errorMessage = "order_cancel_failure_message".localized
             showingErrorAlert = true
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
-        
+
         isUpdatingStatus = false
     }
-    
+
     @MainActor
     private func printReceipt(for order: Order) async {
         let subtotal = order.total_amount ?? 0
@@ -424,12 +487,18 @@ struct OrderDetailView: View {
             totalAmount: subtotal * (1 + taxRate),
             timestamp: Date()
         )
-        
+
         do {
             try await printerManager.printCheckoutReceipt(receiptData)
             onPrintResult("receipt_print_success_message".localized)
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
         } catch {
             onPrintResult("receipt_print_failure_message".localized)
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
     }
     

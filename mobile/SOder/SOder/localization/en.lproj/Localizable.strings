@@ -595,6 +595,15 @@
 "add_items_error_no_restaurant" = "Could not identify the restaurant. Please restart the app.";
 "add_items_error_load_failed" = "Failed to load menu data. Please check your connection and try again.";
 "add_items_error_add_failed" = "Failed to add the item to your order. Please try again.";
+"add_items_error_save_failed" = "Failed to save items to the order. Please try again.";
+
+// MARK: - Cart
+"cart_title" = "Cart";
+"cart_empty_title" = "Your cart is empty";
+"cart_empty_subtitle" = "Add items from the menu to get started";
+"pos_total_items" = "Total Items";
+"pos_confirm_order" = "Confirm Order";
+"pos_continue_adding" = "Continue Adding";
 
 // MARK: - Order Status Update View
 "order_status_update_button" = "Update Status";
@@ -1048,3 +1057,12 @@
 
 // MARK: - Tab Bar
 "tab_tables" = "Tables";
+
+// MARK: - Enhanced UI/UX Strings
+"orders_error_title" = "Error Loading Orders";
+"order_detail_updating" = "Updating...";
+"checkout_quick_amounts" = "Quick Amounts";
+"checkout_exact_amount" = "Exact";
+"checkout_cash_details" = "Cash Payment";
+"checkout_processing" = "Processing...";
+"checkout_insufficient_cash_hint" = "Please enter an amount equal to or greater than the total";
