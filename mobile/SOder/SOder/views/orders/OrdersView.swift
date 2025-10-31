@@ -65,6 +65,10 @@ struct OrdersView: View {
         filteredOrderGroups[selectedFilter] ?? []
     }
 
+    private func countForFilter(_ filter: OrderFilter) -> Int {
+        filteredOrderGroups[filter]?.count ?? 0
+    }
+
     var body: some View {
         Group {
             if horizontalSizeClass == .regular {
@@ -87,6 +91,12 @@ struct OrdersView: View {
                 await orderManager.fetchAllOrders()
             } else {
                 await orderManager.fetchActiveOrders()
+            }
+        }
+        .onChange(of: filteredOrders) { oldValue, newValue in
+            // Auto-select first order on iPad when orders are available
+            if horizontalSizeClass == .regular && !newValue.isEmpty && selectedOrder == nil {
+                selectedOrder = newValue.first
             }
         }
         .alert("orders_system_message".localized, isPresented: $showingPrintAlert) {
@@ -132,136 +142,56 @@ struct OrdersView: View {
     // MARK: - iPad Sidebar
     private var orderSidebar: some View {
         VStack(spacing: 0) {
-            // Header with toggle
-            VStack(spacing: Spacing.lg) {
-                HStack {
-                    Text("orders".localized)
-                        .font(.sectionHeader)
-                        .foregroundColor(.appTextPrimary)
-                    Spacer()
-                    
-                    // Auto-print status indicator
-                    if orderManager.autoPrintingEnabled {
-                        AutoPrintStatusView(
-                            isEnabled: orderManager.autoPrintingEnabled,
-                            isActivePrinting: orderManager.autoPrintingInProgress,
-                            autoPrintStats: orderManager.autoPrintStats,
-                            lastResult: orderManager.lastAutoPrintResult
-                        )
-                    }
-                    
-                    Menu {
-                        Button("orders_refresh".localized) {
-                            Task {
-                                if showAllOrders {
-                                    await orderManager.fetchAllOrders()
-                                } else {
-                                    await orderManager.fetchActiveOrders()
-                                }
-                            }
-                        }
-                        
-                        Divider()
-                        
-                        // Auto-printing controls
-                        Section("orders_auto_printing".localized) {
-                            Button(action: {
-                                orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
-                            }) {
-                                HStack {
-                                    Text("orders_auto_print_new_orders".localized)
-                                    Spacer()
-                                    if orderManager.autoPrintingEnabled {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.appSuccess)
-                                    }
-                                }
-                            }
-                            
-                            Button("orders_clear_print_history".localized) {
-                                orderManager.clearPrintHistory()
-                            }
-                            .disabled(!orderManager.autoPrintingEnabled)
-                            
-                            if orderManager.autoPrintStats.totalNewOrdersPrinted > 0 || orderManager.autoPrintStats.totalReadyItemsPrinted > 0 {
-                                Button("orders_view_statistics".localized) {
-                                    // Show detailed statistics
-                                }
-                                .disabled(true) // TODO: Implement detailed stats view
-                            }
-                        }
-                        
-                        Divider()
-                        
-                        Button("orders_sign_out".localized) {
-                            Task {
-                                try? await supabaseManager.signOut()
-                            }
-                        }
-                    } label: {
-                        HStack { Image(systemName: "ellipsis.circle") .font(.title2) }
-                    }
-                }
-                
-                // Order Type Toggle
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.sm) {
-                        SegmentedPill(title: "orders_active_orders".localized, isSelected: !showAllOrders) {
-                            showAllOrders = false
-                        }
-                        SegmentedPill(title: "orders_all_orders".localized, isSelected: showAllOrders) {
-                            showAllOrders = true
+            OrderSidebarHeaderView(
+                showAllOrders: $showAllOrders,
+                selectedFilter: $selectedFilter,
+                onRefresh: {
+                    Task {
+                        if showAllOrders {
+                            await orderManager.fetchAllOrders()
+                        } else {
+                            await orderManager.fetchActiveOrders()
                         }
                     }
-                    .padding(.horizontal)
-                }
-                
-                // Filter Pills
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.md) {
-                        ForEach(OrderFilter.allCases, id: \.self) { filter in
-                            FilterChip(
-                                title: filter.displayName,
-                                count: countForFilter(filter),
-                                isSelected: selectedFilter == filter,
-                                color: filter.color
-                            ) { selectedFilter = filter }
-                        }
+                },
+                onToggleAutoPrint: { orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled) },
+                onClearPrintHistory: { orderManager.clearPrintHistory() },
+                onSignOut: {
+                    Task {
+                        try? await supabaseManager.signOut()
                     }
-                    .padding(.horizontal)
-                }
-                
-                // New Order Button
-                Button(action: { showingNewOrderFlow = true }) {
-                    HStack { Image(systemName: "plus.circle") ; Text("tab_new_order".localized) }
-                        .font(.buttonMedium)
-                        .foregroundColor(.white)
-                        .padding(.vertical, Spacing.md)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.appPrimary)
-                        .cornerRadius(CornerRadius.md)
-                        .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
-                }
-                .padding(.horizontal)
-            }
-            .padding()
-            .background(Color.appSurface)
-            .overlay(Divider(), alignment: .bottom)
+                },
+                onNewOrder: { showingNewOrderFlow = true },
+                orderManager: orderManager,
+                supabaseManager: supabaseManager
+            )
+
+            orderList
             
-            // Orders List
+            errorMessageView
+        }
+        .navigationTitle("orders".localized)
+        .navigationBarHidden(true)
+    }
+
+    private var orderList: some View {
+        Group {
             if orderManager.isLoading {
-                VStack(spacing: Spacing.sm) {
-                    ForEach(0..<3) { _ in
+                List {
+                    ForEach(0..<5) { _ in
                         SkeletonOrderRow()
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                     }
                 }
+                .listStyle(.plain)
                 .redacted(reason: .placeholder)
+                .transition(.opacity)
             } else if filteredOrders.isEmpty {
                 Spacer()
                 EmptyOrdersView(filter: selectedFilter)
+                    .transition(.scale.combined(with: .opacity))
                 Spacer()
             } else {
                 List(filteredOrders, selection: $selectedOrder) { order in
@@ -273,40 +203,86 @@ struct OrdersView: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    .onTapGesture { selectedOrder = order }
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: Motion.fast)) {
+                            selectedOrder = order
+                        }
+                        // Haptic feedback for order selection
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                        impactFeedback.impactOccurred()
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .trailing)))
                 }
                 .listStyle(PlainListStyle())
                 .scrollContentBackground(.hidden)
                 .id("\(selectedFilter.rawValue)-\(showAllOrders)")
                 .animation(.easeInOut(duration: Motion.medium), value: selectedFilter)
-                .refreshable { if showAllOrders { await orderManager.fetchAllOrders() } else { await orderManager.fetchActiveOrders() } }
-                .onChange(of: selectedOrder) { newOrder in
-                    print("Selected order changed to: \(newOrder?.id ?? "nil")")
+                .refreshable {
+                    if showAllOrders {
+                        await orderManager.fetchAllOrders()
+                    } else {
+                        await orderManager.fetchActiveOrders()
+                    }
                 }
             }
-            // Error Message
-            if let errorMessage = orderManager.errorMessage {
-                HStack {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.appWarning)
+        }
+    }
+
+    @ViewBuilder
+    private var errorMessageView: some View {
+        if let errorMessage = orderManager.errorMessage {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.title3)
+                    .foregroundColor(.appError)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text("orders_error_title".localized)
+                        .font(.captionBold)
+                        .foregroundColor(.appTextPrimary)
                     Text(errorMessage)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Button("orders_retry".localized) {
-                        Task {
+                        .font(.captionRegular)
+                        .foregroundColor(.appTextSecondary)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                Button(action: {
+                    Task {
+                        if showAllOrders {
+                            await orderManager.fetchAllOrders()
+                        } else {
                             await orderManager.fetchActiveOrders()
                         }
                     }
-                    .font(.caption)
-                    .foregroundColor(.appPrimary)
+                    // Haptic feedback for retry
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                }) {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "arrow.clockwise")
+                        Text("orders_retry".localized)
+                    }
+                    .font(.captionBold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.sm)
+                    .background(Color.appPrimary)
+                    .cornerRadius(CornerRadius.sm)
                 }
-                .padding()
-                .background(Color.appSurface)
             }
+            .padding(Spacing.md)
+            .background(Color.appErrorLight)
+            .cornerRadius(CornerRadius.md)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .stroke(Color.appError.opacity(0.3), lineWidth: 1)
+            )
+            .padding(.horizontal, Spacing.md)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .animation(.easeInOut(duration: Motion.medium), value: orderManager.errorMessage)
         }
-        .navigationTitle("orders".localized)
-        .navigationBarHidden(true)
     }
     
     // MARK: - iPad Detail View
@@ -448,23 +424,52 @@ struct OrdersView: View {
             
             // Error Message
             if let errorMessage = orderManager.errorMessage {
-                HStack {
+                HStack(spacing: Spacing.sm) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.appWarning)
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.title3)
+                        .foregroundColor(.appError)
+
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        Text("orders_error_title".localized)
+                            .font(.captionBold)
+                            .foregroundColor(.appTextPrimary)
+                        Text(errorMessage)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
+                            .lineLimit(2)
+                    }
+
                     Spacer()
-                    Button("orders_retry".localized) {
+
+                    Button(action: {
                         Task {
                             await orderManager.fetchActiveOrders()
                         }
+                        // Haptic feedback
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
+                    }) {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "arrow.clockwise")
+                            Text("orders_retry".localized)
+                        }
+                        .font(.captionBold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.vertical, Spacing.sm)
+                        .background(Color.appPrimary)
+                        .cornerRadius(CornerRadius.sm)
                     }
-                    .font(.caption)
-                    .foregroundColor(.appPrimary)
                 }
-                .padding()
-                .background(Color.appSurface)
+                .padding(Spacing.md)
+                .background(Color.appErrorLight)
+                .cornerRadius(CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(Color.appError.opacity(0.3), lineWidth: 1)
+                )
+                .padding(.horizontal, Spacing.md)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .navigationTitle("orders".localized)
@@ -527,30 +532,46 @@ struct OrdersView: View {
         Dictionary(grouping: filteredOrders, by: { $0.table?.name ?? String(format: "orders_table_format".localized, $0.table_id) })
     }
     
-    private func countForFilter(_ filter: OrderFilter) -> Int {
-        filteredOrderGroups[filter]?.count ?? 0
-    }
-    
     // MARK: - Swipe Actions
     
     @MainActor
     private func printOrderReceipt(_ order: Order) async {
+        // Haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
         do {
             try await printerManager.printOrderReceipt(order)
             printMessage = "receipt_print_success_message".localized
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
         } catch {
             printMessage = "receipt_print_failure_message".localized
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
         showingPrintAlert = true
     }
-    
+
     @MainActor
     private func markOrderAsServing(_ order: Order) async {
+        // Haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
         do {
             _ = try await orderManager.updateOrderStatus(orderId: order.id, newStatus: .serving)
             printMessage = String(format: "order_status_update_success_message".localized, OrderStatus.serving.displayName)
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
         } catch {
             printMessage = "order_status_update_failure_message".localized
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
         }
         showingPrintAlert = true
     }
@@ -719,7 +740,7 @@ struct SidebarOrderRowView: View {
 
 // Keep existing FilterChip, EmptyOrdersView, OrderRowView, EnhancedStatusBadge, StatusActionButton, PrintButton, EnhancedOrderItemView, and StatusBadge views
 
-private struct SegmentedPill: View {
+struct SegmentedPill: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
