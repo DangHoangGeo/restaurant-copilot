@@ -396,11 +396,22 @@ struct OrderItemDetailView: View {
         let impactFeedback = UIImpactFeedbackGenerator(style: .light)
         impactFeedback.impactOccurred()
 
-        await orderManager.updateOrderItemNotes(orderItemId: item.id, notes: finalNotes)
-
-        editingNotes = false
+        do {
+            try await orderManager.updateOrderItemNotes(orderItemId: item.id, notes: finalNotes)
+            editingNotes = false
+            onPrintResult("Notes updated successfully")
+            
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
+        } catch {
+            onPrintResult("Failed to update notes: \(error.localizedDescription)")
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
+        }
+        
         isUpdatingNotes = false
-        onPrintResult("Notes updated successfully")
 
         // Success haptic
         let notificationFeedback = UINotificationFeedbackGenerator()
@@ -416,14 +427,26 @@ struct OrderItemDetailView: View {
         impactFeedback.impactOccurred()
 
         let nextStatus = getNextStatus()
-        await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: nextStatus)
+        do {
+            try await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: nextStatus)
+            onPrintResult("Status updated to \(nextStatus.displayName)")
 
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
+            
+            // Close after a short delay to show feedback
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                onComplete()
+            }
+        } catch {
+            onPrintResult("Failed to update status: \(error.localizedDescription)")
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
+        }
+        
         isUpdatingStatus = false
-        onPrintResult("Status updated to \(nextStatus.displayName)")
-
-        // Success haptic
-        let notificationFeedback = UINotificationFeedbackGenerator()
-        notificationFeedback.notificationOccurred(.success)
 
         // Close after a short delay to show feedback
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -439,14 +462,26 @@ struct OrderItemDetailView: View {
         let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
         impactFeedback.impactOccurred()
 
-        await orderManager.cancelOrderItem(orderItemId: item.id)
+        do {
+            try await orderManager.cancelOrderItem(orderItemId: item.id)
+            onPrintResult("Item canceled successfully")
 
+            // Success haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.success)
+            
+            // Close after a short delay to show feedback
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                onComplete()
+            }
+        } catch {
+            onPrintResult("Failed to cancel item: \(error.localizedDescription)")
+            // Error haptic
+            let notificationFeedback = UINotificationFeedbackGenerator()
+            notificationFeedback.notificationOccurred(.error)
+        }
+        
         isCancelling = false
-        onPrintResult("Item canceled successfully")
-
-        // Success haptic
-        let notificationFeedback = UINotificationFeedbackGenerator()
-        notificationFeedback.notificationOccurred(.success)
 
         // Close after a short delay to show feedback
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
