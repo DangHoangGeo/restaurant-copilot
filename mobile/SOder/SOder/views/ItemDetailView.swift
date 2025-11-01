@@ -9,6 +9,9 @@ struct ItemDetailView: View {
     let onStatusAdvance: () -> Void
     
     @State private var isAdvancingStatus = false
+    @State private var timeAgoText: String = ""
+
+    private let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ZStack {
@@ -45,6 +48,10 @@ struct ItemDetailView: View {
             .cornerRadius(CornerRadius.lg)
             .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
             .padding()
+        }
+        .onAppear(perform: updateTimeAgoText)
+        .onReceive(timer) { _ in
+            updateTimeAgoText()
         }
     }
     
@@ -296,10 +303,10 @@ struct ItemDetailView: View {
     
     // MARK: - Computed Properties
     
-    private var timeAgoText: String {
+    private func updateTimeAgoText() {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
-        return formatter.localizedString(for: item.orderTime, relativeTo: Date())
+        timeAgoText = formatter.localizedString(for: item.orderTime, relativeTo: Date())
     }
     
     private var statusColor: Color {

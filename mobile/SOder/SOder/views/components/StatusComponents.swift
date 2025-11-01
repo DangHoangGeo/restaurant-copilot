@@ -528,8 +528,20 @@ struct EnhancedOrderItemView: View {
     @MainActor
     private func updateItemStatus() async {
         let nextStatus = getNextStatus()
-        await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: nextStatus)
-        onPrintResult("Updated \(item.menu_item?.displayName ?? "item") to \(nextStatus.displayName)")
+        do {
+            try await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: nextStatus)
+            onPrintResult("Updated \(item.menu_item?.displayName ?? "item") to \(nextStatus.displayName)")
+            
+            // Success haptic feedback
+            let feedback = UINotificationFeedbackGenerator()
+            feedback.notificationOccurred(.success)
+        } catch {
+            onPrintResult("Failed to update status: \(error.localizedDescription)")
+            
+            // Error haptic feedback
+            let feedback = UINotificationFeedbackGenerator()
+            feedback.notificationOccurred(.error)
+        }
     }
     
     private func getNextStatus() -> OrderItemStatus {

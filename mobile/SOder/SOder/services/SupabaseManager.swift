@@ -41,12 +41,20 @@ class SupabaseManager: ObservableObject {
     
     private init() {
         // Use configuration from Info.plist instead of hardcoded values
-        guard let supabaseURL = URL(string: Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String ?? "") else {
-            fatalError("SUPABASE_URL not found in Info.plist")
+        guard let supabaseURLString = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
+              let supabaseURL = URL(string: supabaseURLString) else {
+            print("FATAL ERROR: SUPABASE_URL not found or invalid in Info.plist. Please check your configuration.")
+            // In a real app, you might want to handle this more gracefully than a fatal error,
+            // perhaps by setting a state that disables all Supabase-related functionality.
+            // For this example, we'll proceed with a dummy client to avoid a hard crash.
+            self.client = SupabaseClient(supabaseURL: URL(string: "http://localhost")!, supabaseKey: "dummy")
+            return
         }
         
         guard let supabaseKey = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String else {
-            fatalError("SUPABASE_ANON_KEY not found in Info.plist")
+            print("FATAL ERROR: SUPABASE_ANON_KEY not found in Info.plist. Please check your configuration.")
+            self.client = SupabaseClient(supabaseURL: URL(string: "http://localhost")!, supabaseKey: "dummy")
+            return
         }
         
         self.client = SupabaseClient(
@@ -79,7 +87,12 @@ class SupabaseManager: ObservableObject {
 
         // Load restaurant data only if JWT parsing was successful and restaurantIdFromToken is set
         if isAuthenticated && restaurantIdFromToken != nil {
-            await loadRestaurantData()
+            do {
+                try await loadRestaurantData()
+            } catch {
+                await handleAuthFailure()
+                throw error
+            }
         } else {
             // If JWT parsing failed or restaurantId is missing, ensure user is not treated as authenticated for restaurant data
             if restaurantIdFromToken == nil { print("Error: restaurant_id missing from token.") }
@@ -117,7 +130,11 @@ class SupabaseManager: ObservableObject {
             }
 
             if isAuthenticated && restaurantIdFromToken != nil {
-                await loadRestaurantData()
+                do {
+                    try await loadRestaurantData()
+                } catch {
+                    await handleAuthFailure()
+                }
             } else {
                 // If token parsing failed or no restaurantId, ensure clean state
                 await handleAuthFailure()
@@ -166,14 +183,14 @@ class SupabaseManager: ObservableObject {
     }
     
     @MainActor
-    private func loadRestaurantData() async { // Removed subdomain parameter
+    private func loadRestaurantData() async throws { // Removed subdomain parameter
         guard let user = currentUser, isAuthenticated, let restaurantIdToLoad = self.restaurantIdFromToken else {
             if self.restaurantIdFromToken == nil {
                  print("Debug: restaurantIdFromToken is nil during loadRestaurantData call.")
             }
             // Optionally clear currentRestaurant if auth state is inconsistent
-            // self.currentRestaurant = nil
-            return
+            self.currentRestaurant = nil
+            throw AuthError.noRestaurantAssociated
         }
         
         do {
@@ -189,19 +206,8 @@ class SupabaseManager: ObservableObject {
             print("Loaded restaurant: \(restaurant.name ?? "Unknown"), ID: \(restaurant.id)")
         } catch {
             print("Error loading restaurant data for ID \(restaurantIdToLoad): \(error)")
-            // Fallback or error handling:
-            // currentRestaurant = nil // Or a mock if absolutely necessary for some flows
-            // For testing, create a mock restaurant with the test ID
-            currentRestaurant = Restaurant(
-                id: restaurantIdToLoad, // Use the ID from token for mock consistency
-                name: "Fallback Restaurant (Error)",
-                subdomain: "error", // Indicate error state
-                timezone: "UTC",
-                created_at: "",
-                updated_at: "",
-                taxRate: 0.1
-            )
-            print("Using fallback restaurant due to loading error.")
+            self.currentRestaurant = nil
+            throw SupabaseManagerError.fetchError("Failed to load restaurant data.")
         }
     }
 

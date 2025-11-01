@@ -859,46 +859,34 @@ class OrderManager: ObservableObject {
         errorMessage = nil
         
         do {
-            // Use the optimized RPC function instead of client-side joins
+            // A single query to fetch all required data
             let response: [OrderWithTableResponse] = try await supabaseManager.client
-                .rpc("get_active_orders_with_details", params: ["p_restaurant_id": restaurantId])
+                .from("orders")
+                .select("""
+                    *,
+                    table:tables(*),
+                    order_items(
+                        *,
+                        menu_item:menu_items(
+                            *,
+                            category:categories(
+                                id,
+                                name_en,
+                                name_ja,
+                                name_vi
+                            )
+                        ),
+                        menu_item_size:menu_item_sizes(*)
+                    )
+                """)
+                .eq("restaurant_id", value: restaurantId)
+                .in("status", value: ["new", "serving"])
+                .order("created_at", ascending: false)
                 .execute()
                 .value
-            
-            // Still need to fetch related data for order items, table, etc.
-            // This will be done in a separate, more efficient query
-            var ordersWithDetails: [OrderWithTableResponse] = []
-            
-            for order in response {
-                let orderWithDetails: OrderWithTableResponse = try await supabaseManager.client
-                    .from("orders")
-                    .select("""
-                        *,
-                        table:tables(*),
-                        order_items(
-                            *,
-                            menu_item:menu_items(
-                                *,
-                                category:categories(
-                                    id,
-                                    name_en,
-                                    name_ja,
-                                    name_vi
-                                )
-                            ),
-                            menu_item_size:menu_item_sizes(*)
-                        )
-                    """)
-                    .eq("id", value: order.id)
-                    .single()
-                    .execute()
-                    .value
-                
-                ordersWithDetails.append(orderWithDetails)
-            }
-            
-            self.orders = ordersWithDetails.map { $0.toOrder() }
-            print("Fetched \(orders.count) active orders using RPC")
+
+            self.orders = response.map { $0.toOrder() }
+            print("Fetched \(orders.count) active orders in a single query")
             
         } catch {
             print("Error fetching active orders: \(error)")
@@ -1003,12 +991,12 @@ class OrderManager: ObservableObject {
     
     // MARK: - Update Order Item Notes
     @MainActor
-    func updateOrderItemNotes(orderItemId: String, notes: String?) async {
+    func updateOrderItemNotes(orderItemId: String, notes: String?) async throws {
         do {
             let _: OrderItem = try await supabaseManager.client
                 .from("order_items")
                 .update([
-                    "notes": notes
+                    "notes": notes // Optional String is already Encodable, no need for Any
                 ])
                 .eq("id", value: orderItemId)
                 .single()
@@ -1019,21 +1007,9 @@ class OrderManager: ObservableObject {
             for (orderIndex, order) in orders.enumerated() {
                 if let orderItems = order.order_items,
                    let itemIndex = orderItems.firstIndex(where: { $0.id == orderItemId }) {
-                    orders[orderIndex].order_items?[itemIndex] = OrderItem(
-                        id: orderItems[itemIndex].id,
-                        restaurant_id: orderItems[itemIndex].restaurant_id,
-                        order_id: orderItems[itemIndex].order_id,
-                        menu_item_id: orderItems[itemIndex].menu_item_id,
-                        quantity: orderItems[itemIndex].quantity,
-                        notes: notes,
-                        menu_item_size_id: orderItems[itemIndex].menu_item_size_id,
-                        topping_ids: orderItems[itemIndex].topping_ids,
-                        price_at_order: orderItems[itemIndex].price_at_order,
-                        status: orderItems[itemIndex].status,
-                        created_at: orderItems[itemIndex].created_at,
-                        updated_at: orderItems[itemIndex].updated_at,
-                        menu_item: orderItems[itemIndex].menu_item
-                    )
+                    var item = orderItems[itemIndex]
+                    item.notes = notes
+                    orders[orderIndex].order_items?[itemIndex] = item
                     break
                 }
             }
@@ -1042,13 +1018,13 @@ class OrderManager: ObservableObject {
             
         } catch {
             print("Error updating order item notes: \(error)")
-            errorMessage = "error_update_item_notes".localized
+            throw OrderManagerError.orderItemUpdateFailed("error_update_item_notes".localized)
         }
     }
     
     // MARK: - Cancel Order Item
     @MainActor
-    func cancelOrderItem(orderItemId: String) async {
+    func cancelOrderItem(orderItemId: String) async throws {
         do {
             // Set status to canceled
             let _: OrderItem = try await supabaseManager.client
@@ -1066,21 +1042,10 @@ class OrderManager: ObservableObject {
             for (orderIndex, order) in orders.enumerated() {
                 if let orderItems = order.order_items,
                    let itemIndex = orderItems.firstIndex(where: { $0.id == orderItemId }) {
-                    orders[orderIndex].order_items?[itemIndex] = OrderItem(
-                        id: orderItems[itemIndex].id,
-                        restaurant_id: orderItems[itemIndex].restaurant_id,
-                        order_id: orderItems[itemIndex].order_id,
-                        menu_item_id: orderItems[itemIndex].menu_item_id,
-                        quantity: orderItems[itemIndex].quantity,
-                        notes: orderItems[itemIndex].notes,
-                        menu_item_size_id: orderItems[itemIndex].menu_item_size_id,
-                        topping_ids: orderItems[itemIndex].topping_ids,
-                        price_at_order: orderItems[itemIndex].price_at_order,
-                        status: .canceled,
-                        created_at: orderItems[itemIndex].created_at,
-                        updated_at: ISO8601DateFormatter().string(from: Date()),
-                        menu_item: orderItems[itemIndex].menu_item
-                    )
+                    var item = orderItems[itemIndex]
+                    item.status = .canceled
+                    item.updated_at = ISO8601DateFormatter().string(from: Date())
+                    orders[orderIndex].order_items?[itemIndex] = item
                     break
                 }
             }
@@ -1089,13 +1054,13 @@ class OrderManager: ObservableObject {
             
         } catch {
             print("Error cancelling order item: \(error)")
-            errorMessage = "error_cancel_item".localized
+            throw OrderManagerError.orderItemUpdateFailed("error_cancel_item".localized)
         }
     }
 
     // MARK: - Update Order Item Status
     @MainActor
-    func updateOrderItemStatus(orderItemId: String, newStatus: OrderItemStatus) async {
+    func updateOrderItemStatus(orderItemId: String, newStatus: OrderItemStatus) async throws {
         do {
             let _: OrderItem = try await supabaseManager.client
                 .from("order_items")
@@ -1111,21 +1076,9 @@ class OrderManager: ObservableObject {
             for (orderIndex, order) in orders.enumerated() {
                 if let orderItems = order.order_items,
                    let itemIndex = orderItems.firstIndex(where: { $0.id == orderItemId }) {
-                    orders[orderIndex].order_items?[itemIndex] = OrderItem(
-                        id: orderItems[itemIndex].id,
-                        restaurant_id: orderItems[itemIndex].restaurant_id,
-                        order_id: orderItems[itemIndex].order_id,
-                        menu_item_id: orderItems[itemIndex].menu_item_id,
-                        quantity: orderItems[itemIndex].quantity,
-                        notes: orderItems[itemIndex].notes,
-                        menu_item_size_id: orderItems[itemIndex].menu_item_size_id,
-                        topping_ids: orderItems[itemIndex].topping_ids,
-                        price_at_order: orderItems[itemIndex].price_at_order,
-                        status: newStatus,
-                        created_at: orderItems[itemIndex].created_at,
-                        updated_at: orderItems[itemIndex].updated_at,
-                        menu_item: orderItems[itemIndex].menu_item
-                    )
+                    var item = orderItems[itemIndex]
+                    item.status = newStatus
+                    orders[orderIndex].order_items?[itemIndex] = item
                     break
                 }
             }
@@ -1134,7 +1087,7 @@ class OrderManager: ObservableObject {
             
         } catch {
             print("Error updating order item status: \(error)")
-            errorMessage = "error_update_item_status".localized
+            throw OrderManagerError.orderItemUpdateFailed("error_update_item_status".localized)
         }
     }
     
