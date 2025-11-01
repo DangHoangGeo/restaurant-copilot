@@ -117,6 +117,12 @@ class PrinterManager: ObservableObject {
             throw PrinterError.configurationError("printer_invalid_address_format_error".localized)
         }
 
+        let ipAddress = components[0]
+        guard isValidIPAddress(ipAddress) else {
+            settingsManager.updateConnectionStatus(for: printer.id, status: .error("printer_invalid_ip_address_error".localized))
+            throw PrinterError.configurationError("printer_invalid_ip_address_error".localized)
+        }
+
         // Use configured printer settings if available, otherwise use defaults
         let printerConfig: PrinterConfig.Hardware
         if let configuredPrinter = settingsManager.configuredPrinters.first(where: { $0.id == printer.id }) {
@@ -129,7 +135,7 @@ class PrinterManager: ObservableObject {
             )
         } else {
             printerConfig = PrinterConfig.Hardware(
-                ipAddress: components[0],
+                ipAddress: ipAddress,
                 port: port,
                 name: printer.name,
                 connectionTimeout: 5.0,
