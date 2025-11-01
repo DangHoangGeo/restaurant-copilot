@@ -996,7 +996,7 @@ class OrderManager: ObservableObject {
             let _: OrderItem = try await supabaseManager.client
                 .from("order_items")
                 .update([
-                    "notes": notes as Any
+                    "notes": notes // Optional String is already Encodable, no need for Any
                 ])
                 .eq("id", value: orderItemId)
                 .single()

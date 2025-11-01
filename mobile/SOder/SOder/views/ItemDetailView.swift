@@ -303,10 +303,10 @@ struct ItemDetailView: View {
     
     // MARK: - Computed Properties
     
-    private var timeAgoText: String {
+    private func updateTimeAgoText() {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
-        return formatter.localizedString(for: item.orderTime, relativeTo: Date())
+        timeAgoText = formatter.localizedString(for: item.orderTime, relativeTo: Date())
     }
     
     private var statusColor: Color {

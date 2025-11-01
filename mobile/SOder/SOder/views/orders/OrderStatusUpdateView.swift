@@ -348,7 +348,17 @@ struct OrderStatusUpdateView: View {
             if let orderItems = order.order_items {
                 for item in orderItems {
                     if let newStatus = itemStatusUpdates[item.id], newStatus != item.status {
-                        await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: newStatus)
+                        do {
+                            try await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: newStatus)
+                        } catch {
+                            print("Failed to update status for item \(item.id): \(error.localizedDescription)")
+                            errorMessage = "Failed to update some item statuses"
+                            
+                            // Error haptic
+                            let feedback = UINotificationFeedbackGenerator()
+                            feedback.notificationOccurred(.error)
+                            return // Exit early if any update fails
+                        }
                     }
                 }
             }
