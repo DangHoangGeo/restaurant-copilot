@@ -2,45 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { logEvent } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-
-const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
-
-function rateLimit(ip: string, limit = 10, windowSec = 60): boolean {
-  const now = Date.now();
-  const entry = ipCounters[ip] || { tokens: limit, lastRefill: now };
-
-  const timePassed = (now - entry.lastRefill) / 1000;
-  entry.tokens = Math.min(
-    limit,
-    entry.tokens + timePassed * (limit / windowSec),
-  );
-  entry.lastRefill = now;
-
-  if (entry.tokens >= 1) {
-    entry.tokens -= 1;
-    ipCounters[ip] = entry;
-    return true;
-  }
-
-  ipCounters[ip] = entry;
-  return false;
-}
-
-// JWT_SECRET will be retrieved and checked within the POST handler.
+import { protectEndpoint, RATE_LIMIT_CONFIGS } from "@/lib/server/rateLimit";
 
 export async function POST(req: NextRequest) {
-  const JWT_SECRET = process.env.JWT_SECRET;
-  if (!JWT_SECRET) {
-    console.error("FATAL: JWT_SECRET environment variable is not set.");
-    return new Response("Internal Server Error: JWT_SECRET not configured.", {
-      status: 500,
-    });
-  }
-
   const ip = req.headers.get("x-forwarded-for") || "unknown";
   try {
-    if (!rateLimit(ip)) {
-      return new Response("Too Many Requests", { status: 429 });
+    const rateLimitError = await protectEndpoint(req, RATE_LIMIT_CONFIGS.AUTH, "auth/login");
+    if (rateLimitError) {
+      return rateLimitError;
     }
 
     const { email, password, captchaToken } = await req.json();

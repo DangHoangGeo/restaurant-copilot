@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { z } from "zod";
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; // Ensure this path is correct
+import { checkAuthorization } from '@/lib/server/rolePermissions';
 
 const settingsSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -193,20 +194,11 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   const user: AuthUser | null = await getUserFromRequest();
-  if (!user || !user.restaurantId) {
-    return NextResponse.json({ error: "Unauthorized: Missing user or restaurant ID" }, { status: 401 });
-  }
 
-  // TODO: Add role-based authorization check here (e.g., user must be 'owner' or 'manager')
-  // const { data: userRoleData, error: roleError } = await supabase
-  //   .from('employees') // or your user roles table
-  //   .select('role')
-  //   .eq('user_id', user.userId)
-  //   .eq('restaurant_id', user.restaurantId)
-  //   .single();
-  // if (roleError || !userRoleData || !['owner', 'manager'].includes(userRoleData.role)) {
-  //   return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
-  // }
+  const authError = checkAuthorization(user, 'settings', 'UPDATE');
+  if (authError) {
+    return authError;
+  }
 
   // The subdomain from query param is no longer used to identify the restaurant for update.
   // We rely solely on user.restaurantId from the authenticated session.
