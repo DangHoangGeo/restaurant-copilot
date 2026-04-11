@@ -29,6 +29,73 @@ function setCachedSubdomainId(subdomain: string, id: string): void {
   subdomainCache.set(subdomain, { id, expiresAt: Date.now() + SUBDOMAIN_CACHE_TTL_MS });
 }
 
+type UserRestaurantAccess = {
+  id: string;
+  subdomain: string;
+  onboarded: boolean;
+};
+
+async function getRestaurantForUser(userId: string): Promise<UserRestaurantAccess | null> {
+  // Primary source: users table mapping auth user -> restaurant_id
+  const { data: userRecords, error: userError } = await supabaseAdmin
+    .from('users')
+    .select('restaurant_id')
+    .eq('id', userId)
+    .limit(1);
+
+  if (userError) {
+    logger.warn('middleware', 'Failed to query users table for restaurant mapping', {
+      userId,
+      error: userError.message,
+    });
+  }
+
+  let restaurantId = userRecords?.[0]?.restaurant_id as string | undefined;
+
+  // Fallback for legacy/multi-restaurant accounts
+  if (!restaurantId) {
+    const { data: relationships, error: relationshipError } = await supabaseAdmin
+      .from('user_restaurant_relationships')
+      .select('restaurant_id')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .limit(1);
+
+    if (relationshipError) {
+      logger.warn('middleware', 'Failed to query user_restaurant_relationships fallback', {
+        userId,
+        error: relationshipError.message,
+      });
+    } else {
+      restaurantId = relationships?.[0]?.restaurant_id as string | undefined;
+    }
+  }
+
+  if (!restaurantId) return null;
+
+  const { data: restaurant, error: restaurantError } = await supabaseAdmin
+    .from('restaurants')
+    .select('id, subdomain, onboarded')
+    .eq('id', restaurantId)
+    .single();
+
+  if (restaurantError || !restaurant?.subdomain) {
+    logger.warn('middleware', 'Failed to fetch restaurant details for user', {
+      userId,
+      restaurantId,
+      error: restaurantError?.message || 'Restaurant not found',
+    });
+    return null;
+  }
+
+  return {
+    id: restaurant.id,
+    subdomain: restaurant.subdomain,
+    onboarded: Boolean(restaurant.onboarded),
+  };
+}
+
 // Share Supabase auth cookies across all subdomains so that a login on the
 // root domain (e.g. coorder.ai) is honoured on restaurant.coorder.ai without
 // a second sign-in prompt.
@@ -289,18 +356,10 @@ export async function middleware(req: NextRequest) {
 
     if (subdomain && subdomain !== 'www') {
       try {
-        // Single query replaces three sequential queries (users→restaurant_id, restaurants→subdomain,
-        // restaurants→onboarded).  The restaurants table has a user_id column that maps an owner to
-        // their restaurant, so we can fetch everything we need in one round-trip.
-        const { data: restaurant, error: restaurantError } = await supabaseAdmin
-          .from('restaurants')
-          .select('id, subdomain, onboarded')
-          .eq('user_id', supabaseUser.id)
-          .single();
+        const restaurant = await getRestaurantForUser(supabaseUser.id);
 
-        if (restaurantError || !restaurant) {
+        if (!restaurant) {
           logger.error('middleware', 'Error fetching restaurant for user', {
-            error: restaurantError?.message || 'Restaurant not found',
             userId: supabaseUser.id,
           });
           const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
@@ -344,11 +403,7 @@ export async function middleware(req: NextRequest) {
     } else {
       // User is on the root/www domain accessing /dashboard — redirect to their restaurant subdomain.
       try {
-        const { data: restaurant } = await supabaseAdmin
-          .from('restaurants')
-          .select('subdomain')
-          .eq('user_id', supabaseUser.id)
-          .single();
+        const restaurant = await getRestaurantForUser(supabaseUser.id);
 
         if (restaurant?.subdomain) {
           const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
@@ -375,11 +430,7 @@ export async function middleware(req: NextRequest) {
   if (supabaseUser && authPagePatterns.some(p => p.test(currentPathnameForLogic))) {
     // Look up the user's restaurant subdomain so we redirect to the correct host, not just the path.
     try {
-      const { data: restaurant } = await supabaseAdmin
-        .from('restaurants')
-        .select('subdomain')
-        .eq('user_id', supabaseUser.id)
-        .single();
+      const restaurant = await getRestaurantForUser(supabaseUser.id);
 
       if (restaurant?.subdomain) {
         const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
