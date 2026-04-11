@@ -141,7 +141,7 @@ async function handleSupabaseAndRls(
           logger.warn('middleware', `Error fetching restaurant ID for RLS (subdomain ${subdomainForRls})`, { error: restaurantError.message });
         } else if (restaurant?.id) {
           restaurantId = restaurant.id;
-          setCachedSubdomainId(subdomainForRls, restaurantId);
+          setCachedSubdomainId(subdomainForRls, restaurant.id);
         }
       }
 
