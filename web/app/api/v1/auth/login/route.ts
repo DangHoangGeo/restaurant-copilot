@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
     // 2. Get the restaurant's subdomain
     const { data: restaurant, error: restError } = await supabase
       .from("restaurants")
-      .select("subdomain, default_language")
+      .select("subdomain, default_language, is_verified, is_active, suspended_at")
       .eq("id", restaurantId)
       .single();
 
@@ -292,6 +292,33 @@ export async function POST(req: NextRequest) {
 
     const restaurantSubdomain = restaurant.subdomain;
     const defaultLanguage = restaurant.default_language || "en";
+    const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
+    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
+
+    if (!restaurant.is_verified) {
+      let pendingApprovalUrl = `https://${restaurantSubdomain}.${productionUrl}/${defaultLanguage}/pending-approval`;
+      if (isDevelopment) {
+        pendingApprovalUrl = `http://${restaurantSubdomain}.localhost:3000/${defaultLanguage}/pending-approval`;
+      }
+
+      await supabase.auth.signOut();
+      return NextResponse.json(
+        {
+          message: "Your restaurant account is pending admin approval.",
+          pendingApproval: true,
+          redirectUrl: pendingApprovalUrl,
+        },
+        { status: 403 },
+      );
+    }
+
+    if (!restaurant.is_active || restaurant.suspended_at) {
+      await supabase.auth.signOut();
+      return NextResponse.json(
+        { message: "Your restaurant account is currently suspended." },
+        { status: 403 },
+      );
+    }
 
     // No two_factor_enabled check for now, directly proceed to login.
     // if (userRecord.two_factor_enabled && userRecord.role === "owner") {
@@ -303,8 +330,6 @@ export async function POST(req: NextRequest) {
     // JWT token generation and auth_token cookie are removed.
     // Supabase client's signInWithPassword handles session cookies.
 
-    const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
-    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
     let redirectUrl = `https://${restaurantSubdomain}.${productionUrl}/${defaultLanguage}/dashboard`;
     if (isDevelopment) {
       redirectUrl = `http://${restaurantSubdomain}.localhost:3000/${defaultLanguage}/dashboard`;

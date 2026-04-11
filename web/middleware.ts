@@ -33,6 +33,9 @@ type UserRestaurantAccess = {
   id: string;
   subdomain: string;
   onboarded: boolean;
+  isVerified: boolean;
+  isActive: boolean;
+  suspendedAt: string | null;
 };
 
 async function getRestaurantForUser(userId: string): Promise<UserRestaurantAccess | null> {
@@ -76,7 +79,7 @@ async function getRestaurantForUser(userId: string): Promise<UserRestaurantAcces
 
   const { data: restaurant, error: restaurantError } = await supabaseAdmin
     .from('restaurants')
-    .select('id, subdomain, onboarded')
+    .select('id, subdomain, onboarded, is_verified, is_active, suspended_at')
     .eq('id', restaurantId)
     .single();
 
@@ -93,6 +96,9 @@ async function getRestaurantForUser(userId: string): Promise<UserRestaurantAcces
     id: restaurant.id,
     subdomain: restaurant.subdomain,
     onboarded: Boolean(restaurant.onboarded),
+    isVerified: Boolean(restaurant.is_verified),
+    isActive: Boolean(restaurant.is_active),
+    suspendedAt: restaurant.suspended_at,
   };
 }
 
@@ -379,6 +385,14 @@ export async function middleware(req: NextRequest) {
             return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
           }
           return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+        }
+
+        if (!restaurant.isVerified) {
+          return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/pending-approval`, req.url));
+        }
+
+        if (!restaurant.isActive || restaurant.suspendedAt) {
+          return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/login?error=suspended`, req.url));
         }
 
         // Check onboarding status (data already fetched above — no extra query needed)

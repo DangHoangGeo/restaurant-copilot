@@ -41,6 +41,10 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData?.redirectUrl) {
+          window.location.href = errorData.redirectUrl;
+          return;
+        }
         throw new Error(errorData.message || t("loginFailed"));
       }
 

@@ -17,7 +17,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     // Single query: join users → restaurants to avoid two sequential round-trips.
     const { data: userRecords, error: userRecordError } = await supabase
       .from('users')
-      .select('restaurant_id, role, restaurants(id, subdomain)')
+      .select('restaurant_id, role, restaurants(id, subdomain, is_verified, is_active, suspended_at)')
       .eq('id', supabaseUser.id);
 
     if (userRecordError || !userRecords || userRecords.length === 0) {
@@ -51,12 +51,18 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       ? userRecord.restaurants[0]
       : userRecord.restaurants;
 
+    const role = userRecord.role || supabaseUser.app_metadata?.role || null;
+    const isVerified = (restaurant as { is_verified?: boolean } | null)?.is_verified ?? false;
+    const isActive = (restaurant as { is_active?: boolean } | null)?.is_active ?? true;
+    const suspendedAt = (restaurant as { suspended_at?: string | null } | null)?.suspended_at ?? null;
+    const isOwnerBlocked = role === 'owner' && (!isVerified || !isActive || Boolean(suspendedAt));
+
     return {
       userId: supabaseUser.id,
       email: supabaseUser.email,
-      restaurantId: userRecord.restaurant_id,
+      restaurantId: isOwnerBlocked ? null : userRecord.restaurant_id,
       subdomain: (restaurant as { subdomain?: string } | null)?.subdomain || null,
-      role: userRecord.role,
+      role,
     };
   } catch (error) {
     console.error('Error in getCachedUser:', error);
