@@ -6,23 +6,21 @@ import type { AuthUser } from './getUserFromRequest';
 // Cache the user data for the duration of the request
 export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
-  
+
   const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser();
-  
+
   if (authError || !supabaseUser) {
     return null;
   }
 
   try {
-    // Fetch user record first, then get restaurant data separately for more reliable querying
-    // Handle potential duplicate user records
+    // Single query: join users → restaurants to avoid two sequential round-trips.
     const { data: userRecords, error: userRecordError } = await supabase
       .from('users')
-      .select('restaurant_id, role')
+      .select('restaurant_id, role, restaurants(id, subdomain)')
       .eq('id', supabaseUser.id);
 
     if (userRecordError || !userRecords || userRecords.length === 0) {
-      // Fallback to user metadata if record not found
       return {
         userId: supabaseUser.id,
         email: supabaseUser.email,
@@ -36,11 +34,9 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       console.warn(`Multiple user records found for user ${supabaseUser.id} (${userRecords.length} records) - using first record`);
     }
 
-    // Use the first record (or only record if there's just one)
     const userRecord = userRecords[0];
 
-    if (!userRecord || !userRecord.restaurant_id) {
-      // Fallback to user metadata if no restaurant_id found
+    if (!userRecord?.restaurant_id) {
       return {
         userId: supabaseUser.id,
         email: supabaseUser.email,
@@ -50,22 +46,19 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       };
     }
 
-    // Get restaurant data separately to ensure we get the subdomain
-    const { data: restaurant } = await supabase
-      .from('restaurants')
-      .select('id, subdomain, name')
-      .eq('id', userRecord.restaurant_id)
-      .single();
+    // restaurants is a related row returned as an object (or array with one entry)
+    const restaurant = Array.isArray(userRecord.restaurants)
+      ? userRecord.restaurants[0]
+      : userRecord.restaurants;
 
     return {
       userId: supabaseUser.id,
       email: supabaseUser.email,
       restaurantId: userRecord.restaurant_id,
-      subdomain: restaurant?.subdomain || null,
+      subdomain: (restaurant as { subdomain?: string } | null)?.subdomain || null,
       role: userRecord.role,
     };
   } catch (error) {
-    // Log error but don't fail - return basic user info
     console.error('Error in getCachedUser:', error);
     return {
       userId: supabaseUser.id,
