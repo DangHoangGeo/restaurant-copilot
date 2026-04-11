@@ -286,7 +286,7 @@ export async function middleware(req: NextRequest) {
     // Restaurant ownership verification for subdomain access
     const host = req.headers.get("host") || req.nextUrl.host;
     const subdomain = getSubdomainFromHost(host);
-    
+
     if (subdomain && subdomain !== 'www') {
       try {
         // Single query replaces three sequential queries (users→restaurant_id, restaurants→subdomain,
@@ -341,18 +341,57 @@ export async function middleware(req: NextRequest) {
         const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
         return NextResponse.redirect(loginUrl);
       }
+    } else {
+      // User is on the root/www domain accessing /dashboard — redirect to their restaurant subdomain.
+      try {
+        const { data: restaurant } = await supabaseAdmin
+          .from('restaurants')
+          .select('subdomain')
+          .eq('user_id', supabaseUser.id)
+          .single();
+
+        if (restaurant?.subdomain) {
+          const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+          if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
+            return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+          }
+          return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+        }
+      } catch (error) {
+        logger.error('middleware', 'Error fetching restaurant for root-domain dashboard redirect', {
+          error: error instanceof Error ? error.message : String(error),
+          userId: supabaseUser.id,
+        });
+      }
     }
   }
 
-  // Redirect logged-in users from login/signup/forgot-password pages
+  // Redirect logged-in users from login/signup/forgot-password pages to their restaurant dashboard
   const authPagePatterns = [
     new RegExp(`^/${currentLocaleForLogic}/login$`),
     new RegExp(`^/${currentLocaleForLogic}/signup$`),
     new RegExp(`^/${currentLocaleForLogic}/forgot-password$`),
   ];
   if (supabaseUser && authPagePatterns.some(p => p.test(currentPathnameForLogic))) {
-    const defaultDashboardPath = `/${currentLocaleForLogic}/dashboard`;
-    return NextResponse.redirect(new URL(defaultDashboardPath, req.url));
+    // Look up the user's restaurant subdomain so we redirect to the correct host, not just the path.
+    try {
+      const { data: restaurant } = await supabaseAdmin
+        .from('restaurants')
+        .select('subdomain')
+        .eq('user_id', supabaseUser.id)
+        .single();
+
+      if (restaurant?.subdomain) {
+        const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+        if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
+          return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+        }
+        return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+      }
+    } catch {
+      // Fall back to a same-host redirect if the lookup fails
+    }
+    return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/dashboard`, req.url));
   }
 
   // Subdomain specific logic
