@@ -48,35 +48,72 @@ export async function POST(req: NextRequest) {
     .select("id,status,total_amount")
     .eq("session_id", sessionId)
     .eq("restaurant_id", restaurantId)
-    .in("status", ["new", "serving"]) // Allow adding items to orders that are new or serving
+    .in("status", ["new", "serving"])
     .single();
-    
+
   if (!orderRow) {
     return NextResponse.json({ success: false, error: "Invalid or expired session" }, { status: 400 });
   }
 
+  // -------------------------------------------------------------------------
+  // Batch-fetch all required data upfront to avoid N+1 queries inside the loop
+  // -------------------------------------------------------------------------
+  const menuItemIds = items.map((i) => i.menuItemId);
+  const sizeIds = items.map((i) => i.menu_item_size_id).filter((id): id is string => !!id);
+  const allToppingIds = items.flatMap((i) => i.topping_ids ?? []);
+
+  // Three parallel queries instead of up to (3 × N) sequential queries
+  const [menuItemsRes, sizesRes, toppingsRes] = await Promise.all([
+    supabaseAdmin
+      .from("menu_items")
+      .select("id, price, available, weekday_visibility, restaurant_id")
+      .in("id", menuItemIds)
+      .eq("restaurant_id", restaurantId),
+    sizeIds.length > 0
+      ? supabaseAdmin
+          .from("menu_item_sizes")
+          .select("id, price, menu_item_id, restaurant_id")
+          .in("id", sizeIds)
+          .eq("restaurant_id", restaurantId)
+      : Promise.resolve({ data: [], error: null }),
+    allToppingIds.length > 0
+      ? supabaseAdmin
+          .from("toppings")
+          .select("id, price, menu_item_id, restaurant_id")
+          .in("id", allToppingIds)
+          .eq("restaurant_id", restaurantId)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (menuItemsRes.error) {
+    return NextResponse.json({ success: false, error: "Failed to validate menu items" }, { status: 500 });
+  }
+
+  type MenuItemRow = { id: string; price: number; available: boolean; weekday_visibility: number[]; restaurant_id: string };
+  type SizeRow = { id: string; price: number; menu_item_id: string; restaurant_id: string };
+  type ToppingRow = { id: string; price: number; menu_item_id: string; restaurant_id: string };
+
+  const menuItemMap = new Map<string, MenuItemRow>(
+    (menuItemsRes.data as MenuItemRow[]).map((m) => [m.id, m])
+  );
+  const sizeMap = new Map<string, SizeRow>(
+    ((sizesRes.data ?? []) as SizeRow[]).map((s) => [s.id, s])
+  );
+  const toppingMap = new Map<string, ToppingRow>(
+    ((toppingsRes.data ?? []) as ToppingRow[]).map((t) => [t.id, t])
+  );
+
+  const todayWeekday = new Date().getDay() === 0 ? 7 : new Date().getDay();
   let totalAmount = Number(orderRow.total_amount) || 0;
   const orderItemsData = [];
 
   for (const orderItem of items) {
     const { menuItemId, quantity, menu_item_size_id, topping_ids, notes } = orderItem;
 
-    const { data: menuItem }: { data: { price: number; available: boolean; weekday_visibility: number[]; restaurant_id: string } | null } = await supabaseAdmin
-      .from("menu_items")
-      .select("price,available,weekday_visibility, restaurant_id") // Ensure restaurant_id is fetched for validation
-      .eq("id", menuItemId)
-      .eq("restaurant_id", restaurantId) // Validate against the session's restaurantId
-      .single();
-
+    const menuItem = menuItemMap.get(menuItemId);
     if (!menuItem || !menuItem.available) {
       return NextResponse.json({ success: false, error: `Item ${menuItemId} unavailable` }, { status: 400 });
     }
-    // Validate restaurant_id coherence (though already filtered in query)
-    if (menuItem.restaurant_id !== restaurantId) {
-        return NextResponse.json({ success: false, error: `Item ${menuItemId} does not belong to restaurant ${restaurantId}` }, { status: 400 });
-    }
-
-    const todayWeekday = new Date().getDay() === 0 ? 7 : new Date().getDay();
     if (!menuItem.weekday_visibility.includes(todayWeekday)) {
       return NextResponse.json({ success: false, error: `Item ${menuItemId} not available today` }, { status: 400 });
     }
@@ -84,41 +121,19 @@ export async function POST(req: NextRequest) {
     let currentItemPrice = Number(menuItem.price);
 
     if (menu_item_size_id) {
-      const { data: sizeInfo }: { data: { price: number; menu_item_id: string; restaurant_id: string } | null } = await supabaseAdmin
-        .from("menu_item_sizes")
-        .select("price, menu_item_id, restaurant_id")
-        .eq("id", menu_item_size_id)
-        .eq("menu_item_id", menuItemId)
-        .eq("restaurant_id", restaurantId)
-        .single();
-
-      if (!sizeInfo) {
+      const sizeInfo = sizeMap.get(menu_item_size_id);
+      if (!sizeInfo || sizeInfo.menu_item_id !== menuItemId || sizeInfo.restaurant_id !== restaurantId) {
         return NextResponse.json({ success: false, error: `Invalid size ${menu_item_size_id} for item ${menuItemId}` }, { status: 400 });
-      }
-      // Ensure size actually belongs to the item and restaurant (redundant if query is structured well, but good for safety)
-      if (sizeInfo.menu_item_id !== menuItemId || sizeInfo.restaurant_id !== restaurantId) {
-        return NextResponse.json({ success: false, error: `Size ${menu_item_size_id} mismatch for item ${menuItemId} at restaurant ${restaurantId}` }, { status: 400 });
       }
       currentItemPrice = Number(sizeInfo.price);
     }
 
     let additionalToppingsPrice = 0;
     if (topping_ids && topping_ids.length > 0) {
-      const { data: toppingsInfo, error: toppingsError }: { data: { price: number; menu_item_id: string; restaurant_id: string }[] | null; error: unknown } = await supabaseAdmin
-        .from("toppings")
-        .select("price, menu_item_id, restaurant_id")
-        .in("id", topping_ids)
-        .eq("menu_item_id", menuItemId) // Ensure toppings belong to the current menu item
-        .eq("restaurant_id", restaurantId); // Ensure toppings belong to the current restaurant
-
-      if (toppingsError || !toppingsInfo || toppingsInfo.length !== topping_ids.length) {
-        return NextResponse.json({ success: false, error: `Invalid topping IDs for item ${menuItemId}` }, { status: 400 });
-      }
-
-      for (const topping of toppingsInfo) {
-        // Double check each topping belongs to the item and restaurant
-        if (topping.menu_item_id !== menuItemId || topping.restaurant_id !== restaurantId) {
-            return NextResponse.json({ success: false, error: `Topping mismatch for item ${menuItemId} at restaurant ${restaurantId}` }, { status: 400 });
+      for (const toppingId of topping_ids) {
+        const topping = toppingMap.get(toppingId);
+        if (!topping || topping.menu_item_id !== menuItemId || topping.restaurant_id !== restaurantId) {
+          return NextResponse.json({ success: false, error: `Invalid topping IDs for item ${menuItemId}` }, { status: 400 });
         }
         additionalToppingsPrice += Number(topping.price);
       }
@@ -128,13 +143,11 @@ export async function POST(req: NextRequest) {
 
     orderItemsData.push({
       restaurant_id: restaurantId,
-      // order_id will be set after order update/creation
       menu_item_id: menuItemId,
       quantity,
       notes,
       menu_item_size_id: menu_item_size_id || null,
       topping_ids: topping_ids || null,
-      // Price for this specific configuration at the time of order, per unit
       price_at_order: currentItemPrice + additionalToppingsPrice,
     });
   }
