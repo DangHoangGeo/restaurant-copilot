@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { redirect } from 'next/navigation';
+import { getSubdomainFromHost } from '@/lib/utils';
 
 export async function generateMetadata({
   params
@@ -33,17 +34,7 @@ export default async function DashboardLayout({
   }
   const headersList = await headers();
   const host = headersList.get("host") || "";
-  let subdomain = null;
-  const parts = host.split('.');
-	// Determine root domain parts for production and handle localhost in development
-	let rootDomainParts = (process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai').split('.').length;
-	// If running on localhost, treat 'localhost' as the root domain
-	if (host.includes('localhost')) {
-		rootDomainParts = 1; // 'abc.localhost:3000' => ['abc', 'localhost:3000']
-	}
-	if (parts.length > rootDomainParts) {
-		subdomain = parts[0];
-	}
+  const subdomain = getSubdomainFromHost(host);
 
   if (!subdomain) {
     // This scenario should be handled by middleware redirecting to a selection page
