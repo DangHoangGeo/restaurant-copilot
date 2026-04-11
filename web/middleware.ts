@@ -7,6 +7,37 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 
+// ---------------------------------------------------------------------------
+// In-process cache: subdomain → restaurant_id
+// Avoids a DB round-trip on every request for subdomain pages.
+// TTL is intentionally short so subdomain changes propagate quickly.
+// ---------------------------------------------------------------------------
+const subdomainCache = new Map<string, { id: string; expiresAt: number }>();
+const SUBDOMAIN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function getCachedSubdomainId(subdomain: string): string | null {
+  const entry = subdomainCache.get(subdomain);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    subdomainCache.delete(subdomain);
+    return null;
+  }
+  return entry.id;
+}
+
+function setCachedSubdomainId(subdomain: string, id: string): void {
+  subdomainCache.set(subdomain, { id, expiresAt: Date.now() + SUBDOMAIN_CACHE_TTL_MS });
+}
+
+// Share Supabase auth cookies across all subdomains so that a login on the
+// root domain (e.g. coorder.ai) is honoured on restaurant.coorder.ai without
+// a second sign-in prompt.
+function getSharedCookieDomain(): string | undefined {
+  if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') return undefined;
+  const host = process.env.NEXT_PUBLIC_PRODUCTION_URL;
+  return host ? `.${host}` : undefined;
+}
+
 const nextIntl = createNextIntlMiddleware(routing);
 
 // const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'baoan.jp';
@@ -61,12 +92,13 @@ function addSecurityHeaders(response: NextResponse, request: NextRequest) {
   }
 }
 
-// This function is adapted from the core logic of the previous web/lib/supabase/middleware.ts
-// It will handle Supabase session, RLS, and initial auth check.
+// This function handles Supabase session refresh and RLS restaurant context.
 async function handleSupabaseAndRls(
   request: NextRequest,
   response: NextResponse // Pass the response to set cookies on
 ) {
+  const cookieDomain = getSharedCookieDomain();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -76,10 +108,10 @@ async function handleSupabaseAndRls(
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          response.cookies.set({ name, value, ...options });
+          response.cookies.set({ name, value, ...options, ...(cookieDomain ? { domain: cookieDomain } : {}) });
         },
         remove(name: string, options: CookieOptions) {
-          response.cookies.set({ name, value: '', ...options });
+          response.cookies.set({ name, value: '', ...options, ...(cookieDomain ? { domain: cookieDomain } : {}) });
         },
       },
     }
@@ -88,39 +120,47 @@ async function handleSupabaseAndRls(
   // IMPORTANT: supabase.auth.getUser() MUST be called to refresh the session
   const { data: { user } } = await supabase.auth.getUser();
 
-  // RLS context setting for anonymous users (public restaurant pages)
+  // RLS context setting for anonymous users (public restaurant pages).
+  // The restaurant_id lookup is cached in-process to avoid a DB hit on every request.
   const host = request.headers.get("host") || request.nextUrl.host;
-  const subdomainForRls = getSubdomainFromHost(host); // Using your existing util
+  const subdomainForRls = getSubdomainFromHost(host);
 
   if (subdomainForRls && subdomainForRls !== 'www' && !request.nextUrl.pathname.startsWith('/api/auth')) {
     try {
-      // Use supabaseAdmin for this lookup as it might need to bypass RLS
-      // or if the anon key doesn't have direct access to 'restaurants' table for this purpose.
-      const { data: restaurant, error: restaurantError } = await supabaseAdmin
-        .from('restaurants')
-        .select('id')
-        .eq('subdomain', subdomainForRls)
-        .single();
+      // Check in-process cache first to skip the DB round-trip
+      let restaurantId = getCachedSubdomainId(subdomainForRls);
 
-      if (restaurantError) {
-        logger.warn('middleware', `Error fetching restaurant ID for RLS (subdomain ${subdomainForRls})`, { error: restaurantError.message });
-      } else if (restaurant && restaurant.id) {
-        // Use the regular 'supabase' client (with user's context or anon context) to call the RPC
+      if (!restaurantId) {
+        const { data: restaurant, error: restaurantError } = await supabaseAdmin
+          .from('restaurants')
+          .select('id')
+          .eq('subdomain', subdomainForRls)
+          .single();
+
+        if (restaurantError) {
+          logger.warn('middleware', `Error fetching restaurant ID for RLS (subdomain ${subdomainForRls})`, { error: restaurantError.message });
+        } else if (restaurant?.id) {
+          restaurantId = restaurant.id;
+          setCachedSubdomainId(subdomainForRls, restaurant.id);
+        }
+      }
+
+      if (restaurantId) {
         const { error: rpcError } = await supabase.rpc('set_current_restaurant_id_for_session', {
-          restaurant_id_value: restaurant.id,
+          restaurant_id_value: restaurantId,
         });
         if (rpcError) {
-          logger.error('middleware', `Error setting app.current_restaurant_id for ${restaurant.id} via RPC`, { 
-            error: rpcError.message, 
-            restaurantId: restaurant.id,
-            subdomain: subdomainForRls 
+          logger.error('middleware', `Error setting app.current_restaurant_id for ${restaurantId} via RPC`, {
+            error: rpcError.message,
+            restaurantId,
+            subdomain: subdomainForRls,
           });
         }
       }
     } catch (error) {
-      logger.error('middleware', 'Exception while setting RLS restaurant context', { 
+      logger.error('middleware', 'Exception while setting RLS restaurant context', {
         error: error instanceof Error ? error.message : String(error),
-        subdomain: subdomainForRls 
+        subdomain: subdomainForRls,
       });
     }
   }
@@ -249,34 +289,19 @@ export async function middleware(req: NextRequest) {
     
     if (subdomain && subdomain !== 'www') {
       try {
-        // Get the user's restaurant and check if it matches the subdomain
-        const { data: userRecord, error: userError } = await supabaseAdmin
-          .from('users')
-          .select('restaurant_id')
-          .eq('id', supabaseUser.id)
-          .single();
-
-        if (userError || !userRecord?.restaurant_id) {
-          logger.error('middleware', 'Error fetching user restaurant', { 
-            error: userError?.message || 'No restaurant_id found',
-            userId: supabaseUser.id 
-          });
-          const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
-          return NextResponse.redirect(loginUrl);
-        }
-
-        // Get the restaurant's subdomain to verify ownership
+        // Single query replaces three sequential queries (users→restaurant_id, restaurants→subdomain,
+        // restaurants→onboarded).  The restaurants table has a user_id column that maps an owner to
+        // their restaurant, so we can fetch everything we need in one round-trip.
         const { data: restaurant, error: restaurantError } = await supabaseAdmin
           .from('restaurants')
-          .select('subdomain')
-          .eq('id', userRecord.restaurant_id)
+          .select('id, subdomain, onboarded')
+          .eq('user_id', supabaseUser.id)
           .single();
 
         if (restaurantError || !restaurant) {
-          logger.error('middleware', 'Error fetching restaurant subdomain', { 
+          logger.error('middleware', 'Error fetching restaurant for user', {
             error: restaurantError?.message || 'Restaurant not found',
-            restaurantId: userRecord.restaurant_id,
-            userId: supabaseUser.id 
+            userId: supabaseUser.id,
           });
           const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
           return NextResponse.redirect(loginUrl);
@@ -284,62 +309,37 @@ export async function middleware(req: NextRequest) {
 
         // Verify that the user's restaurant matches the current subdomain
         if (restaurant.subdomain !== subdomain) {
-          logger.warn('middleware', 'User attempting to access dashboard for different restaurant', { 
+          logger.warn('middleware', 'User attempting to access dashboard for different restaurant', {
             userSubdomain: restaurant.subdomain,
             accessedSubdomain: subdomain,
             userId: supabaseUser.id,
-            restaurantId: userRecord.restaurant_id
+            restaurantId: restaurant.id,
           });
-          // Redirect to their own restaurant's dashboard
-          const userDashboardUrl = `https://${restaurant.subdomain}.${process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai'}/${currentLocaleForLogic}/dashboard`;
-          if (process.env.NEXT_PRIVATE_DEVELOPMENT === "true") {
-            const devUrl = `http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`;
-            return NextResponse.redirect(new URL(devUrl));
+          const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+          if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
+            return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
           }
-          return NextResponse.redirect(new URL(userDashboardUrl));
+          return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+        }
+
+        // Check onboarding status (data already fetched above — no extra query needed)
+        if (FEATURE_FLAGS.onboarding) {
+          const isOnboardingPage = currentPathnameForLogic.includes('/dashboard/onboarding');
+          if (!restaurant.onboarded && !isOnboardingPage) {
+            return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/dashboard/onboarding`, req.url));
+          }
+          if (restaurant.onboarded && isOnboardingPage) {
+            return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/dashboard`, req.url));
+          }
         }
       } catch (error) {
-        logger.error('middleware', 'Error verifying restaurant ownership', { 
+        logger.error('middleware', 'Error verifying restaurant ownership', {
           error: error instanceof Error ? error.message : String(error),
           userId: supabaseUser.id,
-          subdomain 
+          subdomain,
         });
         const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
         return NextResponse.redirect(loginUrl);
-      }
-    }
-
-    // Check onboarding status for authenticated dashboard users
-    if (supabaseUser && FEATURE_FLAGS.onboarding) {
-      try {
-        // Get the restaurant for the authenticated user
-        const { data: restaurants, error: restaurantError } = await supabaseAdmin
-          .from('restaurants')
-          .select('id, onboarded')
-          .eq('user_id', supabaseUser.id)
-          .limit(1);
-
-        if (!restaurantError && restaurants && restaurants.length > 0) {
-          const restaurant = restaurants[0];
-          const isOnboardingPage = currentPathnameForLogic.includes('/dashboard/onboarding');
-          
-          // Redirect to onboarding if not yet onboarded and not already on onboarding page
-          if (!restaurant.onboarded && !isOnboardingPage) {
-            const onboardingUrl = new URL(`/${currentLocaleForLogic}/dashboard/onboarding`, req.url);
-            return NextResponse.redirect(onboardingUrl);
-          }
-          
-          // Redirect away from onboarding if already onboarded
-          if (restaurant.onboarded && isOnboardingPage) {
-            const dashboardUrl = new URL(`/${currentLocaleForLogic}/dashboard`, req.url);
-            return NextResponse.redirect(dashboardUrl);
-          }
-        }
-      } catch (error) {
-        logger.error('middleware', 'Error checking onboarding status', { 
-          error: error instanceof Error ? error.message : String(error),
-          userId: supabaseUser.id 
-        });
       }
     }
   }
