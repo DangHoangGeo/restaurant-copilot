@@ -130,6 +130,56 @@ If the agent skips the foundation summary, the phase is incomplete.
 
 The work should be executed in this order.
 
+## Current Status Snapshot
+
+### Phase 0 Status
+
+`In progress / not complete yet`
+
+What is confirmed fixed:
+
+- booking status route now reads `bookingId` correctly from params
+- broken platform trial cron was disabled instead of continuing to fail on missing RPCs
+- low-stock route was partially corrected to use `inventory_items`
+- item-detail report no longer crashes on missing cost data
+
+What still blocks Phase 0 completion:
+
+- daily usage snapshot still buckets data by UTC instead of Japan local day
+- low-stock UI still expects the old response fields
+- aggregate dashboard still queries a nonexistent inventory `name` column
+- item profit margin is now reported as real `0%` instead of unavailable / not tracked
+
+PM status:
+
+- Phase 0 should stay open until those four gaps are fixed and verified
+
+### Phase 1 Status
+
+`Completed with Phase 2 follow-ups`
+
+What is confirmed delivered:
+
+- migration `037_organization_foundation.sql` adds the organization layer above restaurants
+- existing restaurant remains the branch-level operating unit
+- organization membership, branch scope tables, and permission override tables exist
+- registration now bootstraps an organization for a newly created restaurant
+- organization summary, members, and branch-list API routes were added
+- centralized organization context and authorization services were added
+- shared types were added for the new organization domain
+
+What Phase 1 does not solve yet:
+
+- multi-branch runtime switching is not complete
+- owner-side branch context is not yet propagated through the existing restaurant-scoped JWT and RLS model
+- invite flow only works for users who already exist
+- non-owner org-member onboarding is still incomplete
+
+PM status:
+
+- Phase 1 can be treated as complete for foundation delivery
+- the remaining operational gaps move into Phase 2 by design
+
 ---
 
 ## Phase 0: Stabilize the Current Base
@@ -158,6 +208,17 @@ Fix known owner-side breaks before adding new business features.
 - booking update route works with the correct booking id handling
 - existing scheduled jobs run against the current schema or are clearly disabled with a replacement plan
 - no regression in customer ordering flow
+
+### Current Status
+
+`Open`
+
+Remaining blockers before Phase 0 can be closed:
+
+- fix Japan-local day boundaries for `daily-usage-snapshot`
+- align low-stock UI with the new API response shape
+- fix aggregate dashboard low-stock query to stop reading nonexistent inventory columns
+- render profit margin as unavailable until COGS exists
 
 ### PM Note to AI Agent
 
@@ -200,6 +261,24 @@ Support one business owning multiple branches and multiple founder-level members
 - RLS and permission checks still isolate data correctly
 - existing single-restaurant users still work after migration
 
+### Current Status
+
+`Complete`
+
+Delivered in this phase:
+
+- organization foundation migration created
+- organization bootstrap added to registration flow
+- organization context/service layer added
+- centralized org authorization scaffolding added
+- owner organization API endpoints added
+
+Accepted follow-ups moved to Phase 2:
+
+- branch runtime switching under the existing JWT and RLS model
+- onboarding for org members who do not already own a restaurant
+- email invite flow for users who do not yet exist
+
 ### PM Note to AI Agent
 
 Keep this phase mostly backend and authorization-focused. Do not try to finish every owner UI here.
@@ -224,6 +303,9 @@ Make founder, co-founder, finance, and manager access explicit and maintainable.
 - implement branch-scoped permissions
 - centralize permission checks in one server-side authorization layer
 - update owner navigation and data loading to respect scope
+- define the active-branch context model for multi-branch founders
+- add onboarding for organization members who do not already have a `users.restaurant_id`
+- build invite-by-email flow instead of requiring pre-existing user rows
 
 ### Required Roles
 
@@ -240,6 +322,24 @@ Make founder, co-founder, finance, and manager access explicit and maintainable.
 - a branch manager sees only assigned branches
 - finance-only users can read reports without getting operational write access
 - audit-sensitive actions are permission-gated
+- a founder can intentionally switch active branch context without breaking RLS
+- Phase 2 defines how JWT/session branch context is resolved for branch-scoped operations
+- invited members can join even if they did not already have a restaurant or existing `users` row
+- invite-by-email flow supports pending invite, acceptance, and membership activation
+
+### Risks / Follow-Ups Carried Into Phase 2
+
+- the existing `restaurant_id` JWT claim still controls branch-level RLS; Phase 2 must define how active branch context changes when a founder operates a different branch
+- the `users.restaurant_id` column is still single-valued; org members who do not already own a restaurant need a separate onboarding path
+- there is no invite-by-email flow yet; `POST /api/v1/owner/organization/members` currently requires the target user to already exist in `users`
+
+### PM Requirements For Phase 2
+
+- do not patch branch switching in an ad hoc way inside individual routes
+- define one explicit branch-context strategy for JWT, session, and server authorization
+- keep branch-scoped RLS trustworthy during the transition from single-restaurant assumptions
+- design member onboarding so founders, finance users, and managers are not forced through owner-style restaurant creation
+- implement invites as a first-class workflow, not as a hidden prerequisite on an existing user record
 
 ### PM Note to AI Agent
 

@@ -4,6 +4,7 @@ import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
 import { ZodError } from "zod"; // Import ZodError explicitly
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { bootstrapOrganizationForRestaurant } from "@/lib/server/organizations/service";
 
 const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
 
@@ -155,7 +156,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User record creation failed" }, { status: 500 });
     }
 
-    // 7. Return { success: true, redirect: "https://{subdomain}.coorder.ai/en/login" }.
+    // 7. Bootstrap organization for the new restaurant (Phase 1)
+    await bootstrapOrganizationForRestaurant(userData.user.id, restaurantId, {
+      name,
+      slug: subdomain,
+    });
+
+    // 8. Return { success: true, redirect: "https://{subdomain}.coorder.ai/en/login" }.
 
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
     const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
