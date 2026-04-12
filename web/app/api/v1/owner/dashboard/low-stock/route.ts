@@ -5,8 +5,8 @@ import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 export interface LowStockItem {
   id: string;
   name: string;
-  current_stock: number;
-  min_threshold: number;
+  stock_level: number;
+  threshold: number;
   category: string;
   severity: 'critical' | 'warning' | 'low';
   price?: number;
@@ -21,75 +21,85 @@ export async function GET() {
 
     const supabase = await createClient();
 
-    // Query for low stock items
-    const { data: lowStockItems, error } = await supabase
-      .from('menu_items')
+    // Query inventory_items joined with menu_items and categories.
+    // PostgREST does not support column-to-column comparisons in filters, so
+    // we fetch all non-null inventory rows and filter stock_level < threshold in JS.
+    const { data: inventoryData, error } = await supabase
+      .from('inventory_items')
       .select(`
         id,
-        name,
-        current_stock,
-        min_threshold,
-        price,
-        categories(name_en, name_ja, name_vi)
+        stock_level,
+        threshold,
+        menu_items!inner (
+          id,
+          name_ja,
+          name_en,
+          name_vi,
+          price,
+          available,
+          categories!inner (name_en, name_ja, name_vi)
+        )
       `)
       .eq('restaurant_id', user.restaurantId)
-      .eq('is_available', true)
-      .not('current_stock', 'is', null)
-      .not('min_threshold', 'is', null)
-      .filter('current_stock', 'lte', 'min_threshold');
+      .not('stock_level', 'is', null)
+      .not('threshold', 'is', null);
 
     if (error) {
-      console.error('Error fetching low stock items:', error);
+      console.error('Error fetching inventory items:', error);
       return NextResponse.json({ error: 'Failed to fetch low stock items' }, { status: 500 });
     }
 
-    // Process the data and determine severity
-    const processedItems: LowStockItem[] = (lowStockItems || []).map(item => {
-      const stockRatio = item.current_stock / item.min_threshold;
+    // Filter to items where stock_level is below threshold
+    const belowThreshold = (inventoryData || []).filter(
+      item => item.stock_level < item.threshold
+    );
+
+    const processedItems: LowStockItem[] = belowThreshold.map(item => {
+      const menuItem = Array.isArray(item.menu_items) ? item.menu_items[0] : item.menu_items;
+      const stockRatio = item.threshold > 0 ? item.stock_level / item.threshold : 0;
+
       let severity: 'critical' | 'warning' | 'low';
-      
-      if (stockRatio <= 0.2) { // 20% or less of threshold
+      if (stockRatio <= 0.2) {
         severity = 'critical';
-      } else if (stockRatio <= 0.5) { // 50% or less of threshold
+      } else if (stockRatio <= 0.5) {
         severity = 'warning';
       } else {
         severity = 'low';
       }
 
-      // Get category name from the first category (since it's an array)
-      const category = Array.isArray(item.categories) && item.categories.length > 0 
-        ? (item.categories[0].name_en || item.categories[0].name_ja || item.categories[0].name_vi || 'Unknown')
-        : 'Unknown';
+      const cats = Array.isArray(menuItem?.categories) ? menuItem.categories : [menuItem?.categories];
+      const category =
+        cats[0]?.name_en || cats[0]?.name_ja || cats[0]?.name_vi || 'Unknown';
+
+      const name =
+        menuItem?.name_en || menuItem?.name_ja || menuItem?.name_vi || 'Unknown';
 
       return {
         id: item.id,
-        name: item.name,
-        current_stock: item.current_stock,
-        min_threshold: item.min_threshold,
+        name,
+        stock_level: item.stock_level,
+        threshold: item.threshold,
         category,
         severity,
-        price: item.price
+        price: menuItem?.price,
       };
     });
 
-    // Sort by severity (critical first) and then by stock ratio
+    // Sort by severity (critical first), then by stock ratio ascending
     processedItems.sort((a, b) => {
       const severityOrder = { critical: 0, warning: 1, low: 2 };
       const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
       if (severityDiff !== 0) return severityDiff;
-      
-      // If same severity, sort by stock ratio (lowest first)
-      const ratioA = a.current_stock / a.min_threshold;
-      const ratioB = b.current_stock / b.min_threshold;
+      const ratioA = a.threshold > 0 ? a.stock_level / a.threshold : 0;
+      const ratioB = b.threshold > 0 ? b.stock_level / b.threshold : 0;
       return ratioA - ratioB;
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: processedItems,
-      count: processedItems.length
+      count: processedItems.length,
     });
-
   } catch (error) {
     console.error('Unexpected error in low-stock API:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

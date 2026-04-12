@@ -149,9 +149,10 @@ export async function GET(request: NextRequest) {
         ? reviews.reduce((sum: number, rating: number) => sum + rating, 0) / reviews.length 
         : 0;
       
-      const profitMargin = item.costPerItem > 0 
-        ? ((item.revenue - (item.totalSold * item.costPerItem)) / item.revenue) * 100
-        : 0;
+      // Cost-per-item (COGS) is not tracked in the schema yet.
+      // Return null so consumers can render an explicit "N/A" state instead of a
+      // misleading 0.0% figure that would distort owner and accountant reports.
+      const profitMargin: null = null;
 
       return {
         ...item,

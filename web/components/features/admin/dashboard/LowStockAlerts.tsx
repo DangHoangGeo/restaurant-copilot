@@ -9,8 +9,8 @@ import { AlertTriangle, Package, TrendingDown, AlertCircle, Minus } from 'lucide
 export interface LowStockItem {
   id: string;
   name: string;
-  current_stock: number;
-  min_threshold: number;
+  stock_level: number;
+  threshold: number;
   category: string;
   severity: 'critical' | 'warning' | 'low';
   price?: number;
@@ -123,10 +123,10 @@ export function LowStockAlerts({
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
                   <div className="text-right">
                     <p className="font-semibold text-gray-900 dark:text-gray-100">
-                      {t('stock_level')}: {item.current_stock}
+                      {t('stock_level')}: {item.stock_level}
                     </p>
                     <p className="text-gray-500 dark:text-gray-400">
-                      {t('threshold')}: {item.min_threshold}
+                      {t('threshold')}: {item.threshold}
                     </p>
                   </div>
                 </div>

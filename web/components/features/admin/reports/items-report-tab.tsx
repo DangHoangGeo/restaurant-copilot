@@ -29,7 +29,7 @@ export interface ItemReportData {
   avgRating: number;
   reviewCount: number;
   costPerItem: number;
-  profitMargin: number;
+  profitMargin: number | null;
   popularityRank: number;
   lastOrderDate: string;
   imageUrl?: string;
@@ -388,15 +388,19 @@ export function ItemsReportTab({
                       </div>
                     </td>
                     <td className="p-3 text-right">
-                      <span className={`font-medium ${
-                        item.profitMargin > 50 
-                          ? 'text-green-600 dark:text-green-400' 
-                          : item.profitMargin > 30 
-                            ? 'text-yellow-600 dark:text-yellow-400' 
-                            : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {item.profitMargin.toFixed(1)}%
-                      </span>
+                      {item.profitMargin === null ? (
+                        <span className="text-gray-400 dark:text-gray-500 text-sm">N/A</span>
+                      ) : (
+                        <span className={`font-medium ${
+                          item.profitMargin > 50
+                            ? 'text-green-600 dark:text-green-400'
+                            : item.profitMargin > 30
+                              ? 'text-yellow-600 dark:text-yellow-400'
+                              : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {item.profitMargin.toFixed(1)}%
+                        </span>
+                      )}
                     </td>
                     <td className="p-3 text-right">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
