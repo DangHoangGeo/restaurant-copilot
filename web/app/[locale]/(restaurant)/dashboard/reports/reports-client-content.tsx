@@ -72,7 +72,7 @@ interface ItemDataPoint {
   avgRating: number;
   reviewCount: number;
   costPerItem: number;
-  profitMargin: number;
+  profitMargin: number | null;
   popularityRank: number;
   lastOrderDate: string;
   imageUrl?: string;

@@ -9,7 +9,7 @@ const statusSchema = z.object({ status: z.enum(['confirmed', 'canceled']) });
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ bookingId: string }> }) {
   const supabase = createRouteHandlerClient({ cookies });
   const user: AuthUser | null = await getUserFromRequest();
-  const bookingId = await params;
+  const { bookingId } = await params;
 
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID.' }, { status: 401 });

@@ -126,10 +126,11 @@ export async function GET() {
         .order('created_at', { ascending: true }),
 
       // 6. Low stock items (if enabled)
+      // inventory_items has no name column; join menu_items to get localised names.
       FEATURE_FLAGS.lowStockAlerts
         ? supabaseAdmin
             .from('inventory_items')
-            .select('id, name, stock_level, threshold')
+            .select('id, stock_level, threshold, menu_items!inner(name_ja, name_en, name_vi)')
             .eq('restaurant_id', restaurantId)
         : Promise.resolve({ data: [], error: null }),
 
@@ -198,16 +199,24 @@ export async function GET() {
     // Process low stock items
     const lowStockItems = lowStockData.status === 'fulfilled' && lowStockData.value.data
       ? lowStockData.value.data
-          .filter(item => item.stock_level <= (item.threshold || 5))
-          .map(item => ({
-            id: item.id,
-            name: item.name,
-            currentStock: item.stock_level,
-            threshold: item.threshold || 5,
-            stockLevel: item.stock_level <= Math.floor((item.threshold || 5) / 2) 
-              ? 'critical' as const
-              : 'low' as const,
-          }))
+          .filter(item => item.stock_level < (item.threshold ?? 5))
+          .map(item => {
+            const mi = Array.isArray(item.menu_items) ? item.menu_items[0] : item.menu_items;
+            const name = (mi as { name_en?: string; name_ja?: string; name_vi?: string } | null)?.name_en
+              || (mi as { name_en?: string; name_ja?: string; name_vi?: string } | null)?.name_ja
+              || (mi as { name_en?: string; name_ja?: string; name_vi?: string } | null)?.name_vi
+              || 'Unknown';
+            const threshold = item.threshold ?? 5;
+            return {
+              id: item.id,
+              name,
+              currentStock: item.stock_level,
+              threshold,
+              stockLevel: item.stock_level <= Math.floor(threshold / 2)
+                ? 'critical' as const
+                : 'low' as const,
+            };
+          })
           .slice(0, 5)
       : [];
 

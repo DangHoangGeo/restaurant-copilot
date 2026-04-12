@@ -45,7 +45,7 @@ export async function GET() {
       // Generate customer name
       const tables = Array.isArray(order.tables)? order.tables[0] : order.tables;
       const tableName = tables?.name || null;
-      const customerName = tableName
+      const customerName = tableName ? `Table ${tableName}` : `Table ${order.table_id}`
 
       return {
         id: order.id,
