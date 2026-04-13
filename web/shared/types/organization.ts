@@ -149,3 +149,62 @@ export interface GetActiveBranchResponse {
 export interface SetActiveBranchRequest {
   restaurant_id: string;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Branch menu types (Phase 3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Request body for POST /api/v1/owner/organization/menu/copy */
+export interface CopyMenuRequest {
+  source_restaurant_id: string;
+  target_restaurant_id: string;
+}
+
+/** Response shape for POST /api/v1/owner/organization/menu/copy */
+export interface CopyMenuResponse {
+  success: true;
+  categories_copied: number;
+  items_copied: number;
+}
+
+/** Response shape for GET /api/v1/owner/organization/menu/compare */
+export interface MenuCompareResponse {
+  branchA: {
+    restaurantId: string;
+    categories: Array<{
+      id: string;
+      name_en: string;
+      name_ja: string | null;
+      name_vi: string | null;
+      position: number;
+      items: Array<{
+        id: string;
+        name_en: string;
+        name_ja: string | null;
+        name_vi: string | null;
+        price: number;
+        available: boolean;
+        position: number;
+      }>;
+    }>;
+  };
+  branchB: {
+    restaurantId: string;
+    categories: Array<{
+      id: string;
+      name_en: string;
+      name_ja: string | null;
+      name_vi: string | null;
+      position: number;
+      items: Array<{
+        id: string;
+        name_en: string;
+        name_ja: string | null;
+        name_vi: string | null;
+        price: number;
+        available: boolean;
+        position: number;
+      }>;
+    }>;
+  };
+}

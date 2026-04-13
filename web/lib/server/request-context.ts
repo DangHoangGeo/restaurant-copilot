@@ -2,6 +2,7 @@
 import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import type { AuthUser } from './getUserFromRequest';
 import { ACTIVE_BRANCH_COOKIE } from './organizations/active-branch';
 
@@ -76,7 +77,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
         restaurantId = activeBranchCookie;
         // Fetch the active branch's subdomain so downstream callers that inspect
         // subdomain (redirects, domain checks) see the correct value.
-        const { data: activeBranchRow } = await supabase
+        const { data: activeBranchRow } = await supabaseAdmin
           .from('restaurants')
           .select('subdomain')
           .eq('id', activeBranchCookie)
