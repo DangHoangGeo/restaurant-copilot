@@ -3,11 +3,11 @@ name: Release Checks And Database Migrations
 on:
   push:
     branches:
-      - develop
+      - staging
       - main
   pull_request:
     branches:
-      - develop
+      - staging
       - main
 
 permissions:
