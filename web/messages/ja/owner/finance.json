@@ -1,0 +1,51 @@
+{
+  "pageTitle": "月次財務レポート",
+  "pageDescription": "売上・労働時間・コストの月次サマリー（会計士への引き継ぎ用）",
+
+  "statusLive": "ライブ（未確定）",
+  "statusClosed": "確定済み",
+  "statusDraft": "下書き",
+
+  "prevMonth": "前月",
+  "nextMonth": "翌月",
+  "noData": "この期間のデータがありません。",
+
+  "revenue": "売上合計",
+  "grossSales": "値引き前売上",
+  "discounts": "割引合計",
+  "netRevenue": "純売上",
+  "orderCount": "{count}件の注文",
+
+  "grossProfit": "粗利益（概算）",
+  "grossProfitHint": "売上 − コスト",
+
+  "totalCosts": "コスト合計",
+  "laborHours": "承認済み労働時間",
+  "laborEntries": "{count}件の記録",
+
+  "purchaseOrders": "仕入発注",
+  "otherExpenses": "その他経費",
+  "combinedCosts": "コスト合計",
+
+  "orders": "発注",
+  "expenses": "経費",
+
+  "liveNotice": "合計は現在の実績に基づいており、月次締め前に変動することがあります。",
+
+  "notes": "会計士へのメモ",
+  "notesPlaceholder": "会計士・税理士へのメモ（任意）…",
+
+  "exportCsv": "CSVエクスポート",
+  "exporting": "エクスポート中…",
+  "exportError": "エクスポートに失敗しました。もう一度お試しください。",
+
+  "closeMonth": "月次締め",
+  "closeConfirmTitle": "この月を締めますか？",
+  "closeConfirmBody": "{period} を締めると、すべての合計が確定されます。この操作は元に戻せません。",
+  "confirmClose": "確定して締める",
+  "closing": "締め中…",
+  "cancel": "キャンセル",
+  "closeError": "月次締めに失敗しました。もう一度お試しください。",
+
+  "recentSnapshots": "最近の月"
+}

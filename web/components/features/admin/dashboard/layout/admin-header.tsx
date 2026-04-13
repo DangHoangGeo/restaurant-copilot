@@ -26,6 +26,11 @@ const viewNameMap: Record<string, string> = {
   '/dashboard/employees': 'admin_sidebar_employees_schedules',
   '/dashboard/bookings': 'admin_sidebar_bookings_preorders',
   '/dashboard/reports': 'admin_sidebar_reports_analytics',
+  '/dashboard/purchasing': 'admin_sidebar_purchasing',
+  '/dashboard/finance': 'admin_sidebar_finance',
+  '/dashboard/promotions': 'admin_sidebar_promotions',
+  '/dashboard/branches': 'admin_sidebar_branches',
+  '/dashboard/organization': 'admin_sidebar_organization',
   '/dashboard/profile': 'admin_sidebar_profile',
 };
 

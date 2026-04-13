@@ -1,0 +1,84 @@
+{
+  "pageTitle": "Khuyến Mãi",
+  "pageDescription": "Tạo và quản lý mã giảm giá cho chi nhánh của bạn",
+
+  "addPromotion": "Thêm khuyến mãi",
+  "addPromotionTitle": "Khuyến mãi mới",
+  "emptyStateTitle": "Chưa có khuyến mãi nào",
+  "emptyStateTitleFiltered": "Không có khuyến mãi phù hợp",
+  "noPromotions": "Chưa có khuyến mãi nào. Nhấn Thêm khuyến mãi để tạo mã giảm giá đầu tiên.",
+  "noPromotionsInactive": "Không có khuyến mãi nào phù hợp với bộ lọc hiện tại.",
+
+  "showInactive": "Hiển thị đã tắt",
+  "hideInactive": "Ẩn đã tắt",
+
+  "statusActive": "Đang hoạt động",
+  "statusInactive": "Đã tắt",
+
+  "discountTypes": {
+    "percentage": "Phần trăm",
+    "flat": "Số tiền cố định"
+  },
+  "discountValuePct": "Giảm {value}%",
+  "discountValueFlat": "Giảm {amount}",
+
+  "usageCount": "Đã dùng {count} lần",
+  "usageLimit": "Đã dùng {used} / {limit} lần",
+  "usageUnlimited": "Không giới hạn",
+
+  "validFrom": "Từ {date}",
+  "validUntil": "Đến {date}",
+  "validFromUntil": "{from} – {until}",
+  "validAlways": "Luôn có hiệu lực",
+
+  "minOrder": "Đơn tối thiểu {amount}",
+  "maxDiscount": "Giảm tối đa {amount}",
+
+  "disable": "Tắt",
+  "enable": "Bật",
+  "delete": "Xóa",
+  "deleteConfirm": "Xóa khuyến mãi này?",
+  "deleteConfirmBody": "Mã này chưa được sử dụng và sẽ bị xóa vĩnh viễn.",
+  "confirmDelete": "Xóa",
+  "cancel": "Hủy",
+
+  "save": "Lưu",
+  "saving": "Đang lưu…",
+  "invalidDiscountValue": "Vui lòng nhập giá trị giảm hợp lệ.",
+  "createFailed": "Lưu thất bại. Vui lòng thử lại.",
+  "deleteFailed": "Xóa thất bại. Vui lòng thử lại.",
+  "toggleFailed": "Cập nhật trạng thái thất bại. Vui lòng thử lại.",
+
+  "fields": {
+    "code": "Mã khuyến mãi",
+    "codePlaceholder": "Ví dụ: SUMMER10",
+    "codeHint": "Chỉ dùng chữ hoa và số. Khách hàng nhập khi thanh toán.",
+    "description": "Mô tả",
+    "descriptionPlaceholder": "Ví dụ: Giảm 10% tất cả đơn hàng",
+    "discountType": "Loại giảm giá",
+    "discountValue": "Giá trị giảm",
+    "discountValueHintPct": "Phần trăm (ví dụ: 10 cho 10%)",
+    "discountValueHintFlat": "Số tiền cố định theo tiền tệ chi nhánh",
+    "minOrderAmount": "Giá trị đơn hàng tối thiểu",
+    "minOrderAmountPlaceholder": "Tùy chọn",
+    "maxDiscountAmount": "Mức giảm tối đa",
+    "maxDiscountAmountPlaceholder": "Giới hạn cho giảm theo phần trăm (tùy chọn)",
+    "validFrom": "Có hiệu lực từ",
+    "validUntil": "Hết hạn vào",
+    "usageLimit": "Giới hạn lượt dùng",
+    "usageLimitPlaceholder": "Để trống = không giới hạn"
+  },
+
+  "summary": {
+    "activePromotions": "Khuyến mãi đang hoạt động",
+    "monthDiscounts": "Giảm giá tháng này"
+  },
+
+  "usage": {
+    "title": "Lịch sử sử dụng",
+    "noUsage": "Khuyến mãi này chưa được sử dụng.",
+    "orderId": "Đơn hàng",
+    "appliedAt": "Thời gian áp dụng",
+    "amount": "Số tiền giảm"
+  }
+}

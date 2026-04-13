@@ -8,6 +8,7 @@ import { PurchaseOrderList } from "./PurchaseOrderList";
 import { ExpenseList } from "./ExpenseList";
 import { SupplierList } from "./SupplierList";
 import type { PurchaseOrder, Expense, Supplier } from "@/lib/server/purchasing/types";
+import { MoneySectionNav } from "@/components/features/admin/money/MoneySectionNav";
 
 type Tab = "orders" | "expenses" | "suppliers";
 
@@ -22,6 +23,7 @@ interface PurchasingDashboardProps {
   monthStart: string;
   monthEnd: string;
   canWrite: boolean;
+  locale: string;
 }
 
 export function PurchasingDashboard({
@@ -34,15 +36,16 @@ export function PurchasingDashboard({
   monthStart,
   monthEnd,
   canWrite,
+  locale,
 }: PurchasingDashboardProps) {
   const t = useTranslations("owner.purchasing");
   const [activeTab, setActiveTab] = useState<Tab>("orders");
 
   const formatAmount = (amount: number) =>
-    new Intl.NumberFormat("ja-JP", {
+    new Intl.NumberFormat(locale, {
       style: "currency",
       currency: restaurantCurrency || "JPY",
-      maximumFractionDigits: 0,
+      maximumFractionDigits: restaurantCurrency === "JPY" ? 0 : 2,
     }).format(amount);
 
   const tabs: Array<{ key: Tab; labelKey: string; icon: React.ReactNode }> = [
@@ -65,6 +68,8 @@ export function PurchasingDashboard({
             <p className="text-xs text-muted-foreground">{t("pageDescription")}</p>
           </div>
         </div>
+
+        <MoneySectionNav locale={locale} />
 
         {!canWrite && (
           <div className="rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
