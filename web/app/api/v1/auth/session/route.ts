@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { createClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function GET() {
   try {
@@ -40,13 +41,13 @@ export async function GET() {
     // Use the first record (or only record if there's just one)
     const userProfile = userProfiles[0];
 
-    // Fetch restaurant information if user has a restaurant
+    // Fetch restaurant information for the effective branch context.
     let restaurant = null;
-    if (userProfile.restaurant_id) {
-      const { data: restaurantData, error: restaurantError } = await supabase
+    if (user.restaurantId) {
+      const { data: restaurantData, error: restaurantError } = await supabaseAdmin
         .from('restaurants')
         .select('id, name, subdomain, logo_url, brand_color, default_language, onboarded')
-        .eq('id', userProfile.restaurant_id)
+        .eq('id', user.restaurantId)
         .single();
 
       if (!restaurantError && restaurantData) {
@@ -69,8 +70,8 @@ export async function GET() {
         name: userProfile.name,
         email: userProfile.email,
         role: userProfile.role,
-        restaurantId: userProfile.restaurant_id,
-        subdomain: user.subdomain,
+        restaurantId: user.restaurantId,
+        subdomain: restaurant?.subdomain ?? user.subdomain,
         restaurant
       }
     });

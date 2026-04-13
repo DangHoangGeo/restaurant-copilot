@@ -374,6 +374,30 @@ This phase should reduce future complexity, not add it. Prefer one clean permiss
 
 ## Phase 3: Branch Management and Branch-Specific Menus
 
+### Current Status
+
+`Completed — 2026-04-13`
+
+Delivered in this phase:
+
+- `web/lib/server/organizations/branch-menu.ts` — copy and compare domain logic (admin client, org-scoped)
+- `POST /api/v1/owner/organization/menu/copy` — delete target menu and copy all categories, items, sizes, toppings from source branch
+- `GET /api/v1/owner/organization/menu/compare?branch_a=&branch_b=` — side-by-side menu snapshot for two branches
+- `/dashboard/branches` — branches management page: list, active-branch switcher, copy tool, compare panel
+- Active branch indicator banner on `/dashboard/menu` for multi-branch orgs
+- `Branches` sidebar nav item (Layers icon)
+- i18n keys added for EN / JA / VI under `owner/branches` namespace
+- `owner/branches` registered in `web/i18n/request.ts`
+- `CopyMenuRequest`, `CopyMenuResponse`, `MenuCompareResponse` types added to `web/shared/types/organization.ts`
+- Customer ordering flow: not modified; menu tables were already branch-scoped via `restaurant_id`
+
+Accepted follow-ups for Phase 4+:
+
+- No migration was needed — menu tables (`categories`, `menu_items`, `menu_item_sizes`, `toppings`) already carry `restaurant_id` as the branch-level isolation key
+- Menu copy is not transactional (Supabase does not expose a direct transaction API in route handlers); the UI warns before the destructive copy
+- Branches page hides copy/compare actions for single-branch owners (branches.length < 2)
+- A `branch_menu_copy_logs` audit table could be added if copy history is needed in Phase 6+
+
 ### Goal
 
 Let owners manage multiple branches, each with its own menu, while preserving the working customer order flow.

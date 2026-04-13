@@ -18,6 +18,7 @@ import {
   LucideIcon,
   Sparkles,
   Building2,
+  Layers,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -51,6 +52,11 @@ interface NavItemProps {
 }
 
 const utilityNavItemsConfig: NavItemConfig[] = [
+  {
+    icon: Layers,
+    labelKey: "admin_sidebar_branches",
+    href: "/dashboard/branches",
+  },
   {
     icon: Building2,
     labelKey: "admin_sidebar_organization",
