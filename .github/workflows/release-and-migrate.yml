@@ -22,6 +22,11 @@ jobs:
     name: Web Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment: ${{ github.ref_name }}
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     defaults:
       run:
         working-directory: web
