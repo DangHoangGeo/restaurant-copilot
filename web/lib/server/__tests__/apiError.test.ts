@@ -1,3 +1,5 @@
+/** @jest-environment node */
+
 import { createApiError } from '../apiError';
 
 describe('API Error Utilities', () => {
