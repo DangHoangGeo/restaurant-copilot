@@ -1,0 +1,97 @@
+{
+  "pageTitle": "購買管理",
+  "pageDescription": "仕入先への発注、日常経費、仕入先連絡先を管理します",
+
+  "tabs": {
+    "orders": "発注",
+    "expenses": "経費",
+    "suppliers": "仕入先"
+  },
+
+  "summary": {
+    "monthOrders": "今月の発注合計",
+    "monthExpenses": "今月の経費合計"
+  },
+
+  "addOrder": "発注追加",
+  "addOrderTitle": "新規発注",
+  "addExpense": "経費追加",
+  "addExpenseTitle": "新規経費",
+  "addSupplier": "仕入先追加",
+  "addSupplierTitle": "新規仕入先",
+  "exportOrders": "発注CSV",
+  "exportExpenses": "経費CSV",
+  "readOnlyNotice": "閲覧専用です。このブランチの購買データは確認と出力ができますが、変更は購買権限のある担当者のみ行えます。",
+
+  "noOrders": "発注記録がありません。「発注追加」をタップして最初の仕入れを記録してください。",
+  "noExpenses": "経費記録がありません。「経費追加」をタップして記録してください。",
+  "noSuppliers": "仕入先がありません。「仕入先追加」をタップして最初の取引先を登録してください。",
+
+  "orderStatus": {
+    "pending": "未受領",
+    "received": "受領済",
+    "cancelled": "キャンセル"
+  },
+
+  "paid": "支払済",
+  "unpaid": "未払",
+  "unknownSupplier": "仕入先不明",
+
+  "markPaid": "支払済にする",
+  "markReceived": "受領済にする",
+  "delete": "削除",
+  "archive": "アーカイブ",
+
+  "save": "保存",
+  "saving": "保存中…",
+  "cancel": "キャンセル",
+  "createFailed": "保存に失敗しました。もう一度お試しください。",
+
+  "fields": {
+    "supplierName": "仕入先",
+    "supplierNamePlaceholder": "仕入先名（任意）",
+    "savedSupplier": "登録済み仕入先",
+    "savedSupplierPlaceholder": "仕入先を選択、または空欄のままにします",
+    "category": "カテゴリ",
+    "orderDate": "発注日",
+    "totalAmount": "合計金額（円）",
+    "notes": "メモ",
+    "notesPlaceholder": "任意のメモ",
+    "markAsPaid": "支払済として記録",
+    "description": "内容",
+    "descriptionPlaceholder": "何のための経費ですか？",
+    "amount": "金額（円）",
+    "expenseDate": "日付",
+    "contactName": "担当者名",
+    "contactPhone": "電話番号",
+    "contactEmail": "メールアドレス"
+  },
+
+  "categories": {
+    "food": "食材",
+    "beverage": "飲料",
+    "equipment": "設備",
+    "utilities": "光熱費",
+    "other": "その他"
+  },
+
+  "expenseCategories": {
+    "food": "食材",
+    "transport": "交通費",
+    "utilities": "光熱費",
+    "maintenance": "メンテナンス",
+    "other": "その他"
+  },
+
+  "supplierCategories": {
+    "food": "食材",
+    "beverage": "飲料",
+    "equipment": "設備",
+    "utilities": "光熱・水道",
+    "general": "一般"
+  },
+
+  "validation": {
+    "invalidAmount": "有効な金額を入力してください。"
+  }
+}
