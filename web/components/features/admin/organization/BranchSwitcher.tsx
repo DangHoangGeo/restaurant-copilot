@@ -29,11 +29,12 @@ export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps)
   const [switching, setSwitching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Only show if there are multiple branches
-  if (accessibleRestaurantIds.length <= 1) return null;
-
   // Fetch available branches and current active branch
   useEffect(() => {
+    if (accessibleRestaurantIds.length <= 1) {
+      return;
+    }
+
     async function load() {
       try {
         const [branchesRes, activeRes] = await Promise.all([
@@ -55,7 +56,7 @@ export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps)
       }
     }
     load();
-  }, []);
+  }, [accessibleRestaurantIds.length]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -67,6 +68,9 @@ export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps)
     if (open) document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
+
+  // Only show if there are multiple branches
+  if (accessibleRestaurantIds.length <= 1) return null;
 
   const switchBranch = async (restaurantId: string) => {
     if (restaurantId === activeBranchId) {

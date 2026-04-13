@@ -4,7 +4,6 @@
 
 import {
   getMyOrganization,
-  getOrganizationById,
   listOrganizationMembers,
   listOrganizationRestaurants,
   getAccessibleRestaurantIds,
