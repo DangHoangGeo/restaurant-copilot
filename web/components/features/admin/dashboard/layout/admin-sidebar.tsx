@@ -19,6 +19,7 @@ import {
   Sparkles,
   Building2,
   Layers,
+  ShoppingCart,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -133,6 +134,11 @@ export function AdminSidebar({
           icon: BarChartBig,
           labelKey: "admin_sidebar_reports_analytics",
           href: "/dashboard/reports",
+        },
+        {
+          icon: ShoppingCart,
+          labelKey: "admin_sidebar_purchasing",
+          href: "/dashboard/purchasing",
         }
       );
     }

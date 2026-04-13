@@ -1,0 +1,92 @@
+{
+  "pageTitle": "Purchasing",
+  "pageDescription": "Track supplier orders, daily expenses, and supplier contacts",
+
+  "tabs": {
+    "orders": "Orders",
+    "expenses": "Expenses",
+    "suppliers": "Suppliers"
+  },
+
+  "summary": {
+    "monthOrders": "This month (orders)",
+    "monthExpenses": "This month (expenses)"
+  },
+
+  "addOrder": "Add Order",
+  "addOrderTitle": "New Purchase Order",
+  "addExpense": "Add Expense",
+  "addExpenseTitle": "New Expense",
+  "addSupplier": "Add Supplier",
+  "addSupplierTitle": "New Supplier",
+
+  "noOrders": "No purchase orders yet. Tap Add Order to record your first purchase.",
+  "noExpenses": "No expenses recorded yet. Tap Add Expense to record one.",
+  "noSuppliers": "No suppliers yet. Tap Add Supplier to add your first contact.",
+
+  "orderStatus": {
+    "pending": "Pending",
+    "received": "Received",
+    "cancelled": "Cancelled"
+  },
+
+  "paid": "Paid",
+  "unpaid": "Unpaid",
+  "unknownSupplier": "Unknown supplier",
+
+  "markPaid": "Mark as paid",
+  "markReceived": "Mark as received",
+  "delete": "Delete",
+  "archive": "Archive",
+
+  "save": "Save",
+  "saving": "Saving…",
+  "cancel": "Cancel",
+  "createFailed": "Failed to save. Please try again.",
+
+  "fields": {
+    "supplierName": "Supplier",
+    "supplierNamePlaceholder": "Supplier name (optional)",
+    "category": "Category",
+    "orderDate": "Order date",
+    "totalAmount": "Total amount (¥)",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes",
+    "markAsPaid": "Already paid",
+    "description": "Description",
+    "descriptionPlaceholder": "What was this for?",
+    "amount": "Amount (¥)",
+    "expenseDate": "Date",
+    "contactName": "Contact person",
+    "contactPhone": "Phone",
+    "contactEmail": "Email"
+  },
+
+  "categories": {
+    "food": "Food",
+    "beverage": "Beverage",
+    "equipment": "Equipment",
+    "utilities": "Utilities",
+    "other": "Other"
+  },
+
+  "expenseCategories": {
+    "food": "Food",
+    "transport": "Transport",
+    "utilities": "Utilities",
+    "maintenance": "Maintenance",
+    "other": "Other"
+  },
+
+  "supplierCategories": {
+    "food": "Food",
+    "beverage": "Beverage",
+    "equipment": "Equipment",
+    "utilities": "Utilities",
+    "general": "General"
+  },
+
+  "validation": {
+    "invalidAmount": "Please enter a valid amount."
+  }
+}

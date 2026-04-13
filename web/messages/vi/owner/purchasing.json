@@ -1,0 +1,92 @@
+{
+  "pageTitle": "Quản lý mua hàng",
+  "pageDescription": "Theo dõi đơn đặt hàng, chi phí hàng ngày và danh bạ nhà cung cấp",
+
+  "tabs": {
+    "orders": "Đơn hàng",
+    "expenses": "Chi phí",
+    "suppliers": "Nhà cung cấp"
+  },
+
+  "summary": {
+    "monthOrders": "Tháng này (đơn hàng)",
+    "monthExpenses": "Tháng này (chi phí)"
+  },
+
+  "addOrder": "Thêm đơn hàng",
+  "addOrderTitle": "Đơn hàng mới",
+  "addExpense": "Thêm chi phí",
+  "addExpenseTitle": "Chi phí mới",
+  "addSupplier": "Thêm nhà cung cấp",
+  "addSupplierTitle": "Nhà cung cấp mới",
+
+  "noOrders": "Chưa có đơn hàng nào. Nhấn \"Thêm đơn hàng\" để ghi lại lần mua đầu tiên.",
+  "noExpenses": "Chưa có chi phí nào. Nhấn \"Thêm chi phí\" để ghi lại.",
+  "noSuppliers": "Chưa có nhà cung cấp. Nhấn \"Thêm nhà cung cấp\" để đăng ký đầu tiên.",
+
+  "orderStatus": {
+    "pending": "Chờ nhận hàng",
+    "received": "Đã nhận",
+    "cancelled": "Đã hủy"
+  },
+
+  "paid": "Đã thanh toán",
+  "unpaid": "Chưa thanh toán",
+  "unknownSupplier": "Không rõ nhà cung cấp",
+
+  "markPaid": "Đánh dấu đã thanh toán",
+  "markReceived": "Đánh dấu đã nhận",
+  "delete": "Xóa",
+  "archive": "Lưu trữ",
+
+  "save": "Lưu",
+  "saving": "Đang lưu…",
+  "cancel": "Hủy",
+  "createFailed": "Lưu thất bại. Vui lòng thử lại.",
+
+  "fields": {
+    "supplierName": "Nhà cung cấp",
+    "supplierNamePlaceholder": "Tên nhà cung cấp (tùy chọn)",
+    "category": "Danh mục",
+    "orderDate": "Ngày đặt hàng",
+    "totalAmount": "Tổng tiền (¥)",
+    "notes": "Ghi chú",
+    "notesPlaceholder": "Ghi chú tùy chọn",
+    "markAsPaid": "Đã thanh toán",
+    "description": "Mô tả",
+    "descriptionPlaceholder": "Chi phí này dùng cho việc gì?",
+    "amount": "Số tiền (¥)",
+    "expenseDate": "Ngày",
+    "contactName": "Người liên hệ",
+    "contactPhone": "Điện thoại",
+    "contactEmail": "Email"
+  },
+
+  "categories": {
+    "food": "Thực phẩm",
+    "beverage": "Đồ uống",
+    "equipment": "Thiết bị",
+    "utilities": "Tiện ích",
+    "other": "Khác"
+  },
+
+  "expenseCategories": {
+    "food": "Thực phẩm",
+    "transport": "Vận chuyển",
+    "utilities": "Tiện ích",
+    "maintenance": "Bảo trì",
+    "other": "Khác"
+  },
+
+  "supplierCategories": {
+    "food": "Thực phẩm",
+    "beverage": "Đồ uống",
+    "equipment": "Thiết bị",
+    "utilities": "Tiện ích",
+    "general": "Chung"
+  },
+
+  "validation": {
+    "invalidAmount": "Vui lòng nhập số tiền hợp lệ."
+  }
+}
