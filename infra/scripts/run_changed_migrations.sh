@@ -23,19 +23,19 @@ if [[ -z "${base_sha}" || "${base_sha}" == "${ZERO_SHA}" ]]; then
 fi
 
 mapfile -t changed_existing_migrations < <(
-  git diff --name-only --diff-filter=MRD "${base_sha}" "${head_sha}" -- infra/migrations \
+  git diff --name-only --diff-filter=MRD "${base_sha}" "${head_sha}" -- infra/production/migrations \
     | sort -V
 )
 
 if (( ${#changed_existing_migrations[@]} > 0 )); then
   echo "Refusing to run because existing migration files were modified, renamed, or deleted:" >&2
   printf ' - %s\n' "${changed_existing_migrations[@]}" >&2
-  echo "Create a new SQL migration file under infra/migrations instead of rewriting an applied one." >&2
+  echo "Create a new SQL migration file under infra/production/migrations instead of rewriting an applied one." >&2
   exit 1
 fi
 
 mapfile -t added_migrations < <(
-  git diff --name-only --diff-filter=A "${base_sha}" "${head_sha}" -- infra/migrations \
+  git diff --name-only --diff-filter=A "${base_sha}" "${head_sha}" -- infra/production/migrations \
     | sort -V
 )
 
