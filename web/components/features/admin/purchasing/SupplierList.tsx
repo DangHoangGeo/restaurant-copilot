@@ -8,9 +8,10 @@ import { supplierCategoryValues } from "@/lib/server/purchasing/schemas";
 
 interface SupplierListProps {
   initialSuppliers: Supplier[];
+  canWrite: boolean;
 }
 
-export function SupplierList({ initialSuppliers }: SupplierListProps) {
+export function SupplierList({ initialSuppliers, canWrite }: SupplierListProps) {
   const t = useTranslations("owner.purchasing");
   const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
   const [showForm, setShowForm] = useState(false);
@@ -36,13 +37,15 @@ export function SupplierList({ initialSuppliers }: SupplierListProps) {
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
           {t("tabs.suppliers")}
         </h2>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium hover:bg-primary/90 transition-colors"
-        >
-          {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {t("addSupplier")}
-        </button>
+        {canWrite && (
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {t("addSupplier")}
+          </button>
+        )}
       </div>
 
       {/* Form */}
@@ -98,13 +101,15 @@ export function SupplierList({ initialSuppliers }: SupplierListProps) {
               )}
             </div>
           </div>
-          <button
-            onClick={() => handleArchive(supplier.id)}
-            className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
-            aria-label={t("archive")}
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {canWrite && (
+            <button
+              onClick={() => handleArchive(supplier.id)}
+              className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
+              aria-label={t("archive")}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       ))}
     </div>

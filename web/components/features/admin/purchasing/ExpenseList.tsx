@@ -2,16 +2,32 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Receipt, Plus, Trash2, ChevronUp } from "lucide-react";
+import { Receipt, Plus, Trash2, ChevronUp, Download } from "lucide-react";
 import type { Expense } from "@/lib/server/purchasing/types";
 import { expenseCategoryValues } from "@/lib/server/purchasing/schemas";
+
+function getDateInputValue(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 interface ExpenseListProps {
   initialExpenses: Expense[];
   restaurantCurrency: string;
+  monthStart: string;
+  monthEnd: string;
+  canWrite: boolean;
 }
 
-export function ExpenseList({ initialExpenses, restaurantCurrency }: ExpenseListProps) {
+export function ExpenseList({
+  initialExpenses,
+  restaurantCurrency,
+  monthStart,
+  monthEnd,
+  canWrite,
+}: ExpenseListProps) {
   const t = useTranslations("owner.purchasing");
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
   const [showForm, setShowForm] = useState(false);
@@ -40,17 +56,28 @@ export function ExpenseList({ initialExpenses, restaurantCurrency }: ExpenseList
   return (
     <div className="space-y-4">
       {/* Header + Add */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
           {t("tabs.expenses")}
         </h2>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium hover:bg-primary/90 transition-colors"
-        >
-          {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {t("addExpense")}
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/v1/owner/purchasing/export?type=expenses&from_date=${monthStart}&to_date=${monthEnd}`}
+            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            {t("exportExpenses")}
+          </a>
+          {canWrite && (
+            <button
+              onClick={() => setShowForm((v) => !v)}
+              className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {t("addExpense")}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Quick-entry form */}
@@ -89,13 +116,15 @@ export function ExpenseList({ initialExpenses, restaurantCurrency }: ExpenseList
               <p className="text-xs text-muted-foreground mt-1">{expense.notes}</p>
             )}
           </div>
-          <button
-            onClick={() => handleDelete(expense.id)}
-            className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
-            aria-label={t("delete")}
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {canWrite && (
+            <button
+              onClick={() => handleDelete(expense.id)}
+              className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
+              aria-label={t("delete")}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       ))}
     </div>
@@ -113,7 +142,7 @@ function AddExpenseForm({ onCreated, onCancel }: AddExpenseFormProps) {
   const t = useTranslations("owner.purchasing");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const today = new Date().toISOString().split("T")[0];
+  const today = getDateInputValue();
 
   const [form, setForm] = useState({
     description: "",

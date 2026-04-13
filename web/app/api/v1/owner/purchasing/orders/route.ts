@@ -8,16 +8,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { USER_ROLES } from '@/lib/constants';
 import { CreatePurchaseOrderSchema, ListPurchaseOrdersSchema } from '@/lib/server/purchasing/schemas';
+import { resolvePurchasingAccess } from '@/lib/server/purchasing/access';
 import { getPurchaseOrders, addPurchaseOrder } from '@/lib/server/purchasing/service';
 
 const ALLOWED_ROLES = [USER_ROLES.OWNER, USER_ROLES.MANAGER] as const;
 
 export async function GET(req: NextRequest) {
-  const user = await getUserFromRequest();
-  if (!user?.restaurantId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  if (!ALLOWED_ROLES.includes(user.role as 'owner' | 'manager')) {
+  const access = await resolvePurchasingAccess();
+  if (!access) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -42,7 +40,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const orders = await getPurchaseOrders(user.restaurantId, parsed.data);
+    const orders = await getPurchaseOrders(access.restaurantId, parsed.data);
     return NextResponse.json({ orders });
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Failed to fetch orders';

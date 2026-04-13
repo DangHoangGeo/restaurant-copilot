@@ -19,6 +19,9 @@
   "addExpenseTitle": "New Expense",
   "addSupplier": "Add Supplier",
   "addSupplierTitle": "New Supplier",
+  "exportOrders": "Export orders",
+  "exportExpenses": "Export expenses",
+  "readOnlyNotice": "Read-only access: you can review and export this branch's purchasing data, but only purchasing managers can change records.",
 
   "noOrders": "No purchase orders yet. Tap Add Order to record your first purchase.",
   "noExpenses": "No expenses recorded yet. Tap Add Expense to record one.",
@@ -47,6 +50,8 @@
   "fields": {
     "supplierName": "Supplier",
     "supplierNamePlaceholder": "Supplier name (optional)",
+    "savedSupplier": "Saved supplier",
+    "savedSupplierPlaceholder": "Choose a supplier or leave blank",
     "category": "Category",
     "orderDate": "Order date",
     "totalAmount": "Total amount (¥)",

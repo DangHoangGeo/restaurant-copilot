@@ -15,6 +15,44 @@ import type {
 } from './schemas';
 import * as queries from './queries';
 
+function roundCurrencyAmount(value: number): number {
+  return Number(value.toFixed(2));
+}
+
+function calculatePurchaseOrderTotal(
+  items: CreatePurchaseOrderInput['items'],
+  taxAmount: number | null | undefined
+): number | null {
+  if (!items || items.length === 0) return null;
+
+  const itemsTotal = items.reduce(
+    (sum, item) => sum + item.quantity * item.unit_price,
+    0
+  );
+
+  return roundCurrencyAmount(itemsTotal + (taxAmount ?? 0));
+}
+
+async function resolveSupplierName(params: {
+  restaurantId: string;
+  supplierId?: string | null;
+  supplierName?: string | null;
+}): Promise<string | null | undefined> {
+  const { restaurantId, supplierId, supplierName } = params;
+
+  if (!supplierId) return supplierName;
+
+  const supplier = await queries.getSupplierById(supplierId, restaurantId);
+  if (!supplier) {
+    throw Object.assign(
+      new Error('Supplier not found in this branch'),
+      { status: 422 }
+    );
+  }
+
+  return supplier.name;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Suppliers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -89,20 +127,23 @@ export async function addPurchaseOrder(
   input: CreatePurchaseOrderInput,
   createdBy: string | null
 ): Promise<PurchaseOrderWithItems> {
-  // If supplier_id provided, denormalize supplier name for longevity
-  let supplierName = input.supplier_name ?? null;
-  if (input.supplier_id && !supplierName) {
-    const supplier = await queries.getSupplierById(input.supplier_id, restaurantId);
-    if (!supplier) {
-      throw Object.assign(
-        new Error('Supplier not found in this branch'),
-        { status: 422 }
-      );
-    }
-    supplierName = supplier.name;
-  }
+  const supplierName = await resolveSupplierName({
+    restaurantId,
+    supplierId: input.supplier_id,
+    supplierName: input.supplier_name ?? null,
+  });
 
-  return queries.createPurchaseOrder(restaurantId, { ...input, supplier_name: supplierName }, createdBy);
+  const computedTotal = calculatePurchaseOrderTotal(input.items, input.tax_amount);
+
+  return queries.createPurchaseOrder(
+    restaurantId,
+    {
+      ...input,
+      supplier_name: supplierName ?? null,
+      total_amount: computedTotal ?? input.total_amount,
+    },
+    createdBy
+  );
 }
 
 export async function editPurchaseOrder(
@@ -110,8 +151,24 @@ export async function editPurchaseOrder(
   restaurantId: string,
   input: UpdatePurchaseOrderInput
 ): Promise<PurchaseOrder> {
-  await getPurchaseOrder(id, restaurantId); // 404 if not found
-  return queries.updatePurchaseOrder(id, restaurantId, input);
+  const existing = await getPurchaseOrder(id, restaurantId); // 404 if not found
+
+  let supplierName = input.supplier_name;
+  if (Object.prototype.hasOwnProperty.call(input, 'supplier_id')) {
+    supplierName = await resolveSupplierName({
+      restaurantId,
+      supplierId: input.supplier_id,
+      supplierName:
+        input.supplier_id === null
+          ? input.supplier_name ?? existing.supplier_name
+          : input.supplier_name,
+    });
+  }
+
+  return queries.updatePurchaseOrder(id, restaurantId, {
+    ...input,
+    supplier_name: supplierName,
+  });
 }
 
 export async function removePurchaseOrder(

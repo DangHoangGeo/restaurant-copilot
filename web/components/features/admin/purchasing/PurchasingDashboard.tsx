@@ -19,6 +19,9 @@ interface PurchasingDashboardProps {
   /** Pre-computed totals for the current month to avoid extra client-side fetch */
   monthlyOrdersTotal: number;
   monthlyExpensesTotal: number;
+  monthStart: string;
+  monthEnd: string;
+  canWrite: boolean;
 }
 
 export function PurchasingDashboard({
@@ -28,6 +31,9 @@ export function PurchasingDashboard({
   restaurantCurrency,
   monthlyOrdersTotal,
   monthlyExpensesTotal,
+  monthStart,
+  monthEnd,
+  canWrite,
 }: PurchasingDashboardProps) {
   const t = useTranslations("owner.purchasing");
   const [activeTab, setActiveTab] = useState<Tab>("orders");
@@ -59,6 +65,12 @@ export function PurchasingDashboard({
             <p className="text-xs text-muted-foreground">{t("pageDescription")}</p>
           </div>
         </div>
+
+        {!canWrite && (
+          <div className="rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            {t("readOnlyNotice")}
+          </div>
+        )}
 
         {/* Monthly summary cards */}
         <div className="grid grid-cols-2 gap-3">
@@ -101,17 +113,24 @@ export function PurchasingDashboard({
         {activeTab === "orders" && (
           <PurchaseOrderList
             initialOrders={initialOrders}
+            suppliers={initialSuppliers}
             restaurantCurrency={restaurantCurrency}
+            monthStart={monthStart}
+            monthEnd={monthEnd}
+            canWrite={canWrite}
           />
         )}
         {activeTab === "expenses" && (
           <ExpenseList
             initialExpenses={initialExpenses}
             restaurantCurrency={restaurantCurrency}
+            monthStart={monthStart}
+            monthEnd={monthEnd}
+            canWrite={canWrite}
           />
         )}
         {activeTab === "suppliers" && (
-          <SupplierList initialSuppliers={initialSuppliers} />
+          <SupplierList initialSuppliers={initialSuppliers} canWrite={canWrite} />
         )}
       </div>
     </div>

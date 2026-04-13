@@ -9,17 +9,22 @@ import {
   Clock,
   XCircle,
   Banknote,
+  Download,
   ChevronDown,
   ChevronUp,
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { PurchaseOrder } from "@/lib/server/purchasing/types";
+import type { PurchaseOrder, Supplier } from "@/lib/server/purchasing/types";
 import { AddPurchaseOrderForm } from "./AddPurchaseOrderForm";
 
 interface PurchaseOrderListProps {
   initialOrders: PurchaseOrder[];
+  suppliers: Supplier[];
   restaurantCurrency: string;
+  monthStart: string;
+  monthEnd: string;
+  canWrite: boolean;
 }
 
 const STATUS_ICON = {
@@ -28,15 +33,13 @@ const STATUS_ICON = {
   cancelled: <XCircle className="h-4 w-4 text-muted-foreground" />,
 };
 
-const STATUS_LABEL_KEY = {
-  pending:   "orderStatus.pending",
-  received:  "orderStatus.received",
-  cancelled: "orderStatus.cancelled",
-};
-
 export function PurchaseOrderList({
   initialOrders,
+  suppliers,
   restaurantCurrency,
+  monthStart,
+  monthEnd,
+  canWrite,
 }: PurchaseOrderListProps) {
   const t = useTranslations("owner.purchasing");
   const [orders, setOrders] = useState<PurchaseOrder[]>(initialOrders);
@@ -60,7 +63,8 @@ export function PurchaseOrderList({
   };
 
   const handleMarkReceived = async (orderId: string) => {
-    const today = new Date().toISOString().split("T")[0];
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     const res = await fetch(`/api/v1/owner/purchasing/orders/${orderId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -92,17 +96,28 @@ export function PurchaseOrderList({
   return (
     <div className="space-y-4">
       {/* Header + Add button */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
           {t("tabs.orders")}
         </h2>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium hover:bg-primary/90 transition-colors"
-        >
-          {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {t("addOrder")}
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/v1/owner/purchasing/export?type=orders&from_date=${monthStart}&to_date=${monthEnd}`}
+            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            {t("exportOrders")}
+          </a>
+          {canWrite && (
+            <button
+              onClick={() => setShowForm((v) => !v)}
+              className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {t("addOrder")}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Add form */}
@@ -110,6 +125,7 @@ export function PurchaseOrderList({
         <AddPurchaseOrderForm
           onCreated={handleOrderCreated}
           onCancel={() => setShowForm(false)}
+          suppliers={suppliers}
         />
       )}
 
@@ -131,6 +147,7 @@ export function PurchaseOrderList({
           onMarkReceived={() => handleMarkReceived(order.id)}
           onDelete={() => handleDelete(order.id)}
           t={t}
+          canWrite={canWrite}
         />
       ))}
     </div>
@@ -146,9 +163,10 @@ interface OrderCardProps {
   onMarkReceived: () => void;
   onDelete: () => void;
   t: ReturnType<typeof useTranslations>;
+  canWrite: boolean;
 }
 
-function OrderCard({ order, formatAmount, onMarkPaid, onMarkReceived, onDelete, t }: OrderCardProps) {
+function OrderCard({ order, formatAmount, onMarkPaid, onMarkReceived, onDelete, t, canWrite }: OrderCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -205,29 +223,40 @@ function OrderCard({ order, formatAmount, onMarkPaid, onMarkReceived, onDelete, 
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2 pt-1">
-            {order.status === "pending" && (
+            {canWrite && order.status === "pending" && (
               <button
-                onClick={onMarkReceived}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onMarkReceived();
+                }}
                 className="text-xs px-3 py-1.5 rounded-lg border hover:bg-muted transition-colors font-medium"
               >
                 {t("markReceived")}
               </button>
             )}
-            {!order.is_paid && order.status !== "cancelled" && (
+            {canWrite && !order.is_paid && order.status !== "cancelled" && (
               <button
-                onClick={onMarkPaid}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onMarkPaid();
+                }}
                 className="text-xs px-3 py-1.5 rounded-lg border hover:bg-muted transition-colors font-medium"
               >
                 {t("markPaid")}
               </button>
             )}
-            <button
-              onClick={onDelete}
-              className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/5 transition-colors"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              {t("delete")}
-            </button>
+            {canWrite && (
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDelete();
+                }}
+                className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/5 transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {t("delete")}
+              </button>
+            )}
           </div>
         </div>
       )}

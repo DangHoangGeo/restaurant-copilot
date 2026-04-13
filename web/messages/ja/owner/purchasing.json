@@ -19,6 +19,9 @@
   "addExpenseTitle": "新規経費",
   "addSupplier": "仕入先追加",
   "addSupplierTitle": "新規仕入先",
+  "exportOrders": "発注CSV",
+  "exportExpenses": "経費CSV",
+  "readOnlyNotice": "閲覧専用です。このブランチの購買データは確認と出力ができますが、変更は購買権限のある担当者のみ行えます。",
 
   "noOrders": "発注記録がありません。「発注追加」をタップして最初の仕入れを記録してください。",
   "noExpenses": "経費記録がありません。「経費追加」をタップして記録してください。",
@@ -47,6 +50,8 @@
   "fields": {
     "supplierName": "仕入先",
     "supplierNamePlaceholder": "仕入先名（任意）",
+    "savedSupplier": "登録済み仕入先",
+    "savedSupplierPlaceholder": "仕入先を選択、または空欄のままにします",
     "category": "カテゴリ",
     "orderDate": "発注日",
     "totalAmount": "合計金額（円）",

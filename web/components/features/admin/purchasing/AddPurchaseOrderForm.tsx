@@ -2,21 +2,30 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import type { PurchaseOrder } from "@/lib/server/purchasing/types";
+import type { PurchaseOrder, Supplier } from "@/lib/server/purchasing/types";
 import { purchaseCategoryValues } from "@/lib/server/purchasing/schemas";
+
+function getDateInputValue(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 interface AddPurchaseOrderFormProps {
   onCreated: (order: PurchaseOrder) => void;
   onCancel: () => void;
+  suppliers: Supplier[];
 }
 
-export function AddPurchaseOrderForm({ onCreated, onCancel }: AddPurchaseOrderFormProps) {
+export function AddPurchaseOrderForm({ onCreated, onCancel, suppliers }: AddPurchaseOrderFormProps) {
   const t = useTranslations("owner.purchasing");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const today = new Date().toISOString().split("T")[0];
+  const today = getDateInputValue();
 
   const [form, setForm] = useState({
+    supplier_id: "",
     supplier_name: "",
     category: "food" as string,
     order_date: today,
@@ -42,7 +51,8 @@ export function AddPurchaseOrderForm({ onCreated, onCancel }: AddPurchaseOrderFo
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          supplier_name: form.supplier_name || null,
+          supplier_id: form.supplier_id || null,
+          supplier_name: form.supplier_id ? null : form.supplier_name || null,
           category: form.category,
           order_date: form.order_date,
           total_amount: amount,
@@ -73,6 +83,33 @@ export function AddPurchaseOrderForm({ onCreated, onCancel }: AddPurchaseOrderFo
     >
       <h3 className="text-sm font-semibold">{t("addOrderTitle")}</h3>
 
+      {/* Supplier */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground block mb-1">
+          {t("fields.savedSupplier")}
+        </label>
+        <select
+          value={form.supplier_id}
+          onChange={(e) => {
+            const nextSupplierId = e.target.value;
+            const selectedSupplier = suppliers.find((supplier) => supplier.id === nextSupplierId);
+            setForm((current) => ({
+              ...current,
+              supplier_id: nextSupplierId,
+              supplier_name: nextSupplierId ? selectedSupplier?.name ?? current.supplier_name : current.supplier_name,
+            }));
+          }}
+          className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+        >
+          <option value="">{t("fields.savedSupplierPlaceholder")}</option>
+          {suppliers.map((supplier) => (
+            <option key={supplier.id} value={supplier.id}>
+              {supplier.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Supplier name */}
       <div>
         <label className="text-xs font-medium text-muted-foreground block mb-1">
@@ -83,6 +120,7 @@ export function AddPurchaseOrderForm({ onCreated, onCancel }: AddPurchaseOrderFo
           value={form.supplier_name}
           onChange={(e) => setForm((f) => ({ ...f, supplier_name: e.target.value }))}
           placeholder={t("fields.supplierNamePlaceholder")}
+          disabled={Boolean(form.supplier_id)}
           className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       </div>

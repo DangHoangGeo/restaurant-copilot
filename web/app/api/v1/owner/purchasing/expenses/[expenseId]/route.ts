@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { USER_ROLES } from '@/lib/constants';
 import { UpdateExpenseSchema } from '@/lib/server/purchasing/schemas';
+import { resolvePurchasingAccess } from '@/lib/server/purchasing/access';
 import { getExpense, editExpense, removeExpense } from '@/lib/server/purchasing/service';
 
 const ALLOWED_ROLES = [USER_ROLES.OWNER, USER_ROLES.MANAGER] as const;
@@ -14,16 +15,13 @@ type RouteContext = { params: Promise<{ expenseId: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   const { expenseId } = await params;
-  const user = await getUserFromRequest();
-  if (!user?.restaurantId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  if (!ALLOWED_ROLES.includes(user.role as 'owner' | 'manager')) {
+  const access = await resolvePurchasingAccess();
+  if (!access) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   try {
-    const expense = await getExpense(expenseId, user.restaurantId);
+    const expense = await getExpense(expenseId, access.restaurantId);
     return NextResponse.json({ expense });
   } catch (err) {
     const status = (err as { status?: number }).status ?? 500;

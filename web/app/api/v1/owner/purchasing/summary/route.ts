@@ -10,12 +10,9 @@
 //   currency  — default JPY
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { USER_ROLES } from '@/lib/constants';
+import { resolvePurchasingAccess } from '@/lib/server/purchasing/access';
 import { getPurchaseSummaryForPeriod } from '@/lib/server/purchasing/service';
 import { z } from 'zod';
-
-const ALLOWED_ROLES = [USER_ROLES.OWNER, USER_ROLES.MANAGER] as const;
 
 const QuerySchema = z.object({
   from_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -24,11 +21,8 @@ const QuerySchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const user = await getUserFromRequest();
-  if (!user?.restaurantId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  if (!ALLOWED_ROLES.includes(user.role as 'owner' | 'manager')) {
+  const access = await resolvePurchasingAccess();
+  if (!access) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -48,7 +42,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const summary = await getPurchaseSummaryForPeriod(
-      user.restaurantId,
+      access.restaurantId,
       parsed.data.from_date,
       parsed.data.to_date,
       parsed.data.currency

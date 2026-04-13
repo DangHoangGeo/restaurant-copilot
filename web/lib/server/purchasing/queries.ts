@@ -205,6 +205,12 @@ export async function updatePurchaseOrder(
 
   if (input.is_paid === true) {
     updatePayload.paid_at = new Date().toISOString();
+  } else if (input.is_paid === false) {
+    updatePayload.paid_at = null;
+  }
+
+  if (input.status && input.status !== 'received' && input.received_date === undefined) {
+    updatePayload.received_date = null;
   }
 
   const { data, error } = await supabaseAdmin
@@ -332,6 +338,7 @@ export async function getPurchaseSummary(
       .from('purchase_orders')
       .select('total_amount')
       .eq('restaurant_id', restaurantId)
+      .eq('currency', currency)
       .neq('status', 'cancelled')
       .gte('order_date', fromDate)
       .lte('order_date', toDate),
@@ -339,6 +346,7 @@ export async function getPurchaseSummary(
       .from('expenses')
       .select('amount')
       .eq('restaurant_id', restaurantId)
+      .eq('currency', currency)
       .gte('expense_date', fromDate)
       .lte('expense_date', toDate),
   ]);

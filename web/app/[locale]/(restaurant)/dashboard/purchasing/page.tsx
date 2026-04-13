@@ -3,13 +3,13 @@
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import {
   getPurchaseOrders,
   getExpenses,
   getSuppliers,
   getPurchaseSummaryForPeriod,
 } from "@/lib/server/purchasing/service";
+import { resolvePurchasingAccess } from "@/lib/server/purchasing/access";
 import { PurchasingDashboard } from "@/components/features/admin/purchasing/PurchasingDashboard";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -30,19 +30,20 @@ export default async function PurchasingPage({
 }) {
   const { locale } = await params;
 
-  const user = await getUserFromRequest();
-  if (!user?.restaurantId) {
-    redirect(`/${locale}/login`);
+  const access = await resolvePurchasingAccess();
+  if (!access) {
+    redirect(`/${locale}/dashboard`);
   }
 
-  const restaurantId = user.restaurantId;
+  const restaurantId = access.restaurantId;
 
   // Current month boundaries for summary
   const now = new Date();
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    .toISOString()
-    .split("T")[0];
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+  const monthStart = `${year}-${month}-01`;
+  const monthEnd = `${year}-${month}-${String(lastDay).padStart(2, "0")}`;
 
   // Load restaurant currency
   const { data: restaurantRow } = await supabaseAdmin
@@ -76,6 +77,9 @@ export default async function PurchasingPage({
       restaurantCurrency={currency}
       monthlyOrdersTotal={monthlySummary.total_orders_amount}
       monthlyExpensesTotal={monthlySummary.total_expenses_amount}
+      monthStart={monthStart}
+      monthEnd={monthEnd}
+      canWrite={access.canWrite}
     />
   );
 }

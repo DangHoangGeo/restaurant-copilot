@@ -19,6 +19,9 @@
   "addExpenseTitle": "Chi phí mới",
   "addSupplier": "Thêm nhà cung cấp",
   "addSupplierTitle": "Nhà cung cấp mới",
+  "exportOrders": "Xuất đơn hàng",
+  "exportExpenses": "Xuất chi phí",
+  "readOnlyNotice": "Chế độ chỉ xem: bạn có thể xem và xuất dữ liệu mua hàng của chi nhánh này, nhưng chỉ người có quyền mua hàng mới được chỉnh sửa.",
 
   "noOrders": "Chưa có đơn hàng nào. Nhấn \"Thêm đơn hàng\" để ghi lại lần mua đầu tiên.",
   "noExpenses": "Chưa có chi phí nào. Nhấn \"Thêm chi phí\" để ghi lại.",
@@ -47,6 +50,8 @@
   "fields": {
     "supplierName": "Nhà cung cấp",
     "supplierNamePlaceholder": "Tên nhà cung cấp (tùy chọn)",
+    "savedSupplier": "Nhà cung cấp đã lưu",
+    "savedSupplierPlaceholder": "Chọn nhà cung cấp hoặc để trống",
     "category": "Danh mục",
     "orderDate": "Ngày đặt hàng",
     "totalAmount": "Tổng tiền (¥)",
