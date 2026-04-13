@@ -87,6 +87,37 @@ export async function listOrganizationMembers(
   });
 }
 
+export interface OrgBranch {
+  id: string;
+  name: string;
+  subdomain: string;
+}
+
+/**
+ * List org branches with their display names and subdomains.
+ * Used anywhere the UI needs to show a branch picker with real labels.
+ */
+export async function listOrganizationBranches(orgId: string): Promise<OrgBranch[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('organization_restaurants')
+    .select('restaurant_id, restaurants(id, name, subdomain)')
+    .eq('organization_id', orgId)
+    .order('added_at', { ascending: true });
+
+  if (error || !data) return [];
+
+  return (data as Array<{
+    restaurant_id: string;
+    restaurants: { id: string; name: string; subdomain: string } | Array<{ id: string; name: string; subdomain: string }> | null;
+  }>).flatMap((row) => {
+    const r = Array.isArray(row.restaurants) ? row.restaurants[0] : row.restaurants;
+    if (!r) return [];
+    return [{ id: r.id, name: r.name, subdomain: r.subdomain }];
+  });
+}
+
 /** List restaurants belonging to an organization (RLS-scoped). */
 export async function listOrganizationRestaurants(
   orgId: string

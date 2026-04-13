@@ -105,3 +105,20 @@ export interface InviteOrgMemberInput {
   shop_scope: ShopScope;
   selected_restaurant_ids?: string[];
 }
+
+// Pending invite (stored in organization_pending_invites)
+export interface PendingInvite {
+  id: string;
+  organization_id: string;
+  invited_by: string;
+  email: string;
+  role: OrgMemberRole;
+  shop_scope: ShopScope;
+  selected_restaurant_ids: string[] | null;
+  invite_token: string;
+  expires_at: string;
+  accepted_at: string | null;
+  accepted_by_user_id: string | null;
+  is_active: boolean;
+  created_at: string;
+}

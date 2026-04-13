@@ -131,6 +131,7 @@
     "profile": "プロフィール",
     "settings": "設定"
   },
+  "admin_sidebar_organization": "組織",
   "admin_sidebar_dashboard": "ダッシュボード",
   "admin_sidebar_onboarding": "開始方法",
   "admin_sidebar_homepage_management": "ホームページ管理",

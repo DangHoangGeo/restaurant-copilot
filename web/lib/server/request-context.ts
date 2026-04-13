@@ -1,9 +1,21 @@
 // Request-scoped cache for user and restaurant context
 import { cache } from 'react';
+import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import type { AuthUser } from './getUserFromRequest';
+import { ACTIVE_BRANCH_COOKIE } from './organizations/active-branch';
 
-// Cache the user data for the duration of the request
+// Cache the user data for the duration of the request.
+//
+// Active-branch override (Phase 2):
+//   Multi-branch org members can switch their active branch via the
+//   x-coorder-active-branch cookie.  After resolving the base restaurantId from
+//   users.restaurant_id, this function checks if the cookie is set to a different
+//   restaurant the user is authorised to access.  If so, the cookie value becomes
+//   the effective restaurantId for this request.
+//
+//   Validation uses the is_org_member_for_restaurant() DB function (SECURITY DEFINER,
+//   reads auth.uid()) so the check is RLS-safe and a single round-trip.
 export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
 
@@ -36,27 +48,51 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
 
     const userRecord = userRecords[0];
 
-    if (!userRecord?.restaurant_id) {
-      return {
-        userId: supabaseUser.id,
-        email: supabaseUser.email,
-        restaurantId: supabaseUser.app_metadata?.restaurant_id || null,
-        subdomain: null,
-        role: supabaseUser.app_metadata?.role || null,
-      };
-    }
-
     // restaurants is a related row returned as an object (or array with one entry)
-    const restaurant = Array.isArray(userRecord.restaurants)
+    const primaryRestaurant = Array.isArray(userRecord.restaurants)
       ? userRecord.restaurants[0]
       : userRecord.restaurants;
+
+    let restaurantId: string | null =
+      userRecord?.restaurant_id ?? supabaseUser.app_metadata?.restaurant_id ?? null;
+    let subdomain: string | null =
+      (primaryRestaurant as { subdomain?: string } | null)?.subdomain ?? null;
+
+    // ── Active-branch cookie override ─────────────────────────────────────────
+    // If the user has set an active-branch cookie pointing to a *different*
+    // restaurant than their base restaurant_id, validate it and, if valid, use
+    // it as the effective restaurantId for this request.
+    const cookieStore = await cookies();
+    const activeBranchCookie = cookieStore.get(ACTIVE_BRANCH_COOKIE)?.value;
+
+    if (activeBranchCookie && activeBranchCookie !== restaurantId) {
+      // is_org_member_for_restaurant() checks both all_shops scope and
+      // selected_shops rows in a single SECURITY DEFINER call.
+      const { data: hasAccess } = await supabase.rpc('is_org_member_for_restaurant', {
+        p_restaurant_id: activeBranchCookie,
+      });
+
+      if (hasAccess === true) {
+        restaurantId = activeBranchCookie;
+        // Fetch the active branch's subdomain so downstream callers that inspect
+        // subdomain (redirects, domain checks) see the correct value.
+        const { data: activeBranchRow } = await supabase
+          .from('restaurants')
+          .select('subdomain')
+          .eq('id', activeBranchCookie)
+          .single();
+        subdomain = activeBranchRow?.subdomain ?? null;
+      }
+      // If validation fails (access revoked, stale cookie), fall through to
+      // the base restaurantId — the stale cookie is silently ignored.
+    }
 
     return {
       userId: supabaseUser.id,
       email: supabaseUser.email,
-      restaurantId: userRecord.restaurant_id,
-      subdomain: (restaurant as { subdomain?: string } | null)?.subdomain || null,
-      role: userRecord.role,
+      restaurantId,
+      subdomain,
+      role: userRecord?.role ?? supabaseUser.app_metadata?.role ?? null,
     };
   } catch (error) {
     console.error('Error in getCachedUser:', error);

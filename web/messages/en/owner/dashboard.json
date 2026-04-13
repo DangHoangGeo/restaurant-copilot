@@ -131,6 +131,7 @@
     "profile": "Profile",
     "settings": "Settings"
   },
+  "admin_sidebar_organization": "Organization",
   "admin_sidebar_dashboard": "Dashboard",
   "admin_sidebar_onboarding": "Get Started",
   "admin_sidebar_homepage_management": "Homepage",

@@ -17,6 +17,7 @@ import {
   List,
   LucideIcon,
   Sparkles,
+  Building2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -50,6 +51,11 @@ interface NavItemProps {
 }
 
 const utilityNavItemsConfig: NavItemConfig[] = [
+  {
+    icon: Building2,
+    labelKey: "admin_sidebar_organization",
+    href: "/dashboard/organization",
+  },
   {
     icon: Settings,
     labelKey: "admin_sidebar_restaurant_settings",
