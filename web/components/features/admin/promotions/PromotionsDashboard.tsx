@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { PromotionList } from "./PromotionList";
 import { AddPromotionForm, type FormData } from "./AddPromotionForm";
 import type { Promotion } from "@/lib/server/promotions/types";
+import { MoneySectionNav } from "@/components/features/admin/money/MoneySectionNav";
 
 interface PromotionsDashboardProps {
   initialPromotions: Promotion[];
@@ -119,6 +120,8 @@ export function PromotionsDashboard({
           </div>
         </div>
 
+        <MoneySectionNav locale={locale} />
+
         {/* Summary cards */}
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-xl border bg-card p-4">
@@ -165,9 +168,26 @@ export function PromotionsDashboard({
 
         {/* Promotions list */}
         {visible.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
-            {showInactive ? t("noPromotionsInactive") : t("noPromotions")}
-          </p>
+          <div className="rounded-xl border bg-muted/30 px-5 py-8 text-center">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Tag className="h-5 w-5" />
+            </div>
+            <p className="mt-3 text-sm font-medium text-foreground">
+              {showInactive ? t("emptyStateTitleFiltered") : t("emptyStateTitle")}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {showInactive ? t("noPromotionsInactive") : t("noPromotions")}
+            </p>
+            {canWrite && !showInactive && (
+              <button
+                onClick={() => setShowForm(true)}
+                className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                {t("addPromotion")}
+              </button>
+            )}
+          </div>
         ) : (
           <PromotionList
             promotions={visible}

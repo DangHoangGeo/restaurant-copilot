@@ -4,6 +4,8 @@
 
   "addPromotion": "Add Promotion",
   "addPromotionTitle": "New Promotion",
+  "emptyStateTitle": "No promotions yet",
+  "emptyStateTitleFiltered": "No matching promotions",
   "noPromotions": "No promotions yet. Tap Add Promotion to create your first discount code.",
   "noPromotionsInactive": "No promotions match the current filter.",
 
@@ -17,6 +19,8 @@
     "percentage": "Percentage",
     "flat": "Flat amount"
   },
+  "discountValuePct": "{value}%",
+  "discountValueFlat": "{amount} off",
 
   "usageCount": "{count} used",
   "usageLimit": "{used} / {limit} used",
@@ -40,6 +44,7 @@
 
   "save": "Save",
   "saving": "Saving…",
+  "invalidDiscountValue": "Please enter a valid discount value.",
   "createFailed": "Failed to save. Please try again.",
   "deleteFailed": "Failed to delete. Please try again.",
   "toggleFailed": "Failed to update status. Please try again.",

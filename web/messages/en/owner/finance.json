@@ -11,6 +11,9 @@
   "noData": "No data available for this period.",
 
   "revenue": "Revenue",
+  "grossSales": "Gross Sales",
+  "discounts": "Discounts",
+  "netRevenue": "Net Revenue",
   "orderCount": "{count, plural, =0 {0 orders} one {1 order} other {# orders}}",
 
   "grossProfit": "Gross Profit Est.",

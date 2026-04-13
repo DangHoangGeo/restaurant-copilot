@@ -23,7 +23,7 @@ export interface FormData {
   usage_limit: number | null;
 }
 
-export function AddPromotionForm({ currency, onSave, onCancel }: AddPromotionFormProps) {
+export function AddPromotionForm({ currency: _currency, onSave, onCancel }: AddPromotionFormProps) {
   const t = useTranslations("owner.promotions");
 
   const [saving, setSaving] = useState(false);
@@ -45,7 +45,7 @@ export function AddPromotionForm({ currency, onSave, onCancel }: AddPromotionFor
 
     const value = parseFloat(discountValue);
     if (isNaN(value) || value <= 0) {
-      setError("Please enter a valid discount value.");
+      setError(t("invalidDiscountValue"));
       return;
     }
 

@@ -85,6 +85,8 @@ CREATE INDEX IF NOT EXISTS idx_order_discounts_restaurant_id ON order_discounts(
 CREATE INDEX IF NOT EXISTS idx_order_discounts_order_id      ON order_discounts(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_discounts_promotion_id  ON order_discounts(promotion_id);
 CREATE INDEX IF NOT EXISTS idx_order_discounts_applied_at    ON order_discounts(applied_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_order_discounts_unique_order
+  ON order_discounts(order_id);
 
 -- ──────────────────────────────────────────────────────────
 -- 3. updated_at trigger for promotions
@@ -114,7 +116,14 @@ ALTER TABLE order_discounts ENABLE ROW LEVEL SECURITY;
 
 -- promotions: owner/manager can read; owner/manager can write
 CREATE POLICY promotions_select ON promotions
-  FOR SELECT USING (restaurant_id = get_user_restaurant_id());
+  FOR SELECT USING (
+    restaurant_id = get_user_restaurant_id()
+    AND EXISTS (
+      SELECT 1 FROM users
+      WHERE id = auth.uid()
+        AND role IN ('owner', 'manager')
+    )
+  );
 
 CREATE POLICY promotions_insert ON promotions
   FOR INSERT WITH CHECK (
@@ -128,8 +137,22 @@ CREATE POLICY promotions_insert ON promotions
 
 CREATE POLICY promotions_update ON promotions
   FOR UPDATE
-  USING  (restaurant_id = get_user_restaurant_id())
-  WITH CHECK (restaurant_id = get_user_restaurant_id());
+  USING (
+    restaurant_id = get_user_restaurant_id()
+    AND EXISTS (
+      SELECT 1 FROM users
+      WHERE id = auth.uid()
+        AND role IN ('owner', 'manager')
+    )
+  )
+  WITH CHECK (
+    restaurant_id = get_user_restaurant_id()
+    AND EXISTS (
+      SELECT 1 FROM users
+      WHERE id = auth.uid()
+        AND role IN ('owner', 'manager')
+    )
+  );
 
 CREATE POLICY promotions_delete ON promotions
   FOR DELETE USING (

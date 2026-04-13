@@ -80,6 +80,7 @@ export default async function PurchasingPage({
       monthStart={monthStart}
       monthEnd={monthEnd}
       canWrite={access.canWrite}
+      locale={locale}
     />
   );
 }

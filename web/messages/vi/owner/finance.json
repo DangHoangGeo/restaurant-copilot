@@ -11,6 +11,9 @@
   "noData": "Không có dữ liệu cho kỳ này.",
 
   "revenue": "Doanh thu",
+  "grossSales": "Doanh thu gộp",
+  "discounts": "Giảm giá",
+  "netRevenue": "Doanh thu thuần",
   "orderCount": "{count} đơn hàng",
 
   "grossProfit": "Lợi nhuận gộp (ước tính)",

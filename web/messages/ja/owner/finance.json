@@ -11,6 +11,9 @@
   "noData": "この期間のデータがありません。",
 
   "revenue": "売上合計",
+  "grossSales": "値引き前売上",
+  "discounts": "割引合計",
+  "netRevenue": "純売上",
   "orderCount": "{count}件の注文",
 
   "grossProfit": "粗利益（概算）",

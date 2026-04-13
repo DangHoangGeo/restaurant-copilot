@@ -27,6 +27,14 @@ function fmtAmount(value: number, currency: string, locale: string) {
   }).format(value);
 }
 
+function fmtDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(`${value}T00:00:00`));
+}
+
 export function PromotionList({
   promotions,
   currency,
@@ -44,9 +52,11 @@ export function PromotionList({
 
   const formatDiscount = (promo: Promotion) => {
     if (promo.discount_type === "percentage") {
-      return `${promo.discount_value}% off`;
+      return t("discountValuePct", { value: promo.discount_value });
     }
-    return `${fmtAmount(promo.discount_value, currency, locale)} off`;
+    return t("discountValueFlat", {
+      amount: fmtAmount(promo.discount_value, currency, locale),
+    });
   };
 
   const formatUsage = (promo: Promotion) => {
@@ -59,9 +69,12 @@ export function PromotionList({
   const formatValidity = (promo: Promotion) => {
     if (!promo.valid_from && !promo.valid_until) return t("validAlways");
     if (promo.valid_from && promo.valid_until)
-      return t("validFromUntil", { from: promo.valid_from, until: promo.valid_until });
-    if (promo.valid_from) return t("validFrom", { date: promo.valid_from });
-    return t("validUntil", { date: promo.valid_until ?? "" });
+      return t("validFromUntil", {
+        from: fmtDate(promo.valid_from, locale),
+        until: fmtDate(promo.valid_until, locale),
+      });
+    if (promo.valid_from) return t("validFrom", { date: fmtDate(promo.valid_from, locale) });
+    return t("validUntil", { date: fmtDate(promo.valid_until ?? "", locale) });
   };
 
   return (
@@ -130,7 +143,7 @@ export function PromotionList({
               <TrendingDown className="h-3 w-3" />
               {formatDiscount(promo)}
               {promo.discount_type === "percentage" && promo.max_discount_amount !== null
-                ? ` (max ${fmtAmount(promo.max_discount_amount, currency, locale)})`
+                ? ` (${t("maxDiscount", { amount: fmtAmount(promo.max_discount_amount, currency, locale) })})`
                 : ""}
             </span>
 

@@ -46,6 +46,11 @@ interface NavItemConfig {
   featureFlag?: boolean;
 }
 
+interface NavSection {
+  headingKey: string;
+  items: NavItemConfig[];
+}
+
 interface NavItemProps {
   icon: LucideIcon;
   labelKey: string;
@@ -53,29 +58,6 @@ interface NavItemProps {
   exact?: boolean;
   isUtility?: boolean;
 }
-
-const utilityNavItemsConfig: NavItemConfig[] = [
-  {
-    icon: Layers,
-    labelKey: "admin_sidebar_branches",
-    href: "/dashboard/branches",
-  },
-  {
-    icon: Building2,
-    labelKey: "admin_sidebar_organization",
-    href: "/dashboard/organization",
-  },
-  {
-    icon: Settings,
-    labelKey: "admin_sidebar_restaurant_settings",
-    href: "/dashboard/settings",
-  },
-  {
-    icon: Eye,
-    labelKey: "admin_sidebar_homepage_management",
-    href: "/dashboard/homepage",
-  },
-];
 
 export function AdminSidebar({
   restaurantSettings,
@@ -88,77 +70,119 @@ export function AdminSidebar({
   const locale = (params.locale as string) || "en";
   const { needsOnboarding } = useRestaurantSettings();
 
-  // Dynamic navigation items based on onboarding status
-  const getNavItemsConfig = (): NavItemConfig[] => {
-    const baseItems: NavItemConfig[] = [
-      {
-        icon: Home,
-        labelKey: "admin_sidebar_dashboard",
-        href: "/dashboard",
-        exact: true,
-      },
-    ];
-
-    // Show onboarding if not yet onboarded and feature is enabled
-    if (needsOnboarding && FEATURE_FLAGS.onboarding) {
-      baseItems.push({
-        icon: Sparkles,
-        labelKey: "admin_sidebar_onboarding",
-        href: "/dashboard/onboarding",
-      });
-    } else {
-      // Show regular navigation items only after onboarding
-      baseItems.push(
+  const navSections: NavSection[] = needsOnboarding && FEATURE_FLAGS.onboarding
+    ? [
         {
-          icon: ClipboardList,
-          labelKey: "admin_sidebar_menu_management",
-          href: "/dashboard/menu",
+          headingKey: "nav_group_start",
+          items: [
+            {
+              icon: Home,
+              labelKey: "admin_sidebar_dashboard",
+              href: "/dashboard",
+              exact: true,
+            },
+            {
+              icon: Sparkles,
+              labelKey: "admin_sidebar_onboarding",
+              href: "/dashboard/onboarding",
+            },
+          ],
         },
-        { icon: List, labelKey: "admin_sidebar_orders",
-          href: "/dashboard/orders" },
+      ]
+    : [
         {
-          icon: TableSimpleIcon,
-          labelKey: "admin_sidebar_table_qr_management",
-          href: "/dashboard/tables",
-        },
-        {
-          icon: UserCog,
-          labelKey: "admin_sidebar_employees_schedules",
-          href: "/dashboard/employees",
-        },
-        {
-          icon: BookUser,
-          labelKey: "admin_sidebar_bookings_preorders",
-          href: "/dashboard/bookings",
-          featureFlag: FEATURE_FLAGS.tableBooking,
-        },
-        {
-          icon: BarChartBig,
-          labelKey: "admin_sidebar_reports_analytics",
-          href: "/dashboard/reports",
-        },
-        {
-          icon: ShoppingCart,
-          labelKey: "admin_sidebar_purchasing",
-          href: "/dashboard/purchasing",
-        },
-        {
-          icon: FileText,
-          labelKey: "admin_sidebar_finance",
-          href: "/dashboard/finance",
+          headingKey: "nav_group_today",
+          items: [
+            {
+              icon: Home,
+              labelKey: "admin_sidebar_dashboard",
+              href: "/dashboard",
+              exact: true,
+            },
+            {
+              icon: List,
+              labelKey: "admin_sidebar_orders",
+              href: "/dashboard/orders",
+            },
+            {
+              icon: ClipboardList,
+              labelKey: "admin_sidebar_menu_management",
+              href: "/dashboard/menu",
+            },
+            {
+              icon: TableSimpleIcon,
+              labelKey: "admin_sidebar_table_qr_management",
+              href: "/dashboard/tables",
+            },
+            {
+              icon: BookUser,
+              labelKey: "admin_sidebar_bookings_preorders",
+              href: "/dashboard/bookings",
+              featureFlag: FEATURE_FLAGS.tableBooking,
+            },
+            {
+              icon: BarChartBig,
+              labelKey: "admin_sidebar_reports_analytics",
+              href: "/dashboard/reports",
+            },
+          ],
         },
         {
-          icon: Tag,
-          labelKey: "admin_sidebar_promotions",
-          href: "/dashboard/promotions",
-        }
-      );
-    }
-
-    return baseItems;
-  };
-
-  const navItemsConfig = getNavItemsConfig();
+          headingKey: "nav_group_people",
+          items: [
+            {
+              icon: UserCog,
+              labelKey: "admin_sidebar_employees_schedules",
+              href: "/dashboard/employees",
+            },
+          ],
+        },
+        {
+          headingKey: "nav_group_money",
+          items: [
+            {
+              icon: ShoppingCart,
+              labelKey: "admin_sidebar_purchasing",
+              href: "/dashboard/purchasing",
+            },
+            {
+              icon: FileText,
+              labelKey: "admin_sidebar_finance",
+              href: "/dashboard/finance",
+            },
+            {
+              icon: Tag,
+              labelKey: "admin_sidebar_promotions",
+              href: "/dashboard/promotions",
+            },
+          ],
+        },
+        {
+          headingKey: "nav_group_settings",
+          items: [
+            {
+              icon: Layers,
+              labelKey: "admin_sidebar_branches",
+              href: "/dashboard/branches",
+            },
+            {
+              icon: Building2,
+              labelKey: "admin_sidebar_organization",
+              href: "/dashboard/organization",
+            },
+            {
+              icon: Eye,
+              labelKey: "admin_sidebar_homepage_management",
+              href: "/dashboard/homepage",
+            },
+            {
+              icon: Settings,
+              labelKey: "admin_sidebar_restaurant_settings",
+              href: "/dashboard/settings",
+            },
+          ],
+        },
+      ];
 
   const NavItem = ({
     icon: IconComponent,
@@ -246,20 +270,26 @@ export function AdminSidebar({
           </Button>
         </div>
         <nav className="p-3 space-y-1.5 flex-grow overflow-y-auto">
-          {navItemsConfig.map(
-            (item) =>
-              (item.featureFlag === undefined || item.featureFlag === true) && (
-                <NavItem key={item.href} {...item} />
-              ),
-          )}
-
-          {utilityNavItemsConfig.length > 0 && <hr className="my-3" />}
-          {utilityNavItemsConfig.map(
-            (item) =>
-              (item.featureFlag === undefined || item.featureFlag === true) && (
-                <NavItem key={item.href} {...item} isUtility />
-              ),
-          )}
+          {navSections.map((section, sectionIndex) => (
+            <div key={section.headingKey} className={cn(sectionIndex > 0 && "pt-3")}>
+              <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {t(section.headingKey)}
+              </p>
+              <div className="space-y-1.5">
+                {section.items.map(
+                  (item) =>
+                    (item.featureFlag === undefined || item.featureFlag === true) && (
+                      <NavItem
+                        key={item.href}
+                        {...item}
+                        isUtility={section.headingKey === "nav_group_settings"}
+                      />
+                    ),
+                )}
+              </div>
+              {sectionIndex < navSections.length - 1 && <hr className="my-3" />}
+            </div>
+          ))}
         </nav>
       </aside>
       {isOpen && (

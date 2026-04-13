@@ -33,12 +33,12 @@ export async function resolvePromotionsAccess(): Promise<PromotionsAccess | null
   const activeBranchId = await getActiveBranchId(ctx);
   if (!activeBranchId || !authz.canAccessRestaurant(activeBranchId)) return null;
 
-  const canRead = authz.can('reports') || authz.can('finance_exports');
+  const canRead = authz.can('promotions');
   if (!canRead) return null;
 
   return {
     restaurantId: activeBranchId,
     userId: ctx.member.user_id,
-    canWrite: authz.can('purchases'),
+    canWrite: authz.can('promotions'),
   };
 }

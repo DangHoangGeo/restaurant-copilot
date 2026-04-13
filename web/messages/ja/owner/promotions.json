@@ -4,6 +4,8 @@
 
   "addPromotion": "プロモーション追加",
   "addPromotionTitle": "新規プロモーション",
+  "emptyStateTitle": "まだプロモーションがありません",
+  "emptyStateTitleFiltered": "一致するプロモーションがありません",
   "noPromotions": "プロモーションがありません。「プロモーション追加」をタップして最初の割引コードを作成してください。",
   "noPromotionsInactive": "現在のフィルターに一致するプロモーションがありません。",
 
@@ -17,6 +19,8 @@
     "percentage": "割引率",
     "flat": "固定割引額"
   },
+  "discountValuePct": "{value}%",
+  "discountValueFlat": "{amount}割引",
 
   "usageCount": "{count}回使用",
   "usageLimit": "{used} / {limit}回使用",
@@ -40,6 +44,7 @@
 
   "save": "保存",
   "saving": "保存中…",
+  "invalidDiscountValue": "有効な割引値を入力してください。",
   "createFailed": "保存に失敗しました。もう一度お試しください。",
   "deleteFailed": "削除に失敗しました。もう一度お試しください。",
   "toggleFailed": "ステータスの更新に失敗しました。もう一度お試しください。",

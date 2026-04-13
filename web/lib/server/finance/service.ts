@@ -182,6 +182,7 @@ export async function getOrgMonthlyRollup(params: {
   branch_count: number;
   branches_with_snapshot: number;
   revenue_total: number;
+  discount_total: number;
   approved_labor_hours: number;
   combined_cost_total: number;
   gross_profit_estimate: number;
@@ -193,9 +194,10 @@ export async function getOrgMonthlyRollup(params: {
   const snapshots = await getClosedSnapshotsForBranches(branchIds, year, month);
 
   const revenue_total        = snapshots.reduce((s, r) => s + r.revenue_total, 0);
+  const discount_total       = snapshots.reduce((s, r) => s + r.discount_total, 0);
   const approved_labor_hours = snapshots.reduce((s, r) => s + r.approved_labor_hours, 0);
   const combined_cost_total  = snapshots.reduce((s, r) => s + r.combined_cost_total, 0);
-  const gross_profit_estimate = revenue_total - combined_cost_total;
+  const gross_profit_estimate = revenue_total - discount_total - combined_cost_total;
 
   return {
     year,
@@ -203,6 +205,7 @@ export async function getOrgMonthlyRollup(params: {
     branch_count: branchIds.length,
     branches_with_snapshot: snapshots.length,
     revenue_total,
+    discount_total,
     approved_labor_hours: parseFloat(approved_labor_hours.toFixed(2)),
     combined_cost_total,
     gross_profit_estimate,

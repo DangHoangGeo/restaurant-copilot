@@ -14,9 +14,11 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  ReceiptPercent,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MonthlyFinanceReport, MonthlyFinanceSnapshot } from "@/lib/server/finance/types";
+import { MoneySectionNav } from "@/components/features/admin/money/MoneySectionNav";
 
 interface FinanceDashboardProps {
   year: number;
@@ -137,6 +139,8 @@ export function FinanceDashboard({
           </div>
         </div>
 
+        <MoneySectionNav locale={locale} />
+
         {/* Month navigator */}
         <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
           <button
@@ -222,6 +226,27 @@ export function FinanceDashboard({
                 primary={fmtHours(d.approved_labor_hours)}
                 secondary={t("laborEntries", { count: d.labor_entry_count })}
               />
+            </div>
+
+            {/* Purchasing breakdown */}
+            <div className="rounded-xl border bg-card divide-y text-sm">
+              <div className="px-4 py-2.5 flex justify-between">
+                <span className="text-muted-foreground">{t("grossSales")}</span>
+                <span className="font-medium">{fmt(d.revenue_total)}</span>
+              </div>
+              <div className="px-4 py-2.5 flex justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <ReceiptPercent className="h-3.5 w-3.5" />
+                  {t("discounts")}
+                </span>
+                <span className="font-medium text-amber-600">
+                  -{fmt(d.discount_total)}
+                </span>
+              </div>
+              <div className="px-4 py-2.5 flex justify-between font-semibold">
+                <span>{t("netRevenue")}</span>
+                <span>{fmt(d.revenue_total - d.discount_total)}</span>
+              </div>
             </div>
 
             {/* Purchasing breakdown */}

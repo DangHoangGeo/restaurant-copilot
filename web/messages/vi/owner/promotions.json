@@ -4,6 +4,8 @@
 
   "addPromotion": "Thêm khuyến mãi",
   "addPromotionTitle": "Khuyến mãi mới",
+  "emptyStateTitle": "Chưa có khuyến mãi nào",
+  "emptyStateTitleFiltered": "Không có khuyến mãi phù hợp",
   "noPromotions": "Chưa có khuyến mãi nào. Nhấn Thêm khuyến mãi để tạo mã giảm giá đầu tiên.",
   "noPromotionsInactive": "Không có khuyến mãi nào phù hợp với bộ lọc hiện tại.",
 
@@ -17,6 +19,8 @@
     "percentage": "Phần trăm",
     "flat": "Số tiền cố định"
   },
+  "discountValuePct": "Giảm {value}%",
+  "discountValueFlat": "Giảm {amount}",
 
   "usageCount": "Đã dùng {count} lần",
   "usageLimit": "Đã dùng {used} / {limit} lần",
@@ -40,6 +44,7 @@
 
   "save": "Lưu",
   "saving": "Đang lưu…",
+  "invalidDiscountValue": "Vui lòng nhập giá trị giảm hợp lệ.",
   "createFailed": "Lưu thất bại. Vui lòng thử lại.",
   "deleteFailed": "Xóa thất bại. Vui lòng thử lại.",
   "toggleFailed": "Cập nhật trạng thái thất bại. Vui lòng thử lại.",

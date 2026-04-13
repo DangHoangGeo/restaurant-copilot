@@ -143,7 +143,15 @@ export async function insertOrderDiscount(
     .select('*')
     .single();
 
-  if (error) throw new Error(`insertOrderDiscount: ${error.message}`);
+  if (error) {
+    if ('code' in error && error.code === '23505') {
+      throw Object.assign(
+        new Error('A discount has already been applied to this order'),
+        { status: 409 }
+      );
+    }
+    throw new Error(`insertOrderDiscount: ${error.message}`);
+  }
   return data as OrderDiscount;
 }
 

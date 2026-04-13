@@ -14,6 +14,26 @@ export const CreatePromotionSchema = z.object({
   valid_from:          z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
   valid_until:         z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
   usage_limit:         z.number().int().positive().optional().nullable(),
+}).superRefine((data, ctx) => {
+  if (data.discount_type === 'percentage' && data.discount_value > 100) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['discount_value'],
+      message: 'Percentage discounts cannot exceed 100',
+    });
+  }
+
+  if (
+    data.valid_from &&
+    data.valid_until &&
+    data.valid_until < data.valid_from
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['valid_until'],
+      message: 'End date must be on or after the start date',
+    });
+  }
 });
 
 export const UpdatePromotionSchema = z.object({
@@ -24,6 +44,18 @@ export const UpdatePromotionSchema = z.object({
   valid_until:         z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
   usage_limit:         z.number().int().positive().optional().nullable(),
   is_active:           z.boolean().optional(),
+}).superRefine((data, ctx) => {
+  if (
+    data.valid_from &&
+    data.valid_until &&
+    data.valid_until < data.valid_from
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['valid_until'],
+      message: 'End date must be on or after the start date',
+    });
+  }
 });
 
 export const ValidatePromoSchema = z.object({
