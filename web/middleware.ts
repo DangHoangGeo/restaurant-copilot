@@ -125,7 +125,7 @@ function addSecurityHeaders(response: NextResponse, request: NextRequest) {
     `font-src 'self' https://fonts.gstatic.com data:`,
     `img-src 'self' data: blob: https: ${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/*`,
     `media-src 'self' blob: ${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/*`,
-    `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://api.stripe.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com wss://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')}`,
+    `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://api.stripe.com https://www.google.com https://www.gstatic.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com wss://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')}`,
     "frame-src 'self' https://js.stripe.com https://www.google.com",
     "object-src 'none'",
     "base-uri 'self'",
