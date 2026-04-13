@@ -3,7 +3,7 @@
 // Overview Trends Chart Component
 // Note: Install recharts if not already: npm install recharts
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,11 +19,7 @@ export default function OverviewTrends() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchOverview();
-  }, [period]);
-
-  const fetchOverview = async () => {
+  const fetchOverview = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/v1/platform/overview?period=${period}`);
@@ -34,7 +30,11 @@ export default function OverviewTrends() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    fetchOverview();
+  }, [fetchOverview]);
 
   if (loading) {
     return (

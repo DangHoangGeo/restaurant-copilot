@@ -14,7 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  ReceiptPercent,
+  Percent,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MonthlyFinanceReport, MonthlyFinanceSnapshot } from "@/lib/server/finance/types";
@@ -236,7 +236,7 @@ export function FinanceDashboard({
               </div>
               <div className="px-4 py-2.5 flex justify-between">
                 <span className="text-muted-foreground flex items-center gap-2">
-                  <ReceiptPercent className="h-3.5 w-3.5" />
+                  <Percent className="h-3.5 w-3.5" />
                   {t("discounts")}
                 </span>
                 <span className="font-medium text-amber-600">

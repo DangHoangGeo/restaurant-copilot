@@ -37,17 +37,6 @@ export async function POST(req: NextRequest) {
   try {
     const input = createPendingInviteSchema.parse(body);
 
-    // Check if this email is already an active org member
-    const { createClient } = await import('@/lib/supabase/server');
-    const supabase = await createClient();
-    const { data: existingMember } = await supabase
-      .from('organization_members')
-      .select('id')
-      .eq('organization_id', ctx!.organization.id)
-      .eq('is_active', true)
-      .limit(1)
-      .single();
-
     // Check via admin if user exists with this email and is already a member
     const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
     const { data: userCheck } = await supabaseAdmin

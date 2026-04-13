@@ -2,11 +2,9 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import EmployeeList from './EmployeeList';
 import ScheduleWeek from './ScheduleWeek';
-import AttendanceTable from './AttendanceTable';
 import QRScannerModal from './QRScannerModal';
 import PerformanceOverview from './PerformanceOverview';
 import AttendanceSummaryView from '@/components/features/admin/employees/AttendanceSummaryView';

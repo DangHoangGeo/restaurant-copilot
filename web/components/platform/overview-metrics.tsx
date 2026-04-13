@@ -2,7 +2,7 @@
 
 // Overview Metrics Cards Component
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Users, DollarSign, MessageSquare, TrendingUp } from 'lucide-react';
@@ -18,11 +18,7 @@ export default function OverviewMetrics() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchOverview();
-  }, [period]);
-
-  const fetchOverview = async () => {
+  const fetchOverview = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/v1/platform/overview?period=${period}`);
@@ -33,7 +29,11 @@ export default function OverviewMetrics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    fetchOverview();
+  }, [fetchOverview]);
 
   if (loading) {
     return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
