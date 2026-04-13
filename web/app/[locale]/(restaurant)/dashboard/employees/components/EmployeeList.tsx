@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, PlusCircle } from "lucide-react";
+import { AlertTriangle, PlusCircle, QrCode } from "lucide-react";
+import EmployeeQRPanel from '@/components/features/admin/employees/EmployeeQRPanel';
 import { toast } from "sonner";
 
 // Type matching the GET /api/v1/owner/employees response structure
@@ -62,6 +63,7 @@ export default function EmployeeList() {
 
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<EmployeeFormEmployee | null>(null);
+  const [qrEmployee, setQrEmployee] = useState<DisplayEmployee | null>(null);
 
   const fetchEmployees = useCallback(async () => {
     setIsLoading(true);
@@ -198,8 +200,9 @@ export default function EmployeeList() {
                   <Button variant="outline" size="sm" onClick={() => handleEditEmployee(emp)} disabled={isLoading}>
                     {t("actions.edit")}
                   </Button>
-                  <Button variant="outline" size="sm" disabled> {/* Placeholder for future */}
-                    {t("actions.manageSchedule")}
+                  <Button variant="outline" size="sm" onClick={() => setQrEmployee(emp)} disabled={isLoading}>
+                    <QrCode className="mr-1 h-3 w-3" />
+                    {t("actions.qrCode")}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -213,13 +216,23 @@ export default function EmployeeList() {
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingEmployee ? t_form("editTitle") : t_form("addTitle")}</DialogTitle>
-              {/* Optional: <DialogDescription>Make changes to your employee here. Click save when you're done.</DialogDescription> */}
             </DialogHeader>
             <EmployeeForm
               employee={editingEmployee}
               onClose={() => setShowEmployeeForm(false)}
               onSuccess={handleFormSuccess}
             />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {qrEmployee && (
+        <Dialog open={!!qrEmployee} onOpenChange={(open) => { if (!open) setQrEmployee(null); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>{qrEmployee.name}</DialogTitle>
+            </DialogHeader>
+            <EmployeeQRPanel employeeId={qrEmployee.id} employeeName={qrEmployee.name} />
           </DialogContent>
         </Dialog>
       )}

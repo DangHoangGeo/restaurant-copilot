@@ -1,20 +1,24 @@
 {
   "dashboard": {
     "tabs": {
+      "approvals": "Phê duyệt",
+      "summaries": "Chấm công",
       "employees": "Nhân viên",
       "schedule": "Lịch",
-      "attendance": "Chấm công",
       "performance": "Hiệu suất"
     },
     "actions": {
-      "openQrScanner": "Quét mã QR để chấm công"
-    }
+      "scanCheckIn": "Quét vào ca",
+      "scanCheckOut": "Quét tan ca"
+    },
+    "scanExceptionWarning": "Phát hiện ngoại lệ chấm công — vui lòng kiểm tra tab Phê duyệt."
   },
   "list": {
     "title": "Quản lý nhân viên",
     "actions": {
       "addEmployee": "Thêm nhân viên mới",
       "edit": "Chỉnh sửa",
+      "qrCode": "Mã QR",
       "manageSchedule": "Quản lý lịch"
     },
     "table": {
@@ -119,6 +123,87 @@
     },
     "notifications": {
       "verifySuccess": "Xác nhận chấm công thành công."
+    }
+  },
+  "qrPanel": {
+    "title": "Mã QR chấm công",
+    "description": "Mã QR của {name}. Nhân viên quét mã này để vào ca hoặc tan ca.",
+    "noCredential": "Chưa có mã QR nào được cấp cho nhân viên này.",
+    "issuedAt": "Ngày cấp: {date}",
+    "expiresAt": "Hết hạn: {date}",
+    "confirmRotate": "Cấp lại mã QR sẽ vô hiệu hóa mã cũ ngay lập tức. Tiếp tục?",
+    "rotateWarning": "Cấp lại mã QR sẽ vô hiệu hóa mã cũ ngay lập tức. Nhân viên cần dùng mã mới.",
+    "actions": {
+      "issue": "Cấp mã QR",
+      "rotate": "Cấp lại mã QR",
+      "rotating": "Đang cấp lại..."
+    },
+    "errors": {
+      "loadFailed": "Không thể tải mã QR.",
+      "issueFailed": "Không thể cấp mã QR.",
+      "rotateFailed": "Không thể cấp lại mã QR."
+    },
+    "notifications": {
+      "issued": "Mã QR đã được cấp.",
+      "rotated": "Mã QR đã được cấp lại. Mã cũ đã vô hiệu."
+    }
+  },
+  "summaries": {
+    "title": "Tổng hợp chấm công",
+    "filters": {
+      "allEmployees": "Tất cả nhân viên",
+      "allStatuses": "Tất cả trạng thái"
+    },
+    "table": {
+      "date": "Ngày",
+      "employee": "Nhân viên",
+      "checkIn": "Giờ vào",
+      "checkOut": "Giờ ra",
+      "hours": "Giờ",
+      "status": "Trạng thái",
+      "actions": "Hành động"
+    },
+    "status": {
+      "pending": "Chờ duyệt",
+      "approved": "Đã duyệt",
+      "rejected": "Bị từ chối",
+      "correctionPending": "Cần chỉnh sửa"
+    },
+    "actions": {
+      "approve": "Duyệt",
+      "reject": "Từ chối",
+      "refresh": "Làm mới"
+    },
+    "noSummaries": "Không tìm thấy tổng hợp chấm công theo bộ lọc đã chọn.",
+    "exceptionNote": "Hàng màu cam có ngoại lệ (thiếu giờ tan ca, chỉnh sửa thủ công hoặc giờ bất thường). Kiểm tra trước khi duyệt.",
+    "errors": {
+      "loadEmployeesError": "Không thể tải danh sách nhân viên.",
+      "loadSummariesError": "Không thể tải tổng hợp chấm công.",
+      "approveError": "Không thể xử lý phê duyệt."
+    },
+    "notifications": {
+      "approved": "Đã duyệt chấm công.",
+      "rejected": "Đã từ chối chấm công."
+    }
+  },
+  "approvalInbox": {
+    "empty": "Không có chấm công nào cần phê duyệt. Tất cả đã xong!",
+    "pendingCount": "{count} mục cần xem xét",
+    "correctionLabel": "Chỉnh sửa",
+    "hours": "Vào: {checkin} — Ra: {checkout}",
+    "exceptionNote": "Mục có tam giác cam là ngoại lệ. Kiểm tra ghi chú trước khi duyệt.",
+    "actions": {
+      "approve": "Duyệt",
+      "reject": "Từ chối",
+      "refresh": "Làm mới"
+    },
+    "errors": {
+      "loadError": "Không thể tải danh sách chấm công chờ duyệt.",
+      "actionError": "Không thể xử lý hành động."
+    },
+    "notifications": {
+      "approved": "Đã duyệt chấm công.",
+      "rejected": "Đã từ chối chấm công."
     }
   },
   "qrScannerModal": {
