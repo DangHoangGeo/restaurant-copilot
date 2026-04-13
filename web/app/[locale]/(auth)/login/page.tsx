@@ -40,8 +40,14 @@ export default function LoginPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || t("loginFailed"));
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || t("loginFailed"));
+        } else {
+          const errorText = await response.text();
+          throw new Error(errorText || t("loginFailed"));
+        }
       }
 
       const data = await response.json();
