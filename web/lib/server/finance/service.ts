@@ -15,6 +15,7 @@ import {
   computeRevenue,
   computeLaborHours,
   computePurchasing,
+  computeDiscounts,
   buildLiveSummary,
   getBranchIdsForOrg,
   getClosedSnapshotsForBranches,
@@ -69,10 +70,11 @@ async function computeLiveSummary(
 ): Promise<LiveMonthlySummary> {
   const { fromDate, toDate } = monthBoundaries(year, month);
 
-  const [revenue, labor, purchasing] = await Promise.all([
+  const [revenue, labor, purchasing, discounts] = await Promise.all([
     computeRevenue(restaurantId, fromDate, toDate),
     computeLaborHours(restaurantId, fromDate, toDate),
     computePurchasing(restaurantId, fromDate, toDate, currency),
+    computeDiscounts(restaurantId, fromDate, toDate),
   ]);
 
   return buildLiveSummary({
@@ -82,6 +84,7 @@ async function computeLiveSummary(
     ...revenue,
     ...labor,
     ...purchasing,
+    ...discounts,
   });
 }
 

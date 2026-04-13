@@ -218,6 +218,34 @@ export async function getClosedSnapshotsForBranches(
   return (data ?? []) as MonthlyFinanceSnapshot[];
 }
 
+/**
+ * Compute total discounts applied to orders in a calendar month.
+ * Reads from order_discounts using Japan-local applied_at range.
+ * Returns 0 if the table is empty or order_discounts doesn't exist yet.
+ */
+export async function computeDiscounts(
+  restaurantId: string,
+  fromDate: string, // YYYY-MM-DD
+  toDate: string    // YYYY-MM-DD
+): Promise<{ discount_total: number }> {
+  const { data, error } = await supabaseAdmin
+    .from('order_discounts')
+    .select('discount_amount')
+    .eq('restaurant_id', restaurantId)
+    .gte('applied_at', `${fromDate}T00:00:00+09:00`)
+    .lte('applied_at', `${toDate}T23:59:59+09:00`);
+
+  if (error) {
+    // Table may not exist in older environments; treat as zero safely.
+    console.warn(`computeDiscounts: ${error.message}`);
+    return { discount_total: 0 };
+  }
+
+  const rows = (data ?? []) as Array<{ discount_amount: number }>;
+  const discount_total = rows.reduce((sum, r) => sum + (r.discount_amount ?? 0), 0);
+  return { discount_total: parseFloat(discount_total.toFixed(2)) };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -228,6 +256,7 @@ export function buildLiveSummary(params: {
   currency: string;
   revenue_total: number;
   order_count: number;
+  discount_total: number;
   approved_labor_hours: number;
   labor_entry_count: number;
   purchasing_total: number;
@@ -236,7 +265,6 @@ export function buildLiveSummary(params: {
 }): LiveMonthlySummary {
   return {
     ...params,
-    discount_total: 0,
-    gross_profit_estimate: params.revenue_total - params.combined_cost_total,
+    gross_profit_estimate: params.revenue_total - params.discount_total - params.combined_cost_total,
   };
 }

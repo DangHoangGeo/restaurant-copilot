@@ -1,0 +1,79 @@
+{
+  "pageTitle": "Promotions",
+  "pageDescription": "Create and manage discount codes for your branch",
+
+  "addPromotion": "Add Promotion",
+  "addPromotionTitle": "New Promotion",
+  "noPromotions": "No promotions yet. Tap Add Promotion to create your first discount code.",
+  "noPromotionsInactive": "No promotions match the current filter.",
+
+  "showInactive": "Show inactive",
+  "hideInactive": "Hide inactive",
+
+  "statusActive": "Active",
+  "statusInactive": "Inactive",
+
+  "discountTypes": {
+    "percentage": "Percentage",
+    "flat": "Flat amount"
+  },
+
+  "usageCount": "{count} used",
+  "usageLimit": "{used} / {limit} used",
+  "usageUnlimited": "Unlimited",
+
+  "validFrom": "From {date}",
+  "validUntil": "Until {date}",
+  "validFromUntil": "{from} – {until}",
+  "validAlways": "Always valid",
+
+  "minOrder": "Min order {amount}",
+  "maxDiscount": "Max {amount} off",
+
+  "disable": "Disable",
+  "enable": "Enable",
+  "delete": "Delete",
+  "deleteConfirm": "Delete this promotion?",
+  "deleteConfirmBody": "This code has never been used and will be permanently removed.",
+  "confirmDelete": "Delete",
+  "cancel": "Cancel",
+
+  "save": "Save",
+  "saving": "Saving…",
+  "createFailed": "Failed to save. Please try again.",
+  "deleteFailed": "Failed to delete. Please try again.",
+  "toggleFailed": "Failed to update status. Please try again.",
+
+  "fields": {
+    "code": "Promo code",
+    "codePlaceholder": "e.g. SUMMER10",
+    "codeHint": "Uppercase letters and numbers only. Customers enter this at checkout.",
+    "description": "Description",
+    "descriptionPlaceholder": "e.g. 10% off all orders",
+    "discountType": "Discount type",
+    "discountValue": "Discount value",
+    "discountValueHintPct": "Percentage (e.g. 10 for 10%)",
+    "discountValueHintFlat": "Fixed amount in branch currency",
+    "minOrderAmount": "Minimum order amount",
+    "minOrderAmountPlaceholder": "Optional minimum",
+    "maxDiscountAmount": "Maximum discount cap",
+    "maxDiscountAmountPlaceholder": "Optional cap for percentage discounts",
+    "validFrom": "Valid from",
+    "validUntil": "Valid until",
+    "usageLimit": "Usage limit",
+    "usageLimitPlaceholder": "Leave blank for unlimited"
+  },
+
+  "summary": {
+    "activePromotions": "Active promotions",
+    "monthDiscounts": "Discounts this month"
+  },
+
+  "usage": {
+    "title": "Usage history",
+    "noUsage": "This promotion has not been used yet.",
+    "orderId": "Order",
+    "appliedAt": "Applied",
+    "amount": "Amount"
+  }
+}

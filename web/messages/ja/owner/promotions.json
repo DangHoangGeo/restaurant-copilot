@@ -1,0 +1,79 @@
+{
+  "pageTitle": "プロモーション",
+  "pageDescription": "ブランチの割引コードを作成・管理します",
+
+  "addPromotion": "プロモーション追加",
+  "addPromotionTitle": "新規プロモーション",
+  "noPromotions": "プロモーションがありません。「プロモーション追加」をタップして最初の割引コードを作成してください。",
+  "noPromotionsInactive": "現在のフィルターに一致するプロモーションがありません。",
+
+  "showInactive": "無効を表示",
+  "hideInactive": "無効を非表示",
+
+  "statusActive": "有効",
+  "statusInactive": "無効",
+
+  "discountTypes": {
+    "percentage": "割引率",
+    "flat": "固定割引額"
+  },
+
+  "usageCount": "{count}回使用",
+  "usageLimit": "{used} / {limit}回使用",
+  "usageUnlimited": "無制限",
+
+  "validFrom": "{date}から",
+  "validUntil": "{date}まで",
+  "validFromUntil": "{from}〜{until}",
+  "validAlways": "常に有効",
+
+  "minOrder": "最低注文額 {amount}",
+  "maxDiscount": "最大 {amount} 割引",
+
+  "disable": "無効化",
+  "enable": "有効化",
+  "delete": "削除",
+  "deleteConfirm": "このプロモーションを削除しますか？",
+  "deleteConfirmBody": "このコードは一度も使われていないため、完全に削除されます。",
+  "confirmDelete": "削除する",
+  "cancel": "キャンセル",
+
+  "save": "保存",
+  "saving": "保存中…",
+  "createFailed": "保存に失敗しました。もう一度お試しください。",
+  "deleteFailed": "削除に失敗しました。もう一度お試しください。",
+  "toggleFailed": "ステータスの更新に失敗しました。もう一度お試しください。",
+
+  "fields": {
+    "code": "プロモーションコード",
+    "codePlaceholder": "例: SUMMER10",
+    "codeHint": "大文字と数字のみ。お客様がチェックアウト時に入力します。",
+    "description": "説明",
+    "descriptionPlaceholder": "例: 全注文10%オフ",
+    "discountType": "割引種別",
+    "discountValue": "割引値",
+    "discountValueHintPct": "割引率（例: 10 → 10%オフ）",
+    "discountValueHintFlat": "固定割引額（ブランチ通貨）",
+    "minOrderAmount": "最低注文金額",
+    "minOrderAmountPlaceholder": "任意",
+    "maxDiscountAmount": "最大割引上限",
+    "maxDiscountAmountPlaceholder": "割引率に対する上限（任意）",
+    "validFrom": "有効開始日",
+    "validUntil": "有効終了日",
+    "usageLimit": "使用回数上限",
+    "usageLimitPlaceholder": "空白で無制限"
+  },
+
+  "summary": {
+    "activePromotions": "有効なプロモーション",
+    "monthDiscounts": "今月の割引合計"
+  },
+
+  "usage": {
+    "title": "使用履歴",
+    "noUsage": "このプロモーションはまだ使用されていません。",
+    "orderId": "注文",
+    "appliedAt": "適用日時",
+    "amount": "割引額"
+  }
+}

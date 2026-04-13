@@ -21,6 +21,7 @@ import {
   Layers,
   ShoppingCart,
   FileText,
+  Tag,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -145,6 +146,11 @@ export function AdminSidebar({
           icon: FileText,
           labelKey: "admin_sidebar_finance",
           href: "/dashboard/finance",
+        },
+        {
+          icon: Tag,
+          labelKey: "admin_sidebar_promotions",
+          href: "/dashboard/promotions",
         }
       );
     }
