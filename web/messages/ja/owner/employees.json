@@ -1,20 +1,24 @@
 {
   "dashboard": {
     "tabs": {
+      "approvals": "承認",
+      "summaries": "勤怠",
       "employees": "従業員",
       "schedule": "スケジュール",
-      "attendance": "勤怠",
       "performance": "パフォーマンス"
     },
     "actions": {
-      "openQrScanner": "勤怠用QRコードをスキャン"
-    }
+      "scanCheckIn": "出勤スキャン",
+      "scanCheckOut": "退勤スキャン"
+    },
+    "scanExceptionWarning": "勤怠に例外が検出されました — 「承認」タブで確認してください。"
   },
   "list": {
     "title": "従業員管理",
     "actions": {
       "addEmployee": "新しい従業員を追加",
       "edit": "編集",
+      "qrCode": "QRコード",
       "manageSchedule": "スケジュール管理"
     },
     "table": {
@@ -119,6 +123,87 @@
     },
     "notifications": {
       "verifySuccess": "勤怠記録が正常に承認されました。"
+    }
+  },
+  "qrPanel": {
+    "title": "勤怠QRコード",
+    "description": "{name} のQRコードです。従業員はこれをスキャンして出退勤を記録します。",
+    "noCredential": "この従業員にはまだQRコードが発行されていません。",
+    "issuedAt": "発行日: {date}",
+    "expiresAt": "有効期限: {date}",
+    "confirmRotate": "QRコードを更新すると、古いコードはすぐに無効になります。続行しますか？",
+    "rotateWarning": "QRコードを更新すると古いコードはすぐに無効になります。従業員は新しいコードを使用する必要があります。",
+    "actions": {
+      "issue": "QRコードを発行",
+      "rotate": "QRコードを更新",
+      "rotating": "更新中..."
+    },
+    "errors": {
+      "loadFailed": "QRコードの読み込みに失敗しました。",
+      "issueFailed": "QRコードの発行に失敗しました。",
+      "rotateFailed": "QRコードの更新に失敗しました。"
+    },
+    "notifications": {
+      "issued": "QRコードが発行されました。",
+      "rotated": "QRコードが更新されました。古いコードは無効です。"
+    }
+  },
+  "summaries": {
+    "title": "勤怠サマリー",
+    "filters": {
+      "allEmployees": "全従業員",
+      "allStatuses": "全ステータス"
+    },
+    "table": {
+      "date": "日付",
+      "employee": "従業員",
+      "checkIn": "出勤",
+      "checkOut": "退勤",
+      "hours": "時間",
+      "status": "ステータス",
+      "actions": "操作"
+    },
+    "status": {
+      "pending": "未承認",
+      "approved": "承認済み",
+      "rejected": "却下",
+      "correctionPending": "修正が必要"
+    },
+    "actions": {
+      "approve": "承認",
+      "reject": "却下",
+      "refresh": "更新"
+    },
+    "noSummaries": "選択した条件の勤怠サマリーが見つかりません。",
+    "exceptionNote": "オレンジ色の行には例外があります（退勤未記録、手動修正、異常な時間など）。承認前に確認してください。",
+    "errors": {
+      "loadEmployeesError": "従業員の読み込みに失敗しました。",
+      "loadSummariesError": "勤怠サマリーの読み込みに失敗しました。",
+      "approveError": "承認処理に失敗しました。"
+    },
+    "notifications": {
+      "approved": "勤怠を承認しました。",
+      "rejected": "勤怠を却下しました。"
+    }
+  },
+  "approvalInbox": {
+    "empty": "承認が必要な勤怠はありません。すべて完了！",
+    "pendingCount": "{count} 件の確認が必要です",
+    "correctionLabel": "修正",
+    "hours": "出勤: {checkin} — 退勤: {checkout}",
+    "exceptionNote": "オレンジの三角アイコンがある項目は例外です。承認前にメモを確認してください。",
+    "actions": {
+      "approve": "承認",
+      "reject": "却下",
+      "refresh": "更新"
+    },
+    "errors": {
+      "loadError": "承認待ちの勤怠の読み込みに失敗しました。",
+      "actionError": "処理に失敗しました。"
+    },
+    "notifications": {
+      "approved": "勤怠を承認しました。",
+      "rejected": "勤怠を却下しました。"
     }
   },
   "qrScannerModal": {

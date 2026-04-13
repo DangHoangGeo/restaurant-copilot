@@ -1,20 +1,24 @@
 {
   "dashboard": {
     "tabs": {
+      "approvals": "Approvals",
+      "summaries": "Attendance",
       "employees": "Employees",
       "schedule": "Schedule",
-      "attendance": "Attendance",
       "performance": "Performance"
     },
     "actions": {
-      "openQrScanner": "Scan QR Code for Attendance"
-    }
+      "scanCheckIn": "Scan Check-In",
+      "scanCheckOut": "Scan Check-Out"
+    },
+    "scanExceptionWarning": "Attendance exception detected — please review in the Approvals tab."
   },
   "list": {
     "title": "Employee Management",
     "actions": {
       "addEmployee": "Add New Employee",
       "edit": "Edit",
+      "qrCode": "QR Code",
       "manageSchedule": "Manage Schedule"
     },
     "table": {
@@ -119,6 +123,87 @@
     },
     "notifications": {
       "verifySuccess": "Attendance record verified successfully."
+    }
+  },
+  "qrPanel": {
+    "title": "Attendance QR Code",
+    "description": "QR code for {name}. The employee scans this to check in or out.",
+    "noCredential": "No QR credential has been issued yet for this employee.",
+    "issuedAt": "Issued: {date}",
+    "expiresAt": "Expires: {date}",
+    "confirmRotate": "Rotating the QR code will invalidate the old one immediately. Continue?",
+    "rotateWarning": "Rotating the QR code will invalidate the old code immediately. The employee will need to use the new code.",
+    "actions": {
+      "issue": "Issue QR Code",
+      "rotate": "Rotate QR Code",
+      "rotating": "Rotating..."
+    },
+    "errors": {
+      "loadFailed": "Failed to load QR credential.",
+      "issueFailed": "Failed to issue QR credential.",
+      "rotateFailed": "Failed to rotate QR credential."
+    },
+    "notifications": {
+      "issued": "QR credential issued.",
+      "rotated": "QR credential rotated. Old code is now invalid."
+    }
+  },
+  "summaries": {
+    "title": "Attendance Summaries",
+    "filters": {
+      "allEmployees": "All Employees",
+      "allStatuses": "All Statuses"
+    },
+    "table": {
+      "date": "Date",
+      "employee": "Employee",
+      "checkIn": "Check-In",
+      "checkOut": "Check-Out",
+      "hours": "Hours",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "correctionPending": "Correction Needed"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "refresh": "Refresh"
+    },
+    "noSummaries": "No attendance summaries found for the selected filters.",
+    "exceptionNote": "Rows highlighted in orange have exceptions (missing check-out, manual correction, or unusual hours). Review these before approving.",
+    "errors": {
+      "loadEmployeesError": "Failed to load employees.",
+      "loadSummariesError": "Failed to load attendance summaries.",
+      "approveError": "Failed to process approval."
+    },
+    "notifications": {
+      "approved": "Attendance approved.",
+      "rejected": "Attendance rejected."
+    }
+  },
+  "approvalInbox": {
+    "empty": "No pending attendance to review. All caught up!",
+    "pendingCount": "{count} items need review",
+    "correctionLabel": "Correction",
+    "hours": "In: {checkin} — Out: {checkout}",
+    "exceptionNote": "Items with an orange triangle have exceptions. Review the notes before approving.",
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "refresh": "Refresh"
+    },
+    "errors": {
+      "loadError": "Failed to load pending approvals.",
+      "actionError": "Failed to process action."
+    },
+    "notifications": {
+      "approved": "Attendance approved.",
+      "rejected": "Attendance marked as rejected."
     }
   },
   "qrScannerModal": {
