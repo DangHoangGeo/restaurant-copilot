@@ -28,6 +28,7 @@ const NAMESPACES = [
   'owner/organization',
   'owner/branches',
   'owner/purchasing',
+  'owner/finance',
   // customer
   'customer/home',
   'customer/menu',

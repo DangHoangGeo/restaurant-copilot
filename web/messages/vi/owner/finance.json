@@ -1,0 +1,48 @@
+{
+  "pageTitle": "Tài Chính Tháng",
+  "pageDescription": "Tóm tắt doanh thu, lao động và chi phí hàng tháng để bàn giao kế toán",
+
+  "statusLive": "Trực tiếp (chưa chốt)",
+  "statusClosed": "Đã chốt",
+  "statusDraft": "Bản nháp",
+
+  "prevMonth": "Tháng trước",
+  "nextMonth": "Tháng sau",
+  "noData": "Không có dữ liệu cho kỳ này.",
+
+  "revenue": "Doanh thu",
+  "orderCount": "{count} đơn hàng",
+
+  "grossProfit": "Lợi nhuận gộp (ước tính)",
+  "grossProfitHint": "Doanh thu − Chi phí",
+
+  "totalCosts": "Tổng chi phí",
+  "laborHours": "Giờ làm đã duyệt",
+  "laborEntries": "{count} bản ghi",
+
+  "purchaseOrders": "Đơn mua hàng",
+  "otherExpenses": "Chi phí khác",
+  "combinedCosts": "Tổng chi phí",
+
+  "orders": "Đơn hàng",
+  "expenses": "Chi phí",
+
+  "liveNotice": "Các số liệu được tính theo dữ liệu thực và có thể thay đổi trước khi chốt tháng.",
+
+  "notes": "Ghi chú cho kế toán",
+  "notesPlaceholder": "Ghi chú tùy chọn cho kế toán hoặc chuẩn bị thuế…",
+
+  "exportCsv": "Xuất CSV",
+  "exporting": "Đang xuất…",
+  "exportError": "Xuất thất bại. Vui lòng thử lại.",
+
+  "closeMonth": "Chốt tháng",
+  "closeConfirmTitle": "Chốt tháng này?",
+  "closeConfirmBody": "Chốt {period} sẽ cố định tất cả số liệu. Thao tác này không thể hoàn tác.",
+  "confirmClose": "Xác nhận & Chốt",
+  "closing": "Đang chốt…",
+  "cancel": "Hủy",
+  "closeError": "Chốt tháng thất bại. Vui lòng thử lại.",
+
+  "recentSnapshots": "Các tháng gần đây"
+}
