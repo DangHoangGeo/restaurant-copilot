@@ -20,9 +20,9 @@ export const dateRangeSchema = z.object({
   const from = new Date(data.fromDate);
   const to = new Date(data.toDate);
   const diffInDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-  return diffInDays <= VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS;
+  return diffInDays >= 0 && diffInDays <= VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS;
 }, {
-  message: `Date range cannot exceed ${VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS} days`,
+  message: `Date range must be between 0 and ${VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS} days`,
 });
 
 // Pagination validation schemas (updated for Phase 1 requirements)
@@ -88,11 +88,11 @@ export const ordersGetQuerySchema = z.object({
     const from = new Date(data.fromDate);
     const to = new Date(data.toDate);
     const diffInDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-    return diffInDays <= VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS;
+    return diffInDays >= 0 && diffInDays <= VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS;
   }
   return true;
 }, {
-  message: `Date range cannot exceed ${VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS} days`,
+  message: `Date range must be between 0 and ${VALIDATION_LIMITS.MAX_DATE_RANGE_DAYS} days`,
 });
 
 // Categories GET query validation schema

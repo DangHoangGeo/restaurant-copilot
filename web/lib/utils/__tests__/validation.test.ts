@@ -45,7 +45,7 @@ describe('Validation Schemas', () => {
 
     it('should fail if range is more than MAX_DATE_RANGE_DAYS', () => {
       const fromDate = '2025-01-01';
-      const toDate = `2025-02-10`; // More than 31 days
+      const toDate = '2025-05-01';
       const result = dateRangeSchema.safeParse({ fromDate, toDate });
       expect(result.success).toBe(false);
     });
