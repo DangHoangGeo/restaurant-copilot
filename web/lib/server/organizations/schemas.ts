@@ -32,5 +32,37 @@ export const updateOrgSchema = z.object({
   currency: z.string().length(3).optional(),
 });
 
+// Schema for creating a pending invite (invite by email, user need not exist yet)
+export const createPendingInviteSchema = z.object({
+  email: z.string().email('Valid email required'),
+  role: orgMemberRoleSchema,
+  shop_scope: shopScopeSchema,
+  selected_restaurant_ids: z.array(z.string().uuid()).optional(),
+}).refine(
+  (data) =>
+    data.shop_scope !== 'selected_shops' ||
+    (data.selected_restaurant_ids && data.selected_restaurant_ids.length > 0),
+  {
+    message: 'selected_restaurant_ids must be provided when shop_scope is selected_shops',
+    path: ['selected_restaurant_ids'],
+  }
+);
+
+// Schema for accepting a pending invite
+export const acceptInviteSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  // Optional fields for users who do not yet have an account
+  name: z.string().min(1).max(100).optional(),
+  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+});
+
+// Schema for setting the active branch
+export const setActiveBranchSchema = z.object({
+  restaurant_id: z.string().uuid('Valid restaurant ID required'),
+});
+
 export type InviteOrgMemberInput = z.infer<typeof inviteOrgMemberSchema>;
 export type UpdateOrgInput = z.infer<typeof updateOrgSchema>;
+export type CreatePendingInviteInput = z.infer<typeof createPendingInviteSchema>;
+export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;
+export type SetActiveBranchInput = z.infer<typeof setActiveBranchSchema>;

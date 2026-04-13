@@ -25,6 +25,7 @@ const NAMESPACES = [
   'owner/reports',
   'owner/settings',
   'owner/profile',
+  'owner/organization',
   // customer
   'customer/home',
   'customer/menu',

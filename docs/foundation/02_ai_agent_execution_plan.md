@@ -287,6 +287,31 @@ Keep this phase mostly backend and authorization-focused. Do not try to finish e
 
 ## Phase 2: Shared Founder and Branch Access Control
 
+### Current Status
+
+`Completed — 2026-04-13`
+
+Delivered in this phase:
+
+- migration `038_pending_invites.sql` adds `organization_pending_invites` table with RLS
+- invite-by-email flow: `POST /invites`, `GET /invites`, `DELETE /invites/[id]`
+- `GET /validate?token=` endpoint lets the accept-invite page check invite state without exposing the token
+- `POST /api/v1/auth/accept-invite` handles both new users (creates account + users row) and existing users
+- accept-invite UI page at `/[locale]/(auth)/accept-invite/`
+- active-branch cookie strategy in `lib/server/organizations/active-branch.ts`
+- `GET/PUT /api/v1/owner/organization/active-branch` — read and set the active branch
+- organization management dashboard at `/dashboard/organization`
+- `MembersPanel` component (members list, invite form, pending invites with revoke)
+- `BranchSwitcher` component (hidden for single-branch orgs, reload-on-switch for multi-branch)
+- Organization sidebar nav item added to `AdminSidebar`
+- i18n keys added for EN / JA / VI
+
+Accepted follow-ups for Phase 3+:
+
+- email delivery for invite tokens (currently token is returned to the founder to share manually)
+- branch data shown in BranchSwitcher uses IDs only; Phase 3 branch-detail work will improve display
+- logout route should call `buildClearActiveBranchCookieHeader()` to clear the active-branch cookie
+
 ### Goal
 
 Make founder, co-founder, finance, and manager access explicit and maintainable.
