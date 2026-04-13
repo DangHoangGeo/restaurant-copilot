@@ -62,7 +62,12 @@ for file in "${added_migrations[@]}"; do
     psql "${SUPABASE_DB_URL}" \
       -v ON_ERROR_STOP=1 \
       -v filename="${file}" \
-      -Atqc "SELECT 1 FROM public.github_action_migrations WHERE filename = :'filename' LIMIT 1;"
+      -Atq <<'SQL'
+SELECT 1
+FROM public.github_action_migrations
+WHERE filename = :'filename'
+LIMIT 1;
+SQL
   )"
 
   if [[ "${already_applied}" == "1" ]]; then
@@ -77,5 +82,8 @@ for file in "${added_migrations[@]}"; do
     -v ON_ERROR_STOP=1 \
     -v filename="${file}" \
     -v commit_sha="${head_sha}" \
-    -c "INSERT INTO public.github_action_migrations (filename, applied_commit_sha) VALUES (:'filename', :'commit_sha');"
+    <<'SQL'
+INSERT INTO public.github_action_migrations (filename, applied_commit_sha)
+VALUES (:'filename', :'commit_sha');
+SQL
 done
