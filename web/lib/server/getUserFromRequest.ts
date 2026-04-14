@@ -1,12 +1,26 @@
 import { getCachedUser } from './request-context';
 
+export interface AuthUserRestaurantSettings {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  subdomain: string;
+  primaryColor: string;
+  defaultLocale: string;
+  onboarded: boolean;
+  owner_photo_url: string | null;
+  owner_story_en: string;
+  owner_story_ja: string;
+  owner_story_vi: string;
+}
+
 export interface AuthUser {
   userId: string;
   email: string | undefined;
   restaurantId: string | null;
   subdomain: string | null;
   role: string | null;
-  // exp is typically part of JWT, Supabase user object doesn\'t expose it directly in the same way
+  restaurantSettings: AuthUserRestaurantSettings | null;
 }
 
 export async function getUserFromRequest(): Promise<AuthUser | null> {

@@ -28,9 +28,11 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
 
   try {
     // Single query: join users → restaurants to avoid two sequential round-trips.
+    // Select all restaurant fields needed by the layout so getRestaurantSettingsFromSubdomain
+    // does not need to make a separate DB call.
     const { data: userRecords, error: userRecordError } = await supabase
       .from('users')
-      .select('restaurant_id, role, restaurants(id, subdomain)')
+      .select('restaurant_id, role, restaurants(id, name, logo_url, subdomain, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi)')
       .eq('id', supabaseUser.id);
 
     if (userRecordError || !userRecords || userRecords.length === 0) {
@@ -40,6 +42,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
         restaurantId: supabaseUser.app_metadata?.restaurant_id || null,
         subdomain: null,
         role: supabaseUser.app_metadata?.role || null,
+        restaurantSettings: null,
       };
     }
 
@@ -54,10 +57,29 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       ? userRecord.restaurants[0]
       : userRecord.restaurants;
 
+    // Type the joined restaurant row (Supabase returns it as a nested object)
+    type RestaurantRow = {
+      id: string;
+      name: string;
+      logo_url: string | null;
+      subdomain: string;
+      brand_color: string | null;
+      default_language: string | null;
+      onboarded: boolean | null;
+      owner_photo_url: string | null;
+      owner_story_en: string | null;
+      owner_story_ja: string | null;
+      owner_story_vi: string | null;
+    } | null;
+
     let restaurantId: string | null =
       userRecord?.restaurant_id ?? supabaseUser.app_metadata?.restaurant_id ?? null;
-    let subdomain: string | null =
-      (primaryRestaurant as { subdomain?: string } | null)?.subdomain ?? null;
+    let subdomain: string | null = (primaryRestaurant as RestaurantRow)?.subdomain ?? null;
+
+    // Build restaurant settings from the already-joined row (no extra DB call).
+    let restaurantSettings = primaryRestaurant
+      ? buildRestaurantSettings(primaryRestaurant as RestaurantRow)
+      : null;
 
     // ── Active-branch cookie override ─────────────────────────────────────────
     // If the user has set an active-branch cookie pointing to a *different*
@@ -75,14 +97,17 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
 
       if (hasAccess === true) {
         restaurantId = activeBranchCookie;
-        // Fetch the active branch's subdomain so downstream callers that inspect
-        // subdomain (redirects, domain checks) see the correct value.
+        // Fetch the active branch's full settings so downstream callers have
+        // everything they need (subdomain, name, logo, etc.) without an extra query.
         const { data: activeBranchRow } = await supabaseAdmin
           .from('restaurants')
-          .select('subdomain')
+          .select('id, name, logo_url, subdomain, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi')
           .eq('id', activeBranchCookie)
           .single();
         subdomain = activeBranchRow?.subdomain ?? null;
+        restaurantSettings = activeBranchRow
+          ? buildRestaurantSettings(activeBranchRow as RestaurantRow)
+          : null;
       }
       // If validation fails (access revoked, stale cookie), fall through to
       // the base restaurantId — the stale cookie is silently ignored.
@@ -94,6 +119,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       restaurantId,
       subdomain,
       role: userRecord?.role ?? supabaseUser.app_metadata?.role ?? null,
+      restaurantSettings,
     };
   } catch (error) {
     console.error('Error in getCachedUser:', error);
@@ -103,9 +129,39 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       restaurantId: supabaseUser.app_metadata?.restaurant_id || null,
       subdomain: null,
       role: supabaseUser.app_metadata?.role || null,
+      restaurantSettings: null,
     };
   }
 });
+
+function buildRestaurantSettings(row: {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  subdomain: string;
+  brand_color: string | null;
+  default_language: string | null;
+  onboarded: boolean | null;
+  owner_photo_url: string | null;
+  owner_story_en: string | null;
+  owner_story_ja: string | null;
+  owner_story_vi: string | null;
+} | null) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    logoUrl: row.logo_url,
+    subdomain: row.subdomain,
+    primaryColor: row.brand_color || '#3B82F6',
+    defaultLocale: row.default_language || 'en',
+    onboarded: row.onboarded || false,
+    owner_photo_url: row.owner_photo_url || null,
+    owner_story_en: row.owner_story_en || '',
+    owner_story_ja: row.owner_story_ja || '',
+    owner_story_vi: row.owner_story_vi || '',
+  };
+}
 
 // Cache restaurant context for the request
 export const getCachedRestaurantContext = cache(async (subdomain: string) => {

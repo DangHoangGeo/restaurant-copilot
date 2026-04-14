@@ -29,6 +29,28 @@ function setCachedSubdomainId(subdomain: string, id: string): void {
   subdomainCache.set(subdomain, { id, expiresAt: Date.now() + SUBDOMAIN_CACHE_TTL_MS });
 }
 
+// ---------------------------------------------------------------------------
+// In-process cache: userId → UserRestaurantAccess
+// Avoids 2 DB round-trips on every authenticated dashboard request.
+// Same TTL as subdomain cache — short enough for role/ownership changes to
+// propagate within a reasonable time.
+// ---------------------------------------------------------------------------
+const userRestaurantCache = new Map<string, { restaurant: UserRestaurantAccess; expiresAt: number }>();
+
+function getCachedUserRestaurant(userId: string): UserRestaurantAccess | null {
+  const entry = userRestaurantCache.get(userId);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    userRestaurantCache.delete(userId);
+    return null;
+  }
+  return entry.restaurant;
+}
+
+function setCachedUserRestaurant(userId: string, restaurant: UserRestaurantAccess): void {
+  userRestaurantCache.set(userId, { restaurant, expiresAt: Date.now() + SUBDOMAIN_CACHE_TTL_MS });
+}
+
 type UserRestaurantAccess = {
   id: string;
   subdomain: string;
@@ -36,6 +58,10 @@ type UserRestaurantAccess = {
 };
 
 async function getRestaurantForUser(userId: string): Promise<UserRestaurantAccess | null> {
+  // Check in-process cache first to avoid DB round-trips on every request.
+  const cached = getCachedUserRestaurant(userId);
+  if (cached) return cached;
+
   // Primary source: users table mapping auth user -> restaurant_id
   const { data: userRecords, error: userError } = await supabaseAdmin
     .from('users')
@@ -89,11 +115,13 @@ async function getRestaurantForUser(userId: string): Promise<UserRestaurantAcces
     return null;
   }
 
-  return {
+  const result: UserRestaurantAccess = {
     id: restaurant.id,
     subdomain: restaurant.subdomain,
     onboarded: Boolean(restaurant.onboarded),
   };
+  setCachedUserRestaurant(userId, result);
+  return result;
 }
 
 // Share Supabase auth cookies across all subdomains so that a login on the
