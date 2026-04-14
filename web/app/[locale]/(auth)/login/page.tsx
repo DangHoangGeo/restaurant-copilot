@@ -39,6 +39,16 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password, captchaToken }),
       });
 
+      // Pending-approval / suspended: server returns 403 with a redirectUrl.
+      if (response.status === 403) {
+        const errorData = await response.json();
+        if (errorData.redirectUrl) {
+          window.location.href = errorData.redirectUrl;
+          return;
+        }
+        throw new Error(errorData.message || t("loginFailed"));
+      }
+
       if (!response.ok) {
         const contentType = response.headers.get("content-type");
         if (contentType?.includes("application/json")) {

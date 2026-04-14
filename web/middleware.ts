@@ -55,6 +55,9 @@ type UserRestaurantAccess = {
   id: string;
   subdomain: string;
   onboarded: boolean;
+  is_verified: boolean;
+  is_active: boolean;
+  suspended_at: string | null;
 };
 
 async function getRestaurantForUser(userId: string): Promise<UserRestaurantAccess | null> {
@@ -102,7 +105,7 @@ async function getRestaurantForUser(userId: string): Promise<UserRestaurantAcces
 
   const { data: restaurant, error: restaurantError } = await supabaseAdmin
     .from('restaurants')
-    .select('id, subdomain, onboarded')
+    .select('id, subdomain, onboarded, is_verified, is_active, suspended_at')
     .eq('id', restaurantId)
     .single();
 
@@ -119,6 +122,9 @@ async function getRestaurantForUser(userId: string): Promise<UserRestaurantAcces
     id: restaurant.id,
     subdomain: restaurant.subdomain,
     onboarded: Boolean(restaurant.onboarded),
+    is_verified: Boolean(restaurant.is_verified),
+    is_active: Boolean(restaurant.is_active),
+    suspended_at: restaurant.suspended_at ?? null,
   };
   setCachedUserRestaurant(userId, result);
   return result;
@@ -409,6 +415,14 @@ export async function middleware(req: NextRequest) {
           return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
         }
 
+        // Block dashboard access for suspended or unverified/inactive restaurants.
+        const isSuspended = restaurant.suspended_at != null;
+        const isPendingApproval = !restaurant.is_verified || !restaurant.is_active;
+        if (isSuspended || isPendingApproval) {
+          const reason = isSuspended ? 'suspended' : 'pending';
+          return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/pending-approval?reason=${reason}`, req.url));
+        }
+
         // Check onboarding status (data already fetched above — no extra query needed)
         if (FEATURE_FLAGS.onboarding) {
           const isOnboardingPage = currentPathnameForLogic.includes('/dashboard/onboarding');
@@ -460,12 +474,22 @@ export async function middleware(req: NextRequest) {
     try {
       const restaurant = await getRestaurantForUser(supabaseUser.id);
 
-      if (restaurant?.subdomain) {
-        const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
-        if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
-          return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+      if (restaurant) {
+        // Redirect suspended/pending restaurants to the pending-approval page instead of dashboard.
+        const isSuspended = restaurant.suspended_at != null;
+        const isPendingApproval = !restaurant.is_verified || !restaurant.is_active;
+        if (isSuspended || isPendingApproval) {
+          const reason = isSuspended ? 'suspended' : 'pending';
+          return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/pending-approval?reason=${reason}`, req.url));
         }
-        return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+
+        if (restaurant.subdomain) {
+          const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+          if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
+            return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+          }
+          return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+        }
       }
     } catch {
       // Fall back to a same-host redirect if the lookup fails

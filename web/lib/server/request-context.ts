@@ -32,7 +32,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     // does not need to make a separate DB call.
     const { data: userRecords, error: userRecordError } = await supabase
       .from('users')
-      .select('restaurant_id, role, restaurants(id, name, logo_url, subdomain, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi)')
+      .select('restaurant_id, role, restaurants(id, name, logo_url, subdomain, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi, is_verified, is_active, suspended_at)')
       .eq('id', supabaseUser.id);
 
     if (userRecordError || !userRecords || userRecords.length === 0) {
@@ -70,6 +70,9 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       owner_story_en: string | null;
       owner_story_ja: string | null;
       owner_story_vi: string | null;
+      is_verified: boolean;
+      is_active: boolean;
+      suspended_at: string | null;
     } | null;
 
     let restaurantId: string | null =
@@ -80,6 +83,19 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     let restaurantSettings = primaryRestaurant
       ? buildRestaurantSettings(primaryRestaurant as RestaurantRow)
       : null;
+
+    // ── Approval / suspension guard for owner accounts ────────────────────────
+    // Owner APIs rely on a valid restaurantId to enforce RLS. If the restaurant
+    // is not yet verified, has been deactivated, or is suspended, nulling out
+    // restaurantId prevents those APIs from proceeding without a hard sign-out.
+    const role = userRecord?.role ?? supabaseUser.app_metadata?.role ?? null;
+    if (role === 'owner' && primaryRestaurant) {
+      const row = primaryRestaurant as RestaurantRow & { is_verified: boolean; is_active: boolean; suspended_at: string | null };
+      const blocked = row.suspended_at != null || !row.is_verified || !row.is_active;
+      if (blocked) {
+        restaurantId = null;
+      }
+    }
 
     // ── Active-branch cookie override ─────────────────────────────────────────
     // If the user has set an active-branch cookie pointing to a *different*
@@ -146,6 +162,9 @@ function buildRestaurantSettings(row: {
   owner_story_en: string | null;
   owner_story_ja: string | null;
   owner_story_vi: string | null;
+  is_verified?: boolean;
+  is_active?: boolean;
+  suspended_at?: string | null;
 } | null) {
   if (!row) return null;
   return {

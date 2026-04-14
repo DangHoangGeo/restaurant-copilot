@@ -270,10 +270,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Get the restaurant's subdomain
+    // 2. Get the restaurant's subdomain and approval status
     const { data: restaurant, error: restError } = await supabase
       .from("restaurants")
-      .select("subdomain, default_language")
+      .select("subdomain, default_language, is_verified, is_active, suspended_at")
       .eq("id", restaurantId)
       .single();
 
@@ -305,6 +305,31 @@ export async function POST(req: NextRequest) {
 
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
     const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
+
+    // Check approval/suspension status before allowing access to the dashboard.
+    const isSuspended = restaurant.suspended_at != null;
+    const isPendingApproval = !restaurant.is_verified || !restaurant.is_active;
+
+    if (isSuspended || isPendingApproval) {
+      const reason = isSuspended ? "suspended" : "pending";
+      const rootOrigin = isDevelopment
+        ? "http://localhost:3000"
+        : `https://${productionUrl}`;
+      const pendingRedirectUrl = `${rootOrigin}/${defaultLanguage}/pending-approval?reason=${reason}`;
+
+      await logEvent({
+        level: "WARN",
+        endpoint: "/api/v1/auth/login",
+        message: `Login blocked for restaurant ${restaurantId}: ${reason}`,
+        metadata: { ip, userId: data.user.id, restaurantId },
+      });
+
+      return NextResponse.json(
+        { message: "Your restaurant account is not yet approved.", redirectUrl: pendingRedirectUrl },
+        { status: 403 },
+      );
+    }
+
     let redirectUrl = `https://${restaurantSubdomain}.${productionUrl}/${defaultLanguage}/dashboard`;
     if (isDevelopment) {
       redirectUrl = `http://${restaurantSubdomain}.localhost:3000/${defaultLanguage}/dashboard`;
