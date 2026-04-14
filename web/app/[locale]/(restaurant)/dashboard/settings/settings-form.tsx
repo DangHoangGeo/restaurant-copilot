@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Image as ImageIcon, Loader2, Globe, Clock, MessageSquare, User, CreditCard, Truck } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import imageCompression from 'browser-image-compression';
 import { OperatingHoursEditor } from "@/components/features/admin/dashboard/OperatingHoursEditor";
 import { SocialLinksEditor } from "@/components/features/admin/dashboard/SocialLinksEditor";
@@ -86,6 +87,7 @@ const getSettingsSchema = (t: ReturnType<typeof useTranslations<'Dashboard.Setti
   currency: z.enum(["JPY", "USD", "VND"], { required_error: t("currency.required") }).optional(),
   payment_methods: z.array(z.enum(["cash", "credit_card", "mobile_payment", "paypay"])).optional(),
   delivery_options: z.array(z.enum(["pickup", "delivery", "dine_in"])).optional(),
+  allow_order_notes: z.boolean().optional(),
   logoFile: z.instanceof(File)
     .refine(file => file.size <= 1 * 1024 * 1024, t("logoFile.maxSize", { maxSize: 1 }))
     .refine(file => ["image/png", "image/jpeg", "image/webp"].includes(file.type), t("logoFile.invalidType"))
@@ -189,6 +191,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
       currency: initialSettings.currency as "JPY" | "USD" | "VND" || "JPY",
       payment_methods: (initialSettings.payment_methods as ("cash" | "credit_card" | "mobile_payment" | "paypay")[]) || ["cash"],
       delivery_options: (initialSettings.delivery_options as ("pickup" | "delivery" | "dine_in")[]) || ["dine_in"],
+      allow_order_notes: initialSettings.allow_order_notes ?? true,
       logoUrl: initialSettings.logo_url || null,
       logoFile: null,
     },
@@ -329,6 +332,7 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
           currency: data.currency,
           payment_methods: data.payment_methods,
           delivery_options: data.delivery_options,
+          allow_order_notes: data.allow_order_notes,
           logo_url: publicLogoUrl,
         }),
       });
@@ -772,6 +776,37 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
                 </div>
                 {errors.delivery_options && <p className="text-sm text-red-500 mt-1">{errors.delivery_options.message}</p>}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Order Experience */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("orderExperience.title")}</CardTitle>
+              <CardDescription>{t("orderExperience.description")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Controller
+                name="allow_order_notes"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex items-center justify-between rounded-xl border p-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="allow_order_notes" className="text-sm font-medium cursor-pointer">
+                        {t("orderExperience.allowOrderNotes")}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {t("orderExperience.allowOrderNotesDescription")}
+                      </p>
+                    </div>
+                    <Switch
+                      id="allow_order_notes"
+                      checked={field.value ?? true}
+                      onCheckedChange={field.onChange}
+                    />
+                  </div>
+                )}
+              />
             </CardContent>
           </Card>
         </TabsContent>

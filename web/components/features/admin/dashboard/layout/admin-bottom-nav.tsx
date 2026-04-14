@@ -98,6 +98,7 @@ export function AdminBottomNav() {
               <li key={href} className="flex-1">
                 <Link
                   href={fullHref}
+                  prefetch={false}
                   className={cn(
                     'flex min-h-16 flex-col items-center justify-center py-2 text-xs',
                     isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
@@ -138,6 +139,7 @@ export function AdminBottomNav() {
               <Link
                 key={href}
                 href={`/${locale}${href}`}
+                prefetch={false}
                 onClick={() => setIsMoreOpen(false)}
                 className="flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >

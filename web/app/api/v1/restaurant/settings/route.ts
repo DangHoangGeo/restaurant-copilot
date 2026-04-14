@@ -47,6 +47,7 @@ const settingsSchema = z.object({
   // WiFi settings for table QR codes
   wifi_ssid: z.string().max(100).nullable().optional(),
   wifi_password: z.string().max(100).nullable().optional(),
+  allow_order_notes: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -98,7 +99,8 @@ export async function GET() {
         owner_story_vi,
         owner_photo_url,
         wifi_ssid,
-        wifi_password
+        wifi_password,
+        allow_order_notes
       `)
       .eq("id", user.restaurantId) // Use authenticated user's restaurant ID
       .single();
@@ -176,6 +178,8 @@ export async function GET() {
       // WiFi settings
       wifi_ssid: restaurant.wifi_ssid,
       wifi_password: restaurant.wifi_password,
+      // Ordering options
+      allow_order_notes: restaurant.allow_order_notes ?? true,
     };
 
     console.log('Restaurant settings response - onboarded:', restaurant.onboarded, 'type:', typeof restaurant.onboarded);

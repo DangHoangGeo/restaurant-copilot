@@ -1,25 +1,27 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useRef, Suspense, useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from 'use-debounce';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Clock, 
-  TrendingUp, 
+import {
+  Search,
+  Clock,
+  TrendingUp,
   Sparkles,
   ChefHat,
   ArrowRight,
   Heart,
   RefreshCw,
   Menu,
-  X
+  X,
+  UtensilsCrossed
 } from 'lucide-react';
 import { getLocalizedText } from '@/lib/customerUtils';
-import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
+import { generateContextualInfo } from '@/components/common/ContextualGreeting';
 import { ItemDetailModal } from '@/components/features/customer/menu/ItemDetailModal';
 import { SmartMenuSkeleton, MenuCardSkeleton } from '@/components/ui/enhanced-skeleton';
 import { useCart } from '@/components/features/customer/CartContext';
@@ -72,6 +74,8 @@ interface SmartMenuProps {
   tableNumber?: string;
   restaurantName?: string;
   restaurantId?: string;
+  logoUrl?: string | null;
+  allowOrderNotes?: boolean;
 }
 
 // Helper function to get time of day classification
@@ -138,7 +142,9 @@ export function SmartMenu({
   sessionId,
   tableNumber,
   restaurantName = "Our Restaurant",
-  restaurantId
+  restaurantId,
+  logoUrl,
+  allowOrderNotes = true
 }: SmartMenuProps) {
   const { addToCart, getQuantityByItemId, cart } = useCart();
   
@@ -417,22 +423,105 @@ export function SmartMenu({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-      {/* Compact Header for mobile-first design */}
-      <div 
-        className="pb-2"
+      {/* Restaurant Hero Header */}
+      <div
+        className="relative overflow-hidden"
         style={{
-          background: brandColor 
-            ? `linear-gradient(135deg, ${brandColor} 0%, ${brandColor}cc 50%, ${brandColor}aa 100%)`
-            : 'linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%)', // fallback cyan gradient
+          background: brandColor
+            ? `linear-gradient(150deg, ${brandColor} 0%, ${brandColor}e0 55%, ${brandColor}a0 100%)`
+            : 'linear-gradient(150deg, #0891b2 0%, #0e7490 55%, #155e75 100%)'
         }}
       >
-        <ContextualGreeting 
-          contextualInfo={contextualInfo}
-          variant="minimal"
-          className="text-center text-white p-4"
-          showWeather={false}
-          showTimeInfo={true}
+        {/* Decorative blobs */}
+        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10" style={{ filter: 'blur(28px)' }} />
+        <div className="absolute -bottom-8 -left-6 w-36 h-36 rounded-full bg-white/10" style={{ filter: 'blur(22px)' }} />
+        {/* Subtle dot pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '22px 22px' }}
         />
+
+        {/* Main content */}
+        <div className="relative px-5 pt-5 pb-12">
+          <div className="flex items-center gap-4">
+            {/* Logo or initial */}
+            <motion.div
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="flex-shrink-0"
+            >
+              {logoUrl ? (
+                <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/40 shadow-2xl">
+                  <Image src={logoUrl} alt={restaurantName} width={64} height={64} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/30 shadow-2xl flex items-center justify-center">
+                  <UtensilsCrossed className="h-7 w-7 text-white/80" />
+                </div>
+              )}
+            </motion.div>
+
+            {/* Restaurant name + subtitle */}
+            <div className="flex-1 min-w-0">
+              <motion.h1
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 }}
+                className="font-bold text-white text-xl leading-tight truncate"
+                style={{ textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}
+              >
+                {restaurantName}
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18 }}
+                className="text-white/70 text-sm mt-0.5 leading-snug line-clamp-1"
+              >
+                {contextualInfo.weatherSuggestion}
+              </motion.p>
+            </div>
+
+            {/* Table badge */}
+            {tableNumber && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.22 }}
+                className="flex-shrink-0 bg-white/20 border border-white/30 rounded-2xl px-3 py-2 text-center shadow-lg backdrop-blur-sm"
+              >
+                <p className="text-white/60 text-[10px] uppercase tracking-widest font-medium leading-none">Table</p>
+                <p className="text-white font-bold text-xl leading-none mt-1">{tableNumber}</p>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Greeting strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28 }}
+            className="mt-4 flex items-center gap-2.5 bg-black/10 rounded-xl px-4 py-2.5"
+          >
+            <Clock className="h-3.5 w-3.5 text-white/70 flex-shrink-0" />
+            <p className="text-sm leading-snug">
+              <span className="font-semibold text-white">{contextualInfo.timeGreeting}</span>
+              <span className="text-white/60 mx-1.5">·</span>
+              <span className="text-white/75">{contextualInfo.greeting.split('!')[0]}!</span>
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Wave bottom divider */}
+        <div className="absolute bottom-0 left-0 right-0 h-6 overflow-hidden">
+          <svg viewBox="0 0 1440 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" preserveAspectRatio="none">
+            <path
+              d="M0 24L80 20C160 16 320 8 480 6C640 4 800 8 960 12C1120 16 1280 20 1360 22L1440 24V24H1360C1280 24 1120 24 960 24C800 24 640 24 480 24C320 24 160 24 80 24H0Z"
+              className="fill-slate-50 dark:fill-slate-900"
+            />
+          </svg>
+        </div>
       </div>
 
       {/* Search and Content with tighter spacing */}
@@ -901,6 +990,7 @@ export function SmartMenu({
         brandColor={brandColor}
         onAddToCart={handleModalAddToCart}
         canAddItems={canAddItems}
+        showOrderNotes={allowOrderNotes}
       />
     </div>
   );

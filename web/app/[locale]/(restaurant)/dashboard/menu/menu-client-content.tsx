@@ -365,7 +365,6 @@ export function MenuClientContent() {
       });
 
       if (!response.ok) {
-        // If endpoint doesn't exist, assume no orders (backward compatibility)
         return false;
       }
 
@@ -647,9 +646,21 @@ export function MenuClientContent() {
         throw new Error(errorMessage);
       }
 
+      const responseData = await response.json();
       toast.success(data.id ? t('category.update_success') : t('category.create_success'));
       setIsCategoryModalOpen(false);
-      await reloadData();
+
+      if (data.id) {
+        // Update existing category in place, preserving menu_items
+        const updatedCat = responseData.category;
+        setMenuData(prev => prev.map(cat =>
+          cat.id === data.id ? { ...cat, ...updatedCat } : cat
+        ));
+      } else {
+        // Append newly created category (POST wraps in createApiSuccess)
+        const newCat = responseData.data?.category ?? responseData.category;
+        setMenuData(prev => [...prev, { ...newCat, menu_items: [] }]);
+      }
     } catch (error) {
       console.error('Error saving category:', error);
       toast.error(error instanceof Error ? error.message : t('category.save_error'));
@@ -705,7 +716,7 @@ export function MenuClientContent() {
         throw new Error(errorMessage);
       }
       toast.success(t('category.delete_success'));
-      await reloadData();
+      setMenuData(prev => prev.filter(cat => cat.id !== categoryId));
     } catch (error) {
       console.error('Error deleting category:', error);
       toast.error(error instanceof Error ? error.message : t('category.delete_error'));
@@ -779,10 +790,35 @@ export function MenuClientContent() {
         throw new Error(errorData.message || 'Failed to save menu item');
       }
 
+      const responseData = await response.json();
+      const savedItem = responseData.menuItem;
       toast.success(data.id ? t('item.update_success') : t('item.create_success'));
       setIsItemModalOpen(false);
-      itemForm.reset(); 
-      await reloadData();
+      itemForm.reset();
+
+      if (data.id) {
+        // Update item in place; handle cross-category moves
+        setMenuData(prev => {
+          // Remove from old category
+          const without = prev.map(cat => ({
+            ...cat,
+            menu_items: cat.menu_items.filter(item => item.id !== data.id),
+          }));
+          // Insert into destination category
+          return without.map(cat =>
+            cat.id === savedItem.category_id
+              ? { ...cat, menu_items: [...cat.menu_items.filter(i => i.id !== savedItem.id), savedItem] }
+              : cat
+          );
+        });
+      } else {
+        // Append new item to its category
+        setMenuData(prev => prev.map(cat =>
+          cat.id === savedItem.category_id
+            ? { ...cat, menu_items: [...cat.menu_items, savedItem] }
+            : cat
+        ));
+      }
     } catch (error) {
       console.error('Error saving menu item:', error);
       toast.error(error instanceof Error ? error.message : t('item.save_error'));
@@ -805,7 +841,12 @@ export function MenuClientContent() {
       }
 
       toast.success(t(!currentAvailability ? 'item.made_available' : 'item.made_unavailable'));
-      await reloadData();
+      setMenuData(prev => prev.map(cat => ({
+        ...cat,
+        menu_items: cat.menu_items.map(item =>
+          item.id === itemId ? { ...item, available: !currentAvailability } : item
+        ),
+      })));
     } catch (error) {
       console.error('Error updating availability:', error);
       toast.error(t('item.availability_update_error'));
@@ -861,7 +902,10 @@ export function MenuClientContent() {
         throw new Error(errorData.message || 'Failed to delete menu item');
       }
       toast.success(t('item.delete_success'));
-      await reloadData();
+      setMenuData(prev => prev.map(cat => ({
+        ...cat,
+        menu_items: cat.menu_items.filter(item => item.id !== itemId),
+      })));
     } catch (error) {
       console.error('Error deleting menu item:', error);
       toast.error(t('item.delete_error'));
@@ -887,7 +931,13 @@ export function MenuClientContent() {
         }
 
         toast.success(t('item.made_unavailable'));
-        await reloadData();
+        const targetId = deleteProtectionDialog.id;
+        setMenuData(prev => prev.map(cat => ({
+          ...cat,
+          menu_items: cat.menu_items.map(item =>
+            item.id === targetId ? { ...item, available: false } : item
+          ),
+        })));
       } catch (error) {
         console.error('Error making item unavailable:', error);
         toast.error(t('item.availability_update_error'));
@@ -904,10 +954,15 @@ export function MenuClientContent() {
               body: JSON.stringify({ available: false }),
             })
           );
-          
+
           await Promise.all(updatePromises);
           toast.success(t('category.items_made_unavailable'));
-          await reloadData();
+          const targetCatId = deleteProtectionDialog.id;
+          setMenuData(prev => prev.map(cat =>
+            cat.id === targetCatId
+              ? { ...cat, menu_items: cat.menu_items.map(item => ({ ...item, available: false })) }
+              : cat
+          ));
         }
       } catch (error) {
         console.error('Error making category items unavailable:', error);
@@ -934,6 +989,14 @@ export function MenuClientContent() {
     const { source, destination, type } = result;
 
     if (!destination) return;
+    if (type === 'CATEGORY' && source.index === destination.index) return;
+    if (
+      type === 'MENU_ITEM' &&
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      return;
+    }
 
     if (type === 'CATEGORY') {
       const reorderedCategories = Array.from(menuData);
@@ -942,26 +1005,30 @@ export function MenuClientContent() {
 
       setMenuData(reorderedCategories.map((cat, index) => ({ ...cat, position: index })));
 
-      // API calls to update category positions
+      // Single bulk API call instead of N sequential writes
       setIsLoading(true);
       try {
-        for (let i = 0; i < reorderedCategories.length; i++) {
-          const category = reorderedCategories[i];
-          if (category.position !== i) { // Only update if position actually changed
-            await fetch(`/api/v1/owner/categories/${category.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ position: i }),
-            });
-          }
+        const originalCategoryPositions = new Map(menuData.map(cat => [cat.id, cat.position]));
+        const payload = reorderedCategories
+          .map((cat, i) => ({ id: cat.id, position: i }))
+          .filter(({ id, position }) => originalCategoryPositions.get(id) !== position);
+
+        if (payload.length === 0) {
+          return;
         }
+
+        const res = await fetch('/api/v1/owner/categories/reorder', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: payload }),
+        });
+        if (!res.ok) throw new Error('Failed to reorder categories');
         toast.success(t('category.reorder_success'));
-        await reloadData(); // Refresh to confirm, though local state is updated
+        // Local state already updated above — no reloadData() needed
       } catch (error) {
         console.error('Error reordering categories:', error);
-        toast.error(t('category.reorder_error')); // Add this translation key
-        // Potentially revert state or rely on reloadData()
-        setMenuData([]); // Revert to empty on error
+        toast.error(t('category.reorder_error'));
+        await reloadData(); // Roll back local state on failure
       } finally {
         setIsLoading(false);
       }
@@ -982,36 +1049,69 @@ export function MenuClientContent() {
 
 
       const destItems = sourceCategoryIndex === destCategoryIndex ? sourceItems : Array.from(destCategory.menu_items); // Changed to const
-      destItems.splice(destination.index, 0, { ...movedItem, id: destCategory.id }); // Ensure category_id is updated
+      destItems.splice(destination.index, 0, { ...movedItem, category_id: destCategory.id }); // Ensure category_id is updated
 
       destCategory.menu_items = destItems.map((item, index) => ({ ...item, position: index }));
       newMenuData[destCategoryIndex] = destCategory;
 
       setMenuData(newMenuData);
 
-      // API calls to update item positions and potentially category_id
+      // Persist all affected items in one API call so server order stays consistent.
       setIsLoading(true);
       try {
-        const itemToUpdate = destCategory.menu_items[destination.index];
-         await fetch(`/api/v1/owner/menu/menu-items/${itemToUpdate.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              position: destination.index,
-              category_id: destCategory.id // Update category_id if moved to a different category
-            }),
-          });
+        const originalItemState = new Map(
+          menuData
+            .filter(cat => cat.id === sourceCategory.id || cat.id === destCategory.id)
+            .flatMap(cat =>
+              cat.menu_items.map(item => [item.id, { position: item.position, category_id: cat.id }])
+            )
+        );
 
-        // If items were moved within the same category, or from another, their old positions need re-eval too
-        // This simplified version only updates the moved item. A full solution might re-update all items in affected categories.
-        // For now, we rely on router.refresh() to get fully consistent positions from backend if needed.
+        const updates = (
+          sourceCategoryIndex === destCategoryIndex
+            ? destCategory.menu_items.map((item, index) => ({
+                id: item.id,
+                position: index,
+                category_id: destCategory.id,
+              }))
+            : [
+                ...sourceCategory.menu_items.map((item, index) => ({
+                  id: item.id,
+                  position: index,
+                  category_id: sourceCategory.id,
+                })),
+                ...destCategory.menu_items.map((item, index) => ({
+                  id: item.id,
+                  position: index,
+                  category_id: destCategory.id,
+                })),
+              ]
+        ).filter(item => {
+          const original = originalItemState.get(item.id);
+          return (
+            !original ||
+            original.position !== item.position ||
+            original.category_id !== item.category_id
+          );
+        });
+
+        if (updates.length === 0) {
+          return;
+        }
+
+        const res = await fetch('/api/v1/owner/menu/menu-items/reorder', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: updates }),
+        });
+        if (!res.ok) throw new Error('Failed to reorder menu items');
 
         toast.success(t('item.reorder_success'));
-        await reloadData();
+        // Local state already updated above — no reloadData() needed
       } catch (error) {
         console.error('Error reordering menu item:', error);
-        toast.error(t('item.reorder_error')); // Add this translation key
-        setMenuData([]); // Revert on error
+        toast.error(t('item.reorder_error'));
+        await reloadData(); // Roll back local state on failure
       } finally {
         setIsLoading(false);
       }

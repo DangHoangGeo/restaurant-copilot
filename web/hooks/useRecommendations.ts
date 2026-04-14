@@ -115,7 +115,7 @@ export function useRecommendations(params: RecommendationParams) {
     error,
     refetch
   } = useQuery({
-    queryKey: ['recommendations', params.sessionId, params.timeOfDay, params.currentCartItems, params.restaurantId],
+    queryKey: ['recommendations', params.sessionId, params.timeOfDay, params.restaurantId],
     queryFn: () => fetchRecommendations(params),
     staleTime: 2 * 60 * 1000, // 2 minutes - recommendations can be more dynamic
     gcTime: 5 * 60 * 1000, // 5 minutes

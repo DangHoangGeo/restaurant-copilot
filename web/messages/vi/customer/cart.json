@@ -81,6 +81,7 @@
     "view_cart": "Xem Giỏ Hàng",
     "checkout": "Thanh Toán",
     "empty_message": "Giỏ hàng trống",
-    "add_items": "Thêm một số món ngon!"
+    "add_items": "Thêm một số món ngon!",
+    "place_order": "Gọi món"
   }
 }

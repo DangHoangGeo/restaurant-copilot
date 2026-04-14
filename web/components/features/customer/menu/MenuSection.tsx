@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { CompactFoodCard } from "./CompactFoodCard";
@@ -54,6 +54,8 @@ export function MenuSection({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const rafRef = useRef<number | null>(null);
 
   const checkScrollability = () => {
     if (scrollContainerRef.current) {
@@ -63,14 +65,44 @@ export function MenuSection({
     }
   };
 
+  const updateItemScales = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const containerCenter = container.scrollLeft + container.clientWidth / 2;
+    const fadeDistance = container.clientWidth * 0.52;
+
+    itemRefs.current.forEach((el) => {
+      if (!el) return;
+      const itemCenter = el.offsetLeft + el.offsetWidth / 2;
+      const distance = Math.abs(itemCenter - containerCenter);
+      const progress = Math.max(0, 1 - distance / fadeDistance);
+      // Ease in-out: quadratic gives a natural center "pop"
+      const eased = progress * (2 - progress);
+      const scale = 0.9 + 0.24 * eased; // 0.88 → 1.12
+      el.style.transform = `scale(${scale.toFixed(3)})`;
+      el.style.zIndex = String(Math.round(eased * 10));
+    });
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(updateItemScales);
+  }, [updateItemScales]);
+
   useEffect(() => {
     checkScrollability();
+    updateItemScales();
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener('scroll', checkScrollability);
-      return () => container.removeEventListener('scroll', checkScrollability);
+      container.addEventListener('scroll', handleScroll, { passive: true });
+      return () => {
+        container.removeEventListener('scroll', checkScrollability);
+        container.removeEventListener('scroll', handleScroll);
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      };
     }
-  }, [items]);
+  }, [items, handleScroll, updateItemScales]);
 
   if (items.length === 0) return null;
 
@@ -111,36 +143,41 @@ export function MenuSection({
 
       {/* Enhanced Horizontal Scrolling Items with better indicators */}
       <div className="relative">
-        <div 
+        <div
           ref={scrollContainerRef}
-          className="flex gap-4 overflow-x-auto pb-2 px-4 scrollbar-hide scroll-smooth"
+          className="flex gap-4 overflow-x-auto py-4 px-4 scrollbar-hide scroll-smooth"
           style={{ scrollBehavior: 'smooth' }}
         >
           {items.map((item, index) => (
-            <motion.div
+            <div
               key={item.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ 
-                delay: index * 0.05, 
-                duration: 0.3,
-                type: "spring",
-                stiffness: 300,
-                damping: 30
-              }}
+              ref={(el) => { itemRefs.current[index] = el; }}
+              style={{ willChange: 'transform', transition: 'transform 0.12s ease-out', flexShrink: 0 }}
             >
-              <CompactFoodCard
-                item={item}
-                qtyInCart={getQuantity(item.id)}
-                onAdd={() => onAddToCart(item)}
-                onCardClick={() => onItemClick(item)}
-                brandColor={brandColor}
-                locale={locale}
-                canAddItems={canAddItems}
-                showPopularBadge={showPopularBadge}
-                showRecommendedBadge={showRecommendedBadge}
-              />
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  delay: index * 0.05,
+                  duration: 0.3,
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30
+                }}
+              >
+                <CompactFoodCard
+                  item={item}
+                  qtyInCart={getQuantity(item.id)}
+                  onAdd={() => onAddToCart(item)}
+                  onCardClick={() => onItemClick(item)}
+                  brandColor={brandColor}
+                  locale={locale}
+                  canAddItems={canAddItems}
+                  showPopularBadge={showPopularBadge}
+                  showRecommendedBadge={showRecommendedBadge}
+                />
+              </motion.div>
+            </div>
           ))}
         </div>
         

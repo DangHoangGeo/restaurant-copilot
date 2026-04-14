@@ -76,6 +76,7 @@ export default function PlatformNav({ locale }: { locale: string }) {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={cn(
                 'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                 isActive
@@ -95,6 +96,7 @@ export default function PlatformNav({ locale }: { locale: string }) {
         {/* Settings */}
         <Link
           href={`/${locale}/platform/settings`}
+          prefetch={false}
           className={cn(
             'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
             pathname === `/${locale}/platform/settings`
