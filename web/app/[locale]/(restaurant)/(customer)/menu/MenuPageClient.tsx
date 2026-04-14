@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
 import { useCustomerData } from '@/components/features/customer/layout/CustomerDataContext';
 import { useTranslations } from 'next-intl';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getSubdomainFromHost } from '@/lib/utils';
@@ -27,13 +27,15 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   // Session dialog states
   const [guestCount, setGuestCount] = useState<number>(1);
   const [showGuestDialog, setShowGuestDialog] = useState<boolean>(false);
+  const [guestDialogStep, setGuestDialogStep] = useState<'guests' | 'passcode'>('guests');
+  const [isStartingSession, setIsStartingSession] = useState<boolean>(false);
   const [showJoinDialog, setShowJoinDialog] = useState<boolean>(false);
-  const [showPasscodeDisplay, setShowPasscodeDisplay] = useState<boolean>(false);
   const [passcode, setPasscode] = useState<string>('');
   const [sessionPasscode, setSessionPasscode] = useState<string>('');
   const [pendingSessionId, setPendingSessionId] = useState<string>('');
   const [requirePasscode, setRequirePasscode] = useState<boolean>(false);
 
+  const brandColor = restaurantSettings?.primaryColor || '#3b82f6';
 
   // Handle session resolution for QR codes and session parameters
   useEffect(() => {
@@ -43,7 +45,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
 
     const resolveSession = async () => {
       setIsLoading(true);
-      
+
       try {
         // Handle existing sessionId parameter (direct session access)
         if (sessionParams.sessionId) {
@@ -54,10 +56,10 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         else if (sessionParams.code) {
           const response = await fetch(`/api/v1/customer/session/check-code?code=${sessionParams.code}`);
           const result = await response.json();
-          
+
           if (result.success) {
             setTableId(result.tableId);
-            
+
             if (result.activeSessionId) {
               // There's an active session - need to join it
               setPendingSessionId(result.activeSessionId);
@@ -83,6 +85,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const startSession = async () => {
     if (!tableId) return;
     if (!restaurantSettings) return;
+    setIsStartingSession(true);
 
     try {
       const subdomain = getSubdomainFromHost(window.location.host);
@@ -93,17 +96,14 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
 
       const res = await fetch(`/api/v1/customer/session/create?${params.toString()}`);
       const data = await res.json();
-      
+
       if (data.success) {
-        // Use the centralized session management
         setSessionId(data.sessionId);
-        
-        // Store additional data locally
         localStorage.setItem("guestCount", String(data.guestCount || guestCount));
-        
         setSessionPasscode(data.passcode || '');
-        setShowGuestDialog(false);
-        setShowPasscodeDisplay(true);
+
+        // Transition to passcode step within the same dialog
+        setGuestDialogStep('passcode');
 
         // Update URL to use sessionId instead of code
         const currentUrl = new URL(window.location.href);
@@ -114,6 +114,8 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       }
     } catch (error) {
       console.error('Error starting session:', error);
+    } finally {
+      setIsStartingSession(false);
     }
   };
 
@@ -123,18 +125,17 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     if (!restaurantSettings) return;
     try {
       const subdomain = getSubdomainFromHost(window.location.host);
-      const params = new URLSearchParams({ 
+      const params = new URLSearchParams({
         sessionId: pendingSessionId,
         passcode: requirePasscode ? passcode : 'default'
       });
       params.append('restaurantId', restaurantSettings.id);
       if (subdomain) params.append('subdomain', subdomain);
-      
+
       const response = await fetch(`/api/v1/customer/session/join?${params.toString()}`);
       const data = await response.json();
-      
+
       if (data.success) {
-        // Use the centralized session management
         setSessionId(data.sessionId);
         setShowJoinDialog(false);
 
@@ -150,6 +151,18 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       }
     } catch (error) {
       console.error('Error joining session:', error);
+    }
+  };
+
+  const handleContinueToMenu = () => {
+    setShowGuestDialog(false);
+    setGuestDialogStep('guests');
+  };
+
+  const handleGuestDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setShowGuestDialog(false);
+      setGuestDialogStep('guests');
     }
   };
 
@@ -219,13 +232,11 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   }
 
   // Redirect to history page for expired/completed sessions
-  // Only redirect if there's a sessionId in the URL - if user navigates to menu without sessionId, 
-  // they want a fresh start regardless of stored session status
   if (sessionData.sessionStatus === 'expired' && sessionParams.sessionId) {
     const historyUrl = new URLSearchParams();
     if (sessionData.sessionId) historyUrl.set('sessionId', sessionData.sessionId);
     router.push(`/${locale}/history?${historyUrl.toString()}`);
-    
+
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -251,89 +262,196 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         allowOrderNotes={restaurantSettings?.allow_order_notes ?? true}
       />
 
-      {/* Guest Count Dialog */}
-      <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('guest_count_title')}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-gray-600 mb-4">
-              {t('guest_count_description')}
-            </p>
-            <Input
-              type="number"
-              min="1"
-              max="20"
-              value={guestCount}
-              onChange={(e) => setGuestCount(parseInt(e.target.value) || 1)}
-              className="w-full"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowGuestDialog(false)}>
-              {t('cancel')}
-            </Button>
-            <Button onClick={startSession}>
-              {t('start_session')}
-            </Button>
-          </DialogFooter>
+      {/* Guest Count + Passcode Dialog (combined 2-step) */}
+      <Dialog open={showGuestDialog} onOpenChange={handleGuestDialogOpenChange}>
+        <DialogContent className="sm:max-w-sm p-0 overflow-hidden">
+          {guestDialogStep === 'guests' ? (
+            <div key="guests" className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200">
+              <DialogTitle className="sr-only">{t('guest_count_title')}</DialogTitle>
+
+              {/* Welcome header */}
+              <div className="mb-6">
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+                  style={{ backgroundColor: `${brandColor}20` }}
+                >
+                  <svg
+                    className="w-7 h-7"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.8}
+                    stroke={brandColor}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {restaurantSettings?.name
+                    ? `${t('welcome_to')} ${restaurantSettings.name}`
+                    : t('welcome_greeting')}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">{t('welcome_subtitle')}</p>
+              </div>
+
+              {/* Guest count description */}
+              <p className="text-sm text-gray-600 mb-5">{t('guest_count_description')}</p>
+
+              {/* Stepper */}
+              <div className="flex items-center justify-center gap-8 mb-8">
+                <button
+                  type="button"
+                  aria-label={t('decrease_guests')}
+                  onClick={() => setGuestCount(c => Math.max(1, c - 1))}
+                  disabled={guestCount <= 1}
+                  className="w-14 h-14 rounded-full text-3xl font-medium border-2 transition-all duration-150 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed select-none"
+                  style={{ borderColor: brandColor, color: brandColor }}
+                >
+                  −
+                </button>
+
+                <div className="text-center min-w-[3.5rem]">
+                  <span
+                    className="text-6xl font-bold tabular-nums leading-none block transition-all duration-150"
+                    style={{ color: brandColor }}
+                  >
+                    {guestCount}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-1 block">{t('guests_label')}</span>
+                </div>
+
+                <button
+                  type="button"
+                  aria-label={t('increase_guests')}
+                  onClick={() => setGuestCount(c => Math.min(20, c + 1))}
+                  disabled={guestCount >= 20}
+                  className="w-14 h-14 rounded-full text-3xl font-medium border-2 transition-all duration-150 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed select-none"
+                  style={{ borderColor: brandColor, color: brandColor }}
+                >
+                  +
+                </button>
+              </div>
+
+              <Button
+                onClick={startSession}
+                disabled={isStartingSession}
+                className="w-full h-12 text-base font-semibold text-white"
+                style={{ backgroundColor: brandColor, borderColor: brandColor }}
+              >
+                {isStartingSession ? t('starting') : t('start_session')}
+              </Button>
+            </div>
+          ) : (
+            <div key="passcode" className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200">
+              <DialogTitle className="sr-only">{t('session_created_title')}</DialogTitle>
+
+              {/* Success icon */}
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ backgroundColor: `${brandColor}20` }}
+              >
+                <svg
+                  className="w-9 h-9"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2.5}
+                  stroke={brandColor}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </div>
+
+              <h2 className="text-xl font-bold text-gray-900 mb-1">{t('session_ready_title')}</h2>
+              <p className="text-sm text-gray-500 mb-6">{t('passcode_share_instructions')}</p>
+
+              {/* Passcode display */}
+              <div
+                className="rounded-2xl px-6 py-5 mb-4"
+                style={{ backgroundColor: `${brandColor}12` }}
+              >
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
+                  {t('table_passcode_label')}
+                </p>
+                <div
+                  className="text-5xl font-bold tracking-[0.3em] pl-[0.3em]"
+                  style={{ color: brandColor }}
+                >
+                  {sessionPasscode}
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-400 mb-6">{t('passcode_instructions')}</p>
+
+              <Button
+                onClick={handleContinueToMenu}
+                className="w-full h-12 text-base font-semibold text-white"
+                style={{ backgroundColor: brandColor, borderColor: brandColor }}
+              >
+                {t('start_ordering')}
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
       {/* Join Session Dialog */}
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('join_session_title')}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-gray-600 mb-4">
-              {t('join_session_description')}
-            </p>
+        <DialogContent className="sm:max-w-sm p-0 overflow-hidden">
+          <div className="text-center p-6">
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ backgroundColor: `${brandColor}20` }}
+            >
+              <svg
+                className="w-7 h-7"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.8}
+                stroke={brandColor}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
+                />
+              </svg>
+            </div>
+
+            <DialogTitle className="text-xl font-bold text-gray-900 mb-1">
+              {t('join_session_title')}
+            </DialogTitle>
+            <p className="text-sm text-gray-500 mb-6">{t('join_session_description')}</p>
+
             {requirePasscode && (
               <Input
                 type="text"
+                inputMode="numeric"
+                maxLength={4}
                 placeholder={t('enter_passcode')}
                 value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                className="w-full"
+                onChange={(e) => setPasscode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                className="w-full text-center text-2xl font-bold tracking-[0.4em] h-14 mb-6"
               />
             )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowJoinDialog(false)}>
-              {t('cancel')}
-            </Button>
-            <Button onClick={joinSession}>
+
+            <Button
+              onClick={joinSession}
+              className="w-full h-12 text-base font-semibold text-white mb-3"
+              style={{ backgroundColor: brandColor, borderColor: brandColor }}
+            >
               {t('join')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Passcode Display Dialog */}
-      <Dialog open={showPasscodeDisplay} onOpenChange={setShowPasscodeDisplay}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('session_created_title')}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 text-center">
-            <p className="text-sm text-gray-600 mb-4">
-              {t('passcode_share_message')}
-            </p>
-            <div className="text-3xl font-bold text-blue-600 mb-4 p-4 bg-blue-50 rounded-lg">
-              {sessionPasscode}
-            </div>
-            <p className="text-xs text-gray-500">
-              {t('passcode_instructions')}
-            </p>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setShowPasscodeDisplay(false)} className="w-full">
-              {t('continue_to_menu')}
+            <Button
+              variant="ghost"
+              onClick={() => setShowJoinDialog(false)}
+              className="w-full h-10 text-sm text-gray-500"
+            >
+              {t('cancel')}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>

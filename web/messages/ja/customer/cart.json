@@ -82,6 +82,7 @@
     "placing_order": "注文",
     "checkout": "レジに進む",
     "empty_message": "カートは空です",
-    "add_items": "美味しい商品を追加しましょう！"
+    "add_items": "美味しい商品を追加しましょう！",
+    "place_order": "注文する"
   }
 }

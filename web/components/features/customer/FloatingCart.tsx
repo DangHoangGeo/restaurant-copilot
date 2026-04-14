@@ -366,7 +366,7 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                       {t("floating_cart.items_count", { count })}
                     </p>
                     <p className="text-xs opacity-90">
-                      {t("floating_cart.total", { amount: total.toFixed(0) })}: ¥{total.toFixed(0)}
+                      {t("floating_cart.total", { amount: total.toFixed(0) })}
                     </p>
                   </div>
                 </button>
