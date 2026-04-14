@@ -1,16 +1,28 @@
-// Platform Admin System Logs Page
+import { getTranslations } from 'next-intl/server';
+import LogsTable from '@/components/platform/logs-table';
 
-export default function LogsPage() {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'platform.logs' });
+  return { title: t('title') };
+}
+
+export default async function PlatformLogsPage() {
+  const t = await getTranslations('platform.logs');
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">System Logs</h1>
-        <p className="text-gray-500 mt-1">View and search system logs</p>
+        <h2 className="text-2xl font-bold text-gray-900">{t('title')}</h2>
+        <p className="text-sm text-gray-500 mt-1">{t('subtitle')}</p>
       </div>
 
-      <div className="bg-white rounded-lg border p-8 text-center">
-        <p className="text-gray-500">Logs viewer UI coming soon</p>
-        <p className="text-sm text-gray-400 mt-2">API endpoint: /api/v1/platform/logs</p>
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <LogsTable />
       </div>
     </div>
   );

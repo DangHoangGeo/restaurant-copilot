@@ -2,7 +2,9 @@
 
 // Period Selector Component
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Select,
   SelectContent,
@@ -13,13 +15,20 @@ import {
 
 export default function PeriodSelector() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentPeriod = searchParams.get('period') || '30days';
+  const t = useTranslations('platform.overview.period_selector');
+  const currentPeriod = useMemo(() => {
+    const period = searchParams.get('period');
+    return period === 'today' || period === '7days' || period === '30days' || period === '90days'
+      ? period
+      : '30days';
+  }, [searchParams]);
 
   const handlePeriodChange = (value: string) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     params.set('period', value);
-    router.push(`?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
@@ -28,10 +37,10 @@ export default function PeriodSelector() {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="today">Today</SelectItem>
-        <SelectItem value="7days">Last 7 Days</SelectItem>
-        <SelectItem value="30days">Last 30 Days</SelectItem>
-        <SelectItem value="90days">Last 90 Days</SelectItem>
+        <SelectItem value="today">{t('today')}</SelectItem>
+        <SelectItem value="7days">{t('7days')}</SelectItem>
+        <SelectItem value="30days">{t('30days')}</SelectItem>
+        <SelectItem value="90days">{t('90days')}</SelectItem>
       </SelectContent>
     </Select>
   );

@@ -47,10 +47,32 @@ export async function GET(request: NextRequest) {
     }
 
     if (query.search) {
-      // Search by restaurant name (need to join)
-      dbQuery = dbQuery.or(
-        `restaurants.name.ilike.%${query.search}%`
-      );
+      // Search restaurant names via a dedicated lookup so the filter works reliably
+      // across PostgREST relation limits.
+      const { data: matchingRestaurants, error: searchError } = await supabase
+        .from('restaurants')
+        .select('id')
+        .ilike('name', `%${query.search}%`);
+
+      if (searchError) {
+        console.error('Error searching restaurants for subscriptions:', searchError);
+        return platformApiError('Failed to fetch subscriptions', 500);
+      }
+
+      const matchingRestaurantIds = matchingRestaurants?.map((restaurant) => restaurant.id) || [];
+      if (matchingRestaurantIds.length === 0) {
+        return platformApiResponse({
+          data: [],
+          pagination: {
+            page: query.page,
+            limit: query.limit,
+            total: 0,
+            total_pages: 0
+          }
+        });
+      }
+
+      dbQuery = dbQuery.in('restaurant_id', matchingRestaurantIds);
     }
 
     // Apply sorting

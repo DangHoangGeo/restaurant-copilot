@@ -2,40 +2,44 @@
 
 // Overview Metrics Cards Component
 
-import { useCallback, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import useSWR from 'swr';
 import { Users, DollarSign, MessageSquare, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { DashboardOverview } from '@/shared/types/platform';
 
+const fetcher = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error || 'Failed to load overview metrics');
+  }
+  return response.json();
+};
+
 export default function OverviewMetrics() {
   const t = useTranslations('platform.overview');
+  const tc = useTranslations('platform.common');
   const searchParams = useSearchParams();
-  const period = searchParams.get('period') || '30days';
+  const period = useMemo(() => {
+    const value = searchParams.get('period');
+    return value === 'today' || value === '7days' || value === '30days' || value === '90days'
+      ? value
+      : '30days';
+  }, [searchParams]);
 
-  const [overview, setOverview] = useState<DashboardOverview | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchOverview = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/v1/platform/overview?period=${period}`);
-      const data = await response.json();
-      setOverview(data);
-    } catch (error) {
-      console.error('Error fetching overview:', error);
-    } finally {
-      setLoading(false);
+  const { data: overview, isLoading, error } = useSWR<DashboardOverview>(
+    `/api/v1/platform/overview?period=${period}`,
+    fetcher,
+    {
+      revalidateOnFocus: false
     }
-  }, [period]);
+  );
 
-  useEffect(() => {
-    fetchOverview();
-  }, [fetchOverview]);
-
-  if (loading) {
+  if (isLoading) {
     return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {[...Array(4)].map((_, i) => (
         <Card key={i} className="animate-pulse">
@@ -51,8 +55,8 @@ export default function OverviewMetrics() {
     </div>;
   }
 
-  if (!overview) {
-    return <div className="text-center text-gray-500">Failed to load metrics</div>;
+  if (error || !overview) {
+    return <div className="text-center text-gray-500">{tc('error')}</div>;
   }
 
   const metrics = [

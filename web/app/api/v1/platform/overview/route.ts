@@ -44,14 +44,34 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    // Get tenant statistics
-    const { data: allRestaurants } = await supabase
-      .from('restaurants')
-      .select('id, created_at, suspended_at');
-
-    const { data: subscriptions } = await supabase
-      .from('tenant_subscriptions')
-      .select('status, restaurant_id, trial_ends_at, current_period_end, canceled_at');
+    // Fetch independent datasets in parallel to reduce dashboard latency.
+    const [
+      { data: allRestaurants },
+      { data: subscriptions },
+      { data: supportSummary },
+      { data: plans },
+      { data: platformUsage },
+      { data: trendData }
+    ] = await Promise.all([
+      supabase
+        .from('restaurants')
+        .select('id, created_at, suspended_at'),
+      supabase
+        .from('tenant_subscriptions')
+        .select('status, restaurant_id, plan_id, trial_ends_at, current_period_end, canceled_at'),
+      supabase.rpc('get_support_ticket_summary'),
+      supabase
+        .from('subscription_plans')
+        .select('id, price_monthly, price_yearly'),
+      supabase.rpc('get_platform_usage_summary', {
+        target_date: now.toISOString().split('T')[0]
+      }),
+      supabase
+        .from('tenant_usage_snapshots')
+        .select('snapshot_date, total_orders, total_revenue')
+        .gte('snapshot_date', periodStart.toISOString().split('T')[0])
+        .order('snapshot_date', { ascending: true })
+    ]);
 
     const totalTenants = allRestaurants?.length || 0;
     const newSignups =
@@ -74,11 +94,6 @@ export async function GET(request: NextRequest) {
           new Date(s.canceled_at) >= periodStart
       ).length || 0;
 
-    // Get support ticket statistics
-    const { data: supportSummary } = await supabase.rpc(
-      'get_support_ticket_summary'
-    );
-
     const supportStats = supportSummary?.[0] || {
       total_tickets: 0,
       new_tickets: 0,
@@ -90,11 +105,6 @@ export async function GET(request: NextRequest) {
       (supportStats.total_tickets || 0) -
       (supportStats.resolved_tickets || 0) -
       (supportStats.closed_tickets || 0);
-
-    // Get revenue metrics (from active subscriptions)
-    const { data: plans } = await supabase
-      .from('subscription_plans')
-      .select('id, price_monthly, price_yearly');
 
     const planPriceMap = new Map<string, { monthly: number; yearly: number }>();
     plans?.forEach((p) => {
@@ -110,10 +120,7 @@ export async function GET(request: NextRequest) {
     subscriptions
       ?.filter((s) => s.status === 'active')
       .forEach((s) => {
-        const prices = planPriceMap.get(
-          // @ts-expect-error - plan_id exists in join
-          s.plan_id || ''
-        );
+        const prices = planPriceMap.get(s.plan_id || '');
         if (prices) {
           // Determine billing cycle from subscription
           const isYearly =
@@ -138,27 +145,12 @@ export async function GET(request: NextRequest) {
         ? (canceledInPeriod / activeSubscribers) * 100
         : 0;
 
-    // Get usage statistics
-    const { data: platformUsage } = await supabase.rpc(
-      'get_platform_usage_summary',
-      {
-        target_date: now.toISOString().split('T')[0]
-      }
-    );
-
     const usageStats = platformUsage?.[0] || {
       total_orders: 0,
       total_customers: 0,
       total_ai_calls: 0,
       avg_orders_per_restaurant: 0
     };
-
-    // Get trend data
-    const { data: trendData } = await supabase
-      .from('tenant_usage_snapshots')
-      .select('snapshot_date, total_orders, total_revenue')
-      .gte('snapshot_date', periodStart.toISOString().split('T')[0])
-      .order('snapshot_date', { ascending: true });
 
     // Aggregate by date
     const trendMap = new Map<

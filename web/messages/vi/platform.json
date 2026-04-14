@@ -1,0 +1,256 @@
+{
+  "nav": {
+    "overview": "Tổng quan",
+    "approvals": "Chờ phê duyệt",
+    "subscriptions": "Gói dịch vụ",
+    "accounts": "Tài khoản",
+    "usage": "Sử dụng tài nguyên",
+    "logs": "Nhật ký",
+    "support": "Hỗ trợ",
+    "settings": "Cài đặt"
+  },
+  "header": {
+    "title": "Quản trị nền tảng",
+    "admin_badge": "Admin",
+    "notifications": "Thông báo",
+    "no_notifications": "Không có thông báo mới",
+    "language": "Ngôn ngữ",
+    "account": "Tài khoản",
+    "logout": "Đăng xuất"
+  },
+  "overview": {
+    "title": "Tổng quan nền tảng",
+    "period_selector": {
+      "today": "Hôm nay",
+      "7days": "7 ngày qua",
+      "30days": "30 ngày qua",
+      "90days": "90 ngày qua"
+    },
+    "tenants": {
+      "title": "Khách hàng",
+      "total": "Tổng khách hàng",
+      "on_trial": "Đang dùng thử",
+      "active": "Đang đăng ký",
+      "suspended": "Đã tạm khóa",
+      "new_signups": "Đăng ký mới"
+    },
+    "revenue": {
+      "title": "Doanh thu",
+      "mrr": "MRR",
+      "arr": "ARR",
+      "churn_rate": "Tỷ lệ rời bỏ"
+    },
+    "support": {
+      "title": "Hỗ trợ",
+      "total_tickets": "Tổng yêu cầu",
+      "new_tickets": "Yêu cầu mới",
+      "unresolved": "Chưa giải quyết",
+      "sla_breached": "Vi phạm SLA"
+    },
+    "usage": {
+      "title": "Sử dụng",
+      "total_orders": "Tổng đơn hàng",
+      "total_customers": "Tổng khách hàng",
+      "ai_calls": "Lượt gọi AI",
+      "avg_orders": "Đơn hàng TB/khách"
+    },
+    "trends": {
+      "title": "Xu hướng",
+      "empty": "Không có dữ liệu xu hướng",
+      "signups": "Đăng ký",
+      "orders": "Đơn hàng",
+      "revenue": "Doanh thu"
+    }
+  },
+  "approvals": {
+    "title": "Chờ phê duyệt",
+    "subtitle": "Xem xét và phê duyệt đăng ký nhà hàng mới",
+    "table": {
+      "restaurant": "Nhà hàng",
+      "email": "Email",
+      "created_at": "Ngày đăng ký",
+      "plan": "Gói",
+      "actions": "Thao tác"
+    },
+    "actions": {
+      "approve": "Phê duyệt",
+      "reject": "Từ chối",
+      "view_details": "Xem chi tiết"
+    },
+    "approve_dialog": {
+      "title": "Phê duyệt nhà hàng",
+      "description": "Bạn có chắc chắn muốn phê duyệt nhà hàng này không?",
+      "notes_label": "Ghi chú (tùy chọn)",
+      "notes_placeholder": "Thêm ghi chú về việc phê duyệt này...",
+      "cancel": "Hủy",
+      "confirm": "Phê duyệt"
+    },
+    "reject_dialog": {
+      "title": "Từ chối nhà hàng",
+      "description": "Vui lòng cung cấp lý do từ chối.",
+      "reason_label": "Lý do",
+      "reason_placeholder": "Giải thích lý do từ chối đơn đăng ký này...",
+      "cancel": "Hủy",
+      "confirm": "Từ chối"
+    },
+    "empty": "Không có yêu cầu phê duyệt nào",
+    "loading": "Đang tải yêu cầu..."
+  },
+  "subscriptions": {
+    "title": "Gói dịch vụ",
+    "subtitle": "Quản lý gói đăng ký và thanh toán của khách hàng",
+    "table": {
+      "restaurant": "Nhà hàng",
+      "plan": "Gói",
+      "status": "Trạng thái",
+      "billing_cycle": "Chu kỳ thanh toán",
+      "current_period_end": "Ngày gia hạn",
+      "seats_used": "Số chỗ đã dùng",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "trial": "Dùng thử",
+      "active": "Đang hoạt động",
+      "past_due": "Quá hạn thanh toán",
+      "canceled": "Đã hủy",
+      "paused": "Tạm dừng",
+      "expired": "Đã hết hạn"
+    },
+    "actions": {
+      "upgrade": "Nâng cấp",
+      "downgrade": "Hạ cấp",
+      "extend_trial": "Gia hạn dùng thử",
+      "cancel": "Hủy",
+      "view_details": "Xem chi tiết"
+    },
+    "filters": {
+      "all_status": "Tất cả trạng thái",
+      "all_plans": "Tất cả gói",
+      "search_placeholder": "Tìm kiếm nhà hàng..."
+    },
+    "empty": "Không tìm thấy gói đăng ký nào",
+    "loading": "Đang tải gói đăng ký..."
+  },
+  "accounts": {
+    "title": "Tài khoản",
+    "subtitle": "Quản lý tài khoản nhà hàng và người dùng",
+    "table": {
+      "restaurant": "Nhà hàng",
+      "owner": "Chủ sở hữu",
+      "staff_count": "Số nhân viên",
+      "last_active": "Hoạt động cuối",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "actions": {
+      "view_details": "Xem chi tiết",
+      "suspend": "Tạm khóa",
+      "unsuspend": "Mở khóa"
+    },
+    "empty": "Không tìm thấy tài khoản nào",
+    "loading": "Đang tải tài khoản..."
+  },
+  "usage": {
+    "title": "Sử dụng tài nguyên",
+    "subtitle": "Theo dõi mức tiêu thụ tài nguyên nền tảng",
+    "metrics": {
+      "orders": "Đơn hàng",
+      "storage": "Lưu trữ",
+      "ai_calls": "Lượt gọi AI",
+      "api_calls": "Lượt gọi API"
+    },
+    "filters": {
+      "all_restaurants": "Tất cả nhà hàng",
+      "date_range": "Khoảng thời gian"
+    },
+    "empty": "Không có dữ liệu sử dụng",
+    "loading": "Đang tải dữ liệu sử dụng..."
+  },
+  "logs": {
+    "title": "Nhật ký hệ thống",
+    "subtitle": "Xem và tìm kiếm nhật ký hệ thống",
+    "table": {
+      "timestamp": "Thời gian",
+      "level": "Mức độ",
+      "restaurant": "Nhà hàng",
+      "endpoint": "Endpoint",
+      "message": "Thông điệp",
+      "actions": "Thao tác"
+    },
+    "filters": {
+      "all_levels": "Tất cả mức độ",
+      "all_restaurants": "Tất cả nhà hàng",
+      "search_placeholder": "Tìm kiếm nhật ký..."
+    },
+    "actions": {
+      "export": "Xuất CSV",
+      "view_details": "Xem chi tiết"
+    },
+    "empty": "Không tìm thấy nhật ký nào",
+    "loading": "Đang tải nhật ký..."
+  },
+  "support": {
+    "title": "Yêu cầu hỗ trợ",
+    "subtitle": "Quản lý yêu cầu hỗ trợ từ khách hàng",
+    "tabs": {
+      "all": "Tất cả",
+      "new": "Mới",
+      "investigating": "Đang xử lý",
+      "waiting": "Đang chờ",
+      "resolved": "Đã giải quyết"
+    },
+    "table": {
+      "ticket_number": "Số yêu cầu",
+      "subject": "Tiêu đề",
+      "restaurant": "Nhà hàng",
+      "priority": "Ưu tiên",
+      "status": "Trạng thái",
+      "created_at": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "priority": {
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "high": "Cao",
+      "urgent": "Khẩn cấp"
+    },
+    "status": {
+      "new": "Mới",
+      "investigating": "Đang xử lý",
+      "waiting_customer": "Chờ khách hàng",
+      "resolved": "Đã giải quyết",
+      "closed": "Đã đóng"
+    },
+    "actions": {
+      "reply": "Trả lời",
+      "assign": "Giao cho",
+      "resolve": "Đánh dấu đã giải quyết",
+      "close": "Đóng yêu cầu"
+    },
+    "filters": {
+      "all_priorities": "Tất cả ưu tiên",
+      "all_status": "Tất cả trạng thái",
+      "search_placeholder": "Tìm kiếm yêu cầu..."
+    },
+    "empty": "Không tìm thấy yêu cầu nào",
+    "loading": "Đang tải yêu cầu..."
+  },
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "close": "Đóng",
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi",
+    "success": "Thao tác thành công",
+    "confirm": "Xác nhận",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "reset": "Đặt lại",
+    "export": "Xuất",
+    "refresh": "Làm mới",
+    "view": "Xem",
+    "actions": "Thao tác"
+  }
+}

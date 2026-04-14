@@ -2,7 +2,7 @@
 
 // Pending Approvals Table Component
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,17 +21,19 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from '@/components/ui/dialog';
-//import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { RestaurantSummary } from '@/shared/types/platform';
 
 export default function ApprovalsTable() {
   const t = useTranslations('platform.approvals');
+  const tc = useTranslations('platform.common');
+
   const [restaurants, setRestaurants] = useState<RestaurantSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantSummary | null>(null);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -39,22 +41,53 @@ export default function ApprovalsTable() {
   const [rejectReason, setRejectReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchPendingApprovals();
-  }, []);
+  const abortRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef(0);
+  const errorLabel = tc('error');
 
-  const fetchPendingApprovals = async () => {
+  const fetchPendingApprovals = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+    abortRef.current?.abort();
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       setLoading(true);
-      const response = await fetch('/api/v1/platform/restaurants?verified=unverified');
-      const data = await response.json();
-      setRestaurants(data.data || []);
+      setError(null);
+
+      const response = await fetch('/api/v1/platform/restaurants?verified=unverified', {
+        signal: controller.signal
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(body?.error || errorLabel);
+      }
+
+      if (requestId !== requestIdRef.current) return;
+
+      setRestaurants(body.data || []);
     } catch (error) {
+      if (controller.signal.aborted || requestId !== requestIdRef.current) return;
       console.error('Error fetching approvals:', error);
+      setError(error instanceof Error ? error.message : errorLabel);
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+      }
     }
-  };
+  }, [errorLabel]);
+
+  useEffect(() => {
+    fetchPendingApprovals();
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, [fetchPendingApprovals]);
 
   const handleApprove = async () => {
     if (!selectedRestaurant) return;
@@ -66,15 +99,19 @@ export default function ApprovalsTable() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: approveNotes })
       });
+      const body = await response.json().catch(() => null);
 
-      if (response.ok) {
-        setApproveDialogOpen(false);
-        setApproveNotes('');
-        setSelectedRestaurant(null);
-        fetchPendingApprovals();
+      if (!response.ok) {
+        throw new Error(body?.error || errorLabel);
       }
+
+      setApproveDialogOpen(false);
+      setApproveNotes('');
+      setSelectedRestaurant(null);
+      fetchPendingApprovals();
     } catch (error) {
       console.error('Error approving restaurant:', error);
+      setError(error instanceof Error ? error.message : errorLabel);
     } finally {
       setSubmitting(false);
     }
@@ -93,15 +130,19 @@ export default function ApprovalsTable() {
           reason: rejectReason
         })
       });
+      const body = await response.json().catch(() => null);
 
-      if (response.ok) {
-        setRejectDialogOpen(false);
-        setRejectReason('');
-        setSelectedRestaurant(null);
-        fetchPendingApprovals();
+      if (!response.ok) {
+        throw new Error(body?.error || errorLabel);
       }
+
+      setRejectDialogOpen(false);
+      setRejectReason('');
+      setSelectedRestaurant(null);
+      fetchPendingApprovals();
     } catch (error) {
       console.error('Error rejecting restaurant:', error);
+      setError(error instanceof Error ? error.message : errorLabel);
     } finally {
       setSubmitting(false);
     }
@@ -109,6 +150,17 @@ export default function ApprovalsTable() {
 
   if (loading) {
     return <div className="text-center py-8 text-gray-500">{t('loading')}</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-600 space-y-3">
+        <p>{error}</p>
+        <Button variant="outline" size="sm" onClick={fetchPendingApprovals}>
+          {tc('refresh')}
+        </Button>
+      </div>
+    );
   }
 
   if (restaurants.length === 0) {
