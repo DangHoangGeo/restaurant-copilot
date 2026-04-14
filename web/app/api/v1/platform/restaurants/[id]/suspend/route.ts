@@ -2,7 +2,7 @@
 // Suspend or unsuspend a restaurant
 
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import {
   requirePlatformAdmin,
   getPlatformAdmin,
@@ -26,7 +26,6 @@ export async function PATCH(
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action'); // 'suspend' or 'unsuspend'
 
-    const supabase = await createClient();
     const admin = await getPlatformAdmin();
 
     if (!admin) {
@@ -34,91 +33,107 @@ export async function PATCH(
     }
 
     if (action === 'unsuspend') {
-      // Validate unsuspend request
       const validated = unsuspendRestaurantSchema.parse(body);
 
-      // Call the unsuspend_restaurant function
-      const { data, error } = await supabase.rpc('unsuspend_restaurant', {
-        rest_id: restaurantId
-      });
+      // Clear suspension fields directly with service role to bypass RLS
+      const { data: restaurant, error } = await supabaseAdmin
+        .from('restaurants')
+        .update({
+          is_active: true,
+          suspended_at: null,
+          suspended_by: null,
+          suspend_reason: null,
+          suspend_notes: null,
+        })
+        .eq('id', restaurantId)
+        .select()
+        .single();
 
       if (error) {
         console.error('Error unsuspending restaurant:', error);
         return platformApiError('Failed to unsuspend restaurant', 500);
       }
 
-      if (!data) {
+      if (!restaurant) {
         return platformApiError('Restaurant not found', 404);
       }
 
-      // Log the action
-      await logPlatformAction(
-        'unsuspend_restaurant',
-        'restaurant',
-        restaurantId,
-        restaurantId,
-        {
-          notes: validated.notes
-        }
-      );
+      // Restore subscription status: trial/active based on dates, else expired
+      const now = new Date().toISOString();
+      const { data: sub } = await supabaseAdmin
+        .from('tenant_subscriptions')
+        .select('trial_ends_at, current_period_end')
+        .eq('restaurant_id', restaurantId)
+        .eq('status', 'paused')
+        .maybeSingle();
+      if (sub) {
+        const newStatus =
+          sub.trial_ends_at && sub.trial_ends_at > now
+            ? 'trial'
+            : sub.current_period_end && sub.current_period_end > now
+              ? 'active'
+              : 'expired';
+        await supabaseAdmin
+          .from('tenant_subscriptions')
+          .update({ status: newStatus })
+          .eq('restaurant_id', restaurantId)
+          .eq('status', 'paused');
+      }
 
-      // Fetch updated restaurant
-      const { data: restaurant } = await supabase
-        .from('restaurants')
-        .select('*')
-        .eq('id', restaurantId)
-        .single();
+      await logPlatformAction('unsuspend_restaurant', 'restaurant', restaurantId, restaurantId, {
+        notes: validated.notes,
+      });
 
       return platformApiResponse({
         success: true,
         message: 'Restaurant unsuspended successfully',
-        data: restaurant
+        data: restaurant,
       });
     } else {
-      // Default action is suspend
-      // Validate suspend request
       const validated = suspendRestaurantSchema.parse(body);
 
-      // Call the suspend_restaurant function
-      const { data, error } = await supabase.rpc('suspend_restaurant', {
-        rest_id: restaurantId,
-        admin_id: admin.id,
-        reason: validated.reason,
-        notes: validated.notes || null
-      });
+      // Set suspension fields directly with service role to bypass RLS
+      const { data: restaurant, error } = await supabaseAdmin
+        .from('restaurants')
+        .update({
+          is_active: false,
+          suspended_at: new Date().toISOString(),
+          suspended_by: admin.id,
+          suspend_reason: validated.reason,
+          suspend_notes: validated.notes || null,
+        })
+        .eq('id', restaurantId)
+        .select()
+        .single();
 
       if (error) {
         console.error('Error suspending restaurant:', error);
         return platformApiError('Failed to suspend restaurant', 500);
       }
 
-      if (!data) {
+      if (!restaurant) {
         return platformApiError('Restaurant not found', 404);
       }
 
-      // Log the action
-      await logPlatformAction(
-        'suspend_restaurant',
-        'restaurant',
-        restaurantId,
-        restaurantId,
-        {
-          reason: validated.reason,
-          notes: validated.notes
-        }
-      );
+      // Pause active/trial subscriptions
+      await supabaseAdmin
+        .from('tenant_subscriptions')
+        .update({ status: 'paused' })
+        .eq('restaurant_id', restaurantId)
+        .in('status', ['trial', 'active'])
+        .catch(() => {
+          // Best-effort — subscription update is non-critical
+        });
 
-      // Fetch updated restaurant
-      const { data: restaurant } = await supabase
-        .from('restaurants')
-        .select('*')
-        .eq('id', restaurantId)
-        .single();
+      await logPlatformAction('suspend_restaurant', 'restaurant', restaurantId, restaurantId, {
+        reason: validated.reason,
+        notes: validated.notes,
+      });
 
       return platformApiResponse({
         success: true,
         message: 'Restaurant suspended successfully',
-        data: restaurant
+        data: restaurant,
       });
     }
   } catch (error) {

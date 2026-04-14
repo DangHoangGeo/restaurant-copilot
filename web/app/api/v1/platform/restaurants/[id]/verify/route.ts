@@ -2,7 +2,7 @@
 // Verify a restaurant
 
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import {
   requirePlatformAdmin,
   getPlatformAdmin,
@@ -27,26 +27,31 @@ export async function PATCH(
     // Validate request body
     const validated = verifyRestaurantSchema.parse(body);
 
-    const supabase = await createClient();
     const admin = await getPlatformAdmin();
 
     if (!admin) {
       return platformApiError('Platform admin not found', 403);
     }
 
-    // Call the verify_restaurant function
-    const { data, error } = await supabase.rpc('verify_restaurant', {
-      rest_id: restaurantId,
-      admin_id: admin.id,
-      notes: validated.notes || null
-    });
+    // Update directly with service role to bypass RLS — auth check is done above
+    const { data: restaurant, error } = await supabaseAdmin
+      .from('restaurants')
+      .update({
+        is_verified: true,
+        verified_at: new Date().toISOString(),
+        verified_by: admin.id,
+        verification_notes: validated.notes || null,
+      })
+      .eq('id', restaurantId)
+      .select()
+      .single();
 
     if (error) {
       console.error('Error verifying restaurant:', error);
       return platformApiError('Failed to verify restaurant', 500);
     }
 
-    if (!data) {
+    if (!restaurant) {
       return platformApiError('Restaurant not found', 404);
     }
 
@@ -56,17 +61,8 @@ export async function PATCH(
       'restaurant',
       restaurantId,
       restaurantId,
-      {
-        notes: validated.notes
-      }
+      { notes: validated.notes }
     );
-
-    // Fetch updated restaurant
-    const { data: restaurant } = await supabase
-      .from('restaurants')
-      .select('*')
-      .eq('id', restaurantId)
-      .single();
 
     return platformApiResponse({
       success: true,
