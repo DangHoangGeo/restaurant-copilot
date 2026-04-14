@@ -30,6 +30,8 @@ const NAMESPACES = [
   'owner/purchasing',
   'owner/finance',
   'owner/promotions',
+  // platform admin
+  'platform',
   // customer
   'customer/home',
   'customer/menu',

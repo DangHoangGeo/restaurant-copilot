@@ -81,6 +81,20 @@ export async function GET(request: NextRequest) {
 
     // Get message counts for each ticket
     const ticketIds = tickets?.map((t) => t.id) || [];
+    if (ticketIds.length === 0) {
+      const response: PaginatedResponse<SupportTicket> = {
+        data: [],
+        pagination: {
+          page: query.page,
+          limit: query.limit,
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / query.limit)
+        }
+      };
+
+      return platformApiResponse(response);
+    }
+
     const { data: messageCounts } = await supabase
       .from('support_ticket_messages')
       .select('ticket_id')

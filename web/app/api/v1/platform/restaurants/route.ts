@@ -90,26 +90,40 @@ export async function GET(request: NextRequest) {
     // Get additional stats for each restaurant
     const restaurantIds = restaurants?.map((r) => r.id) || [];
 
-    // Fetch staff counts
-    const { data: staffCounts } = await supabase
-      .from('users')
-      .select('restaurant_id')
-      .in('restaurant_id', restaurantIds);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [
+      { data: staffCounts },
+      { data: usageData },
+      { data: lastOrders },
+      { data: ticketCounts }
+    ] = await Promise.all([
+      supabase
+        .from('users')
+        .select('restaurant_id')
+        .in('restaurant_id', restaurantIds),
+      supabase
+        .from('tenant_usage_snapshots')
+        .select('restaurant_id, total_orders, total_revenue')
+        .in('restaurant_id', restaurantIds)
+        .gte('snapshot_date', thirtyDaysAgo.toISOString().split('T')[0]),
+      supabase
+        .from('orders')
+        .select('restaurant_id, created_at')
+        .in('restaurant_id', restaurantIds)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('support_tickets')
+        .select('restaurant_id')
+        .in('restaurant_id', restaurantIds)
+        .not('status', 'in', '(resolved,closed)')
+    ]);
 
     const staffCountMap = new Map<string, number>();
     staffCounts?.forEach((s) => {
       staffCountMap.set(s.restaurant_id, (staffCountMap.get(s.restaurant_id) || 0) + 1);
     });
-
-    // Fetch usage snapshots for last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const { data: usageData } = await supabase
-      .from('tenant_usage_snapshots')
-      .select('restaurant_id, total_orders, total_revenue')
-      .in('restaurant_id', restaurantIds)
-      .gte('snapshot_date', thirtyDaysAgo.toISOString().split('T')[0]);
 
     const usageMap = new Map<
       string,
@@ -126,26 +140,12 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    // Fetch last order times
-    const { data: lastOrders } = await supabase
-      .from('orders')
-      .select('restaurant_id, created_at')
-      .in('restaurant_id', restaurantIds)
-      .order('created_at', { ascending: false });
-
     const lastOrderMap = new Map<string, string>();
     lastOrders?.forEach((o) => {
       if (!lastOrderMap.has(o.restaurant_id)) {
         lastOrderMap.set(o.restaurant_id, o.created_at);
       }
     });
-
-    // Fetch open support tickets
-    const { data: ticketCounts } = await supabase
-      .from('support_tickets')
-      .select('restaurant_id')
-      .in('restaurant_id', restaurantIds)
-      .not('status', 'in', '(resolved,closed)');
 
     const ticketCountMap = new Map<string, number>();
     ticketCounts?.forEach((t) => {
@@ -186,6 +186,20 @@ export async function GET(request: NextRequest) {
           support_tickets_open: ticketCountMap.get(r.id) || 0
         };
       }) || [];
+
+    if (restaurantIds.length === 0) {
+      const response: PaginatedResponse<RestaurantSummary> = {
+        data: [],
+        pagination: {
+          page: query.page,
+          limit: query.limit,
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / query.limit)
+        }
+      };
+
+      return platformApiResponse(response);
+    }
 
     const response: PaginatedResponse<RestaurantSummary> = {
       data: summaries,

@@ -1,16 +1,26 @@
-// Platform Admin Settings Page
+import { getTranslations } from 'next-intl/server';
+import PlatformSettings from '@/components/platform/platform-settings';
 
-export default function SettingsPage() {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'platform.nav' });
+  return { title: t('settings') };
+}
+
+export default async function PlatformSettingsPage() {
+  const t = await getTranslations('platform.nav');
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 mt-1">Platform configuration and settings</p>
+        <h2 className="text-2xl font-bold text-gray-900">{t('settings')}</h2>
       </div>
 
-      <div className="bg-white rounded-lg border p-8 text-center">
-        <p className="text-gray-500">Settings UI coming soon</p>
-      </div>
+      <PlatformSettings />
     </div>
   );
 }

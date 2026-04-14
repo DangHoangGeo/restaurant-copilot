@@ -1,0 +1,256 @@
+{
+  "nav": {
+    "overview": "概要",
+    "approvals": "承認待ち",
+    "subscriptions": "サブスクリプション",
+    "accounts": "アカウント",
+    "usage": "リソース使用量",
+    "logs": "ログ",
+    "support": "サポート",
+    "settings": "設定"
+  },
+  "header": {
+    "title": "プラットフォーム管理",
+    "admin_badge": "管理者",
+    "notifications": "通知",
+    "no_notifications": "新しい通知はありません",
+    "language": "言語",
+    "account": "アカウント",
+    "logout": "ログアウト"
+  },
+  "overview": {
+    "title": "プラットフォーム概要",
+    "period_selector": {
+      "today": "今日",
+      "7days": "過去7日間",
+      "30days": "過去30日間",
+      "90days": "過去90日間"
+    },
+    "tenants": {
+      "title": "テナント",
+      "total": "テナント合計",
+      "on_trial": "トライアル中",
+      "active": "有効サブスクライバー",
+      "suspended": "停止中",
+      "new_signups": "新規登録"
+    },
+    "revenue": {
+      "title": "収益",
+      "mrr": "月次経常収益",
+      "arr": "年次経常収益",
+      "churn_rate": "解約率"
+    },
+    "support": {
+      "title": "サポート",
+      "total_tickets": "総チケット数",
+      "new_tickets": "新規チケット",
+      "unresolved": "未解決",
+      "sla_breached": "SLA違反"
+    },
+    "usage": {
+      "title": "使用状況",
+      "total_orders": "総注文数",
+      "total_customers": "総顧客数",
+      "ai_calls": "AI呼び出し",
+      "avg_orders": "平均注文数/テナント"
+    },
+    "trends": {
+      "title": "トレンド",
+      "empty": "トレンドデータがありません",
+      "signups": "登録数",
+      "orders": "注文数",
+      "revenue": "収益"
+    }
+  },
+  "approvals": {
+    "title": "承認待ち",
+    "subtitle": "新規レストランの申請を確認・承認する",
+    "table": {
+      "restaurant": "レストラン",
+      "email": "メールアドレス",
+      "created_at": "登録日",
+      "plan": "プラン",
+      "actions": "操作"
+    },
+    "actions": {
+      "approve": "承認",
+      "reject": "却下",
+      "view_details": "詳細を見る"
+    },
+    "approve_dialog": {
+      "title": "レストランを承認",
+      "description": "このレストランを承認してもよろしいですか？",
+      "notes_label": "メモ（任意）",
+      "notes_placeholder": "承認に関するメモを入力してください...",
+      "cancel": "キャンセル",
+      "confirm": "承認する"
+    },
+    "reject_dialog": {
+      "title": "レストランを却下",
+      "description": "却下理由を入力してください。",
+      "reason_label": "理由",
+      "reason_placeholder": "却下の理由を入力してください...",
+      "cancel": "キャンセル",
+      "confirm": "却下する"
+    },
+    "empty": "承認待ちの申請はありません",
+    "loading": "申請を読み込み中..."
+  },
+  "subscriptions": {
+    "title": "サブスクリプション",
+    "subtitle": "テナントのサブスクリプションと請求を管理する",
+    "table": {
+      "restaurant": "レストラン",
+      "plan": "プラン",
+      "status": "ステータス",
+      "billing_cycle": "請求サイクル",
+      "current_period_end": "更新日",
+      "seats_used": "使用シート数",
+      "actions": "操作"
+    },
+    "status": {
+      "trial": "トライアル",
+      "active": "有効",
+      "past_due": "支払い遅延",
+      "canceled": "キャンセル済み",
+      "paused": "一時停止",
+      "expired": "期限切れ"
+    },
+    "actions": {
+      "upgrade": "アップグレード",
+      "downgrade": "ダウングレード",
+      "extend_trial": "トライアル延長",
+      "cancel": "キャンセル",
+      "view_details": "詳細を見る"
+    },
+    "filters": {
+      "all_status": "全ステータス",
+      "all_plans": "全プラン",
+      "search_placeholder": "レストランを検索..."
+    },
+    "empty": "サブスクリプションが見つかりません",
+    "loading": "サブスクリプションを読み込み中..."
+  },
+  "accounts": {
+    "title": "アカウント",
+    "subtitle": "レストランアカウントとユーザーを管理する",
+    "table": {
+      "restaurant": "レストラン",
+      "owner": "オーナー",
+      "staff_count": "スタッフ数",
+      "last_active": "最終アクティブ",
+      "status": "ステータス",
+      "actions": "操作"
+    },
+    "actions": {
+      "view_details": "詳細を見る",
+      "suspend": "停止",
+      "unsuspend": "停止解除"
+    },
+    "empty": "アカウントが見つかりません",
+    "loading": "アカウントを読み込み中..."
+  },
+  "usage": {
+    "title": "リソース使用量",
+    "subtitle": "プラットフォームのリソース消費を監視する",
+    "metrics": {
+      "orders": "注文数",
+      "storage": "ストレージ",
+      "ai_calls": "AI呼び出し",
+      "api_calls": "API呼び出し"
+    },
+    "filters": {
+      "all_restaurants": "全レストラン",
+      "date_range": "期間"
+    },
+    "empty": "使用データがありません",
+    "loading": "使用データを読み込み中..."
+  },
+  "logs": {
+    "title": "システムログ",
+    "subtitle": "システムログを表示・検索する",
+    "table": {
+      "timestamp": "タイムスタンプ",
+      "level": "レベル",
+      "restaurant": "レストラン",
+      "endpoint": "エンドポイント",
+      "message": "メッセージ",
+      "actions": "操作"
+    },
+    "filters": {
+      "all_levels": "全レベル",
+      "all_restaurants": "全レストラン",
+      "search_placeholder": "ログを検索..."
+    },
+    "actions": {
+      "export": "CSVエクスポート",
+      "view_details": "詳細を見る"
+    },
+    "empty": "ログが見つかりません",
+    "loading": "ログを読み込み中..."
+  },
+  "support": {
+    "title": "サポートチケット",
+    "subtitle": "カスタマーサポートリクエストを管理する",
+    "tabs": {
+      "all": "すべて",
+      "new": "新規",
+      "investigating": "調査中",
+      "waiting": "待機中",
+      "resolved": "解決済み"
+    },
+    "table": {
+      "ticket_number": "チケット番号",
+      "subject": "件名",
+      "restaurant": "レストラン",
+      "priority": "優先度",
+      "status": "ステータス",
+      "created_at": "作成日",
+      "actions": "操作"
+    },
+    "priority": {
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "urgent": "緊急"
+    },
+    "status": {
+      "new": "新規",
+      "investigating": "調査中",
+      "waiting_customer": "顧客待ち",
+      "resolved": "解決済み",
+      "closed": "クローズ"
+    },
+    "actions": {
+      "reply": "返信",
+      "assign": "担当者割り当て",
+      "resolve": "解決済みにする",
+      "close": "クローズ"
+    },
+    "filters": {
+      "all_priorities": "全優先度",
+      "all_status": "全ステータス",
+      "search_placeholder": "チケットを検索..."
+    },
+    "empty": "チケットが見つかりません",
+    "loading": "チケットを読み込み中..."
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "close": "閉じる",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "success": "操作が成功しました",
+    "confirm": "確認",
+    "search": "検索",
+    "filter": "フィルター",
+    "reset": "リセット",
+    "export": "エクスポート",
+    "refresh": "更新",
+    "view": "表示",
+    "actions": "操作"
+  }
+}
