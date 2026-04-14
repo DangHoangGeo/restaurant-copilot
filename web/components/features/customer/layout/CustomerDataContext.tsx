@@ -39,11 +39,15 @@ const CustomerDataContext = createContext<CustomerDataContextType | null>(null);
 
 interface CustomerDataProviderProps {
   children: React.ReactNode;
+  initialSettings?: RestaurantSettings | null;
 }
 
-export function CustomerDataProvider({ children }: CustomerDataProviderProps) {
-  const [restaurantSettings, setRestaurantSettings] = useState<RestaurantSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function CustomerDataProvider({ children, initialSettings }: CustomerDataProviderProps) {
+  const [restaurantSettings, setRestaurantSettings] = useState<RestaurantSettings | null>(
+    initialSettings ?? null
+  );
+  // If initialSettings were provided by the server, skip the client-side fetch entirely.
+  const [isLoading, setIsLoading] = useState(!initialSettings);
   const [error, setError] = useState<string | null>(null);
   const [sessionData, setSessionData] = useState<SessionData>({
     sessionId: null,
@@ -172,20 +176,22 @@ export function CustomerDataProvider({ children }: CustomerDataProviderProps) {
     }
   };
 
-  // Fetch restaurant settings
+  // Fetch restaurant settings only when not pre-populated from the server.
   useEffect(() => {
+    if (initialSettings) return; // Server already provided data — skip fetch.
+
     const fetchRestaurantSettings = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const subdomain = window.location.hostname.split('.')[0];
         const response = await fetch(`/api/v1/customer/restaurant?subdomain=${subdomain}`);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch restaurant data');
         }
-        
+
         const data = await response.json();
         setRestaurantSettings(data.restaurant);
       } catch (err) {
@@ -198,7 +204,7 @@ export function CustomerDataProvider({ children }: CustomerDataProviderProps) {
     };
 
     fetchRestaurantSettings();
-  }, []);
+  }, [initialSettings]);
 
   // Check for stored session on mount and URL parameters
   useEffect(() => {

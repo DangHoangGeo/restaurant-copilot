@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { CartProvider, useCart } from "../CartContext";
 import { CustomerDataProvider, useCustomerData } from "./CustomerDataContext";
 import type { CartItem } from "../CartContext";
+import type { RestaurantSettings } from "@/shared/types/customer";
 import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";
 import { FloatingCart } from "../FloatingCart";
@@ -14,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeletons/skeleton";
 interface CustomerLayoutProps {
   children: React.ReactNode;
   locale: string;
+  initialSettings?: RestaurantSettings | null;
 }
 
 function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
@@ -180,9 +182,9 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   );
 }
 
-export function CustomerLayout({ children, locale }: CustomerLayoutProps) {
+export function CustomerLayout({ children, locale, initialSettings }: CustomerLayoutProps) {
   return (
-    <CustomerDataProvider>
+    <CustomerDataProvider initialSettings={initialSettings}>
       <CartProvider>
         <CustomerLayoutContent locale={locale}>
           {children}
