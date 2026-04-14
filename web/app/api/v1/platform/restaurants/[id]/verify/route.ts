@@ -14,14 +14,14 @@ import { verifyRestaurantSchema } from '@/shared/schemas/platform';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ restaurantId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ){
   // Check platform admin authorization
   const authError = await requirePlatformAdmin();
   if (authError) return authError;
 
   try {
-    const {restaurantId} = await params;
+    const { id: restaurantId } = await params;
     const body = await request.json();
 
     // Validate request body
