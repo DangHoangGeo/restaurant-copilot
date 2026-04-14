@@ -211,18 +211,10 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
     if (typeof window !== 'undefined') {
       // First check URL parameters for sessionId
       if (sessionParams.sessionId) {
-        // Set the session from URL parameter and validate it
-        setSessionData(prev => ({
-          ...prev,
-          sessionId: sessionParams.sessionId || null,
-          sessionStatus: 'active',
-          canAddItems: true,
-        }));
-        
-        // Also store it locally for persistence
+        // Store locally for persistence, but do NOT grant canAddItems until server confirms
         localStorage.setItem('coorder_session_id', sessionParams.sessionId);
-        
-        // Validate the session with the server
+
+        // Validate the session with the server — canAddItems will be set by the response
         validateSessionFromUrl(sessionParams.sessionId);
       } else {
         // Check for stored session if no URL parameter

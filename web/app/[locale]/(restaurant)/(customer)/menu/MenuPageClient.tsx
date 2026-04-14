@@ -246,6 +246,9 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         brandColor={restaurantSettings?.primaryColor || "#3b82f6"}
         setView={handleSetView}
         restaurantId={restaurantSettings?.id || ''}
+        restaurantName={restaurantSettings?.name}
+        logoUrl={restaurantSettings?.logoUrl}
+        allowOrderNotes={restaurantSettings?.allow_order_notes ?? true}
       />
 
       {/* Guest Count Dialog */}

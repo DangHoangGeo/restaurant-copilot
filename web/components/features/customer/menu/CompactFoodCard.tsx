@@ -302,11 +302,15 @@ export function CompactFoodCard({
                 scale: 0.95,
                 transition: { duration: 0.1 }
               }}
-              transition={{ 
-                duration: isAddingToCart ? 0.8 : 0.2,
+              transition={isAddingToCart ? {
+                duration: 0.5,
+                type: "tween",
+                ease: "easeInOut",
+              } : {
+                duration: 0.2,
                 type: "spring",
                 stiffness: 400,
-                damping: 25
+                damping: 25,
               }}
             >
               <Button

@@ -214,5 +214,11 @@
     "JPY": "Yên Nhật (¥)",
     "USD": "Đô la Mỹ ($)",
     "VND": "Đồng Việt Nam (₫)"
+  },
+  "orderExperience": {
+    "title": "Trải nghiệm đặt món",
+    "description": "Tùy chỉnh những gì khách hàng thấy khi đặt món",
+    "allowOrderNotes": "Cho phép yêu cầu đặc biệt",
+    "allowOrderNotesDescription": "Cho phép khách hàng thêm ghi chú hoặc yêu cầu đặc biệt cho từng món (ví dụ: \"không hành\", \"thêm sốt\")."
   }
 }

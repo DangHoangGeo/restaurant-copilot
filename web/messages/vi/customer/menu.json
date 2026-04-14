@@ -80,7 +80,9 @@
     "rating": "Đánh giá",
     "description": "Mô tả",
     "decrease_quantity": "Giảm số lượng",
-    "increase_quantity": "Tăng số lượng"
+    "increase_quantity": "Tăng số lượng",
+    "show_more": "Xem thêm",
+    "show_less": "Thu gọn"
   },
   "ai_assistant": {
     "title": "Trợ lý nhà hàng",

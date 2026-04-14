@@ -80,7 +80,9 @@
     "rating": "評価",
     "description": "説明",
     "decrease_quantity": "数量を減らす",
-    "increase_quantity": "数量を増やす"
+    "increase_quantity": "数量を増やす",
+    "show_more": "もっと見る",
+    "show_less": "閉じる"
   },
   "ai_assistant": {
     "title": "レストランアシスタント",
