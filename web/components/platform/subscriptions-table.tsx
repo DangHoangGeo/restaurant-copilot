@@ -138,7 +138,13 @@ export default function SubscriptionsTable() {
           </SelectContent>
         </Select>
 
-        <Button variant="ghost" size="icon" onClick={fetchSubscriptions} title={tc('refresh')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={fetchSubscriptions}
+          title={tc('refresh')}
+          aria-label={tc('refresh')}
+        >
           <RefreshCw className="w-4 h-4" />
         </Button>
       </div>

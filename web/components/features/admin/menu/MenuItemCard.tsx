@@ -115,7 +115,12 @@ export function MenuItemCard({
                 </h3>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 flex-shrink-0"
+                      aria-label={t('table_headers.actions')}
+                    >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -218,7 +223,12 @@ export function MenuItemCard({
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 flex-shrink-0"
+                    aria-label={t('table_headers.actions')}
+                  >
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -345,10 +355,22 @@ export function MenuItemCard({
       {/* Actions - Compact on mobile */}
       <td className="px-2 sm:px-4 py-3 w-16 sm:w-auto">
         <div className="flex gap-0.5 sm:gap-1">
-          <Button size="sm" variant="ghost" onClick={onEdit} className="h-8 w-8 p-0 sm:h-9 sm:w-9">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onEdit}
+            className="h-8 w-8 p-0 sm:h-9 sm:w-9"
+            aria-label={t('edit')}
+          >
             <SquarePen className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={onDelete} className="text-red-500 h-8 w-8 p-0 sm:h-9 sm:w-9">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onDelete}
+            className="text-red-500 h-8 w-8 p-0 sm:h-9 sm:w-9"
+            aria-label={t('delete')}
+          >
             <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
