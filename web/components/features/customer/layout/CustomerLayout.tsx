@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CartProvider, useCart } from "../CartContext";
 import { CustomerDataProvider, useCustomerData } from "./CustomerDataContext";
@@ -21,7 +21,7 @@ interface CustomerLayoutProps {
 function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   const t = useTranslations("customer");
   const tSession = useTranslations("customer/session");
-  const params = useParams();
+  //const params = useParams();
   const router = useRouter();
   const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();
   const { restaurantSettings, sessionData, isLoading, error } = useCustomerData();
@@ -84,7 +84,7 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
         clearCart();
         
         // Redirect to order history page
-        router.push(`/${params.locale}/history?sessionId=${sessionData.sessionId}`);
+        router.push(`/${locale}/history?sessionId=${sessionData.sessionId}`);
       } else {
         throw new Error(data.error || 'Order placement failed');
       }
