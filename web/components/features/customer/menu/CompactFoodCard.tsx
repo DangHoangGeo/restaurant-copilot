@@ -224,7 +224,8 @@ export function CompactFoodCard({
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 500, damping: 25 }}
-          className="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-[10px] md:text-xs font-bold shadow-md border-2 border-white z-10"
+          className="absolute top-2 right-2 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-[10px] md:text-xs font-bold shadow-md border-2 border-white z-10"
+          style={{ backgroundColor: brandColor }}
         >
           {qtyInCart}
         </motion.div>
@@ -291,9 +292,9 @@ export function CompactFoodCard({
                 disabled={isAddingToCart}
                 className="h-8 w-8 md:h-11 md:w-11 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20 focus:ring-2 focus:ring-offset-2 relative overflow-hidden"
                 style={{
-                  backgroundColor: isAddingToCart ? '#10b981' : brandColor,
+                  backgroundColor: brandColor,
                   boxShadow: isAddingToCart
-                    ? '0 0 25px rgba(16, 185, 129, 0.5)'
+                    ? `0 0 25px ${brandColor}80`
                     : `0 4px 15px ${brandColor}40`
                 }}
                 aria-label={`Add ${itemName} to cart`}

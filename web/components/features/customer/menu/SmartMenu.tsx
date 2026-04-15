@@ -16,10 +16,12 @@ import {
   ArrowRight,
   Heart,
   RefreshCw,
-  Menu,
-  X,
-  UtensilsCrossed
+
+  UtensilsCrossed,
+  Moon,
+  Sun,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { getLocalizedText } from '@/lib/customerUtils';
 import { generateContextualInfo } from '@/components/common/ContextualGreeting';
 import { ItemDetailModal } from '@/components/features/customer/menu/ItemDetailModal';
@@ -33,6 +35,7 @@ import type { ViewType, ViewProps } from '@/components/features/customer/screens
 import { CompactFoodCard } from './CompactFoodCard';
 import { MenuSection } from './MenuSection';
 import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/common/language-switcher';
 
 // Enhanced interfaces for smart features
 interface SmartMenuItem extends FoodItem {
@@ -147,15 +150,13 @@ export function SmartMenu({
   allowOrderNotes = true
 }: SmartMenuProps) {
   const { addToCart, getQuantityByItemId, cart } = useCart();
-  
+  const { theme, setTheme } = useTheme();
+  const [selectedLocale, setSelectedLocale] = useState(locale);
+
   // State management
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [activeSmartCategory, setActiveSmartCategory] = useState<string>('all');
-  // Category filter modal state
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [categorySearchTerm, setCategorySearchTerm] = useState('');
-  const [debouncedCategorySearchTerm] = useDebounce(categorySearchTerm, 300);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string | null>(null);
   // const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
@@ -383,21 +384,6 @@ export function SmartMenu({
     );
   }, [smartCategories, timeOfDay]);
 
-  const activeCategoryLabel = useMemo(() => {
-    if (!activeCategoryFilter) return '';
-    const activeCategory = activeCategories.find(cat => cat.id === activeCategoryFilter);
-    if (!activeCategory) return '';
-
-    return getLocalizedText(
-      {
-        name_en: activeCategory.name_en || '',
-        name_ja: activeCategory.name_ja || '',
-        name_vi: activeCategory.name_vi || ''
-      },
-      locale
-    );
-  }, [activeCategoryFilter, activeCategories, locale]);
-
   // Apply restaurant brand color
   useEffect(() => {
     if (brandColor) {
@@ -456,8 +442,34 @@ export function SmartMenu({
           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '22px 22px' }}
         />
 
+        {/* ── Action bar: language / theme / history ── */}
+        <div
+          className="relative z-10 flex items-center justify-end gap-1 px-3"
+          style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 10px)' }}
+        >
+          {sessionId && (
+            <button
+              onClick={() => setView('history', { tableId, sessionId, tableNumber })}
+              className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+              aria-label="Order history"
+            >
+              <Clock className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+          <div className="[&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:h-9 [&_button]:rounded-full [&_button]:bg-white/15">
+            <LanguageSwitcher currentLocale={selectedLocale} onLocaleChange={setSelectedLocale} />
+          </div>
+        </div>
+
         {/* Main content */}
-        <div className="relative px-5 pt-5 pb-12">
+        <div className="relative px-5 pt-3 pb-12">
           <div className="flex items-center gap-4">
             {/* Logo or initial */}
             <motion.div
@@ -539,11 +551,11 @@ export function SmartMenu({
         </div>
       </div>
 
-      {/* Search and Content with tighter spacing */}
-      <div className="container mx-auto px-4 py-4">
-        {/* Enhanced Search Bar with better mobile touch targets */}
-        <div className="mb-4">
-          <div className="relative max-w-md mx-auto">
+      {/* ── Sticky search + category bar ── */}
+      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm">
+        {/* Search bar */}
+        <div className="px-4 pt-3 pb-0">
+          <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               ref={searchInputRef}
@@ -551,7 +563,7 @@ export function SmartMenu({
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 pr-12 w-full h-12 text-base rounded-2xl border-2 border-gray-200 focus:border-[var(--brand-color)] transition-colors shadow-sm"
+              className="pl-12 pr-12 w-full h-11 text-base rounded-xl border border-gray-200 dark:border-slate-700 focus:border-[var(--brand-color)] transition-colors bg-slate-50 dark:bg-slate-800"
             />
             {searchTerm && (
               <motion.div
@@ -572,22 +584,47 @@ export function SmartMenu({
           </div>
         </div>
 
-        {activeCategoryFilter && (
-          <div className="mb-4 flex justify-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm">
-              <span className="text-slate-500">{t('menu.currently_showing')}:</span>
-              <span className="font-medium text-slate-900">{activeCategoryLabel}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setActiveCategoryFilter(null)}
-                className="h-7 rounded-full px-2 text-xs"
-              >
-                {t('menu.clear_filters')}
-              </Button>
-            </div>
+        {/* Category pills */}
+        {activeCategories.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto px-4 py-2.5 scrollbar-hide">
+            <button
+              onClick={() => setActiveCategoryFilter(null)}
+              className="flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 border focus:outline-none"
+              style={
+                !activeCategoryFilter
+                  ? { backgroundColor: brandColor, borderColor: brandColor, color: '#fff' }
+                  : { backgroundColor: 'transparent', borderColor: '#e2e8f0', color: '#64748b' }
+              }
+            >
+              {t('menu.show_all_categories')}
+            </button>
+            {activeCategories.map((cat) => {
+              const label = getLocalizedText(
+                { name_en: cat.name_en || '', name_ja: cat.name_ja || '', name_vi: cat.name_vi || '' },
+                locale
+              );
+              const isActive = activeCategoryFilter === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategoryFilter(isActive ? null : cat.id)}
+                  className="flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 border focus:outline-none"
+                  style={
+                    isActive
+                      ? { backgroundColor: brandColor, borderColor: brandColor, color: '#fff' }
+                      : { backgroundColor: 'transparent', borderColor: '#e2e8f0', color: '#64748b' }
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         )}
+      </div>
+
+      {/* ── Scrollable content ── */}
+      <div className="container mx-auto px-4 py-4">
 
         {/* Smart Category Tabs - Hidden when not searching */}
         {debouncedSearchTerm && (
@@ -841,170 +878,7 @@ export function SmartMenu({
         </div>
       </div>
 
-      {/* Category Filter Bottom Sheet */}
-      <AnimatePresence>
-        {isCategoryModalOpen && (
-          /* Bottom Sheet - No backdrop, menu stays fully visible */
-          <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ 
-                type: 'spring', 
-                damping: 30, 
-                stiffness: 300,
-                mass: 0.8
-              }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl max-h-[70vh] overflow-hidden"
-            >
-              {/* Handle */}
-              <div className="flex justify-center py-3">
-                <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-              </div>
-              
-              {/* Header */}
-              <div className="px-6 pb-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {t('menu.filter_categories')}
-                  </h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsCategoryModalOpen(false)}
-                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                {activeCategoryFilter && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {t('menu.currently_showing')}: {activeCategoryLabel}
-                  </p>
-                )}
-              </div>
-              
-              {/* Search */}
-              <div className="px-6 pb-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="search"
-                    placeholder={t('menu.search_categories')}
-                    value={categorySearchTerm}
-                    onChange={e => setCategorySearchTerm(e.target.value)}
-                    className="pl-10 w-full rounded-xl border-gray-200 dark:border-gray-700"
-                  />
-                </div>
-              </div>
-              
-              {/* Categories List */}
-              <div className="px-6 pb-6 overflow-y-auto max-h-[40vh]">
-                {/* Show All Option */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`w-full text-left p-3 rounded-xl mb-2 transition-all duration-200 ${
-                    !activeCategoryFilter
-                      ? 'bg-[var(--brand-color)] text-white shadow-md'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                  onClick={() => {
-                    setActiveCategoryFilter(null);
-                    setIsCategoryModalOpen(false);
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">
-                      {t('menu.show_all_categories')}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                      {allMenuItems.length}
-                    </Badge>
-                  </div>
-                </motion.button>
-                
-                {/* Category Options */}
-                {activeCategories
-                  .filter(cat =>
-                    getLocalizedText(
-                      { name_en: cat.name_en || '', name_ja: cat.name_ja || '', name_vi: cat.name_vi || '' },
-                      locale
-                    )
-                      .toLowerCase()
-                      .includes(debouncedCategorySearchTerm.toLowerCase())
-                  )
-                  .map(cat => {
-                    const categoryItems = allMenuItems.filter(item => item.categoryId === cat.id);
-                    const isActive = activeCategoryFilter === cat.id;
-                    
-                    return (
-                      <motion.button
-                        key={cat.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`w-full text-left p-3 rounded-xl mb-2 transition-all duration-200 ${
-                          isActive
-                            ? 'bg-[var(--brand-color)] text-white shadow-md'
-                            : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
-                        onClick={() => {
-                          setActiveCategoryFilter(cat.id);
-                          setIsCategoryModalOpen(false);
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">
-                            {getLocalizedText(
-                              { name_en: cat.name_en || '', name_ja: cat.name_ja || '', name_vi: cat.name_vi || '' },
-                              locale
-                            )}
-                          </span>
-                          <Badge 
-                            variant={isActive ? "outline" : "secondary"} 
-                            className={`text-xs ${isActive ? 'border-white text-white' : ''}`}
-                          >
-                            {categoryItems.length}
-                          </Badge>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
-              </div>
-            </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Floating Category Filter Button */}
-      <div className="fixed bottom-6 right-4 z-30">
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Button
-            className="p-4 rounded-lg shadow-2xl border-2 border-white dark:border-gray-700"
-            style={{
-              background: brandColor 
-                ? `linear-gradient(135deg, ${brandColor} 0%, ${brandColor}dd 100%)`
-                : 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
-            }}
-            onClick={() => setIsCategoryModalOpen(true)}
-          >
-            <Menu className="h-6 w-6 text-white" />
-          </Button>
-        </motion.div>
-        
-        {/* Category Filter Indicator */}
-        {activeCategoryFilter && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold"
-          >
-            1
-          </motion.div>
-        )}
-      </div>
 
       {/* Item Detail Modal */}
       <ItemDetailModal
