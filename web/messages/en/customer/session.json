@@ -40,5 +40,9 @@
   "invalid_table": "Invalid Table",
   "invalid_table_message": "The table ID is invalid or doesn't belong to this restaurant.",
   "invalid_table_instruction": "Please scan a valid QR code from a table at this restaurant.",
-  "view_menu_only": "View Menu Only"
+  "view_menu_only": "View Menu Only",
+  "session_required": "No Active Session",
+  "session_required_message": "Please scan the QR code on your table to start ordering.",
+  "order_failed": "Order Failed",
+  "try_again_later": "Please try again later."
 }

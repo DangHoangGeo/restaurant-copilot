@@ -40,5 +40,9 @@
   "invalid_table": "無効なテーブル",
   "invalid_table_message": "テーブルIDが無効か、このレストランに属していません。",
   "invalid_table_instruction": "有効なテーブルのQRコードをスキャンしてください。",
-  "view_menu_only": "メニューのみ閲覧"
+  "view_menu_only": "メニューのみ閲覧",
+  "session_required": "アクティブなセッションがありません",
+  "session_required_message": "テーブルのQRコードをスキャンして注文を開始してください。",
+  "order_failed": "注文に失敗しました",
+  "try_again_later": "後でもう一度お試しください。"
 }

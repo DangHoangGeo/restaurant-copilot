@@ -40,5 +40,9 @@
   "invalid_table": "Bàn không hợp lệ",
   "invalid_table_message": "ID bàn không hợp lệ hoặc không thuộc nhà hàng này.",
   "invalid_table_instruction": "Vui lòng quét mã QR hợp lệ tại nhà hàng này.",
-  "view_menu_only": "Chỉ xem thực đơn"
+  "view_menu_only": "Chỉ xem thực đơn",
+  "session_required": "Chưa có phiên đặt món",
+  "session_required_message": "Vui lòng quét mã QR trên bàn để bắt đầu đặt món.",
+  "order_failed": "Đặt món thất bại",
+  "try_again_later": "Vui lòng thử lại sau."
 }

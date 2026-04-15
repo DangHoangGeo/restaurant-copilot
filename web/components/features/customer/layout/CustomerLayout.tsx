@@ -1,16 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CartProvider, useCart } from "../CartContext";
 import { CustomerDataProvider, useCustomerData } from "./CustomerDataContext";
 import type { CartItem } from "../CartContext";
 import type { RestaurantSettings } from "@/shared/types/customer";
-import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";
 import { FloatingCart } from "../FloatingCart";
 //import { AIAssistant } from "./AIAssistant";
 import { Skeleton } from "@/components/ui/skeletons/skeleton";
+import { useToast } from "@/components/ui/use-toast";
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
@@ -20,37 +20,34 @@ interface CustomerLayoutProps {
 
 function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   const t = useTranslations("customer");
+  const tSession = useTranslations("customer/session");
   const params = useParams();
   const router = useRouter();
-  //const pathname = usePathname();
-  const [selectedLocale, setSelectedLocale] = useState(locale);
   const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();
   const { restaurantSettings, sessionData, isLoading, error } = useCustomerData();
+  const { toast } = useToast();
 
   //const [isAIOpen, setIsAIOpen] = useState(false);
 
   // Determine current context for AI Assistant
   //const currentContext = pathname.includes('/menu') ? 'menu': pathname.includes('/order') ? 'order' : 'menu';
 
-  // Handle navigation
-  const handleCartClick = () => {
-    router.push(`/${params.locale}/cart`);
-  };
-
-  const handleOrderHistoryClick = () => {
-    router.push(`/${params.locale}/history`);
-  };
-
   // Handle order placement
   const handlePlaceOrder = async () => {
     if (!sessionData.sessionId) {
-      console.error('No session ID available for order placement');
-      // TODO: Show error toast or redirect to session creation
+      toast({
+        title: tSession("session_required"),
+        description: tSession("session_required_message"),
+        variant: "destructive",
+      });
       return;
     }
     if (!restaurantSettings) {
-      console.error('No restaurant settings available for order placement');
-      // TODO: Show error toast or redirect to restaurant selection
+      toast({
+        title: tSession("order_failed"),
+        description: tSession("try_again_later"),
+        variant: "destructive",
+      });
       return;
     }
 
@@ -93,8 +90,11 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
       }
     } catch (error) {
       console.error('Error placing order:', error);
-      // TODO: Show error toast notification
-      // For now, just log the error
+      toast({
+        title: tSession("order_failed"),
+        description: error instanceof Error ? error.message : tSession("try_again_later"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -147,16 +147,6 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
-      <CustomerHeader
-        restaurantSettings={restaurantSettings}
-        onCartClick={handleCartClick}
-        currentLocale={selectedLocale}
-        onLocaleChange={setSelectedLocale}
-        onOrderHistoryClick={handleOrderHistoryClick}
-        cartItemCount={totalCartItems}
-        showOrderHistory={!!sessionData.sessionId}
-      />
-      
       <main className="flex-1">
         {children}
       </main>
