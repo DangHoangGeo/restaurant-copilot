@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle } from 'lucide-react';
+import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle, Loader2 } from 'lucide-react';
 import { MenuSkeleton } from '@/components/ui/skeletons';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
@@ -1200,6 +1200,13 @@ export function MenuClientContent() {
 
   return (
     <>
+      {isLoading && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-background border rounded-lg shadow-lg px-4 py-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Saving...</span>
+        </div>
+      )}
+
       <header className="mb-8">
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
           {t("title")}

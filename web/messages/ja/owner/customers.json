@@ -1,0 +1,24 @@
+{
+  "title": "顧客",
+  "description": "顧客の注文履歴と情報を表示",
+  "retry": "再試行",
+  "empty_state": "顧客データはまだありません。顧客が注文を開始すると、ここに表示されます。",
+  "stats": {
+    "total_customers": "総顧客数",
+    "total_revenue": "総売上",
+    "average_spend": "平均支出",
+    "returning_customers": "リピーター",
+    "regular_customers": "常連客"
+  },
+  "table": {
+    "customer_name": "顧客名",
+    "orders": "注文数",
+    "total_spent": "合計支出",
+    "avg_order": "平均注文額",
+    "last_visit": "最終訪問日",
+    "status": "ステータス"
+  },
+  "errors": {
+    "fetch_failed": "顧客データの読み込みに失敗しました"
+  }
+}

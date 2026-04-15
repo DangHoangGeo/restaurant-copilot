@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Table } from '@/shared/types'
+import { Loader2 } from 'lucide-react'
 
 // Components
 import { TableHeader } from '@/components/features/admin/tables/TableHeader'
@@ -20,6 +21,9 @@ import { QRCodeModal } from '@/components/features/admin/tables/QRCodeModal'
 import { TableModal, TableFormData } from '@/components/features/admin/tables/TableModal'
 import { TablesSkeleton } from '@/components/features/admin/tables/TablesSkeleton'
 import { ErrorState } from '@/components/features/admin/tables/ErrorState'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 // Define Zod schema for table form validation
 const getTableSchema = (t: ReturnType<typeof useTranslations<'validation'>>) => z.object({
@@ -60,6 +64,10 @@ export function TablesClientContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
+  const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false);
+  const [bulkAddCount, setBulkAddCount] = useState(5);
+  const [bulkAddPrefix, setBulkAddPrefix] = useState('Table');
+  const [isBulkAdding, setIsBulkAdding] = useState(false);
 
   // Form setup
   const tableSchema = getTableSchema(tVal);
@@ -209,7 +217,41 @@ export function TablesClientContent() {
   }
 
   const handleOpenBulkAddModal = () => {
-    toast.info('Bulk add functionality coming soon');
+    setIsBulkAddModalOpen(true);
+  };
+
+  const handleBulkAdd = async () => {
+    setIsBulkAdding(true);
+    try {
+      // Find highest existing table number to continue sequence
+      const existingNumbers = tablesData
+        .map(t => {
+          const match = t.name.match(/\d+$/);
+          return match ? parseInt(match[0]) : 0;
+        })
+        .filter(n => n > 0);
+      const startFrom = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+
+      const requests = Array.from({ length: bulkAddCount }, (_, i) =>
+        fetch('/api/v1/owner/tables', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: `${bulkAddPrefix} ${startFrom + i}`,
+            capacity: 4,
+            status: 'available',
+          }),
+        })
+      );
+      await Promise.all(requests);
+      toast.success(`${bulkAddCount} tables added successfully`);
+      setIsBulkAddModalOpen(false);
+      await fetchData();
+    } catch {
+      toast.error('Failed to add tables. Please try again.');
+    } finally {
+      setIsBulkAdding(false);
+    }
   };
 
   const clearFilters = () => {
@@ -345,6 +387,46 @@ export function TablesClientContent() {
         onRefreshQR={(table) => handleGenerateQr(table, true)}
         isQrCodeOld={isQrCodeOld}
       />
+
+      <Dialog open={isBulkAddModalOpen} onOpenChange={setIsBulkAddModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bulk Add Tables</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Table name prefix</label>
+              <Input
+                value={bulkAddPrefix}
+                onChange={e => setBulkAddPrefix(e.target.value)}
+                placeholder="Table"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Number of tables to add</label>
+              <Input
+                type="number"
+                min={1}
+                max={50}
+                value={bulkAddCount}
+                onChange={e => setBulkAddCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Will add {bulkAddCount} table{bulkAddCount !== 1 ? 's' : ''} with default capacity of 4 seats.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBulkAddModalOpen(false)} disabled={isBulkAdding}>
+              Cancel
+            </Button>
+            <Button onClick={handleBulkAdd} disabled={isBulkAdding || !bulkAddPrefix.trim()}>
+              {isBulkAdding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isBulkAdding ? 'Adding...' : `Add ${bulkAddCount} Tables`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

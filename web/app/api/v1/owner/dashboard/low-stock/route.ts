@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
+import { notifyLowStock } from '@/lib/server/notifications/email';
 
 export interface LowStockItem {
   id: string;
@@ -94,6 +95,37 @@ export async function GET() {
       const ratioB = b.threshold > 0 ? b.stock_level / b.threshold : 0;
       return ratioA - ratioB;
     });
+
+    // Send notifications for critical items only (if enabled)
+    const shouldNotify = process.env.NOTIFY_LOW_STOCK === 'true';
+    if (shouldNotify && processedItems.length > 0) {
+      try {
+        const { data: restaurant } = await supabase
+          .from('restaurants')
+          .select('email, name')
+          .eq('id', user.restaurantId)
+          .single();
+
+        if (restaurant?.email) {
+          const criticalItems = processedItems.filter(item => item.severity === 'critical');
+          if (criticalItems.length > 0) {
+            await notifyLowStock({
+              restaurantEmail: restaurant.email,
+              restaurantName: restaurant.name || 'Your Restaurant',
+              items: criticalItems.map(item => ({
+                name: item.name,
+                currentStock: item.stock_level,
+                threshold: item.threshold,
+                unit: 'units',
+              })),
+            }).catch(err => console.error('[Low stock notification error]', err));
+          }
+        }
+      } catch (notificationError) {
+        console.error('Error preparing low stock notifications:', notificationError);
+        // Continue regardless of notification errors
+      }
+    }
 
     return NextResponse.json({
       success: true,

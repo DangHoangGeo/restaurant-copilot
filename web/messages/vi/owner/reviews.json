@@ -1,0 +1,16 @@
+{
+  "title": "Đánh giá",
+  "description": "Xem và quản lý đánh giá và xếp hạng của khách hàng",
+  "stats": {
+    "total_reviews": "Tổng số đánh giá",
+    "average_rating": "Xếp hạng trung bình",
+    "five_star_count": "Đánh giá 5 sao"
+  },
+  "empty_state": {
+    "title": "Chưa có đánh giá",
+    "description": "Đánh giá của khách hàng sẽ hiển thị ở đây sau khi bạn nhận được"
+  },
+  "errors": {
+    "fetch_failed": "Không thể tải đánh giá"
+  }
+}

@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCap
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, ChevronLeft, ChevronRight, Loader2, CheckCircle } from "lucide-react";
+import { useAuth } from "@/components/ProtectedLayout";
 import {
   formatDateYYYYMMDD,
   formatDateYYYYMM,
@@ -39,12 +40,11 @@ export interface AttendanceRecord {
   verified_at?: string | null; // ISO DateTime string
 }
 
-// Mock user role - replace with actual role from context/session
-const USER_IS_MANAGER_OR_OWNER = true; // const userRole = 'owner';
-
 export default function AttendanceTable() {
   const t = useTranslations("owner.employees.attendance");
   const common_t = useTranslations("common");
+  const { user } = useAuth();
+  const USER_IS_MANAGER_OR_OWNER = user?.role === 'owner' || user?.role === 'manager';
 
   const [employees, setEmployees] = useState<ApiEmployeeForAttendance[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");

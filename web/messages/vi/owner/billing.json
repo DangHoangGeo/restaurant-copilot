@@ -1,0 +1,57 @@
+{
+  "title": "Thanh toán & Đăng ký",
+  "subtitle": "Quản lý kế hoạch đăng ký và thông tin thanh toán của bạn",
+  "current_plan": {
+    "title": "Kế hoạch hiện tại",
+    "plan_name": "Kế hoạch",
+    "price": "Chi phí hàng tháng",
+    "period_end": "Kỳ thanh toán kết thúc",
+    "days_until_renewal": "Ngày cho đến khi gia hạn",
+    "days": "ngày"
+  },
+  "trial": {
+    "banner_title": "Thời gian dùng thử đang hoạt động",
+    "banner_description": "Thời gian dùng thử của bạn sẽ kết thúc trong {days} ngày. Nâng cấp lên gói trả phí để tiếp tục sử dụng CoOrder.ai sau kỳ dùng thử.",
+    "start_date": "Ngày bắt đầu dùng thử",
+    "end_date": "Ngày kết thúc dùng thử",
+    "days_remaining": "ngày còn lại"
+  },
+  "status": {
+    "trial": "Dùng thử",
+    "active": "Hoạt động",
+    "past_due": "Quá hạn",
+    "past_due_title": "Cần thanh toán",
+    "past_due_description": "Khoản thanh toán của bạn đã quá hạn. Vui lòng cập nhật thông tin thanh toán để tiếp tục sử dụng CoOrder.ai.",
+    "canceled": "Đã hủy",
+    "paused": "Tạm dừng",
+    "expired": "Đã hết hạn"
+  },
+  "billing_cycle": {
+    "monthly": "tháng",
+    "yearly": "năm"
+  },
+  "features": {
+    "title": "Các tính năng của kế hoạch",
+    "basic_order_management": "Quản lý đơn hàng cơ bản",
+    "ai_analytics_basic": "Phân tích AI cơ bản",
+    "basic_customer_support": "Hỗ trợ khách hàng cơ bản",
+    "advanced_order_management": "Quản lý đơn hàng nâng cao",
+    "enhanced_ai_analytics": "Phân tích AI nâng cao",
+    "priority_customer_support": "Hỗ trợ khách hàng ưu tiên",
+    "external_platform_integrations": "Tích hợp nền tảng bên ngoài",
+    "full_feature_access": "Truy cập đầy đủ các tính năng",
+    "comprehensive_ai_optimization": "Tối ưu hóa AI toàn diện",
+    "dedicated_ai_support": "Hỗ trợ AI chuyên dụng",
+    "multi_location_management": "Quản lý nhiều địa điểm"
+  },
+  "upgrade": {
+    "title": "Sẵn sàng để nâng cấp?",
+    "description": "Liên hệ với nhóm của chúng tôi để nâng cấp kế hoạch và mở khóa thêm tính năng cho nhà hàng của bạn.",
+    "cta": "Liên hệ bộ phận bán hàng"
+  },
+  "billing_history": {
+    "title": "Lịch sử thanh toán & Hóa đơn",
+    "description": "Cần bản sao hóa đơn hoặc lịch sử thanh toán của bạn? Liên hệ với nhóm hỗ trợ của chúng tôi và chúng tôi sẽ gửi ngay.",
+    "contact_support": "Yêu cầu hóa đơn"
+  }
+}
