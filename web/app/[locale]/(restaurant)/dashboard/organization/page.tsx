@@ -34,6 +34,7 @@ export default async function OrganizationPage({
 
   const authz = buildAuthorizationService(ctx);
   const canManage = authz?.canManageMembers() ?? false;
+  const canEditSettings = authz?.canChangeOrgSettings() ?? false;
 
   const [rawMembers, rawInvites, branches] = await Promise.all([
     listOrganizationMembers(ctx.organization.id),
@@ -89,6 +90,7 @@ export default async function OrganizationPage({
       pendingInvites={pendingInvites}
       branches={accessibleBranches}
       canManage={canManage}
+      canEditSettings={canEditSettings}
     />
   );
 }

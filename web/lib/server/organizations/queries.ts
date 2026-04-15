@@ -299,3 +299,76 @@ export async function deactivateOrganizationMember(memberId: string): Promise<bo
 
   return !error;
 }
+
+/** Update organization-level settings (name, timezone, currency). Uses admin client. */
+export async function updateOrganizationSettings(
+  orgId: string,
+  updates: { name?: string; timezone?: string; currency?: string }
+): Promise<Organization | null> {
+  const { data, error } = await supabaseAdmin
+    .from('owner_organizations')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', orgId)
+    .select('*')
+    .single();
+
+  if (error || !data) {
+    console.error('Failed to update organization:', error);
+    return null;
+  }
+  return data as Organization;
+}
+
+/**
+ * Update a member's role and/or shop scope.
+ * Also synchronises organization_member_shop_scopes rows when scope changes.
+ */
+export async function updateOrganizationMember(
+  memberId: string,
+  orgId: string,
+  updates: { role?: OrgMemberRole; shop_scope?: ShopScope; selected_restaurant_ids?: string[] }
+): Promise<OrganizationMember | null> {
+  const { role, shop_scope, selected_restaurant_ids } = updates;
+
+  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (role !== undefined) patch.role = role;
+  if (shop_scope !== undefined) patch.shop_scope = shop_scope;
+
+  const { data: member, error } = await supabaseAdmin
+    .from('organization_members')
+    .update(patch)
+    .eq('id', memberId)
+    .eq('organization_id', orgId)
+    .select('*')
+    .single();
+
+  if (error || !member) {
+    console.error('Failed to update org member:', error);
+    return null;
+  }
+
+  // Sync shop scope rows when scope changes
+  if (shop_scope === 'selected_shops' && selected_restaurant_ids?.length) {
+    await supabaseAdmin
+      .from('organization_member_shop_scopes')
+      .delete()
+      .eq('member_id', memberId);
+
+    const scopeRows = selected_restaurant_ids.map((rid) => ({
+      organization_id: orgId,
+      member_id: memberId,
+      restaurant_id: rid,
+    }));
+    const { error: scopeError } = await supabaseAdmin
+      .from('organization_member_shop_scopes')
+      .insert(scopeRows);
+    if (scopeError) console.error('Failed to update shop scopes:', scopeError);
+  } else if (shop_scope === 'all_shops') {
+    await supabaseAdmin
+      .from('organization_member_shop_scopes')
+      .delete()
+      .eq('member_id', memberId);
+  }
+
+  return member as OrganizationMember;
+}

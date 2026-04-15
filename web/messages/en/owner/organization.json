@@ -27,5 +27,22 @@
   "selectBranch": "Select branch",
   "switchBranch": "Switch branch",
   "selectAtLeastOneBranch": "Please select at least one branch.",
-  "noBranchesAvailable": "No branches available."
+  "noBranchesAvailable": "No branches available.",
+  "editSettings": "Edit Settings",
+  "editSettingsTitle": "Organization Settings",
+  "nameLabel": "Organization name",
+  "timezoneLabel": "Timezone",
+  "currencyLabel": "Currency (3-letter code)",
+  "saveSettings": "Save",
+  "settingsSaved": "Settings updated successfully",
+  "settingsError": "Failed to update settings. Please try again.",
+  "editMember": "Edit member",
+  "editMemberTitle": "Edit Member",
+  "saveChanges": "Save changes",
+  "editMemberError": "Failed to update member. Please try again.",
+  "resendInvite": "Resend",
+  "resendInviteTitle": "Invite resent",
+  "resendInviteNote": "New token generated. Share it with the invitee.",
+  "resendInviteError": "Failed to resend invite. Please try again.",
+  "resentAt": "Resent {date}"
 }
