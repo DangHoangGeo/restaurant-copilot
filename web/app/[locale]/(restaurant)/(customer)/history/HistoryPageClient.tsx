@@ -27,6 +27,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   const [error, setError] = useState<string | null>(null);
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [passcodeCopied, setPasscodeCopied] = useState(false);
 
   // Get sessionId from URL params or context
   const sessionId = searchParams.get('sessionId') || sessionData.sessionId;
@@ -94,7 +95,8 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     if (passcode) {
       try {
         await navigator.clipboard.writeText(passcode);
-        // Could add toast notification here in the future
+        setPasscodeCopied(true);
+        window.setTimeout(() => setPasscodeCopied(false), 1500);
       } catch (err) {
         console.error('Failed to copy passcode:', err);
       }
@@ -246,6 +248,10 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     }
   };
 
+  const totalAmount = historyData?.order?.total_amount || 0;
+  const subtotalAmount = Math.round(totalAmount / 1.1);
+  const taxAmount = Math.max(0, totalAmount - subtotalAmount);
+
   if (isLoading || contextLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -274,8 +280,6 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               // Only include sessionId if the session is still active (not completed)
               // When in error state, check session status from context instead of historyData
               const menuUrl = new URLSearchParams();
-              // Only include sessionId if the session is still active (not completed)
-              console.log('sessionData:', sessionData);
               if (sessionId && sessionData.sessionStatus === 'active') {
                 menuUrl.set('sessionId', sessionId);
               }
@@ -300,7 +304,6 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             onClick={() => {
               const menuUrl = new URLSearchParams();
               // Only include sessionId if the session is still active (not completed)
-              console.log('sessionData:', sessionData);
               if (sessionId && sessionData.sessionStatus === 'active') {
                 menuUrl.set('sessionId', sessionId);
               }
@@ -395,7 +398,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                     className="flex items-center gap-2"
                   >
                     <Copy className="h-4 w-4" />
-                    {t('copy_passcode')}
+                    {passcodeCopied ? t('copied') : t('copy_passcode')}
                   </Button>
                 </div>
 
@@ -403,15 +406,15 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('subtotal')}</span>
-                    <span>¥{Math.round((historyData.order?.total_amount || 0))}</span>
+                    <span>¥{subtotalAmount}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('tax')} (10%)</span>
-                    <span>¥{Math.round((historyData.order?.total_amount || 0) * 0.1)}</span>
+                    <span>¥{taxAmount}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between font-semibold">
                     <span>{t('total')}</span>
-                    <span>¥{(historyData.order?.total_amount + Math.round((historyData.order?.total_amount || 0) * 0.1)|| 0)}</span>
+                    <span>¥{totalAmount}</span>
                   </div>
                   <div className="text-right text-xs text-gray-500 dark:text-gray-400">
                     {historyData.order?.items?.length || 0} {t('items_count')}

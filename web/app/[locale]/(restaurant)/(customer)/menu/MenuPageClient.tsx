@@ -34,6 +34,10 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const [sessionPasscode, setSessionPasscode] = useState<string>('');
   const [pendingSessionId, setPendingSessionId] = useState<string>('');
   const [requirePasscode, setRequirePasscode] = useState<boolean>(false);
+  const [startSessionError, setStartSessionError] = useState<string | null>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [isJoiningSession, setIsJoiningSession] = useState<boolean>(false);
+  const [resolveError, setResolveError] = useState<string | null>(null);
 
   const brandColor = restaurantSettings?.primaryColor || '#3b82f6';
 
@@ -45,12 +49,12 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
 
     const resolveSession = async () => {
       setIsLoading(true);
+      setResolveError(null);
 
       try {
         // Handle existing sessionId parameter (direct session access)
         if (sessionParams.sessionId) {
           // Context already handles this, we just need to verify it's still valid
-          console.log('Session ID from URL parameters:', sessionParams.sessionId);
         }
         // Handle QR code scanning (code parameter)
         else if (sessionParams.code) {
@@ -69,22 +73,26 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               // New session from QR code - show guest count dialog
               setShowGuestDialog(true);
             }
+          } else {
+            setResolveError(t('invalid_session_message'));
           }
         }
       } catch (error) {
         console.error('Error resolving session:', error);
+        setResolveError(t('join_failed'));
       } finally {
         setIsLoading(false);
       }
     };
 
     resolveSession();
-  }, [sessionParams.code, sessionParams.sessionId]);
+  }, [sessionParams.code, sessionParams.sessionId, t]);
 
   // Start new session (called when guest count dialog is submitted)
   const startSession = async () => {
     if (!tableId) return;
     if (!restaurantSettings) return;
+    setStartSessionError(null);
     setIsStartingSession(true);
 
     try {
@@ -111,9 +119,12 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         currentUrl.searchParams.delete('tableId');
         currentUrl.searchParams.set('sessionId', data.sessionId);
         window.history.replaceState({}, '', currentUrl.toString());
+      } else {
+        setStartSessionError(t('start_session_failed'));
       }
     } catch (error) {
       console.error('Error starting session:', error);
+      setStartSessionError(t('start_session_failed'));
     } finally {
       setIsStartingSession(false);
     }
@@ -123,6 +134,15 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const joinSession = async () => {
     if (!pendingSessionId) return;
     if (!restaurantSettings) return;
+
+    if (requirePasscode && passcode.length !== 4) {
+      setJoinError(t('invalid_passcode_error'));
+      return;
+    }
+
+    setJoinError(null);
+    setIsJoiningSession(true);
+
     try {
       const subdomain = getSubdomainFromHost(window.location.host);
       const params = new URLSearchParams({
@@ -138,6 +158,8 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       if (data.success) {
         setSessionId(data.sessionId);
         setShowJoinDialog(false);
+        setPasscode('');
+        setJoinError(null);
 
         // Update URL to use sessionId instead of code
         const currentUrl = new URL(window.location.href);
@@ -146,23 +168,42 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         currentUrl.searchParams.set('sessionId', data.sessionId);
         window.history.replaceState({}, '', currentUrl.toString());
       } else {
-        // TODO: reflect error in UI
-        console.error('Failed to join session:', data.error);
+        if (data.error === 'Invalid passcode') {
+          setJoinError(t('invalid_passcode_error'));
+        } else if (data.error === 'Session is no longer active') {
+          setJoinError(t('session_expired_message'));
+        } else {
+          setJoinError(t('join_failed'));
+        }
       }
     } catch (error) {
       console.error('Error joining session:', error);
+      setJoinError(t('join_failed'));
+    } finally {
+      setIsJoiningSession(false);
     }
   };
 
   const handleContinueToMenu = () => {
     setShowGuestDialog(false);
     setGuestDialogStep('guests');
+    setStartSessionError(null);
   };
 
   const handleGuestDialogOpenChange = (open: boolean) => {
     if (!open) {
       setShowGuestDialog(false);
       setGuestDialogStep('guests');
+      setStartSessionError(null);
+    }
+  };
+
+  const handleJoinDialogOpenChange = (open: boolean) => {
+    setShowJoinDialog(open);
+    if (!open) {
+      setPasscode('');
+      setJoinError(null);
+      setIsJoiningSession(false);
     }
   };
 
@@ -222,6 +263,24 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           </h2>
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             {t('invalid_session_message')}
+          </p>
+          <Button onClick={() => router.push(`/${locale}/`)}>
+            {t('scan_qr_again')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (resolveError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center max-w-md px-4">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">
+            {t('invalid_session')}
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-4">
+            {resolveError}
           </p>
           <Button onClick={() => router.push(`/${locale}/`)}>
             {t('scan_qr_again')}
@@ -343,6 +402,12 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               >
                 {isStartingSession ? t('starting') : t('start_session')}
               </Button>
+
+              {startSessionError && (
+                <p className="mt-3 text-sm text-red-600">
+                  {startSessionError}
+                </p>
+              )}
             </div>
           ) : (
             <div key="passcode" className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200">
@@ -398,7 +463,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       </Dialog>
 
       {/* Join Session Dialog */}
-      <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
+      <Dialog open={showJoinDialog} onOpenChange={handleJoinDialogOpenChange}>
         <DialogContent className="sm:max-w-sm p-0 overflow-hidden">
           <div className="text-center p-6">
             <div
@@ -432,17 +497,35 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 maxLength={4}
                 placeholder={t('enter_passcode')}
                 value={passcode}
-                onChange={(e) => setPasscode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                onChange={(e) => {
+                  setPasscode(e.target.value.replace(/\D/g, '').slice(0, 4));
+                  if (joinError) setJoinError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isJoiningSession) {
+                    void joinSession();
+                  }
+                }}
+                autoFocus
                 className="w-full text-center text-2xl font-bold tracking-[0.4em] h-14 mb-6"
               />
             )}
 
+            {joinError && (
+              <p className="text-sm text-red-600 mb-4">{joinError}</p>
+            )}
+
+            {requirePasscode && !joinError && (
+              <p className="text-xs text-gray-500 mb-4">{t('ask_for_passcode_instruction')}</p>
+            )}
+
             <Button
               onClick={joinSession}
+              disabled={isJoiningSession || (requirePasscode && passcode.length !== 4)}
               className="w-full h-12 text-base font-semibold text-white mb-3"
               style={{ backgroundColor: brandColor, borderColor: brandColor }}
             >
-              {t('join')}
+              {isJoiningSession ? t('starting') : t('join')}
             </Button>
             <Button
               variant="ghost"
