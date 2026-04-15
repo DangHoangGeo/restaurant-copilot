@@ -819,23 +819,6 @@ export function SmartMenu({
                       />
                     )}
 
-                    {/* Time-based Section */}
-                    {smartCategories[timeOfDay] && smartCategories[timeOfDay].count > 0 && (
-                      <MenuSection
-                        title={t(`menu.perfect_for_${timeOfDay}`)}
-                        description={t(`menu.perfect_for_${timeOfDay}_description`)}
-                        items={smartCategories[timeOfDay].items}
-                        brandColor={brandColor}
-                        locale={locale}
-                        canAddItems={canAddItems}
-                        onItemClick={handleItemClick}
-                        onAddToCart={handleAddToCart}
-                        getQuantity={getQuantityByItemId}
-                        icon={timeOfDay === 'breakfast' ? <ChefHat className="h-5 w-5" /> : 
-                              timeOfDay === 'lunch' ? <Clock className="h-5 w-5" /> : <Heart className="h-5 w-5" />}
-                      />
-                    )}
-
                     {/* Regular Categories */}
                     {activeCategories.map((category) => {
                       const categoryItems = allMenuItems.filter(item => item.categoryId === category.id);
