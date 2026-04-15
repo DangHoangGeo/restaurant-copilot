@@ -114,7 +114,7 @@ ALTER TABLE organization_pending_invites
 
 ---
 
-### Sprint 2 — Branch Creation & Overview Dashboard
+### Sprint 2 — Branch Creation & Overview Dashboard ⏳ PENDING
 
 **A2: Add Branch to Existing Org**
 - `POST /api/v1/owner/organization/restaurants` — create new `restaurants` row + link via `organization_restaurants`
@@ -128,7 +128,7 @@ ALTER TABLE organization_pending_invites
 
 ---
 
-### Sprint 3 — Email Delivery & Permission UI
+### Sprint 3 — Email Delivery & Permission UI ⏳ PENDING
 
 **A4 (continued): Email delivery**
 - Integrate Resend/SendGrid or Supabase Email edge function
@@ -145,7 +145,7 @@ ALTER TABLE organization_pending_invites
 
 ---
 
-### Sprint 4 — Operational Improvements
+### Sprint 4 — Operational Improvements ⏳ PENDING
 
 **C1: Safe Menu Copy (Non-Destructive)**
 - New `mode` option in `CopyMenuRequest`: `'replace' | 'merge' | 'add_missing'`
@@ -161,7 +161,7 @@ ALTER TABLE organization_pending_invites
 
 ---
 
-### Sprint 5 — Governance
+### Sprint 5 — Governance ⏳ PENDING
 
 **P4-1: Audit Log UI** — browse `organization_audit_log` table  
 **P4-3: Branch Deactivation** — soft-close with `is_active = false`
