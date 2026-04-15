@@ -48,6 +48,21 @@ export const createPendingInviteSchema = z.object({
   }
 );
 
+// Schema for updating a member's role and/or shop scope
+export const updateMemberSchema = z.object({
+  role: orgMemberRoleSchema.optional(),
+  shop_scope: shopScopeSchema.optional(),
+  selected_restaurant_ids: z.array(z.string().uuid()).optional(),
+}).refine(
+  (data) =>
+    data.shop_scope !== 'selected_shops' ||
+    (data.selected_restaurant_ids && data.selected_restaurant_ids.length > 0),
+  {
+    message: 'selected_restaurant_ids must be provided when shop_scope is selected_shops',
+    path: ['selected_restaurant_ids'],
+  }
+);
+
 // Schema for accepting a pending invite
 export const acceptInviteSchema = z.object({
   token: z.string().min(1, 'Token is required'),
@@ -63,6 +78,7 @@ export const setActiveBranchSchema = z.object({
 
 export type InviteOrgMemberInput = z.infer<typeof inviteOrgMemberSchema>;
 export type UpdateOrgInput = z.infer<typeof updateOrgSchema>;
+export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
 export type CreatePendingInviteInput = z.infer<typeof createPendingInviteSchema>;
 export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;
 export type SetActiveBranchInput = z.infer<typeof setActiveBranchSchema>;

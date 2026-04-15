@@ -121,4 +121,7 @@ export interface PendingInvite {
   accepted_by_user_id: string | null;
   is_active: boolean;
   created_at: string;
+  /** Populated after migration 042 */
+  last_resent_at?: string | null;
+  resend_count?: number;
 }

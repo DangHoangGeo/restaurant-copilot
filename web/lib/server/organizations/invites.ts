@@ -115,6 +115,50 @@ export async function revokePendingInvite(inviteId: string): Promise<boolean> {
   return !error;
 }
 
+/**
+ * Resend a pending invite: generates a fresh token and extends expiry by 7 days.
+ * Returns the new token on success, null on failure.
+ * Validates that the invite belongs to the given org and has not been accepted.
+ */
+export async function resendPendingInvite(
+  inviteId: string,
+  orgId: string
+): Promise<{ invite_token: string; expires_at: string } | null> {
+  // Fetch the current invite to validate state and get current resend_count
+  const { data: invite, error: fetchError } = await supabaseAdmin
+    .from('organization_pending_invites')
+    .select('id, organization_id, is_active, accepted_at, resend_count')
+    .eq('id', inviteId)
+    .single();
+
+  if (fetchError || !invite) return null;
+  if (invite.organization_id !== orgId) return null;
+  if (!invite.is_active || invite.accepted_at !== null) return null;
+
+  const newToken = generateInviteToken();
+  const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const currentCount: number = (invite.resend_count as number | null) ?? 0;
+
+  const { data: updated, error: updateError } = await supabaseAdmin
+    .from('organization_pending_invites')
+    .update({
+      invite_token: newToken,
+      expires_at: newExpiry,
+      last_resent_at: new Date().toISOString(),
+      resend_count: currentCount + 1,
+    })
+    .eq('id', inviteId)
+    .select('invite_token, expires_at')
+    .single();
+
+  if (updateError || !updated) {
+    console.error('Failed to resend invite:', updateError);
+    return null;
+  }
+
+  return { invite_token: updated.invite_token, expires_at: updated.expires_at };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Accept invite — handles both new and existing users
 // ─────────────────────────────────────────────────────────────────────────────

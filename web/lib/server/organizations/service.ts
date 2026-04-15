@@ -11,9 +11,12 @@ import {
   createOrganizationForNewRestaurant,
   addOrganizationMember,
   deactivateOrganizationMember,
+  updateOrganizationSettings,
+  updateOrganizationMember,
 } from './queries';
 import type {
   Organization,
+  OrganizationMember,
   OrganizationMemberWithUser,
   OrganizationRestaurant,
   OrgContext,
@@ -177,4 +180,31 @@ export async function inviteOrganizationMember(
 export async function removeMember(memberId: string): Promise<{ success: boolean }> {
   const ok = await deactivateOrganizationMember(memberId);
   return { success: ok };
+}
+
+/**
+ * Update organization settings (name, timezone, currency).
+ * The caller must have organization_settings permission (enforced at route level).
+ */
+export async function updateOrganization(
+  orgId: string,
+  updates: { name?: string; timezone?: string; currency?: string }
+): Promise<{ success: boolean; organization?: Organization; error?: string }> {
+  const org = await updateOrganizationSettings(orgId, updates);
+  if (!org) return { success: false, error: 'Failed to update organization' };
+  return { success: true, organization: org };
+}
+
+/**
+ * Update a member's role and/or branch access scope.
+ * The caller must be able to manage members (enforced at route level).
+ */
+export async function editMember(
+  memberId: string,
+  orgId: string,
+  updates: { role?: OrgMemberRole; shop_scope?: ShopScope; selected_restaurant_ids?: string[] }
+): Promise<{ success: boolean; member?: OrganizationMember; error?: string }> {
+  const member = await updateOrganizationMember(memberId, orgId, updates);
+  if (!member) return { success: false, error: 'Failed to update member' };
+  return { success: true, member };
 }

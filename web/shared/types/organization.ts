@@ -80,6 +80,32 @@ export interface GetOrganizationRestaurantsResponse {
   }>;
 }
 
+/** Request body for PATCH /api/v1/owner/organization */
+export interface UpdateOrganizationRequest {
+  name?: string;
+  timezone?: string;
+  currency?: string;
+}
+
+/** Response shape for PATCH /api/v1/owner/organization */
+export interface UpdateOrganizationResponse {
+  success: true;
+  organization: ApiOrganization;
+}
+
+/** Request body for PATCH /api/v1/owner/organization/members/[id] */
+export interface UpdateMemberRequest {
+  role?: OrgMemberRole;
+  shop_scope?: ShopScope;
+  selected_restaurant_ids?: string[];
+}
+
+/** Response shape for PATCH /api/v1/owner/organization/members/[id] */
+export interface UpdateMemberResponse {
+  success: true;
+  member: ApiOrganizationMember;
+}
+
 /** Human-readable labels for each org role */
 export const ORG_ROLE_LABELS: Record<OrgMemberRole, string> = {
   founder_full_control:   'Founder (Full Control)',
@@ -134,6 +160,13 @@ export interface AcceptInviteRequest {
   /** Required for new users who do not yet have a Supabase auth account. */
   name?: string;
   password?: string;
+}
+
+/** Response shape for POST /api/v1/owner/organization/invites/[id]/resend */
+export interface ResendInviteResponse {
+  success: true;
+  invite_token: string;
+  expires_at: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

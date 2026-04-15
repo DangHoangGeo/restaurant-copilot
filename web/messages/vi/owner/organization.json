@@ -27,5 +27,22 @@
   "selectBranch": "Chọn chi nhánh",
   "switchBranch": "Chuyển chi nhánh",
   "selectAtLeastOneBranch": "Vui lòng chọn ít nhất một chi nhánh.",
-  "noBranchesAvailable": "Không có chi nhánh nào."
+  "noBranchesAvailable": "Không có chi nhánh nào.",
+  "editSettings": "Chỉnh sửa cài đặt",
+  "editSettingsTitle": "Cài đặt tổ chức",
+  "nameLabel": "Tên tổ chức",
+  "timezoneLabel": "Múi giờ",
+  "currencyLabel": "Tiền tệ (mã 3 chữ cái)",
+  "saveSettings": "Lưu",
+  "settingsSaved": "Đã cập nhật cài đặt thành công",
+  "settingsError": "Không thể cập nhật cài đặt. Vui lòng thử lại.",
+  "editMember": "Chỉnh sửa thành viên",
+  "editMemberTitle": "Chỉnh sửa thành viên",
+  "saveChanges": "Lưu thay đổi",
+  "editMemberError": "Không thể cập nhật thành viên. Vui lòng thử lại.",
+  "resendInvite": "Gửi lại",
+  "resendInviteTitle": "Đã gửi lại lời mời",
+  "resendInviteNote": "Mã mới đã được tạo. Chia sẻ với người được mời.",
+  "resendInviteError": "Không thể gửi lại lời mời. Vui lòng thử lại.",
+  "resentAt": "Đã gửi lại {date}"
 }
