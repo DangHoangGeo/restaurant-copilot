@@ -136,169 +136,141 @@ export function CompactFoodCard({
 
   return (
     <motion.div
-      whileHover={{ 
-        scale: 1.03, 
+      whileHover={{
+        scale: 1.03,
         y: -2,
-        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
       }}
       whileTap={{ scale: 0.98 }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 300, 
+      transition={{
+        type: "spring",
+        stiffness: 300,
         damping: 25,
         duration: 0.2
       }}
-      className="w-[150px] h-[200px] rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm flex-shrink-0 cursor-pointer transition-all border border-slate-200 dark:border-slate-700 flex flex-col"
+      className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer"
       onClick={onCardClick}
     >
-      {/* Image Container - Perfect aspect ratio 4:3 with loading state */}
-      <div className="relative w-full aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-700">
-        {item.image_url && (
+      {/* Full-bleed image */}
+      <div className="absolute inset-0">
+        {item.image_url ? (
           <Image
             src={item.image_url}
             alt={itemName}
             fill
-            className="object-cover aspect-[4/3] transition-opacity duration-300"
+            className="object-cover transition-opacity duration-300"
             loading="lazy"
             onLoad={(e) => {
               const target = e.target as HTMLImageElement;
               target.style.opacity = '1';
             }}
             onError={(e) => {
-              // Fallback to colored background with first letter if image fails
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
             }}
             style={{ opacity: 0 }}
           />
-        )}
-        
-        {/* Use placeholder SVG when no image_url */}
-        {!item.image_url && (
-          <Image
-            src="/placeholder-food.svg"
-            alt={itemName}
-            fill
-            className="object-cover aspect-[4/3]"
-          />
-        )}
-        
-        {/* Enhanced fallback for missing images with category-based colors and better centering */}
-        {!item.image_url && (
-          <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryPastelColor(itemName)} flex flex-col items-center justify-center`}>
+        ) : (
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryPastelColor(itemName)}`} />
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, type: "spring" }}
-              className="text-center flex flex-col items-center justify-center h-full"
+              className="absolute inset-0 flex items-center justify-center"
             >
-              <motion.span 
-                className="text-4xl mb-3 block"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                {getFoodEmoji(itemName)}
-              </motion.span>
-              <span className="text-xs font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide bg-white/30 dark:bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
-                {itemName.charAt(0).toUpperCase()}
-              </span>
+              <span className="text-5xl md:text-7xl">{getFoodEmoji(itemName)}</span>
             </motion.div>
-          </div>
-        )}
-        
-
-
-        {/* Minimal Badge Overlay - positioned to barely cover image */}
-        {showBadge && (showPopularBadge || showRecommendedBadge) && (
-          <div className="absolute top-1 left-1 z-10">
-            {showPopularBadge && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] flex items-center gap-0.5 px-1 py-0.5 shadow-md border-0 rounded-sm">
-                  <TrendingUp className="h-2 w-2" />
-                  <span className="hidden sm:inline">Popular</span>
-                  <span className="sm:hidden">🔥</span>
-                </Badge>
-              </motion.div>
-            )}
-            {showRecommendedBadge && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] flex items-center gap-0.5 px-1 py-0.5 shadow-md border-0 rounded-sm">
-                  <Sparkles className="h-2 w-2" />
-                  <span className="hidden sm:inline">AI Pick</span>
-                  <span className="sm:hidden">✨</span>
-                </Badge>
-              </motion.div>
-            )}
-          </div>
-        )}
-
-        {/* Minimal Quantity Indicator - positioned outside image */}
-        {qtyInCart > 0 && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 500, damping: 25 }}
-            className="absolute top-1 right-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow-md border border-white z-10"
-          >
-            {qtyInCart}
-          </motion.div>
-        )}
-
-        {/* Availability overlay */}
-        {!item.available && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-              Out of Stock
-            </span>
-          </div>
+          </>
         )}
       </div>
 
-      {/* Enhanced Content - Better price alignment and spacing */}
-      <div className="flex-1 p-3 flex flex-col justify-between min-h-0">
-        <div className="space-y-2">
-          <div 
-            className="font-semibold text-xs sm:text-sm leading-tight text-slate-800 dark:text-slate-200 line-clamp-2 overflow-hidden"
-            title={itemName}
-            style={{ 
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              lineHeight: '1.3em',
-              maxHeight: '2.6em',
-              wordBreak: 'break-word'
-            }}
-          >
-            {itemName}
-          </div>
+      {/* Bottom gradient — seamlessly blends image into the info area */}
+      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+
+      {/* Badges — top left */}
+      {showBadge && (showPopularBadge || showRecommendedBadge) && (
+        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+          {showPopularBadge && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 shadow-md border-0 rounded-sm">
+                <TrendingUp className="h-2 w-2" />
+                <span>Popular</span>
+              </Badge>
+            </motion.div>
+          )}
+          {showRecommendedBadge && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 shadow-md border-0 rounded-sm">
+                <Sparkles className="h-2 w-2" />
+                <span>AI Pick</span>
+              </Badge>
+            </motion.div>
+          )}
         </div>
-        <div className="mt-auto pt-1 flex items-center justify-between">
-          <div className="font-bold text-base" style={{ color: brandColor }}>
+      )}
+
+      {/* Quantity indicator — top right */}
+      {qtyInCart > 0 && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 500, damping: 25 }}
+          className="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-[10px] md:text-xs font-bold shadow-md border-2 border-white z-10"
+        >
+          {qtyInCart}
+        </motion.div>
+      )}
+
+      {/* Availability overlay */}
+      {!item.available && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+          <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            Out of Stock
+          </span>
+        </div>
+      )}
+
+      {/* Info overlay — sits on top of the gradient at the bottom */}
+      <div className="absolute inset-x-0 bottom-0 z-10 p-3 md:p-5 flex flex-col gap-1 md:gap-2">
+        <div
+          className="font-semibold text-sm md:text-lg leading-tight text-white line-clamp-2"
+          title={itemName}
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            wordBreak: 'break-word',
+          }}
+        >
+          {itemName}
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="font-bold text-base md:text-xl text-white drop-shadow" style={{ color: brandColor }}>
             ¥{item.price}
           </div>
-          {/* Enhanced Add Button with enhanced animations and accessibility */}
           {canAddItems && (
             <motion.div
-              animate={isAddingToCart ? { 
-                scale: [1, 1.15, 1.05, 1], 
-                rotate: [0, 15, -15, 0] 
-              } : { 
-                scale: 1, 
-                rotate: 0 
+              animate={isAddingToCart ? {
+                scale: [1, 1.15, 1.05, 1],
+                rotate: [0, 15, -15, 0]
+              } : {
+                scale: 1,
+                rotate: 0
               }}
-              whileHover={{ 
+              whileHover={{
                 scale: 1.1,
                 boxShadow: `0 8px 25px ${brandColor}40`
               }}
-              whileTap={{ 
+              whileTap={{
                 scale: 0.95,
                 transition: { duration: 0.1 }
               }}
@@ -317,16 +289,15 @@ export function CompactFoodCard({
                 size="sm"
                 onClick={handleAddClick}
                 disabled={isAddingToCart}
-                className="h-7 w-7 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20 focus:ring-2 focus:ring-offset-2 relative overflow-hidden"
-                style={{ 
+                className="h-8 w-8 md:h-11 md:w-11 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20 focus:ring-2 focus:ring-offset-2 relative overflow-hidden"
+                style={{
                   backgroundColor: isAddingToCart ? '#10b981' : brandColor,
-                  boxShadow: isAddingToCart 
-                    ? '0 0 25px rgba(16, 185, 129, 0.5)' 
+                  boxShadow: isAddingToCart
+                    ? '0 0 25px rgba(16, 185, 129, 0.5)'
                     : `0 4px 15px ${brandColor}40`
                 }}
                 aria-label={`Add ${itemName} to cart`}
               >
-                {/* Success ripple effect */}
                 {isAddingToCart && (
                   <motion.div
                     initial={{ scale: 0, opacity: 0.8 }}
@@ -335,12 +306,11 @@ export function CompactFoodCard({
                     className="absolute inset-0 rounded-full bg-white"
                   />
                 )}
-                
                 <motion.div
                   animate={isAddingToCart ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Plus className="h-4 w-4 text-white" />
+                  <Plus className="h-4 w-4 md:h-5 md:w-5 text-white" />
                 </motion.div>
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
