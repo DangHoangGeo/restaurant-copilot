@@ -65,7 +65,20 @@ export function MenuSection({
     }
   };
 
+  const resetItemScales = useCallback(() => {
+    itemRefs.current.forEach((el) => {
+      if (!el) return;
+      el.style.transform = 'scale(1)';
+      el.style.zIndex = '';
+    });
+  }, []);
+
   const updateItemScales = useCallback(() => {
+    // Scale effect only on mobile; on larger screens keep cards at natural size
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      resetItemScales();
+      return;
+    }
     const container = scrollContainerRef.current;
     if (!container) return;
     const containerCenter = container.scrollLeft + container.clientWidth / 2;
@@ -76,13 +89,12 @@ export function MenuSection({
       const itemCenter = el.offsetLeft + el.offsetWidth / 2;
       const distance = Math.abs(itemCenter - containerCenter);
       const progress = Math.max(0, 1 - distance / fadeDistance);
-      // Ease in-out: quadratic gives a natural center "pop"
       const eased = progress * (2 - progress);
-      const scale = 0.9 + 0.24 * eased; // 0.88 → 1.12
+      const scale = 0.9 + 0.24 * eased;
       el.style.transform = `scale(${scale.toFixed(3)})`;
       el.style.zIndex = String(Math.round(eased * 10));
     });
-  }, []);
+  }, [resetItemScales]);
 
   const handleScroll = useCallback(() => {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
@@ -93,15 +105,21 @@ export function MenuSection({
     checkScrollability();
     updateItemScales();
     const container = scrollContainerRef.current;
+    const handleResize = () => updateItemScales();
+    window.addEventListener('resize', handleResize, { passive: true });
     if (container) {
       container.addEventListener('scroll', checkScrollability);
       container.addEventListener('scroll', handleScroll, { passive: true });
       return () => {
         container.removeEventListener('scroll', checkScrollability);
         container.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', handleResize);
         if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       };
     }
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, [items, handleScroll, updateItemScales]);
 
   if (items.length === 0) return null;
@@ -181,9 +199,9 @@ export function MenuSection({
           ))}
         </div>
         
-        {/* Enhanced left scroll indicator with better visibility */}
+        {/* Left scroll indicator */}
         {canScrollLeft && (
-          <div className="absolute left-0 top-0 bottom-2 w-16 bg-gradient-to-r from-white via-white/90 dark:from-slate-900 dark:via-slate-900/90 to-transparent pointer-events-none flex items-center justify-start pl-3 z-10">
+          <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none z-10">
             <motion.div
               animate={{ x: [-3, 3, -3] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -193,25 +211,16 @@ export function MenuSection({
             </motion.div>
           </div>
         )}
-        
-        {/* Enhanced right scroll indicator with better visibility and hint */}
+
+        {/* Right scroll indicator */}
         {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-2 w-16 bg-gradient-to-l from-white via-white/90 dark:from-slate-900 dark:via-slate-900/90 to-transparent pointer-events-none flex items-center justify-end pr-3 z-10">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none z-10">
             <motion.div
               animate={{ x: [-3, 3, -3] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               className="bg-white/80 dark:bg-slate-800/80 rounded-full p-1.5 shadow-md backdrop-blur-sm"
             >
               <ChevronRight className="h-3 w-3 text-slate-500 dark:text-slate-400" />
-            </motion.div>
-            {/* Subtle "more items" hint */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1, duration: 0.5 }}
-              className="absolute -top-6 right-2 text-xs text-slate-400 dark:text-slate-500 bg-white/70 dark:bg-slate-800/70 px-2 py-1 rounded-full backdrop-blur-sm"
-            >
-              +{items.length - 3}
             </motion.div>
           </div>
         )}
