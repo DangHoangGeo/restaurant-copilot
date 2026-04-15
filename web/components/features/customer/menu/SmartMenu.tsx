@@ -383,6 +383,21 @@ export function SmartMenu({
     );
   }, [smartCategories, timeOfDay]);
 
+  const activeCategoryLabel = useMemo(() => {
+    if (!activeCategoryFilter) return '';
+    const activeCategory = activeCategories.find(cat => cat.id === activeCategoryFilter);
+    if (!activeCategory) return '';
+
+    return getLocalizedText(
+      {
+        name_en: activeCategory.name_en || '',
+        name_ja: activeCategory.name_ja || '',
+        name_vi: activeCategory.name_vi || ''
+      },
+      locale
+    );
+  }, [activeCategoryFilter, activeCategories, locale]);
+
   // Apply restaurant brand color
   useEffect(() => {
     if (brandColor) {
@@ -491,7 +506,7 @@ export function SmartMenu({
                 transition={{ delay: 0.22 }}
                 className="flex-shrink-0 bg-white/20 border border-white/30 rounded-2xl px-3 py-2 text-center shadow-lg backdrop-blur-sm"
               >
-                <p className="text-white/60 text-[10px] uppercase tracking-widest font-medium leading-none">Table</p>
+                <p className="text-white/60 text-xs uppercase tracking-widest font-medium leading-none">Table</p>
                 <p className="text-white font-bold text-xl leading-none mt-1">{tableNumber}</p>
               </motion.div>
             )}
@@ -556,6 +571,23 @@ export function SmartMenu({
             )}
           </div>
         </div>
+
+        {activeCategoryFilter && (
+          <div className="mb-4 flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm">
+              <span className="text-slate-500">{t('menu.currently_showing')}:</span>
+              <span className="font-medium text-slate-900">{activeCategoryLabel}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveCategoryFilter(null)}
+                className="h-7 rounded-full px-2 text-xs"
+              >
+                {t('menu.clear_filters')}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Smart Category Tabs - Hidden when not searching */}
         {debouncedSearchTerm && (
@@ -801,7 +833,7 @@ export function SmartMenu({
           {/* Hide AI assistant for now */}
           <Button
             variant="outline"
-            onClick={() => setView('checkout', { tableId, sessionId, tableNumber })}
+            onClick={() => setView('history', { tableId, sessionId, tableNumber })}
           >
             {t('view_history')}
             <ArrowRight className="h-4 w-4 ml-2" />
@@ -847,14 +879,7 @@ export function SmartMenu({
                 </div>
                 {activeCategoryFilter && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {t('menu.currently_showing')}: {getLocalizedText(
-                      { 
-                        name_en: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_en || '', 
-                        name_ja: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_ja || '', 
-                        name_vi: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_vi || '' 
-                      },
-                      locale
-                    )}
+                    {t('menu.currently_showing')}: {activeCategoryLabel}
                   </p>
                 )}
               </div>
