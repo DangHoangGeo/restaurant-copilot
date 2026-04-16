@@ -121,9 +121,7 @@ export async function PATCH(
         .update({ status: 'paused' })
         .eq('restaurant_id', restaurantId)
         .in('status', ['trial', 'active'])
-        .catch(() => {
-          // Best-effort — subscription update is non-critical
-        });
+
 
       await logPlatformAction('suspend_restaurant', 'restaurant', restaurantId, restaurantId, {
         reason: validated.reason,
