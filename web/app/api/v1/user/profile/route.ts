@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
+import { createClient } from "@/lib/supabase/server";
 
 export async function PUT(req: NextRequest) {
   try {
@@ -10,17 +11,18 @@ export async function PUT(req: NextRequest) {
     }
 
 
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser();
-    if (authError || !user) {
+    // Get authenticated user using session cookies
+    const user = await getUserFromRequest();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Update user profile
-    const { data, error: updateError } = await supabaseAdmin
+    const supabase = await createClient();
+    // Update user profile - using regular client to enforce RLS
+    const { data, error: updateError } = await supabase
       .from("users")
       .update({ name: name.trim() })
-      .eq("id", user.id)
+      .eq("id", user.userId)
       .select()
       .single();
 
