@@ -71,7 +71,8 @@ export async function listOrganizationMembers(
   if (error || !data) return [];
 
   // Enrich with user email/name via admin client (users table is RLS-restricted)
-  const userIds = (data as OrganizationMember[]).map((m) => m.user_id);
+  const members = data as OrganizationMember[];
+  const userIds = members.map((m) => m.user_id);
   const { data: users } = await supabaseAdmin
     .from('users')
     .select('id, email, name')
@@ -79,12 +80,35 @@ export async function listOrganizationMembers(
 
   const userMap = new Map((users ?? []).map((u) => [u.id, u]));
 
-  return (data as OrganizationMember[]).map((member) => {
+  // Fetch shop scopes for members with selected_shops scope
+  const selectedShopsMemberIds = members
+    .filter((m) => m.shop_scope === 'selected_shops')
+    .map((m) => m.id);
+
+  const scopeMap = new Map<string, string[]>();
+  if (selectedShopsMemberIds.length > 0) {
+    const { data: scopes } = await supabaseAdmin
+      .from('organization_member_shop_scopes')
+      .select('member_id, restaurant_id')
+      .in('member_id', selectedShopsMemberIds);
+
+    for (const row of (scopes ?? []) as { member_id: string; restaurant_id: string }[]) {
+      const existing = scopeMap.get(row.member_id) ?? [];
+      existing.push(row.restaurant_id);
+      scopeMap.set(row.member_id, existing);
+    }
+  }
+
+  return members.map((member) => {
     const u = userMap.get(member.user_id);
     return {
       ...member,
       email: u?.email ?? '',
       name: u?.name ?? null,
+      accessible_restaurant_ids:
+        member.shop_scope === 'selected_shops'
+          ? (scopeMap.get(member.id) ?? [])
+          : undefined,
     };
   });
 }

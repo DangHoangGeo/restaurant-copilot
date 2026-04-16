@@ -77,6 +77,8 @@ export interface OrganizationMemberPermission {
 export interface OrganizationMemberWithUser extends OrganizationMember {
   email: string;
   name: string | null;
+  /** Populated only when shop_scope === 'selected_shops'; undefined for all_shops members. */
+  accessible_restaurant_ids?: string[];
 }
 
 // Full org context loaded for an authenticated user
