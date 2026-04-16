@@ -106,6 +106,19 @@ export interface InviteOrgMemberInput {
   selected_restaurant_ids?: string[];
 }
 
+// Payload for adding a new branch/restaurant to an existing org
+export interface AddBranchInput {
+  name: string;
+  subdomain: string;
+  default_language: 'en' | 'ja' | 'vi';
+  brand_color: string;
+  tax?: number;
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+}
+
 // Pending invite (stored in organization_pending_invites)
 export interface PendingInvite {
   id: string;

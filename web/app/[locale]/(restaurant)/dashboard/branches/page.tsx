@@ -34,6 +34,7 @@ export default async function BranchesPage({
 
   const authz = buildAuthorizationService(ctx);
   const canManageMenu = authz?.canManageMembers() ?? false;
+  const canAddBranch = authz?.canManageMembers() ?? false;
 
   const allBranches = await listOrganizationBranches(ctx.organization.id);
 
@@ -48,6 +49,7 @@ export default async function BranchesPage({
       branches={branches}
       activeBranchId={activeBranchId}
       canManageMenu={canManageMenu}
+      canAddBranch={canAddBranch}
     />
   );
 }

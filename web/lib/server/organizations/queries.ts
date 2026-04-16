@@ -13,6 +13,7 @@ import type {
   ShopScope,
   OrgPermission,
   CreateOrganizationInput,
+  AddBranchInput,
 } from './types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -288,6 +289,68 @@ export async function addOrganizationMember(
   }
 
   return member as OrganizationMember;
+}
+
+/**
+ * Create a new restaurant row and link it to an existing organization.
+ * Uses admin client — called server-side after authorization check.
+ * Returns the new restaurant id on success, null on failure.
+ */
+export async function createRestaurantInOrg(
+  orgId: string,
+  addedByUserId: string,
+  input: AddBranchInput
+): Promise<{ id: string; name: string; subdomain: string } | null> {
+  // 1. Check subdomain uniqueness
+  const { data: existing } = await supabaseAdmin
+    .from('restaurants')
+    .select('id')
+    .eq('subdomain', input.subdomain)
+    .single();
+
+  if (existing) return null; // caller should surface a 409
+
+  // 2. Create the restaurant row
+  const insert: Record<string, unknown> = {
+    name: input.name,
+    subdomain: input.subdomain,
+    default_language: input.default_language,
+    brand_color: input.brand_color,
+  };
+  if (input.tax !== undefined) insert.tax = input.tax;
+  if (input.address) insert.address = input.address;
+  if (input.phone) insert.phone = input.phone;
+  if (input.email) insert.email = input.email;
+  if (input.website) insert.website = input.website;
+
+  const { data: restaurant, error: restaurantError } = await supabaseAdmin
+    .from('restaurants')
+    .insert(insert)
+    .select('id, name, subdomain')
+    .single();
+
+  if (restaurantError || !restaurant) {
+    console.error('Failed to create restaurant:', restaurantError);
+    return null;
+  }
+
+  // 3. Link restaurant to organization
+  const { error: linkError } = await supabaseAdmin
+    .from('organization_restaurants')
+    .insert({
+      organization_id: orgId,
+      restaurant_id: restaurant.id,
+      added_by: addedByUserId,
+    });
+
+  if (linkError) {
+    console.error('Failed to link restaurant to org:', linkError);
+    // Attempt cleanup — best effort
+    await supabaseAdmin.from('restaurants').delete().eq('id', restaurant.id);
+    return null;
+  }
+
+  return restaurant as { id: string; name: string; subdomain: string };
 }
 
 /** Deactivate an organization member (soft delete). */

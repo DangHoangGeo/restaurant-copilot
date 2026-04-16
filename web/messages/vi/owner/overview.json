@@ -1,0 +1,12 @@
+{
+  "pageTitle": "Tổng quan tổ chức",
+  "pageDescription": "Hiệu suất hôm nay của tất cả các chi nhánh.",
+  "totalRevenueLabel": "Tổng doanh thu hôm nay",
+  "totalOpenOrdersLabel": "Tổng đơn đang xử lý",
+  "branchesHeading": "Chi tiết theo chi nhánh",
+  "todayRevenueLabel": "Doanh thu hôm nay",
+  "openOrdersLabel": "Đơn đang xử lý",
+  "viewBranch": "Xem chi nhánh",
+  "noAccess": "Bạn không có quyền truy cập vào chi nhánh nào.",
+  "loadError": "Không thể tải dữ liệu tổng quan."
+}
