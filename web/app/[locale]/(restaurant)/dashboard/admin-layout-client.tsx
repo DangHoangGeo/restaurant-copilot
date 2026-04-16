@@ -61,7 +61,6 @@ export function AdminLayoutClient({ children, restaurantSettings, locale }: Admi
     hero_subtitle_en: null,
     hero_subtitle_ja: null,
     hero_subtitle_vi: null,
-    allow_order_notes: false,
     owner_story_en: restaurantSettings.owner_story_en || '',
     owner_story_ja: restaurantSettings.owner_story_ja || null,
     owner_story_vi: restaurantSettings.owner_story_vi || null,

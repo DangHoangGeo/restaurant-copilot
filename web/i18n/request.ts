@@ -49,39 +49,32 @@ export default getRequestConfig(async ({ requestLocale }) => {
     ? requested
     : routing.defaultLocale;
 
-  // Dynamically import each namespace file and create nested structure.
-  // Load namespaces in parallel to reduce server render latency.
+  // Dynamically import each namespace file and create nested structure
   const messages: Record<string, unknown> = {};
-
-  const loadedNamespaces = await Promise.all(
-    NAMESPACES.map(async (ns) => {
-      try {
-        const moduleImport = await import(`../messages/${locale}/${ns}.json`);
-        return { ns, content: moduleImport.default };
-      } catch {
-        // Skip missing namespace files
-        return null;
+  
+  for (const ns of NAMESPACES) {
+    try {
+      const moduleImport = await import(`../messages/${locale}/${ns}.json`);
+      const content = moduleImport.default;
+      
+      // Create nested structure based on namespace path
+      const keys = ns.split('/');
+      let current = messages;
+      
+      // Navigate/create nested objects for the namespace path
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
+        current = current[keys[i]] as Record<string, unknown>;
       }
-    })
-  );
-
-  for (const loaded of loadedNamespaces) {
-    if (!loaded) continue;
-
-    const { ns, content } = loaded;
-    const keys = ns.split('/');
-    let current = messages;
-
-    // Navigate/create nested objects for the namespace path
-    for (let i = 0; i < keys.length - 1; i++) {
-      if (!current[keys[i]]) {
-        current[keys[i]] = {};
-      }
-      current = current[keys[i]] as Record<string, unknown>;
+      
+      // Set the final content
+      current[keys[keys.length - 1]] = content;
+    } catch (error) {
+      // Skip missing namespace files
+      console.warn(`Missing translation namespace: ${ns} for locale: ${locale}`, error);
     }
-
-    // Set the final content
-    current[keys[keys.length - 1]] = content;
   }
 
   return { locale, messages };

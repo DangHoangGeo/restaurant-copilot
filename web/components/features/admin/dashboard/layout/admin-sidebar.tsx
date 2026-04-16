@@ -203,7 +203,7 @@ export function AdminSidebar({
       : pathname.startsWith(fullHref);
 
     return (
-      <Link href={fullHref} passHref legacyBehavior prefetch={false}>
+      <Link href={fullHref} passHref legacyBehavior>
         <a
           onClick={() => {
             if (isOpen && window.innerWidth < 1024) setIsOpen(false);
@@ -242,7 +242,6 @@ export function AdminSidebar({
         <div className="flex items-center justify-between h-16 px-4 border-b flex-shrink-0">
           <Link
             href={`/${locale}/dashboard`}
-            prefetch={false}
             className="flex items-center"
             onClick={() => setIsOpen(false)}
           >

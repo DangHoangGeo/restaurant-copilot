@@ -46,8 +46,7 @@ export async function GET(req: NextRequest) {
         description_ja,
         description_vi,
         opening_hours,
-        timezone,
-        allow_order_notes
+        timezone
       `)
       .eq("subdomain", subdomain)
       .single();
@@ -89,8 +88,7 @@ export async function GET(req: NextRequest) {
         description_ja: restaurant.description_ja,
         description_vi: restaurant.description_vi,
         opening_hours: parsedOpeningHours,
-        timezone: restaurant.timezone,
-        allow_order_notes: restaurant.allow_order_notes ?? true
+        timezone: restaurant.timezone
       }
     });
 

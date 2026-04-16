@@ -214,11 +214,5 @@
     "JPY": "日本円 (¥)",
     "USD": "米ドル ($)",
     "VND": "ベトナムドン (₫)"
-  },
-  "orderExperience": {
-    "title": "注文体験",
-    "description": "注文時にお客様に表示する内容をカスタマイズします",
-    "allowOrderNotes": "特別なご要望を許可する",
-    "allowOrderNotesDescription": "お客様が各商品にメモや特別なリクエストを追加できるようにします（例：「玉ねぎなし」「ソース多め」）。"
   }
 }
