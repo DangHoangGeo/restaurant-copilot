@@ -11,15 +11,19 @@ import {
   Loader2,
   Copy,
   ChevronDown,
+  ChevronUp,
   Pencil,
   X,
   RefreshCw,
+  ShieldCheck,
 } from "lucide-react";
 import type {
   ApiOrganizationMember,
   ApiPendingInvite,
   OrgMemberRole,
   ShopScope,
+  OrgPermission,
+  MemberPermissionState,
 } from "@/shared/types/organization";
 import { ORG_ROLE_LABELS } from "@/shared/types/organization";
 
@@ -455,6 +459,233 @@ function EditMemberForm({
   );
 }
 
+// ─── Permission editor ────────────────────────────────────────────────────────
+
+const PERMISSION_KEYS: OrgPermission[] = [
+  "reports",
+  "finance_exports",
+  "purchases",
+  "promotions",
+  "employees",
+  "attendance_approvals",
+  "restaurant_settings",
+  "organization_settings",
+  "billing",
+];
+
+function PermissionEditor({
+  memberId,
+  onClose,
+}: {
+  memberId: string;
+  onClose: () => void;
+}) {
+  const t = useTranslations("owner.organization");
+  const [permissions, setPermissions] = useState<MemberPermissionState[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  // Local draft overrides: permission → boolean | undefined (undefined = use fetched value)
+  const [draft, setDraft] = useState<Partial<Record<OrgPermission, boolean>>>({});
+
+  const fetchPermissions = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(
+        `/api/v1/owner/organization/members/${memberId}/permissions`
+      );
+      if (!res.ok) {
+        setError(t("permissionsLoadError"));
+        return;
+      }
+      const data = await res.json();
+      setPermissions(data.permissions ?? []);
+      setDraft({});
+    } catch {
+      setError(t("permissionsLoadError"));
+    } finally {
+      setLoading(false);
+    }
+  }, [memberId, t]);
+
+  useEffect(() => {
+    fetchPermissions();
+  }, [fetchPermissions]);
+
+  const handleToggle = (permission: OrgPermission, value: boolean) => {
+    setDraft((prev) => ({ ...prev, [permission]: value }));
+    setSaved(false);
+  };
+
+  const hasDraftChanges = Object.keys(draft).length > 0;
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(
+        `/api/v1/owner/organization/members/${memberId}/permissions`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ permissions: draft }),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? t("permissionsSaveError"));
+        return;
+      }
+      const data = await res.json();
+      setPermissions(data.permissions ?? []);
+      setDraft({});
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setError(t("permissionsSaveError"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t("confirmResetPermissions"))) return;
+    setResetting(true);
+    setError("");
+    try {
+      const res = await fetch(
+        `/api/v1/owner/organization/members/${memberId}/permissions`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reset: true }),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? t("permissionsSaveError"));
+        return;
+      }
+      const data = await res.json();
+      setPermissions(data.permissions ?? []);
+      setDraft({});
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setError(t("permissionsSaveError"));
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const getEffectiveValue = (perm: MemberPermissionState): boolean => {
+    if (draft[perm.permission] !== undefined) return draft[perm.permission]!;
+    return perm.granted;
+  };
+
+  const isDraftChanged = (perm: MemberPermissionState): boolean =>
+    draft[perm.permission] !== undefined &&
+    draft[perm.permission] !== perm.granted;
+
+  return (
+    <div className="mt-3 rounded-lg border bg-muted/30 p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          {t("permissionsTitle")}
+        </p>
+        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onClose}>
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {saved && !error && (
+        <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700">
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+          <span>{t("permissionsSaved")}</span>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <>
+          <p className="text-xs text-muted-foreground">{t("permissionsHint")}</p>
+          <div className="space-y-1">
+            {permissions.map((perm) => {
+              const effective = getEffectiveValue(perm);
+              const changed = isDraftChanged(perm);
+              return (
+                <label
+                  key={perm.permission}
+                  className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-muted/50 cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs font-medium truncate">
+                      {t(`permission_${perm.permission}` as Parameters<typeof t>[0])}
+                    </span>
+                    {perm.is_override && !changed && (
+                      <span className="text-[10px] rounded-full bg-amber-100 text-amber-700 px-1.5 py-0.5 shrink-0">
+                        {t("permissionOverride")}
+                      </span>
+                    )}
+                    {changed && (
+                      <span className="text-[10px] rounded-full bg-blue-100 text-blue-700 px-1.5 py-0.5 shrink-0">
+                        {t("permissionUnsaved")}
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={effective}
+                    onChange={(e) => handleToggle(perm.permission, e.target.checked)}
+                    className="h-4 w-4 accent-primary shrink-0"
+                  />
+                </label>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              size="sm"
+              disabled={!hasDraftChanges || saving}
+              onClick={handleSave}
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("saveChanges")}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={resetting}
+              onClick={handleReset}
+            >
+              {resetting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                t("resetToDefaults")
+              )}
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Main panel ───────────────────────────────────────────────────────────────
 
 export function MembersPanel({
@@ -470,6 +701,7 @@ export function MembersPanel({
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [permissionsMemberId, setPermissionsMemberId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [resendToken, setResendToken] = useState<{ inviteId: string; token: string } | null>(null);
 
@@ -582,6 +814,24 @@ export function MembersPanel({
                       <Button
                         size="icon"
                         variant="ghost"
+                        className={`h-8 w-8 ${permissionsMemberId === member.id ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                        onClick={() =>
+                          setPermissionsMemberId(
+                            permissionsMemberId === member.id ? null : member.id
+                          )
+                        }
+                        aria-label={t("editPermissions")}
+                        title={t("editPermissions")}
+                      >
+                        {permissionsMemberId === member.id ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ShieldCheck className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
                         className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         onClick={() =>
                           setEditingMemberId(
@@ -622,6 +872,15 @@ export function MembersPanel({
                     branches={branches}
                     onSaved={handleMemberSaved}
                     onCancel={() => setEditingMemberId(null)}
+                  />
+                </div>
+              )}
+
+              {permissionsMemberId === member.id && (
+                <div className="px-4 pb-3">
+                  <PermissionEditor
+                    memberId={member.id}
+                    onClose={() => setPermissionsMemberId(null)}
                   />
                 </div>
               )}

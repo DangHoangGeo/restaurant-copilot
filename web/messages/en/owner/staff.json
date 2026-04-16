@@ -1,0 +1,10 @@
+{
+  "pageTitle": "All Staff",
+  "totalCount": "{count} employees across all branches",
+  "employeeCount": "{count} employees",
+  "searchPlaceholder": "Search by name, email, or role…",
+  "allBranches": "All branches",
+  "noEmployees": "No employees found across your branches.",
+  "noResults": "No employees match your search.",
+  "loadError": "Failed to load staff. Please try again."
+}

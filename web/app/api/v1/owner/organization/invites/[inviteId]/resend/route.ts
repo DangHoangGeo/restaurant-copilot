@@ -27,7 +27,7 @@ export async function POST(
 
   const { inviteId } = await params;
 
-  const result = await resendPendingInvite(inviteId, ctx!.organization.id);
+  const result = await resendPendingInvite(inviteId, ctx!.organization.id, ctx!.organization.name);
 
   if (!result) {
     return NextResponse.json(

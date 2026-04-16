@@ -176,6 +176,99 @@ export async function getMemberPermissionOverrides(
   return map;
 }
 
+/**
+ * Get all 9 permissions for a member, showing the effective value and whether
+ * it is an explicit override or the role default.
+ * Used by the B2 permission editor UI.
+ */
+export async function getMemberPermissionsWithOverrides(
+  memberId: string,
+  role: OrgMemberRole
+): Promise<Array<{ permission: OrgPermission; granted: boolean; is_override: boolean; role_default: boolean }>> {
+  const { ROLE_DEFAULT_PERMISSIONS } = await import('@/lib/server/authorization/types');
+
+  const roleDefaults = ROLE_DEFAULT_PERMISSIONS[role];
+  const ALL_PERMISSIONS: OrgPermission[] = [
+    'reports',
+    'finance_exports',
+    'purchases',
+    'promotions',
+    'employees',
+    'attendance_approvals',
+    'restaurant_settings',
+    'organization_settings',
+    'billing',
+  ];
+
+  // Fetch explicit overrides from DB
+  const { data, error } = await supabaseAdmin
+    .from('organization_member_permissions')
+    .select('permission, granted')
+    .eq('member_id', memberId);
+
+  const overrideMap = new Map<OrgPermission, boolean>();
+  if (!error && data) {
+    for (const row of data as { permission: OrgPermission; granted: boolean }[]) {
+      overrideMap.set(row.permission, row.granted);
+    }
+  }
+
+  return ALL_PERMISSIONS.map((permission) => {
+    const roleDefault = roleDefaults[permission] ?? false;
+    const isOverride = overrideMap.has(permission);
+    const granted = isOverride ? overrideMap.get(permission)! : roleDefault;
+    return { permission, granted, is_override: isOverride, role_default: roleDefault };
+  });
+}
+
+/**
+ * Upsert permission overrides for a member.
+ * Pass a partial record; permissions not in the map are left unchanged.
+ * To reset a permission to role default, delete its row — use resetMemberPermission instead.
+ */
+export async function upsertMemberPermissions(
+  orgId: string,
+  memberId: string,
+  grantedByUserId: string,
+  permissions: Partial<Record<OrgPermission, boolean>>
+): Promise<boolean> {
+  const rows = Object.entries(permissions).map(([permission, granted]) => ({
+    organization_id: orgId,
+    member_id: memberId,
+    permission: permission as OrgPermission,
+    granted,
+    granted_by: grantedByUserId,
+  }));
+
+  if (rows.length === 0) return true;
+
+  const { error } = await supabaseAdmin
+    .from('organization_member_permissions')
+    .upsert(rows, { onConflict: 'member_id,permission' });
+
+  if (error) {
+    console.error('Failed to upsert member permissions:', error);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Delete all permission overrides for a member, restoring role defaults.
+ */
+export async function resetMemberPermissions(memberId: string): Promise<boolean> {
+  const { error } = await supabaseAdmin
+    .from('organization_member_permissions')
+    .delete()
+    .eq('member_id', memberId);
+
+  if (error) {
+    console.error('Failed to reset member permissions:', error);
+    return false;
+  }
+  return true;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Write queries (admin client for server-side use during registration)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -434,4 +527,63 @@ export async function updateOrganizationMember(
   }
 
   return member as OrganizationMember;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cross-branch employee queries (B3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface OrgEmployeeRow {
+  employee_id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  job_title: string;
+  restaurant_id: string;
+  restaurant_name: string;
+  restaurant_subdomain: string;
+}
+
+/**
+ * List all employees across the given restaurant IDs.
+ * Uses admin client — called server-side after authorization check.
+ */
+export async function listOrganizationEmployees(
+  restaurantIds: string[]
+): Promise<OrgEmployeeRow[]> {
+  if (restaurantIds.length === 0) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from('employees')
+    .select('id, role, user_id, restaurant_id, restaurants(id, name, subdomain), users(id, email, name)')
+    .in('restaurant_id', restaurantIds)
+    .order('restaurant_id', { ascending: true });
+
+  if (error || !data) {
+    console.error('Failed to list org employees:', error);
+    return [];
+  }
+
+  return (data as Array<{
+    id: string;
+    role: string;
+    user_id: string;
+    restaurant_id: string;
+    restaurants: { id: string; name: string; subdomain: string } | Array<{ id: string; name: string; subdomain: string }> | null;
+    users: { id: string; email: string; name: string } | Array<{ id: string; email: string; name: string }> | null;
+  }>).flatMap((row) => {
+    const restaurant = Array.isArray(row.restaurants) ? row.restaurants[0] : row.restaurants;
+    const user = Array.isArray(row.users) ? row.users[0] : row.users;
+    if (!restaurant || !user) return [];
+    return [{
+      employee_id: row.id,
+      user_id: row.user_id,
+      name: user.name,
+      email: user.email,
+      job_title: row.role,
+      restaurant_id: row.restaurant_id,
+      restaurant_name: restaurant.name,
+      restaurant_subdomain: restaurant.subdomain,
+    }];
+  });
 }

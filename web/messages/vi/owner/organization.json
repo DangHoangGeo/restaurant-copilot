@@ -44,5 +44,26 @@
   "resendInviteTitle": "Đã gửi lại lời mời",
   "resendInviteNote": "Mã mới đã được tạo. Chia sẻ với người được mời.",
   "resendInviteError": "Không thể gửi lại lời mời. Vui lòng thử lại.",
-  "resentAt": "Đã gửi lại {date}"
+  "resentAt": "Đã gửi lại {date}",
+
+  "editPermissions": "Chỉnh sửa quyền",
+  "permissionsTitle": "Ghi đè quyền",
+  "permissionsHint": "Các nút chuyển ghi đè mặc định vai trò. Thay đổi được đánh dấu 'chưa lưu' sẽ được áp dụng khi Lưu.",
+  "permissionsLoadError": "Không thể tải quyền. Vui lòng thử lại.",
+  "permissionsSaveError": "Không thể lưu quyền. Vui lòng thử lại.",
+  "permissionsSaved": "Đã lưu quyền thành công",
+  "permissionOverride": "ghi đè",
+  "permissionUnsaved": "chưa lưu",
+  "confirmResetPermissions": "Đặt lại tất cả ghi đè quyền cho thành viên này? Họ sẽ trở về mặc định vai trò.",
+  "resetToDefaults": "Đặt lại về mặc định",
+
+  "permission_reports": "Báo cáo",
+  "permission_finance_exports": "Xuất tài chính",
+  "permission_purchases": "Mua hàng",
+  "permission_promotions": "Khuyến mãi",
+  "permission_employees": "Nhân viên",
+  "permission_attendance_approvals": "Duyệt chấm công",
+  "permission_restaurant_settings": "Cài đặt nhà hàng",
+  "permission_organization_settings": "Cài đặt tổ chức",
+  "permission_billing": "Thanh toán"
 }
