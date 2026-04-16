@@ -100,45 +100,31 @@ export function BookingClientContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
-
+    
     if (!formData.tableId || !formData.customerName || !formData.contact || !formData.date || !formData.time || formData.partySize < 1) {
       setFormError(t("form.validation_error_fill_fields"));
       return;
     }
-
+    
     setIsSubmitting(true);
     console.log("Submitting booking:", formData);
-
+    
+    // Mock API Call - replace with actual booking API
     try {
-      const response = await fetch('/api/v1/owner/bookings/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tableId: formData.tableId,
-          customerName: formData.customerName,
-          customerContact: formData.contact,
-          bookingDate: formData.date,
-          bookingTime: formData.time,
-          partySize: formData.partySize,
-          preorderItems: formData.preOrderItems.map(item => ({
-            menuItemId: item.itemId,
-            quantity: item.quantity,
-          })),
-        }),
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (Math.random() > 0.2) { // 80% success rate for demo
+            resolve("Success");
+          } else {
+            reject(new Error("Booking failed"));
+          }
+        }, 2000);
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        if (response.status === 409) {
-          throw new Error(t("form.time_slot_taken") || "This time slot is already booked. Please choose another time.");
-        }
-        throw new Error(errorData.error || "Booking failed");
-      }
 
       setSubmitted(true);
     } catch (err) {
       console.error("Booking submission error:", err);
-      setFormError(err instanceof Error ? err.message : "Failed to submit. Please try again.");
+      setFormError("Failed to submit  Please try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -17,7 +17,7 @@ import type { MenuItemSize, Topping, MenuItem, FoodItem } from "@/shared/types/m
 interface Props {
   count: number;
   total: number;
-  onPlaceOrder: () => Promise<void> | void;
+  onPlaceOrder: () => void;
   brandColor: string;
   locale?: string;
 }
@@ -106,16 +106,17 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
     setEditingItem(null);
   };
 
-  const handlePlaceOrder = async () => {
-    if (count === 0 || isPlacingOrder) return;
-
+  const handlePlaceOrder = () => {
+    if (count === 0) return;
+    
     setIsPlacingOrder(true);
-    try {
-      await onPlaceOrder();
-      setIsExpanded(false);
-    } finally {
+    
+    // Simulate order placement delay
+    setTimeout(() => {
+      onPlaceOrder();
       setIsPlacingOrder(false);
-    }
+      setIsExpanded(false);
+    }, 1000);
   };
 
   const renderCartItem = (item: CartItem) => {
@@ -227,9 +228,9 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                 variant="outline"
                 size="sm"
                 onClick={() => handleUpdateQuantity(item.uniqueId, item.qty - 1)}
-                className="h-11 w-11 p-0 rounded-full"
+                className="h-6 w-6 p-0 rounded-full"
               >
-                <Minus className="h-4 w-4" />
+                <Minus className="h-3 w-3" />
               </Button>
               <span className="text-sm font-medium min-w-[1.5rem] text-center">
                 {item.qty}
@@ -238,9 +239,9 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                 variant="outline"
                 size="sm"
                 onClick={() => handleUpdateQuantity(item.uniqueId, item.qty + 1)}
-                className="h-11 w-11 p-0 rounded-full"
+                className="h-6 w-6 p-0 rounded-full"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3 w-3" />
               </Button>
             </div>
           </div>
@@ -340,6 +341,7 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
               backgroundColor: brandColor,
               borderColor: brandColor
             }}
+            onClick={handleToggleExpanded}
           >
             <div className="px-4">
               <div className="flex items-center justify-between text-white">
@@ -364,7 +366,7 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                       {t("floating_cart.items_count", { count })}
                     </p>
                     <p className="text-xs opacity-90">
-                      {t("floating_cart.total", { amount: total.toFixed(0) })}
+                      {t("floating_cart.total", { amount: total.toFixed(0) })}: ¥{total.toFixed(0)}
                     </p>
                   </div>
                 </button>

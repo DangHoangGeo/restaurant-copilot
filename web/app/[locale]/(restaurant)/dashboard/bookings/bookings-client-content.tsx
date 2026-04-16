@@ -5,9 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Eye, CalendarX, Loader2, AlertTriangle, PlusCircle } from 'lucide-react'
+import { Eye, CalendarX, Loader2, AlertTriangle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { FEATURE_FLAGS } from '@/config/feature-flags'
 import { ComingSoon } from '@/components/common/coming-soon'
@@ -56,18 +54,7 @@ export function BookingsClientContent() {
   const [error, setError] = useState<string | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [tables, setTables] = useState<Array<{id: string; name: string; capacity: number}>>([])
-  const [createForm, setCreateForm] = useState({
-    tableId: '',
-    customerName: '',
-    customerContact: '',
-    bookingDate: new Date().toISOString().split('T')[0],
-    bookingTime: '19:00',
-    partySize: 2,
-  })
-  const [isCreating, setIsCreating] = useState(false)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const loadBookings = useCallback(async () => {
     setError(null);
@@ -113,49 +100,6 @@ export function BookingsClientContent() {
       setIsInitialLoading(false);
     }
   }, [t]);
-
-  const fetchTables = useCallback(async () => {
-    try {
-      const res = await fetch('/api/v1/owner/tables');
-      const data = await res.json();
-      setTables(data.data?.tables || []);
-    } catch { /* silently ignore */ }
-  }, []);
-
-  const handleCreateBooking = async () => {
-    if (!createForm.tableId || !createForm.customerName || !createForm.customerContact) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-    setIsCreating(true);
-    try {
-      const res = await fetch('/api/v1/owner/bookings/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tableId: createForm.tableId,
-          customerName: createForm.customerName,
-          customerContact: createForm.customerContact,
-          bookingDate: createForm.bookingDate,
-          bookingTime: createForm.bookingTime,
-          partySize: createForm.partySize,
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        if (res.status === 409) throw new Error('Time slot already booked');
-        throw new Error(err.error || 'Failed to create booking');
-      }
-      toast.success('Booking created successfully');
-      setIsCreateModalOpen(false);
-      setCreateForm({ tableId: '', customerName: '', customerContact: '', bookingDate: new Date().toISOString().split('T')[0], bookingTime: '19:00', partySize: 2 });
-      loadBookings();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to create booking');
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   useEffect(() => {
     loadBookings();
@@ -209,14 +153,10 @@ export function BookingsClientContent() {
 
   return (
     <div>
-      <header className="mb-8 flex items-center justify-between">
+      <header className="mb-8">
         <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
           {t("title")}
         </h1>
-        <Button onClick={() => { setIsCreateModalOpen(true); fetchTables(); }}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Booking
-        </Button>
       </header>
 
       {bookings.length === 0 ? (
@@ -290,90 +230,6 @@ export function BookingsClientContent() {
               </>
             )}
              <Button variant="ghost" onClick={() => setIsDetailModalOpen(false)}>{tCommon('close_modal')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Create New Booking</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Table</label>
-              <Select value={createForm.tableId} onValueChange={(value) => setCreateForm({...createForm, tableId: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a table" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tables.map((table) => (
-                    <SelectItem key={table.id} value={table.id}>
-                      {table.name} (Capacity: {table.capacity})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Customer Name</label>
-              <Input
-                type="text"
-                placeholder="Customer name"
-                value={createForm.customerName}
-                onChange={(e) => setCreateForm({...createForm, customerName: e.target.value})}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Contact/Phone</label>
-              <Input
-                type="text"
-                placeholder="Phone number"
-                value={createForm.customerContact}
-                onChange={(e) => setCreateForm({...createForm, customerContact: e.target.value})}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Date</label>
-              <Input
-                type="date"
-                min={new Date().toISOString().split('T')[0]}
-                value={createForm.bookingDate}
-                onChange={(e) => setCreateForm({...createForm, bookingDate: e.target.value})}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Time</label>
-              <Input
-                type="time"
-                value={createForm.bookingTime}
-                onChange={(e) => setCreateForm({...createForm, bookingTime: e.target.value})}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Party Size</label>
-              <Input
-                type="number"
-                min="1"
-                value={createForm.partySize}
-                onChange={(e) => setCreateForm({...createForm, partySize: parseInt(e.target.value) || 1})}
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="mt-6">
-            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)} disabled={isCreating}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateBooking} disabled={isCreating}>
-              {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Booking
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

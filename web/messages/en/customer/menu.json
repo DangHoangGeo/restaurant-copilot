@@ -80,9 +80,7 @@
     "rating": "Rating",
     "description": "Description",
     "decrease_quantity": "Decrease quantity",
-    "increase_quantity": "Increase quantity",
-    "show_more": "See more",
-    "show_less": "See less"
+    "increase_quantity": "Increase quantity"
   },
   "ai_assistant": {
     "title": "Restaurant Assistant",

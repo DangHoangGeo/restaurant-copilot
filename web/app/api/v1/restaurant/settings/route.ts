@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { z } from "zod";
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; // Ensure this path is correct
-import { resolveOrgContext } from '@/lib/server/organizations/service';
-import { buildAuthorizationService, forbidden } from '@/lib/server/authorization/service';
 
 const settingsSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -49,7 +47,6 @@ const settingsSchema = z.object({
   // WiFi settings for table QR codes
   wifi_ssid: z.string().max(100).nullable().optional(),
   wifi_password: z.string().max(100).nullable().optional(),
-  allow_order_notes: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -101,8 +98,7 @@ export async function GET() {
         owner_story_vi,
         owner_photo_url,
         wifi_ssid,
-        wifi_password,
-        allow_order_notes
+        wifi_password
       `)
       .eq("id", user.restaurantId) // Use authenticated user's restaurant ID
       .single();
@@ -180,8 +176,6 @@ export async function GET() {
       // WiFi settings
       wifi_ssid: restaurant.wifi_ssid,
       wifi_password: restaurant.wifi_password,
-      // Ordering options
-      allow_order_notes: restaurant.allow_order_notes ?? true,
     };
 
     console.log('Restaurant settings response - onboarded:', restaurant.onboarded, 'type:', typeof restaurant.onboarded);
@@ -203,12 +197,16 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized: Missing user or restaurant ID" }, { status: 401 });
   }
 
-  // Role-based authorization: only owner/manager can modify settings
-  const ctx = await resolveOrgContext();
-  const authz = buildAuthorizationService(ctx);
-  if (!authz?.canChangeOrgSettings()) {
-    return forbidden('Only owners and managers can modify restaurant settings');
-  }
+  // TODO: Add role-based authorization check here (e.g., user must be 'owner' or 'manager')
+  // const { data: userRoleData, error: roleError } = await supabase
+  //   .from('employees') // or your user roles table
+  //   .select('role')
+  //   .eq('user_id', user.userId)
+  //   .eq('restaurant_id', user.restaurantId)
+  //   .single();
+  // if (roleError || !userRoleData || !['owner', 'manager'].includes(userRoleData.role)) {
+  //   return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
+  // }
 
   // The subdomain from query param is no longer used to identify the restaurant for update.
   // We rely solely on user.restaurantId from the authenticated session.

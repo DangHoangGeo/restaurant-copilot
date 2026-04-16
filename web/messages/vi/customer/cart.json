@@ -79,10 +79,8 @@
     "items_count": "{count} món",
     "total": "Tổng: {amount}",
     "view_cart": "Xem Giỏ Hàng",
-    "placing_order": "Đang gọi món",
     "checkout": "Thanh Toán",
     "empty_message": "Giỏ hàng trống",
-    "add_items": "Thêm một số món ngon!",
-    "place_order": "Gọi món"
+    "add_items": "Thêm một số món ngon!"
   }
 }

@@ -22,10 +22,6 @@ import {
   ShoppingCart,
   FileText,
   Tag,
-  CreditCard,
-  Star,
-  Users,
-  Package,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -129,22 +125,11 @@ export function AdminSidebar({
               labelKey: "admin_sidebar_reports_analytics",
               href: "/dashboard/reports",
             },
-            {
-              icon: Star,
-              labelKey: "admin_sidebar_reviews",
-              href: "/dashboard/reviews",
-              featureFlag: FEATURE_FLAGS.onlineReviews,
-            },
           ],
         },
         {
           headingKey: "nav_group_people",
           items: [
-            {
-              icon: Users,
-              labelKey: "admin_sidebar_customers",
-              href: "/dashboard/customers",
-            },
             {
               icon: UserCog,
               labelKey: "admin_sidebar_employees_schedules",
@@ -155,11 +140,6 @@ export function AdminSidebar({
         {
           headingKey: "nav_group_money",
           items: [
-            {
-              icon: Package,
-              labelKey: "admin_sidebar_inventory",
-              href: "/dashboard/inventory",
-            },
             {
               icon: ShoppingCart,
               labelKey: "admin_sidebar_purchasing",
@@ -180,11 +160,6 @@ export function AdminSidebar({
         {
           headingKey: "nav_group_settings",
           items: [
-            {
-              icon: CreditCard,
-              labelKey: "admin_sidebar_billing",
-              href: "/dashboard/billing",
-            },
             {
               icon: Layers,
               labelKey: "admin_sidebar_branches",
@@ -222,7 +197,7 @@ export function AdminSidebar({
       : pathname.startsWith(fullHref);
 
     return (
-      <Link href={fullHref} passHref legacyBehavior prefetch={false}>
+      <Link href={fullHref} passHref legacyBehavior>
         <a
           onClick={() => {
             if (isOpen && window.innerWidth < 1024) setIsOpen(false);
@@ -261,7 +236,6 @@ export function AdminSidebar({
         <div className="flex items-center justify-between h-16 px-4 border-b flex-shrink-0">
           <Link
             href={`/${locale}/dashboard`}
-            prefetch={false}
             className="flex items-center"
             onClick={() => setIsOpen(false)}
           >

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logEvent } from '@/lib/logger';
-import { notifyNewBooking, notifyBookingConfirmed } from '@/lib/server/notifications/email';
 
 const ipBuckets: Record<string, { tokens: number; lastRefill: number }> = {};
 function rateLimit(ip: string, limit = 10, windowSec = 60) {
@@ -101,23 +100,6 @@ export async function POST(req: NextRequest) {
         message: error.message,
       });
       return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });
-    }
-
-    // Fire-and-forget email notification — non-blocking
-    const { data: restaurantData } = await supabaseAdmin
-      .from('restaurants')
-      .select('email, name')
-      .eq('id', table.restaurant_id)
-      .single();
-
-    if (restaurantData?.email) {
-      notifyNewBooking({
-        restaurantEmail: restaurantData.email,
-        customerName: payload.customerName,
-        bookingDate: payload.bookingDate,
-        bookingTime: payload.bookingTime,
-        partySize: payload.partySize,
-      }).catch(err => console.error('[Booking notification error]', err));
     }
 
     return NextResponse.json({ success: true, bookingId: data.id });

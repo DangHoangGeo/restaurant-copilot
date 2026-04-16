@@ -45,7 +45,6 @@ export interface RestaurantSettings {
   delivery_options?: string[];
   primaryColor?: string;
   secondaryColor?: string;
-  allow_order_notes?: boolean;
 }
 
 export interface RestaurantData {

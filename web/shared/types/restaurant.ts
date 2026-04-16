@@ -51,7 +51,6 @@ export type Restaurant = {
   currency: string | null;
   payment_methods: string[] | null;
   delivery_options: string[] | null;
-  allow_order_notes: boolean | null;
   logo_url: string | null;
   onboarded: boolean | null;
   // Hero content fields for homepage

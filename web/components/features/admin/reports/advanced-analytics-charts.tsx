@@ -80,7 +80,6 @@ const CustomTooltip = ({ active, payload, label, currency = 'JPY' }: {
 export function AdvancedAnalyticsCharts({
   salesData,
   categoryData,
-  itemsData,
   trendData,
   isLoading,
   dateRange,

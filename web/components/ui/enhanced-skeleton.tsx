@@ -224,7 +224,7 @@ export function SmartMenuSkeleton() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Header skeleton */}
-      <div className="bg-gradient-to-r from-gray-100 to-gray-400">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center space-y-3">
             <Skeleton 

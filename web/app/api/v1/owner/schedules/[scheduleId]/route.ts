@@ -2,7 +2,6 @@ import { createRouteHandlerClient, SupabaseClient } from '@supabase/auth-helpers
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 
 // Zod schema for updating a schedule entry (all fields optional)
 const updateScheduleSchema = z.object({
@@ -24,6 +23,15 @@ const updateScheduleSchema = z.object({
 });
 
 
+// Placeholder for getting restaurant_id from user session or JWT
+async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<string | null> {
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session) {
+    console.error("Session error for schedule update/delete:", sessionError);
+    return null;
+  }
+  return session.user?.app_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
+}
 
 // PATCH handler for updating a schedule
 export async function PATCH(req: NextRequest) {
@@ -35,11 +43,10 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const user = await getUserFromRequest();
-    if (!user?.restaurantId) {
+    const userRestaurantId = await getRestaurantIdFromSession(supabase);
+    if (!userRestaurantId) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
-    const userRestaurantId = user.restaurantId;
 
     const reqJson = await req.json();
     const validation = updateScheduleSchema.safeParse(reqJson);
@@ -107,11 +114,10 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    const user = await getUserFromRequest();
-    if (!user?.restaurantId) {
+    const userRestaurantId = await getRestaurantIdFromSession(supabase);
+    if (!userRestaurantId) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
-    const userRestaurantId = user.restaurantId;
 
     // Perform delete, ensuring the schedule belongs to the user's restaurant
     const { error: deleteError, count } = await supabase

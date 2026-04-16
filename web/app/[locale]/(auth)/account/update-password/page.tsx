@@ -82,15 +82,11 @@ export default function UpdatePasswordPage() {
         setNewPassword("");
         setConfirmPassword("");
         // Optionally redirect after success
-        // Re-check session after password update and redirect appropriately
-        setTimeout(async () => {
-          const { data: { session: updatedSession } } = await createClient().auth.getSession();
-          if (updatedSession) {
-            router.push("/dashboard");
-          } else {
-            router.push("/login");
-          }
-        }, 1500);
+        // TODO: check if authenticated user is still valid, then redirect to account page
+        // if not, redirect to login
+        setTimeout(() => {
+          router.push("/login");
+        }, 1000);
       }
     } catch {
       setError(t("error.anErrorOccurred"));
