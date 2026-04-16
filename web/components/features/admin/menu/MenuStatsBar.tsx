@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MenuIcon, AlertTriangle, TrendingUp, CheckCircle } from 'lucide-react';
@@ -13,23 +14,50 @@ interface MenuStatsBarProps {
   locale: string;
 }
 
-export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStatsBarProps) {
+/**
+ * ⚡ Bolt: Optimized MenuStatsBar component
+ * - Memoized component to prevent re-renders when parent's search/filter state changes
+ * - Memoized statistics calculations to avoid redundant O(N) processing
+ * - Fixed state mutation bug by copying categories array before sorting
+ */
+export const MenuStatsBar = memo(function MenuStatsBar({
+  categories,
+  isLoading = false,
+  locale
+}: MenuStatsBarProps) {
   const t = useTranslations('owner.menu.stats');
 
-  // Calculate stats
-  const totalItems = categories.reduce((acc, cat) => acc + cat.menu_items.length, 0);
-  const availableItems = categories.reduce((acc, cat) => 
-    acc + cat.menu_items.filter(item => item.available).length, 0
-  );
+  // Calculate stats efficiently in a single pass
+  const { totalItems, availableItems, lowStockItems, topCategories } = useMemo(() => {
+    let total = 0;
+    let available = 0;
+    let lowStock = 0;
+
+    categories.forEach(cat => {
+      total += cat.menu_items.length;
+      cat.menu_items.forEach(item => {
+        if (item.available) available++;
+        // Ensure we only count items where stock_level is explicitly set as a number
+        if (typeof item.stock_level === 'number' && item.stock_level < 10) {
+          lowStock++;
+        }
+      });
+    });
+
+    // Create a copy to avoid mutating the original categories prop
+    const top = [...categories]
+      .sort((a, b) => b.menu_items.length - a.menu_items.length)
+      .slice(0, 3);
+
+    return {
+      totalItems: total,
+      availableItems: available,
+      lowStockItems: lowStock,
+      topCategories: top
+    };
+  }, [categories]);
+
   const unavailableItems = totalItems - availableItems;
-  const lowStockItems = categories.reduce((acc, cat) => 
-    acc + cat.menu_items.filter(item => 
-      item.stock_level !== undefined && item.stock_level < 10
-    ).length, 0
-  );
-  const topCategories = categories
-    .sort((a, b) => b.menu_items.length - a.menu_items.length)
-    .slice(0, 3);
 
   if (isLoading) {
     return (
@@ -121,4 +149,4 @@ export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStat
       </CardContent>
     </Card>
   );
-}
+});
