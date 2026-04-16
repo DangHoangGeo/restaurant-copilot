@@ -1,0 +1,3 @@
+## 2025-05-15 - [Aria-label and Shadowing]
+**Learning:** Adding an `aria-label` to a container element will cause screen readers to ignore all visible text content within that container. This is particularly relevant for responsive components that might have visible text on some screen sizes (like desktop) but not others (like mobile).
+**Action:** Use `aria-label` only for truly icon-only buttons or interactive elements that lack descriptive text. For responsive elements, consider using visually hidden text (e.g., `sr-only` class) or conditional `aria-label` attributes to ensure information is not lost for screen reader users when text is visible.

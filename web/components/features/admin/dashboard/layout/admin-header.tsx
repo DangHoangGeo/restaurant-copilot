@@ -143,7 +143,10 @@ export function AdminHeader({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center px-2 sm:px-3">
+              <Button
+                variant="ghost"
+                className="flex items-center px-2 sm:px-3"
+              >
                 <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center mr-0 sm:mr-2">
                   <User className="h-4 w-4 text-muted-foreground" />
                 </div>

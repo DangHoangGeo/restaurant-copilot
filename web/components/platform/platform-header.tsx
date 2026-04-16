@@ -48,7 +48,7 @@ export default function PlatformHeader({ locale }: { locale: string }) {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative" aria-label={t('notifications')}>
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
               </Button>
@@ -65,7 +65,7 @@ export default function PlatformHeader({ locale }: { locale: string }) {
           {/* Locale Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label={t('language')}>
                 <Globe className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
@@ -87,7 +87,7 @@ export default function PlatformHeader({ locale }: { locale: string }) {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label={t('account')}>
                 <User className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
