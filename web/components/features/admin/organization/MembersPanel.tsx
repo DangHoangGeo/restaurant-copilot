@@ -461,18 +461,6 @@ function EditMemberForm({
 
 // ─── Permission editor ────────────────────────────────────────────────────────
 
-const PERMISSION_KEYS: OrgPermission[] = [
-  "reports",
-  "finance_exports",
-  "purchases",
-  "promotions",
-  "employees",
-  "attendance_approvals",
-  "restaurant_settings",
-  "organization_settings",
-  "billing",
-];
-
 function PermissionEditor({
   memberId,
   onClose,
