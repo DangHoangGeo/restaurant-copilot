@@ -4,6 +4,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { ROLE_DEFAULT_PERMISSIONS } from '@/lib/server/authorization/types';
 import type {
   Organization,
   OrganizationMember,
@@ -185,8 +186,6 @@ export async function getMemberPermissionsWithOverrides(
   memberId: string,
   role: OrgMemberRole
 ): Promise<Array<{ permission: OrgPermission; granted: boolean; is_override: boolean; role_default: boolean }>> {
-  const { ROLE_DEFAULT_PERMISSIONS } = await import('@/lib/server/authorization/types');
-
   const roleDefaults = ROLE_DEFAULT_PERMISSIONS[role];
   const ALL_PERMISSIONS: OrgPermission[] = [
     'reports',

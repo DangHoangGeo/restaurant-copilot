@@ -21,7 +21,7 @@ import {
 } from '@/lib/server/organizations/queries';
 import { updateMemberPermissionsSchema } from '@/lib/server/organizations/schemas';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import type { OrgMemberRole } from '@/lib/server/organizations/types';
+import type { OrgMemberRole, OrgPermission } from '@/lib/server/organizations/types';
 import { ZodError } from 'zod';
 
 export async function GET(
@@ -113,7 +113,7 @@ export async function PATCH(
         ctx!.organization.id,
         memberId,
         ctx!.member.user_id,
-        input.permissions as Record<string, boolean>
+        input.permissions as Partial<Record<OrgPermission, boolean>>
       );
       if (!ok) {
         return NextResponse.json({ error: 'Failed to update permissions' }, { status: 500 });
