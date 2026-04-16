@@ -68,7 +68,8 @@ export async function POST(req: NextRequest) {
       input.email,
       input.role,
       input.shop_scope,
-      input.selected_restaurant_ids
+      input.selected_restaurant_ids,
+      ctx!.organization.name
     );
 
     if (!invite) {

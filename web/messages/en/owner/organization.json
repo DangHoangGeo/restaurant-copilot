@@ -44,5 +44,26 @@
   "resendInviteTitle": "Invite resent",
   "resendInviteNote": "New token generated. Share it with the invitee.",
   "resendInviteError": "Failed to resend invite. Please try again.",
-  "resentAt": "Resent {date}"
+  "resentAt": "Resent {date}",
+
+  "editPermissions": "Edit permissions",
+  "permissionsTitle": "Permission Overrides",
+  "permissionsHint": "Toggles override the role default. Changes marked 'unsaved' are applied on Save.",
+  "permissionsLoadError": "Failed to load permissions. Please try again.",
+  "permissionsSaveError": "Failed to save permissions. Please try again.",
+  "permissionsSaved": "Permissions saved successfully",
+  "permissionOverride": "override",
+  "permissionUnsaved": "unsaved",
+  "confirmResetPermissions": "Reset all permission overrides for this member? They will revert to role defaults.",
+  "resetToDefaults": "Reset to defaults",
+
+  "permission_reports": "Reports",
+  "permission_finance_exports": "Finance exports",
+  "permission_purchases": "Purchases",
+  "permission_promotions": "Promotions",
+  "permission_employees": "Employees",
+  "permission_attendance_approvals": "Attendance approvals",
+  "permission_restaurant_settings": "Restaurant settings",
+  "permission_organization_settings": "Organization settings",
+  "permission_billing": "Billing"
 }

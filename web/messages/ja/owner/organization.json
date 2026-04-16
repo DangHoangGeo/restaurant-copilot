@@ -44,5 +44,26 @@
   "resendInviteTitle": "招待を再送信しました",
   "resendInviteNote": "新しいトークンが生成されました。招待者と共有してください。",
   "resendInviteError": "招待の再送信に失敗しました。もう一度お試しください。",
-  "resentAt": "{date}に再送信"
+  "resentAt": "{date}に再送信",
+
+  "editPermissions": "権限を編集",
+  "permissionsTitle": "権限の上書き",
+  "permissionsHint": "トグルはロールのデフォルトを上書きします。「未保存」とマークされた変更は保存時に適用されます。",
+  "permissionsLoadError": "権限の読み込みに失敗しました。もう一度お試しください。",
+  "permissionsSaveError": "権限の保存に失敗しました。もう一度お試しください。",
+  "permissionsSaved": "権限を保存しました",
+  "permissionOverride": "上書き",
+  "permissionUnsaved": "未保存",
+  "confirmResetPermissions": "このメンバーの権限の上書きをすべてリセットしますか？ロールのデフォルトに戻ります。",
+  "resetToDefaults": "デフォルトにリセット",
+
+  "permission_reports": "レポート",
+  "permission_finance_exports": "財務エクスポート",
+  "permission_purchases": "購買",
+  "permission_promotions": "プロモーション",
+  "permission_employees": "従業員",
+  "permission_attendance_approvals": "出勤承認",
+  "permission_restaurant_settings": "店舗設定",
+  "permission_organization_settings": "組織設定",
+  "permission_billing": "請求"
 }

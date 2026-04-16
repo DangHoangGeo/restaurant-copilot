@@ -93,6 +93,33 @@ export const addBranchSchema = z.object({
   website: z.string().url('Invalid URL').max(200).optional().or(z.literal('')),
 });
 
+// Schema for updating a member's individual permission overrides (B2)
+export const updateMemberPermissionsSchema = z.object({
+  // Partial record — only keys provided will be upserted.
+  // To restore a permission to its role default, pass reset: true.
+  permissions: z.record(
+    z.enum([
+      'reports',
+      'finance_exports',
+      'purchases',
+      'promotions',
+      'employees',
+      'attendance_approvals',
+      'restaurant_settings',
+      'organization_settings',
+      'billing',
+    ]),
+    z.boolean()
+  ).optional(),
+  // When true, delete ALL override rows for this member (restores role defaults)
+  reset: z.boolean().optional(),
+}).refine(
+  (data) => data.permissions !== undefined || data.reset === true,
+  { message: 'Provide permissions to update or set reset=true to clear all overrides' }
+);
+
+export type UpdateMemberPermissionsInput = z.infer<typeof updateMemberPermissionsSchema>;
+
 export type InviteOrgMemberInput = z.infer<typeof inviteOrgMemberSchema>;
 export type UpdateOrgInput = z.infer<typeof updateOrgSchema>;
 export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
