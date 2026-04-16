@@ -126,19 +126,34 @@ export interface OrgBranch {
 export async function listOrganizationBranches(orgId: string): Promise<OrgBranch[]> {
   const supabase = await createClient();
 
+  // Fetch restaurant IDs from organization_restaurants using RLS-scoped client
+  // (ensures the caller is a member of this org)
   const { data, error } = await supabase
     .from('organization_restaurants')
-    .select('restaurant_id, restaurants(id, name, subdomain)')
+    .select('restaurant_id')
     .eq('organization_id', orgId)
     .order('added_at', { ascending: true });
 
   if (error || !data) return [];
 
-  return (data as Array<{
-    restaurant_id: string;
-    restaurants: { id: string; name: string; subdomain: string } | Array<{ id: string; name: string; subdomain: string }> | null;
-  }>).flatMap((row) => {
-    const r = Array.isArray(row.restaurants) ? row.restaurants[0] : row.restaurants;
+  const restaurantIds = (data as Array<{ restaurant_id: string }>).map((r) => r.restaurant_id);
+  if (restaurantIds.length === 0) return [];
+
+  // Use admin client to fetch restaurant details so RLS on the restaurants
+  // table (which is keyed to the user's primary restaurant) doesn't hide
+  // newly-added org branches.
+  const { data: restaurants } = await supabaseAdmin
+    .from('restaurants')
+    .select('id, name, subdomain')
+    .in('id', restaurantIds);
+
+  const restaurantMap = new Map(
+    (restaurants ?? []).map((r) => [r.id, r as { id: string; name: string; subdomain: string }])
+  );
+
+  // Preserve the ordering returned by organization_restaurants
+  return restaurantIds.flatMap((id) => {
+    const r = restaurantMap.get(id);
     if (!r) return [];
     return [{ id: r.id, name: r.name, subdomain: r.subdomain }];
   });
@@ -432,6 +447,12 @@ export async function createRestaurantInOrg(
     subdomain: input.subdomain,
     default_language: input.default_language,
     brand_color: input.brand_color,
+    // Branches added to an existing org inherit verified/active status and
+    // skip the standard onboarding flow — the owner already configured them
+    // via the AddBranchModal.
+    is_active: true,
+    is_verified: true,
+    onboarded: true,
   };
   if (input.tax !== undefined) insert.tax = input.tax;
   if (input.address) insert.address = input.address;

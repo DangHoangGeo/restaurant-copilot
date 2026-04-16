@@ -60,6 +60,62 @@ type UserRestaurantAccess = {
   suspended_at: string | null;
 };
 
+/**
+ * Check if userId is an org member with access to the restaurant at `subdomain`.
+ * Used to allow multi-branch org owners to access branch dashboards.
+ */
+async function getOrgBranchAccess(userId: string, subdomain: string): Promise<UserRestaurantAccess | null> {
+  // 1. Resolve the restaurant at this subdomain
+  const { data: restaurant } = await supabaseAdmin
+    .from('restaurants')
+    .select('id, subdomain, onboarded, is_verified, is_active, suspended_at')
+    .eq('subdomain', subdomain)
+    .maybeSingle();
+
+  if (!restaurant) return null;
+
+  // 2. Find which org this restaurant belongs to
+  const { data: orgLink } = await supabaseAdmin
+    .from('organization_restaurants')
+    .select('organization_id')
+    .eq('restaurant_id', restaurant.id)
+    .maybeSingle();
+
+  if (!orgLink) return null;
+
+  // 3. Verify the user is an active member of that org
+  const { data: orgMember } = await supabaseAdmin
+    .from('organization_members')
+    .select('id, shop_scope')
+    .eq('user_id', userId)
+    .eq('organization_id', orgLink.organization_id)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (!orgMember) return null;
+
+  // 4. For selected_shops members, confirm access to this specific restaurant
+  if (orgMember.shop_scope === 'selected_shops') {
+    const { data: scope } = await supabaseAdmin
+      .from('organization_member_shop_scopes')
+      .select('id')
+      .eq('member_id', orgMember.id)
+      .eq('restaurant_id', restaurant.id)
+      .maybeSingle();
+
+    if (!scope) return null;
+  }
+
+  return {
+    id: restaurant.id,
+    subdomain: restaurant.subdomain,
+    onboarded: Boolean(restaurant.onboarded),
+    is_verified: Boolean(restaurant.is_verified),
+    is_active: Boolean(restaurant.is_active),
+    suspended_at: restaurant.suspended_at ?? null,
+  };
+}
+
 async function getRestaurantForUser(userId: string): Promise<UserRestaurantAccess | null> {
   // Check in-process cache first to avoid DB round-trips on every request.
   const cached = getCachedUserRestaurant(userId);
@@ -390,9 +446,9 @@ export async function middleware(req: NextRequest) {
 
     if (subdomain && subdomain !== 'www') {
       try {
-        const restaurant = await getRestaurantForUser(supabaseUser.id);
+        const primaryRestaurant = await getRestaurantForUser(supabaseUser.id);
 
-        if (!restaurant) {
+        if (!primaryRestaurant) {
           logger.error('middleware', 'Error fetching restaurant for user', {
             userId: supabaseUser.id,
           });
@@ -400,19 +456,33 @@ export async function middleware(req: NextRequest) {
           return NextResponse.redirect(loginUrl);
         }
 
-        // Verify that the user's restaurant matches the current subdomain
+        // Determine the effective restaurant for this request.
+        // For multi-branch org members the current subdomain may belong to a
+        // branch that is different from their primary (users.restaurant_id) restaurant.
+        let restaurant = primaryRestaurant;
+
         if (restaurant.subdomain !== subdomain) {
-          logger.warn('middleware', 'User attempting to access dashboard for different restaurant', {
-            userSubdomain: restaurant.subdomain,
-            accessedSubdomain: subdomain,
-            userId: supabaseUser.id,
-            restaurantId: restaurant.id,
-          });
-          const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
-          if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
-            return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+          // Check if the user has org-level access to the restaurant at this subdomain.
+          const orgBranch = await getOrgBranchAccess(supabaseUser.id, subdomain);
+
+          if (!orgBranch) {
+            // No org access — redirect to the user's primary restaurant.
+            logger.warn('middleware', 'User attempting to access dashboard for different restaurant', {
+              userSubdomain: restaurant.subdomain,
+              accessedSubdomain: subdomain,
+              userId: supabaseUser.id,
+              restaurantId: restaurant.id,
+            });
+            const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+            if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
+              return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+            }
+            return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
           }
-          return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+
+          // Org member accessing a branch they own — use branch data for
+          // subsequent active/onboarding checks.
+          restaurant = orgBranch;
         }
 
         // Block dashboard access for suspended or unverified/inactive restaurants.
