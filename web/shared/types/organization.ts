@@ -41,6 +41,8 @@ export interface ApiOrganizationMember {
   is_active: boolean;
   email: string;
   name: string | null;
+  /** Populated only when shop_scope === 'selected_shops'; undefined for all_shops members. */
+  accessible_restaurant_ids?: string[];
 }
 
 /** Response shape for GET /api/v1/owner/organization */

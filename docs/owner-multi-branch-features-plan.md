@@ -82,7 +82,7 @@ Each role has **default permissions** (`ROLE_DEFAULT_PERMISSIONS` in `web/lib/se
 
 ## Implementation Plan
 
-### Sprint 1 — Core Management Unblocking ✅ IMPLEMENTED
+### Sprint 1 — Core Management Unblocking ✅ IMPLEMENTED + BUGS FIXED
 
 **A1: Organization Settings Editor**  
 - `PATCH /api/v1/owner/organization` — update name, timezone, currency  
@@ -111,6 +111,15 @@ ALTER TABLE organization_pending_invites
   ADD COLUMN IF NOT EXISTS last_resent_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS resend_count   INT NOT NULL DEFAULT 0;
 ```
+
+**Bug fixes applied (2026-04-16):**
+
+| # | Severity | File | Bug | Fix |
+|---|----------|------|-----|-----|
+| 1 | Critical | `MembersPanel.tsx`, `queries.ts`, `types.ts`, `shared/types/organization.ts` | `EditMemberForm` initialised `selectedBranchIds` to `[]`; members with `selected_shops` scope lost their branch assignments on edit and were blocked by the "select at least one branch" validation | Added `accessible_restaurant_ids` to `OrganizationMemberWithUser` and `ApiOrganizationMember`; populated from `organization_member_shop_scopes` in `listOrganizationMembers`; `EditMemberForm` now initialises state from `member.accessible_restaurant_ids ?? []` |
+| 2 | Medium | `members/[memberId]/route.ts` | DELETE handler did not filter by `is_active: true` when verifying the target member, so removing an already-deactivated member returned 200 success | Added `.eq('is_active', true)` to the membership lookup query |
+| 3 | Medium | `MembersPanel.tsx` | `removeMember` and `revokeInvite` called `onRefresh()` unconditionally regardless of API response status, silently hiding errors | Added `res.ok` checks; errors are now surfaced via an `actionError` banner above the member list |
+| 4 | Medium | `invites.ts` | `acceptPendingInvite` used `supabaseAdmin.auth.admin.listUsers()` (unbounded, single-page) to find a user by email — could miss users past the default page limit and create duplicate auth accounts | Replaced with a targeted `users` table query (`.eq('email', email)`) which is indexed and returns the correct result regardless of total user count |
 
 ---
 

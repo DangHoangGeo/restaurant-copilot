@@ -308,7 +308,9 @@ function EditMemberForm({
   const t = useTranslations("owner.organization");
   const [role, setRole] = useState<OrgMemberRole>(member.role);
   const [shopScope, setShopScope] = useState<ShopScope>(member.shop_scope);
-  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>(
+    member.accessible_restaurant_ids ?? []
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -692,6 +694,7 @@ export function MembersPanel({
   const [permissionsMemberId, setPermissionsMemberId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [resendToken, setResendToken] = useState<{ inviteId: string; token: string } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const handleInviteSuccess = (token: string) => {
     setShowInviteForm(false);
@@ -702,9 +705,17 @@ export function MembersPanel({
   const removeMember = async (memberId: string) => {
     if (!confirm(t("confirmRemoveMember"))) return;
     setRemovingId(memberId);
+    setActionError(null);
     try {
-      await fetch(`/api/v1/owner/organization/members/${memberId}`, { method: "DELETE" });
-      onRefresh();
+      const res = await fetch(`/api/v1/owner/organization/members/${memberId}`, { method: "DELETE" });
+      if (res.ok) {
+        onRefresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setActionError(data.error ?? t("removeMemberError"));
+      }
+    } catch {
+      setActionError(t("removeMemberError"));
     } finally {
       setRemovingId(null);
     }
@@ -713,9 +724,17 @@ export function MembersPanel({
   const revokeInvite = async (inviteId: string) => {
     if (!confirm(t("confirmRevokeInvite"))) return;
     setRevokingId(inviteId);
+    setActionError(null);
     try {
-      await fetch(`/api/v1/owner/organization/invites/${inviteId}`, { method: "DELETE" });
-      onRefresh();
+      const res = await fetch(`/api/v1/owner/organization/invites/${inviteId}`, { method: "DELETE" });
+      if (res.ok) {
+        onRefresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setActionError(data.error ?? t("revokeInviteError"));
+      }
+    } catch {
+      setActionError(t("revokeInviteError"));
     } finally {
       setRevokingId(null);
     }
@@ -745,6 +764,13 @@ export function MembersPanel({
 
   return (
     <div className="space-y-6">
+      {actionError && (
+        <div className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
+
       {/* Active members */}
       <section>
         <div className="flex items-center justify-between mb-3">

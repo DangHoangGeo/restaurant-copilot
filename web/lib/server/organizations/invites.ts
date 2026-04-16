@@ -220,15 +220,18 @@ export async function acceptPendingInvite(
   let userId: string;
   let newUserCreated = false;
 
-  // 2. Check if user already exists in Supabase auth
-  const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-  const existingAuthUser = existingUsers?.users?.find(
-    (u) => u.email?.toLowerCase() === email
-  );
+  // 2. Check if user already exists by looking up the users table (indexed on email).
+  //    Using the users table avoids an unbounded auth.admin.listUsers() scan that would
+  //    only return the first page of results and miss users beyond the page limit.
+  const { data: existingUserRow } = await supabaseAdmin
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .single();
 
-  if (existingAuthUser) {
+  if (existingUserRow) {
     // User already has an auth account — just resolve their user_id
-    userId = existingAuthUser.id;
+    userId = existingUserRow.id;
   } else {
     // New user — require name and password
     if (!name || !password) {

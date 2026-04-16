@@ -99,13 +99,14 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     );
   }
 
-  // Verify the target member belongs to this organization
+  // Verify the target member belongs to this organization and is still active
   const supabase = await createClient();
   const { data: targetMember, error } = await supabase
     .from('organization_members')
     .select('id, organization_id')
     .eq('id', memberId)
     .eq('organization_id', ctx!.organization.id)
+    .eq('is_active', true)
     .single();
 
   if (error || !targetMember) {
