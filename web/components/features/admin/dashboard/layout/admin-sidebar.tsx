@@ -22,6 +22,7 @@ import {
   ShoppingCart,
   FileText,
   Tag,
+  LayoutGrid,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -160,6 +161,11 @@ export function AdminSidebar({
         {
           headingKey: "nav_group_settings",
           items: [
+            {
+              icon: LayoutGrid,
+              labelKey: "admin_sidebar_overview",
+              href: "/dashboard/overview",
+            },
             {
               icon: Layers,
               labelKey: "admin_sidebar_branches",

@@ -184,6 +184,52 @@ export interface SetActiveBranchRequest {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Add branch types (Sprint 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Request body for POST /api/v1/owner/organization/restaurants */
+export interface AddBranchRequest {
+  name: string;
+  subdomain: string;
+  default_language: 'en' | 'ja' | 'vi';
+  brand_color: string;
+  tax?: number;
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+}
+
+/** Response shape for POST /api/v1/owner/organization/restaurants */
+export interface AddBranchResponse {
+  success: true;
+  restaurant: {
+    id: string;
+    name: string;
+    subdomain: string;
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Organization overview types (Sprint 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface OrgBranchOverview {
+  restaurant_id: string;
+  name: string;
+  subdomain: string;
+  today_revenue: number;
+  open_orders_count: number;
+}
+
+/** Response shape for GET /api/v1/owner/organization/overview */
+export interface OrgOverviewResponse {
+  branches: OrgBranchOverview[];
+  total_today_revenue: number;
+  total_open_orders: number;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Branch menu types (Phase 3)
 // ─────────────────────────────────────────────────────────────────────────────
 

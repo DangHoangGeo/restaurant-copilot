@@ -1,0 +1,12 @@
+{
+  "pageTitle": "Organization Overview",
+  "pageDescription": "Today's performance across all your branches.",
+  "totalRevenueLabel": "Total Revenue Today",
+  "totalOpenOrdersLabel": "Total Open Orders",
+  "branchesHeading": "Branch Breakdown",
+  "todayRevenueLabel": "Revenue Today",
+  "openOrdersLabel": "Open Orders",
+  "viewBranch": "View Branch",
+  "noAccess": "You do not have access to any branches.",
+  "loadError": "Failed to load overview data."
+}

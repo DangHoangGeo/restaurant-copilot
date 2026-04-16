@@ -1,0 +1,12 @@
+{
+  "pageTitle": "組織の概要",
+  "pageDescription": "すべてのブランチの本日のパフォーマンス。",
+  "totalRevenueLabel": "本日の総売上",
+  "totalOpenOrdersLabel": "対応中の注文数",
+  "branchesHeading": "ブランチ別内訳",
+  "todayRevenueLabel": "本日の売上",
+  "openOrdersLabel": "対応中の注文",
+  "viewBranch": "ブランチを表示",
+  "noAccess": "アクセス可能なブランチがありません。",
+  "loadError": "概要データの読み込みに失敗しました。"
+}

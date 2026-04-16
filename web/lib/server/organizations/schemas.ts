@@ -76,9 +76,27 @@ export const setActiveBranchSchema = z.object({
   restaurant_id: z.string().uuid('Valid restaurant ID required'),
 });
 
+// Schema for adding a new branch/restaurant to an org
+export const addBranchSchema = z.object({
+  name: z.string().min(1, 'Restaurant name is required').max(100),
+  subdomain: z
+    .string()
+    .min(3, 'Subdomain must be at least 3 characters')
+    .max(50, 'Subdomain must be less than 50 characters')
+    .regex(/^[a-z0-9-]+$/, 'Subdomain can only contain lowercase letters, numbers, and hyphens'),
+  default_language: z.enum(['en', 'ja', 'vi']),
+  brand_color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Invalid hex color'),
+  tax: z.number().min(0).max(1).optional(),
+  address: z.string().max(500).optional(),
+  phone: z.string().max(50).optional(),
+  email: z.string().email('Invalid email').max(100).optional().or(z.literal('')),
+  website: z.string().url('Invalid URL').max(200).optional().or(z.literal('')),
+});
+
 export type InviteOrgMemberInput = z.infer<typeof inviteOrgMemberSchema>;
 export type UpdateOrgInput = z.infer<typeof updateOrgSchema>;
 export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
 export type CreatePendingInviteInput = z.infer<typeof createPendingInviteSchema>;
 export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;
 export type SetActiveBranchInput = z.infer<typeof setActiveBranchSchema>;
+export type AddBranchSchemaInput = z.infer<typeof addBranchSchema>;

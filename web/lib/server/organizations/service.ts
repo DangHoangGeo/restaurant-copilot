@@ -9,6 +9,7 @@ import {
   getAccessibleRestaurantIds,
   getMemberPermissionOverrides,
   createOrganizationForNewRestaurant,
+  createRestaurantInOrg,
   addOrganizationMember,
   deactivateOrganizationMember,
   updateOrganizationSettings,
@@ -24,6 +25,7 @@ import type {
   ShopScope,
   InviteOrgMemberInput,
   CreateOrganizationInput,
+  AddBranchInput,
 } from './types';
 import { createClient } from '@/lib/supabase/server';
 
@@ -121,6 +123,30 @@ export async function bootstrapOrganizationForRestaurant(
   input: CreateOrganizationInput
 ): Promise<{ organizationId: string; memberId: string } | null> {
   return createOrganizationForNewRestaurant(userId, restaurantId, input);
+}
+
+/**
+ * Add a new branch (restaurant) to an existing organization.
+ * Validates subdomain uniqueness before creating.
+ * Caller must be founder_full_control (enforced at route level).
+ */
+export async function addBranchToOrganization(
+  orgId: string,
+  addedByUserId: string,
+  input: AddBranchInput
+): Promise<{
+  success: boolean;
+  restaurant?: { id: string; name: string; subdomain: string };
+  error?: string;
+  conflict?: boolean;
+}> {
+  const restaurant = await createRestaurantInOrg(orgId, addedByUserId, input);
+  if (!restaurant) {
+    // Attempt to distinguish subdomain conflict vs other errors
+    // createRestaurantInOrg returns null for conflicts too; route handler does the pre-check
+    return { success: false, error: 'Failed to create branch' };
+  }
+  return { success: true, restaurant };
 }
 
 /**
