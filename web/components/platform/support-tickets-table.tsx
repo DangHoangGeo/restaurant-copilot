@@ -164,7 +164,13 @@ export default function SupportTicketsTable() {
           </SelectContent>
         </Select>
 
-        <Button variant="ghost" size="icon" onClick={fetchTickets} title={tc('refresh')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={fetchTickets}
+          title={tc('refresh')}
+          aria-label={tc('refresh')}
+        >
           <RefreshCw className="w-4 h-4" />
         </Button>
       </div>

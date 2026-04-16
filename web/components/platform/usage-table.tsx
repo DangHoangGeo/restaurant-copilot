@@ -94,7 +94,13 @@ export default function UsageTable() {
           </SelectContent>
         </Select>
 
-        <Button variant="ghost" size="icon" onClick={fetchUsage} title={tc('refresh')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={fetchUsage}
+          title={tc('refresh')}
+          aria-label={tc('refresh')}
+        >
           <RefreshCw className="w-4 h-4" />
         </Button>
       </div>

@@ -139,7 +139,13 @@ export default function LogsTable() {
           {t('actions.export')}
         </Button>
 
-        <Button variant="ghost" size="icon" onClick={fetchLogs} title={tc('refresh')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={fetchLogs}
+          title={tc('refresh')}
+          aria-label={tc('refresh')}
+        >
           <RefreshCw className="w-4 h-4" />
         </Button>
       </div>
