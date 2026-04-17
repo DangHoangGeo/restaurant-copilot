@@ -1,13 +1,14 @@
 import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { ControlRestaurantsClient } from '@/components/features/admin/control/control-restaurants-client';
 import { buildAuthorizationService } from '@/lib/server/authorization/service';
+import { resolveFounderControlContext } from '@/lib/server/control/access';
 import { getActiveBranchId } from '@/lib/server/organizations/active-branch';
 import {
   listOrganizationBranches,
   listOrganizationEmployees,
 } from '@/lib/server/organizations/queries';
-import { resolveOrgContext } from '@/lib/server/organizations/service';
+import { listOrganizationSharedMenu } from '@/lib/server/organizations/shared-menu';
 
 export async function generateMetadata({
   params,
@@ -20,15 +21,14 @@ export async function generateMetadata({
 }
 
 export default async function ControlRestaurantsPage({
-  params,
+  params: _params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  const ctx = await resolveOrgContext();
+  const ctx = await resolveFounderControlContext();
 
   if (!ctx) {
-    redirect(`/${locale}/dashboard`);
+    notFound();
   }
 
   const authz = buildAuthorizationService(ctx);
@@ -36,7 +36,10 @@ export default async function ControlRestaurantsPage({
   const canAddBranch = authz?.canManageMembers() ?? false;
   const canViewEmployees = authz?.can('employees') ?? false;
 
-  const allBranches = await listOrganizationBranches(ctx.organization.id);
+  const [allBranches, sharedMenuCategories] = await Promise.all([
+    listOrganizationBranches(ctx.organization.id),
+    canManageMenu ? listOrganizationSharedMenu(ctx.organization.id) : Promise.resolve([]),
+  ]);
   const accessibleIds = new Set(ctx.accessibleRestaurantIds);
   const branches = allBranches.filter((branch) => accessibleIds.has(branch.id));
 
@@ -55,6 +58,7 @@ export default async function ControlRestaurantsPage({
     id: branch.id,
     name: branch.name,
     subdomain: branch.subdomain,
+    branchCode: branch.branch_code ?? branch.subdomain,
     employeeCount: employeeCountByBranch.get(branch.id) ?? 0,
     isActive: branch.id === activeBranchId,
   }));
@@ -64,6 +68,8 @@ export default async function ControlRestaurantsPage({
       branches={branchesWithMeta}
       canManageMenu={canManageMenu}
       canAddBranch={canAddBranch}
+      companyPublicSubdomain={ctx.organization.public_subdomain ?? null}
+      sharedMenuCategories={sharedMenuCategories}
     />
   );
 }

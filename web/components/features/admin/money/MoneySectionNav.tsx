@@ -15,9 +15,9 @@ interface MoneySectionNavProps {
 
 export function MoneySectionNav({
   locale,
-  financeHref = "/dashboard/finance",
-  purchasingHref = "/dashboard/purchasing",
-  promotionsHref = "/dashboard/promotions",
+  financeHref = "/branch/finance",
+  purchasingHref = "/branch/purchasing",
+  promotionsHref = "/branch/promotions",
 }: MoneySectionNavProps) {
   const pathname = usePathname();
   const t = useTranslations("owner.dashboard");

@@ -1,7 +1,7 @@
 import React from "react";
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { HomepageClientContent } from "./homepage-client-content";
-import { resolveOrgContext } from '@/lib/server/organizations/service';
+import { resolveFounderControlContext } from '@/lib/server/control/access';
 
 export default async function HomepagePage({
   params
@@ -9,10 +9,10 @@ export default async function HomepagePage({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params;
-  const ctx = await resolveOrgContext();
+  const ctx = await resolveFounderControlContext();
 
   if (!ctx) {
-    redirect(`/${locale}/dashboard`);
+    notFound();
   }
 
   if (!ctx.organization.onboarding_completed_at) {

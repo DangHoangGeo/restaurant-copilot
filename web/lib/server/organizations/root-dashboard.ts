@@ -69,7 +69,7 @@ export function buildBranchDashboardUrl(
   subdomain: string,
   locale: string
 ): string {
-  const path = `/${locale}/dashboard`;
+  const path = `/${locale}/branch`;
 
   if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
     return `http://${subdomain}.localhost:3000${path}`;

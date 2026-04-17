@@ -48,7 +48,7 @@ export default async function MenuPage({
 						<strong className="text-foreground">{activeBranchName}</strong>
 					</span>
 					<Link
-						href={`/${locale}/dashboard/branches`}
+						href={`/${locale}/control/restaurants`}
 						className="ml-auto text-xs text-primary hover:underline"
 					>
 						Switch branch

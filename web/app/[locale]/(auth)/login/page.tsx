@@ -68,8 +68,8 @@ export default function LoginPage() {
         // Use the redirectUrl from the API which includes the correct subdomain
         window.location.href = data.redirectUrl;
       } else {
-        // Fallback to dashboard on current domain if no redirectUrl provided
-        router.push(`/${locale}/dashboard`);
+        // Founder-safe fallback: control decides whether onboarding or overview comes next
+        router.push(`/${locale}/control`);
       }
     } catch (err) {
       if (err instanceof Error) {

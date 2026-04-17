@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu as MenuIcon, Moon, Sun, ChevronDown, User, Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { Menu as MenuIcon, Moon, Sun, ChevronDown, User, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { LanguageSwitcher } from '@/components/common/language-switcher';
 import { usePathname, useRouter, useParams } from 'next/navigation';
@@ -18,20 +18,20 @@ import { useTranslations } from 'next-intl';
 
 // This mapping should ideally live in a config file
 const viewNameMap: Record<string, string> = {
-  '/dashboard': 'admin_sidebar_dashboard',
-  '/dashboard/homepage': 'admin_sidebar_homepage_management',
-  '/dashboard/settings': 'admin_sidebar_restaurant_settings',
-  '/dashboard/menu': 'admin_sidebar_menu_management',
-  '/dashboard/tables': 'admin_sidebar_table_qr_management',
-  '/dashboard/employees': 'admin_sidebar_employees_schedules',
-  '/dashboard/bookings': 'admin_sidebar_bookings_preorders',
-  '/dashboard/reports': 'admin_sidebar_reports_analytics',
-  '/dashboard/purchasing': 'admin_sidebar_purchasing',
-  '/dashboard/finance': 'admin_sidebar_finance',
-  '/dashboard/promotions': 'admin_sidebar_promotions',
-  '/dashboard/branches': 'admin_sidebar_branches',
-  '/dashboard/organization': 'admin_sidebar_organization',
-  '/dashboard/profile': 'admin_sidebar_profile',
+  '/branch': 'admin_sidebar_dashboard',
+  '/branch/homepage': 'admin_sidebar_homepage_management',
+  '/branch/settings': 'admin_sidebar_restaurant_settings',
+  '/branch/menu': 'admin_sidebar_menu_management',
+  '/branch/tables': 'admin_sidebar_table_qr_management',
+  '/branch/employees': 'admin_sidebar_employees_schedules',
+  '/branch/bookings': 'admin_sidebar_bookings_preorders',
+  '/branch/reports': 'admin_sidebar_reports_analytics',
+  '/branch/purchasing': 'admin_sidebar_purchasing',
+  '/branch/finance': 'admin_sidebar_finance',
+  '/branch/promotions': 'admin_sidebar_promotions',
+  '/branch/branches': 'admin_sidebar_branches',
+  '/branch/organization': 'admin_sidebar_organization',
+  '/branch/profile': 'admin_sidebar_profile',
 };
 
 interface AdminHeaderProps {
@@ -90,11 +90,11 @@ export function AdminHeader({
 
   // Handle dynamic routes
   if (!currentPageTitleKey) {
-    if (basePath.startsWith('/dashboard/menu/')) {
+    if (basePath.startsWith('/branch/menu/')) {
       currentPageTitleKey = 'admin_sidebar_menu_management';
-    } else if (basePath.startsWith('/dashboard/tables/')) {
+    } else if (basePath.startsWith('/branch/tables/')) {
       currentPageTitleKey = 'admin_sidebar_table_qr_management';
-    } else if (basePath.startsWith('/dashboard/employees/')) {
+    } else if (basePath.startsWith('/branch/employees/')) {
       currentPageTitleKey = 'admin_sidebar_employees_schedules';
     }
   }
@@ -156,14 +156,9 @@ export function AdminHeader({
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>{t('user_menu.my_account_label')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <Link href={`/${locale}/dashboard/profile`} passHref legacyBehavior>
+              <Link href={`/${locale}/branch/profile`} passHref legacyBehavior>
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <a><User className="mr-2 h-4 w-4" /> {t('user_menu.profile_link')}</a>
-                </DropdownMenuItem>
-              </Link>
-              <Link href={`/${locale}/dashboard/settings`} passHref legacyBehavior>
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <a><SettingsIcon className="mr-2 h-4 w-4" /> {t('user_menu.settings_link')}</a>
                 </DropdownMenuItem>
               </Link>
               <DropdownMenuSeparator />

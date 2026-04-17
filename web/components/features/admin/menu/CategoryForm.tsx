@@ -68,7 +68,7 @@ export function CategoryForm({ initialData, locale }: CategoryFormProps) {
       }
 
       toast(initialData?.id ? t('update_success_desc') : t('create_success_desc'));
-      router.push(`/${locale}/dashboard/menu`);
+      router.push(`/${locale}/branch/menu`);
       router.refresh();
     } catch (error) {
       console.error("Error saving category:", error);

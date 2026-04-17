@@ -192,6 +192,7 @@ function buildRestaurantSettings(row: {
     logoUrl: row.logo_url,
     subdomain: row.subdomain,
     branch_code: row.branch_code ?? null,
+    company_public_subdomain: null,
     primaryColor: row.brand_color || '#3B82F6',
     defaultLocale: row.default_language || 'en',
     onboarded: row.onboarded || false,

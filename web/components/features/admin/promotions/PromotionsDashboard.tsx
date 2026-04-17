@@ -16,6 +16,9 @@ interface PromotionsDashboardProps {
   currency: string;
   locale: string;
   canWrite: boolean;
+  financeHref?: string;
+  purchasingHref?: string;
+  promotionsHref?: string;
 }
 
 export function PromotionsDashboard({
@@ -24,6 +27,9 @@ export function PromotionsDashboard({
   currency,
   locale,
   canWrite,
+  financeHref,
+  purchasingHref,
+  promotionsHref,
 }: PromotionsDashboardProps) {
   const t = useTranslations("owner.promotions");
   const router = useRouter();
@@ -120,7 +126,12 @@ export function PromotionsDashboard({
           </div>
         </div>
 
-        <MoneySectionNav locale={locale} />
+        <MoneySectionNav
+          locale={locale}
+          financeHref={financeHref}
+          purchasingHref={purchasingHref}
+          promotionsHref={promotionsHref}
+        />
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 gap-4">

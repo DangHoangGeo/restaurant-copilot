@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { ControlSettingsContent } from './control-settings-content';
-import { resolveOrgContext } from '@/lib/server/organizations/service';
 import { buildAuthorizationService } from '@/lib/server/authorization/service';
+import { resolveFounderControlContext } from '@/lib/server/control/access';
 
 export async function generateMetadata({
   params,
@@ -15,15 +15,13 @@ export async function generateMetadata({
 }
 
 export default async function ControlSettingsPage({
-  params,
+  params: _params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-
-  const ctx = await resolveOrgContext();
+  const ctx = await resolveFounderControlContext();
   if (!ctx) {
-    redirect(`/${locale}/dashboard`);
+    notFound();
   }
 
   const authz = buildAuthorizationService(ctx);

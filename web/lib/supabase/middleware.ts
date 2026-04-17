@@ -83,7 +83,11 @@ export async function updateSession(request: NextRequest) {
     // Only redirect if not on a public page or a page that might be accessed by subdomain anonymously
     const isLikelyPublicPage = subdomain && subdomain !== 'www'; // A simple heuristic
 
-    if (!isLikelyPublicPage || request.nextUrl.pathname.startsWith('/dashboard')) { // Always protect dashboard
+    if (
+      !isLikelyPublicPage ||
+      request.nextUrl.pathname.startsWith('/dashboard') ||
+      request.nextUrl.pathname.startsWith('/branch')
+    ) { // Always protect branch operations
         const url = request.nextUrl.clone();
         url.pathname = '/login';
         return NextResponse.redirect(url);
