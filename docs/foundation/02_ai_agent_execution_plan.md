@@ -12,8 +12,8 @@ The goal is not to ship many disconnected features. The goal is to build a stron
 2. Treat each existing `restaurant` as a branch-level operating unit.
 3. Add multi-branch support above the current restaurant layer through an organization model.
 4. Keep branch menus independent first.
-5. Founder and co-founder experience must live on the root-domain control route.
-6. Branch manager experience must live on the branch-scoped operations route.
+5. Founder and co-founder experience must live on the organization-subdomain control route.
+6. Branch manager experience must live on the organization-subdomain operations route with explicit branch context.
 7. Keep permissions explicit and auditable.
 8. Keep finance and attendance logic reliable enough for real operations.
 

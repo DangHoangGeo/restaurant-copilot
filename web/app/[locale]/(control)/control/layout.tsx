@@ -65,6 +65,7 @@ export default async function ControlLayout({
       <ControlShell
         locale={locale}
         organizationName={controlContext.organization.name}
+        userEmail={user.email ?? ''}
         accessControls={accessControls}
       >
         {children}

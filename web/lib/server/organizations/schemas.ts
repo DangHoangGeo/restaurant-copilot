@@ -137,6 +137,43 @@ export const organizationOnboardingSchema = z.object({
   description_en: z.string().max(1000).nullable().optional(),
   description_ja: z.string().max(1000).nullable().optional(),
   description_vi: z.string().max(1000).nullable().optional(),
+  primary_branch: z.object({
+    id: z.string().uuid('Valid branch ID required'),
+    name: z.string().min(1).max(100),
+    branch_code: z
+      .string()
+      .min(2)
+      .max(50)
+      .regex(/^[a-z0-9-]+$/, 'Branch code can only contain lowercase letters, numbers, and hyphens'),
+    default_language: z.enum(['en', 'ja', 'vi']),
+    tax: z.number().min(0).max(1),
+    address: z.string().max(500).nullable().optional(),
+    opening_hours: z.string().max(1000).nullable().optional(),
+    phone: z.string().max(50).nullable().optional(),
+    email: z.string().email('Invalid email').max(100).nullable().optional(),
+    website: z.string().url('Invalid URL').max(200).nullable().optional(),
+    logo_url: z.string().url('Invalid logo URL').nullable().optional(),
+    hero_title_en: z.string().max(100).nullable().optional(),
+    hero_title_ja: z.string().max(100).nullable().optional(),
+    hero_title_vi: z.string().max(100).nullable().optional(),
+    hero_subtitle_en: z.string().max(200).nullable().optional(),
+    hero_subtitle_ja: z.string().max(200).nullable().optional(),
+    hero_subtitle_vi: z.string().max(200).nullable().optional(),
+    owner_story_en: z.string().max(1000).nullable().optional(),
+    owner_story_ja: z.string().max(1000).nullable().optional(),
+    owner_story_vi: z.string().max(1000).nullable().optional(),
+    owner_photo_url: z.string().url('Invalid owner photo URL').nullable().optional(),
+    gallery_images: z.array(z.string().url('Invalid gallery URL')).optional(),
+    signature_dishes: z.array(z.object({
+      name_en: z.string().min(1).max(100),
+      name_ja: z.string().max(100).nullable().optional(),
+      name_vi: z.string().max(100).nullable().optional(),
+      description_en: z.string().max(500).nullable().optional(),
+      description_ja: z.string().max(500).nullable().optional(),
+      description_vi: z.string().max(500).nullable().optional(),
+      price: z.number().min(0),
+    })).optional(),
+  }),
 });
 
 // Schema for updating a member's individual permission overrides (B2)

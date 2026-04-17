@@ -33,6 +33,15 @@ describe('root dashboard urls', () => {
     process.env.NEXT_PRIVATE_DEVELOPMENT = 'false';
     process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
 
+    expect(buildRootControlUrl('ja', 'bao-an-group')).toBe(
+      'https://bao-an-group.coorder.ai/ja/control/overview'
+    );
+  });
+
+  it('falls back to the root domain when no owner subdomain is available', () => {
+    process.env.NEXT_PRIVATE_DEVELOPMENT = 'false';
+    process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
+
     expect(buildRootControlUrl('ja')).toBe(
       'https://coorder.ai/ja/control/overview'
     );
@@ -51,8 +60,8 @@ describe('root dashboard urls', () => {
     process.env.NEXT_PRIVATE_DEVELOPMENT = 'false';
     process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
 
-    expect(buildRootControlSectionUrl('ja', '/control/homepage')).toBe(
-      'https://coorder.ai/ja/control/homepage'
+    expect(buildRootControlSectionUrl('ja', '/control/homepage', 'bao-an-group')).toBe(
+      'https://bao-an-group.coorder.ai/ja/control/homepage'
     );
   });
 });

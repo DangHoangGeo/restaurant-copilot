@@ -16,7 +16,6 @@ import {
   Phone,
   Plus,
   ShoppingBag,
-  Trash2,
   TrendingUp,
   Users,
   XCircle,
@@ -44,12 +43,15 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { OrgEmployeeRow } from '@/lib/server/organizations/queries';
 import type { BranchOverviewData } from '@/lib/server/control/branch-overview';
+import type { BranchTeamPayrollData } from '@/lib/server/control/branch-team';
 import type { BranchSettings, BranchDetailTab } from '@/app/[locale]/(control)/control/restaurants/[branchId]/page';
+import { ControlBranchTeamPanel } from '@/components/features/admin/control/control-branch-team-panel';
 
 interface ControlBranchDetailClientProps {
   branch: BranchSettings;
   employees: OrgEmployeeRow[];
   overview: BranchOverviewData;
+  teamPayroll: BranchTeamPayrollData;
   initialTab: BranchDetailTab;
   currency: string;
   orgTimezone: string;
@@ -82,13 +84,6 @@ const JOB_TITLES = [
   { value: 'cashier', label: 'Cashier' },
 ];
 
-const JOB_TITLE_COLORS: Record<string, string> = {
-  manager: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  chef: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  server: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  cashier: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-};
-
 const TABS: { key: BranchDetailTab; label: string }[] = [
   { key: 'overview', label: 'Overview' },
   { key: 'team', label: 'Team' },
@@ -111,6 +106,7 @@ export function ControlBranchDetailClient({
   branch: initialBranch,
   employees: initialEmployees,
   overview,
+  teamPayroll,
   initialTab,
   currency,
 }: ControlBranchDetailClientProps) {
@@ -480,53 +476,26 @@ export function ControlBranchDetailClient({
               <p className="mt-1 text-xs text-muted-foreground">Add your first team member above.</p>
             </div>
           ) : (
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead>Employee</TableHead>
-                    <TableHead className="hidden sm:table-cell">Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="w-10 pr-3" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employees.map((emp) => (
-                    <TableRow key={emp.employee_id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                            {emp.name?.[0]?.toUpperCase() ?? '?'}
-                          </div>
-                          <p className="text-sm font-medium leading-tight">{emp.name || '—'}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
-                        {emp.email}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className={cn('text-[10px] capitalize', JOB_TITLE_COLORS[emp.job_title] ?? '')}
-                        >
-                          {emp.job_title}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="pr-3">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive"
-                          disabled
-                          title="Remove employee (coming soon)"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="space-y-4">
+              <div className="rounded-3xl border bg-card p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold">Roster overview</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Founders can review schedules, approved hours, and salary estimates without leaving control.
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="rounded-full">
+                    {teamPayroll.monthLabel}
+                  </Badge>
+                </div>
+              </div>
+
+              <ControlBranchTeamPanel
+                branchId={initialBranch.id}
+                currency={initialBranch.currency ?? currency}
+                data={teamPayroll}
+              />
             </div>
           )}
         </div>

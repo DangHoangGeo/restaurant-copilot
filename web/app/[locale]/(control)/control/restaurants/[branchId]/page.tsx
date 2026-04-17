@@ -3,6 +3,7 @@ import { resolveFounderControlContext } from '@/lib/server/control/access';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { listOrganizationEmployees } from '@/lib/server/organizations/queries';
 import { getBranchOverview } from '@/lib/server/control/branch-overview';
+import { getBranchTeamPayrollData } from '@/lib/server/control/branch-team';
 import { ControlBranchDetailClient } from '@/components/features/admin/control/control-branch-detail-client';
 
 export interface BranchSettings {
@@ -56,6 +57,12 @@ export default async function ControlBranchDetailPage({
   }
 
   const branch = branchResult.data as BranchSettings;
+  const teamPayroll = await getBranchTeamPayrollData({
+    branchId,
+    employees,
+    timezone: branch.timezone ?? ctx.organization.timezone,
+    currency: branch.currency ?? ctx.organization.currency,
+  });
   const rawTab = sp.tab;
   const activeTab: BranchDetailTab =
     rawTab === 'team' ? 'team' : rawTab === 'setup' ? 'setup' : 'overview';
@@ -65,6 +72,7 @@ export default async function ControlBranchDetailPage({
       branch={branch}
       employees={employees}
       overview={overview}
+      teamPayroll={teamPayroll}
       initialTab={activeTab}
       currency={ctx.organization.currency}
       orgTimezone={ctx.organization.timezone}

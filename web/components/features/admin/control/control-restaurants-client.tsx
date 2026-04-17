@@ -5,6 +5,7 @@ import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
+  CalendarDays,
   Building2,
   Copy,
   GitCompare,
@@ -18,14 +19,6 @@ import { MenuCopyModal } from '@/components/features/admin/branches/MenuCopyModa
 import { MenuComparePanel } from '@/components/features/admin/branches/MenuComparePanel';
 import { ControlSharedMenuPanel } from '@/components/features/admin/control/control-shared-menu-panel';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { OrganizationSharedMenuCategory } from '@/lib/server/organizations/shared-menu';
 
@@ -42,6 +35,7 @@ interface ControlRestaurantsClientProps {
   branches: Branch[];
   canAddBranch: boolean;
   canManageMenu: boolean;
+  organizationName?: string;
   companyPublicSubdomain: string | null;
   sharedMenuCategories: OrganizationSharedMenuCategory[];
 }
@@ -52,6 +46,7 @@ export function ControlRestaurantsClient({
   branches: initialBranches,
   canAddBranch,
   canManageMenu,
+  organizationName,
   companyPublicSubdomain,
   sharedMenuCategories,
 }: ControlRestaurantsClientProps) {
@@ -137,7 +132,10 @@ export function ControlRestaurantsClient({
       )}
 
       {canManageMenu && (
-        <ControlSharedMenuPanel categories={sharedMenuCategories} />
+        <ControlSharedMenuPanel
+          categories={sharedMenuCategories}
+          organizationName={organizationName}
+        />
       )}
 
       {/* Restaurant list */}
@@ -159,70 +157,91 @@ export function ControlRestaurantsClient({
           )}
         </div>
       ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>Restaurant</TableHead>
-                <TableHead className="hidden sm:table-cell">Public entry</TableHead>
-                <TableHead className="hidden md:table-cell text-center">Employees</TableHead>
-                <TableHead className="w-24 pr-3" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {branches.map((branch) => (
-                <TableRow
-                  key={branch.id}
-                  className="cursor-pointer"
-                  onClick={() => handleOpen(branch.id)}
-                >
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm leading-tight truncate max-w-40">{branch.name}</p>
-                        {branch.isActive && (
-                          <Badge variant="secondary" className="mt-0.5 text-[9px] h-4 px-1.5 rounded-full">active</Badge>
-                        )}
-                        {branch.branchCode ? (
-                          <p className="mt-1 text-[11px] text-muted-foreground sm:hidden">
-                            branch {branch.branchCode}
-                          </p>
+        <div className="space-y-3">
+          <div className="rounded-3xl border bg-card p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold">Branch control</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Open a branch to review setup, schedules, approved hours, and payroll readiness.
+                </p>
+              </div>
+              <Badge variant="secondary" className="rounded-full">
+                {branches.length} branches
+              </Badge>
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            {branches.map((branch) => (
+              <article
+                key={branch.id}
+                className="rounded-[28px] border bg-card p-4 transition hover:border-slate-300"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-base font-semibold">{branch.name}</h3>
+                        {branch.isActive ? (
+                          <Badge variant="secondary" className="rounded-full">
+                            Active branch
+                          </Badge>
                         ) : null}
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
-                    <div className="space-y-1">
-                      <p>{companyPublicSubdomain ? `${companyPublicSubdomain}.coorder.ai` : `${branch.subdomain}.coorder.ai`}</p>
-                      <p className="text-xs">
-                        branch {branch.branchCode ?? branch.subdomain}
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {companyPublicSubdomain
+                          ? `${companyPublicSubdomain}.coorder.ai`
+                          : `${branch.subdomain}.coorder.ai`}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Branch code {branch.branchCode ?? branch.subdomain}
                       </p>
                     </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-center">
-                    <div className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl gap-1.5"
+                    onClick={() => handleOpen(branch.id)}
+                  >
+                    Open
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-2xl bg-muted/20 px-3 py-3">
+                    <div className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
-                      {branch.employeeCount ?? 0}
+                      Team
                     </div>
-                  </TableCell>
-                  <TableCell className="pr-3 text-right" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 gap-1 rounded-lg text-xs"
-                      onClick={() => handleOpen(branch.id)}
-                    >
-                      Open
-                      <ArrowRight className="h-3 w-3" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    <p className="mt-2 text-lg font-semibold">{branch.employeeCount ?? 0}</p>
+                    <p className="text-xs text-muted-foreground">People on roster</p>
+                  </div>
+                  <div className="rounded-2xl bg-muted/20 px-3 py-3">
+                    <div className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      Payroll
+                    </div>
+                    <p className="mt-2 text-sm font-semibold">Schedules + hours</p>
+                    <p className="text-xs text-muted-foreground">View on detail page</p>
+                  </div>
+                  <div className="rounded-2xl bg-muted/20 px-3 py-3">
+                    <div className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                      <Globe className="h-3.5 w-3.5" />
+                      Public
+                    </div>
+                    <p className="mt-2 text-sm font-semibold">Customer entry</p>
+                    <p className="text-xs text-muted-foreground">Branch-aware link ready</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       )}
 

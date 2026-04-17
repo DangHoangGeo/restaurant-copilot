@@ -68,6 +68,7 @@ export default async function ControlRestaurantsPage({
       branches={branchesWithMeta}
       canManageMenu={canManageMenu}
       canAddBranch={canAddBranch}
+      organizationName={ctx.organization.name}
       companyPublicSubdomain={ctx.organization.public_subdomain ?? null}
       sharedMenuCategories={sharedMenuCategories}
     />

@@ -15,6 +15,8 @@ export function canUseRootDashboard(role: string | null | undefined): role is Or
 export interface RootDashboardAccess {
   organization_id: string;
   role: OrgMemberRole;
+  public_subdomain: string | null;
+  onboarding_completed_at: string | null;
 }
 
 export async function getRootDashboardAccess(
@@ -22,7 +24,7 @@ export async function getRootDashboardAccess(
 ): Promise<RootDashboardAccess | null> {
   const { data: memberships, error } = await supabaseAdmin
     .from('organization_members')
-    .select('organization_id, role, created_at')
+    .select('organization_id, role, created_at, owner_organizations(public_subdomain, onboarding_completed_at)')
     .eq('user_id', userId)
     .eq('is_active', true)
     .order('created_at', { ascending: true })
@@ -40,22 +42,40 @@ export async function getRootDashboardAccess(
     return null;
   }
 
+  const ownerOrganization = Array.isArray(rootAccessMembership.owner_organizations)
+    ? rootAccessMembership.owner_organizations[0]
+    : (rootAccessMembership.owner_organizations as { public_subdomain?: string | null } | null | undefined);
+
   return {
     organization_id: rootAccessMembership.organization_id,
     role: rootAccessMembership.role as OrgMemberRole,
+    public_subdomain: ownerOrganization?.public_subdomain ?? null,
+    onboarding_completed_at:
+      (ownerOrganization as { onboarding_completed_at?: string | null } | null | undefined)
+        ?.onboarding_completed_at ?? null,
   };
 }
 
-export function buildRootControlUrl(locale: string): string {
-  return buildRootControlSectionUrl(locale, '/control/overview');
+function buildSubdomainUrl(subdomain: string, fullPath: string): string {
+  if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
+    return `http://${subdomain}.localhost:3000${fullPath}`;
+  }
+
+  const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+  return `https://${subdomain}.${productionUrl}${fullPath}`;
 }
 
 export function buildRootControlSectionUrl(
   locale: string,
-  path: string
+  path: string,
+  subdomain?: string | null
 ): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   const fullPath = `/${locale}${normalizedPath}`;
+
+  if (subdomain) {
+    return buildSubdomainUrl(subdomain, fullPath);
+  }
 
   if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
     return `http://localhost:3000${fullPath}`;
@@ -65,16 +85,18 @@ export function buildRootControlSectionUrl(
   return `https://${productionUrl}${fullPath}`;
 }
 
+export function buildRootControlUrl(
+  locale: string,
+  subdomain?: string | null
+): string {
+  return buildRootControlSectionUrl(locale, '/control/overview', subdomain);
+}
+
 export function buildBranchDashboardUrl(
   subdomain: string,
   locale: string
 ): string {
   const path = `/${locale}/branch`;
 
-  if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
-    return `http://${subdomain}.localhost:3000${path}`;
-  }
-
-  const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
-  return `https://${subdomain}.${productionUrl}${path}`;
+  return buildSubdomainUrl(subdomain, path);
 }

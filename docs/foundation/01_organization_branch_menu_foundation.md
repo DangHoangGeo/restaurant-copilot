@@ -74,7 +74,7 @@ That name is now too ambiguous because both founder-level work and branch-level 
 
 ## Founder control route
 
-- canonical host: root domain
+- canonical host: organization subdomain
 - canonical purpose: founder, co-founder, finance, and accountant control plane
 - recommended route family name: `control`
 
@@ -89,7 +89,7 @@ This route should own:
 
 ## Branch operations route
 
-- canonical host: branch-scoped restaurant route
+- canonical host: organization subdomain with explicit branch context
 - canonical purpose: day-to-day restaurant execution
 - recommended route family name: `operations`
 
@@ -113,6 +113,13 @@ The target architecture should refer to:
 - branch `operations` route
 
 This keeps route ownership clear for both humans and AI agents.
+
+## Host rule update
+
+- public marketing, signup, login, and platform admin stay on the root domain
+- each approved organization gets one company subdomain
+- founder control and branch operations both run under that company subdomain
+- legacy branch subdomains may remain as compatibility aliases during migration, but they are not the target operating model
 
 ## Branch-Specific Menu Strategy
 

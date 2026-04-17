@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
         .from('restaurants')
         .select('id')
         .eq('subdomain', subdomain)
-        .single();
+        .maybeSingle();
 
       if (restaurantError) {
         await logger.warn('middleware', 'Error fetching restaurant ID for subdomain', {

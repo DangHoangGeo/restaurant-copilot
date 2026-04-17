@@ -9,8 +9,8 @@
 - The customer ordering flow stays stable and branch-scoped.
 - The existing `restaurant` stays the branch-level operating unit.
 - Multi-branch support is added above branches through the organization layer.
-- Founder control moves toward the root-domain `control` route.
-- Branch execution stays focused in the branch-scoped route.
+- Founder control moves toward the organization-subdomain `control` route.
+- Branch execution stays focused in the organization-subdomain branch route with explicit branch context.
 
 ## Current Legacy Dashboard Classification
 
@@ -61,7 +61,7 @@
 
 ## Phase 1 Implementation Notes
 
-- Add a root-domain `control` shell first.
+- Add a company-subdomain `control` shell first.
 - Reuse existing organization and overview services instead of rebuilding them.
 - Keep legacy founder screens reachable while the new route shell comes online.
 - Move page ownership in slices instead of relocating every screen at once.
@@ -106,6 +106,13 @@ This keeps founder control organization-first while preserving branch-scoped exe
 
 - Founder starts from the public homepage pricing/subscription path.
 - Signup creates the company, requested subdomain, founder membership, and first branch in a pending approval state.
-- Platform admin approval is required before the founder can access the root-domain `control` route.
+- Platform admin approval is required before the founder can access the company-subdomain `control` route.
 - The first approved destination is `control/onboarding`, not `control/overview`.
 - `control/homepage` should stay blocked until onboarding is completed.
+- Owner onboarding should ask for only the minimum business facts first:
+  - company and branch name
+  - contact info
+  - address
+  - opening hours
+  - a short introduction in the owner's preferred language
+- AI should then propose the multilingual copy, branding color, and starter logo for review instead of making the owner design these manually.

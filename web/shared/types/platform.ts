@@ -65,6 +65,19 @@ export interface RestaurantDetail extends RestaurantSummary {
   suspended_by: string | null;
 }
 
+export interface OrganizationApprovalSummary {
+  id: string;
+  name: string;
+  public_subdomain: string;
+  requested_plan: string | null;
+  created_at: string;
+  founder_email: string | null;
+  founder_name: string | null;
+  branch_count: number;
+  primary_branch_name: string | null;
+  primary_branch_subdomain: string | null;
+}
+
 // ============================================
 // SUBSCRIPTION
 // ============================================
