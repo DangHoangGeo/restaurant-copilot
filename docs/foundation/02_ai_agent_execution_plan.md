@@ -139,25 +139,24 @@ The work should be executed in this order.
 
 ### Phase 0 Status
 
-`In progress / not complete yet`
+`Completed — 2026-04-17`
 
-What is confirmed fixed:
+What is confirmed fixed and verified in the codebase:
 
-- booking status route now reads `bookingId` correctly from params
-- broken platform trial cron was disabled instead of continuing to fail on missing RPCs
-- low-stock route was partially corrected to use `inventory_items`
+- booking status route reads `bookingId` correctly from params
+- broken platform trial cron disabled instead of continuing to fail on missing RPCs
+- low-stock route uses `inventory_items` with `menu_items!inner` join for localized names
 - item-detail report no longer crashes on missing cost data
-
-What still blocks Phase 0 completion:
-
-- daily usage snapshot still buckets data by UTC instead of Japan local day
-- low-stock UI still expects the old response fields
-- aggregate dashboard still queries a nonexistent inventory `name` column
-- item profit margin is now reported as real `0%` instead of unavailable / not tracked
+- daily usage snapshot uses JST `+09:00` day boundaries (not UTC) for all date math
+- low-stock UI (`LowStockAlerts`) response shape matches `DashboardLowStockItem` exactly
+- aggregate dashboard inventory query uses `menu_items!inner` join — no nonexistent `name` column on `inventory_items`
+- item profit margin returns `null` from API and renders as "N/A" in `items-report-tab` (not `0%`)
+- `lib/server/dashboard/dates.ts` added with `getLocalDayRange`, `bucketToLocalDate`, and `getLocalDateRange` helpers
+- aggregate dashboard reads per-branch `timezone` from `restaurants` table, defaults to `Asia/Tokyo`
 
 PM status:
 
-- Phase 0 should stay open until those four gaps are fixed and verified
+- Phase 0 is complete. All four originally-listed blockers are verified fixed.
 
 ### Phase 1 Status
 
@@ -436,6 +435,38 @@ Do not introduce a global shared catalog in this phase. Branch independence is t
 ---
 
 ## Phase 4: Employee Scheduling, QR Attendance, and Approvals
+
+### Current Status
+
+`Completed — 2026-04-17`
+
+Delivered in this phase:
+
+- migration `039_attendance_phase4.sql` — adds `employee_qr_credentials`, `attendance_events`, `attendance_daily_summaries`, `attendance_approvals` with RLS
+- migration `040_attendance_phase4_blockers.sql` — adds `corrected_event_type` column + append-only policy on `attendance_events`
+- `web/lib/server/attendance/` domain module — `queries.ts`, `service.ts`, `types.ts`, `schemas.ts`
+  - `processScanEvent`: validates credential token, writes immutable event, rebuilds daily summary
+  - `rebuildDailySummary`: idempotent rebuild from events; detects missing checkout, implausible hours, manual corrections
+  - `addManualCorrection`: manager inserts corrected punch; triggers summary rebuild + `correction_pending` flag
+  - `approveSummary`: writes audit record to `attendance_approvals`, updates summary status
+  - `getActiveCredential` / `rotateCredential`: credential lifecycle, deactivates prior token on rotation
+- `POST /api/v1/attendance/scan` — public secure scan endpoint (credential token → employee identity, not caller-supplied)
+- `GET/POST /api/v1/owner/employees/[employeeId]/qr-credential` — read or rotate QR credential (owner/manager only)
+- `GET /api/v1/owner/attendance/summaries` — filterable list (status, employee, date range)
+- `POST /api/v1/owner/attendance/summaries/[summaryId]/approve` — approve or reject with full audit trail
+- `POST /api/v1/owner/attendance/corrections` — manual correction event (manager/owner only)
+- `AttendanceApprovalInbox` component — manager daily inbox: pending + correction_pending summaries, inline approve/reject
+- `AttendanceSummaryView` component — full monthly table with employee/status/month filters and inline actions
+- `EmployeeQRPanel` component — displays QR code for employee's active credential, rotate button with confirmation
+- `EmployeesDashboard` updated — four tabs (Approvals, Summaries, Employees, Schedule, Performance) + Scan Check-In / Scan Check-Out action buttons
+- `EmployeeList` updated — QR code button per employee opens `EmployeeQRPanel` in a dialog
+- i18n keys added for EN / JA / VI under `owner/employees` namespace
+
+Accepted follow-ups for Phase 5+:
+
+- kiosk mode (shared device scan without employee login) is stubbed but not yet active; scan endpoint currently requires employee session
+- manual correction UI form is not yet exposed in the dashboard (corrections can be submitted via API)
+- payroll-hours CSV export for approved summaries is not yet implemented (Phase 6 deliverable)
 
 ### Goal
 
