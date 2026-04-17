@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify, SignJWT } from "jose";
+import {
+  buildBranchDashboardUrl,
+  buildRootControlUrl,
+  getRootDashboardAccess,
+} from "@/lib/server/organizations/root-dashboard";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { serialize } from "cookie";
 import { TextEncoder } from "util";
@@ -72,12 +77,13 @@ export async function POST(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 7,
     });
 
-    const isDev = process.env.NEXT_PRIVATE_DEVELOPMENT!;
-    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
-    let redirectUrl = `https://${restaurant.subdomain}.${productionUrl}/${restaurant.default_language}/dashboard`;
-    if (isDev) {
-      redirectUrl = `http://${restaurant.subdomain}.localhost:3000/${restaurant.default_language}/dashboard`;
-    }
+    const rootDashboardAccess = await getRootDashboardAccess(userId);
+    const redirectUrl = rootDashboardAccess
+      ? buildRootControlUrl(restaurant.default_language)
+      : buildBranchDashboardUrl(
+          restaurant.subdomain,
+          restaurant.default_language
+        );
 
     const response = NextResponse.json({ success: true, redirectUrl });
     response.headers.set("Set-Cookie", cookie);

@@ -36,6 +36,8 @@ export type Restaurant = {
   id: string;
   name: string | null;
   subdomain: string | null;
+  branch_code?: string | null;
+  company_public_subdomain?: string | null;
   default_language: "en" | "ja" | "vi" | null;
   brand_color: string | null;
   tax: number | null;

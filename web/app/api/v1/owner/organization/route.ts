@@ -50,7 +50,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const input = updateOrgSchema.parse(body);
 
-    if (!input.name && !input.timezone && !input.currency) {
+    if (Object.keys(input).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 

@@ -1,4 +1,9 @@
-import { canUseRootDashboard } from '@/lib/server/organizations/root-dashboard';
+import {
+  buildBranchDashboardUrl,
+  buildRootControlUrl,
+  buildRootControlSectionUrl,
+  canUseRootDashboard,
+} from '@/lib/server/organizations/root-dashboard';
 
 describe('canUseRootDashboard', () => {
   it('allows founder and finance roles onto the root-domain dashboard', () => {
@@ -12,5 +17,42 @@ describe('canUseRootDashboard', () => {
     expect(canUseRootDashboard('branch_general_manager')).toBe(false);
     expect(canUseRootDashboard('staff')).toBe(false);
     expect(canUseRootDashboard(null)).toBe(false);
+  });
+});
+
+describe('root dashboard urls', () => {
+  const previousDev = process.env.NEXT_PRIVATE_DEVELOPMENT;
+  const previousProductionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL;
+
+  afterEach(() => {
+    process.env.NEXT_PRIVATE_DEVELOPMENT = previousDev;
+    process.env.NEXT_PUBLIC_PRODUCTION_URL = previousProductionUrl;
+  });
+
+  it('builds the root founder control url', () => {
+    process.env.NEXT_PRIVATE_DEVELOPMENT = 'false';
+    process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
+
+    expect(buildRootControlUrl('ja')).toBe(
+      'https://coorder.ai/ja/control/overview'
+    );
+  });
+
+  it('builds the branch dashboard url', () => {
+    process.env.NEXT_PRIVATE_DEVELOPMENT = 'false';
+    process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
+
+    expect(buildBranchDashboardUrl('shibuya', 'ja')).toBe(
+      'https://shibuya.coorder.ai/ja/dashboard'
+    );
+  });
+
+  it('builds a root founder control section url', () => {
+    process.env.NEXT_PRIVATE_DEVELOPMENT = 'false';
+    process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
+
+    expect(buildRootControlSectionUrl('ja', '/control/homepage')).toBe(
+      'https://coorder.ai/ja/control/homepage'
+    );
   });
 });

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logEvent } from "@/lib/logger";
+import {
+  buildBranchDashboardUrl,
+  buildRootControlUrl,
+  getRootDashboardAccess,
+} from "@/lib/server/organizations/root-dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -330,10 +335,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let redirectUrl = `https://${restaurantSubdomain}.${productionUrl}/${defaultLanguage}/dashboard`;
-    if (isDevelopment) {
-      redirectUrl = `http://${restaurantSubdomain}.localhost:3000/${defaultLanguage}/dashboard`;
-    }
+    const rootDashboardAccess = await getRootDashboardAccess(data.user.id);
+
+    const redirectUrl = rootDashboardAccess
+      ? buildRootControlUrl(defaultLanguage)
+      : buildBranchDashboardUrl(restaurantSubdomain, defaultLanguage);
 
     const response = NextResponse.json({
       message: "Login successful",

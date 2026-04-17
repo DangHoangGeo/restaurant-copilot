@@ -23,9 +23,14 @@ const RestaurantContext = createContext<RestaurantContextType | undefined>(undef
 interface RestaurantProviderProps {
   children: ReactNode;
   initialSettings?: RestaurantSettings | null;
+  onboardingRedirectPath?: string | null;
 }
 
-export function RestaurantProvider({ children, initialSettings }: RestaurantProviderProps) {
+export function RestaurantProvider({
+  children,
+  initialSettings,
+  onboardingRedirectPath,
+}: RestaurantProviderProps) {
   const [restaurantSettings, setRestaurantSettings] = useState<RestaurantSettings | null>(
     initialSettings || null
   );
@@ -76,13 +81,25 @@ export function RestaurantProvider({ children, initialSettings }: RestaurantProv
     if (!isLoading && needsOnboarding && restaurantSettings) {
       const isOnboardingPage = pathname.includes('/dashboard/onboarding');
       const isApiRoute = pathname.startsWith('/api');
+      const redirectPath =
+        onboardingRedirectPath === undefined
+          ? `/${locale}/dashboard/onboarding`
+          : onboardingRedirectPath;
       
       // Only redirect if not already on onboarding page and not an API route
-      if (!isOnboardingPage && !isApiRoute) {
-        router.push(`/${locale}/dashboard/onboarding`);
+      if (!isOnboardingPage && !isApiRoute && redirectPath) {
+        router.push(redirectPath);
       }
     }
-  }, [isLoading, needsOnboarding, pathname, router, locale, restaurantSettings]);
+  }, [
+    isLoading,
+    needsOnboarding,
+    pathname,
+    router,
+    locale,
+    restaurantSettings,
+    onboardingRedirectPath,
+  ]);
 
   const refetchSettings = async () => {
     await fetchSettings();

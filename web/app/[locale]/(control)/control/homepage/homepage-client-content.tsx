@@ -17,13 +17,7 @@ import {
   Image as ImageIconLucide,
   Heart,
   MessageSquare,
-  Sparkles,
-  ArrowRight
 } from "lucide-react";
-import { useRestaurantSettings } from "@/contexts/RestaurantContext";
-import { useParams } from "next/navigation";
-import { FEATURE_FLAGS } from "@/config/feature-flags";
-import Link from "next/link";
 import { GalleryManager } from "./gallery-manager";
 import { OwnerStoryEditor } from "./owner-story-editor";
 import { SignatureDishesSelector } from "./signature-dishes-selector";
@@ -36,45 +30,6 @@ interface HomepageClientContentProps {
 export function HomepageClientContent({ locale }: HomepageClientContentProps) {
   const t = useTranslations("owner.homepage");
   const [activeTab, setActiveTab] = useState("overview");
-  const { needsOnboarding, isLoading } = useRestaurantSettings();
-  const params = useParams();
-  const currentLocale = (params.locale as string) || 'en';
-
-  // Show onboarding prompt if not yet onboarded
-  if (FEATURE_FLAGS.onboarding && needsOnboarding && !isLoading) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <Card className="text-center">
-          <CardHeader className="pb-6">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Sparkles className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-bold">
-              Complete Your Setup First
-            </CardTitle>
-            <p className="text-muted-foreground mt-2">
-              Before managing your homepage, please complete the initial onboarding process. This will set up your restaurant profile and generate content for your homepage.
-            </p>
-          </CardHeader>
-          <CardContent className="pb-8">
-            <div className="space-y-4">
-              <Link href={`/${currentLocale}/dashboard/onboarding`}>
-                <Button size="lg" className="w-full">
-                  Complete Onboarding
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <p className="text-sm text-muted-foreground">
-                The onboarding process will help generate your hero content and initial homepage setup
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const tabs = [
     {

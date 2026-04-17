@@ -118,6 +118,10 @@ export interface OrgBranch {
   id: string;
   name: string;
   subdomain: string;
+  branch_code?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 /**
@@ -145,18 +149,34 @@ export async function listOrganizationBranches(orgId: string): Promise<OrgBranch
   // newly-added org branches.
   const { data: restaurants } = await supabaseAdmin
     .from('restaurants')
-    .select('id, name, subdomain')
+    .select('id, name, subdomain, branch_code, address, phone, email')
     .in('id', restaurantIds);
 
   const restaurantMap = new Map(
-    (restaurants ?? []).map((r) => [r.id, r as { id: string; name: string; subdomain: string }])
+    (restaurants ?? []).map((r) => [r.id, r as {
+      id: string;
+      name: string;
+      subdomain: string;
+      branch_code?: string | null;
+      address?: string | null;
+      phone?: string | null;
+      email?: string | null;
+    }])
   );
 
   // Preserve the ordering returned by organization_restaurants
   return restaurantIds.flatMap((id) => {
     const r = restaurantMap.get(id);
     if (!r) return [];
-    return [{ id: r.id, name: r.name, subdomain: r.subdomain }];
+    return [{
+      id: r.id,
+      name: r.name,
+      subdomain: r.subdomain,
+      branch_code: r.branch_code ?? null,
+      address: r.address ?? null,
+      phone: r.phone ?? null,
+      email: r.email ?? null,
+    }];
   });
 }
 
@@ -331,6 +351,9 @@ export async function createOrganizationForNewRestaurant(
     .insert({
       name: input.name,
       slug: input.slug,
+      public_subdomain: input.slug,
+      approval_status: 'pending',
+      requested_plan: input.requested_plan ?? null,
       country: input.country ?? 'JP',
       timezone: input.timezone ?? 'Asia/Tokyo',
       currency: input.currency ?? 'JPY',
@@ -460,6 +483,7 @@ export async function createRestaurantInOrg(
   const insert: Record<string, unknown> = {
     name: input.name,
     subdomain: input.subdomain,
+    branch_code: input.subdomain,
     default_language: input.default_language,
     brand_color: input.brand_color,
     // Branches added to an existing org inherit verified/active status and
@@ -515,10 +539,10 @@ export async function deactivateOrganizationMember(memberId: string): Promise<bo
   return !error;
 }
 
-/** Update organization-level settings (name, timezone, currency). Uses admin client. */
+/** Update organization-level settings including branding. Uses admin client. */
 export async function updateOrganizationSettings(
   orgId: string,
-  updates: { name?: string; timezone?: string; currency?: string }
+  updates: Partial<Pick<Organization, 'name' | 'country' | 'timezone' | 'currency' | 'logo_url' | 'brand_color' | 'description_en' | 'description_ja' | 'description_vi' | 'website' | 'phone' | 'email' | 'onboarding_completed_at' | 'approval_status' | 'approved_at' | 'approved_by' | 'approval_notes' | 'requested_plan'>>
 ): Promise<Organization | null> {
   const { data, error } = await supabaseAdmin
     .from('owner_organizations')

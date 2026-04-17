@@ -55,6 +55,29 @@ export async function PATCH(
       return platformApiError('Restaurant not found', 404);
     }
 
+    const { data: orgLink } = await supabaseAdmin
+      .from('organization_restaurants')
+      .select('organization_id')
+      .eq('restaurant_id', restaurantId)
+      .maybeSingle();
+
+    if (orgLink?.organization_id) {
+      const { error: orgError } = await supabaseAdmin
+        .from('owner_organizations')
+        .update({
+          approval_status: 'approved',
+          approved_at: new Date().toISOString(),
+          approved_by: admin.id,
+          approval_notes: validated.notes || null,
+        })
+        .eq('id', orgLink.organization_id);
+
+      if (orgError) {
+        console.error('Error approving linked organization:', orgError);
+        return platformApiError('Restaurant verified but organization approval failed', 500);
+      }
+    }
+
     // Log the action
     await logPlatformAction(
       'verify_restaurant',

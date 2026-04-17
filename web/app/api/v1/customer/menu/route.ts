@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { getSubdomainFromHost } from "@/lib/utils";
+import { resolvePublicRestaurantContext } from "@/lib/server/customer-entry";
 
 /**
  * Customer API: Get menu data by subdomain
@@ -18,34 +18,19 @@ export async function GET(req: NextRequest) {
       // Use provided restaurant ID directly (avoids subdomain lookup)
       restaurantId = restaurantIdParam;
     } else {
-      // Fallback: Get subdomain from host header or query param
-      const hostHeader = req.headers.get('host') || '';
-      const subdomainFromHost = getSubdomainFromHost(hostHeader);
-      const subdomainFromQuery = req.nextUrl.searchParams.get("subdomain");
-      
-      const subdomain = subdomainFromQuery || subdomainFromHost;
+      const restaurantContext = await resolvePublicRestaurantContext({
+        host: req.headers.get('host'),
+        orgIdentifier: req.nextUrl.searchParams.get('org'),
+        branchCode: req.nextUrl.searchParams.get('branch'),
+        subdomain: req.nextUrl.searchParams.get("subdomain"),
+      });
 
-      if (!subdomain) {
+      if (!restaurantContext) {
         return NextResponse.json({ 
-          error: "No subdomain or restaurantId provided" 
+          error: "No public restaurant context or restaurantId provided" 
         }, { status: 400 });
       }
-
-      // Get restaurant ID from subdomain
-      const { data: restaurant, error: restaurantError } = await supabaseAdmin
-        .from("restaurants")
-        .select("id")
-        .eq("subdomain", subdomain)
-        .single();
-
-      if (restaurantError || !restaurant) {
-        return NextResponse.json({
-          error: "Restaurant not found",
-          details: restaurantError?.message
-        }, { status: 404 });
-      }
-      
-      restaurantId = restaurant.id;
+      restaurantId = restaurantContext.restaurant.id;
     }
 
     // Fetch menu categories with items, optionally including sizes and toppings

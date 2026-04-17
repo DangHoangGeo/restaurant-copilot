@@ -28,8 +28,18 @@ export const inviteOrgMemberSchema = z.object({
 
 export const updateOrgSchema = z.object({
   name: z.string().min(1).max(100).optional(),
+  country: z.string().length(2).optional(),
   timezone: z.string().optional(),
   currency: z.string().length(3).optional(),
+  // Branding (migration 043)
+  logo_url: z.string().url('Invalid logo URL').nullable().optional(),
+  brand_color: z.string().regex(/^#([0-9A-Fa-f]{6})$/, 'Must be a valid hex color').nullable().optional(),
+  description_en: z.string().max(1000).nullable().optional(),
+  description_ja: z.string().max(1000).nullable().optional(),
+  description_vi: z.string().max(1000).nullable().optional(),
+  website: z.string().url('Invalid URL').nullable().optional(),
+  phone: z.string().max(50).nullable().optional(),
+  email: z.string().email('Invalid email').max(100).nullable().optional(),
 });
 
 // Schema for creating a pending invite (invite by email, user need not exist yet)
@@ -93,6 +103,42 @@ export const addBranchSchema = z.object({
   website: z.string().url('Invalid URL').max(200).optional().or(z.literal('')),
 });
 
+export const organizationSharedMenuCategorySchema = z.object({
+  name_en: z.string().min(1, 'Category name is required').max(100),
+  name_ja: z.string().max(100).optional().or(z.literal('')),
+  name_vi: z.string().max(100).optional().or(z.literal('')),
+  position: z.number().int().min(0).optional(),
+});
+
+export const organizationSharedMenuItemSchema = z.object({
+  category_id: z.string().uuid('Valid category ID required'),
+  name_en: z.string().min(1, 'Item name is required').max(100),
+  name_ja: z.string().max(100).optional().or(z.literal('')),
+  name_vi: z.string().max(100).optional().or(z.literal('')),
+  description_en: z.string().max(500).optional().or(z.literal('')),
+  description_ja: z.string().max(500).optional().or(z.literal('')),
+  description_vi: z.string().max(500).optional().or(z.literal('')),
+  price: z.number().min(0),
+  image_url: z.string().url('Invalid image URL').nullable().optional(),
+  available: z.boolean().optional(),
+  position: z.number().int().min(0).optional(),
+});
+
+export const organizationOnboardingSchema = z.object({
+  name: z.string().min(1).max(100),
+  country: z.string().length(2),
+  timezone: z.string().min(1),
+  currency: z.string().length(3),
+  logo_url: z.string().url('Invalid logo URL').nullable().optional(),
+  brand_color: z.string().regex(/^#([0-9A-Fa-f]{6})$/, 'Must be a valid hex color'),
+  website: z.string().url('Invalid URL').nullable().optional(),
+  phone: z.string().max(50).nullable().optional(),
+  email: z.string().email('Invalid email').max(100).nullable().optional(),
+  description_en: z.string().max(1000).nullable().optional(),
+  description_ja: z.string().max(1000).nullable().optional(),
+  description_vi: z.string().max(1000).nullable().optional(),
+});
+
 // Schema for updating a member's individual permission overrides (B2)
 export const updateMemberPermissionsSchema = z.object({
   // Partial record — only keys provided will be upserted.
@@ -127,3 +173,6 @@ export type CreatePendingInviteInput = z.infer<typeof createPendingInviteSchema>
 export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;
 export type SetActiveBranchInput = z.infer<typeof setActiveBranchSchema>;
 export type AddBranchSchemaInput = z.infer<typeof addBranchSchema>;
+export type OrganizationSharedMenuCategoryInput = z.infer<typeof organizationSharedMenuCategorySchema>;
+export type OrganizationSharedMenuItemInput = z.infer<typeof organizationSharedMenuItemSchema>;
+export type OrganizationOnboardingInput = z.infer<typeof organizationOnboardingSchema>;

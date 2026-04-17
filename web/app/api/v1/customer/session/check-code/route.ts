@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { getSubdomainFromHost } from "@/lib/utils";
+import { resolveCustomerEntryContext } from "@/lib/server/customer-entry";
 
 /**
  * Customer API: Check QR code and get table/session info
@@ -15,56 +14,26 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Get subdomain from host header
-    const hostHeader = req.headers.get('host') || '';
-    const subdomain = getSubdomainFromHost(hostHeader);
-
-    if (!subdomain) {
-      return NextResponse.json({ 
-        error: "Invalid subdomain" 
-      }, { status: 400 });
-    }
-
-    // Get restaurant ID from subdomain
-    const { data: restaurant, error: restaurantError } = await supabaseAdmin
-      .from("restaurants")
-      .select("id")
-      .eq("subdomain", subdomain)
-      .single();
-
-    if (restaurantError || !restaurant) {
-      return NextResponse.json({
-        error: "Restaurant not found",
-        details: restaurantError?.message
-      }, { status: 404 });
-    }
-
-    // Call RPC to get table session info by code
-    const { data, error } = await supabaseAdmin.rpc('get_table_session_by_code', {
-      input_code: code,
-      input_restaurant_id: restaurant.id
+    const entry = await resolveCustomerEntryContext({
+      host: req.headers.get('host'),
+      orgIdentifier: req.nextUrl.searchParams.get('org'),
+      branchCode: req.nextUrl.searchParams.get('branch'),
+      tableCode: code,
     });
 
-    if (error) {
+    if (!entry) {
       return NextResponse.json({
         success: false,
         error: "Invalid QR code"
       }, { status: 400 });
     }
 
-    const row = data[0] as {
-      table_id: string;
-      restaurant_id: string;
-      active_session_id: string | null;
-      require_passcode: boolean;
-    };
-
     return NextResponse.json({
       success: true,
-      tableId: row.table_id,
-      restaurantId: row.restaurant_id,
-      activeSessionId: row.active_session_id,
-      requirePasscode: row.require_passcode
+      tableId: entry.tableId,
+      restaurantId: entry.restaurant.id,
+      activeSessionId: entry.activeSessionId,
+      requirePasscode: entry.requirePasscode
     });
 
   } catch (error) {

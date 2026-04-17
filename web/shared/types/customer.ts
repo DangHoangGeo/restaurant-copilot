@@ -27,6 +27,8 @@ export interface RestaurantSettings {
   id: string;
   name: string;
   subdomain: string;
+  branchCode?: string | null;
+  companyPublicSubdomain?: string | null;
   logoUrl?: string | null;
   defaultLocale?: string;
   contactInfo?: string | null;
@@ -51,6 +53,8 @@ export interface RestaurantData {
   id: string;
   name: string;
   subdomain: string;
+  branchCode?: string | null;
+  companyPublicSubdomain?: string | null;
   logoUrl?: string | null;
   tagline_en?: string | null;
   tagline_ja?: string | null;

@@ -51,7 +51,29 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           console.log('Session ID from URL parameters:', sessionParams.sessionId);
         }
         // Handle QR code scanning (code parameter)
-        else if (sessionParams.code) {
+        else if (sessionParams.branch && sessionParams.table) {
+          const params = new URLSearchParams({
+            branch: sessionParams.branch,
+            table: sessionParams.table,
+          });
+          const orgIdentifier = getSubdomainFromHost(window.location.host);
+          if (orgIdentifier) params.set('org', orgIdentifier);
+
+          const response = await fetch(`/api/v1/customer/entry/resolve?${params.toString()}`);
+          const result = await response.json();
+
+          if (result.success) {
+            setTableId(result.table.id);
+
+            if (result.activeSessionId) {
+              setPendingSessionId(result.activeSessionId);
+              setRequirePasscode(result.requirePasscode || false);
+              setShowJoinDialog(true);
+            } else {
+              setShowGuestDialog(true);
+            }
+          }
+        } else if (sessionParams.code) {
           const response = await fetch(`/api/v1/customer/session/check-code?code=${sessionParams.code}`);
           const result = await response.json();
           
@@ -77,7 +99,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     };
 
     resolveSession();
-  }, [sessionParams.code, sessionParams.sessionId]);
+  }, [sessionParams.branch, sessionParams.code, sessionParams.sessionId, sessionParams.table]);
 
   // Start new session (called when guest count dialog is submitted)
   const startSession = async () => {
@@ -89,7 +111,10 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       const params = new URLSearchParams({ tableId });
       params.append('guests', String(guestCount));
       params.append('restaurantId', restaurantSettings.id);
+      if (sessionParams.branch) params.append('branch', sessionParams.branch);
+      if (sessionParams.table) params.append('table', sessionParams.table);
       if (subdomain) params.append('subdomain', subdomain);
+      if (subdomain && sessionParams.branch) params.append('org', subdomain);
 
       const res = await fetch(`/api/v1/customer/session/create?${params.toString()}`);
       const data = await res.json();
@@ -128,6 +153,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         passcode: requirePasscode ? passcode : 'default'
       });
       params.append('restaurantId', restaurantSettings.id);
+      if (sessionParams.branch) params.append('branch', sessionParams.branch);
       if (subdomain) params.append('subdomain', subdomain);
       
       const response = await fetch(`/api/v1/customer/session/join?${params.toString()}`);
@@ -161,6 +187,13 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       tableNumber: sessionData.tableNumber || '',
     });
 
+    if (sessionParams.branch) {
+      baseParams.set('branch', sessionParams.branch);
+    }
+    if (sessionParams.table) {
+      baseParams.set('table', sessionParams.table);
+    }
+
     if (props) {
       Object.entries(props).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -185,7 +218,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       default:
         router.push(`/${locale}/menu?${baseParams.toString()}`);
     }
-  }, [locale, router, sessionData.sessionId, sessionData.tableNumber]);
+  }, [locale, router, sessionData.sessionId, sessionData.tableNumber, sessionParams.branch, sessionParams.table]);
 
   // Show loading state
   if (contextLoading || isLoading) {
@@ -224,6 +257,8 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   if (sessionData.sessionStatus === 'expired' && sessionParams.sessionId) {
     const historyUrl = new URLSearchParams();
     if (sessionData.sessionId) historyUrl.set('sessionId', sessionData.sessionId);
+    if (sessionParams.branch) historyUrl.set('branch', sessionParams.branch);
+    if (sessionParams.table) historyUrl.set('table', sessionParams.table);
     router.push(`/${locale}/history?${historyUrl.toString()}`);
     
     return (

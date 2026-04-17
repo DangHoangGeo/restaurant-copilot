@@ -38,6 +38,8 @@ export function AdminLayoutClient({ children, restaurantSettings, locale }: Admi
     id: '', // Will be populated by context when it fetches full data
     name: restaurantSettings.name,
     subdomain: restaurantSettings.subdomain || '',
+    branch_code: (restaurantSettings as { branch_code?: string | null }).branch_code ?? null,
+    company_public_subdomain: (restaurantSettings as { company_public_subdomain?: string | null }).company_public_subdomain ?? null,
     default_language: null, // Will be populated by context
     brand_color: restaurantSettings.primaryColor || null,
     tax: null, // Will be populated by context

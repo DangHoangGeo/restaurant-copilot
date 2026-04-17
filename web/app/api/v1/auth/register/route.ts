@@ -41,7 +41,15 @@ export async function POST(req: NextRequest) {
     }
 
     body = await req.json(); // Assign to the outer-scoped body
-    const { name, subdomain, email, password, defaultLanguage, policyAgreement } = signupSchema.parse(body);
+    const {
+      name,
+      subdomain,
+      email,
+      password,
+      defaultLanguage,
+      selectedPlan,
+      policyAgreement,
+    } = signupSchema.parse(body);
 
     // Ensure user has agreed to the policy (this is already validated by the schema, but explicit check for clarity)
     if (!policyAgreement) {
@@ -54,14 +62,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "You must agree to the Terms of Service and Privacy Policy" }, { status: 400 });
     }
 
-    // 2. Recheck subdomain in restaurants; if taken, return 409.
-    const { data: existingRestaurant, error: checkError } = await supabaseAdmin
-      .from("restaurants")
-      .select("id")
-      .eq("subdomain", subdomain)
-      .single();
+    // 2. Recheck subdomain in restaurants and organizations; if taken, return 409.
+    const [{ data: existingRestaurant, error: restaurantCheckError }, { data: existingOrganization, error: organizationCheckError }] = await Promise.all([
+      supabaseAdmin
+        .from("restaurants")
+        .select("id")
+        .eq("subdomain", subdomain)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("owner_organizations")
+        .select("id")
+        .or(`public_subdomain.eq.${subdomain},slug.eq.${subdomain}`)
+        .maybeSingle(),
+    ]);
 
-    if (existingRestaurant) {
+    if (existingRestaurant || existingOrganization) {
       await logEvent({
         level: "INFO",
         endpoint: "/api/v1/register",
@@ -70,8 +85,11 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json({ error: "Subdomain already taken" }, { status: 409 });
     }
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows found
-      throw checkError;
+    if (restaurantCheckError) {
+      throw restaurantCheckError;
+    }
+    if (organizationCheckError) {
+      throw organizationCheckError;
     }
     // 3. Create Supabase Auth user
     const { data: userData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -99,7 +117,14 @@ export async function POST(req: NextRequest) {
     // 4. Insert into restaurants with { name, subdomain, default_language, brand_color }, returning restaurant_id.
     const { data: restaurantData, error: restaurantError } = await supabaseAdmin
       .from("restaurants")
-      .insert([{ name, subdomain, default_language: defaultLanguage, brand_color: "#00a3d7" }])
+      .insert([{
+        name,
+        subdomain,
+        branch_code: subdomain,
+        default_language: defaultLanguage,
+        brand_color: "#00a3d7",
+        is_verified: false,
+      }])
       .select("id")
       .single();
 
@@ -160,6 +185,7 @@ export async function POST(req: NextRequest) {
     const bootstrapResult = await bootstrapOrganizationForRestaurant(userData.user.id, restaurantId, {
       name,
       slug: subdomain,
+      requested_plan: selectedPlan,
     });
 
     if (!bootstrapResult) {
@@ -208,19 +234,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Organization bootstrap failed" }, { status: 500 });
     }
 
-    // 8. Return { success: true, redirect: "https://{subdomain}.coorder.ai/en/login" }.
-
-    const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
-    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
-    let redirectUrl = `https://${subdomain}.${productionUrl}/${defaultLanguage}/login`;
-    if (isDevelopment) {
-      redirectUrl = `http://${subdomain}.localhost:3000/${defaultLanguage}/login`;
-    }
+    // 8. Send the founder into the pending-approval flow on the root domain.
+    const redirectUrl = `/${defaultLanguage}/signup/pending-approval?org=${encodeURIComponent(subdomain)}`;
     await logEvent({
       level: "INFO",
       endpoint: "/api/v1/register",
-      message: "User registered successfully",
-      metadata: { email, subdomain, restaurantId },
+      message: "User registered successfully and is waiting for approval",
+      metadata: { email, subdomain, restaurantId, selectedPlan },
     });
     return NextResponse.json({ success: true, redirect: redirectUrl });
   } catch (error: unknown) {

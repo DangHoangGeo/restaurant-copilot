@@ -9,6 +9,8 @@ interface SessionParams {
   sessionId?: string;
   tableNumber?: string;
   code?: string;
+  branch?: string;
+  table?: string;
 }
 
 interface SessionData {
@@ -63,6 +65,8 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
     sessionId: searchParams.get('sessionId') || undefined,
     tableNumber: searchParams.get('tableNumber') || undefined,
     code: searchParams.get('code') || undefined,
+    branch: searchParams.get('branch') || undefined,
+    table: searchParams.get('table') || undefined,
   };
 
   // Session management functions
@@ -185,8 +189,17 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
         setIsLoading(true);
         setError(null);
 
-        const subdomain = window.location.hostname.split('.')[0];
-        const response = await fetch(`/api/v1/customer/restaurant?subdomain=${subdomain}`);
+        const params = new URLSearchParams();
+        const hostSubdomain = window.location.hostname.split('.')[0];
+
+        if (sessionParams.branch) {
+          params.set('branch', sessionParams.branch);
+          if (hostSubdomain) params.set('org', hostSubdomain);
+        } else if (hostSubdomain) {
+          params.set('subdomain', hostSubdomain);
+        }
+
+        const response = await fetch(`/api/v1/customer/restaurant?${params.toString()}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch restaurant data');
@@ -204,7 +217,7 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
     };
 
     fetchRestaurantSettings();
-  }, [initialSettings]);
+  }, [initialSettings, sessionParams.branch]);
 
   // Check for stored session on mount and URL parameters
   useEffect(() => {

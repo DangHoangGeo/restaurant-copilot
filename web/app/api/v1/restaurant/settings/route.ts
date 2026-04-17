@@ -69,6 +69,7 @@ export async function GET() {
         id,
         name,
         subdomain,
+        branch_code,
         logo_url,
         brand_color,
         default_language,
@@ -114,6 +115,16 @@ export async function GET() {
         return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
     }
 
+    const { data: orgLink } = await supabaseAdmin
+      .from('organization_restaurants')
+      .select('owner_organizations(public_subdomain)')
+      .eq('restaurant_id', user.restaurantId)
+      .maybeSingle();
+
+    const ownerOrganization = Array.isArray(orgLink?.owner_organizations)
+      ? orgLink?.owner_organizations[0]
+      : orgLink?.owner_organizations;
+
     // Parse JSON strings back to objects for consistent API response
     let parsedOpeningHours = null;
     let parsedSocialLinks = null;
@@ -144,6 +155,8 @@ export async function GET() {
       id: restaurant.id,
       name: restaurant.name,
       subdomain: restaurant.subdomain,
+      branch_code: restaurant.branch_code,
+      company_public_subdomain: ownerOrganization?.public_subdomain ?? null,
       logo_url: restaurant.logo_url,
       brand_color: restaurant.brand_color || "#3B82F6",
       default_language: restaurant.default_language || "en",

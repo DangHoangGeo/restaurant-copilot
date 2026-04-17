@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { getSubdomainFromHost } from "@/lib/utils";
+import { resolvePublicRestaurantContext } from "@/lib/server/customer-entry";
 
 /**
  * Customer API: Get restaurant data by subdomain
@@ -8,78 +7,33 @@ import { getSubdomainFromHost } from "@/lib/utils";
  */
 export async function GET(req: NextRequest) {
   try {
-    // Get subdomain from host header or query param
-    const hostHeader = req.headers.get('host') || '';
-    const subdomainFromHost = getSubdomainFromHost(hostHeader);
-    const subdomainFromQuery = req.nextUrl.searchParams.get("subdomain");
-    
-    const subdomain = subdomainFromQuery || subdomainFromHost;
+    const restaurantContext = await resolvePublicRestaurantContext({
+      host: req.headers.get('host'),
+      orgIdentifier: req.nextUrl.searchParams.get('org'),
+      branchCode: req.nextUrl.searchParams.get('branch'),
+      restaurantId: req.nextUrl.searchParams.get('restaurantId'),
+      subdomain: req.nextUrl.searchParams.get("subdomain"),
+    });
 
-    if (!subdomain) {
-      return NextResponse.json({ 
-        error: "No subdomain provided. Please access via restaurant subdomain." 
-      }, { status: 400 });
-    }
-
-    // Basic validation for subdomain format
-    if (!/^[a-z0-9-]{3,30}$/.test(subdomain)) {
-      return NextResponse.json({ 
-        error: "Invalid subdomain format" 
-      }, { status: 400 });
-    }
-
-    // Fetch restaurant details
-    const { data: restaurant, error: restaurantError } = await supabaseAdmin
-      .from("restaurants")
-      .select(`
-        id,
-        name,
-        logo_url,
-        subdomain,
-        brand_color,
-        default_language,
-        address,
-        phone,
-        email,
-        website,
-        description_en,
-        description_ja,
-        description_vi,
-        opening_hours,
-        timezone
-      `)
-      .eq("subdomain", subdomain)
-      .single();
-
-    if (restaurantError || !restaurant) {
+    if (!restaurantContext) {
       return NextResponse.json({
         error: "Restaurant not found",
-        details: restaurantError?.message
       }, { status: 404 });
     }
 
-    // Parse opening hours if it's a JSON string
-    let parsedOpeningHours = null;
-    try {
-      if (restaurant.opening_hours && typeof restaurant.opening_hours === 'string') {
-        parsedOpeningHours = JSON.parse(restaurant.opening_hours);
-      } else {
-        parsedOpeningHours = restaurant.opening_hours;
-      }
-    } catch (error) {
-      console.warn('Failed to parse opening_hours JSON:', error);
-      parsedOpeningHours = restaurant.opening_hours;
-    }
+    const restaurant = restaurantContext.restaurant;
 
     // Return restaurant settings in customer-friendly format
     return NextResponse.json({
       restaurant: {
         id: restaurant.id,
         name: restaurant.name,
-        logoUrl: restaurant.logo_url,
+        logoUrl: restaurant.logoUrl,
         subdomain: restaurant.subdomain,
-        primaryColor: restaurant.brand_color || '#3B82F6',
-        defaultLocale: restaurant.default_language || 'en',
+        branchCode: restaurant.branchCode,
+        companyPublicSubdomain: restaurant.companyPublicSubdomain,
+        primaryColor: restaurant.primaryColor || '#3B82F6',
+        defaultLocale: restaurant.defaultLocale || 'en',
         address: restaurant.address,
         phone: restaurant.phone,
         email: restaurant.email,
@@ -87,7 +41,7 @@ export async function GET(req: NextRequest) {
         description_en: restaurant.description_en,
         description_ja: restaurant.description_ja,
         description_vi: restaurant.description_vi,
-        opening_hours: parsedOpeningHours,
+        opening_hours: restaurant.opening_hours,
         timezone: restaurant.timezone
       }
     });

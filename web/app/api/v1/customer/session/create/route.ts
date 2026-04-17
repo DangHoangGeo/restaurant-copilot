@@ -1,24 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { randomUUID } from "crypto";
+import { resolveCustomerEntryContext } from "@/lib/server/customer-entry";
 
 export async function GET(req: NextRequest) {
   try {
-    const tableId = req.nextUrl.searchParams.get("tableId");
+    let tableId = req.nextUrl.searchParams.get("tableId");
     const guestsParam = req.nextUrl.searchParams.get("guests");
-    const restaurantId = req.nextUrl.searchParams.get("restaurantId");
+    let restaurantId = req.nextUrl.searchParams.get("restaurantId");
+    const branchCode = req.nextUrl.searchParams.get("branch");
+    const tableCode = req.nextUrl.searchParams.get("table");
+    const orgIdentifier = req.nextUrl.searchParams.get("org");
 
     const parsedGuests = guestsParam ? parseInt(guestsParam, 10) : NaN;
     const guestCount = Number.isFinite(parsedGuests) && parsedGuests > 0 ? parsedGuests : 1;
     
+    if ((!tableId || !restaurantId) && tableCode) {
+      const entry = await resolveCustomerEntryContext({
+        host: req.headers.get('host'),
+        orgIdentifier,
+        branchCode,
+        tableCode,
+        restaurantId,
+      });
+
+      if (entry) {
+        tableId = entry.tableId;
+        restaurantId = entry.restaurant.id;
+      }
+    }
+
     if (!tableId) {
       return NextResponse.json({ success: false, error: "Table ID is required" }, { status: 400 });
     }
-
-    // Get restaurant ID from subdomain
-    //const host = req.headers.get("host") || "";
-    //const subdomain = getSubdomainFromHost(host) || req.nextUrl.searchParams.get("subdomain");
-    //const restaurantId = subdomain ? await getRestaurantIdFromSubdomain(subdomain) : null;
 
     if (!restaurantId) {
       return NextResponse.json({ success: false, error: "Invalid restaurant" }, { status: 400 });

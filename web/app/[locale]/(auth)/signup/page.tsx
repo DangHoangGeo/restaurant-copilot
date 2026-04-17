@@ -179,24 +179,24 @@ export default function SignupPage() {
 
   return (
     <AuthCard 
-      title={t('title.signup')}
-      description={t('subtitle.signup')}
+      title="Create your company"
+      description="Choose your company subdomain, create the founder account, and send the business for approval."
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Restaurant Name */}
+        {/* Company Name */}
         <FormField
-          label={t('nameLabel')}
+          label="Company name"
           {...register("name")}
           error={errors.name?.message}
-          placeholder={t('namePlaceholder')}
+          placeholder="Pho Tokyo Group"
         />
 
         {/* Subdomain */}
         <FormField
-          label={t('subdomainLabel')}
+          label="Company subdomain"
           {...register("subdomain")}
           error={errors.subdomain?.message}
-          placeholder={t('subdomainPlaceholder')}
+          placeholder="photokyo"
           loading={subdomainAvailability === "checking"}
           success={subdomainAvailability === "available" ? t('subdomainAvailable') : undefined}
           helpText={subdomainAvailability === "not-available" ? t('subdomainNotAvailable') : undefined}
@@ -280,8 +280,8 @@ export default function SignupPage() {
         {/* Selected Plan Display */}
         {selectedPlan && (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">  
-              {tCommon('selectedPlanLabel')}
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Subscription starting point
             </label>
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="flex justify-between items-center">
@@ -291,6 +291,9 @@ export default function SignupPage() {
                   </h4>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     ${PRICING_PLANS.find(plan => plan.id === selectedPlan)?.price.monthly}/month
+                  </p>
+                  <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
+                    You will enter a pending approval stage first. Real billing can attach to this plan later.
                   </p>
                 </div>
                 <button

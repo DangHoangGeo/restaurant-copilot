@@ -235,8 +235,14 @@ export function TablesClientContent() {
 
   // QR Code URL generation
   const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'coorder.ai';
-  const qrCodeUrl = selectedTableForQr && restaurantSettings?.subdomain
-    ? `https://${restaurantSettings.subdomain.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/menu?code=${selectedTableForQr.qr_code}`
+  const companyPublicSubdomain = restaurantSettings?.company_public_subdomain;
+  const branchCode = restaurantSettings?.branch_code;
+  const qrCodeUrl = selectedTableForQr?.qr_code
+    ? companyPublicSubdomain && branchCode
+      ? `https://${companyPublicSubdomain}.${ROOT_DOMAIN}/${locale}/menu?branch=${branchCode}&table=${selectedTableForQr.qr_code}`
+      : restaurantSettings?.subdomain
+        ? `https://${restaurantSettings.subdomain.toLowerCase().replace(/\s+/g, '')}.${ROOT_DOMAIN}/${locale}/menu?code=${selectedTableForQr.qr_code}`
+        : ''
     : ''
 
   // Early returns for loading and error states

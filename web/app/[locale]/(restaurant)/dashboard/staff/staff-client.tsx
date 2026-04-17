@@ -11,11 +11,19 @@ import {
 } from "lucide-react";
 import type { OrgEmployee } from "@/shared/types/organization";
 
-export default function StaffClient() {
+interface StaffClientProps {
+  initialEmployees?: OrgEmployee[];
+  showHeader?: boolean;
+}
+
+export default function StaffClient({
+  initialEmployees,
+  showHeader = true,
+}: StaffClientProps) {
   const t = useTranslations("owner.staff");
 
-  const [employees, setEmployees] = useState<OrgEmployee[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [employees, setEmployees] = useState<OrgEmployee[]>(initialEmployees ?? []);
+  const [loading, setLoading] = useState(initialEmployees ? false : true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState<string>("");
   const [branchFilter, setBranchFilter] = useState<string>("all");
@@ -40,8 +48,16 @@ export default function StaffClient() {
   }, [t]);
 
   useEffect(() => {
+    if (initialEmployees) {
+      setEmployees(initialEmployees);
+      setLoading(false);
+    }
+  }, [initialEmployees]);
+
+  useEffect(() => {
+    if (initialEmployees) return;
     fetchEmployees();
-  }, [fetchEmployees]);
+  }, [fetchEmployees, initialEmployees]);
 
   // Derive unique branch list for filter
   const branches: Array<{ id: string; name: string; subdomain: string }> = Array.from(
@@ -76,20 +92,21 @@ export default function StaffClient() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Users className="h-5 w-5" />
+      {showHeader ? (
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Users className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold">{t("pageTitle")}</h1>
+            {!loading && (
+              <p className="text-sm text-muted-foreground">
+                {t("totalCount", { count: employees.length })}
+              </p>
+            )}
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-semibold">{t("pageTitle")}</h1>
-          {!loading && (
-            <p className="text-sm text-muted-foreground">
-              {t("totalCount", { count: employees.length })}
-            </p>
-          )}
-        </div>
-      </div>
+      ) : null}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">

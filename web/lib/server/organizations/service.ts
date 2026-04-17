@@ -209,13 +209,34 @@ export async function removeMember(memberId: string): Promise<{ success: boolean
   return { success: ok };
 }
 
+export type OrgSettingsUpdates = {
+  name?: string;
+  country?: string;
+  timezone?: string;
+  currency?: string;
+  approval_status?: 'pending' | 'approved' | 'rejected';
+  approved_at?: string | null;
+  approved_by?: string | null;
+  approval_notes?: string | null;
+  requested_plan?: 'starter' | 'growth' | 'enterprise' | null;
+  onboarding_completed_at?: string | null;
+  logo_url?: string | null;
+  brand_color?: string | null;
+  description_en?: string | null;
+  description_ja?: string | null;
+  description_vi?: string | null;
+  website?: string | null;
+  phone?: string | null;
+  email?: string | null;
+};
+
 /**
- * Update organization settings (name, timezone, currency).
+ * Update organization settings including branding fields.
  * The caller must have organization_settings permission (enforced at route level).
  */
 export async function updateOrganization(
   orgId: string,
-  updates: { name?: string; timezone?: string; currency?: string }
+  updates: OrgSettingsUpdates
 ): Promise<{ success: boolean; organization?: Organization; error?: string }> {
   const org = await updateOrganizationSettings(orgId, updates);
   if (!org) return { success: false, error: 'Failed to update organization' };

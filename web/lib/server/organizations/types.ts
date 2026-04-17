@@ -25,6 +25,13 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
+  public_subdomain: string;
+  approval_status: 'pending' | 'approved' | 'rejected';
+  approved_at?: string | null;
+  approved_by?: string | null;
+  approval_notes?: string | null;
+  requested_plan?: string | null;
+  onboarding_completed_at?: string | null;
   country: string;
   timezone: string;
   currency: string;
@@ -32,6 +39,15 @@ export interface Organization {
   created_by: string;
   created_at: string;
   updated_at: string;
+  // Shared branding (migration 043) — inherited by all branches unless overridden
+  logo_url?: string | null;
+  brand_color?: string | null;
+  description_en?: string | null;
+  description_ja?: string | null;
+  description_vi?: string | null;
+  website?: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export interface OrganizationMember {
@@ -95,6 +111,7 @@ export interface OrgContext {
 export interface CreateOrganizationInput {
   name: string;
   slug: string;
+  requested_plan?: 'starter' | 'growth' | 'enterprise';
   country?: string;
   timezone?: string;
   currency?: string;

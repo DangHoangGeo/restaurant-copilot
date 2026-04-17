@@ -10,6 +10,10 @@ The customer menu ordering flow is already working well and should be preserved 
 - `01_organization_branch_menu_foundation.md`
 - `02_ai_agent_execution_plan.md`
 
+## Working Artifacts
+
+- `03_founder_control_route_map.md`
+
 ## Working Rules
 
 - Keep customer ordering stable while expanding owner operations.
