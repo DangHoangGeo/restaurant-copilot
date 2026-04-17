@@ -142,6 +142,7 @@ Do not introduce hidden coupling between orders, menus, reports, attendance, per
 - Prefer composition over inheritance.
 - Keep functions small and single-purpose.
 - Search for and reuse an existing solution before creating a new abstraction.
+- Make sure to audit all key operations and actions—including errors and system bugs—so administrators can identify and fix issues. Maintain business audit logs for managers and owners, enabling them to clearly see who performed each action and when.
 
 ## Testing and Verification Rules
 

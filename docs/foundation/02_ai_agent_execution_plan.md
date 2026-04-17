@@ -12,9 +12,23 @@ The goal is not to ship many disconnected features. The goal is to build a stron
 2. Treat each existing `restaurant` as a branch-level operating unit.
 3. Add multi-branch support above the current restaurant layer through an organization model.
 4. Keep branch menus independent first.
-5. Keep the owner and manager experience mobile-first.
-6. Keep permissions explicit and auditable.
-7. Keep finance and attendance logic reliable enough for real operations.
+5. Founder and co-founder experience must live on the root-domain control route.
+6. Branch manager experience must live on the branch-scoped operations route.
+7. Keep permissions explicit and auditable.
+8. Keep finance and attendance logic reliable enough for real operations.
+
+## Refactor Authority
+
+AI agents are explicitly allowed to refactor and reorganize the codebase to create a strong long-term foundation.
+
+That means:
+
+- existing route structure does not need to be preserved if it conflicts with the new architecture
+- existing mixed founder/branch dashboard structure should be treated as transitional legacy code
+- shared modules, shared data contracts, and shared database foundations should be created before feature-by-feature UI expansion
+- preserving bad structure is not safer than refactoring it when the target architecture is already clear
+
+The goal is not to minimize code movement. The goal is to create a codebase that is easier to maintain, reason about, and extend safely.
 
 ## Mandatory Foundation Reading
 
@@ -74,6 +88,26 @@ The start-of-task brief must explicitly say:
 - what data boundaries and permission boundaries apply
 
 If an AI agent cannot produce this brief clearly, the task should stop there and be reframed before implementation continues.
+
+## Architectural Execution Rule
+
+The implementation order must follow this logic:
+
+1. shared foundation first
+2. founder control route second
+3. branch operations refactor third
+4. branch feature expansion only after the new route and shared foundation are stable
+
+Shared foundation means:
+
+- database model and migrations
+- authorization and policy layer
+- branch-context and organization-context resolution
+- shared server domain modules
+- shared schemas and types
+- shared UI primitives and route shells
+
+Do not implement new founder or branch screens on top of unstable shared layers.
 
 ## Global Definition of Done
 
@@ -137,6 +171,13 @@ The work should be executed in this order.
 
 ## Current Status Snapshot
 
+Important interpretation rule:
+
+- the current codebase contains partially delivered work from earlier phases
+- that historical delivery does not lock the architecture for the next implementation wave
+- if earlier implementation lives in the wrong route, wrong module boundary, or wrong ownership surface, it may be moved or replaced
+- future execution order should follow the target architecture, not the legacy file layout
+
 ### Phase 0 Status
 
 `Completed — 2026-04-17`
@@ -158,9 +199,9 @@ PM status:
 
 - Phase 0 is complete. All four originally-listed blockers are verified fixed.
 
-### Phase 1 Status
+### Legacy Organization Foundation Snapshot
 
-`Completed with Phase 2 follow-ups`
+`Historical implementation snapshot`
 
 What is confirmed delivered:
 
@@ -172,7 +213,7 @@ What is confirmed delivered:
 - centralized organization context and authorization services were added
 - shared types were added for the new organization domain
 
-What Phase 1 does not solve yet:
+What this legacy implementation does not solve yet:
 
 - multi-branch runtime switching is not complete
 - owner-side branch context is not yet propagated through the existing restaurant-scoped JWT and RLS model
@@ -181,8 +222,8 @@ What Phase 1 does not solve yet:
 
 PM status:
 
-- Phase 1 can be treated as complete for foundation delivery
-- the remaining operational gaps move into Phase 2 by design
+- this historical work is useful input, but the new execution phases below now control the target order
+- the remaining operational gaps should be resolved through the new shared-foundation-first sequence
 
 ---
 
@@ -215,336 +256,195 @@ Fix known owner-side breaks before adding new business features.
 
 ### Current Status
 
-`Open`
-
-Remaining blockers before Phase 0 can be closed:
-
-- fix Japan-local day boundaries for `daily-usage-snapshot`
-- align low-stock UI with the new API response shape
-- fix aggregate dashboard low-stock query to stop reading nonexistent inventory columns
-- render profit margin as unavailable until COGS exists
-
-### PM Note to AI Agent
-
-Do this first. Do not start organization or finance work on top of a broken reporting base.
-
----
-
-## Phase 1: Build the Organization Foundation
-
-### Goal
-
-Support one business owning multiple branches and multiple founder-level members.
-
-### Mandatory First Step
-
-- read all foundation docs
-- write the implementation brief
-- confirm that the current `restaurant` remains the branch-level unit and this phase adds an organization layer above it
-
-### Scope
-
-- add organization tables above the current restaurant layer
-- map existing single-owner restaurants into the new organization model
-- add organization membership and scoped permissions
-- preserve current login behavior while expanding the data model
-
-### Core Tables
-
-- `owner_organizations`
-- `organization_members`
-- `organization_restaurants`
-- `organization_member_shop_scopes`
-- `organization_member_permissions`
-
-### Completion Definition
-
-- one organization can own multiple restaurants
-- one founder-level user can access multiple branches through the organization model
-- a second founder-level user can be added without being modeled as an employee
-- RLS and permission checks still isolate data correctly
-- existing single-restaurant users still work after migration
-
-### Current Status
-
-`Complete`
-
-Delivered in this phase:
-
-- organization foundation migration created
-- organization bootstrap added to registration flow
-- organization context/service layer added
-- centralized org authorization scaffolding added
-- owner organization API endpoints added
-
-Accepted follow-ups moved to Phase 2:
-
-- branch runtime switching under the existing JWT and RLS model
-- onboarding for org members who do not already own a restaurant
-- email invite flow for users who do not yet exist
-
-### PM Note to AI Agent
-
-Keep this phase mostly backend and authorization-focused. Do not try to finish every owner UI here.
-
----
-
-## Phase 2: Shared Founder and Branch Access Control
-
-### Current Status
-
-`Completed — 2026-04-13`
-
-Delivered in this phase:
-
-- migration `038_pending_invites.sql` adds `organization_pending_invites` table with RLS
-- invite-by-email flow: `POST /invites`, `GET /invites`, `DELETE /invites/[id]`
-- `GET /validate?token=` endpoint lets the accept-invite page check invite state without exposing the token
-- `POST /api/v1/auth/accept-invite` handles both new users (creates account + users row) and existing users
-- accept-invite UI page at `/[locale]/(auth)/accept-invite/`
-- active-branch cookie strategy in `lib/server/organizations/active-branch.ts`
-- `GET/PUT /api/v1/owner/organization/active-branch` — read and set the active branch
-- organization management dashboard at `/dashboard/organization`
-- `MembersPanel` component (members list, invite form, pending invites with revoke)
-- `BranchSwitcher` component (hidden for single-branch orgs, reload-on-switch for multi-branch)
-- Organization sidebar nav item added to `AdminSidebar`
-- i18n keys added for EN / JA / VI
-
-Accepted follow-ups for Phase 3+:
-
-- email delivery for invite tokens (currently token is returned to the founder to share manually)
-- branch data shown in BranchSwitcher uses IDs only; Phase 3 branch-detail work will improve display
-- logout route should call `buildClearActiveBranchCookieHeader()` to clear the active-branch cookie
-
-### Goal
-
-Make founder, co-founder, finance, and manager access explicit and maintainable.
-
-### Mandatory First Step
-
-- read all foundation docs
-- write the implementation brief
-- confirm that founders are not modeled as employees and branch scope must remain explicit
-
-### Scope
-
-- implement organization-level roles
-- implement branch-scoped permissions
-- centralize permission checks in one server-side authorization layer
-- update owner navigation and data loading to respect scope
-- define the active-branch context model for multi-branch founders
-- add onboarding for organization members who do not already have a `users.restaurant_id`
-- build invite-by-email flow instead of requiring pre-existing user rows
-
-### Required Roles
-
-- `founder_full_control`
-- `founder_operations`
-- `founder_finance`
-- `accountant_readonly`
-- `branch_general_manager`
-
-### Completion Definition
-
-- role and scope checks are not duplicated across many routes
-- a founder can see all allowed branches
-- a branch manager sees only assigned branches
-- finance-only users can read reports without getting operational write access
-- audit-sensitive actions are permission-gated
-- a founder can intentionally switch active branch context without breaking RLS
-- Phase 2 defines how JWT/session branch context is resolved for branch-scoped operations
-- invited members can join even if they did not already have a restaurant or existing `users` row
-- invite-by-email flow supports pending invite, acceptance, and membership activation
-
-### Risks / Follow-Ups Carried Into Phase 2
-
-- the existing `restaurant_id` JWT claim still controls branch-level RLS; Phase 2 must define how active branch context changes when a founder operates a different branch
-- the `users.restaurant_id` column is still single-valued; org members who do not already own a restaurant need a separate onboarding path
-- there is no invite-by-email flow yet; `POST /api/v1/owner/organization/members` currently requires the target user to already exist in `users`
-
-### PM Requirements For Phase 2
-
-- do not patch branch switching in an ad hoc way inside individual routes
-- define one explicit branch-context strategy for JWT, session, and server authorization
-- keep branch-scoped RLS trustworthy during the transition from single-restaurant assumptions
-- design member onboarding so founders, finance users, and managers are not forced through owner-style restaurant creation
-- implement invites as a first-class workflow, not as a hidden prerequisite on an existing user record
-
-### PM Note to AI Agent
-
-This phase should reduce future complexity, not add it. Prefer one clean permission layer over many local checks.
-
----
-
-## Phase 3: Branch Management and Branch-Specific Menus
-
-### Current Status
-
-`Completed — 2026-04-13`
-
-Delivered in this phase:
-
-- `web/lib/server/organizations/branch-menu.ts` — copy and compare domain logic (admin client, org-scoped)
-- `POST /api/v1/owner/organization/menu/copy` — delete target menu and copy all categories, items, sizes, toppings from source branch
-- `GET /api/v1/owner/organization/menu/compare?branch_a=&branch_b=` — side-by-side menu snapshot for two branches
-- `/dashboard/branches` — branches management page: list, active-branch switcher, copy tool, compare panel
-- Active branch indicator banner on `/dashboard/menu` for multi-branch orgs
-- `Branches` sidebar nav item (Layers icon)
-- i18n keys added for EN / JA / VI under `owner/branches` namespace
-- `owner/branches` registered in `web/i18n/request.ts`
-- `CopyMenuRequest`, `CopyMenuResponse`, `MenuCompareResponse` types added to `web/shared/types/organization.ts`
-- Customer ordering flow: not modified; menu tables were already branch-scoped via `restaurant_id`
-
-Accepted follow-ups for Phase 4+:
-
-- No migration was needed — menu tables (`categories`, `menu_items`, `menu_item_sizes`, `toppings`) already carry `restaurant_id` as the branch-level isolation key
-- Menu copy is not transactional (Supabase does not expose a direct transaction API in route handlers); the UI warns before the destructive copy
-- Branches page hides copy/compare actions for single-branch owners (branches.length < 2)
-- A `branch_menu_copy_logs` audit table could be added if copy history is needed in Phase 6+
-
-### Goal
-
-Let owners manage multiple branches, each with its own menu, while preserving the working customer order flow.
-
-### Mandatory First Step
-
-- read all foundation docs
-- write the implementation brief
-- confirm that branch menus stay independent first and customer ordering must not be redesigned
-
-### Scope
-
-- add owner branch list and branch switcher
-- keep menu data branch-scoped
-- add branch menu duplication tools
-- add branch menu comparison for owner review
-- confirm customer menu loads only the selected branch menu
-
-### Completion Definition
-
-- an owner can manage multiple branches from one account scope
-- each branch can have different categories, items, prices, and availability
-- copying a menu from one branch to another works
-- editing one branch menu does not change another branch menu
-- customer QR ordering continues to load the correct branch menu
-
-### PM Note to AI Agent
-
-Do not introduce a global shared catalog in this phase. Branch independence is the correct first release model.
-
----
-
-## Phase 4: Employee Scheduling, QR Attendance, and Approvals
-
-### Current Status
-
 `Completed — 2026-04-17`
 
-Delivered in this phase:
+### PM Note to AI Agent
 
-- migration `039_attendance_phase4.sql` — adds `employee_qr_credentials`, `attendance_events`, `attendance_daily_summaries`, `attendance_approvals` with RLS
-- migration `040_attendance_phase4_blockers.sql` — adds `corrected_event_type` column + append-only policy on `attendance_events`
-- `web/lib/server/attendance/` domain module — `queries.ts`, `service.ts`, `types.ts`, `schemas.ts`
-  - `processScanEvent`: validates credential token, writes immutable event, rebuilds daily summary
-  - `rebuildDailySummary`: idempotent rebuild from events; detects missing checkout, implausible hours, manual corrections
-  - `addManualCorrection`: manager inserts corrected punch; triggers summary rebuild + `correction_pending` flag
-  - `approveSummary`: writes audit record to `attendance_approvals`, updates summary status
-  - `getActiveCredential` / `rotateCredential`: credential lifecycle, deactivates prior token on rotation
-- `POST /api/v1/attendance/scan` — public secure scan endpoint (credential token → employee identity, not caller-supplied)
-- `GET/POST /api/v1/owner/employees/[employeeId]/qr-credential` — read or rotate QR credential (owner/manager only)
-- `GET /api/v1/owner/attendance/summaries` — filterable list (status, employee, date range)
-- `POST /api/v1/owner/attendance/summaries/[summaryId]/approve` — approve or reject with full audit trail
-- `POST /api/v1/owner/attendance/corrections` — manual correction event (manager/owner only)
-- `AttendanceApprovalInbox` component — manager daily inbox: pending + correction_pending summaries, inline approve/reject
-- `AttendanceSummaryView` component — full monthly table with employee/status/month filters and inline actions
-- `EmployeeQRPanel` component — displays QR code for employee's active credential, rotate button with confirmation
-- `EmployeesDashboard` updated — four tabs (Approvals, Summaries, Employees, Schedule, Performance) + Scan Check-In / Scan Check-Out action buttons
-- `EmployeeList` updated — QR code button per employee opens `EmployeeQRPanel` in a dialog
-- i18n keys added for EN / JA / VI under `owner/employees` namespace
+This base work is complete, but do not regress it while building the new foundation.
 
-Accepted follow-ups for Phase 5+:
+---
 
-- kiosk mode (shared device scan without employee login) is stubbed but not yet active; scan endpoint currently requires employee session
-- manual correction UI form is not yet exposed in the dashboard (corrections can be submitted via API)
-- payroll-hours CSV export for approved summaries is not yet implemented (Phase 6 deliverable)
+## Target Execution Order
+
+The target execution order now supersedes the legacy route structure in the codebase.
+
+Historical implementation work may still exist, but future work should follow the phases below.
+
+## Phase 1: Shared Foundation Reset
 
 ### Goal
 
-Make staffing and attendance reliable enough for day-to-day branch operations.
+Build the shared foundation first so later founder and branch work lands on stable architecture instead of the old mixed dashboard structure.
 
 ### Mandatory First Step
 
 - read all foundation docs
 - write the implementation brief
-- confirm that attendance events, approvals, and finalized work-hour summaries are separate layers
+- confirm that shared database, domain, auth, and UI foundations must land before route-specific expansion
 
 ### Scope
 
-- improve employee schedule management
-- support daily working hour review
-- replace weak QR attendance assumptions with a secure branch-ready flow
-- add manager approval for exceptions and finalized hours
-
-### Required Outcomes
-
-- schedule creation and editing
-- branch-level employee assignment
-- QR check-in and check-out
-- exception handling for missing or incorrect scans
-- approval workflow for payroll-grade daily summaries
+- refactor database and migration foundations where needed
+- centralize organization context, branch context, and authorization services
+- centralize shared types, schemas, and validation
+- define shared UI primitives, layout shells, and route conventions
+- create or refactor shared server domain modules before feature-specific pages
+- create a clear target folder structure for founder control route and branch operations route
 
 ### Completion Definition
 
-- employees can check in and out through a valid QR flow
-- attendance events are tied to the correct branch and employee
-- managers can approve or reject corrections
-- finalized daily hours are generated from approved attendance data
-- owner or manager can review attendance from mobile without confusion
+- the database foundation supports organization and branch separation cleanly
+- shared auth and permission checks are centralized
+- shared types and schemas are reusable across owner and branch flows
+- route shells and shared components exist for the new architecture
+- agents no longer need to build new features on top of the legacy mixed dashboard structure
 
 ### PM Note to AI Agent
 
-Do not treat raw scan events as final payroll truth. Keep attendance events, approvals, and finalized summaries separate.
+This phase is allowed to move files, rename modules, and reorganize folders aggressively if that improves the foundation.
 
 ---
 
-## Phase 5: Purchasing and Expense Management
+## Phase 2: Founder Control Route Foundation
 
 ### Goal
 
-Give branches a simple way to record equipment purchases, supplier spending, and daily food expenses.
+Build the root-domain founder control route before refactoring branch features.
 
 ### Mandatory First Step
 
 - read all foundation docs
 - write the implementation brief
-- confirm that branch-scoped operational simplicity matters more than procurement-system complexity
+- confirm that founders and co-founders must land on the root-domain control route, not a branch subdomain
 
 ### Scope
 
-- add purchase and expense data model
-- add branch-level purchase entry UI
-- add supplier, category, and receipt attachment support where practical
-- connect purchases to monthly finance reporting
+- add the founder control route shell on the root domain
+- update auth and redirect behavior so founder-level users land on the root domain after login
+- move organization management, branch setup, and access management into the founder route
+- move restaurant basic information ownership into the founder route
+- add branch selection and cross-branch overview in the founder route
 
 ### Completion Definition
 
-- branch managers can record purchases from mobile
-- expenses are branch-scoped and categorized
-- purchase records can be reviewed by founders or finance users
-- spending appears in monthly finance summaries
-- exports are possible for accountant review
+- founder and co-founder login lands on the root-domain control route
+- restaurant basic information is owned by the founder route
+- organization members and access are managed from the founder route
+- cross-branch overview exists in the founder route
+- the founder route no longer depends on branch-scoped page ownership assumptions
 
 ### PM Note to AI Agent
 
-Keep the first version simple. Recording real spending accurately is more important than building a complex procurement system.
+Do not wait for branch refactor to start the founder route. Founder control is the primary product surface.
 
 ---
 
-## Phase 6: Monthly Finance Close and Tax-Ready Reporting
+## Phase 3: Founder Feature Execution
 
 ### Goal
 
-Give owners a monthly cashflow view that is trustworthy enough for internal review and accountant handoff.
+Implement the founder-first feature set on top of the shared foundation and new control route.
+
+### Mandatory First Step
+
+- read all foundation docs
+- write the implementation brief
+- confirm that founder workflow is business control, setup, access, and money review rather than daily branch task execution
+
+### Scope
+
+- organization and shared-founder access flows
+- branch creation, archive, and identity setup
+- founder-controlled restaurant configuration
+- founder-level money and finance surfaces
+- founder-level promotion policy and rollout controls
+- founder-level month-end and export workflows
+
+### Completion Definition
+
+- founders can manage restaurants, access, and configuration without entering branch-scoped surfaces
+- founder-controlled finance and review flows live in the control route
+- founder-controlled settings no longer depend on the branch operations route
+- founder UI is mobile-first and coherent on the root domain
+
+### PM Note to AI Agent
+
+This phase should make the founder route genuinely useful before branch refactor begins.
+
+---
+
+## Phase 4: Branch Operations Route Refactor
+
+### Goal
+
+Refactor the existing branch features into a focused branch operations route after the founder route is stable.
+
+### Mandatory First Step
+
+- read all foundation docs
+- write the implementation brief
+- confirm which existing branch screens stay, move, merge, or get removed
+
+### Scope
+
+- move founder-only screens out of the legacy branch dashboard
+- refactor branch navigation into the operations route
+- remove duplicated settings and low-value admin-style surfaces
+- keep only branch-owned operational features in the branch route
+- preserve branch manager reporting and analytics as part of the branch route
+
+### Completion Definition
+
+- branch route is clearly operational, not founder-administrative
+- branch manager can run the restaurant without founder-only setup screens in the way
+- branch reports and analytics remain available for branch managers
+- branch route naming and structure match the target architecture
+
+### PM Note to AI Agent
+
+This is a real refactor phase, not a cosmetic rename. Remove architectural confusion, not just labels.
+
+---
+
+## Phase 5: Branch Feature Migration and Cleanup
+
+### Goal
+
+Finish migrating branch features onto the new operations route and shared foundation.
+
+### Mandatory First Step
+
+- read all foundation docs
+- write the implementation brief
+- confirm that branch features must now consume shared foundations instead of route-local legacy logic
+
+### Scope
+
+- branch menu workflows
+- branch people workflows
+- branch attendance workflows
+- branch expenses and purchasing workflows
+- branch bookings workflows
+- branch reports and analytics workflows
+
+### Completion Definition
+
+- branch features are implemented on shared modules and shared data contracts
+- branch managers can use menu, employees, attendance, expenses, bookings, and local reports from one coherent route
+- branch-local reports and analytics are preserved and understandable
+- legacy branch-specific duplication is reduced or removed
+
+### PM Note to AI Agent
+
+Do not rebuild every branch feature from scratch if the shared foundation already supports it. Migrate intentionally.
+
+---
+
+## Phase 6: Finance Close and Tax-Ready Reporting
+
+### Goal
+
+Give founders a trustworthy month-end finance workflow once founder control and branch operations are both on stable foundations.
 
 ### Mandatory First Step
 
@@ -597,7 +497,7 @@ Add controlled promotion tools without making money reporting unreliable.
 
 ### Completion Definition
 
-- owners can create and disable branch promotions
+- founders can create and disable branch promotions from the control route
 - discount usage is recorded against orders
 - reports can distinguish gross sales from discounted sales
 - branch-specific promotions do not leak into other branches unless intentionally copied
@@ -612,31 +512,33 @@ Promotions must plug into the finance model cleanly. Do not implement them as un
 
 ### Goal
 
-Reduce owner stress and remove avoidable complexity before broader rollout.
+Reduce owner stress and remove avoidable complexity after the new foundation, founder route, and branch route are in place.
 
 ### Mandatory First Step
 
 - read all foundation docs
 - write the implementation brief
-- confirm that owner UX is operational, mobile-first, and should feel simpler after the new foundations land
+- confirm that simplification should happen after the architectural split is implemented
 
 ### Scope
 
-- simplify owner navigation into business language
+- simplify founder route navigation into business language
+- simplify branch route navigation into operational language
 - improve mobile layouts for high-frequency tasks
 - reduce duplicate settings and unnecessary labels
-- verify multilingual owner and employee flows
+- verify multilingual founder and employee flows
 
 ### Completion Definition
 
-- the owner experience centers on branches, people, money, and settings
+- the founder experience centers on organization, restaurants, access, money, and settings
+- the branch experience centers on operations, people, expenses, bookings, and local reports
 - the most common daily actions can be done comfortably on mobile
-- founder and manager workflows feel simpler after the new features land
+- founder and manager workflows feel simpler after the refactor
 - Japanese, Vietnamese, and English owner-side language selection still works where supported
 
 ### PM Note to AI Agent
 
-This phase is not cosmetic cleanup only. It is part of product quality.
+This phase is not cosmetic cleanup only. It is the final simplification pass after the real architecture work is done.
 
 ---
 
@@ -676,8 +578,8 @@ Do not treat production readiness as someone else's cleanup phase after feature 
 Each phase should be broken into small agent tickets. Recommended ticket size:
 
 - one migration-focused ticket
-- one backend/domain ticket
-- one UI ticket
+- one shared foundation or backend/domain ticket
+- one route/UI ticket
 - one verification and cleanup ticket
 
 Avoid assigning one giant ticket that touches every domain at once.
@@ -700,6 +602,7 @@ Do not release the owner upgrade until these are true:
 
 - organization and branch permissions are trustworthy
 - customer ordering is stable
+- founder control route and branch operations route are clearly separated in ownership and navigation
 - monthly finance numbers are internally consistent
 - attendance approval flow is clear
 - branch managers can operate without founder intervention for daily tasks
@@ -717,5 +620,6 @@ If an AI implementation agent starts today, the first active sequence should be:
 2. Phase 1
 3. Phase 2
 4. Phase 3
+5. Phase 4
 
-After that, Phase 4 and Phase 5 can overlap carefully, and Phase 6 should start only when attendance and expenses have stable approved inputs.
+After that, Phase 5 can continue the branch migration, and Phase 6 should start only when attendance and expenses have stable approved inputs on the new shared foundation.
