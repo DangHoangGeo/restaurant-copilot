@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { ProtectedLayout } from '@/components/ProtectedLayout';
 import { ControlShell } from '@/components/features/admin/control/control-shell';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
@@ -23,7 +23,7 @@ export default async function ControlLayout({
   }
 
   if (!controlContext) {
-    redirect(`/${locale}/dashboard`);
+    notFound();
   }
 
   if (controlContext.organization.approval_status !== 'approved') {

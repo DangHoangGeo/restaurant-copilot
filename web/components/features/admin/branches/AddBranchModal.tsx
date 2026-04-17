@@ -54,6 +54,7 @@ const addBranchFormSchema = z.object({
 type AddBranchFormData = z.infer<typeof addBranchFormSchema>;
 
 interface AddBranchModalProps {
+  companyPublicSubdomain?: string | null;
   onClose: () => void;
   onSuccess: (branch: { id: string; name: string; subdomain: string }) => void;
 }
@@ -67,7 +68,11 @@ function toBranchCode(value: string): string {
     .slice(0, 50);
 }
 
-export function AddBranchModal({ onClose, onSuccess }: AddBranchModalProps) {
+export function AddBranchModal({
+  companyPublicSubdomain,
+  onClose,
+  onSuccess,
+}: AddBranchModalProps) {
   const t = useTranslations('owner.branches');
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -143,19 +148,18 @@ export function AddBranchModal({ onClose, onSuccess }: AddBranchModalProps) {
       <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border bg-background shadow-2xl">
         <div className="border-b bg-gradient-to-br from-orange-50 via-background to-amber-50 px-5 py-5 sm:px-6">
           <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5 text-orange-500" />
-                Founder setup
-              </div>
+            <div className="space-y-3">
               <div>
                 <h2 className="text-xl font-semibold tracking-tight">
-                  Add a new restaurant branch
+                  Add restaurant
                 </h2>
-                <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-                  Keep this simple. Create the branch, choose its public code, and let the owner control the rest from one place.
-                </p>
               </div>
+              {companyPublicSubdomain ? (
+                <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground">
+                  <Sparkles className="h-3.5 w-3.5 text-orange-500" />
+                  {companyPublicSubdomain}.coorder.ai
+                </div>
+              ) : null}
             </div>
 
             <button
@@ -187,9 +191,6 @@ export function AddBranchModal({ onClose, onSuccess }: AddBranchModalProps) {
                         className="h-11 rounded-2xl"
                       />
                     </FormControl>
-                    <p className="text-xs text-muted-foreground">
-                      Use the name your team and customers already know.
-                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -217,7 +218,7 @@ export function AddBranchModal({ onClose, onSuccess }: AddBranchModalProps) {
                             className="h-11 rounded-r-none border-0 bg-transparent shadow-none"
                           />
                           <div className="shrink-0 rounded-r-[14px] border-l bg-muted px-3 text-sm text-muted-foreground">
-                            /menu?branch=
+                            {companyPublicSubdomain ? `${companyPublicSubdomain}.coorder.ai` : 'coorder.ai'}/menu?branch=
                             <span className="font-medium text-foreground">
                               {field.value || 'branch-code'}
                             </span>
@@ -225,9 +226,6 @@ export function AddBranchModal({ onClose, onSuccess }: AddBranchModalProps) {
                         </div>
                       </div>
                     </FormControl>
-                    <p className="text-xs text-muted-foreground">
-                      This code is used in QR links and stays compatible with the legacy branch host while we finish the company-host rollout.
-                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -285,9 +283,6 @@ export function AddBranchModal({ onClose, onSuccess }: AddBranchModalProps) {
             <section className="rounded-3xl border bg-muted/20 p-4 sm:p-5">
               <div className="mb-4">
                 <h3 className="text-sm font-semibold">Contact details</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Optional for now. Add only what helps the owner or accountant operate faster.
-                </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">

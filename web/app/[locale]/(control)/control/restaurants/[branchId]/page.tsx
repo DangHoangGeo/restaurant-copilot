@@ -1,4 +1,4 @@
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { resolveFounderControlContext } from '@/lib/server/control/access';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { listOrganizationEmployees } from '@/lib/server/organizations/queries';
@@ -27,14 +27,14 @@ export default async function ControlBranchDetailPage({
   params: Promise<{ locale: string; branchId: string }>;
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const [{ locale, branchId }, sp, ctx] = await Promise.all([
+  const [{ branchId }, sp, ctx] = await Promise.all([
     params,
     searchParams,
     resolveFounderControlContext(),
   ]);
 
   if (!ctx) {
-    redirect(`/${locale}/dashboard`);
+    notFound();
   }
 
   if (!ctx.accessibleRestaurantIds.includes(branchId)) {

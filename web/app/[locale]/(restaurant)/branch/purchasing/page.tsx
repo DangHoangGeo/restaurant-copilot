@@ -32,7 +32,7 @@ export default async function PurchasingPage({
 
   const access = await resolvePurchasingAccess();
   if (!access) {
-    redirect(`/${locale}/dashboard`);
+    redirect(`/${locale}/branch`);
   }
 
   const restaurantId = access.restaurantId;

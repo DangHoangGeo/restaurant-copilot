@@ -37,7 +37,7 @@ export default async function ControlMoneyPage({
   ]);
 
   if (!ctx || !access) {
-    redirect(`/${locale}/dashboard`);
+    redirect(`/${locale}/control/overview`);
   }
 
   let year: number;

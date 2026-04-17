@@ -53,7 +53,7 @@ function fmt(amount: number, currency: string, locale: string) {
   }
 }
 
-function fmtCompact(amount: number, currency: string): string {
+function fmtCompact(amount: number): string {
   if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
   if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}k`;
   return String(Math.round(amount));
@@ -326,7 +326,7 @@ export function ControlOverviewClient({
                 tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(v: number) => fmtCompact(v, currency)}
+                tickFormatter={(v: number) => fmtCompact(v)}
                 width={44}
               />
               <Tooltip
@@ -367,7 +367,7 @@ export function ControlOverviewClient({
                 tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(v: number) => fmtCompact(v, currency)}
+                tickFormatter={(v: number) => fmtCompact(v)}
                 width={44}
               />
               <Tooltip
@@ -441,7 +441,7 @@ export function ControlOverviewClient({
                 tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(v: number) => fmtCompact(v, currency)}
+                tickFormatter={(v: number) => fmtCompact(v)}
               />
               <YAxis
                 type="category"

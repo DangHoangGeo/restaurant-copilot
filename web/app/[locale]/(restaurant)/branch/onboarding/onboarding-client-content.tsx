@@ -215,8 +215,8 @@ export function OnboardingClientContent({ locale }: OnboardingClientContentProps
         toast.success(t('completion.success'));
       }
       
-      // Redirect to homepage management
-      router.push(`/${locale}/dashboard/homepage`);
+      // Redirect to owner homepage tools
+      router.push(`/${locale}/control/homepage`);
     } catch (error) {
       console.error('Onboarding completion error:', error);
       toast.error(t('completion.error'));

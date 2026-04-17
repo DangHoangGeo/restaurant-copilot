@@ -43,7 +43,7 @@ describe('root dashboard urls', () => {
     process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
 
     expect(buildBranchDashboardUrl('shibuya', 'ja')).toBe(
-      'https://shibuya.coorder.ai/ja/dashboard'
+      'https://shibuya.coorder.ai/ja/branch'
     );
   });
 

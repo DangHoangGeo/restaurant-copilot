@@ -3,6 +3,7 @@
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { resolveFounderControlContext } from "@/lib/server/control/access";
 import { resolveFinanceAccess } from "@/lib/server/finance/access";
 import { getMonthlyReport, listMonthlySnapshots, parseYearMonth } from "@/lib/server/finance/service";
 import { FinanceDashboard } from "@/components/features/admin/finance/FinanceDashboard";
@@ -27,10 +28,15 @@ export default async function FinancePage({
 }) {
   const { locale } = await params;
   const sp = await searchParams;
+  const founderContext = await resolveFounderControlContext();
+
+  if (founderContext) {
+    redirect(`/${locale}/control/finance`);
+  }
 
   const access = await resolveFinanceAccess();
   if (!access) {
-    redirect(`/${locale}/dashboard`);
+    redirect(`/${locale}/branch`);
   }
 
   const { restaurantId, currency, canClose } = access;
@@ -40,7 +46,7 @@ export default async function FinancePage({
   try {
     ({ year, month } = parseYearMonth(sp.year ?? null, sp.month ?? null));
   } catch {
-    redirect(`/${locale}/dashboard/finance`);
+    redirect(`/${locale}/branch/finance`);
   }
 
   const [report, history, restaurantRow] = await Promise.all([

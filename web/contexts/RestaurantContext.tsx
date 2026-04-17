@@ -79,11 +79,12 @@ export function RestaurantProvider({
   // Check for onboarding redirect needs
   useEffect(() => {
     if (!isLoading && needsOnboarding && restaurantSettings) {
-      const isOnboardingPage = pathname.includes('/dashboard/onboarding');
+      const isOnboardingPage =
+        pathname.includes('/branch/onboarding') || pathname.includes('/dashboard/onboarding');
       const isApiRoute = pathname.startsWith('/api');
       const redirectPath =
         onboardingRedirectPath === undefined
-          ? `/${locale}/dashboard/onboarding`
+          ? `/${locale}/branch/onboarding`
           : onboardingRedirectPath;
       
       // Only redirect if not already on onboarding page and not an API route

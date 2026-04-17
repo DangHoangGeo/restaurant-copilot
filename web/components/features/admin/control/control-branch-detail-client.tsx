@@ -332,7 +332,7 @@ export function ControlBranchDetailClient({
               <p className="text-xs text-muted-foreground">Contact, hours, tax</p>
             </button>
             <button
-              onClick={() => window.open(`https://${initialBranch.subdomain}.coorder.ai/dashboard/menu`, '_blank')}
+              onClick={() => window.open(`https://${initialBranch.subdomain}.coorder.ai/branch/menu`, '_blank')}
               className="flex flex-col items-start gap-1 rounded-lg border bg-card p-3 text-left hover:bg-muted/40 transition-colors"
             >
               <ShoppingBag className="h-4 w-4 text-muted-foreground" />

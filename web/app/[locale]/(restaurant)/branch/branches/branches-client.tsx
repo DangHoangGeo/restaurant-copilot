@@ -145,7 +145,7 @@ export function BranchesClient({
                           const ok = await switchBranch(branch.id);
                           if (!ok) return;
                         }
-                        router.push(`/${locale}/dashboard/menu`);
+                        router.push(`/${locale}/branch/menu`);
                       }}
                       disabled={switching}
                       className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted"

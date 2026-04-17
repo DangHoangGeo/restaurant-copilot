@@ -91,7 +91,7 @@ export function SettingsClientContent({ locale }: SettingsClientContentProps) {
           </CardHeader>
           <CardContent className="pb-8">
             <div className="space-y-4">
-              <Link href={`/${currentLocale}/dashboard/onboarding`}>
+              <Link href={`/${currentLocale}/control/onboarding`}>
                 <Button size="lg" className="w-full">
                   Complete Onboarding
                   <ArrowRight className="ml-2 h-4 w-4" />

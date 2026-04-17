@@ -28,7 +28,7 @@ export default async function StaffPage({
 
   const authz = buildAuthorizationService(ctx);
   if (!authz?.can("employees")) {
-    redirect(`/${locale}/dashboard`);
+    redirect(`/${locale}/branch`);
   }
 
   return (

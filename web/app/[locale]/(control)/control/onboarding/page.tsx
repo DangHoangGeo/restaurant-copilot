@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { buildAuthorizationService } from '@/lib/server/authorization/service';
-import { resolveOrgContext } from '@/lib/server/organizations/service';
+import { resolveFounderControlContext } from '@/lib/server/control/access';
 import { ControlOnboardingContent } from './control-onboarding-content';
 
 export async function generateMetadata({
@@ -20,10 +20,10 @@ export default async function ControlOnboardingPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const ctx = await resolveOrgContext();
+  const ctx = await resolveFounderControlContext();
 
   if (!ctx) {
-    redirect(`/${locale}/dashboard`);
+    redirect(`/${locale}/login`);
   }
 
   if (ctx.organization.approval_status !== 'approved') {

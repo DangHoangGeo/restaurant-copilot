@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { ControlOverviewClient } from '@/components/features/admin/control/control-overview-client';
 import { resolveFounderControlContext } from '@/lib/server/control/access';
 import { getFounderControlOverview } from '@/lib/server/control/overview';
@@ -23,7 +23,7 @@ export default async function ControlOverviewPage({
   const ctx = await resolveFounderControlContext();
 
   if (!ctx) {
-    redirect(`/${locale}/dashboard`);
+    notFound();
   }
 
   const data = await getFounderControlOverview({

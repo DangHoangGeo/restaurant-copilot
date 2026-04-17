@@ -1,14 +1,14 @@
 import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { ControlPeopleClient } from '@/components/features/admin/control/control-people-client';
 import { buildAuthorizationService } from '@/lib/server/authorization/service';
+import { resolveFounderControlContext } from '@/lib/server/control/access';
 import { listPendingInvites } from '@/lib/server/organizations/invites';
 import {
   listOrganizationBranches,
   listOrganizationEmployees,
   listOrganizationMembers,
 } from '@/lib/server/organizations/queries';
-import { resolveOrgContext } from '@/lib/server/organizations/service';
 import type {
   ApiOrganizationMember,
   ApiPendingInvite,
@@ -30,10 +30,10 @@ export default async function ControlPeoplePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const ctx = await resolveOrgContext();
+  const ctx = await resolveFounderControlContext();
 
   if (!ctx) {
-    redirect(`/${locale}/dashboard`);
+    notFound();
   }
 
   const authz = buildAuthorizationService(ctx);

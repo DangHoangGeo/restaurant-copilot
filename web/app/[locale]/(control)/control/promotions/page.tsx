@@ -1,14 +1,12 @@
-// Promotions management page — Phase 7
-// Displays branch-scoped promotions with create/disable/delete actions.
-
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { resolvePromotionsAccess } from "@/lib/server/promotions/access";
-import { getPromotionList } from "@/lib/server/promotions/service";
-import { computeDiscounts } from "@/lib/server/finance/queries";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { PromotionsDashboard } from "@/components/features/admin/promotions/PromotionsDashboard";
 import { getJapanLocalDate } from "@/lib/server/attendance/service";
+import { resolveFounderControlContext } from "@/lib/server/control/access";
+import { computeDiscounts } from "@/lib/server/finance/queries";
+import { resolvePromotionsAccess } from "@/lib/server/promotions/access";
+import { getPromotionList } from "@/lib/server/promotions/service";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function generateMetadata({
   params,
@@ -20,21 +18,22 @@ export async function generateMetadata({
   return { title: t("pageTitle") };
 }
 
-export default async function PromotionsPage({
+export default async function ControlPromotionsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const [ctx, access] = await Promise.all([
+    resolveFounderControlContext(),
+    resolvePromotionsAccess(),
+  ]);
 
-  const access = await resolvePromotionsAccess();
-  if (!access) {
-    redirect(`/${locale}/dashboard`);
+  if (!ctx || !access) {
+    redirect(`/${locale}/control/overview`);
   }
 
   const { restaurantId, canWrite } = access;
-
-  // Japan-local month boundaries for current month discount total
   const today = getJapanLocalDate();
   const [yearStr, monthStr] = today.split("-");
   const year = parseInt(yearStr, 10);
@@ -42,7 +41,7 @@ export default async function PromotionsPage({
   const mm = String(month).padStart(2, "0");
   const lastDay = new Date(year, month, 0).getDate();
   const fromDate = `${year}-${mm}-01`;
-  const toDate   = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`;
+  const toDate = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`;
 
   const [promotions, discounts, restaurantRow] = await Promise.all([
     getPromotionList(restaurantId, true).catch(() => []),
@@ -63,6 +62,9 @@ export default async function PromotionsPage({
       currency={currency}
       locale={locale}
       canWrite={canWrite}
+      financeHref="/control/finance"
+      purchasingHref="/branch/purchasing"
+      promotionsHref="/control/promotions"
     />
   );
 }

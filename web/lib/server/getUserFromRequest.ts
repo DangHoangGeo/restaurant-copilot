@@ -5,6 +5,8 @@ export interface AuthUserRestaurantSettings {
   name: string;
   logoUrl: string | null;
   subdomain: string;
+  branch_code?: string | null;
+  company_public_subdomain?: string | null;
   primaryColor: string;
   defaultLocale: string;
   onboarded: boolean;

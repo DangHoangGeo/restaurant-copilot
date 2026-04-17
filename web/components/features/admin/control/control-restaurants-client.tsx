@@ -8,12 +8,15 @@ import {
   Building2,
   Copy,
   GitCompare,
+  Globe,
+  Layers3,
   Plus,
   Users,
 } from 'lucide-react';
 import { AddBranchModal } from '@/components/features/admin/branches/AddBranchModal';
 import { MenuCopyModal } from '@/components/features/admin/branches/MenuCopyModal';
 import { MenuComparePanel } from '@/components/features/admin/branches/MenuComparePanel';
+import { ControlSharedMenuPanel } from '@/components/features/admin/control/control-shared-menu-panel';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -24,11 +27,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import type { OrganizationSharedMenuCategory } from '@/lib/server/organizations/shared-menu';
 
 interface Branch {
   id: string;
   name: string;
   subdomain: string;
+  branchCode?: string | null;
   employeeCount?: number;
   isActive?: boolean;
 }
@@ -37,6 +42,8 @@ interface ControlRestaurantsClientProps {
   branches: Branch[];
   canAddBranch: boolean;
   canManageMenu: boolean;
+  companyPublicSubdomain: string | null;
+  sharedMenuCategories: OrganizationSharedMenuCategory[];
 }
 
 type Panel = 'none' | 'copy' | 'compare';
@@ -45,6 +52,8 @@ export function ControlRestaurantsClient({
   branches: initialBranches,
   canAddBranch,
   canManageMenu,
+  companyPublicSubdomain,
+  sharedMenuCategories,
 }: ControlRestaurantsClientProps) {
   const locale = useLocale();
   const router = useRouter();
@@ -65,12 +74,28 @@ export function ControlRestaurantsClient({
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-lg font-semibold">Restaurants</h1>
-          <p className="text-sm text-muted-foreground">
-            {branches.length} branch{branches.length !== 1 ? 'es' : ''} in your organization.
-          </p>
+      <div className="flex flex-col gap-3 rounded-3xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-semibold">Restaurants</h1>
+            <Badge variant="secondary" className="rounded-full">
+              {branches.length}
+            </Badge>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            {companyPublicSubdomain ? (
+              <span className="inline-flex items-center gap-1 rounded-full border bg-muted/40 px-2.5 py-1">
+                <Globe className="h-3.5 w-3.5" />
+                {companyPublicSubdomain}.coorder.ai
+              </span>
+            ) : null}
+            {canManageMenu ? (
+              <span className="inline-flex items-center gap-1 rounded-full border bg-muted/40 px-2.5 py-1">
+                <Layers3 className="h-3.5 w-3.5" />
+                Shared menu ready
+              </span>
+            ) : null}
+          </div>
         </div>
         {canAddBranch && (
           <Button size="sm" onClick={() => setShowAddBranch(true)} className="gap-1.5 rounded-lg">
@@ -111,6 +136,10 @@ export function ControlRestaurantsClient({
         <MenuComparePanel branches={branches} />
       )}
 
+      {canManageMenu && (
+        <ControlSharedMenuPanel categories={sharedMenuCategories} />
+      )}
+
       {/* Restaurant list */}
       {branches.length === 0 ? (
         <div className="rounded-lg border border-dashed py-16 text-center">
@@ -135,7 +164,7 @@ export function ControlRestaurantsClient({
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead>Restaurant</TableHead>
-                <TableHead className="hidden sm:table-cell">Domain</TableHead>
+                <TableHead className="hidden sm:table-cell">Public entry</TableHead>
                 <TableHead className="hidden md:table-cell text-center">Employees</TableHead>
                 <TableHead className="w-24 pr-3" />
               </TableRow>
@@ -157,11 +186,21 @@ export function ControlRestaurantsClient({
                         {branch.isActive && (
                           <Badge variant="secondary" className="mt-0.5 text-[9px] h-4 px-1.5 rounded-full">active</Badge>
                         )}
+                        {branch.branchCode ? (
+                          <p className="mt-1 text-[11px] text-muted-foreground sm:hidden">
+                            branch {branch.branchCode}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
-                    {branch.subdomain}.coorder.ai
+                    <div className="space-y-1">
+                      <p>{companyPublicSubdomain ? `${companyPublicSubdomain}.coorder.ai` : `${branch.subdomain}.coorder.ai`}</p>
+                      <p className="text-xs">
+                        branch {branch.branchCode ?? branch.subdomain}
+                      </p>
+                    </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-center">
                     <div className="inline-flex items-center gap-1 text-sm text-muted-foreground">
@@ -189,6 +228,7 @@ export function ControlRestaurantsClient({
 
       {showAddBranch && (
         <AddBranchModal
+          companyPublicSubdomain={companyPublicSubdomain}
           onClose={() => setShowAddBranch(false)}
           onSuccess={handleBranchAdded}
         />
