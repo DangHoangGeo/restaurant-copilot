@@ -29,6 +29,7 @@ export async function getMyOrganization(): Promise<Organization | null> {
     .from('organization_members')
     .select('organization_id, owner_organizations(*)')
     .eq('is_active', true)
+    .order('created_at', { ascending: true })
     .limit(1)
     .single();
 
@@ -321,6 +322,9 @@ export async function createOrganizationForNewRestaurant(
   restaurantId: string,
   input: CreateOrganizationInput
 ): Promise<{ organizationId: string; memberId: string } | null> {
+  let organizationId: string | null = null;
+  let memberId: string | null = null;
+
   // 1. Create organization
   const { data: org, error: orgError } = await supabaseAdmin
     .from('owner_organizations')
@@ -339,6 +343,7 @@ export async function createOrganizationForNewRestaurant(
     console.error('Failed to create organization:', orgError);
     return null;
   }
+  organizationId = org.id;
 
   // 2. Add user as founder_full_control
   const { data: member, error: memberError } = await supabaseAdmin
@@ -355,8 +360,12 @@ export async function createOrganizationForNewRestaurant(
 
   if (memberError || !member) {
     console.error('Failed to create organization member:', memberError);
+    if (organizationId) {
+      await supabaseAdmin.from('owner_organizations').delete().eq('id', organizationId);
+    }
     return null;
   }
+  memberId = member.id;
 
   // 3. Link restaurant to organization
   const { error: linkError } = await supabaseAdmin
@@ -369,6 +378,12 @@ export async function createOrganizationForNewRestaurant(
 
   if (linkError) {
     console.error('Failed to link restaurant to organization:', linkError);
+    if (memberId) {
+      await supabaseAdmin.from('organization_members').delete().eq('id', memberId);
+    }
+    if (organizationId) {
+      await supabaseAdmin.from('owner_organizations').delete().eq('id', organizationId);
+    }
     return null;
   }
 

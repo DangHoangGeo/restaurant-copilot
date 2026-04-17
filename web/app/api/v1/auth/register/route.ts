@@ -157,10 +157,56 @@ export async function POST(req: NextRequest) {
     }
 
     // 7. Bootstrap organization for the new restaurant (Phase 1)
-    await bootstrapOrganizationForRestaurant(userData.user.id, restaurantId, {
+    const bootstrapResult = await bootstrapOrganizationForRestaurant(userData.user.id, restaurantId, {
       name,
       slug: subdomain,
     });
+
+    if (!bootstrapResult) {
+      await logEvent({
+        level: "ERROR",
+        endpoint: "/api/v1/register",
+        message: "Organization bootstrap failed after restaurant and user creation",
+        metadata: { userId: userData.user.id, restaurantId, subdomain },
+      });
+
+      // Best-effort compensating rollback. Order matters: rows in `users` have a
+      // FK back to `restaurants`, and `auth.users` is deleted last so we still
+      // have an admin handle for the other two cleanups. Any step that fails
+      // must be logged so an operator can finish the cleanup manually — silent
+      // failures here leave orphan rows behind.
+      const usersDelete = await supabaseAdmin.from("users").delete().eq("id", userData.user.id);
+      if (usersDelete.error) {
+        await logEvent({
+          level: "ERROR",
+          endpoint: "/api/v1/register",
+          message: `Rollback failed: could not delete users row: ${usersDelete.error.message}`,
+          metadata: { userId: userData.user.id, restaurantId, subdomain },
+        });
+      }
+
+      const restaurantsDelete = await supabaseAdmin.from("restaurants").delete().eq("id", restaurantId);
+      if (restaurantsDelete.error) {
+        await logEvent({
+          level: "ERROR",
+          endpoint: "/api/v1/register",
+          message: `Rollback failed: could not delete restaurants row: ${restaurantsDelete.error.message}`,
+          metadata: { userId: userData.user.id, restaurantId, subdomain },
+        });
+      }
+
+      const authDelete = await supabaseAdmin.auth.admin.deleteUser(userData.user.id);
+      if (authDelete.error) {
+        await logEvent({
+          level: "ERROR",
+          endpoint: "/api/v1/register",
+          message: `Rollback failed: could not delete auth user: ${authDelete.error.message}`,
+          metadata: { userId: userData.user.id, restaurantId, subdomain },
+        });
+      }
+
+      return NextResponse.json({ error: "Organization bootstrap failed" }, { status: 500 });
+    }
 
     // 8. Return { success: true, redirect: "https://{subdomain}.coorder.ai/en/login" }.
 

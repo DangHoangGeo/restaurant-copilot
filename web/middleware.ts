@@ -6,6 +6,7 @@ import { getSubdomainFromHost } from '@/lib/utils';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
+import { canUseRootDashboard } from '@/lib/server/organizations/root-dashboard';
 
 // ---------------------------------------------------------------------------
 // In-process cache: subdomain → restaurant_id
@@ -59,6 +60,43 @@ type UserRestaurantAccess = {
   is_active: boolean;
   suspended_at: string | null;
 };
+
+type RootDashboardAccess = {
+  organization_id: string;
+  role: string;
+};
+
+async function getRootDashboardAccess(userId: string): Promise<RootDashboardAccess | null> {
+  const { data: memberships, error } = await supabaseAdmin
+    .from('organization_members')
+    .select('organization_id, role, created_at')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .order('created_at', { ascending: true })
+    .limit(10);
+
+  if (error || !memberships) return null;
+
+  const rootAccessMembership = memberships.find((membership) =>
+    canUseRootDashboard(membership.role)
+  );
+
+  if (!rootAccessMembership) return null;
+
+  return {
+    organization_id: rootAccessMembership.organization_id,
+    role: rootAccessMembership.role,
+  };
+}
+
+function buildRootDashboardUrl(locale: string): URL {
+  if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
+    return new URL(`http://localhost:3000/${locale}/dashboard`);
+  }
+
+  const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+  return new URL(`https://${productionUrl}/${locale}/dashboard`);
+}
 
 /**
  * Check if userId is an org member with access to the restaurant at `subdomain`.
@@ -513,16 +551,21 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(loginUrl);
       }
     } else {
-      // User is on the root/www domain accessing /dashboard — redirect to their restaurant subdomain.
+      // User is on the root/www domain accessing /dashboard.
+      // Founder/finance roles stay on the root domain; branch-scoped users are
+      // redirected to their primary restaurant subdomain.
       try {
-        const restaurant = await getRestaurantForUser(supabaseUser.id);
+        const rootDashboardAccess = await getRootDashboardAccess(supabaseUser.id);
+        if (!rootDashboardAccess) {
+          const restaurant = await getRestaurantForUser(supabaseUser.id);
 
-        if (restaurant?.subdomain) {
-          const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
-          if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
-            return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+          if (restaurant?.subdomain) {
+            const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
+            if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
+              return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+            }
+            return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
           }
-          return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
         }
       } catch (error) {
         logger.error('middleware', 'Error fetching restaurant for root-domain dashboard redirect', {
@@ -540,8 +583,14 @@ export async function middleware(req: NextRequest) {
     new RegExp(`^/${currentLocaleForLogic}/forgot-password$`),
   ];
   if (supabaseUser && authPagePatterns.some(p => p.test(currentPathnameForLogic))) {
-    // Look up the user's restaurant subdomain so we redirect to the correct host, not just the path.
+    // Founder/finance org roles stay on the root domain after auth pages.
     try {
+      const rootDashboardAccess = await getRootDashboardAccess(supabaseUser.id);
+      if (rootDashboardAccess) {
+        return NextResponse.redirect(buildRootDashboardUrl(currentLocaleForLogic));
+      }
+
+      // Look up the user's restaurant subdomain so we redirect to the correct host, not just the path.
       const restaurant = await getRestaurantForUser(supabaseUser.id);
 
       if (restaurant) {

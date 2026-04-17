@@ -123,7 +123,7 @@ ALTER TABLE organization_pending_invites
 
 ---
 
-### Sprint 2 — Branch Creation & Overview Dashboard ⏳ PENDING
+### Sprint 2 — Branch Creation & Overview Dashboard ✅ IMPLEMENTED
 
 **A2: Add Branch to Existing Org**
 - `POST /api/v1/owner/organization/restaurants` — create new `restaurants` row + link via `organization_restaurants`
@@ -137,7 +137,7 @@ ALTER TABLE organization_pending_invites
 
 ---
 
-### Sprint 3 — Email Delivery & Permission UI ⏳ PENDING
+### Sprint 3 — Email Delivery & Permission UI ✅ IMPLEMENTED
 
 **A4 (continued): Email delivery**
 - Integrate Resend/SendGrid or Supabase Email edge function
