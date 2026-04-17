@@ -572,6 +572,63 @@ This plan assumes:
 
 That is the right first-release scope.
 
+## Production Readiness Additions
+
+Executing the feature roadmap alone is not enough to make the owner system production-ready.
+
+Before release, the plan also needs explicit work for rollout safety, monitoring, recovery, and support operations.
+
+### 1. Release operations
+
+- staging environment should mirror the production auth, RLS, scheduled jobs, storage, and branch-switching behavior closely enough for rehearsal
+- every migration that changes owner data, organization membership, attendance, or finance must be rehearsed on production-like data first
+- every risky feature should have a feature-flagged rollout or an equivalent controlled release path
+- iOS release and web release should have one coordinated launch checklist for owner-critical features
+
+### 2. Observability and alerts
+
+The first release should include dashboards and alerts for:
+
+- failed or delayed scheduled finance snapshot jobs
+- invite acceptance failures
+- active-branch or branch-scope authorization failures
+- attendance approval backlog or stuck correction flows
+- month-end export failures
+- unusual error spikes on owner dashboard APIs
+
+If these are not visible, owners will discover failures before the team does.
+
+### 3. Data safety and correction workflows
+
+The first release should define:
+
+- backup and recovery expectations for critical owner data
+- reconciliation scripts or queries for finance snapshots
+- explicit correction workflows for attendance summaries and monthly close data
+- immutable closed-month outputs with controlled reopen or adjustment rules
+- secure storage rules for invoice, receipt, and attachment uploads
+
+### 4. Supportability
+
+The team should have runbooks for:
+
+- resending or repairing organization invites
+- correcting branch membership or scope problems
+- rerunning failed scheduled jobs safely
+- correcting attendance after approval disputes
+- reopening or adjusting a month-end close when a late expense or refund is discovered
+
+### 5. Performance and reliability expectations
+
+The owner product should define acceptable production behavior for:
+
+- mobile branch switching responsiveness
+- owner dashboard load on poor mobile connections
+- month-end export generation time
+- degraded behavior when a background job is delayed or fails
+
+These do not need enterprise-grade SLO language for the first release, but they do need explicit targets and fallback expectations.
+
 ---
 
 ## Owner Stress Optimization

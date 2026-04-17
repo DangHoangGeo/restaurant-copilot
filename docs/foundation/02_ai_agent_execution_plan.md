@@ -49,6 +49,8 @@ An AI agent should not start implementation until the task package clearly state
 - the database impact
 - the API impact
 - the UI impact
+- the rollout or rollback impact
+- the monitoring or operational impact
 - the tests or verification expected
 - the completion definition
 
@@ -83,6 +85,7 @@ A phase is only complete when all of the following are true:
 - UI is usable on mobile
 - existing customer ordering is not broken
 - basic verification was run and documented
+- rollout, recovery, and support implications were documented for risky changes
 - the related docs in `docs/foundation/` are updated if behavior changed
 
 ## Agent Delivery Format
@@ -96,7 +99,9 @@ For every phase, the AI agent should deliver:
 5. List of API routes added or updated.
 6. List of UI screens added or updated.
 7. Verification performed.
-8. Risks, follow-ups, or known gaps.
+8. Rollout, rollback, or backfill notes where relevant.
+9. Monitoring, alerts, or runbook updates where relevant.
+10. Risks, follow-ups, or known gaps.
 
 ## Required Prompt Shape for Future AI Agents
 
@@ -604,6 +609,37 @@ This phase is not cosmetic cleanup only. It is part of product quality.
 
 ---
 
+## Cross-Cutting Production Readiness Track
+
+This work is required before production release even if the feature phases are complete.
+
+### Goal
+
+Make the owner upgrade safe to launch, observe, support, and recover in production.
+
+### Scope
+
+- rehearse risky migrations and backfills on production-like data
+- define rollback or containment plans for organization, attendance, and finance changes
+- add dashboards and alerts for scheduled jobs and owner-critical failures
+- document runbooks for invite repair, branch access repair, attendance correction, failed exports, and month-close adjustments
+- verify attachment storage, audit logging, and RLS behavior for new owner domains
+- define rollout controls such as feature flags, staged enablement, or guarded release sequencing
+
+### Completion Definition
+
+- critical migrations and backfills were rehearsed before production
+- the team can detect failed finance jobs, branch-access failures, and invite failures quickly
+- at least one safe recovery path exists for each critical owner workflow introduced by this plan
+- support runbooks exist for the most likely operational failures
+- launch can be gated by explicit production checks instead of assumption
+
+### PM Note to AI Agent
+
+Do not treat production readiness as someone else's cleanup phase after feature delivery. It is part of the implementation contract.
+
+---
+
 ## Suggested Agent Work Packages
 
 Each phase should be broken into small agent tickets. Recommended ticket size:
@@ -622,6 +658,9 @@ Avoid assigning one giant ticket that touches every domain at once.
 - mobile layout checked
 - happy path manually verified
 - one regression check on customer ordering flow
+- logging, alert, and job-monitoring impact reviewed for the changed area
+- rollback, backfill, or recovery path noted for risky data changes
+- reconciliation check added when money, attendance, or scheduled jobs are touched
 - docs updated
 
 ## Release Gate Before Production
@@ -633,6 +672,11 @@ Do not release the owner upgrade until these are true:
 - monthly finance numbers are internally consistent
 - attendance approval flow is clear
 - branch managers can operate without founder intervention for daily tasks
+- staging rehearsal covered multi-branch founders, manager scope, invite flow, attendance approval, purchases, and month-end export
+- risky migrations or backfills were rehearsed and have a rollback or containment plan
+- alerts exist for failed scheduled jobs, failed exports, and owner-critical authorization failures
+- support runbooks exist for invite repair, branch access repair, attendance correction, and month-close correction
+- finance snapshot outputs were reconciled against sample branch data before launch
 
 ## First Agent Starting Order
 

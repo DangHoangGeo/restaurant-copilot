@@ -172,6 +172,18 @@ flowchart TD
 
 These snapshot tables are important for stable reporting, accountant exports, and AI-agent maintainability.
 
+## Production Safety Rules
+
+The organization and branch foundation should also be designed for safe rollout and safe recovery.
+
+- organization and branch migrations must include backfill and reconciliation steps for existing single-restaurant data
+- member role changes, branch scope changes, and active-branch changes must be audit logged
+- destructive menu copy actions should produce durable operation logs and post-copy validation results
+- month-end finance snapshots should become immutable after close; any correction should happen through an explicit reopen or adjustment workflow
+- destructive branch or menu actions should always have a confirmation step and a documented recovery path
+
+Without these rules, the product may be functionally correct in development but still risky to operate in production.
+
 ## Mobile-First Owner Design Rules
 
 - default to one clear branch picker

@@ -17,6 +17,8 @@ The customer menu ordering flow is already working well and should be preserved 
 - Keep the UI mobile-first and simple for busy restaurant owners and managers.
 - Keep language preference separate from business-country rules.
 - Prefer foundations that AI agents can extend and maintain safely.
+- Treat production readiness as part of the foundation work, not a final cleanup step.
+- Require rollout, monitoring, and rollback thinking in every phase that changes data, permissions, finance, jobs, or owner-critical workflows.
 
 ## Archive
 
