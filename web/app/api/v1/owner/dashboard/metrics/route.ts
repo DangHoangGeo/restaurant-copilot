@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
+import {
+  mapInventoryRowsToLowStockItems,
+  type InventoryLowStockRow,
+} from '@/lib/server/dashboard/low-stock';
+import {
+  DEFAULT_RESTAURANT_TIMEZONE,
+  getLocalDateString,
+  getLocalDayRange,
+} from '@/lib/server/dashboard/dates';
 
 export interface DashboardMetrics {
   todaySales: number;
@@ -17,16 +26,26 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const today = new Date().toISOString().split("T")[0];
     const restaurantId = user.restaurantId;
+
+    // Use the restaurant's local day so JST shops don't lose late-night sales
+    // to the next UTC day. Defaults to Asia/Tokyo for Phase 0 launch markets.
+    const { data: restaurantRow } = await supabaseAdmin
+      .from('restaurants')
+      .select('timezone')
+      .eq('id', restaurantId)
+      .maybeSingle();
+    const timezone: string = restaurantRow?.timezone ?? DEFAULT_RESTAURANT_TIMEZONE;
+    const today = getLocalDateString(timezone);
+    const todayRange = getLocalDayRange(today, timezone);
 
     // 1. Today's Total Sales
     const { data: salesData, error: salesError } = await supabaseAdmin
       .from('orders')
       .select('total_amount')
       .eq('restaurant_id', restaurantId)
-      .gte('created_at', `${today}T00:00:00.000Z`)
-      .lte('created_at', `${today}T23:59:59.999Z`)
+      .gte('created_at', todayRange.start)
+      .lte('created_at', todayRange.end)
       .eq('status', 'completed');
 
     if (salesError) throw salesError;
@@ -45,15 +64,15 @@ export async function GET() {
     let topSellerToday: { name: string; metricValue: string } | null = null;
     try {
       const { data: topSellerData, error: topSellerError } = await supabaseAdmin
-        .rpc('get_top_sellers_7days', { 
-          restaurant_id_input: restaurantId,
-          days_input: 1  // Just today
+        .rpc('get_top_seller_for_day', {
+          p_restaurant_id: restaurantId,
+          p_date: today,
         });
 
       if (!topSellerError && topSellerData && topSellerData.length > 0) {
         const topItem = topSellerData[0];
         topSellerToday = { 
-          name: topItem.item_name, 
+          name: topItem.name_en || topItem.name_ja || topItem.name_vi || 'Unknown Item',
           metricValue: `${topItem.total_sold} sold` 
         };
       }
@@ -68,8 +87,8 @@ export async function GET() {
           orders!inner (created_at, restaurant_id)
         `)
         .eq('orders.restaurant_id', restaurantId)
-        .gte('orders.created_at', `${today}T00:00:00.000Z`)
-        .lte('orders.created_at', `${today}T23:59:59.999Z`)
+        .gte('orders.created_at', todayRange.start)
+        .lte('orders.created_at', todayRange.end)
         .limit(50);
 
       if (!topSellerError && topSellerRaw && topSellerRaw.length > 0) {
@@ -110,12 +129,14 @@ export async function GET() {
       try {
         const { data: lowStockData, error: lowStockError } = await supabaseAdmin
           .from('inventory_items')
-          .select('id, stock_level, threshold')
-          .eq('restaurant_id', restaurantId);
+          .select('id, stock_level, threshold, menu_items(name_en, name_ja, name_vi, categories(name_en, name_ja, name_vi))')
+          .eq('restaurant_id', restaurantId)
+          .not('stock_level', 'is', null)
+          .not('threshold', 'is', null);
         
         if (!lowStockError && lowStockData) {
-          lowStockItemsCount = lowStockData.filter(item => 
-            item.stock_level <= (item.threshold || 5)
+          lowStockItemsCount = mapInventoryRowsToLowStockItems(
+            lowStockData as InventoryLowStockRow[]
           ).length;
         }
       } catch (error) {

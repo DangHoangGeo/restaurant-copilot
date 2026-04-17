@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-
-export interface LowStockItem {
-  id: string;
-  name: string;
-  stock_level: number;
-  threshold: number;
-  category: string;
-  severity: 'critical' | 'warning' | 'low';
-  price?: number;
-}
+import {
+  mapInventoryRowsToLowStockItems,
+  type DashboardLowStockItem,
+  type InventoryLowStockRow,
+} from '@/lib/server/dashboard/low-stock';
 
 export async function GET() {
   try {
@@ -54,46 +49,9 @@ export async function GET() {
       item => item.stock_level < item.threshold
     );
 
-    const processedItems: LowStockItem[] = belowThreshold.map(item => {
-      const menuItem = Array.isArray(item.menu_items) ? item.menu_items[0] : item.menu_items;
-      const stockRatio = item.threshold > 0 ? item.stock_level / item.threshold : 0;
-
-      let severity: 'critical' | 'warning' | 'low';
-      if (stockRatio <= 0.2) {
-        severity = 'critical';
-      } else if (stockRatio <= 0.5) {
-        severity = 'warning';
-      } else {
-        severity = 'low';
-      }
-
-      const cats = Array.isArray(menuItem?.categories) ? menuItem.categories : [menuItem?.categories];
-      const category =
-        cats[0]?.name_en || cats[0]?.name_ja || cats[0]?.name_vi || 'Unknown';
-
-      const name =
-        menuItem?.name_en || menuItem?.name_ja || menuItem?.name_vi || 'Unknown';
-
-      return {
-        id: item.id,
-        name,
-        stock_level: item.stock_level,
-        threshold: item.threshold,
-        category,
-        severity,
-        price: menuItem?.price,
-      };
-    });
-
-    // Sort by severity (critical first), then by stock ratio ascending
-    processedItems.sort((a, b) => {
-      const severityOrder = { critical: 0, warning: 1, low: 2 };
-      const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
-      if (severityDiff !== 0) return severityDiff;
-      const ratioA = a.threshold > 0 ? a.stock_level / a.threshold : 0;
-      const ratioB = b.threshold > 0 ? b.stock_level / b.threshold : 0;
-      return ratioA - ratioB;
-    });
+    const processedItems: DashboardLowStockItem[] = mapInventoryRowsToLowStockItems(
+      belowThreshold as InventoryLowStockRow[]
+    );
 
     return NextResponse.json({
       success: true,

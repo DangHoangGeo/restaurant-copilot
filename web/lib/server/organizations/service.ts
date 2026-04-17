@@ -52,6 +52,7 @@ export async function resolveOrgContext(): Promise<OrgContext | null> {
     .select('*, owner_organizations(*)')
     .eq('user_id', supabaseUser.id)
     .eq('is_active', true)
+    .order('created_at', { ascending: true })
     .limit(1)
     .single();
 

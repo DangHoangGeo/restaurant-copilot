@@ -4,6 +4,18 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { createApiSuccess, handleApiError } from '@/lib/server/apiError';
 import { randomUUID } from 'crypto';
+import {
+  mapInventoryRowsToLowStockItems,
+  type DashboardLowStockItem,
+  type InventoryLowStockRow,
+} from '@/lib/server/dashboard/low-stock';
+import {
+  DEFAULT_RESTAURANT_TIMEZONE,
+  bucketToLocalDate,
+  getLocalDateRange,
+  getLocalDateString,
+  getLocalDayRange,
+} from '@/lib/server/dashboard/dates';
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -36,13 +48,7 @@ export interface AggregateDashboardData {
     date: string;
     sales: number;
   }>;
-  lowStockItems: Array<{
-    id: string;
-    name: string;
-    currentStock: number;
-    threshold: number;
-    stockLevel: 'critical' | 'low';
-  }>;
+  lowStockItems: DashboardLowStockItem[];
 }
 
 export async function GET() {
@@ -59,8 +65,24 @@ export async function GET() {
     }
 
     const restaurantId = user.restaurantId;
-    const today = new Date().toISOString().split("T")[0];
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+    // Dashboard numbers are bucketed by the restaurant's local day, not UTC,
+    // so a JST shop that closes at 23:30 doesn't lose the last 9 hours of sales
+    // to the next day. Phase 0 defaults to Asia/Tokyo; later phases will read
+    // the per-branch timezone from the restaurants table.
+    const { data: restaurantRow } = await supabaseAdmin
+      .from('restaurants')
+      .select('timezone')
+      .eq('id', restaurantId)
+      .maybeSingle();
+    const timezone: string = restaurantRow?.timezone ?? DEFAULT_RESTAURANT_TIMEZONE;
+    const today = getLocalDateString(timezone);
+    const todayRange = getLocalDayRange(today, timezone);
+    const last7Dates = getLocalDateRange(today, 7);
+    const weekRange = {
+      start: getLocalDayRange(last7Dates[0], timezone).start,
+      end: todayRange.end,
+    };
 
     // Execute all data fetches in parallel for better performance
     const [
@@ -72,13 +94,13 @@ export async function GET() {
       lowStockData,
       topSellerData
     ] = await Promise.allSettled([
-      // 1. Today's sales
+      // 1. Today's sales (restaurant-local day)
       supabaseAdmin
         .from('orders')
         .select('total_amount')
         .eq('restaurant_id', restaurantId)
-        .gte('created_at', `${today}T00:00:00.000Z`)
-        .lte('created_at', `${today}T23:59:59.999Z`)
+        .gte('created_at', todayRange.start)
+        .lte('created_at', todayRange.end)
         .eq('status', 'completed'),
 
       // 2. Active orders count
@@ -115,23 +137,27 @@ export async function GET() {
         p_limit: 5,
       }),
 
-      // 5. Sales over time (last 7 days)
+      // 5. Sales over time (last 7 local days)
       supabaseAdmin
         .from('orders')
         .select('total_amount, created_at')
         .eq('restaurant_id', restaurantId)
         .eq('status', 'completed')
-        .gte('created_at', `${sevenDaysAgo}T00:00:00.000Z`)
-        .lte('created_at', `${today}T23:59:59.999Z`)
+        .gte('created_at', weekRange.start)
+        .lte('created_at', weekRange.end)
         .order('created_at', { ascending: true }),
 
       // 6. Low stock items (if enabled)
       // inventory_items has no name column; join menu_items to get localised names.
+      // Skip rows with null stock_level / threshold to keep the payload tight —
+      // mapInventoryRowsToLowStockItems would filter them anyway.
       FEATURE_FLAGS.lowStockAlerts
         ? supabaseAdmin
             .from('inventory_items')
-            .select('id, stock_level, threshold, menu_items!inner(name_ja, name_en, name_vi)')
+            .select('id, stock_level, threshold, menu_items!inner(name_ja, name_en, name_vi, price, categories(name_en, name_ja, name_vi))')
             .eq('restaurant_id', restaurantId)
+            .not('stock_level', 'is', null)
+            .not('threshold', 'is', null)
         : Promise.resolve({ data: [], error: null }),
 
       // 7. Top seller today - using RPC
@@ -171,21 +197,21 @@ export async function GET() {
       }))
       : [];
 
-    // Process sales over time
+    // Process sales over time, bucketed into the restaurant's local days.
     const salesOverTime = salesOverTimeData.status === 'fulfilled' && salesOverTimeData.value.data
       ? (() => {
           const dailySales: Record<string, number> = {};
-          
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-            const dateStr = date.toISOString().split('T')[0];
-            dailySales[dateStr] = 0;
+
+          // Seed every local day in the window with 0 so the chart renders even
+          // when a day has no sales.
+          for (const d of last7Dates) {
+            dailySales[d] = 0;
           }
 
           salesOverTimeData.value.data.forEach(order => {
-            const date = new Date(order.created_at).toISOString().split('T')[0];
-            if (dailySales.hasOwnProperty(date)) {
-              dailySales[date] += order.total_amount || 0;
+            const localDay = bucketToLocalDate(order.created_at, timezone);
+            if (Object.prototype.hasOwnProperty.call(dailySales, localDay)) {
+              dailySales[localDay] += order.total_amount || 0;
             }
           });
 
@@ -198,26 +224,7 @@ export async function GET() {
 
     // Process low stock items
     const lowStockItems = lowStockData.status === 'fulfilled' && lowStockData.value.data
-      ? lowStockData.value.data
-          .filter(item => item.stock_level < (item.threshold ?? 5))
-          .map(item => {
-            const mi = Array.isArray(item.menu_items) ? item.menu_items[0] : item.menu_items;
-            const name = (mi as { name_en?: string; name_ja?: string; name_vi?: string } | null)?.name_en
-              || (mi as { name_en?: string; name_ja?: string; name_vi?: string } | null)?.name_ja
-              || (mi as { name_en?: string; name_ja?: string; name_vi?: string } | null)?.name_vi
-              || 'Unknown';
-            const threshold = item.threshold ?? 5;
-            return {
-              id: item.id,
-              name,
-              currentStock: item.stock_level,
-              threshold,
-              stockLevel: item.stock_level <= Math.floor(threshold / 2)
-                ? 'critical' as const
-                : 'low' as const,
-            };
-          })
-          .slice(0, 5)
+      ? mapInventoryRowsToLowStockItems(lowStockData.value.data as InventoryLowStockRow[]).slice(0, 5)
       : [];
 
     // Process top seller today from RPC
