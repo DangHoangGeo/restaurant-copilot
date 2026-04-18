@@ -12,25 +12,30 @@ struct CategoryFilterChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack {            Text(title)
-                .font(.captionBold)
-                .fontWeight(.medium)
+            HStack(spacing: Spacing.xs) {
+                Text(title)
+                    .font(.captionBold)
+                    .fontWeight(.medium)
 
                 if count > 0 {
                     Text("\(count)")
                         .font(.captionBold)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding(Spacing.xxs)
-                        .background(color)
-                        .clipShape(Circle())
+                        .foregroundColor(isSelected ? .appOnHighlight : color)
+                        .padding(.horizontal, Spacing.xs)
+                        .padding(.vertical, 3)
+                        .background((isSelected ? Color.white.opacity(0.16) : color.opacity(0.12)))
+                        .cornerRadius(CornerRadius.sm)
                 }
             }
             .padding(.horizontal, Spacing.md)
-            .padding(.vertical, 6)
-            .background(isSelected ? color.opacity(0.8) : Color.appSurface)
-            .foregroundColor(isSelected ? .white : .appTextPrimary)
+            .padding(.vertical, 8)
+            .background(isSelected ? color : Color.appSurface)
+            .foregroundColor(isSelected ? .appOnHighlight : .appTextPrimary)
             .cornerRadius(CornerRadius.md)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .stroke(isSelected ? color.opacity(0.18) : Color.appBorderLight, lineWidth: 1)
+            )
         }
         .accessibilityLabel(accessibilityLabelText)
         .accessibilityValue(accessibilityValueText)
@@ -347,7 +352,8 @@ struct StatusColumnsView: View {
             .background(Color.appWarning.opacity(0.05))
             .cornerRadius(CornerRadius.md)
         }
-        .padding()
+        .padding(.horizontal, Spacing.md)
+        .padding(.bottom, Spacing.md)
     }
 }
 
@@ -390,41 +396,56 @@ struct CompactKitchenItemCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             // Item name - always visible
-            
-            HStack {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-					HStack {
-						Text(timeAgoText)
-							.font(.captionRegular)
-							.foregroundColor(timeColor)
-							.padding(.vertical, Spacing.xxs)
-							.padding(.horizontal, Spacing.xs)
-							.background(timeColor.opacity(0.1))
-							.cornerRadius(CornerRadius.xs)
 
-						Text(item.itemName)
-							.font(.sectionHeader)
-							.lineLimit(2)
-							.multilineTextAlignment(.leading)
-							.fixedSize(horizontal: false, vertical: true)
-					}
+            HStack(alignment: .top, spacing: Spacing.sm) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    HStack(spacing: Spacing.xs) {
+                        Text(timeAgoText)
+                            .font(.captionRegular)
+                            .foregroundColor(timeColor)
+                            .padding(.vertical, Spacing.xxs)
+                            .padding(.horizontal, Spacing.xs)
+                            .background(timeColor.opacity(0.1))
+                            .cornerRadius(CornerRadius.xs)
+
+                        Text(item.status.displayName.uppercased())
+                            .font(.monoCaption)
+                            .foregroundColor(statusColor)
+                            .padding(.vertical, Spacing.xxs)
+                            .padding(.horizontal, Spacing.xs)
+                            .background(statusColor.opacity(0.12))
+                            .cornerRadius(CornerRadius.xs)
+                    }
+
+                    Text(item.itemName)
+                        .font(.sectionHeader)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+
                     // Size if available
                     if let size = item.size {
                         Text("kitchen_size".localized + " \(size)")
-                            .font(.bodyMedium)
+                            .font(.caption)
                             .foregroundColor(.appTextSecondary)
                     }
                 }
                 
                 Spacer()
                 
-                Text("×\(item.quantity)")
-                    .font(.sectionHeader)
-                    .foregroundColor(.appWarning)
-                    .padding(.horizontal, Spacing.md)
-                    .padding(.vertical, Spacing.sm)
-                    .background(Color.appWarning.opacity(0.1))
-                    .cornerRadius(CornerRadius.md)
+                VStack(alignment: .trailing, spacing: Spacing.xxs) {
+                    Text("QTY")
+                        .font(.monoCaption)
+                        .foregroundColor(.appTextSecondary)
+
+                    Text("×\(item.quantity)")
+                        .font(.cardTitle)
+                        .foregroundColor(.appWarning)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.vertical, Spacing.sm)
+                        .background(Color.appWarning.opacity(0.1))
+                        .cornerRadius(CornerRadius.md)
+                }
             }
             
             // Tables - compact display
@@ -477,16 +498,16 @@ struct CompactKitchenItemCard: View {
                 .background(statusColor.opacity(0.1))
                 .cornerRadius(CornerRadius.sm)
             }
+            .buttonStyle(.plain)
         }
         .padding(Spacing.md)
         .frame(minHeight: 160)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.appSurface)
         .cornerRadius(CornerRadius.md)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(priorityBorderColor, lineWidth: item.priority >= KitchenBoardConfig.urgentThreshold ? 2 : 0.5)
+                .stroke(priorityBorderColor, lineWidth: item.priority >= KitchenBoardConfig.urgentThreshold ? 2 : 1)
         )
         .onTapGesture {
             onDetailTap()

@@ -15,10 +15,6 @@ struct TablesListView: View {
         return viewModel.tables.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
     }
 
-    private var availableCount: Int {
-        viewModel.tables.filter { orderManager.operationalStatus(for: $0) == .available }.count
-    }
-
     var body: some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
@@ -40,7 +36,7 @@ struct TablesListView: View {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     headerSection
                     SearchBar(text: $searchText, placeholder: "tables_search_placeholder".localized)
-                    statsSection
+                    printerHintSection
                     bodySection
                 }
                 .padding(.horizontal, Spacing.md)
@@ -81,6 +77,10 @@ struct TablesListView: View {
                     Text("tables_title".localized)
                         .font(.heroTitle)
                         .foregroundColor(.appTextPrimary)
+
+                    Text("tables_floor_control_subtitle".localized)
+                        .font(.bodyMedium)
+                        .foregroundColor(.appTextSecondary)
                 }
 
                 Spacer()
@@ -90,11 +90,26 @@ struct TablesListView: View {
         }
     }
 
-    private var statsSection: some View {
-        HStack(spacing: Spacing.md) {
-            AppMetricCard(title: "tables", value: "\(viewModel.tables.count)", tint: .appHighlight)
-            AppMetricCard(title: "available", value: "\(availableCount)", tint: .appSuccess)
-            AppMetricCard(title: "qr", value: "print", tint: .appInfo)
+    @ViewBuilder
+    private var printerHintSection: some View {
+        if !printerManager.isConnected {
+            HStack(alignment: .top, spacing: Spacing.sm) {
+                Image(systemName: "printer.dotmatrix")
+                    .foregroundColor(.appWarning)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text("tables_print_printer_disconnected".localized)
+                        .font(.bodyMedium.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
+
+                    Text("tables_floor_printer_hint".localized)
+                        .font(.caption)
+                        .foregroundColor(.appTextSecondary)
+                }
+
+                Spacer()
+            }
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
         }
     }
 
@@ -139,45 +154,61 @@ struct TableRowView: View {
     let onPrintQR: () -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: Spacing.md) {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                HStack(spacing: Spacing.sm) {
-                    Text(table.name)
-                        .font(.cardTitle)
-                        .foregroundColor(.appTextPrimary)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    HStack(spacing: Spacing.sm) {
+                        Text(table.name)
+                            .font(.cardTitle)
+                            .foregroundColor(.appTextPrimary)
 
-                    Text(operationalStatus.displayName.uppercased())
-                        .font(.captionBold)
-                        .foregroundColor(statusColor)
-                        .padding(.horizontal, Spacing.sm)
-                        .padding(.vertical, 4)
-                        .background(statusColor.opacity(0.16))
-                        .cornerRadius(CornerRadius.sm)
+                        Text(operationalStatus.displayName.uppercased())
+                            .font(.captionBold)
+                            .foregroundColor(statusColor)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, 4)
+                            .background(statusColor.opacity(0.16))
+                            .cornerRadius(CornerRadius.sm)
+                    }
+
+                    HStack(spacing: Spacing.sm) {
+                        tableMetaPill(
+                            icon: "person.2",
+                            text: String(format: "tables_capacity_format".localized, table.capacity)
+                        )
+
+                        if table.qr_code != nil {
+                            tableMetaPill(icon: "qrcode", text: "tables_qr_ready".localized)
+                        }
+                    }
+
+                    if let notes = table.notes, !notes.isEmpty {
+                        Text(notes)
+                            .font(.caption)
+                            .foregroundColor(.appTextSecondary)
+                            .lineLimit(2)
+                    }
                 }
 
-                Text("SEATS • \(table.capacity)")
-                    .font(.monoCaption)
-                    .foregroundColor(.appTextSecondary)
-            }
+                Spacer()
 
-            Spacer()
-
-            Button(action: onPrintQR) {
-                VStack(spacing: Spacing.xs) {
-                    Image(systemName: "qrcode")
-                        .font(.system(size: 22, weight: .medium))
-                    Text("tables_print_qr".localized)
-                        .font(.buttonSmall)
+                Button(action: onPrintQR) {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "qrcode")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("tables_print_qr".localized)
+                            .font(.buttonSmall)
+                    }
+                    .foregroundColor(.appTextPrimary)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.md)
+                    .background(Color.appSurfaceSecondary)
+                    .cornerRadius(CornerRadius.md)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.md)
+                            .stroke(Color.appBorderLight, lineWidth: 1)
+                    )
                 }
-                .foregroundColor(.appTextPrimary)
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, Spacing.md)
-                .background(Color.appSurfaceSecondary)
-                .cornerRadius(CornerRadius.md)
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.md)
-                        .stroke(Color.appBorderLight, lineWidth: 1)
-                )
             }
         }
         .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.lg)
@@ -185,6 +216,19 @@ struct TableRowView: View {
 
     private var statusColor: Color {
         operationalStatus.statusColor
+    }
+
+    private func tableMetaPill(icon: String, text: String) -> some View {
+        HStack(spacing: Spacing.xxs) {
+            Image(systemName: icon)
+            Text(text)
+        }
+        .font(.monoCaption)
+        .foregroundColor(.appTextSecondary)
+        .padding(.horizontal, Spacing.sm)
+        .padding(.vertical, Spacing.xs)
+        .background(Color.appSurfaceSecondary)
+        .cornerRadius(CornerRadius.sm)
     }
 }
 

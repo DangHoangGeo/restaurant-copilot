@@ -54,13 +54,13 @@ struct PrintJob: Identifiable, Codable {
         var displayName: String {
             switch self {
             case .kitchenOrder:
-                return "Kitchen Order"
+                return "print_queue_job_type_kitchen_order".localized
             case .customerReceipt:
-                return "Customer Receipt"
+                return "print_queue_job_type_customer_receipt".localized
             case .testReceipt:
-                return "Test Receipt"
+                return "print_queue_job_type_test_receipt".localized
             case .kitchenTest:
-                return "Kitchen Test"
+                return "print_queue_job_type_kitchen_test".localized
             }
         }
     }
