@@ -21,9 +21,15 @@ interface AdminLayoutClientProps {
     owner_photo_url?: string | null;
   };
   locale: string ;
+  ownerControlHref?: string | null;
 }
 
-export function AdminLayoutClient({ children, restaurantSettings, locale }: AdminLayoutClientProps) {
+export function AdminLayoutClient({
+  children,
+  restaurantSettings,
+  locale,
+  ownerControlHref,
+}: AdminLayoutClientProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedLocale, setSelectedLocale] = useState(locale);
 
@@ -89,6 +95,7 @@ export function AdminLayoutClient({ children, restaurantSettings, locale }: Admi
             restaurantSettings={restaurantSettings}
             currentLocale={selectedLocale}
             onLocaleChange={setSelectedLocale}
+            ownerControlHref={ownerControlHref}
           />
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8 pb-20">
             {children}

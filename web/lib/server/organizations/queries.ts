@@ -191,6 +191,7 @@ export async function listOrganizationBranches(
         address: r.address ?? null,
         phone: r.phone ?? null,
         email: r.email ?? null,
+        onboarded: r.onboarded ?? null,
       },
     ];
   });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ interface BranchScopedLinkButtonProps {
   variant?: 'default' | 'primary' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
+  openInNewTab?: boolean;
 }
 
 export function BranchScopedLinkButton({
@@ -21,13 +22,15 @@ export function BranchScopedLinkButton({
   variant = 'outline',
   size = 'sm',
   className,
+  openInNewTab = false,
 }: BranchScopedLinkButtonProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   async function handleClick() {
     setHasError(false);
+    setIsLoading(true);
 
     try {
       const response = await fetch('/api/v1/owner/organization/active-branch', {
@@ -44,12 +47,17 @@ export function BranchScopedLinkButton({
     } catch (error) {
       console.error('Branch switch failed', error);
       setHasError(true);
+      setIsLoading(false);
       return;
     }
 
-    startTransition(() => {
-      router.push(href);
-    });
+    if (openInNewTab) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+      setIsLoading(false);
+      return;
+    }
+
+    router.push(href);
   }
 
   return (
@@ -59,9 +67,9 @@ export function BranchScopedLinkButton({
       size={size}
       className={className}
       onClick={handleClick}
-      disabled={isPending}
+      disabled={isLoading}
     >
-      {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
       {label}
     </Button>
   );

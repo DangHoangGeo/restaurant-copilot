@@ -44,3 +44,26 @@ export async function resolvePurchasingAccess(): Promise<PurchasingAccess | null
     canWrite: authz.can('purchases'),
   };
 }
+
+export async function resolveScopedBranchPurchasingAccess(
+  restaurantId: string
+): Promise<PurchasingAccess | null> {
+  const ctx = await resolveOrgContext();
+  const authz = buildAuthorizationService(ctx);
+  if (!ctx || !authz) return null;
+
+  if (!authz.canAccessRestaurant(restaurantId)) return null;
+
+  const canRead =
+    authz.can('purchases') ||
+    authz.can('reports') ||
+    authz.can('finance_exports');
+
+  if (!canRead) return null;
+
+  return {
+    restaurantId,
+    userId: ctx.member.user_id,
+    canWrite: authz.can('purchases'),
+  };
+}

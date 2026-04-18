@@ -1,25 +1,23 @@
-// GET /api/v1/owner/finance/monthly/export
-//
-// Downloads a CSV export of the monthly finance report for accountant handoff.
-// Uses a closed snapshot if available; otherwise exports the current live totals.
-//
-// Query params (optional):
-//   year  — 4-digit year  (defaults to current Japan-local year)
-//   month — 1–12          (defaults to current Japan-local month)
-//
-// Authorization: owner or manager role required.
-
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveFinanceAccess } from '@/lib/server/finance/access';
-import { getMonthlyReport, parseYearMonth, buildExportCsv } from '@/lib/server/finance/service';
+import {
+  buildExportCsv,
+  getMonthlyReport,
+  parseYearMonth,
+} from '@/lib/server/finance/service';
+import { resolveScopedBranchFinanceAccess } from '@/lib/server/finance/access';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 function sanitizeFilenamePart(value: string): string {
   return value.replace(/[^\p{L}\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '') || 'branch';
 }
 
-export async function GET(req: NextRequest) {
-  const access = await resolveFinanceAccess();
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ branchId: string }> }
+) {
+  const { branchId } = await params;
+  const access = await resolveScopedBranchFinanceAccess(branchId);
+
   if (!access) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -37,8 +35,8 @@ export async function GET(req: NextRequest) {
       searchParams.get('month')
     ));
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Invalid parameters';
-    return NextResponse.json({ error: msg }, { status: 400 });
+    const message = err instanceof Error ? err.message : 'Invalid parameters';
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
   try {
@@ -53,7 +51,6 @@ export async function GET(req: NextRequest) {
 
     const restaurantName = (restaurantRow.data?.name as string | null) ?? 'Branch';
     const csv = buildExportCsv(report, restaurantName);
-
     const mm = String(month).padStart(2, '0');
     const filename = `finance_${year}_${mm}_${sanitizeFilenamePart(restaurantName)}.csv`;
 
@@ -65,7 +62,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Failed to export report';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    const message = err instanceof Error ? err.message : 'Failed to export report';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

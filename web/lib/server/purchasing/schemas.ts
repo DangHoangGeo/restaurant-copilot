@@ -81,15 +81,32 @@ export const UpdatePurchaseOrderSchema = z.object({
 // ─── Expense ──────────────────────────────────────────────
 
 export const expenseCategoryValues = [
-  'food',
-  'transport',
+  'taxes_and_dues',
+  'shipping',
   'utilities',
+  'travel',
+  'communication',
+  'advertising',
+  'entertainment',
+  'insurance',
+  'repairs',
+  'supplies',
+  'welfare',
+  'payroll',
+  'outsourcing',
+  'interest',
+  'rent',
+  'bad_debt',
+  'miscellaneous',
+  // legacy values kept for compatibility with existing rows
+  'transport',
   'maintenance',
+  'food',
   'other',
 ] as const;
 
 export const CreateExpenseSchema = z.object({
-  category:     z.enum(expenseCategoryValues).default('other'),
+  category:     z.enum(expenseCategoryValues).default('miscellaneous'),
   description:  z.string().min(1).max(500),
   amount:       z.number().positive(),
   currency:     z.string().length(3).default('JPY'),

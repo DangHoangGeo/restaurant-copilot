@@ -1,15 +1,15 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { ControlMoneyClient } from '@/components/features/admin/control/control-money-client';
-import { resolveFounderControlContext } from '@/lib/server/control/access';
-import { resolveFinanceAccess } from '@/lib/server/finance/access';
-import {
-  getMonthlyReport,
-  getMonthlyRollupForBranches,
-  listMonthlySnapshots,
-  parseYearMonth,
-} from '@/lib/server/finance/service';
+import { resolveOrganizationFinanceAccess } from '@/lib/server/finance/access';
+import { getOrganizationFinancePeriodReport } from '@/lib/server/finance/organization';
+import { parseYearMonth } from '@/lib/server/finance/service';
+import type { FinancePeriodType } from '@/lib/server/finance/types';
 import { listOrganizationBranches } from '@/lib/server/organizations/queries';
+
+function parsePeriodType(value: string | undefined): FinancePeriodType {
+  return value === 'quarter' ? 'quarter' : 'month';
+}
 
 export async function generateMetadata({
   params,
@@ -17,8 +17,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'owner.control' });
-  return { title: t('money.title') };
+  const t = await getTranslations({ locale, namespace: 'owner.finance' });
+  return { title: t('company.pageTitle') };
 }
 
 export default async function ControlMoneyPage({
@@ -26,17 +26,18 @@ export default async function ControlMoneyPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ year?: string; month?: string }>;
+  searchParams: Promise<{
+    year?: string;
+    month?: string;
+    period?: string;
+    restaurantId?: string;
+  }>;
 }) {
   const { locale } = await params;
   const sp = await searchParams;
+  const access = await resolveOrganizationFinanceAccess();
 
-  const [ctx, access] = await Promise.all([
-    resolveFounderControlContext(),
-    resolveFinanceAccess(),
-  ]);
-
-  if (!ctx || !access) {
+  if (!access) {
     redirect(`/${locale}/control/overview`);
   }
 
@@ -48,41 +49,30 @@ export default async function ControlMoneyPage({
     redirect(`/${locale}/control/finance`);
   }
 
-  const allBranches = await listOrganizationBranches(ctx.organization.id);
-  const accessibleBranches = allBranches.filter((branch) =>
-    ctx.accessibleRestaurantIds.includes(branch.id)
-  );
-  const accessibleBranchIds = accessibleBranches.map((branch) => branch.id);
-
-  const [rollup, report, history] = await Promise.all([
-    getMonthlyRollupForBranches({
-      branchIds: accessibleBranchIds,
-      year,
-      month,
-    }),
-    getMonthlyReport(access.restaurantId, year, month, access.currency).catch(() => null),
-    listMonthlySnapshots(access.restaurantId, 12).catch(() => []),
-  ]);
-
-  const snapshotByBranch = new Map(
-    rollup.snapshots.map((snapshot) => [snapshot.restaurant_id, snapshot])
-  );
-
-  const branchSummaries = accessibleBranches.map((branch) => {
-    const snapshot = snapshotByBranch.get(branch.id);
-
-    return {
-      restaurantId: branch.id,
+  const periodType = parsePeriodType(sp.period);
+  const allBranches = await listOrganizationBranches(access.organizationId);
+  const branches = allBranches
+    .filter((branch) => access.accessibleRestaurantIds.includes(branch.id))
+    .map((branch) => ({
+      id: branch.id,
       name: branch.name,
       subdomain: branch.subdomain,
-      hasClosedSnapshot: Boolean(snapshot),
-      revenueTotal: snapshot?.revenue_total ?? 0,
-      discountTotal: snapshot?.discount_total ?? 0,
-      approvedLaborHours: snapshot?.approved_labor_hours ?? 0,
-      combinedCostTotal: snapshot?.combined_cost_total ?? 0,
-      grossProfitEstimate: snapshot?.gross_profit_estimate ?? 0,
-      isActive: branch.id === access.restaurantId,
-    };
+    }));
+
+  const selectedRestaurantId =
+    sp.restaurantId && access.accessibleRestaurantIds.includes(sp.restaurantId)
+      ? sp.restaurantId
+      : null;
+
+  const report = await getOrganizationFinancePeriodReport({
+    organizationId: access.organizationId,
+    branchIds: access.accessibleRestaurantIds,
+    selectedRestaurantId,
+    year,
+    month,
+    periodType,
+    currency: access.currency,
+    locale,
   });
 
   return (
@@ -91,17 +81,13 @@ export default async function ControlMoneyPage({
       currency={access.currency}
       year={year}
       month={month}
-      branchCount={rollup.branch_count}
-      branchesWithSnapshot={rollup.branches_with_snapshot}
-      revenueTotal={rollup.revenue_total}
-      discountTotal={rollup.discount_total}
-      approvedLaborHours={rollup.approved_labor_hours}
-      combinedCostTotal={rollup.combined_cost_total}
-      grossProfitEstimate={rollup.gross_profit_estimate}
-      branches={branchSummaries}
+      periodType={periodType}
+      branches={branches}
       report={report}
-      history={history}
-      canClose={access.canClose}
+      canExport={access.canExport}
+      canViewIncome={access.canViewIncome}
+      canViewSpending={access.canViewSpending}
+      canManageExpenses={access.canManageExpenses}
     />
   );
 }

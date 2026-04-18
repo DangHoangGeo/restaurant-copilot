@@ -1,51 +1,193 @@
 {
   "pageTitle": "月次財務レポート",
-  "pageDescription": "売上・労働時間・コストの月次サマリー（会計士への引き継ぎ用）",
-
-  "statusLive": "ライブ（未確定）",
-  "statusClosed": "確定済み",
+  "pageDescription": "会計引き継ぎ用の月次売上・労働時間・コスト概要",
+  "statusLive": "ライブ（未締め）",
+  "statusClosed": "締め済み",
   "statusDraft": "下書き",
-
   "prevMonth": "前月",
   "nextMonth": "翌月",
   "noData": "この期間のデータがありません。",
-
-  "revenue": "売上合計",
-  "grossSales": "値引き前売上",
-  "discounts": "割引合計",
+  "revenue": "売上",
+  "grossSales": "総売上",
+  "discounts": "値引き",
   "netRevenue": "純売上",
-  "orderCount": "{count}件の注文",
-
-  "grossProfit": "粗利益（概算）",
-  "grossProfitHint": "売上 − コスト",
-
-  "totalCosts": "コスト合計",
+  "orderCount": "{count, plural, =0 {0件} one {1件} other {#件}}",
+  "grossProfit": "粗利益",
+  "grossProfitHint": "売上から値引きとコストを差し引いた値",
+  "totalCosts": "総コスト",
   "laborHours": "承認済み労働時間",
-  "laborEntries": "{count}件の記録",
-
+  "laborEntries": "{count, plural, =0 {0件} one {1件} other {#件}}",
   "purchaseOrders": "仕入発注",
   "otherExpenses": "その他経費",
-  "combinedCosts": "コスト合計",
-
+  "combinedCosts": "総コスト",
   "orders": "発注",
   "expenses": "経費",
-
-  "liveNotice": "合計は現在の実績に基づいており、月次締め前に変動することがあります。",
-
-  "notes": "会計士へのメモ",
-  "notesPlaceholder": "会計士・税理士へのメモ（任意）…",
-
-  "exportCsv": "CSVエクスポート",
-  "exporting": "エクスポート中…",
-  "exportError": "エクスポートに失敗しました。もう一度お試しください。",
-
+  "liveNotice": "合計はライブ計算のため、月次締めまでは変動する場合があります。",
+  "notes": "会計メモ",
+  "notesPlaceholder": "会計士・税理士向けメモ（任意）…",
+  "exportCsv": "CSVを書き出す",
+  "exporting": "書き出し中…",
+  "exportError": "書き出しに失敗しました。もう一度お試しください。",
   "closeMonth": "月次締め",
   "closeConfirmTitle": "この月を締めますか？",
-  "closeConfirmBody": "{period} を締めると、すべての合計が確定されます。この操作は元に戻せません。",
+  "closeConfirmBody": "{period} を締めると、集計値が固定されます。この操作は元に戻せません。",
   "confirmClose": "確定して締める",
-  "closing": "締め中…",
+  "closing": "締め処理中…",
   "cancel": "キャンセル",
   "closeError": "月次締めに失敗しました。もう一度お試しください。",
-
-  "recentSnapshots": "最近の月"
+  "recentSnapshots": "最近の月",
+  "ledger": {
+    "tabs": {
+      "summary": "概要",
+      "income": "収入",
+      "spending": "支出"
+    },
+    "summary": {
+      "expenseByCategory": "クイック経費のカテゴリ別",
+      "purchaseByCategory": "仕入発注のカテゴリ別",
+      "noExpenseCategories": "今月のクイック経費はまだありません。",
+      "noPurchaseCategories": "今月の仕入発注はまだありません。"
+    },
+    "income": {
+      "title": "収入サマリー",
+      "discountHint": "今月適用された値引き",
+      "grossSales": "総売上",
+      "discounts": "値引き",
+      "netSales": "純売上",
+      "completedOrders": "完了注文数",
+      "recentSales": "最近の売上",
+      "table": "テーブル",
+      "items": "品目数",
+      "amount": "金額",
+      "empty": "今月の完了売上はまだありません。",
+      "walkIn": "店内会計"
+    },
+    "spending": {
+      "title": "支出サマリー",
+      "purchaseOrders": "仕入発注",
+      "quickExpenses": "クイック経費",
+      "totalSpending": "総支出",
+      "totalCostsHint": "仕入発注とクイック経費の合計",
+      "categoryBreakdown": "クイック経費カテゴリ",
+      "noSpendCategories": "今月のクイック経費カテゴリはまだありません。"
+    }
+  },
+  "spending": {
+    "addExpenseTitle": "店舗経費を追加",
+    "addExpenseHint": "ここで店舗のクイック経費を記録できます。誰が追加したかは自動で保存されます。",
+    "dialogHint": "{branch} のクイック経費を記録します。記録者は監査用に自動保存されます。",
+    "auditHint": "店舗、記録者、記録時刻は自動で保存されます。",
+    "expenseSaved": "{branch} の経費を保存しました。",
+    "manageLocked": "ここで支出は確認できますが、現在のロールでは経費の追加や削除はできません。",
+    "expenseLedger": "経費台帳",
+    "purchaseLedger": "仕入台帳",
+    "recordedBy": "記録者",
+    "actions": "操作",
+    "emptyExpenses": "今月のクイック経費はまだありません。",
+    "emptyPurchases": "今月の仕入発注はまだありません。",
+    "unknownCreator": "不明"
+  },
+  "company": {
+    "sectionLabel": "会社財務",
+    "pageTitle": "会社財務",
+    "pageDescription": "まず会社全体を確認し、必要なときだけ店舗に絞って財務を読みます。",
+    "controls": {
+      "month": "月次",
+      "quarter": "四半期",
+      "previousPeriod": "前の期間",
+      "nextPeriod": "次の期間",
+      "branchFilter": "店舗フィルター",
+      "allBranches": "全店舗"
+    },
+    "stats": {
+      "netSalesExTax": "税抜売上",
+      "netSalesExTaxHint": "値引き後、支出前",
+      "salesTax": "推定消費税",
+      "salesTaxHint": "店舗税率設定から推定",
+      "totalSpend": "総支出",
+      "totalSpendHint": "仕入、店舗経費、共通経費を含む",
+      "branchSpend": "店舗支出",
+      "branchSpendHint": "選択店舗の運営支出のみ",
+      "grossProfit": "営業利益",
+      "grossProfitHint": "税抜売上から対象支出を差し引いた値",
+      "branchProfit": "店舗営業利益",
+      "branchProfitHint": "会社共通経費はここに配賦しません",
+      "branchesInScope": "対象店舗数",
+      "branchesInScopeHint": "この表示に含まれる店舗"
+    },
+    "tabs": {
+      "summary": "概要",
+      "branches": "店舗",
+      "tax": "税",
+      "sharedExpenses": "共通経費"
+    },
+    "selectedBranchCompanyExpenseNotice": "この期間に会社共通経費 {amount} が記録されています。参考表示のみで、この店舗の営業利益には差し引いていません。",
+    "summary": {
+      "trendTitle": "期間推移",
+      "trendDescription": "選択した四半期の税抜売上、支出、営業利益を確認します。",
+      "branchCompareTitle": "店舗比較",
+      "branchCompareDescription": "会社財務画面のまま、対象店舗を比較できます。",
+      "chartEmpty": "この範囲の財務データはまだありません。",
+      "salesSeries": "税抜売上",
+      "spendingSeries": "支出",
+      "profitSeries": "営業利益",
+      "snapshotTitle": "期間スナップショット",
+      "snapshotDescription": "店舗に深く入る前のオーナー向け確認値です。",
+      "netSalesInclusive": "税込純売上",
+      "salesTax": "推定消費税",
+      "netSalesExTax": "税抜売上",
+      "branchExpenses": "店舗経費",
+      "companyExpenses": "会社共通経費",
+      "totalSpend": "総支出",
+      "branchOperatingSpend": "店舗運営支出",
+      "grossProfit": "営業利益",
+      "branchOperatingProfit": "店舗営業利益",
+      "periodTableTitle": "期間内訳",
+      "periodTableDescription": "月次と四半期で動きを追い、情報を1枚に詰め込みすぎないようにします。",
+      "periodColumn": "期間"
+    },
+    "branches": {
+      "title": "店舗財務テーブル",
+      "description": "ここで絞り込むか、対応が必要な店舗だけオーナー詳細を開きます。",
+      "branch": "店舗",
+      "close": "締め",
+      "action": "操作",
+      "open": "店舗を開く"
+    },
+    "tax": {
+      "title": "消費税ビュー",
+      "description": "各店舗の税率設定と、顧客から受け取った注文金額から推定しています。",
+      "empty": "この範囲の税データはありません。",
+      "taxSeries": "推定消費税",
+      "salesSeries": "税抜売上",
+      "tableTitle": "税内訳",
+      "tableDescription": "オーナーや会計担当が会社画面のまま課税売上を確認できます。",
+      "scope": "対象",
+      "taxRate": "税率"
+    },
+    "sharedExpenses": {
+      "title": "会社共通経費",
+      "description": "本部費、共通ツール、会計費、家賃など、店舗に混ぜない会社費用をここで扱います。",
+      "add": "共通経費を追加",
+      "dialogTitle": "会社共通経費を追加",
+      "dialogDescription": "会社レベルの経費を記録します。誰が記録したかは監査用に保存されます。",
+      "descriptionPlaceholder": "この会社経費は何のためですか？",
+      "vendor": "支払先",
+      "vendorPlaceholder": "任意の支払先または取引先",
+      "auditHint": "記録者と記録時刻は自動で保存されます。",
+      "saved": "会社共通経費を保存しました。",
+      "total": "期間内の共通経費",
+      "totalHint": "会社レベルの経費のみ",
+      "entryCount": "件数",
+      "entryCountHint": "記録された共通経費行数",
+      "empty": "この期間の会社共通経費はまだありません。",
+      "ledgerTitle": "共通経費台帳",
+      "ledgerDescription": "店舗運営に混ぜず、会社オーバーヘッドを確認します。",
+      "date": "日付",
+      "category": "カテゴリ",
+      "descriptionColumn": "内容",
+      "recordedBy": "記録者",
+      "amount": "金額"
+    }
+  }
 }

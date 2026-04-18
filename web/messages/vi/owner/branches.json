@@ -56,5 +56,45 @@
   "addBranchSave": "Tạo chi nhánh",
   "addBranchSaving": "Đang tạo...",
   "addBranchCancel": "Hủy",
-  "addBranchError": "Tạo chi nhánh thất bại. Vui lòng thử lại."
+  "addBranchError": "Tạo chi nhánh thất bại. Vui lòng thử lại.",
+  "workspace": {
+    "ownerWorkspace": "Không gian chủ sở hữu {subdomain}",
+    "activeBranch": "Chi nhánh đang dùng",
+    "addressNotSet": "Chưa có địa chỉ",
+    "contactNotSet": "Chưa có liên hệ",
+    "openOrdersCount": "{count} đơn đang mở",
+    "staffOnBranch": "nhân sự tại chi nhánh",
+    "ready": "Sẵn sàng",
+    "setupNeeded": "Cần thiết lập",
+    "monthClosed": "Đã khóa sổ tháng",
+    "emptyTitle": "Chưa có chi nhánh nào",
+    "alerts": {
+      "setupNeeded": "{count} chi nhánh vẫn cần founder hoàn tất thiết lập",
+      "monthCloseNeeded": "{count} chi nhánh vẫn chưa khóa sổ tháng",
+      "openOrders": "{count} chi nhánh hiện còn đơn đang mở"
+    },
+    "stats": {
+      "todayRevenue": "Doanh thu hôm nay",
+      "todayRevenueHint": "{count} đơn đang mở",
+      "totalExpenses": "Tổng chi phí",
+      "totalExpensesHint": "Đơn mua hàng và khoản chi trong tháng này",
+      "branchesReady": "Chi nhánh sẵn sàng",
+      "branchesReadyPending": "{count} chi nhánh vẫn cần thiết lập",
+      "branchesReadyAll": "Tất cả chi nhánh đã sẵn sàng",
+      "monthClose": "Khóa sổ tháng ({month})"
+    },
+    "table": {
+      "branch": "Chi nhánh",
+      "contact": "Liên hệ",
+      "today": "Hôm nay",
+      "expenses": "Chi phí",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "expensesThisMonth": "tháng này",
+    "actions": {
+      "ownerView": "Xem chi tiết",
+      "branchManage": "Quản lý chi nhánh"
+    }
+  }
 }

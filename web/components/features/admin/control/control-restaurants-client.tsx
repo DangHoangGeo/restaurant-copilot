@@ -1,32 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowRight,
-  CalendarDays,
+  AlertTriangle,
   Building2,
-  Copy,
-  GitCompare,
-  Globe,
-  Layers3,
+  CheckCircle2,
+  Mail,
+  MapPin,
+  Phone,
   Plus,
-  Users,
 } from 'lucide-react';
 import { AddBranchModal } from '@/components/features/admin/branches/AddBranchModal';
-import { MenuCopyModal } from '@/components/features/admin/branches/MenuCopyModal';
-import { MenuComparePanel } from '@/components/features/admin/branches/MenuComparePanel';
-import { ControlSharedMenuPanel } from '@/components/features/admin/control/control-shared-menu-panel';
-import { Button } from '@/components/ui/button';
+import { BranchScopedLinkButton } from '@/components/features/admin/control/branch-scoped-link-button';
+import { OwnerBranchExpenseDialog } from '@/components/features/admin/control/owner-branch-expense-dialog';
 import { Badge } from '@/components/ui/badge';
-import type { OrganizationSharedMenuCategory } from '@/lib/server/organizations/shared-menu';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import type { FounderControlOverviewData } from '@/lib/server/control/overview';
 
 interface Branch {
   id: string;
   name: string;
   subdomain: string;
   branchCode?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
   employeeCount?: number;
   isActive?: boolean;
   onboarded?: boolean;
@@ -34,238 +42,346 @@ interface Branch {
 
 interface ControlRestaurantsClientProps {
   branches: Branch[];
+  overview: FounderControlOverviewData;
   canAddBranch: boolean;
-  canManageMenu: boolean;
-  organizationName?: string;
   companyPublicSubdomain: string | null;
-  sharedMenuCategories: OrganizationSharedMenuCategory[];
+  currency: string;
 }
 
-type Panel = 'none' | 'copy' | 'compare';
+function fmt(amount: number, currency: string, locale: string) {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: currency === 'JPY' ? 0 : 2,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString()}`;
+  }
+}
+
+function formatContact(branch: Branch, emptyLabel: string): string {
+  if (branch.phone && branch.email) {
+    return `${branch.phone} · ${branch.email}`;
+  }
+
+  return branch.phone ?? branch.email ?? emptyLabel;
+}
+
+function StatItem({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+}) {
+  return (
+    <div className="space-y-0.5">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-xl font-semibold tabular-nums text-slate-900">{value}</p>
+      {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
+    </div>
+  );
+}
 
 export function ControlRestaurantsClient({
   branches: initialBranches,
+  overview,
   canAddBranch,
-  canManageMenu,
-  organizationName,
   companyPublicSubdomain,
-  sharedMenuCategories,
+  currency,
 }: ControlRestaurantsClientProps) {
   const locale = useLocale();
+  const t = useTranslations('owner.branches');
+  const tPurchasing = useTranslations('owner.purchasing');
   const router = useRouter();
-
   const [branches] = useState(initialBranches);
-  const [panel, setPanel] = useState<Panel>('none');
   const [showAddBranch, setShowAddBranch] = useState(false);
-
-  const handleOpen = (branchId: string) => {
-    router.push(`/${locale}/control/restaurants/${branchId}`);
-  };
 
   const handleBranchAdded = () => {
     setShowAddBranch(false);
     router.refresh();
   };
 
+  const monthLabel = `${overview.current_month.year}/${String(overview.current_month.month).padStart(2, '0')}`;
+  const setupNeededCount = branches.filter((branch) => !branch.onboarded).length;
+  const alerts = [
+    setupNeededCount > 0
+      ? t('workspace.alerts.setupNeeded', { count: setupNeededCount })
+      : null,
+    overview.attention.branches_missing_snapshot > 0
+      ? t('workspace.alerts.monthCloseNeeded', {
+          count: overview.attention.branches_missing_snapshot,
+        })
+      : null,
+    overview.attention.branches_with_open_orders > 0
+      ? t('workspace.alerts.openOrders', {
+          count: overview.attention.branches_with_open_orders,
+        })
+      : null,
+  ].filter(Boolean) as string[];
+
+  const overviewBranchById = new Map(
+    overview.branches.map((branch) => [branch.restaurant_id, branch])
+  );
+
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-col gap-3 rounded-3xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold">Restaurants</h1>
-            <Badge variant="secondary" className="rounded-full">
-              {branches.length}
-            </Badge>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            {companyPublicSubdomain ? (
-              <span className="inline-flex items-center gap-1 rounded-full border bg-muted/40 px-2.5 py-1">
-                <Globe className="h-3.5 w-3.5" />
-                {companyPublicSubdomain}.coorder.ai
-              </span>
-            ) : null}
-            {canManageMenu ? (
-              <span className="inline-flex items-center gap-1 rounded-full border bg-muted/40 px-2.5 py-1">
-                <Layers3 className="h-3.5 w-3.5" />
-                Shared menu ready
-              </span>
-            ) : null}
-          </div>
-        </div>
-        {canAddBranch && (
-          <Button size="sm" onClick={() => setShowAddBranch(true)} className="gap-1.5 rounded-lg">
-            <Plus className="h-4 w-4" />
-            Add Restaurant
-          </Button>
-        )}
-      </div>
-
-      {/* Multi-menu toolbar — only when 2+ branches */}
-      {branches.length >= 2 && canManageMenu && (
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={panel === 'copy' ? 'default' : 'outline'}
-            size="sm"
-            className="gap-1.5 rounded-lg"
-            onClick={() => setPanel(panel === 'copy' ? 'none' : 'copy')}
-          >
-            <Copy className="h-3.5 w-3.5" />
-            Copy menu
-          </Button>
-          <Button
-            variant={panel === 'compare' ? 'default' : 'outline'}
-            size="sm"
-            className="gap-1.5 rounded-lg"
-            onClick={() => setPanel(panel === 'compare' ? 'none' : 'compare')}
-          >
-            <GitCompare className="h-3.5 w-3.5" />
-            Compare menus
-          </Button>
-        </div>
-      )}
-
-      {panel === 'copy' && (
-        <MenuCopyModal branches={branches} onClose={() => setPanel('none')} />
-      )}
-      {panel === 'compare' && (
-        <MenuComparePanel branches={branches} />
-      )}
-
-      {canManageMenu && (
-        <ControlSharedMenuPanel
-          categories={sharedMenuCategories}
-          organizationName={organizationName}
-        />
-      )}
-
-      {/* Restaurant list */}
-      {branches.length === 0 ? (
-        <div className="rounded-lg border border-dashed py-16 text-center">
-          <Building2 className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" />
-          <p className="text-sm font-medium">No restaurants yet</p>
-          <p className="mt-1 text-xs text-muted-foreground">Add your first restaurant to get started.</p>
-          {canAddBranch && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="mt-4 rounded-lg gap-1.5"
-              onClick={() => setShowAddBranch(true)}
-            >
-              <Plus className="h-4 w-4" />
-              Add restaurant
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="rounded-3xl border bg-card p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-semibold">Branch control</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Open a branch to review setup, schedules, approved hours, and payroll readiness.
-                </p>
+      <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-semibold text-slate-900">{t('pageTitle')}</h1>
+                <Badge variant="secondary" className="rounded-full">
+                  {branches.length}
+                </Badge>
               </div>
-              <Badge variant="secondary" className="rounded-full">
-                {branches.length} branches
-              </Badge>
+              {companyPublicSubdomain ? (
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {t('workspace.ownerWorkspace', {
+                    subdomain: `${companyPublicSubdomain}.coorder.ai`,
+                  })}
+                </p>
+              ) : null}
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
-            {branches.map((branch) => (
-              <article
-                key={branch.id}
-                className={`rounded-[28px] border bg-card p-4 transition hover:border-slate-300 ${
-                  branch.onboarded ? '' : 'border-amber-300 bg-amber-50/40'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted">
-                      <Building2 className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="truncate text-base font-semibold">{branch.name}</h3>
-                        {branch.isActive ? (
-                          <Badge variant="secondary" className="rounded-full">
-                            Active branch
-                          </Badge>
-                        ) : null}
-                        {!branch.onboarded ? (
-                          <Badge variant="outline" className="rounded-full border-amber-300 bg-amber-100 text-amber-700">
-                            Setup needed
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {companyPublicSubdomain
-                          ? `${companyPublicSubdomain}.coorder.ai`
-                          : `${branch.subdomain}.coorder.ai`}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Branch code {branch.branchCode ?? branch.subdomain}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl gap-1.5"
-                    onClick={() => handleOpen(branch.id)}
-                  >
-                    {branch.onboarded ? 'Open' : 'Finish setup'}
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+          {canAddBranch ? (
+            <Button size="sm" onClick={() => setShowAddBranch(true)} className="gap-1.5 rounded-xl">
+              <Plus className="h-4 w-4" />
+              {t('addBranch')}
+            </Button>
+          ) : null}
+        </div>
 
-                <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                  <div className="rounded-2xl bg-muted/20 px-3 py-3">
-                    <div className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      <Users className="h-3.5 w-3.5" />
-                      Team
-                    </div>
-                    <p className="mt-2 text-lg font-semibold">{branch.employeeCount ?? 0}</p>
-                    <p className="text-xs text-muted-foreground">People on roster</p>
-                  </div>
-                  <div className="rounded-2xl bg-muted/20 px-3 py-3">
-                    <div className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      Payroll
-                    </div>
-                    <p className="mt-2 text-sm font-semibold">Schedules + hours</p>
-                    <p className="text-xs text-muted-foreground">View on detail page</p>
-                  </div>
-                  <div className="rounded-2xl bg-muted/20 px-3 py-3">
-                    <div className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      <Globe className="h-3.5 w-3.5" />
-                      Setup
-                    </div>
-                    <p className="mt-2 text-sm font-semibold">
-                      {branch.onboarded ? 'Customer entry' : 'Needs owner review'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {branch.onboarded
-                        ? 'Branch-aware link ready'
-                        : 'Complete hours, contact, and defaults'}
-                    </p>
-                  </div>
-                </div>
-              </article>
+        {alerts.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {alerts.map((alert) => (
+              <div
+                key={alert}
+                className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700"
+              >
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                {alert}
+              </div>
             ))}
           </div>
+        ) : null}
+      </div>
+
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-[24px] border border-slate-200 bg-white p-4 sm:grid-cols-4">
+        <StatItem
+          label={t('workspace.stats.todayRevenue')}
+          value={fmt(overview.total_today_revenue, currency, locale)}
+          sub={t('workspace.stats.todayRevenueHint', {
+            count: overview.total_open_orders,
+          })}
+        />
+        <StatItem
+          label={t('workspace.stats.totalExpenses')}
+          value={fmt(overview.total_month_spending, currency, locale)}
+          sub={t('workspace.stats.totalExpensesHint')}
+        />
+        <StatItem
+          label={t('workspace.stats.branchesReady')}
+          value={`${branches.length - setupNeededCount}/${branches.length}`}
+          sub={
+            setupNeededCount > 0
+              ? t('workspace.stats.branchesReadyPending', { count: setupNeededCount })
+              : t('workspace.stats.branchesReadyAll')
+          }
+        />
+        <StatItem
+          label={t('workspace.stats.monthClose', { month: monthLabel })}
+          value={`${overview.current_month.branches_with_snapshot}/${overview.current_month.branch_count}`}
+          sub={fmt(overview.current_month.revenue_total, currency, locale)}
+        />
+      </div>
+
+      {branches.length === 0 ? (
+        <div className="rounded-[28px] border border-dashed border-slate-200 bg-white py-16 text-center">
+          <Building2 className="mx-auto mb-3 h-8 w-8 text-slate-300" />
+          <p className="text-sm font-medium text-slate-900">{t('workspace.emptyTitle')}</p>
+          {canAddBranch ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-4 gap-1.5 rounded-xl"
+              onClick={() => setShowAddBranch(true)}
+            >
+              <Plus className="h-4 w-4" />
+              {t('addBranch')}
+            </Button>
+          ) : null}
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="px-4 py-3">{t('workspace.table.branch')}</TableHead>
+                <TableHead className="hidden px-4 py-3 lg:table-cell">
+                  {t('workspace.table.contact')}
+                </TableHead>
+                <TableHead className="hidden px-4 py-3 md:table-cell">
+                  {t('workspace.table.today')}
+                </TableHead>
+                <TableHead className="hidden px-4 py-3 text-right sm:table-cell">
+                  {t('workspace.table.expenses')}
+                </TableHead>
+                <TableHead className="px-4 py-3">{t('workspace.table.status')}</TableHead>
+                <TableHead className="px-4 py-3 text-right">
+                  {t('workspace.table.actions')}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {branches.map((branch) => {
+                const branchOverview = overviewBranchById.get(branch.id);
+
+                return (
+                  <TableRow key={branch.id}>
+                    <TableCell className="px-4 py-3 align-top">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-900">{branch.name}</p>
+                          <Badge variant="outline" className="rounded-full text-xs">
+                            {branch.branchCode ?? branch.subdomain}
+                          </Badge>
+                          {branch.isActive ? (
+                            <Badge variant="secondary" className="rounded-full text-xs">
+                              {t('workspace.activeBranch')}
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <div className="space-y-1 text-xs text-slate-500">
+                          <div className="flex items-start gap-1.5">
+                            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                            <span>{branch.address ?? t('workspace.addressNotSet')}</span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 lg:hidden">
+                            {branch.phone ? (
+                              <span className="inline-flex items-center gap-1.5">
+                                <Phone className="h-3.5 w-3.5 shrink-0" />
+                                {branch.phone}
+                              </span>
+                            ) : null}
+                            {branch.email ? (
+                              <span className="inline-flex items-center gap-1.5">
+                                <Mail className="h-3.5 w-3.5 shrink-0" />
+                                {branch.email}
+                              </span>
+                            ) : null}
+                            {!branch.phone && !branch.email ? (
+                              <span>{t('workspace.contactNotSet')}</span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="hidden px-4 py-3 align-top lg:table-cell">
+                      <p className="text-sm text-slate-600">
+                        {formatContact(branch, t('workspace.contactNotSet'))}
+                      </p>
+                    </TableCell>
+
+                    <TableCell className="hidden px-4 py-3 align-top md:table-cell">
+                      <div className="space-y-0.5 text-sm">
+                        <p className="font-medium text-slate-900">
+                          {fmt(branchOverview?.today_revenue ?? 0, currency, locale)}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {t('workspace.openOrdersCount', {
+                            count: branchOverview?.open_orders_count ?? 0,
+                          })}
+                        </p>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="hidden px-4 py-3 text-right align-top sm:table-cell">
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-medium tabular-nums text-slate-900">
+                          {fmt(branchOverview?.monthly_spending ?? 0, currency, locale)}
+                        </p>
+                        <p className="text-xs text-slate-500">{t('workspace.expensesThisMonth')}</p>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="px-4 py-3 align-top">
+                      <div className="space-y-2">
+                        {branch.onboarded ? (
+                          <Badge
+                            variant="outline"
+                            className="rounded-full border-emerald-200 bg-emerald-50 text-emerald-700"
+                          >
+                            {t('workspace.ready')}
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="rounded-full border-amber-200 bg-amber-50 text-amber-700"
+                          >
+                            {t('workspace.setupNeeded')}
+                          </Badge>
+                        )}
+                        {branchOverview?.has_closed_snapshot ? (
+                          <div className="hidden text-xs text-emerald-700 md:flex md:items-center md:gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            {t('workspace.monthClosed')}
+                          </div>
+                        ) : null}
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="px-4 py-3">
+                      <div className="flex flex-col items-end gap-2 sm:flex-row sm:justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full rounded-xl sm:w-auto"
+                          onClick={() => router.push(`/${locale}/control/restaurants/${branch.id}`)}
+                        >
+                          {t('workspace.actions.ownerView')}
+                        </Button>
+                        <OwnerBranchExpenseDialog
+                          branchId={branch.id}
+                          branchName={branch.name}
+                          currency={currency}
+                          label={tPurchasing('addExpense')}
+                          className="w-full rounded-xl sm:w-auto"
+                        />
+                        <BranchScopedLinkButton
+                          restaurantId={branch.id}
+                          href={`/${locale}/branch`}
+                          label={t('workspace.actions.branchManage')}
+                          size="sm"
+                          className="w-full rounded-xl sm:w-auto"
+                          openInNewTab
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       )}
 
-      {showAddBranch && (
+      {showAddBranch ? (
         <AddBranchModal
           companyPublicSubdomain={companyPublicSubdomain}
           onClose={() => setShowAddBranch(false)}
           onSuccess={handleBranchAdded}
         />
-      )}
+      ) : null}
     </div>
   );
 }

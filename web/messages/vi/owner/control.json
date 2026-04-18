@@ -138,5 +138,249 @@
     "homepageTitle": "Trang chủ và thương hiệu",
     "homepageDescription": "Quản lý phần hiển thị công khai và câu chuyện của chi nhánh.",
     "openHomepage": "Mở công cụ trang chủ"
+  },
+  "branchDetail": {
+    "backToRestaurants": "Quay lại danh sách chi nhánh",
+    "tabs": {
+      "overview": "Tổng quan",
+      "finance": "Tài chính",
+      "team": "Đội ngũ",
+      "setup": "Thiết lập"
+    },
+    "actions": {
+      "publicSite": "Trang công khai",
+      "openBranchManage": "Mở quản lý chi nhánh"
+    },
+    "status": {
+      "ready": "Sẵn sàng",
+      "setupNeeded": "Cần thiết lập",
+      "closed": "Đã khóa",
+      "open": "Đang mở"
+    },
+    "common": {
+      "notSet": "Chưa thiết lập"
+    },
+    "stats": {
+      "todayRevenue": "Doanh thu hôm nay",
+      "orderCount": "{count} đơn",
+      "openOrders": "Đơn đang mở",
+      "openOrdersCount": "{count} đơn đang mở",
+      "inKitchen": "đang ở bếp",
+      "monthSpending": "Chi phí tháng này",
+      "monthSpendingHint": "Đơn mua hàng và khoản chi đã ghi nhận",
+      "monthClose": "Khóa sổ {month}"
+    },
+    "info": {
+      "tableLabel": "Thông tin chi nhánh",
+      "tableValue": "Giá trị",
+      "name": "Tên",
+      "code": "Mã",
+      "address": "Địa chỉ",
+      "contact": "Liên hệ",
+      "workingHours": "Giờ làm việc",
+      "workingHoursValue": "{approved} đã duyệt · {pending} chờ duyệt",
+      "bestSeller": "Món bán chạy nhất",
+      "bestSellerValue": "{item} · đã bán {quantity}",
+      "noSalesYet": "Chi nhánh chưa có doanh số"
+    },
+    "snapshot": {
+      "tableLabel": "Snapshot tháng",
+      "tableValue": "Giá trị",
+      "period": "Kỳ",
+      "status": "Trạng thái",
+      "revenue": "Doanh thu",
+      "grossProfit": "Lợi nhuận gộp",
+      "openOrders": "Đơn đang mở",
+      "monthSpending": "Chi phí tháng này"
+    },
+    "charts": {
+      "revenueTitle": "Doanh thu 14 ngày gần nhất",
+      "revenueSubtitle": "Đơn hoàn tất của chi nhánh này",
+      "revenueEmpty": "Không có đơn hoàn tất trong 14 ngày gần nhất",
+      "hoursTitle": "Giờ làm tháng này",
+      "hoursSubtitle": "Chấm công đã duyệt và chờ duyệt theo nhân viên",
+      "hoursEmpty": "Chưa có giờ công nào được ghi nhận trong tháng này",
+      "approved": "Đã duyệt",
+      "pending": "Chờ duyệt"
+    },
+    "bestSellers": {
+      "title": "Món bán chạy 30 ngày gần nhất",
+      "subtitle": "Các món bán mạnh nhất của riêng chi nhánh này",
+      "itemMeta": "{quantity} đã bán · {revenue}",
+      "empty": "Chi nhánh này chưa có doanh số hoàn tất."
+    },
+    "hoursSnapshot": {
+      "title": "Snapshot giờ công",
+      "subtitle": "Nơi xem giờ làm của chi nhánh này",
+      "approvedHours": "Giờ đã duyệt",
+      "pendingReview": "Chờ kiểm tra",
+      "reviewLabel": "Cách kiểm tra",
+      "reviewBody": "Mở tab đội ngũ để xem kế hoạch tuần, kế hoạch tháng, giờ đã duyệt, giờ chờ duyệt và ước tính lương của từng nhân viên trên chi nhánh này.",
+      "openTeam": "Mở giờ công đội ngũ"
+    },
+    "finance": {
+      "title": "Tài chính chi nhánh",
+      "description": "Xem báo cáo tháng ngay tại đây, rồi mở workspace tài chính của chi nhánh nếu cần làm việc ở tab riêng.",
+      "openBranchFinance": "Mở tài chính chi nhánh",
+      "badges": {
+        "income": "Chi tiết thu vào",
+        "spending": "Chi tiết chi ra",
+        "manage": "Được quản lý chi phí",
+        "readOnly": "Chỉ xem",
+        "export": "Được xuất dữ liệu"
+      },
+      "snapshot": {
+        "revenue": "Doanh thu",
+        "costs": "Tổng chi phí",
+        "grossProfit": "Lợi nhuận gộp",
+        "approvedLabor": "Giờ công đã duyệt"
+      }
+    },
+    "team": {
+      "employeeCount": "{count} nhân viên",
+      "addEmployee": "Thêm nhân viên",
+      "inviteTitle": "Mời nhân viên mới",
+      "fullName": "Họ và tên",
+      "fullNamePlaceholder": "Nguyen Van A",
+      "email": "Email",
+      "emailPlaceholder": "staff@example.com",
+      "role": "Vai trò",
+      "sendInvitation": "Gửi lời mời",
+      "cancel": "Hủy",
+      "inviteHelp": "Nhân viên sẽ nhận email để đặt mật khẩu và truy cập chi nhánh.",
+      "emptyTitle": "Chưa có nhân viên",
+      "emptyDescription": "Thêm thành viên đầu tiên của bạn ở phía trên.",
+      "rosterTitle": "Tổng quan nhân sự",
+      "rosterDescription": "Founder có thể xem lịch làm, giờ đã duyệt và ước tính lương ngay trong control."
+    },
+    "setup": {
+      "readyBanner": "Lưu phần thiết lập này sẽ đánh dấu chi nhánh sẵn sàng vận hành.",
+      "edit": "Chỉnh sửa",
+      "basicInfo": "Thông tin cơ bản",
+      "basicInfoHint": "Giữ thông tin nhận diện và liên hệ của chi nhánh nằm gọn trong phần thiết lập của owner.",
+      "branchName": "Tên chi nhánh",
+      "branchNamePlaceholder": "VD: Pho Saigon Shinjuku",
+      "domain": "Domain (chỉ đọc)",
+      "phone": "Điện thoại",
+      "phonePlaceholder": "+81-3-0000-0000",
+      "email": "Email",
+      "emailPlaceholder": "branch@example.com",
+      "address": "Địa chỉ",
+      "addressPlaceholder": "Tokyo, Shinjuku-ku...",
+      "regional": "Thiết lập khu vực",
+      "regionalHint": "Các mặc định về tài chính, ngôn ngữ và báo cáo của chi nhánh được quản lý tại đây.",
+      "timezone": "Múi giờ",
+      "currency": "Tiền tệ",
+      "taxRate": "Thuế suất (%)",
+      "defaultLanguage": "Ngôn ngữ mặc định",
+      "openingHours": "Giờ mở cửa",
+      "openingHoursHint": "Cập nhật giờ mở cửa và mặc định vận hành của chi nhánh bằng một cửa sổ riêng.",
+      "roleRates": "Mức lương theo giờ",
+      "roleRatesHint": "Mức lương dùng cho payroll estimate nên nằm trong Setup, không nằm trong màn hình team hằng ngày.",
+      "day": "Ngày",
+      "hours": "Khung giờ",
+      "closed": "Đóng cửa",
+      "role": "Vai trò",
+      "hourlyRate": "Mức lương theo giờ",
+      "rateNotSet": "Chưa thiết lập",
+      "saveBasicInfo": "Lưu thông tin cơ bản",
+      "saveRegional": "Lưu thiết lập khu vực",
+      "saveOpeningHours": "Lưu giờ mở cửa",
+      "saveRates": "Lưu mức lương",
+      "saveSettings": "Lưu cài đặt",
+      "saveAndMarkReady": "Lưu và đánh dấu sẵn sàng"
+    },
+    "options": {
+      "timezones": {
+        "asiaTokyo": "Asia/Tokyo (JST)",
+        "asiaHoChiMinh": "Asia/Ho_Chi_Minh (ICT)",
+        "asiaSingapore": "Asia/Singapore (SGT)",
+        "utc": "UTC"
+      },
+      "currencies": {
+        "jpy": "JPY — Yên Nhật",
+        "vnd": "VND — Đồng Việt Nam",
+        "usd": "USD — Đô la Mỹ",
+        "sgd": "SGD — Đô la Singapore"
+      },
+      "languages": {
+        "ja": "Tiếng Nhật",
+        "en": "Tiếng Anh",
+        "vi": "Tiếng Việt"
+      },
+      "roles": {
+        "manager": "Quản lý",
+        "chef": "Bếp",
+        "server": "Phục vụ",
+        "cashier": "Thu ngân"
+      }
+    },
+    "teamPanel": {
+      "weekdays": {
+        "mon": "T2",
+        "tue": "T3",
+        "wed": "T4",
+        "thu": "T5",
+        "fri": "T6",
+        "sat": "T7",
+        "sun": "CN"
+      },
+      "roles": {
+        "manager": "Quản lý",
+        "chef": "Bếp",
+        "server": "Phục vụ",
+        "cashier": "Thu ngân"
+      },
+      "cards": {
+        "thisMonth": "Tháng này",
+        "staffOnBranch": "{count} nhân sự trên chi nhánh",
+        "approvedHours": "Giờ đã duyệt",
+        "pendingHours": "{hours} vẫn đang chờ duyệt",
+        "payrollEstimate": "Ước tính lương",
+        "needRoleRates": "Cần thiết lập mức lương theo vai trò",
+        "payrollHint": "Dựa trên chấm công đã duyệt",
+        "needsAttention": "Cần chú ý",
+        "missingRates": "Thiếu mức lương cho {roles}",
+        "allRatesReady": "Tất cả vai trò đang hoạt động đã có mức lương"
+      },
+      "rates": {
+        "title": "Mức lương theo giờ",
+        "description": "Thiết lập một mức lương cho mỗi cấp bậc để hệ thống tự ước tính lương cuối tháng.",
+        "appliesHint": "Áp dụng cho giờ đã duyệt của vai trò này",
+        "footerHint": "Giờ công lấy từ bảng chấm công đã duyệt, không lấy từ ca dự kiến.",
+        "save": "Lưu mức lương"
+      },
+      "schedule": {
+        "title": "Lịch làm và lương",
+        "description": "Lịch tuần, giờ đã duyệt và ước tính lương trong cùng một màn hình.",
+        "staffCount": "{count} nhân sự",
+        "empty": "Chi nhánh này chưa có nhân sự nào.",
+        "attendanceIssue": "Lỗi chấm công",
+        "waitingCount": "{count} đang chờ",
+        "weeklyPlan": "Kế hoạch tuần",
+        "approved": "Đã duyệt",
+        "salary": "Lương",
+        "setRate": "Thiết lập mức lương",
+        "weeklySchedule": "Lịch tuần",
+        "noWeeklyTemplate": "Chưa có mẫu ca làm cố định theo tuần.",
+        "monthPlan": "Kế hoạch tháng",
+        "pendingReview": "Chờ duyệt",
+        "payrollStatus": "Trạng thái lương",
+        "ready": "Sẵn sàng",
+        "needsRate": "Cần mức lương"
+      },
+      "toasts": {
+        "invalidRate": "Nhập mức lương hợp lệ cho {role}",
+        "saveRatesSuccess": "Đã cập nhật mức lương theo giờ",
+        "saveRatesError": "Không thể lưu mức lương theo giờ"
+      }
+    },
+    "toasts": {
+      "saveSetupSuccess": "Đã lưu cài đặt chi nhánh",
+      "saveSetupError": "Không thể lưu cài đặt",
+      "employeeNameEmailRequired": "Tên và email là bắt buộc",
+      "employeeInviteSuccess": "Đã gửi lời mời",
+      "employeeInviteError": "Không thể thêm nhân viên"
+    }
   }
 }
