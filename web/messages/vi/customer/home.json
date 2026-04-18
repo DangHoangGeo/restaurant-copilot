@@ -88,6 +88,8 @@
     "cancel": "Hủy đơn",
     "confirm": "Xác nhận đơn",
     "from_price": "Từ {price}",
+    "unavailable": "Chưa có",
+    "branch": "chi nhánh",
     "restaurant_not_found": "Không tìm thấy nhà hàng. Vui lòng kiểm tra URL hoặc liên hệ hỗ trợ.",
     "error_loading_menu": "Lỗi tải thực đơn. Vui lòng thử lại sau.",
     "error_loading_cart": "Lỗi tải giỏ hàng. Vui lòng thử lại sau.",
@@ -103,7 +105,59 @@
     "cta_secondary": "Đặt bàn",
     "view_menu": "Xem thực đơn",
     "make_reservation": "Đặt bàn",
-    "loading": "Đang tải phần giới thiệu..."
+    "loading": "Đang tải phần giới thiệu...",
+    "companyBadge": "Trang công ty",
+    "branchBadge": "Trang chi nhánh",
+    "collectionLabel": "Hệ thống nhà hàng",
+    "branchLabel": "Nhà hàng",
+    "currentBranchLabel": "Bắt đầu tại đây",
+    "viewMenu": "Xem thực đơn",
+    "viewLocations": "Xem tất cả chi nhánh",
+    "contactLabel": "Gọi chi nhánh này",
+    "ratingLabel": "Đánh giá khách hàng",
+    "ratingValue": "{rating} sao từ {count} đánh giá",
+    "ratingFallback": "Đánh giá sẽ hiện khi có thêm phản hồi từ khách",
+    "openBranches": "{count}/{total} chi nhánh đang mở cửa",
+    "closedToday": "Hôm nay nghỉ",
+    "stats": {
+      "branches": "Chi nhánh",
+      "featured": "Món nổi bật",
+      "todayHours": "Hôm nay"
+    }
+  },
+  "featured": {
+    "eyebrow": "Gợi ý nổi bật của công ty",
+    "title": "Những món phổ biến nên xem trước",
+    "fullMenu": "Mở thực đơn hiện tại",
+    "sharedBadge": "Thực đơn chung",
+    "branchBadge": "Món nổi bật",
+    "sharedAvailability": "Có trong thực đơn của công ty",
+    "fromBranch": "Từ {branch}",
+    "viewItemCta": "Xem thực đơn",
+    "descriptionFallback": "Hãy mở thực đơn đầy đủ để xem chi tiết và tình trạng phục vụ mới nhất.",
+    "emptyTitle": "Sắp có món nổi bật",
+    "emptyDescription": "Công ty này chưa chọn món nổi bật cho trang chủ."
+  },
+  "story": {
+    "eyebrow": "Câu chuyện thương hiệu",
+    "title": "Một cách yên tâm hơn để chọn nơi gọi món",
+    "ownerLabel": "Người sáng lập hoặc chủ quán",
+    "fallbackDescription": "Hãy vào thực đơn hoặc chọn chi nhánh để xem món đang phục vụ hôm nay."
+  },
+  "locations": {
+    "eyebrow": "Chi nhánh",
+    "title": "Chọn chi nhánh phù hợp với bạn",
+    "description": "Mỗi chi nhánh có thực đơn, giờ mở cửa và thông tin địa phương riêng. Chọn đúng chi nhánh trước để vào luồng đặt bàn và gọi món chính xác.",
+    "currentBranch": "Hiện tại",
+    "openNow": "Đang mở",
+    "closedNow": "Đã đóng",
+    "hoursFallback": "Xem giờ mở cửa trong luồng thực đơn",
+    "viewMenu": "Xem thực đơn",
+    "reserve": "Đặt bàn"
+  },
+  "notFound": {
+    "title": "Không thể mở trang công ty",
+    "description": "Hiện không thể tải trang công ty nhà hàng này. Vui lòng kiểm tra lại địa chỉ và thử lại."
   },
   "gallery": {
     "title": "Nhà hàng của chúng tôi",

@@ -12,7 +12,16 @@ import { useCart } from "./CartContext";
 import { getLocalizedText, useGetCurrentLocale } from "@/lib/customerUtils";
 import { ItemDetailModal } from "./menu/ItemDetailModal";
 import type { CartItem } from "./CartContext";
-import type { MenuItemSize, Topping, MenuItem, FoodItem } from "@/shared/types/menu";
+import type {
+  MenuItemSize,
+  Topping,
+  MenuItem,
+  FoodItem,
+} from "@/shared/types/menu";
+import {
+  appendBranchContext,
+  getOrgIdentifierFromHost,
+} from "@/lib/customer-branch";
 
 interface Props {
   count: number;
@@ -20,26 +29,39 @@ interface Props {
   onPlaceOrder: () => Promise<void> | void;
   brandColor: string;
   locale?: string;
+  branchCode?: string | null;
+  restaurantId?: string;
 }
 
-export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) {
+export function FloatingCart({
+  count,
+  total,
+  onPlaceOrder,
+  brandColor,
+  branchCode,
+  restaurantId,
+}: Props) {
   const t = useTranslations("customer.cart");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
-  const [originalMenuItem, setOriginalMenuItem] = useState<MenuItem | null>(null);
+  const [originalMenuItem, setOriginalMenuItem] = useState<MenuItem | null>(
+    null,
+  );
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-  
+
   const { cart, updateQuantity, removeFromCart, addToCart } = useCart();
   const currentLocale = useGetCurrentLocale();
 
   // Memoize modal props to prevent infinite re-renders
-  const memoizedInitialToppings = useMemo(() => 
-    editingItem?.selectedToppings || [], [editingItem]
+  const memoizedInitialToppings = useMemo(
+    () => editingItem?.selectedToppings || [],
+    [editingItem],
   );
-  
-  const memoizedInitialNotes = useMemo(() => 
-    editingItem?.notes || "", [editingItem]
+
+  const memoizedInitialNotes = useMemo(
+    () => editingItem?.notes || "",
+    [editingItem],
   );
 
   if (count === 0) return null;
@@ -58,50 +80,63 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
 
   const handleEditItem = async (item: CartItem) => {
     setEditingItem(item);
-    
+
     // Fetch the original menu item data to get all available sizes and toppings
     try {
-      const subdomain = window.location.hostname.split('.')[0];
-      const response = await fetch(`/api/v1/customer/menu?subdomain=${subdomain}`);
+      const params = new URLSearchParams();
+      if (restaurantId) {
+        params.set("restaurantId", restaurantId);
+      } else {
+        appendBranchContext(params, {
+          branchCode,
+          orgIdentifier: getOrgIdentifierFromHost(window.location.host),
+        });
+      }
+
+      const response = await fetch(
+        `/api/v1/customer/menu?${params.toString()}`,
+      );
       if (response.ok) {
         const menuData = await response.json();
-        
+
         // Find the original menu item
         let originalItem: MenuItem | null = null;
         for (const category of menuData.categories) {
-          const foundItem = category.menu_items.find((menuItem: MenuItem) => menuItem.id === item.itemId);
+          const foundItem = category.menu_items.find(
+            (menuItem: MenuItem) => menuItem.id === item.itemId,
+          );
           if (foundItem) {
             originalItem = foundItem;
             break;
           }
         }
-        
+
         if (originalItem) {
           setOriginalMenuItem(originalItem);
         }
       }
     } catch (error) {
-      console.error('Failed to fetch original menu item:', error);
+      console.error("Failed to fetch original menu item:", error);
     }
-    
+
     setIsEditModalOpen(true);
   };
 
   const handleSaveEditedItem = (
-    item: FoodItem, 
-    quantity: number, 
-    selectedSize?: MenuItemSize, 
+    item: FoodItem,
+    quantity: number,
+    selectedSize?: MenuItemSize,
     selectedToppings?: Topping[],
-    notes?: string
+    notes?: string,
   ) => {
     if (editingItem) {
       // Remove the old item
       removeFromCart(editingItem.uniqueId);
-      
+
       // Add the updated item
       addToCart(item, quantity, selectedSize, selectedToppings, notes);
     }
-    
+
     setIsEditModalOpen(false);
     setEditingItem(null);
   };
@@ -119,31 +154,42 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
   };
 
   const renderCartItem = (item: CartItem) => {
-    const localizedItemName = getLocalizedText({ 
-      name_en: item.name_en, 
-      name_ja: item.name_ja || '', 
-      name_vi: item.name_vi || '' 
-    }, currentLocale);
-    
+    const localizedItemName = getLocalizedText(
+      {
+        name_en: item.name_en,
+        name_ja: item.name_ja || "",
+        name_vi: item.name_vi || "",
+      },
+      currentLocale,
+    );
+
     const detailsDisplay: string[] = [];
-    
+
     if (item.selectedSize) {
-      const localizedSizeName = getLocalizedText({ 
-        name_en: item.selectedSize.name_en, 
-        name_ja: item.selectedSize.name_ja || '', 
-        name_vi: item.selectedSize.name_vi || '' 
-      }, currentLocale);
+      const localizedSizeName = getLocalizedText(
+        {
+          name_en: item.selectedSize.name_en,
+          name_ja: item.selectedSize.name_ja || "",
+          name_vi: item.selectedSize.name_vi || "",
+        },
+        currentLocale,
+      );
       detailsDisplay.push(localizedSizeName);
     }
-    
+
     if (item.selectedToppings && item.selectedToppings.length > 0) {
-      const toppingNames = item.selectedToppings.map(t => 
-        getLocalizedText({ 
-          name_en: t.name_en || '', 
-          name_ja: t.name_ja || '', 
-          name_vi: t.name_vi || '' 
-        }, currentLocale)
-      ).join(", ");
+      const toppingNames = item.selectedToppings
+        .map((t) =>
+          getLocalizedText(
+            {
+              name_en: t.name_en || "",
+              name_ja: t.name_ja || "",
+              name_vi: t.name_vi || "",
+            },
+            currentLocale,
+          ),
+        )
+        .join(", ");
       detailsDisplay.push(`+${toppingNames}`);
     }
 
@@ -158,8 +204,8 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
         {/* Item Image */}
         <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
           {item.imageUrl ? (
-            <Image 
-              src={item.imageUrl} 
+            <Image
+              src={item.imageUrl}
               alt={localizedItemName}
               width={48}
               height={48}
@@ -180,41 +226,66 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                 onClick={() => handleEditItem(item)}
                 className="text-left w-full group hover:bg-slate-50 dark:hover:bg-slate-700 rounded p-1 -m-1 transition-colors"
               >
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400" 
-                   title={localizedItemName}>
+                <p
+                  className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  title={localizedItemName}
+                >
                   {localizedItemName}
                   <Edit className="inline h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </p>
-                
+
                 {/* Size and Toppings */}
-                {(item.selectedSize || (item.selectedToppings && item.selectedToppings.length > 0) || item.notes) && (
+                {(item.selectedSize ||
+                  (item.selectedToppings && item.selectedToppings.length > 0) ||
+                  item.notes) && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {item.selectedSize && (
-                      <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                        {getLocalizedText({ 
-                          name_en: item.selectedSize.name_en, 
-                          name_ja: item.selectedSize.name_ja || '', 
-                          name_vi: item.selectedSize.name_vi || '' 
-                        }, currentLocale)}
+                      <Badge
+                        variant="secondary"
+                        className="text-xs bg-blue-100 text-blue-700"
+                      >
+                        {getLocalizedText(
+                          {
+                            name_en: item.selectedSize.name_en,
+                            name_ja: item.selectedSize.name_ja || "",
+                            name_vi: item.selectedSize.name_vi || "",
+                          },
+                          currentLocale,
+                        )}
                       </Badge>
                     )}
-                    {item.selectedToppings && item.selectedToppings.map((topping, index) => (
-                      <Badge key={index} variant="outline" className="text-xs border-green-200 text-green-700">
-                        +{getLocalizedText({ 
-                          name_en: topping.name_en || '', 
-                          name_ja: topping.name_ja || '', 
-                          name_vi: topping.name_vi || '' 
-                        }, currentLocale)}
-                      </Badge>
-                    ))}
+                    {item.selectedToppings &&
+                      item.selectedToppings.map((topping, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-xs border-green-200 text-green-700"
+                        >
+                          +
+                          {getLocalizedText(
+                            {
+                              name_en: topping.name_en || "",
+                              name_ja: topping.name_ja || "",
+                              name_vi: topping.name_vi || "",
+                            },
+                            currentLocale,
+                          )}
+                        </Badge>
+                      ))}
                     {item.notes && (
-                      <Badge variant="outline" className="text-xs border-orange-200 text-orange-700">
-                        📝 {item.notes.length > 20 ? `${item.notes.substring(0, 20)}...` : item.notes}
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-orange-200 text-orange-700"
+                      >
+                        📝{" "}
+                        {item.notes.length > 20
+                          ? `${item.notes.substring(0, 20)}...`
+                          : item.notes}
                       </Badge>
                     )}
                   </div>
                 )}
-                
+
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   ¥{item.price} each
                 </p>
@@ -226,7 +297,9 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleUpdateQuantity(item.uniqueId, item.qty - 1)}
+                onClick={() =>
+                  handleUpdateQuantity(item.uniqueId, item.qty - 1)
+                }
                 className="h-11 w-11 p-0 rounded-full"
               >
                 <Minus className="h-4 w-4" />
@@ -237,7 +310,9 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleUpdateQuantity(item.uniqueId, item.qty + 1)}
+                onClick={() =>
+                  handleUpdateQuantity(item.uniqueId, item.qty + 1)
+                }
                 className="h-11 w-11 p-0 rounded-full"
               >
                 <Plus className="h-4 w-4" />
@@ -250,10 +325,10 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
   };
 
   return (
-    <div 
+    <div
       className="fixed left-4 right-4 z-[9999] flex justify-center pointer-events-none"
       style={{
-        bottom: 'max(env(safe-area-inset-bottom, 16px), 16px)',
+        bottom: "max(env(safe-area-inset-bottom, 16px), 16px)",
       }}
     >
       <div className="w-full max-w-md pointer-events-auto">
@@ -294,7 +369,10 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                     <span className="font-semibold text-slate-800 dark:text-slate-100">
                       {t("floating_cart.total", { amount: total.toFixed(0) })}
                     </span>
-                    <span className="font-bold text-lg" style={{ color: brandColor }}>
+                    <span
+                      className="font-bold text-lg"
+                      style={{ color: brandColor }}
+                    >
                       ¥{total.toFixed(0)}
                     </span>
                   </div>
@@ -308,7 +386,11 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
                       <>
                         <motion.div
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          transition={{
+                            duration: 1,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
                           className="mr-2"
                         >
                           <ShoppingCart className="h-4 w-4" />
@@ -338,7 +420,7 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
             className="shadow-2xl bg-opacity-100 dark:bg-opacity-100 border-2 overflow-hidden cursor-pointer"
             style={{
               backgroundColor: brandColor,
-              borderColor: brandColor
+              borderColor: brandColor,
             }}
           >
             <div className="px-4">
@@ -408,11 +490,13 @@ export function FloatingCart({ count, total, onPlaceOrder, brandColor }: Props) 
               price: originalMenuItem.price,
               image_url: originalMenuItem.image_url,
               available: originalMenuItem.available ?? true,
-              weekday_visibility: originalMenuItem.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
+              weekday_visibility: originalMenuItem.weekday_visibility ?? [
+                1, 2, 3, 4, 5, 6, 7,
+              ],
               position: originalMenuItem.position ?? 0,
               // Use all available sizes and toppings from the original menu item
               menu_item_sizes: originalMenuItem.menu_item_sizes || [],
-              toppings: originalMenuItem.toppings || []
+              toppings: originalMenuItem.toppings || [],
             }}
             locale={currentLocale}
             brandColor={brandColor}

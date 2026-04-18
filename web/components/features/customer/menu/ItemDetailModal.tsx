@@ -1,23 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import {
-  X,
-  Star,
-  Minus,
-  Plus,
-  ShoppingCart,
-  Check,
-} from 'lucide-react';
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-import { getLocalizedText } from '@/lib/customerUtils';
-import type { FoodItem, MenuItemSize, Topping } from '@/shared/types/menu';
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { X, Star, Minus, Plus, ShoppingCart, Check } from "lucide-react";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import { getLocalizedText } from "@/lib/customerUtils";
+import type { FoodItem, MenuItemSize, Topping } from "@/shared/types/menu";
 
 interface ItemDetailModalProps {
   isOpen: boolean;
@@ -25,6 +24,9 @@ interface ItemDetailModalProps {
   item: FoodItem | null;
   locale: string;
   brandColor: string;
+  companyName?: string;
+  branchName?: string;
+  logoUrl?: string | null;
   onAddToCart: (
     item: FoodItem,
     quantity: number,
@@ -47,20 +49,25 @@ export function ItemDetailModal({
   item,
   locale,
   brandColor,
+  companyName,
+  branchName,
+  logoUrl,
   onAddToCart,
   canAddItems = true,
   initialQuantity = 1,
   initialSelectedSize = null,
   initialSelectedToppings = [],
-  initialNotes = '',
+  initialNotes = "",
   isEditMode = false,
   showOrderNotes = true,
 }: ItemDetailModalProps) {
-  const t = useTranslations('customer.menu.item_detail');
+  const t = useTranslations("customer.menu.item_detail");
 
   // Portal mount guard (SSR safety)
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Keep a stable snapshot of the item so exit animation can still render it
   // after the parent sets item → null at the same time as isOpen → false.
@@ -72,8 +79,12 @@ export function ItemDetailModal({
 
   // Customisation state
   const [quantity, setQuantity] = useState(initialQuantity);
-  const [selectedSize, setSelectedSize] = useState<MenuItemSize | null>(initialSelectedSize);
-  const [selectedToppings, setSelectedToppings] = useState<Topping[]>(initialSelectedToppings);
+  const [selectedSize, setSelectedSize] = useState<MenuItemSize | null>(
+    initialSelectedSize,
+  );
+  const [selectedToppings, setSelectedToppings] = useState<Topping[]>(
+    initialSelectedToppings,
+  );
   const [notes, setNotes] = useState(initialNotes);
   const [isAdding, setIsAdding] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
@@ -99,30 +110,40 @@ export function ItemDetailModal({
   useEffect(() => {
     if (!isOpen) return;
     const timer = setTimeout(() => sheetRef.current?.focus(), 80);
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKey);
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKey);
     return () => {
       clearTimeout(timer);
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener("keydown", handleKey);
     };
   }, [isOpen, onClose]);
 
   // ── Derived values ────────────────────────────────────────────────────────
   const itemName = useMemo(() => {
-    if (!displayItem) return '';
+    if (!displayItem) return "";
     return getLocalizedText(
-      { name_en: displayItem.name_en, name_vi: displayItem.name_vi || '', name_ja: displayItem.name_ja || '' },
+      {
+        name_en: displayItem.name_en,
+        name_vi: displayItem.name_vi || "",
+        name_ja: displayItem.name_ja || "",
+      },
       locale,
     );
   }, [displayItem, locale]);
 
   const itemDescription = useMemo(() => {
-    if (!displayItem) return '';
+    if (!displayItem) return "";
     return getLocalizedText(
-      { en: displayItem.description_en || '', vi: displayItem.description_vi || '', ja: displayItem.description_ja || '' },
+      {
+        en: displayItem.description_en || "",
+        vi: displayItem.description_vi || "",
+        ja: displayItem.description_ja || "",
+      },
       locale,
     );
   }, [displayItem, locale]);
@@ -135,12 +156,14 @@ export function ItemDetailModal({
   }, [displayItem, selectedSize, selectedToppings, quantity]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const decQty = useCallback(() => setQuantity(p => Math.max(1, p - 1)), []);
-  const incQty = useCallback(() => setQuantity(p => p + 1), []);
+  const decQty = useCallback(() => setQuantity((p) => Math.max(1, p - 1)), []);
+  const incQty = useCallback(() => setQuantity((p) => p + 1), []);
   const selectSize = useCallback((s: MenuItemSize) => setSelectedSize(s), []);
   const toggleTopping = useCallback((tp: Topping) => {
-    setSelectedToppings(prev =>
-      prev.some(t => t.id === tp.id) ? prev.filter(t => t.id !== tp.id) : [...prev, tp],
+    setSelectedToppings((prev) =>
+      prev.some((t) => t.id === tp.id)
+        ? prev.filter((t) => t.id !== tp.id)
+        : [...prev, tp],
     );
   }, []);
 
@@ -148,14 +171,29 @@ export function ItemDetailModal({
     if (!displayItem || !canAddItems) return;
     setIsAdding(true);
     try {
-      onAddToCart(displayItem, quantity, selectedSize || undefined, selectedToppings, notes);
+      onAddToCart(
+        displayItem,
+        quantity,
+        selectedSize || undefined,
+        selectedToppings,
+        notes,
+      );
       onClose();
     } catch (e) {
       console.error(e);
     } finally {
       setIsAdding(false);
     }
-  }, [displayItem, quantity, selectedSize, selectedToppings, notes, onAddToCart, onClose, canAddItems]);
+  }, [
+    displayItem,
+    quantity,
+    selectedSize,
+    selectedToppings,
+    notes,
+    onAddToCart,
+    onClose,
+    canAddItems,
+  ]);
 
   // ── Early return ──────────────────────────────────────────────────────────
   if (!mounted) return null;
@@ -189,17 +227,23 @@ export function ItemDetailModal({
             aria-modal="true"
             aria-labelledby="item-modal-title"
             tabIndex={-1}
-            initial={{ y: '100%' }}
+            initial={{ y: "100%" }}
             animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.9 }}
+            exit={{ y: "100%" }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 340,
+              mass: 0.9,
+            }}
             className="fixed bottom-0 left-0 right-0 z-[9999] flex flex-col bg-white dark:bg-slate-900 rounded-t-[16px] focus:outline-none sm:left-1/2 sm:max-w-lg sm:w-full sm:-translate-x-1/2 sm:bottom-5 sm:rounded-2xl overflow-hidden"
-            style={{ maxHeight: '92dvh' }}
+            style={{ maxHeight: "92dvh" }}
           >
-            
-
             {/* ── Image ── */}
-            <div className="relative w-full flex-shrink-0" style={{ height: 310 }}>
+            <div
+              className="relative w-full flex-shrink-0"
+              style={{ height: 310 }}
+            >
               {displayItem.image_url ? (
                 <Image
                   src={displayItem.image_url}
@@ -228,8 +272,11 @@ export function ItemDetailModal({
               {/* Unavailable overlay */}
               {!displayItem.available && (
                 <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
-                  <Badge variant="destructive" className="text-sm px-4 py-2 font-semibold">
-                    {t('currently_unavailable')}
+                  <Badge
+                    variant="destructive"
+                    className="text-sm px-4 py-2 font-semibold"
+                  >
+                    {t("currently_unavailable")}
                   </Badge>
                 </div>
               )}
@@ -247,6 +294,30 @@ export function ItemDetailModal({
             {/* ── Scrollable body ── */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
               <div className="px-5 pt-1 pb-3 space-y-5">
+                {companyName ? (
+                  <div className="flex items-center gap-3 rounded-2xl bg-slate-100/90 p-3 dark:bg-slate-800/90">
+                    {logoUrl ? (
+                      <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-white/60">
+                        <Image
+                          src={logoUrl}
+                          alt={companyName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : null}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                        {companyName}
+                      </p>
+                      {branchName && branchName !== companyName ? (
+                        <p className="truncate text-xs text-slate-500 dark:text-slate-300">
+                          {branchName}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
 
                 {/* Name + base price */}
                 <div className="flex items-start justify-between gap-3">
@@ -256,7 +327,10 @@ export function ItemDetailModal({
                   >
                     {itemName}
                   </h1>
-                  <span className="text-xl font-bold flex-shrink-0 pt-0.5" style={{ color: brandColor }}>
+                  <span
+                    className="text-xl font-bold flex-shrink-0 pt-0.5"
+                    style={{ color: brandColor }}
+                  >
                     ¥{selectedSize ? selectedSize.price : displayItem.price}
                   </span>
                 </div>
@@ -269,11 +343,11 @@ export function ItemDetailModal({
                       : itemDescription}
                     {isDescLong && (
                       <button
-                        onClick={() => setDescExpanded(p => !p)}
+                        onClick={() => setDescExpanded((p) => !p)}
                         className="ml-1.5 text-xs font-semibold underline-offset-2 hover:underline transition-colors"
                         style={{ color: brandColor }}
                       >
-                        {descExpanded ? t('show_less') : t('show_more')}
+                        {descExpanded ? t("show_less") : t("show_more")}
                       </button>
                     )}
                   </p>
@@ -283,14 +357,18 @@ export function ItemDetailModal({
                 {availableSizes.length > 0 && (
                   <div className="space-y-2.5">
                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                      {t('choose_size')}
+                      {t("choose_size")}
                     </p>
                     <div className="flex gap-2">
                       {availableSizes
                         .sort((a, b) => a.position - b.position)
-                        .map(size => {
+                        .map((size) => {
                           const sizeName = getLocalizedText(
-                            { name_en: size.name_en, name_vi: size.name_vi || '', name_ja: size.name_ja || '' },
+                            {
+                              name_en: size.name_en,
+                              name_vi: size.name_vi || "",
+                              name_ja: size.name_ja || "",
+                            },
                             locale,
                           );
                           const active = selectedSize?.id === size.id;
@@ -302,12 +380,18 @@ export function ItemDetailModal({
                               className="flex-1 min-w-0 py-2.5 px-3 rounded-xl border-2 transition-all text-center"
                               style={{
                                 borderColor: active ? brandColor : undefined,
-                                backgroundColor: active ? brandColor : undefined,
-                                color: active ? 'white' : undefined,
+                                backgroundColor: active
+                                  ? brandColor
+                                  : undefined,
+                                color: active ? "white" : undefined,
                               }}
                             >
-                              <span className="block text-sm font-semibold leading-tight">{sizeName}</span>
-                              <span className="block text-xs opacity-75 mt-0.5">¥{size.price}</span>
+                              <span className="block text-sm font-semibold leading-tight">
+                                {sizeName}
+                              </span>
+                              <span className="block text-xs opacity-75 mt-0.5">
+                                ¥{size.price}
+                              </span>
                             </button>
                           );
                         })}
@@ -319,17 +403,23 @@ export function ItemDetailModal({
                 {availableToppings.length > 0 && (
                   <div className="space-y-2.5">
                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                      {t('add_toppings')}
+                      {t("add_toppings")}
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {availableToppings
                         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-                        .map(topping => {
+                        .map((topping) => {
                           const name = getLocalizedText(
-                            { name_en: topping.name_en, name_vi: topping.name_vi || '', name_ja: topping.name_ja || '' },
+                            {
+                              name_en: topping.name_en,
+                              name_vi: topping.name_vi || "",
+                              name_ja: topping.name_ja || "",
+                            },
                             locale,
                           );
-                          const active = selectedToppings.some(t => t.id === topping.id);
+                          const active = selectedToppings.some(
+                            (t) => t.id === topping.id,
+                          );
                           return (
                             <button
                               key={topping.id}
@@ -338,7 +428,9 @@ export function ItemDetailModal({
                               className="flex items-center gap-2.5 h-12 px-3 rounded-xl border-2 text-left transition-all"
                               style={{
                                 borderColor: active ? brandColor : undefined,
-                                backgroundColor: active ? `${brandColor}12` : undefined,
+                                backgroundColor: active
+                                  ? `${brandColor}12`
+                                  : undefined,
                               }}
                             >
                               {/* Checkbox indicator */}
@@ -346,10 +438,17 @@ export function ItemDetailModal({
                                 className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
                                 style={{
                                   borderColor: active ? brandColor : undefined,
-                                  backgroundColor: active ? brandColor : undefined,
+                                  backgroundColor: active
+                                    ? brandColor
+                                    : undefined,
                                 }}
                               >
-                                {active && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                                {active && (
+                                  <Check
+                                    className="h-2.5 w-2.5 text-white"
+                                    strokeWidth={3}
+                                  />
+                                )}
                               </span>
                               <span className="flex-1 min-w-0">
                                 <span className="block text-xs font-medium text-slate-800 dark:text-slate-200 truncate leading-tight">
@@ -370,17 +469,24 @@ export function ItemDetailModal({
                 {showOrderNotes && (
                   <div className="space-y-2">
                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                      {t('special_instructions')}
+                      {t("special_instructions")}
                     </p>
                     <Textarea
                       value={notes}
-                      onChange={e => setNotes(e.target.value)}
-                      placeholder={t('special_instructions_placeholder')}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder={t("special_instructions_placeholder")}
                       className="min-h-[72px] resize-none rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus-visible:ring-1"
-                      style={{ fontSize: '16px', '--tw-ring-color': brandColor } as React.CSSProperties}
+                      style={
+                        {
+                          fontSize: "16px",
+                          "--tw-ring-color": brandColor,
+                        } as React.CSSProperties
+                      }
                       maxLength={200}
                     />
-                    <p className="text-[11px] text-slate-400 text-right">{notes.length}/200</p>
+                    <p className="text-[11px] text-slate-400 text-right">
+                      {notes.length}/200
+                    </p>
                   </div>
                 )}
 
@@ -391,7 +497,9 @@ export function ItemDetailModal({
             {/* ── Sticky footer: qty + CTA ── */}
             <div
               className="flex-shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-4"
-              style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))' }}
+              style={{
+                paddingBottom: "max(16px, env(safe-area-inset-bottom, 0px))",
+              }}
             >
               <div className="flex items-center gap-3">
                 {/* Quantity stepper */}
@@ -402,7 +510,7 @@ export function ItemDetailModal({
                     onClick={decQty}
                     disabled={quantity <= 1}
                     className="w-10 h-11 rounded-none hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"
-                    aria-label={t('decrease_quantity')}
+                    aria-label={t("decrease_quantity")}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -414,7 +522,7 @@ export function ItemDetailModal({
                     size="icon"
                     onClick={incQty}
                     className="w-10 h-11 rounded-none hover:bg-slate-200 dark:hover:bg-slate-700"
-                    aria-label={t('increase_quantity')}
+                    aria-label={t("increase_quantity")}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -426,7 +534,7 @@ export function ItemDetailModal({
                   disabled={!canAddItems || !displayItem.available || isAdding}
                   className="flex-1 h-11 rounded-xl text-white font-bold text-sm flex items-center justify-between px-4 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: brandColor }}
-                  aria-label={`${isEditMode ? t('update') : t('add_to_cart')} — ¥${totalPrice}`}
+                  aria-label={`${isEditMode ? t("update") : t("add_to_cart")} — ¥${totalPrice}`}
                 >
                   <div className="flex items-center gap-2">
                     {isAdding ? (
@@ -434,7 +542,7 @@ export function ItemDetailModal({
                     ) : (
                       <ShoppingCart className="h-4 w-4" />
                     )}
-                    <span>{isEditMode ? t('update') : t('add_to_cart')}</span>
+                    <span>{isEditMode ? t("update") : t("add_to_cart")}</span>
                   </div>
                   <span className="bg-white/20 px-2.5 py-0.5 rounded-lg font-bold text-sm">
                     ¥{totalPrice}

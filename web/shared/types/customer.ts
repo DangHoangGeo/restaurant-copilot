@@ -1,5 +1,5 @@
 // web/shared/types/customer.ts
-import { MenuItem, Category, MenuItemSize, Topping } from './menu';
+import { MenuItem, Category, MenuItemSize, Topping } from "./menu";
 
 // Re-export menu types for backward compatibility
 export type { MenuItem, Category, MenuItemSize, Topping };
@@ -16,7 +16,13 @@ export interface TableInfo {
   capacity: number | null;
 }
 export interface SessionData {
-  sessionStatus: "new" | "existing" | "resolved" | "invalid" | "expired" | "active";
+  sessionStatus:
+    | "new"
+    | "existing"
+    | "resolved"
+    | "invalid"
+    | "expired"
+    | "active";
   canAddItems: boolean;
   tableId?: string | null;
   sessionId?: string | null;
@@ -26,6 +32,7 @@ export interface SessionData {
 export interface RestaurantSettings {
   id: string;
   name: string;
+  companyName?: string | null;
   subdomain: string;
   branchCode?: string | null;
   companyPublicSubdomain?: string | null;
@@ -53,6 +60,7 @@ export interface RestaurantSettings {
 export interface RestaurantData {
   id: string;
   name: string;
+  companyName?: string | null;
   subdomain: string;
   branchCode?: string | null;
   companyPublicSubdomain?: string | null;

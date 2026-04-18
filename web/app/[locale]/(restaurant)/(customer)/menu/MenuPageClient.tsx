@@ -1,15 +1,19 @@
-'use client';
+"use client";
 
-import { SmartMenu } from '@/components/features/customer/menu/SmartMenu';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
-import { useCustomerData } from '@/components/features/customer/layout/CustomerDataContext';
-import { useTranslations } from 'next-intl';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { getSubdomainFromHost } from '@/lib/utils';
+import { SmartMenu } from "@/components/features/customer/menu/SmartMenu";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import type {
+  ViewType,
+  ViewProps,
+} from "@/components/features/customer/screens/types";
+import { useCustomerData } from "@/components/features/customer/layout/CustomerDataContext";
+import { useTranslations } from "next-intl";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getSubdomainFromHost } from "@/lib/utils";
+import { buildCustomerPath } from "@/lib/customer-branch";
 
 interface MenuPageClientProps {
   locale: string;
@@ -17,34 +21,54 @@ interface MenuPageClientProps {
 
 export function MenuPageClient({ locale }: MenuPageClientProps) {
   const router = useRouter();
-  const { restaurantSettings, sessionParams, sessionData, setSessionId, isLoading: contextLoading } = useCustomerData();
-  const t = useTranslations('customer.session');
+  const {
+    restaurantSettings,
+    sessionParams,
+    activeBranchCode,
+    sessionData,
+    setSessionId,
+    isLoading: contextLoading,
+  } = useCustomerData();
+  const t = useTranslations("customer.session");
 
   // Local state
-  const [tableId, setTableId] = useState<string | null>(sessionParams.tableId || null);
+  const [tableId, setTableId] = useState<string | null>(
+    sessionParams.tableId || null,
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Session dialog states
   const [guestCount, setGuestCount] = useState<number>(1);
   const [showGuestDialog, setShowGuestDialog] = useState<boolean>(false);
-  const [guestDialogStep, setGuestDialogStep] = useState<'guests' | 'passcode'>('guests');
+  const [guestDialogStep, setGuestDialogStep] = useState<"guests" | "passcode">(
+    "guests",
+  );
   const [isStartingSession, setIsStartingSession] = useState<boolean>(false);
   const [showJoinDialog, setShowJoinDialog] = useState<boolean>(false);
-  const [passcode, setPasscode] = useState<string>('');
-  const [sessionPasscode, setSessionPasscode] = useState<string>('');
-  const [pendingSessionId, setPendingSessionId] = useState<string>('');
+  const [passcode, setPasscode] = useState<string>("");
+  const [sessionPasscode, setSessionPasscode] = useState<string>("");
+  const [pendingSessionId, setPendingSessionId] = useState<string>("");
   const [requirePasscode, setRequirePasscode] = useState<boolean>(false);
-  const [startSessionError, setStartSessionError] = useState<string | null>(null);
+  const [startSessionError, setStartSessionError] = useState<string | null>(
+    null,
+  );
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoiningSession, setIsJoiningSession] = useState<boolean>(false);
   const [resolveError, setResolveError] = useState<string | null>(null);
   const [passcodeCopied, setPasscodeCopied] = useState<boolean>(false);
 
-  const brandColor = restaurantSettings?.primaryColor || '#3b82f6';
+  const brandColor = restaurantSettings?.primaryColor || "#3b82f6";
+  const companyName =
+    restaurantSettings?.companyName ?? restaurantSettings?.name ?? "";
+  const branchName = restaurantSettings?.name ?? "";
 
   // Handle session resolution for QR codes and session parameters
   useEffect(() => {
-    if (!sessionParams.code && !sessionParams.sessionId && !(sessionParams.branch && sessionParams.table)) {
+    if (
+      !sessionParams.code &&
+      !sessionParams.sessionId &&
+      !(sessionParams.branch && sessionParams.table)
+    ) {
       return;
     }
 
@@ -56,16 +80,17 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         // Handle existing sessionId parameter (direct session access)
         if (sessionParams.sessionId) {
           // Context already handles this, we just need to verify it's still valid
-        }
-        else if (sessionParams.branch && sessionParams.table) {
+        } else if (sessionParams.branch && sessionParams.table) {
           const params = new URLSearchParams({
             branch: sessionParams.branch,
             table: sessionParams.table,
           });
           const orgIdentifier = getSubdomainFromHost(window.location.host);
-          if (orgIdentifier) params.set('org', orgIdentifier);
+          if (orgIdentifier) params.set("org", orgIdentifier);
 
-          const response = await fetch(`/api/v1/customer/entry/resolve?${params.toString()}`);
+          const response = await fetch(
+            `/api/v1/customer/entry/resolve?${params.toString()}`,
+          );
           const result = await response.json();
 
           if (result.success) {
@@ -79,12 +104,14 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               setShowGuestDialog(true);
             }
           } else {
-            setResolveError(t('invalid_session_message'));
+            setResolveError(t("invalid_session_message"));
           }
         }
         // Handle QR code scanning (code parameter)
         else if (sessionParams.code) {
-          const response = await fetch(`/api/v1/customer/session/check-code?code=${sessionParams.code}`);
+          const response = await fetch(
+            `/api/v1/customer/session/check-code?code=${sessionParams.code}`,
+          );
           const result = await response.json();
 
           if (result.success) {
@@ -100,19 +127,25 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               setShowGuestDialog(true);
             }
           } else {
-            setResolveError(t('invalid_session_message'));
+            setResolveError(t("invalid_session_message"));
           }
         }
       } catch (error) {
-        console.error('Error resolving session:', error);
-        setResolveError(t('join_failed'));
+        console.error("Error resolving session:", error);
+        setResolveError(t("join_failed"));
       } finally {
         setIsLoading(false);
       }
     };
 
     resolveSession();
-  }, [sessionParams.branch, sessionParams.code, sessionParams.sessionId, sessionParams.table, t]);
+  }, [
+    sessionParams.branch,
+    sessionParams.code,
+    sessionParams.sessionId,
+    sessionParams.table,
+    t,
+  ]);
 
   // Start new session (called when guest count dialog is submitted)
   const startSession = async () => {
@@ -124,33 +157,38 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     try {
       const subdomain = getSubdomainFromHost(window.location.host);
       const params = new URLSearchParams({ tableId });
-      params.append('guests', String(guestCount));
-      params.append('restaurantId', restaurantSettings.id);
-      if (subdomain) params.append('subdomain', subdomain);
+      params.append("guests", String(guestCount));
+      params.append("restaurantId", restaurantSettings.id);
+      if (subdomain) params.append("subdomain", subdomain);
 
-      const res = await fetch(`/api/v1/customer/session/create?${params.toString()}`);
+      const res = await fetch(
+        `/api/v1/customer/session/create?${params.toString()}`,
+      );
       const data = await res.json();
 
       if (data.success) {
         setSessionId(data.sessionId);
-        localStorage.setItem("guestCount", String(data.guestCount || guestCount));
-        setSessionPasscode(data.passcode || '');
+        localStorage.setItem(
+          "guestCount",
+          String(data.guestCount || guestCount),
+        );
+        setSessionPasscode(data.passcode || "");
 
         // Transition to passcode step within the same dialog
-        setGuestDialogStep('passcode');
+        setGuestDialogStep("passcode");
 
         // Update URL to use sessionId instead of code
         const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.delete('code');
-        currentUrl.searchParams.delete('tableId');
-        currentUrl.searchParams.set('sessionId', data.sessionId);
-        window.history.replaceState({}, '', currentUrl.toString());
+        currentUrl.searchParams.delete("code");
+        currentUrl.searchParams.delete("tableId");
+        currentUrl.searchParams.set("sessionId", data.sessionId);
+        window.history.replaceState({}, "", currentUrl.toString());
       } else {
-        setStartSessionError(t('start_session_failed'));
+        setStartSessionError(t("start_session_failed"));
       }
     } catch (error) {
-      console.error('Error starting session:', error);
-      setStartSessionError(t('start_session_failed'));
+      console.error("Error starting session:", error);
+      setStartSessionError(t("start_session_failed"));
     } finally {
       setIsStartingSession(false);
     }
@@ -162,7 +200,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     if (!restaurantSettings) return;
 
     if (requirePasscode && passcode.length !== 4) {
-      setJoinError(t('invalid_passcode_error'));
+      setJoinError(t("invalid_passcode_error"));
       return;
     }
 
@@ -173,38 +211,40 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       const subdomain = getSubdomainFromHost(window.location.host);
       const params = new URLSearchParams({
         sessionId: pendingSessionId,
-        passcode: requirePasscode ? passcode : 'default'
+        passcode: requirePasscode ? passcode : "default",
       });
-      params.append('restaurantId', restaurantSettings.id);
-      if (subdomain) params.append('subdomain', subdomain);
+      params.append("restaurantId", restaurantSettings.id);
+      if (subdomain) params.append("subdomain", subdomain);
 
-      const response = await fetch(`/api/v1/customer/session/join?${params.toString()}`);
+      const response = await fetch(
+        `/api/v1/customer/session/join?${params.toString()}`,
+      );
       const data = await response.json();
 
       if (data.success) {
         setSessionId(data.sessionId);
         setShowJoinDialog(false);
-        setPasscode('');
+        setPasscode("");
         setJoinError(null);
 
         // Update URL to use sessionId instead of code
         const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.delete('code');
-        currentUrl.searchParams.delete('tableId');
-        currentUrl.searchParams.set('sessionId', data.sessionId);
-        window.history.replaceState({}, '', currentUrl.toString());
+        currentUrl.searchParams.delete("code");
+        currentUrl.searchParams.delete("tableId");
+        currentUrl.searchParams.set("sessionId", data.sessionId);
+        window.history.replaceState({}, "", currentUrl.toString());
       } else {
-        if (data.error === 'Invalid passcode') {
-          setJoinError(t('invalid_passcode_error'));
-        } else if (data.error === 'Session is no longer active') {
-          setJoinError(t('session_expired_message'));
+        if (data.error === "Invalid passcode") {
+          setJoinError(t("invalid_passcode_error"));
+        } else if (data.error === "Session is no longer active") {
+          setJoinError(t("session_expired_message"));
         } else {
-          setJoinError(t('join_failed'));
+          setJoinError(t("join_failed"));
         }
       }
     } catch (error) {
-      console.error('Error joining session:', error);
-      setJoinError(t('join_failed'));
+      console.error("Error joining session:", error);
+      setJoinError(t("join_failed"));
     } finally {
       setIsJoiningSession(false);
     }
@@ -212,7 +252,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
 
   const handleContinueToMenu = () => {
     setShowGuestDialog(false);
-    setGuestDialogStep('guests');
+    setGuestDialogStep("guests");
     setStartSessionError(null);
     setPasscodeCopied(false);
   };
@@ -220,7 +260,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const handleGuestDialogOpenChange = (open: boolean) => {
     if (!open) {
       setShowGuestDialog(false);
-      setGuestDialogStep('guests');
+      setGuestDialogStep("guests");
       setStartSessionError(null);
       setPasscodeCopied(false);
     }
@@ -229,7 +269,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const handleJoinDialogOpenChange = (open: boolean) => {
     setShowJoinDialog(open);
     if (!open) {
-      setPasscode('');
+      setPasscode("");
       setJoinError(null);
       setIsJoiningSession(false);
     }
@@ -243,43 +283,87 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       setPasscodeCopied(true);
       window.setTimeout(() => setPasscodeCopied(false), 1500);
     } catch (error) {
-      console.error('Failed to copy session passcode:', error);
+      console.error("Failed to copy session passcode:", error);
     }
   };
 
-  const handleSetView = useCallback((view: ViewType, props?: ViewProps) => {
-    const baseParams = new URLSearchParams({
-      locale,
-      view,
-      sessionId: sessionData.sessionId || '',
-      tableNumber: sessionData.tableNumber || '',
-    });
-
-    if (props) {
-      Object.entries(props).forEach(([key, value]) => {
-        if (value !== undefined) {
-          baseParams.set(key, String(value));
-        }
+  const handleSetView = useCallback(
+    (view: ViewType, props?: ViewProps) => {
+      const baseParams = new URLSearchParams({
+        locale,
+        view,
+        sessionId: sessionData.sessionId || "",
+        tableNumber: sessionData.tableNumber || "",
       });
-    }
 
-    switch (view) {
-      case 'menu':
-        router.push(`/${locale}/menu?${baseParams.toString()}`);
-        break;
-      case 'menuitemdetail':
-        router.push(`/${locale}/menu/item?${baseParams.toString()}`);
-        break;
-      case 'review':
-        router.push(`/${locale}/review?${baseParams.toString()}`);
-        break;
-      case 'history':
-        router.push(`/${locale}/history?${baseParams.toString()}`);
-        break;
-      default:
-        router.push(`/${locale}/menu?${baseParams.toString()}`);
-    }
-  }, [locale, router, sessionData.sessionId, sessionData.tableNumber]);
+      if (props) {
+        Object.entries(props).forEach(([key, value]) => {
+          if (value !== undefined) {
+            baseParams.set(key, String(value));
+          }
+        });
+      }
+
+      switch (view) {
+        case "menu":
+          router.push(
+            buildCustomerPath({
+              locale,
+              path: "menu",
+              branchCode: activeBranchCode,
+              searchParams: baseParams,
+            }),
+          );
+          break;
+        case "menuitemdetail":
+          router.push(
+            buildCustomerPath({
+              locale,
+              path: "menu/item",
+              branchCode: activeBranchCode,
+              searchParams: baseParams,
+            }),
+          );
+          break;
+        case "review":
+          router.push(
+            buildCustomerPath({
+              locale,
+              path: "review",
+              branchCode: activeBranchCode,
+              searchParams: baseParams,
+            }),
+          );
+          break;
+        case "history":
+          router.push(
+            buildCustomerPath({
+              locale,
+              path: "history",
+              branchCode: activeBranchCode,
+              searchParams: baseParams,
+            }),
+          );
+          break;
+        default:
+          router.push(
+            buildCustomerPath({
+              locale,
+              path: "menu",
+              branchCode: activeBranchCode,
+              searchParams: baseParams,
+            }),
+          );
+      }
+    },
+    [
+      activeBranchCode,
+      locale,
+      router,
+      sessionData.sessionId,
+      sessionData.tableNumber,
+    ],
+  );
 
   // Show loading state
   if (contextLoading || isLoading) {
@@ -287,25 +371,25 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('loading')}</p>
+          <p className="text-gray-600">{t("loading")}</p>
         </div>
       </div>
     );
   }
 
   // Show error state for invalid sessions
-  if (sessionData.sessionStatus === 'invalid') {
+  if (sessionData.sessionStatus === "invalid") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center max-w-md">
           <h2 className="text-xl font-semibold text-red-600 mb-2">
-            {t('invalid_session')}
+            {t("invalid_session")}
           </h2>
           <p className="text-slate-600 dark:text-slate-400 mb-4">
-            {t('invalid_session_message')}
+            {t("invalid_session_message")}
           </p>
           <Button onClick={() => router.push(`/${locale}/`)}>
-            {t('scan_qr_again')}
+            {t("scan_qr_again")}
           </Button>
         </div>
       </div>
@@ -317,13 +401,13 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center max-w-md px-4">
           <h2 className="text-xl font-semibold text-red-600 mb-2">
-            {t('invalid_session')}
+            {t("invalid_session")}
           </h2>
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             {resolveError}
           </p>
           <Button onClick={() => router.push(`/${locale}/`)}>
-            {t('scan_qr_again')}
+            {t("scan_qr_again")}
           </Button>
         </div>
       </div>
@@ -331,16 +415,24 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   }
 
   // Redirect to history page for expired/completed sessions
-  if (sessionData.sessionStatus === 'expired' && sessionParams.sessionId) {
+  if (sessionData.sessionStatus === "expired" && sessionParams.sessionId) {
     const historyUrl = new URLSearchParams();
-    if (sessionData.sessionId) historyUrl.set('sessionId', sessionData.sessionId);
-    router.push(`/${locale}/history?${historyUrl.toString()}`);
+    if (sessionData.sessionId)
+      historyUrl.set("sessionId", sessionData.sessionId);
+    router.push(
+      buildCustomerPath({
+        locale,
+        path: "history",
+        branchCode: activeBranchCode,
+        searchParams: historyUrl,
+      }),
+    );
 
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('redirecting_to_history')}</p>
+          <p className="text-gray-600">{t("redirecting_to_history")}</p>
         </div>
       </div>
     );
@@ -350,13 +442,14 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     <>
       <SmartMenu
         locale={locale}
-        sessionId={sessionData.sessionId || ''}
-        tableNumber={sessionData.tableNumber || ''}
+        sessionId={sessionData.sessionId || ""}
+        tableNumber={sessionData.tableNumber || ""}
         canAddItems={sessionData.canAddItems}
         brandColor={restaurantSettings?.primaryColor || "#3b82f6"}
         setView={handleSetView}
-        restaurantId={restaurantSettings?.id || ''}
-        restaurantName={restaurantSettings?.name}
+        restaurantId={restaurantSettings?.id || ""}
+        restaurantName={companyName}
+        branchName={branchName}
         logoUrl={restaurantSettings?.logoUrl}
         allowOrderNotes={restaurantSettings?.allowOrderNotes ?? true}
       />
@@ -364,9 +457,14 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       {/* Guest Count + Passcode Dialog (combined 2-step) */}
       <Dialog open={showGuestDialog} onOpenChange={handleGuestDialogOpenChange}>
         <DialogContent className="sm:max-w-sm p-0 overflow-hidden">
-          {guestDialogStep === 'guests' ? (
-            <div key="guests" className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200">
-              <DialogTitle className="sr-only">{t('guest_count_title')}</DialogTitle>
+          {guestDialogStep === "guests" ? (
+            <div
+              key="guests"
+              className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200"
+            >
+              <DialogTitle className="sr-only">
+                {t("guest_count_title")}
+              </DialogTitle>
 
               {/* Welcome header */}
               <div className="mb-6">
@@ -389,22 +487,28 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                   </svg>
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  {restaurantSettings?.name
-                    ? `${t('welcome_to')} ${restaurantSettings.name}`
-                    : t('welcome_greeting')}
+                  {companyName
+                    ? `${t("welcome_to")} ${companyName}`
+                    : t("welcome_greeting")}
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">{t('welcome_subtitle')}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {branchName && branchName !== companyName
+                    ? `${branchName} · ${t("welcome_subtitle")}`
+                    : t("welcome_subtitle")}
+                </p>
               </div>
 
               {/* Guest count description */}
-              <p className="text-sm text-gray-600 mb-5">{t('guest_count_description')}</p>
+              <p className="text-sm text-gray-600 mb-5">
+                {t("guest_count_description")}
+              </p>
 
               {/* Stepper */}
               <div className="flex items-center justify-center gap-8 mb-8">
                 <button
                   type="button"
-                  aria-label={t('decrease_guests')}
-                  onClick={() => setGuestCount(c => Math.max(1, c - 1))}
+                  aria-label={t("decrease_guests")}
+                  onClick={() => setGuestCount((c) => Math.max(1, c - 1))}
                   disabled={guestCount <= 1}
                   className="w-14 h-14 rounded-full text-3xl font-medium border-2 transition-all duration-150 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed select-none"
                   style={{ borderColor: brandColor, color: brandColor }}
@@ -419,13 +523,15 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                   >
                     {guestCount}
                   </span>
-                  <span className="text-xs text-gray-400 mt-1 block">{t('guests_label')}</span>
+                  <span className="text-xs text-gray-400 mt-1 block">
+                    {t("guests_label")}
+                  </span>
                 </div>
 
                 <button
                   type="button"
-                  aria-label={t('increase_guests')}
-                  onClick={() => setGuestCount(c => Math.min(20, c + 1))}
+                  aria-label={t("increase_guests")}
+                  onClick={() => setGuestCount((c) => Math.min(20, c + 1))}
                   disabled={guestCount >= 20}
                   className="w-14 h-14 rounded-full text-3xl font-medium border-2 transition-all duration-150 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed select-none"
                   style={{ borderColor: brandColor, color: brandColor }}
@@ -440,18 +546,21 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 className="w-full h-12 text-base font-semibold text-white"
                 style={{ backgroundColor: brandColor, borderColor: brandColor }}
               >
-                {isStartingSession ? t('starting') : t('start_session')}
+                {isStartingSession ? t("starting") : t("start_session")}
               </Button>
 
               {startSessionError && (
-                <p className="mt-3 text-sm text-red-600">
-                  {startSessionError}
-                </p>
+                <p className="mt-3 text-sm text-red-600">{startSessionError}</p>
               )}
             </div>
           ) : (
-            <div key="passcode" className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200">
-              <DialogTitle className="sr-only">{t('session_created_title')}</DialogTitle>
+            <div
+              key="passcode"
+              className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200"
+            >
+              <DialogTitle className="sr-only">
+                {t("session_created_title")}
+              </DialogTitle>
 
               {/* Success icon */}
               <div
@@ -465,12 +574,20 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                   strokeWidth={2.5}
                   stroke={brandColor}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
                 </svg>
               </div>
 
-              <h2 className="text-xl font-bold text-gray-900 mb-1">{t('session_ready_title')}</h2>
-              <p className="text-sm text-gray-500 mb-6">{t('passcode_share_instructions')}</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">
+                {t("session_ready_title")}
+              </h2>
+              <p className="text-sm text-gray-500 mb-6">
+                {t("passcode_share_instructions")}
+              </p>
 
               {/* Passcode display */}
               <div
@@ -478,7 +595,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 style={{ backgroundColor: `${brandColor}12` }}
               >
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
-                  {t('table_passcode_label')}
+                  {t("table_passcode_label")}
                 </p>
                 <div
                   className="text-5xl font-bold tracking-[0.3em] pl-[0.3em]"
@@ -488,7 +605,9 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 </div>
               </div>
 
-              <p className="text-xs text-gray-400 mb-6">{t('passcode_instructions')}</p>
+              <p className="text-xs text-gray-400 mb-6">
+                {t("passcode_instructions")}
+              </p>
 
               <Button
                 type="button"
@@ -496,7 +615,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 onClick={handleCopyPasscode}
                 className="w-full h-11 mb-3"
               >
-                {passcodeCopied ? t('copied') : t('copy_passcode')}
+                {passcodeCopied ? t("copied") : t("copy_passcode")}
               </Button>
 
               <Button
@@ -504,7 +623,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 className="w-full h-12 text-base font-semibold text-white"
                 style={{ backgroundColor: brandColor, borderColor: brandColor }}
               >
-                {t('start_ordering')}
+                {t("start_ordering")}
               </Button>
             </div>
           )}
@@ -535,23 +654,25 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
             </div>
 
             <DialogTitle className="text-xl font-bold text-gray-900 mb-1">
-              {t('join_session_title')}
+              {t("join_session_title")}
             </DialogTitle>
-            <p className="text-sm text-gray-500 mb-6">{t('join_session_description')}</p>
+            <p className="text-sm text-gray-500 mb-6">
+              {t("join_session_description")}
+            </p>
 
             {requirePasscode && (
               <Input
                 type="text"
                 inputMode="numeric"
                 maxLength={4}
-                placeholder={t('enter_passcode')}
+                placeholder={t("enter_passcode")}
                 value={passcode}
                 onChange={(e) => {
-                  setPasscode(e.target.value.replace(/\D/g, '').slice(0, 4));
+                  setPasscode(e.target.value.replace(/\D/g, "").slice(0, 4));
                   if (joinError) setJoinError(null);
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !isJoiningSession) {
+                  if (e.key === "Enter" && !isJoiningSession) {
                     void joinSession();
                   }
                 }}
@@ -565,23 +686,27 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
             )}
 
             {requirePasscode && !joinError && (
-              <p className="text-xs text-gray-500 mb-4">{t('ask_for_passcode_instruction')}</p>
+              <p className="text-xs text-gray-500 mb-4">
+                {t("ask_for_passcode_instruction")}
+              </p>
             )}
 
             <Button
               onClick={joinSession}
-              disabled={isJoiningSession || (requirePasscode && passcode.length !== 4)}
+              disabled={
+                isJoiningSession || (requirePasscode && passcode.length !== 4)
+              }
               className="w-full h-12 text-base font-semibold text-white mb-3"
               style={{ backgroundColor: brandColor, borderColor: brandColor }}
             >
-              {isJoiningSession ? t('starting') : t('join')}
+              {isJoiningSession ? t("starting") : t("join")}
             </Button>
             <Button
               variant="ghost"
               onClick={() => setShowJoinDialog(false)}
               className="w-full h-10 text-sm text-gray-500"
             >
-              {t('cancel')}
+              {t("cancel")}
             </Button>
           </div>
         </DialogContent>

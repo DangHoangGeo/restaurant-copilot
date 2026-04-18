@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useTranslations } from 'next-intl';
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useTranslations } from "next-intl";
 import {
   Building2,
   ExternalLink,
@@ -15,10 +15,10 @@ import {
   Plus,
   Sparkles,
   X,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -26,29 +26,33 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 const addBranchFormSchema = z.object({
-  name: z.string().min(1, 'Required').max(100),
+  name: z.string().min(1, "Required").max(100),
   subdomain: z
     .string()
-    .min(3, 'At least 3 characters')
-    .max(50, 'Max 50 characters')
-    .regex(/^[a-z0-9-]+$/, 'Lowercase letters, numbers, hyphens only'),
-  default_language: z.enum(['en', 'ja', 'vi']),
-  brand_color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Invalid hex color'),
+    .min(3, "At least 3 characters")
+    .max(50, "Max 50 characters")
+    .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers, hyphens only"),
+  default_language: z.enum(["en", "ja", "vi"]),
   tax: z.number().min(0).max(1).optional(),
   address: z.string().max(500).optional(),
   phone: z.string().max(50).optional(),
-  email: z.string().email('Invalid email').max(100).optional().or(z.literal('')),
-  website: z.string().url('Invalid URL').max(200).optional().or(z.literal('')),
+  email: z
+    .string()
+    .email("Invalid email")
+    .max(100)
+    .optional()
+    .or(z.literal("")),
+  website: z.string().url("Invalid URL").max(200).optional().or(z.literal("")),
 });
 
 type AddBranchFormData = z.infer<typeof addBranchFormSchema>;
@@ -63,8 +67,8 @@ function toBranchCode(value: string): string {
   return value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
     .slice(0, 50);
 }
 
@@ -73,7 +77,7 @@ export function AddBranchModal({
   onClose,
   onSuccess,
 }: AddBranchModalProps) {
-  const t = useTranslations('owner.branches');
+  const t = useTranslations("owner.branches");
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [branchCodeEdited, setBranchCodeEdited] = useState(false);
@@ -81,23 +85,22 @@ export function AddBranchModal({
   const form = useForm<AddBranchFormData>({
     resolver: zodResolver(addBranchFormSchema),
     defaultValues: {
-      name: '',
-      subdomain: '',
-      default_language: 'ja',
-      brand_color: '#EA580C',
+      name: "",
+      subdomain: "",
+      default_language: "ja",
       tax: 0.1,
-      address: '',
-      phone: '',
-      email: '',
-      website: '',
+      address: "",
+      phone: "",
+      email: "",
+      website: "",
     },
   });
 
-  const watchedName = form.watch('name');
+  const watchedName = form.watch("name");
 
   useEffect(() => {
     if (!branchCodeEdited) {
-      form.setValue('subdomain', toBranchCode(watchedName), {
+      form.setValue("subdomain", toBranchCode(watchedName), {
         shouldDirty: false,
         shouldValidate: false,
       });
@@ -118,9 +121,9 @@ export function AddBranchModal({
     };
 
     try {
-      const response = await fetch('/api/v1/owner/organization/restaurants', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/v1/owner/organization/restaurants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -128,16 +131,16 @@ export function AddBranchModal({
 
       if (!response.ok) {
         if (response.status === 409) {
-          form.setError('subdomain', { message: t('addBranchSubdomainTaken') });
+          form.setError("subdomain", { message: t("addBranchSubdomainTaken") });
         } else {
-          setServerError(json.error ?? t('addBranchError'));
+          setServerError(json.error ?? t("addBranchError"));
         }
         return;
       }
 
       onSuccess(json.restaurant);
     } catch {
-      setServerError(t('addBranchError'));
+      setServerError(t("addBranchError"));
     } finally {
       setSubmitting(false);
     }
@@ -165,7 +168,7 @@ export function AddBranchModal({
             <button
               onClick={onClose}
               className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-              aria-label={t('addBranchClose')}
+              aria-label={t("addBranchClose")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -173,7 +176,10 @@ export function AddBranchModal({
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 px-5 py-5 sm:px-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 px-5 py-5 sm:px-6"
+          >
             <section className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -186,7 +192,7 @@ export function AddBranchModal({
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t('addBranchNamePlaceholder')}
+                        placeholder={t("addBranchNamePlaceholder")}
                         {...field}
                         className="h-11 rounded-2xl"
                       />
@@ -218,9 +224,12 @@ export function AddBranchModal({
                             className="h-11 rounded-r-none border-0 bg-transparent shadow-none"
                           />
                           <div className="shrink-0 rounded-r-[14px] border-l bg-muted px-3 text-sm text-muted-foreground">
-                            {companyPublicSubdomain ? `${companyPublicSubdomain}.coorder.ai` : 'coorder.ai'}/menu?branch=
+                            {companyPublicSubdomain
+                              ? `${companyPublicSubdomain}.coorder.ai`
+                              : "coorder.ai"}
+                            /menu?branch=
                             <span className="font-medium text-foreground">
-                              {field.value || 'branch-code'}
+                              {field.value || "branch-code"}
                             </span>
                           </div>
                         </div>
@@ -237,7 +246,10 @@ export function AddBranchModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm">Default language</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="h-11 rounded-2xl">
                           <SelectValue />
@@ -254,30 +266,15 @@ export function AddBranchModal({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="brand_color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">Accent color</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          {...field}
-                          className="h-11 w-14 cursor-pointer rounded-2xl border bg-transparent p-1"
-                        />
-                        <Input
-                          {...field}
-                          placeholder="#EA580C"
-                          className="h-11 rounded-2xl font-mono"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="rounded-2xl border border-dashed bg-muted/20 p-4">
+                <p className="text-sm font-medium text-foreground">
+                  Brand identity
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  New branches inherit the company logo and brand color
+                  automatically.
+                </p>
+              </div>
             </section>
 
             <section className="rounded-3xl border bg-muted/20 p-4 sm:p-5">
@@ -389,11 +386,15 @@ export function AddBranchModal({
                 onClick={onClose}
                 disabled={submitting}
               >
-                {t('addBranchCancel')}
+                {t("addBranchCancel")}
               </Button>
-              <Button type="submit" className="rounded-2xl" disabled={submitting}>
+              <Button
+                type="submit"
+                className="rounded-2xl"
+                disabled={submitting}
+              >
                 <Plus className="mr-2 h-4 w-4" />
-                {submitting ? t('addBranchSaving') : 'Create restaurant'}
+                {submitting ? t("addBranchSaving") : "Create restaurant"}
               </Button>
             </div>
           </form>

@@ -1,312 +1,778 @@
-"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import type { CSSProperties } from "react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Clock3,
+  MapPin,
+  Phone,
+  Sparkles,
+  Star,
+  Store,
+  UtensilsCrossed,
+} from "lucide-react";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
-
-// Import all homepage sections
-import { HeroSection } from "../homepage/HeroSection";
-import { OwnerStorySection } from "../homepage/OwnerStorySection";
-import { GallerySection } from "../homepage/GallerySection";
-import { SignatureDishesSection } from "../homepage/SignatureDishesSection";
-import { ReviewsMapSection } from "../homepage/ReviewsMapSection";
-import { ContactHoursSection } from "../homepage/ContactHoursSection";
-import { RestaurantData } from "@/shared/types";
-
-// Types
-
-
-interface Owner {
-  id: string;
-  name?: string | null;
-  email: string;
-  photo_url?: string | null;
-}
-
-interface GalleryImage {
-  id: string;
-  image_url: string;
-  caption?: string | null;
-  alt_text: string;
-  sort_order: number;
-  is_hero: boolean;
-}
-
-interface SignatureDish {
-  id: string;
-  name_en: string;
-  name_ja: string;
-  name_vi: string;
-  description_en?: string | null;
-  description_ja?: string | null;
-  description_vi?: string | null;
-  price: number;
-  image_url?: string | null;
-  category_name_en?: string;
-  category_name_ja?: string;
-  category_name_vi?: string;
-}
-
-interface HomepageData {
-  restaurant: RestaurantData;
-  owners: Owner[];
-  gallery: GalleryImage[];
-  signature_dishes: SignatureDish[];
-}
+import { Button } from "@/components/ui/button";
+import { createThemeProperties, sanitizeHexColor } from "@/lib/utils/colors";
+import { cn } from "@/lib/utils";
+import type { CustomerHomepageData } from "@/shared/types";
 
 interface NewHomePageProps {
-  subdomain?: string;
-  locale?: string;
-  isAdmin?: boolean;
-  isAdminPreview?: boolean;
-  initialData?: HomepageData | null;
+  locale: string;
+  initialData: CustomerHomepageData | null;
 }
 
-// Helper functions
-function getToday() {
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  return days[new Date().getDay()];
+type OpeningHoursRecord = Record<
+  string,
+  {
+    isClosed?: boolean;
+    openTime?: string;
+    closeTime?: string;
+  }
+>;
+
+function getLocalizedText(
+  locale: string,
+  values: { en?: string | null; ja?: string | null; vi?: string | null },
+): string {
+  if (locale === "ja" && values.ja) return values.ja;
+  if (locale === "vi" && values.vi) return values.vi;
+  return values.en ?? values.ja ?? values.vi ?? "";
 }
 
-function isOpenNow(hours: Record<string, { isClosed?: boolean; openTime?: string; closeTime?: string }>): { open: boolean; closesAt?: string } {
-  const now = new Date();
-  const today = getToday();
-  const todayHours = hours?.[today];
-  
-  if (!todayHours || todayHours.isClosed) return { open: false };
-  
-  try {
-    const [h, m] = todayHours.openTime?.split(":") ?? [0, 0];
-    const [ch, cm] = todayHours.closeTime?.split(":") ?? [23, 59];
-    const openMinutes = Number(h) * 60 + Number(m);
-    const closeMinutes = Number(ch) * 60 + Number(cm);
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    
-    return {
-      open: nowMinutes >= openMinutes && nowMinutes < closeMinutes,
-      closesAt: todayHours.closeTime,
-    };
-  } catch {
-    return { open: false };
-  }
-}
-
-export function NewHomePage({ subdomain, locale = 'en', isAdmin = false, isAdminPreview = false, initialData = null }: NewHomePageProps) {
-  const [homepageData, setHomepageData] = useState<HomepageData | null>(initialData);
-  const [loading, setLoading] = useState(!initialData);
-  const [error, setError] = useState<string | null>(null);
-  
-  const t = useTranslations("customer.home");
-
-  useEffect(() => {
-    // Skip fetch if we already have initial data
-    if (initialData) {
-      return;
-    }
-
-    const fetchHomepageData = async () => {
-      try {
-        setLoading(true);
-        
-        let response;
-        if (isAdminPreview) {
-          // For admin preview, get data from authenticated restaurant context
-          response = await fetch('/api/v1/restaurant/homepage-data');
-        } else {
-          // For public view, get data by subdomain
-          response = await fetch(`/api/v1/restaurant/data?subdomain=${subdomain}`);
-        }
-        
-        if (!response.ok) {
-          throw new Error('Restaurant not found');
-        }
-        
-        const data = await response.json();
-        
-        // Transform data to match our interface
-        const transformedData: HomepageData = {
-          restaurant: {
-            ...data.restaurant,
-            logoUrl: data.restaurant.logo_url,
-          },
-          owners: data.owners || [],
-          gallery: data.gallery || [],
-          signature_dishes: data.signature_dishes || [],
-        };
-        
-        setHomepageData(transformedData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load restaurant data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Only fetch data if we have subdomain or are in admin preview mode
-    if (subdomain || isAdminPreview) {
-      fetchHomepageData();
-    }
-  }, [subdomain, isAdminPreview, initialData]);
-
-  // Apply restaurant brand color to CSS custom property
-  useEffect(() => {
-    if (homepageData?.restaurant?.primaryColor) {
-      document.documentElement.style.setProperty('--brand-color', homepageData.restaurant.primaryColor);
-    }
-  }, [homepageData]);
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-        {/* Loading Skeleton */}
-        <div className="animate-pulse">
-          {/* Hero Skeleton */}
-          <div className="h-96 bg-gradient-to-r from-slate-200 to-slate-300"></div>
-          
-          {/* Content Skeleton */}
-          <div className="px-4 py-12 space-y-12">
-            <div className="max-w-4xl mx-auto">
-              <div className="h-8 bg-slate-200 rounded-lg mb-4 w-1/3"></div>
-              <div className="space-y-3">
-                <div className="h-4 bg-slate-200 rounded w-full"></div>
-                <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-48 bg-slate-200 rounded-2xl"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error || !homepageData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="text-center p-8 max-w-md mx-auto">
-          <div className="mb-6">
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold mb-4 text-slate-800">
-            {t("restaurant_not_found") || "Restaurant Not Found"}
-          </h1>
-          <p className="text-slate-600 mb-6">
-            {error || "We couldn't find the restaurant you're looking for. It may have been moved or doesn't exist."}
-          </p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
-          >
-            {t("try_again") || "Try Again"}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const { restaurant, owners, gallery, signature_dishes } = homepageData;
-  
-  // Parse opening hours
-  const openingHours = (() => {
+function parseOpeningHours(value: unknown): OpeningHoursRecord {
+  if (!value) return {};
+  if (typeof value === "string") {
     try {
-      return typeof restaurant.opening_hours === "string"
-        ? JSON.parse(restaurant.opening_hours)
-        : restaurant.opening_hours || {};
+      return JSON.parse(value) as OpeningHoursRecord;
     } catch {
       return {};
     }
-  })();
+  }
+  return value as OpeningHoursRecord;
+}
 
-  const today = getToday();
-  const { open, closesAt } = isOpenNow(openingHours);
-  
-  // Get today's hours for display
-  const todayHours = (() => {
-    const dayHours = openingHours[today];
-    if (!dayHours || dayHours.isClosed) return "Closed";
-    return `${dayHours.openTime || "--:--"} - ${dayHours.closeTime || "--:--"}`;
-  })();
+function getTodayKey(): string {
+  return [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ][new Date().getDay()];
+}
+
+function getTodayHoursLabel(value: unknown): string | null {
+  const hours = parseOpeningHours(value);
+  const todayHours = hours[getTodayKey()];
+  if (!todayHours || todayHours.isClosed) return null;
+  if (!todayHours.openTime || !todayHours.closeTime) return null;
+  return `${todayHours.openTime} - ${todayHours.closeTime}`;
+}
+
+function isOpenNow(value: unknown): boolean {
+  const hours = parseOpeningHours(value);
+  const todayHours = hours[getTodayKey()];
+  if (!todayHours || todayHours.isClosed) return false;
+  if (!todayHours.openTime || !todayHours.closeTime) return false;
+
+  const [openHour, openMinute] = todayHours.openTime.split(":").map(Number);
+  const [closeHour, closeMinute] = todayHours.closeTime.split(":").map(Number);
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const openMinutes = openHour * 60 + openMinute;
+  const closeMinutes = closeHour * 60 + closeMinute;
+
+  return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+}
+
+function getMenuHref(
+  locale: string,
+  branchCode: string | null,
+  subdomain: string,
+): string {
+  const branch = branchCode ?? subdomain;
+  return `/${locale}/menu?branch=${branch}`;
+}
+
+function getBookingHref(
+  locale: string,
+  branchCode: string | null,
+  subdomain: string,
+): string {
+  const branch = branchCode ?? subdomain;
+  return `/${locale}/booking?branch=${branch}`;
+}
+
+function formatPrice(
+  price: number,
+  currency: string | null,
+  locale: string,
+): string {
+  const resolvedCurrency = currency ?? "JPY";
+  const resolvedLocale =
+    locale === "ja" ? "ja-JP" : locale === "vi" ? "vi-VN" : "en-US";
+
+  try {
+    return new Intl.NumberFormat(resolvedLocale, {
+      style: "currency",
+      currency: resolvedCurrency,
+      maximumFractionDigits: resolvedCurrency === "JPY" ? 0 : 2,
+    }).format(price);
+  } catch {
+    return `${price.toFixed(0)} ${resolvedCurrency}`;
+  }
+}
+
+export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
+  const t = await getTranslations({ locale, namespace: "customer.home" });
+
+  if (!initialData) {
+    return (
+      <div className="min-h-screen bg-slate-950 px-4 py-16 text-white">
+        <div className="mx-auto max-w-xl rounded-[32px] border border-white/10 bg-white/5 p-8 text-center backdrop-blur">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
+            <Store className="h-6 w-6" />
+          </div>
+          <h1 className="text-2xl font-semibold">{t("notFound.title")}</h1>
+          <p className="mt-3 text-sm text-slate-300">
+            {t("notFound.description")}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { company, currentBranch, branches, owners, gallery, featuredItems } =
+    initialData;
+  const brandColor = sanitizeHexColor(
+    company.brandColor ?? currentBranch.brandColor ?? "#2563eb",
+  );
+  const themeProperties = createThemeProperties(brandColor);
+  const description =
+    getLocalizedText(locale, {
+      en: company.description_en,
+      ja: company.description_ja,
+      vi: company.description_vi,
+    }) ||
+    getLocalizedText(locale, {
+      en: currentBranch.description_en,
+      ja: currentBranch.description_ja,
+      vi: currentBranch.description_vi,
+    });
+  const currentTagline = getLocalizedText(locale, {
+    en: currentBranch.tagline_en,
+    ja: currentBranch.tagline_ja,
+    vi: currentBranch.tagline_vi,
+  });
+  const openBranches = branches.filter((branch) =>
+    isOpenNow(branch.openingHours),
+  ).length;
+  const todayHours = getTodayHoursLabel(currentBranch.openingHours);
+  const heroImages = gallery.length > 0 ? gallery.slice(0, 3) : [];
+  const leadOwner = owners[0] ?? null;
 
   return (
-    <motion.div
-      className="min-h-screen bg-slate-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+    <div
+      className="min-h-screen bg-slate-950 text-slate-100"
+      style={themeProperties as CSSProperties}
     >
-      {/* Hero Section */}
-      <HeroSection
-        restaurant={restaurant}
-        gallery={gallery}
-        locale={locale}
-        isOpen={open}
-        closesAt={closesAt}
-      />
+      <div className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-90"
+          style={{
+            background: `
+              radial-gradient(circle at top left, var(--theme-primary-700), transparent 38%),
+              radial-gradient(circle at top right, rgba(255,255,255,0.08), transparent 24%),
+              linear-gradient(180deg, #020617 0%, #0f172a 54%, #111827 100%)
+            `,
+          }}
+        />
+        <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
 
-      {/* Owner Story Section */}
-      <OwnerStorySection
-        restaurant={restaurant}
-        owners={owners}
-        locale={locale}
-        isAdmin={isAdmin}
-      />
+        <main className="relative mx-auto flex max-w-7xl flex-col gap-10 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_420px] lg:gap-8">
+            <div className="rounded-[32px] border border-white/10 bg-white/8 p-5 backdrop-blur md:p-8">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {branches.length > 1
+                    ? t("hero.companyBadge")
+                    : t("hero.branchBadge")}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-400/12 px-3 py-1 text-xs font-medium text-emerald-200">
+                  <Clock3 className="h-3.5 w-3.5" />
+                  {t("hero.openBranches", {
+                    count: openBranches,
+                    total: branches.length,
+                  })}
+                </span>
+              </div>
 
-      {/* Gallery Section */}
-      <GallerySection
-        gallery={gallery}
-        restaurantName={restaurant.name}
-        primaryColor={restaurant.primaryColor}
-        isAdmin={isAdmin}
-      />
+              <div className="mt-6 flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-white/10 shadow-2xl shadow-black/30">
+                  {company.logoUrl ? (
+                    <Image
+                      src={company.logoUrl}
+                      alt={`${company.name} logo`}
+                      width={64}
+                      height={64}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Store className="h-7 w-7 text-white/80" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-300">
+                    {branches.length > 1
+                      ? t("hero.collectionLabel")
+                      : t("hero.branchLabel")}
+                  </p>
+                  <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-5xl">
+                    {company.name}
+                  </h1>
+                  <p className="mt-2 text-sm font-medium uppercase tracking-[0.2em] text-[var(--theme-primary)]">
+                    {t("locations.currentBranch")}: {currentBranch.name}
+                  </p>
+                </div>
+              </div>
 
-      {/* Signature Dishes Section */}
-      <SignatureDishesSection
-        signatureDishes={signature_dishes}
-        locale={locale}
-        currency={restaurant.currency}
-        primaryColor={restaurant.primaryColor}
-        isAdmin={isAdmin}
-      />
+              {currentTagline ? (
+                <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-200 sm:text-xl">
+                  {currentTagline}
+                </p>
+              ) : null}
 
-      {/* Reviews & Map Section */}
-      <ReviewsMapSection
-        restaurant={restaurant}
-        locale={locale}
-      />
+              {description ? (
+                <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
+                  {description}
+                </p>
+              ) : null}
 
-      {/* Contact & Hours Section */}
-      <ContactHoursSection
-        restaurant={restaurant}
-        isOpen={open}
-        closesAt={closesAt}
-        todayHours={todayHours}
-      />
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {t("hero.stats.branches")}
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-white">
+                    {branches.length}
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {t("hero.stats.featured")}
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-white">
+                    {featuredItems.length}
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {t("hero.stats.todayHours")}
+                  </p>
+                  <p className="mt-2 text-base font-medium text-white">
+                    {todayHours ?? t("hero.closedToday")}
+                  </p>
+                </div>
+              </div>
 
-      {/* Admin Panel Hint */}
-      {isAdmin && (
-        <motion.div
-          className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-2xl shadow-lg"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 2, type: "spring" }}
-        >
-          <p className="text-sm font-medium mb-2">✨ Admin Mode</p>
-          <p className="text-xs opacity-90">
-            See suggestions to improve your homepage
-          </p>
-        </motion.div>
-      )}
-    </motion.div>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-12 rounded-2xl border-0 px-5 text-sm font-semibold text-white shadow-lg shadow-black/30"
+                  style={{ backgroundColor: "var(--theme-primary)" }}
+                >
+                  <Link
+                    href={getMenuHref(
+                      locale,
+                      currentBranch.branchCode,
+                      currentBranch.subdomain,
+                    )}
+                  >
+                    <UtensilsCrossed className="h-4 w-4" />
+                    {t("hero.viewMenu")}
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="h-12 rounded-2xl border-white/15 bg-white/8 px-5 text-sm font-semibold text-white hover:bg-white/12"
+                >
+                  <Link href="#locations">
+                    <MapPin className="h-4 w-4" />
+                    {t("hero.viewLocations")}
+                  </Link>
+                </Button>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-2">
+                {branches.slice(0, 5).map((branch) => (
+                  <Link
+                    key={branch.id}
+                    href={getMenuHref(
+                      locale,
+                      branch.branchCode,
+                      branch.subdomain,
+                    )}
+                    className={cn(
+                      "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all",
+                      branch.isCurrent
+                        ? "border-white/20 bg-white/12 text-white"
+                        : "border-white/10 bg-black/20 text-slate-300 hover:border-white/20 hover:bg-white/8 hover:text-white",
+                    )}
+                  >
+                    <span className="h-2 w-2 rounded-full bg-[var(--theme-primary)]" />
+                    {branch.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="overflow-hidden rounded-[32px] border border-white/10 bg-white/8 backdrop-blur">
+                {heroImages[0] ? (
+                  <div className="relative aspect-[4/3]">
+                    <Image
+                      src={heroImages[0].imageUrl}
+                      alt={heroImages[0].altText}
+                      fill
+                      priority
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/15 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-5">
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-300">
+                        {t("hero.currentBranchLabel")}
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold text-white">
+                        {currentBranch.name}
+                      </p>
+                      {currentBranch.address ? (
+                        <p className="mt-2 flex items-start gap-2 text-sm text-slate-200">
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span>{currentBranch.address}</span>
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="flex aspect-[4/3] items-end p-5"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, var(--theme-primary-500), rgba(15, 23, 42, 0.85))",
+                    }}
+                  >
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-200">
+                        {t("hero.currentBranchLabel")}
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold text-white">
+                        {currentBranch.name}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <div className="rounded-[28px] border border-white/10 bg-black/20 p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-2xl bg-white/10 p-3">
+                      <Phone className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                        {t("hero.contactLabel")}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-200">
+                        {currentBranch.phone ??
+                          company.phone ??
+                          t("common.unavailable")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-[28px] border border-white/10 bg-black/20 p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-2xl bg-white/10 p-3">
+                      <Star className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                        {t("hero.ratingLabel")}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-200">
+                        {currentBranch.googleRating
+                          ? t("hero.ratingValue", {
+                              rating: currentBranch.googleRating.toFixed(1),
+                              count: currentBranch.googleReviewCount ?? 0,
+                            })
+                          : t("hero.ratingFallback")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="rounded-[32px] border border-white/10 bg-white/6 p-5 md:p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
+                    {t("featured.eyebrow")}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+                    {t("featured.title")}
+                  </h2>
+                </div>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="rounded-full text-slate-200 hover:bg-white/8 hover:text-white"
+                >
+                  <Link
+                    href={getMenuHref(
+                      locale,
+                      currentBranch.branchCode,
+                      currentBranch.subdomain,
+                    )}
+                  >
+                    {t("featured.fullMenu")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+
+              {featuredItems.length > 0 ? (
+                <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {featuredItems.map((item) => (
+                    <article
+                      key={item.id}
+                      className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/65"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
+                        {item.imageUrl ? (
+                          <Image
+                            src={item.imageUrl}
+                            alt={getLocalizedText(locale, {
+                              en: item.name_en,
+                              ja: item.name_ja,
+                              vi: item.name_vi,
+                            })}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="flex h-full items-center justify-center"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, var(--theme-primary-500), rgba(15, 23, 42, 0.4))",
+                            }}
+                          >
+                            <UtensilsCrossed className="h-10 w-10 text-white/85" />
+                          </div>
+                        )}
+                        <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
+                          <span className="rounded-full bg-slate-950/75 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-100 backdrop-blur">
+                            {item.sourceType === "shared"
+                              ? t("featured.sharedBadge")
+                              : t("featured.branchBadge")}
+                          </span>
+                          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900">
+                            {formatPrice(item.price, item.currency, locale)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-5">
+                        {item.categoryName_en ||
+                        item.categoryName_ja ||
+                        item.categoryName_vi ? (
+                          <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--theme-primary)]">
+                            {getLocalizedText(locale, {
+                              en: item.categoryName_en,
+                              ja: item.categoryName_ja,
+                              vi: item.categoryName_vi,
+                            })}
+                          </p>
+                        ) : null}
+                        <h3 className="mt-2 text-lg font-semibold text-white">
+                          {getLocalizedText(locale, {
+                            en: item.name_en,
+                            ja: item.name_ja,
+                            vi: item.name_vi,
+                          })}
+                        </h3>
+                        <p className="mt-2 min-h-[3rem] text-sm leading-6 text-slate-300">
+                          {getLocalizedText(locale, {
+                            en: item.description_en,
+                            ja: item.description_ja,
+                            vi: item.description_vi,
+                          }) || t("featured.descriptionFallback")}
+                        </p>
+                        <div className="mt-4 flex items-center justify-between gap-3">
+                          <span className="text-xs text-slate-400">
+                            {item.sourceType === "shared"
+                              ? t("featured.sharedAvailability")
+                              : t("featured.fromBranch", {
+                                  branch: item.branchName ?? t("common.branch"),
+                                })}
+                          </span>
+                          <Button
+                            asChild
+                            size="sm"
+                            className="rounded-full text-white"
+                            style={{ backgroundColor: "var(--theme-primary)" }}
+                          >
+                            <Link
+                              href={getMenuHref(
+                                locale,
+                                item.branchCode,
+                                item.branchSubdomain ?? currentBranch.subdomain,
+                              )}
+                            >
+                              {t("featured.viewItemCta")}
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-6 rounded-[28px] border border-dashed border-white/12 bg-black/20 p-8 text-center">
+                  <UtensilsCrossed className="mx-auto h-8 w-8 text-slate-400" />
+                  <p className="mt-3 text-base font-medium text-white">
+                    {t("featured.emptyTitle")}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-300">
+                    {t("featured.emptyDescription")}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <aside className="rounded-[32px] border border-white/10 bg-white/6 p-5 md:p-6">
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
+                {t("story.eyebrow")}
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">
+                {t("story.title")}
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                {description || t("story.fallbackDescription")}
+              </p>
+
+              {leadOwner ? (
+                <div className="mt-6 rounded-[28px] border border-white/10 bg-black/20 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/8">
+                      {leadOwner.photoUrl ? (
+                        <Image
+                          src={leadOwner.photoUrl}
+                          alt={leadOwner.name ?? company.name}
+                          width={56}
+                          height={56}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Store className="h-5 w-5 text-white/80" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                        {t("story.ownerLabel")}
+                      </p>
+                      <p className="mt-1 truncate text-base font-medium text-white">
+                        {leadOwner.name ?? company.name}
+                      </p>
+                      <p className="truncate text-sm text-slate-400">
+                        {leadOwner.email ?? company.email ?? ""}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {heroImages.length > 1 ? (
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  {heroImages.slice(1, 3).map((image) => (
+                    <div
+                      key={image.id}
+                      className="relative aspect-square overflow-hidden rounded-[24px] border border-white/10"
+                    >
+                      <Image
+                        src={image.imageUrl}
+                        alt={image.altText}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </aside>
+          </section>
+
+          <section
+            id="locations"
+            className="rounded-[32px] border border-white/10 bg-white/6 p-5 md:p-6"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
+                  {t("locations.eyebrow")}
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+                  {t("locations.title")}
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+                  {t("locations.description")}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              {branches.map((branch) => {
+                const branchOpen = isOpenNow(branch.openingHours);
+                const branchHours = getTodayHoursLabel(branch.openingHours);
+
+                return (
+                  <article
+                    key={branch.id}
+                    className={cn(
+                      "rounded-[28px] border p-5 transition-all",
+                      branch.isCurrent
+                        ? "border-[var(--theme-primary)] bg-[var(--theme-primary-50)]"
+                        : "border-white/10 bg-slate-950/55",
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/8">
+                        {branch.logoUrl ? (
+                          <Image
+                            src={branch.logoUrl}
+                            alt={`${branch.name} logo`}
+                            width={56}
+                            height={56}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <Store className="h-5 w-5 text-white/80" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-semibold text-white">
+                            {branch.name}
+                          </h3>
+                          {branch.isCurrent ? (
+                            <span
+                              className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--theme-primary)]"
+                              style={{
+                                backgroundColor: "var(--theme-primary-100)",
+                              }}
+                            >
+                              {t("locations.currentBranch")}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p
+                          className={cn(
+                            "mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
+                            branchOpen
+                              ? "bg-emerald-400/12 text-emerald-200"
+                              : "bg-white/8 text-slate-300",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "h-2 w-2 rounded-full",
+                              branchOpen ? "bg-emerald-400" : "bg-slate-500",
+                            )}
+                          />
+                          {branchOpen
+                            ? t("locations.openNow")
+                            : t("locations.closedNow")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {branch.address ? (
+                      <p className="mt-4 flex items-start gap-2 text-sm leading-6 text-slate-300">
+                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--theme-primary)]" />
+                        <span>{branch.address}</span>
+                      </p>
+                    ) : null}
+
+                    <div className="mt-4 grid gap-3 text-sm text-slate-300">
+                      <div className="flex items-center gap-2">
+                        <Clock3 className="h-4 w-4 text-[var(--theme-primary)]" />
+                        <span>
+                          {branchHours ?? t("locations.hoursFallback")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-[var(--theme-primary)]" />
+                        <span>
+                          {branch.phone ??
+                            company.phone ??
+                            t("common.unavailable")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                      <Button
+                        asChild
+                        className="flex-1 rounded-2xl text-white"
+                        style={{ backgroundColor: "var(--theme-primary)" }}
+                      >
+                        <Link
+                          href={getMenuHref(
+                            locale,
+                            branch.branchCode,
+                            branch.subdomain,
+                          )}
+                        >
+                          {t("locations.viewMenu")}
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="flex-1 rounded-2xl border-white/12 bg-white/6 text-white hover:bg-white/10"
+                      >
+                        <Link
+                          href={getBookingHref(
+                            locale,
+                            branch.branchCode,
+                            branch.subdomain,
+                          )}
+                        >
+                          <CalendarDays className="h-4 w-4" />
+                          {t("locations.reserve")}
+                        </Link>
+                      </Button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
   );
 }

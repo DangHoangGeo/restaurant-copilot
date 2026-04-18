@@ -88,6 +88,8 @@
     "cancel": "注文をキャンセル",
     "confirm": "注文を確定",
     "from_price": "{price}から",
+    "unavailable": "未設定",
+    "branch": "店舗",
     "restaurant_not_found": "レストランが見つかりません。URLをご確認いただくかサポートまでご連絡ください。",
     "error_loading_menu": "メニューの読み込みエラー。後でもう一度お試しください。",
     "error_loading_cart": "カートの読み込みエラー。後でもう一度お試しください。",
@@ -103,7 +105,59 @@
     "cta_secondary": "予約する",
     "view_menu": "メニューを見る",
     "make_reservation": "予約する",
-    "loading": "ヒーローセクションを読み込み中…"
+    "loading": "ヒーローセクションを読み込み中…",
+    "companyBadge": "会社トップページ",
+    "branchBadge": "店舗トップページ",
+    "collectionLabel": "レストラングループ",
+    "branchLabel": "レストラン",
+    "currentBranchLabel": "おすすめ店舗",
+    "viewMenu": "メニューを見る",
+    "viewLocations": "店舗一覧を見る",
+    "contactLabel": "この店舗に電話",
+    "ratingLabel": "ゲスト評価",
+    "ratingValue": "{count}件のレビューで{rating}点",
+    "ratingFallback": "レビューが集まると評価が表示されます",
+    "openBranches": "{total}店舗中{count}店舗が営業中",
+    "closedToday": "本日は休業",
+    "stats": {
+      "branches": "店舗数",
+      "featured": "注目メニュー",
+      "todayHours": "本日"
+    }
+  },
+  "featured": {
+    "eyebrow": "会社全体のおすすめ",
+    "title": "まず見てほしい人気メニュー",
+    "fullMenu": "現在の店舗メニューへ",
+    "sharedBadge": "共通メニュー",
+    "branchBadge": "店舗おすすめ",
+    "sharedAvailability": "会社メニューで提供中",
+    "fromBranch": "{branch}から",
+    "viewItemCta": "メニューを見る",
+    "descriptionFallback": "最新の詳細と提供状況はフルメニューでご確認ください。",
+    "emptyTitle": "注目メニューは準備中です",
+    "emptyDescription": "この会社ではまだトップページ用の注目メニューが設定されていません。"
+  },
+  "story": {
+    "eyebrow": "ブランドストーリー",
+    "title": "迷わず店舗を選べる、落ち着いた入口",
+    "ownerLabel": "創業者・オーナー",
+    "fallbackDescription": "今日の提供内容は、メニューを開くか店舗を選んでご確認ください。"
+  },
+  "locations": {
+    "eyebrow": "店舗一覧",
+    "title": "利用しやすい店舗を選ぶ",
+    "description": "各店舗ごとにメニュー、営業時間、地域情報が異なります。先に店舗を選ぶことで、その店舗に合ったメニューと予約フローに進めます。",
+    "currentBranch": "現在",
+    "openNow": "営業中",
+    "closedNow": "営業時間外",
+    "hoursFallback": "営業時間はメニュー画面でご確認ください",
+    "viewMenu": "メニューを見る",
+    "reserve": "予約する"
+  },
+  "notFound": {
+    "title": "会社トップページを表示できません",
+    "description": "このレストラン会社ページを今は読み込めません。アドレスを確認して再度お試しください。"
   },
   "gallery": {
     "title": "レストラン内観",
