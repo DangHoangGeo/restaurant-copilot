@@ -9,9 +9,9 @@
 
 // MARK: - Login Screen
 "login_title" = "Đăng nhập";
-"login_subtitle" = "Nhập thông tin nhân viên nhà hàng của bạn";
-"restaurant_subdomain" = "Tên miền phụ của Nhà hàng";
-"restaurant_subdomain_placeholder" = "Ví dụ: nhahangcuatoi";
+"login_subtitle" = "Nhập mã chi nhánh và thông tin nhân viên";
+"branch_code" = "Mã Chi Nhánh";
+"branch_code_placeholder" = "Ví dụ: hanoi-main";
 "email" = "Email";
 "email_placeholder" = "nhanvien@nhahang.com";
 "password" = "Mật khẩu";
@@ -20,6 +20,10 @@
 "signing_in" = "Đang đăng nhập...";
 "login_error" = "Lỗi đăng nhập";
 "ok" = "OK";
+"privacy_policy" = "Chính sách Bảo mật";
+"terms_of_service" = "Điều khoản Dịch vụ";
+"login_legal_footer" = "Bằng cách đăng nhập, bạn đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật của chúng tôi.";
+"language_selector" = "Chọn ngôn ngữ";
 
 // MARK: - Common Terms
 "cancel" = "Hủy";
@@ -998,3 +1002,21 @@
 
 // MARK: - Tab Bar
 "tab_tables" = "Bàn";
+
+// MARK: - Table Status
+"table_status_available" = "Trống";
+"table_status_occupied" = "Đang dùng";
+"table_status_reserved" = "Đã đặt";
+"table_status_maintenance" = "Bảo trì";
+
+// MARK: - Branch Picker
+"branch_picker_title" = "Chọn Chi Nhánh";
+"branch_picker_subtitle" = "Chọn chi nhánh để bắt đầu làm việc";
+"branch_picker_continue_button" = "Tiếp tục";
+"branch_picker_no_branches" = "Không có chi nhánh khả dụng";
+"branch_picker_no_branches_subtitle" = "Liên hệ quản trị viên để được cấp quyền truy cập.";
+"branch_picker_loading" = "Đang tải chi nhánh...";
+"branch_picker_error" = "Không thể tải danh sách chi nhánh";
+"branch_picker_switch_branch" = "Đổi Chi Nhánh";
+"branch_picker_current_branch" = "Chi Nhánh Hiện Tại";
+"branch_picker_sign_out" = "Đăng xuất";

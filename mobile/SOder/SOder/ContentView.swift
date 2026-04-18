@@ -1,33 +1,31 @@
-//
-//  ContentView.swift
-//  SOder
-//
-//  Created by Dang Hoang on 2025/06/09.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     @StateObject private var supabaseManager = SupabaseManager.shared
-    
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
     var body: some View {
         Group {
-            if supabaseManager.isAuthenticated {
-                MainTabView()
-                    .environmentObject(supabaseManager)
-            } else {
+            if !supabaseManager.isAuthenticated {
                 LoginView()
                     .environmentObject(supabaseManager)
+                    .environmentObject(localizationManager)
+            } else if supabaseManager.needsBranchSelection || supabaseManager.currentRestaurant == nil {
+                BranchPickerView()
+                    .environmentObject(supabaseManager)
+                    .environmentObject(localizationManager)
+            } else {
+                MainTabView()
+                    .environmentObject(supabaseManager)
             }
         }
-        .onAppear {
-            Task {
-                //await $supabaseManager.checkAuthState
-            }
-        }
+        .animation(.easeInOut(duration: 0.25), value: supabaseManager.isAuthenticated)
+        .animation(.easeInOut(duration: 0.25), value: supabaseManager.needsBranchSelection)
+        .animation(.easeInOut(duration: 0.25), value: supabaseManager.currentRestaurant == nil)
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(LocalizationManager.shared)
 }

@@ -9,9 +9,9 @@
 
 // MARK: - Login Screen
 "login_title" = "サインイン";
-"login_subtitle" = "レストランスタッフの認証情報を入力してください";
-"restaurant_subdomain" = "レストランサブドメイン";
-"restaurant_subdomain_placeholder" = "例: myrestaurant";
+"login_subtitle" = "ブランチコードとスタッフ認証情報を入力してください";
+"branch_code" = "ブランチコード";
+"branch_code_placeholder" = "例: tokyo-main";
 "email" = "メール";
 "email_placeholder" = "staff@restaurant.com";
 "password" = "パスワード";
@@ -20,6 +20,10 @@
 "signing_in" = "サインイン中...";
 "login_error" = "ログインエラー";
 "ok" = "OK";
+"privacy_policy" = "プライバシーポリシー";
+"terms_of_service" = "利用規約";
+"login_legal_footer" = "サインインすることで、利用規約とプライバシーポリシーに同意したことになります。";
+"language_selector" = "言語を選択";
 
 // MARK: - Common Terms
 "cancel" = "キャンセル";
@@ -998,3 +1002,21 @@
 
 // MARK: - Tab Bar
 "tab_tables" = "テーブル";
+
+// MARK: - Table Status
+"table_status_available" = "空席";
+"table_status_occupied" = "使用中";
+"table_status_reserved" = "予約済み";
+"table_status_maintenance" = "メンテナンス中";
+
+// MARK: - Branch Picker
+"branch_picker_title" = "ブランチを選択";
+"branch_picker_subtitle" = "作業するブランチを選択してください";
+"branch_picker_continue_button" = "続ける";
+"branch_picker_no_branches" = "利用可能なブランチがありません";
+"branch_picker_no_branches_subtitle" = "管理者に連絡してアクセス権を取得してください。";
+"branch_picker_loading" = "ブランチを読み込み中...";
+"branch_picker_error" = "ブランチの読み込みに失敗しました";
+"branch_picker_switch_branch" = "ブランチを切り替え";
+"branch_picker_current_branch" = "現在のブランチ";
+"branch_picker_sign_out" = "サインアウト";

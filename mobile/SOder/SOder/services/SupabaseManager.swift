@@ -8,10 +8,11 @@ class SupabaseManager: ObservableObject {
     
     @Published var currentUser: User?
     @Published var currentRestaurant: Restaurant?
+    @Published var accessibleBranches: [Restaurant] = []
     @Published var isAuthenticated = false
-    @Published var userRole: String? // Added for JWT role claim
-    
-    // Internal property to store restaurant ID from JWT
+    @Published var needsBranchSelection = false
+    @Published var userRole: String?
+
     private var restaurantIdFromToken: String?
     
     // MARK: - In-Memory Cache
@@ -70,34 +71,28 @@ class SupabaseManager: ObservableObject {
     
     // MARK: - Authentication
     @MainActor
-    func signIn(subdomain: String, email: String, password: String) async throws {
+    func signIn(branchCode: String, email: String, password: String) async throws {
         let response = try await client.auth.signIn(email: email, password: password)
         currentUser = response.user
-        
-        // Parse JWT and set claims
-        let token = response.accessToken // Correctly access accessToken from Session
-        if !token.isEmpty { // Check if the non-optional token string is empty
-            await parseJWTAndSetClaims(token: token)
-        } else {
-            // Handle missing or empty token case
-            print("Error: Access token not found or is empty after sign in.")
+
+        let token = response.accessToken
+        guard !token.isEmpty else {
             await handleAuthFailure()
             throw AuthError.tokenError
         }
 
-        // Load restaurant data only if JWT parsing was successful and restaurantIdFromToken is set
-        if isAuthenticated && restaurantIdFromToken != nil {
-            do {
-                try await loadRestaurantData()
-            } catch {
-                await handleAuthFailure()
-                throw error
-            }
-        } else {
-            // If JWT parsing failed or restaurantId is missing, ensure user is not treated as authenticated for restaurant data
-            if restaurantIdFromToken == nil { print("Error: restaurant_id missing from token.") }
-            await handleAuthFailure() // Clears sensitive data and sets isAuthenticated to false
-            throw AuthError.missingRestaurantClaim // Define this error
+        await parseJWTAndSetClaims(token: token)
+
+        guard isAuthenticated, restaurantIdFromToken != nil else {
+            await handleAuthFailure()
+            throw AuthError.missingRestaurantClaim
+        }
+
+        do {
+            try await loadBranchesAndSelectDefault(branchCode: branchCode)
+        } catch {
+            await handleAuthFailure()
+            throw error
         }
     }
     
@@ -106,42 +101,39 @@ class SupabaseManager: ObservableObject {
         try await client.auth.signOut()
         currentUser = nil
         currentRestaurant = nil
+        accessibleBranches = []
         isAuthenticated = false
-        userRole = nil // Clear role
-        restaurantIdFromToken = nil // Clear token-derived restaurant ID
-        // Clear cache on sign out
+        needsBranchSelection = false
+        userRole = nil
+        restaurantIdFromToken = nil
         clearCache()
     }
     
     @MainActor
     private func checkAuthStatus() async {
         do {
-            let session = try await client.auth.session // Get current session
+            let session = try await client.auth.session
             currentUser = session.user
-            
-            let token = session.accessToken // Correctly access accessToken from Session
-            if !token.isEmpty { // Check if the non-optional token string is empty
-                await parseJWTAndSetClaims(token: token)
-            } else {
-                // No active session token or token is empty
-                print("Error: Access token not found or is empty in existing session.")
+
+            let token = session.accessToken
+            guard !token.isEmpty else {
                 await handleAuthFailure()
                 return
             }
 
-            if isAuthenticated && restaurantIdFromToken != nil {
-                do {
-                    try await loadRestaurantData()
-                } catch {
-                    await handleAuthFailure()
-                }
-            } else {
-                // If token parsing failed or no restaurantId, ensure clean state
+            await parseJWTAndSetClaims(token: token)
+
+            guard isAuthenticated, restaurantIdFromToken != nil else {
+                await handleAuthFailure()
+                return
+            }
+
+            do {
+                try await loadBranchesAndSelectDefault(branchCode: nil)
+            } catch {
                 await handleAuthFailure()
             }
-            
         } catch {
-            print("Error checking auth status or no active session: \(error)")
             await handleAuthFailure()
         }
     }
@@ -182,33 +174,87 @@ class SupabaseManager: ObservableObject {
         self.isAuthenticated = true // Set authenticated only after successful parsing
     }
     
+    /// Loads all branches the authenticated user can access and selects one.
+    /// If branchCode is provided, selects the matching branch (login flow).
+    /// If branchCode is nil, restores the last used branch or prompts for selection.
     @MainActor
-    private func loadRestaurantData() async throws { // Removed subdomain parameter
-        guard let user = currentUser, isAuthenticated, let restaurantIdToLoad = self.restaurantIdFromToken else {
-            if self.restaurantIdFromToken == nil {
-                 print("Debug: restaurantIdFromToken is nil during loadRestaurantData call.")
-            }
-            // Optionally clear currentRestaurant if auth state is inconsistent
+    private func loadBranchesAndSelectDefault(branchCode: String?) async throws {
+        guard isAuthenticated else { throw AuthError.noRestaurantAssociated }
+
+        let branches: [Restaurant] = try await fetchAccessibleBranches()
+        self.accessibleBranches = branches
+
+        guard !branches.isEmpty else {
             self.currentRestaurant = nil
             throw AuthError.noRestaurantAssociated
         }
-        
+
+        if let code = branchCode, !code.isEmpty {
+            // Try to match by branch_code field, fall back to subdomain for compatibility
+            let match = branches.first { $0.branchCode == code || $0.subdomain == code }
+            if let matched = match {
+                self.currentRestaurant = matched
+                self.needsBranchSelection = false
+                saveSavedBranchId(matched.id)
+            } else {
+                // Branch code not found among accessible branches — still sign in, prompt selection
+                self.currentRestaurant = branches.first
+                self.needsBranchSelection = branches.count > 1
+            }
+        } else {
+            // Restoring session: use last used branch if still accessible
+            let savedId = loadSavedBranchId()
+            if let saved = branches.first(where: { $0.id == savedId }) {
+                self.currentRestaurant = saved
+                self.needsBranchSelection = false
+            } else if branches.count == 1 {
+                self.currentRestaurant = branches[0]
+                self.needsBranchSelection = false
+            } else {
+                self.currentRestaurant = nil
+                self.needsBranchSelection = true
+            }
+        }
+    }
+
+    /// Fetches all restaurant/branch records this user's JWT grants access to.
+    private func fetchAccessibleBranches() async throws -> [Restaurant] {
+        guard let restaurantIdToLoad = self.restaurantIdFromToken else {
+            throw AuthError.noRestaurantAssociated
+        }
+
         do {
-            let restaurant: Restaurant = try await client
+            // Primary: fetch all branches where JWT org membership grants access.
+            // For backward compatibility the JWT still carries one restaurant_id;
+            // future: org_member_restaurant_ids array in app_metadata.
+            let branch: Restaurant = try await client
                 .from("restaurants")
                 .select("*")
-                .eq("id", value: restaurantIdToLoad) // Use restaurantIdFromToken
+                .eq("id", value: restaurantIdToLoad)
                 .single()
                 .execute()
                 .value
-            
-            currentRestaurant = restaurant
-            print("Loaded restaurant: \(restaurant.name ?? "Unknown"), ID: \(restaurant.id)")
+            return [branch]
         } catch {
-            print("Error loading restaurant data for ID \(restaurantIdToLoad): \(error)")
-            self.currentRestaurant = nil
-            throw SupabaseManagerError.fetchError("Failed to load restaurant data.")
+            throw SupabaseManagerError.fetchError("Failed to load branch data.")
         }
+    }
+
+    /// Switches the active branch without signing out.
+    @MainActor
+    func selectBranch(_ branch: Restaurant) {
+        currentRestaurant = branch
+        needsBranchSelection = false
+        saveSavedBranchId(branch.id)
+        clearCache()
+    }
+
+    private func saveSavedBranchId(_ id: String) {
+        UserDefaults.standard.set(id, forKey: "lastUsedBranchId")
+    }
+
+    private func loadSavedBranchId() -> String? {
+        UserDefaults.standard.string(forKey: "lastUsedBranchId")
     }
 
     // Helper function to consolidate auth failure cleanup
@@ -436,82 +482,6 @@ class SupabaseManager: ObservableObject {
         }
     }
 
-    // MARK: - Debug Functions
-    @MainActor
-    func debugDatabaseConnection() async {
-        print("=== DEBUG: Database Connection ===")
-        print("Auth status: \(isAuthenticated)")
-        print("Current user: \(currentUser?.email ?? "None")")
-        print("Current restaurant: \(currentRestaurant?.name ?? "None")")
-        print("Restaurant ID: \(currentRestaurantId ?? "None")")
-        
-        // Test basic connection
-        do {
-            let result: [Restaurant] = try await client
-                .from("restaurants")
-                .select("id, name")
-                .limit(5)
-                .execute()
-                .value
-            
-            print("Found \(result.count) restaurants in database:")
-            for restaurant in result {
-                print("- \(restaurant.name ?? "Unnamed") (ID: \(restaurant.id))")
-            }
-        } catch {
-            print("Error testing database connection: \(error)")
-        }
-        
-        // Test orders table specifically
-        do {
-            let orders: [BasicDebugOrder] = try await client
-                .from("orders")
-                .select("id, restaurant_id, status, created_at")
-                .limit(10)
-                .execute()
-                .value
-            
-            print("Found \(orders.count) total orders in database:")
-            for order in orders {
-                print("- Order \(order.id): Restaurant \(order.restaurant_id), Status: \(order.status ?? "unknown")")
-            }
-            
-            // Check orders for our specific restaurant
-            if let restaurantId = currentRestaurantId {
-                let restaurantOrders: [BasicDebugOrder] = try await client
-                    .from("orders")
-                    .select("id, restaurant_id, status, created_at")
-                    .eq("restaurant_id", value: restaurantId)
-                    .execute()
-                    .value
-                
-                print("Found \(restaurantOrders.count) orders for restaurant \(restaurantId):")
-                for order in restaurantOrders {
-                    print("- Order \(order.id): Status \(order.status ?? "unknown"), Created: \(order.created_at ?? "unknown")")
-                }
-            }
-            
-        } catch {
-            print("Error checking orders: \(error)")
-        }
-    }
-    
-    // For testing - bypass authentication
-    @MainActor
-    func setTestRestaurant() {
-        currentRestaurant = Restaurant(
-            id: "9d5a32cd-9eb9-4b4c-ad73-8fe98d17a95e",
-            name: "Test Vietnamese Restaurant",
-            subdomain: "test",
-            timezone: "Asia/Tokyo",
-            created_at: "",
-            updated_at: "",
-            taxRate: 0.1
-        )
-        isAuthenticated = true
-        print("Set test restaurant: \(currentRestaurant?.name ?? "Unknown")")
-    }
-
     // MARK: - Tables Management
 
     /// Fetches all tables for the current restaurant
@@ -540,60 +510,44 @@ class SupabaseManager: ObservableObject {
     }
 }
 
-// Debug model for orders
-private struct BasicDebugOrder: Codable {
-    let id: String
-    let restaurant_id: String
-    let status: String?
-    let created_at: String?
-}
-
 // MARK: - Models
-struct UserInfo: Codable {
-    let restaurant_id: String
-}
-
 struct Restaurant: Codable {
     let id: String
     let name: String?
     let subdomain: String
+    let branchCode: String?
     let timezone: String
     let created_at: String
     let updated_at: String
     let taxRate: Double?
-    
+
     enum CodingKeys: String, CodingKey {
         case id, name, subdomain, timezone, created_at, updated_at
+        case branchCode = "branch_code"
         case taxRate = "tax_rate"
     }
 }
 
 enum AuthError: LocalizedError {
     case noRestaurantAssociated
-    case subdomainMismatch
-    case tokenError // Added for JWT issues
-    case missingRestaurantClaim // Added for missing restaurant_id in JWT
+    case tokenError
+    case missingRestaurantClaim
     case invalidCredentials
     case networkError
-    // case subdomainNotFound // Removed as it's more of an authorization/data validation issue post-auth
     case unknownError
-    
+
     var errorDescription: String? {
         switch self {
         case .noRestaurantAssociated:
-            return "No restaurant associated with this user."
-        case .subdomainMismatch:
-            return "User does not belong to the specified restaurant."
+            return "No branch associated with this user."
         case .tokenError:
             return "Invalid or missing authentication token."
         case .missingRestaurantClaim:
-            return "Token is missing required restaurant information."
+            return "Token is missing required branch information."
         case .invalidCredentials:
             return "Invalid email or password."
         case .networkError:
             return "A network error occurred. Please check your connection and try again."
-        // case .subdomainNotFound:
-        //     return "The specified subdomain was not found."
         case .unknownError:
             return "An unknown authentication error occurred."
         }
