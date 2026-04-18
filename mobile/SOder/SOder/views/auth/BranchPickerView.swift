@@ -61,7 +61,7 @@ struct BranchPickerView: View {
                         if supabaseManager.accessibleBranches.isEmpty {
                             emptyState
                         } else {
-                            ForEach(supabaseManager.accessibleBranches) { branch in
+                            ForEach(supabaseManager.accessibleBranches, id: \.id) { branch in
                                 BranchRowView(
                                     branch: branch,
                                     isSelected: selectedBranch?.id == branch.id
