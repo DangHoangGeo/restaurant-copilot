@@ -2,70 +2,65 @@ import SwiftUI
 
 struct TablesListView: View {
     @StateObject private var viewModel = TablesViewModel()
+    @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject var printerManager: PrinterManager
     @State private var selectedTable: Table?
     @State private var showPrintPreview = false
     @State private var searchText = ""
 
-    var filteredTables: [Table] {
+    private var filteredTables: [Table] {
         if searchText.isEmpty {
             return viewModel.tables
-        } else {
-            return viewModel.tables.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
+        return viewModel.tables.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    private var availableCount: Int {
+        viewModel.tables.filter { orderManager.operationalStatus(for: $0) == .available }.count
     }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Search bar
-                SearchBar(text: $searchText, placeholder: "tables_search_placeholder".localized)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-
-                if viewModel.isLoading {
-                    ProgressView("tables_loading".localized)
-                        .frame(maxHeight: .infinity)
-                } else if let error = viewModel.errorMessage {
-                    ErrorView(message: error, retryAction: {
-                        Task {
-                            await viewModel.fetchTables()
-                        }
-                    })
-                } else if filteredTables.isEmpty {
-                    EmptyTablesView(hasSearch: !searchText.isEmpty)
-                } else {
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(filteredTables) { table in
-                                TableRowView(
-                                    table: table,
-                                    onPrintQR: {
-                                        selectedTable = table
-                                        showPrintPreview = true
-                                    }
-                                )
-                            }
-                        }
-                        .padding()
-                    }
-                }
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                content
             }
-            .navigationTitle("tables_title".localized)
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        Task {
-                            await viewModel.fetchTables()
-                        }
-                    }) {
-                        Image(systemName: "arrow.clockwise")
+        } else {
+            NavigationView {
+                content
+            }
+            .navigationViewStyle(.stack)
+        }
+    }
+
+    private var content: some View {
+        ZStack {
+            AppScreenBackground()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    headerSection
+                    SearchBar(text: $searchText, placeholder: "tables_search_placeholder".localized)
+                    statsSection
+                    bodySection
+                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.md)
+                .padding(.bottom, 120)
+            }
+        }
+        .navigationTitle("tables_title".localized)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    Task {
+                        await viewModel.fetchTables()
                     }
+                }) {
+                    Image(systemName: "arrow.clockwise")
                 }
             }
         }
-        .navigationViewStyle(.stack) // Force single column layout on iPad
         .sheet(isPresented: $showPrintPreview) {
             if let table = selectedTable {
                 TableQRPrintView(table: table)
@@ -76,174 +71,209 @@ struct TablesListView: View {
             await viewModel.fetchTables()
         }
     }
+
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    AppSectionEyebrow("floor control")
+
+                    Text("tables_title".localized)
+                        .font(.heroTitle)
+                        .foregroundColor(.appTextPrimary)
+                }
+
+                Spacer()
+
+                AppHeaderPill("\(filteredTables.count)")
+            }
+        }
+    }
+
+    private var statsSection: some View {
+        HStack(spacing: Spacing.md) {
+            AppMetricCard(title: "tables", value: "\(viewModel.tables.count)", tint: .appHighlight)
+            AppMetricCard(title: "available", value: "\(availableCount)", tint: .appSuccess)
+            AppMetricCard(title: "qr", value: "print", tint: .appInfo)
+        }
+    }
+
+    @ViewBuilder
+    private var bodySection: some View {
+        if viewModel.isLoading {
+            VStack(spacing: Spacing.md) {
+                ProgressView("tables_loading".localized)
+                    .tint(.appHighlight)
+                    .foregroundColor(.appTextPrimary)
+            }
+            .frame(maxWidth: .infinity, minHeight: 220)
+            .appPanel(padding: Spacing.xl, cornerRadius: CornerRadius.xl)
+        } else if let error = viewModel.errorMessage {
+            ErrorView(message: error, retryAction: {
+                Task {
+                    await viewModel.fetchTables()
+                }
+            })
+        } else if filteredTables.isEmpty {
+            EmptyTablesView(hasSearch: !searchText.isEmpty)
+        } else {
+            LazyVStack(spacing: Spacing.md) {
+                ForEach(filteredTables) { table in
+                    TableRowView(
+                        table: table,
+                        operationalStatus: orderManager.operationalStatus(for: table),
+                        onPrintQR: {
+                            selectedTable = table
+                            showPrintPreview = true
+                        }
+                    )
+                }
+            }
+        }
+    }
 }
 
-// MARK: - Table Row View
 struct TableRowView: View {
     let table: Table
+    let operationalStatus: TableOperationalStatus
     let onPrintQR: () -> Void
 
     var body: some View {
-        HStack(spacing: 16) {
-            // Table Icon and Info
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(statusColor.opacity(0.2))
-                        .frame(width: 50, height: 50)
-
-                    Image(systemName: "table.furniture")
-                        .font(.system(size: 24))
-                        .foregroundColor(statusColor)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
+        HStack(alignment: .top, spacing: Spacing.md) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack(spacing: Spacing.sm) {
                     Text(table.name)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(.cardTitle)
+                        .foregroundColor(.appTextPrimary)
 
-                    HStack(spacing: 8) {
-                        Label("\(table.capacity)", systemImage: "person.2")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        Text(table.status.displayName)
-                            .font(.caption)
-                            .foregroundColor(statusColor)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(statusColor.opacity(0.1))
-                            .cornerRadius(4)
-                    }
+                    Text(operationalStatus.displayName.uppercased())
+                        .font(.captionBold)
+                        .foregroundColor(statusColor)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, 4)
+                        .background(statusColor.opacity(0.16))
+                        .cornerRadius(CornerRadius.sm)
                 }
+
+                Text("SEATS • \(table.capacity)")
+                    .font(.monoCaption)
+                    .foregroundColor(.appTextSecondary)
             }
 
             Spacer()
 
-            // Print QR Button
             Button(action: onPrintQR) {
-                VStack(spacing: 4) {
+                VStack(spacing: Spacing.xs) {
                     Image(systemName: "qrcode")
-                        .font(.system(size: 24))
-                        .foregroundColor(.blue)
-
+                        .font(.system(size: 22, weight: .medium))
                     Text("tables_print_qr".localized)
-                        .font(.caption2)
-                        .foregroundColor(.blue)
+                        .font(.buttonSmall)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(8)
+                .foregroundColor(.appTextPrimary)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.md)
+                .background(Color.appSurfaceSecondary)
+                .cornerRadius(CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(Color.appBorderLight, lineWidth: 1)
+                )
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.lg)
     }
 
     private var statusColor: Color {
-        switch table.status {
-        case .available:
-            return .green
-        case .occupied:
-            return .orange
-        case .reserved:
-            return .purple
-        case .maintenance:
-            return .gray
-        }
+        operationalStatus.statusColor
     }
 }
 
-// MARK: - Search Bar
 struct SearchBar: View {
     @Binding var text: String
     let placeholder: String
 
     var body: some View {
-        HStack {
+        HStack(spacing: Spacing.sm) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+                .foregroundColor(.appTextSecondary)
 
             TextField(placeholder, text: $text)
-                .textFieldStyle(PlainTextFieldStyle())
+                .textFieldStyle(.plain)
+                .foregroundColor(.appTextPrimary)
 
             if !text.isEmpty {
                 Button(action: { text = "" }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
+                        .foregroundColor(.appTextSecondary)
                 }
             }
         }
-        .padding(10)
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.lg)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                .stroke(Color.appBorderLight, lineWidth: 1)
+        )
     }
 }
 
-// MARK: - Empty States
 struct EmptyTablesView: View {
     let hasSearch: Bool
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Image(systemName: hasSearch ? "magnifyingglass" : "table.furniture")
                 .font(.system(size: 60))
-                .foregroundColor(.gray)
+                .foregroundColor(.appTextTertiary)
 
             Text(hasSearch ? "tables_no_results".localized : "tables_empty".localized)
-                .font(.headline)
-                .foregroundColor(.secondary)
+                .font(.cardTitle)
+                .foregroundColor(.appTextPrimary)
 
             if !hasSearch {
                 Text("tables_empty_message".localized)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.bodyMedium)
+                    .foregroundColor(.appTextSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, Spacing.xl)
             }
         }
-        .frame(maxHeight: .infinity)
+        .frame(maxWidth: .infinity, minHeight: 220)
+        .appPanel(padding: Spacing.xl, cornerRadius: CornerRadius.xl)
     }
 }
 
-// MARK: - Error View
 struct ErrorView: View {
     let message: String
     let retryAction: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 60))
-                .foregroundColor(.red)
+        VStack(spacing: Spacing.md) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 48))
+                .foregroundColor(.appError)
 
             Text("tables_error".localized)
-                .font(.headline)
+                .font(.cardTitle)
+                .foregroundColor(.appTextPrimary)
 
             Text(message)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(.bodyMedium)
+                .foregroundColor(.appTextSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
 
             Button(action: retryAction) {
                 Text("tables_retry".localized)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color.blue)
-                    .cornerRadius(8)
             }
+            .buttonStyle(PrimaryButtonStyle())
         }
-        .frame(maxHeight: .infinity)
+        .frame(maxWidth: .infinity, minHeight: 220)
+        .appPanel(padding: Spacing.xl, cornerRadius: CornerRadius.xl)
     }
 }
 
-// MARK: - View Model
 @MainActor
 class TablesViewModel: ObservableObject {
     @Published var tables: [Table] = []

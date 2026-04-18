@@ -10,49 +10,33 @@ struct BranchPickerView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color.appInfoLight.opacity(0.5),
-                    Color.appBackground,
-                    Color.appSurfaceSecondary.opacity(0.5)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            AppScreenBackground()
 
             VStack(spacing: 0) {
                 // Header
-                VStack(spacing: Spacing.sm) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color.appPrimary.opacity(0.15),
-                                        Color.appPrimary.opacity(0.05)
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 80, height: 80)
-                        Image(systemName: "building.2.fill")
-                            .font(.system(size: 36))
-                            .foregroundColor(.appPrimary)
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    AppSectionEyebrow("choose branch")
+
+                    HStack(alignment: .top, spacing: Spacing.md) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("branch_picker_title".localized)
+                                .font(.displayTitle)
+                                .foregroundColor(.appTextPrimary)
+
+                            Text("branch_picker_subtitle".localized)
+                                .font(.bodyRegular)
+                                .foregroundColor(.appTextSecondary)
+                                .multilineTextAlignment(.leading)
+                        }
+
+                        Spacer(minLength: 12)
+
+                        AppHeaderPill("\(supabaseManager.accessibleBranches.count)")
                     }
-                    .padding(.top, Spacing.xl)
-
-                    Text("branch_picker_title".localized)
-                        .font(.cardTitle)
-                        .foregroundColor(.appTextPrimary)
-
-                    Text("branch_picker_subtitle".localized)
-                        .font(.bodyRegular)
-                        .foregroundColor(.appTextSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, Spacing.xl)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.xl)
                 .padding(.bottom, Spacing.lg)
 
                 // Branch list
@@ -81,41 +65,15 @@ struct BranchPickerView: View {
                 VStack(spacing: Spacing.sm) {
                     Button(action: confirmSelection) {
                         Text("branch_picker_continue_button".localized)
-                            .font(.buttonLarge)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(
-                                Group {
-                                    if selectedBranch != nil {
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.appPrimary, Color.appPrimary.opacity(0.85)]),
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    } else {
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.appDisabled, Color.appDisabled]),
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    }
-                                }
-                            )
-                            .foregroundColor(.white)
-                            .cornerRadius(CornerRadius.md)
-                            .shadow(
-                                color: selectedBranch != nil ? Color.appPrimary.opacity(0.3) : Color.clear,
-                                radius: 8,
-                                y: 4
-                            )
                     }
+                    .buttonStyle(PrimaryButtonStyle(isEnabled: selectedBranch != nil))
                     .disabled(selectedBranch == nil)
                     .accessibilityLabel("branch_picker_continue_button".localized)
 
                     Button(action: { showSignOutConfirm = true }) {
                         Text("branch_picker_sign_out".localized)
                             .font(.buttonMedium)
-                            .foregroundColor(.appError)
+                            .foregroundColor(.appTextSecondary)
                             .frame(maxWidth: .infinity)
                             .frame(height: 44)
                     }
@@ -180,11 +138,11 @@ private struct BranchRowView: View {
         HStack(spacing: Spacing.md) {
             ZStack {
                 Circle()
-                    .fill(isSelected ? Color.appPrimary.opacity(0.15) : Color.appBackground)
+                    .fill(isSelected ? Color.appHighlight.opacity(0.16) : Color.appSurfaceSecondary)
                     .frame(width: 44, height: 44)
                 Image(systemName: "storefront.fill")
                     .font(.body)
-                    .foregroundColor(isSelected ? .appPrimary : .appTextSecondary)
+                    .foregroundColor(isSelected ? .appHighlight : .appTextSecondary)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -207,18 +165,18 @@ private struct BranchRowView: View {
             if isSelected {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.title3)
-                    .foregroundColor(.appPrimary)
+                    .foregroundColor(.appHighlight)
             }
         }
         .padding(Spacing.md)
         .background(Color.appSurface)
-        .cornerRadius(CornerRadius.md)
+        .cornerRadius(CornerRadius.lg)
         .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.md)
-                .stroke(isSelected ? Color.appPrimary.opacity(0.5) : Color.appBorderLight, lineWidth: isSelected ? 2 : 1)
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                .stroke(isSelected ? Color.appHighlight.opacity(0.65) : Color.appBorderLight, lineWidth: isSelected ? 2 : 1)
         )
         .shadow(
-            color: isSelected ? Color.appPrimary.opacity(0.1) : Elevation.level1.color,
+            color: isSelected ? Color.appHighlight.opacity(0.12) : Elevation.level1.color,
             radius: isSelected ? 4 : Elevation.level1.radius,
             y: Elevation.level1.y
         )

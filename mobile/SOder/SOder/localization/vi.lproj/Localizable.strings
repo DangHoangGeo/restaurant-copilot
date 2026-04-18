@@ -128,6 +128,7 @@
 "checkout_discount_type_picker_label" = "Loại Giảm giá";
 "checkout_discount_type_percentage" = "Phần trăm";
 "checkout_discount_type_fixed" = "Số tiền Cố định";
+"checkout_price_breakdown" = "Chi tiết thanh toán";
 "checkout_price_after_discount_label" = "Sau Giảm giá";
 "checkout_price_tax_label" = "Thuế (%d%%)";
 "checkout_total_label" = "Tổng cộng:";
@@ -1032,3 +1033,58 @@
 "branch_code_hint" = "Mã định danh không gian làm việc của nhà hàng bạn (subdomain)";
 "login_show_password" = "Hiện mật khẩu";
 "login_hide_password" = "Ẩn mật khẩu";
+
+// MARK: - Order Detail Refinements
+"table_status_serving" = "Đang phục vụ";
+"order_detail_title" = "Chi tiết đơn";
+"order_detail_cancel_item_title" = "Hủy món";
+"order_detail_remove_item" = "Xóa món";
+"order_detail_keep_item" = "Giữ lại";
+"order_detail_cancel_item_message" = "Xóa %@ khỏi đơn này?";
+"order_detail_reprint_kitchen" = "In lại bếp";
+"order_detail_tip_label" = "Tiền tip";
+"order_detail_totals_title" = "Tổng";
+"order_detail_guest_count_short" = "%d chỗ";
+"order_detail_placed_time" = "gọi lúc %@";
+"order_detail_manage_title" = "Quản lý";
+"checkout_order_reference" = "Mã: %@";
+"order_status_update_items_failed" = "Không thể cập nhật một hoặc nhiều món.";
+
+// MARK: - Order Item Detail
+"order_item_detail_summary_title" = "Tóm tắt";
+"order_item_detail_quantity_label" = "Số lượng";
+"order_item_detail_elapsed_label" = "Đã qua";
+"order_item_detail_price_label" = "Giá";
+"order_item_detail_current_status" = "Trạng thái hiện tại";
+"order_item_detail_notes_title" = "Ghi chú";
+"order_item_detail_notes_placeholder" = "Thêm yêu cầu đặc biệt";
+"order_item_detail_no_notes" = "Không có ghi chú đặc biệt";
+"order_item_detail_status_title" = "Tiến độ";
+"order_item_detail_status_direct_hint" = "Chạm vào trạng thái muốn chuyển để cập nhật trực tiếp.";
+"order_item_detail_status_hint" = "Bước tiếp theo: %@";
+"order_item_detail_mark_as" = "Đánh dấu %@";
+"order_item_detail_cancel_item" = "Hủy món";
+"order_item_detail_cancel_title" = "Hủy món";
+"order_item_detail_cancel_message" = "Hủy %@? Hành động này không thể hoàn tác.";
+"order_item_detail_cancel_success" = "Đã hủy món.";
+"order_item_detail_cancelling" = "Đang hủy...";
+"order_item_detail_notes_saved" = "Đã cập nhật ghi chú.";
+"order_item_detail_status_updated" = "Đã cập nhật trạng thái thành %@.";
+"add_items_existing_order_subtitle" = "%@ • Mã %@";
+"add_items_new_order_subtitle" = "%@ • Đơn mới";
+"add_items_review_title" = "Xem Lại Món";
+"add_items_review_existing_subtitle" = "Lưu các món này vào %@";
+"add_items_review_new_subtitle" = "Xác nhận đơn cho %@";
+"add_items_save_button" = "Thêm Vào Đơn Hiện Tại";
+"add_items_send_to_kitchen_button" = "Gửi Xuống Bếp";
+"add_items_loading_order_title" = "Đang tải đơn";
+"add_items_loading_order_subtitle" = "Đang chuẩn bị %@";
+"pos_update_item_title" = "Cập nhật món";
+"pos_update_item_button" = "Cập nhật món";
+"pos_unit_price_label" = "Đơn giá";
+"pos_included_price" = "Đã gồm";
+"pos_remove_item_button" = "Xóa món";
+"pos_edit_item_button" = "Chạm để sửa";
+"order_detail_checkout_blocked_title" = "Cập nhật trạng thái trước";
+"order_detail_checkout_blocked_message" = "Hãy phục vụ hoặc hủy tất cả món trước khi thanh toán.";
+"order_detail_checkout_blocked_hint" = "Cập nhật trạng thái món trước";

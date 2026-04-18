@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct AddItemToOrderView: View {
-    let order: Order
+    enum Mode {
+        case existingOrder(Order)
+        case newDraft(orderId: String, table: Table, onOrderConfirmed: (() -> Void)?)
+    }
 
     @EnvironmentObject var orderManager: OrderManager
     @EnvironmentObject var supabaseManager: SupabaseManager
@@ -13,64 +16,105 @@ struct AddItemToOrderView: View {
     @State private var isLoading = false
     @State private var searchText = ""
     @State private var selectedCategoryId: String? = nil
-    @State private var showingCustomizeSheet = false
-    @State private var itemToCustomize: MenuItem? = nil
     @State private var orderSummary: (itemsCount: Int, totalAmount: Double) = (0, 0.0)
     @State private var isSavingToDatabase = false
     @State private var showingCartSheet = false
+    @State private var itemToCustomize: MenuItem? = nil
     @State private var itemToEdit: OrderItem? = nil
 
-    // Use a computed property for the local draft ID to ensure uniqueness
-    private var localDraftOrderId: String {
-        "add_items_\(order.id)"
+    private let mode: Mode
+
+    init(order: Order) {
+        self.mode = .existingOrder(order)
     }
-    
-    // Filtered items based on search and category with multi-language support
+
+    init(draftOrderId: String, table: Table, onOrderConfirmed: (() -> Void)? = nil) {
+        self.mode = .newDraft(orderId: draftOrderId, table: table, onOrderConfirmed: onOrderConfirmed)
+    }
+
+    private var localDraftOrderId: String {
+        switch mode {
+        case .existingOrder(let order):
+            return "add_items_\(order.id)"
+        case .newDraft(let orderId, _, _):
+            return orderId
+        }
+    }
+
+    private var contextualSubtitle: String {
+        switch mode {
+        case .existingOrder(let order):
+            let tableName = order.table?.name ?? "orders_table_prefix".localized + order.table_id
+            let reference = String(order.id.suffix(6)).uppercased()
+            return "add_items_existing_order_subtitle".localized(with: tableName, reference)
+        case .newDraft(_, let table, _):
+            return "add_items_new_order_subtitle".localized(with: table.name)
+        }
+    }
+
+    private var cartConfirmLabel: String {
+        switch mode {
+        case .existingOrder:
+            return "add_items_save_button".localized
+        case .newDraft:
+            return "add_items_send_to_kitchen_button".localized
+        }
+    }
+
+    private var cartConfirmIcon: String {
+        switch mode {
+        case .existingOrder:
+            return "tray.and.arrow.down.fill"
+        case .newDraft:
+            return "fork.knife.circle.fill"
+        }
+    }
+
+    private var cartSubtitle: String {
+        switch mode {
+        case .existingOrder(let order):
+            return "add_items_review_existing_subtitle".localized(with: order.table?.name ?? order.table_id)
+        case .newDraft(_, let table, _):
+            return "add_items_review_new_subtitle".localized(with: table.name)
+        }
+    }
+
     private var filteredItems: [MenuItem] {
         var items = menuItems
-        
-        // Filter by category
+
         if let categoryId = selectedCategoryId {
             items = items.filter { $0.category_id == categoryId }
         }
-        
-        // Multi-language search
+
         if !searchText.isEmpty {
             items = items.filter { item in
-                // Search in all language names
                 item.name_en.localizedCaseInsensitiveContains(searchText) ||
                 (item.name_ja?.localizedCaseInsensitiveContains(searchText) ?? false) ||
                 (item.name_vi?.localizedCaseInsensitiveContains(searchText) ?? false) ||
-                
-                // Search in all language descriptions
                 (item.description_en?.localizedCaseInsensitiveContains(searchText) ?? false) ||
                 (item.description_ja?.localizedCaseInsensitiveContains(searchText) ?? false) ||
                 (item.description_vi?.localizedCaseInsensitiveContains(searchText) ?? false) ||
-                
-                // Search in code
                 (item.code?.localizedCaseInsensitiveContains(searchText) ?? false)
             }
         }
-        
+
         return items.sorted { $0.displayName < $1.displayName }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
-            // Unified Search Header
             MenuSearchHeader(
                 searchText: $searchText,
                 selectedCategoryId: $selectedCategoryId,
                 categories: categories,
                 menuItems: menuItems,
                 title: "add_items_title".localized,
-                subtitle: "add_items_subtitle".localized
+                subtitle: contextualSubtitle
             )
             .padding()
             .background(Color.appSurfaceElevated)
             .shadow(color: Elevation.level2.color, radius: Elevation.level2.radius, x: 0, y: Elevation.level2.y)
-            
-            // Content Area
+
             if isLoading {
                 VStack(spacing: Spacing.lg) {
                     ProgressView()
@@ -90,21 +134,25 @@ struct AddItemToOrderView: View {
                     showCategoryHeaders: true,
                     isAddingItem: coordinator.isAddingItem,
                     onItemTap: { item in
-                        // Clicking the item line opens customization sheet
+                        itemToEdit = nil
                         itemToCustomize = item
-                        showingCustomizeSheet = true
                     },
                     onQuickAdd: { item in
-                        // Clicking + button quick adds to cart
                         Task {
-                            await coordinator.quickAddItem(item, to: localDraftOrderId)
+                            await coordinator.handleAddItem(item, to: localDraftOrderId) { menuItem in
+                                itemToEdit = nil
+                                itemToCustomize = menuItem
+                            }
                             await updateOrderSummary()
                         }
+                    },
+                    onCustomize: { item in
+                        itemToEdit = nil
+                        itemToCustomize = item
                     }
                 )
             }
-            
-            // Floating Cart Button (appears when items are added)
+
             if orderSummary.itemsCount > 0 {
                 VStack(spacing: 0) {
                     Divider()
@@ -113,10 +161,8 @@ struct AddItemToOrderView: View {
                         totalAmount: orderSummary.totalAmount,
                         isVisible: true,
                         onTap: {
-                            // Haptic feedback
                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                             impactFeedback.impactOccurred()
-                            // Show cart sheet
                             showingCartSheet = true
                         }
                     )
@@ -131,7 +177,7 @@ struct AddItemToOrderView: View {
         .navigationTitle("add_items_title".localized)
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            await initializeLocalDraft()
+            await initializeWorkingDraft()
             await loadMenuData()
             await updateOrderSummary()
         }
@@ -141,34 +187,36 @@ struct AddItemToOrderView: View {
                 orderId: localDraftOrderId,
                 coordinator: coordinator,
                 onComplete: {
+                    itemToEdit = nil
                     itemToCustomize = nil
-                    showingCustomizeSheet = false
                     Task {
                         await updateOrderSummary()
                     }
-                }
+                },
+                editingItem: itemToEdit
             )
         }
         .sheet(isPresented: $showingCartSheet) {
             if let localDraft = orderManager.localDraftOrders[localDraftOrderId] {
                 CartSheet(
                     order: localDraft,
+                    title: "add_items_review_title".localized,
+                    subtitle: cartSubtitle,
+                    confirmLabel: cartConfirmLabel,
+                    confirmIcon: cartConfirmIcon,
                     onDismiss: {
                         showingCartSheet = false
                     },
                     onConfirm: {
                         showingCartSheet = false
                         Task {
-                            await saveLocalDraftToDatabase()
+                            await confirmCart()
                         }
                     },
                     onEditItem: { item in
-                        // Close cart and open customize sheet for editing
                         showingCartSheet = false
-                        if let menuItem = item.menu_item {
-                            itemToCustomize = menuItem
-                            showingCustomizeSheet = true
-                        }
+                        itemToEdit = item
+                        itemToCustomize = item.menu_item
                     }
                 )
             }
@@ -179,42 +227,53 @@ struct AddItemToOrderView: View {
             Text(coordinator.errorMessage ?? "order_detail_generic_error_message".localized)
         }
         .onDisappear {
-            // Clean up local draft if user dismisses without saving
-            if orderManager.localDraftOrders[localDraftOrderId] != nil {
+            if case .existingOrder = mode,
+               orderManager.localDraftOrders[localDraftOrderId] != nil {
                 orderManager.localDraftOrders.removeValue(forKey: localDraftOrderId)
-                print("🧹 Cleaned up unsaved local draft for order \(order.id)")
+                print("🧹 Cleaned up unsaved local draft for add-items session \(localDraftOrderId)")
             }
         }
     }
-    
-    // MARK: - Local Draft Management
 
     @MainActor
-    private func initializeLocalDraft() async {
-        // Create a NEW empty local order for cart-like behavior
-        // This prevents items from being immediately saved to the database
-        let localOrder = Order(
-            id: localDraftOrderId,
-            restaurant_id: order.restaurant_id,
-            table_id: order.table_id,
-            session_id: order.session_id,
-            guest_count: order.guest_count,
-            status: order.status,
-            total_amount: 0.0,
-            order_number: order.order_number,
-            created_at: order.created_at,
-            updated_at: order.updated_at,
-            table: order.table,
-            order_items: [], // Start with empty cart
-            payment_method: order.payment_method,
-            discount_amount: order.discount_amount,
-            tax_amount: order.tax_amount,
-            tip_amount: order.tip_amount
-        )
+    private func initializeWorkingDraft() async {
+        switch mode {
+        case .existingOrder(let order):
+            let localOrder = Order(
+                id: localDraftOrderId,
+                restaurant_id: order.restaurant_id,
+                table_id: order.table_id,
+                session_id: order.session_id,
+                guest_count: order.guest_count,
+                status: order.status,
+                total_amount: 0.0,
+                order_number: order.order_number,
+                created_at: order.created_at,
+                updated_at: order.updated_at,
+                table: order.table,
+                order_items: [],
+                payment_method: order.payment_method,
+                discount_amount: order.discount_amount,
+                tax_amount: order.tax_amount,
+                tip_amount: order.tip_amount
+            )
 
-        // Store in local drafts
-        orderManager.localDraftOrders[localDraftOrderId] = localOrder
-        print("✅ Initialized empty local draft cart for adding items to order \(order.id)")
+            orderManager.localDraftOrders[localDraftOrderId] = localOrder
+        case .newDraft(let orderId, let table, _):
+            if orderManager.localDraftOrders[orderId] == nil {
+                await orderManager.createLocalDraftOrder(orderId: orderId, table: table)
+            }
+        }
+    }
+
+    @MainActor
+    private func confirmCart() async {
+        switch mode {
+        case .existingOrder:
+            await saveLocalDraftToDatabase()
+        case .newDraft(_, _, let onOrderConfirmed):
+            await sendDraftOrderToKitchen(onOrderConfirmed: onOrderConfirmed)
+        }
     }
 
     @MainActor
@@ -223,19 +282,19 @@ struct AddItemToOrderView: View {
 
         isSavingToDatabase = true
 
+        defer {
+            isSavingToDatabase = false
+        }
+
         do {
-            // Get the local draft order
             guard let localDraft = orderManager.localDraftOrders[localDraftOrderId],
-                  let newItems = localDraft.order_items else {
-                print("⚠️ No local draft or items found")
+                  let newItems = localDraft.order_items,
+                  case .existingOrder(let order) = mode else {
                 dismiss()
                 return
             }
 
-            // Add each item from the local draft to the actual database order
             for item in newItems {
-                guard let menuItem = item.menu_item else { continue }
-
                 _ = try await orderManager.addItemToDraftOrder(
                     orderId: order.id,
                     menuItemId: item.menu_item_id,
@@ -247,54 +306,61 @@ struct AddItemToOrderView: View {
                 )
             }
 
-            // Clean up local draft
             orderManager.localDraftOrders.removeValue(forKey: localDraftOrderId)
-
-            print("✅ Saved \(newItems.count) items to database order \(order.id)")
-
-            // Dismiss view to show updated order
             dismiss()
-
         } catch {
             print("❌ Error saving items to database: \(error)")
             coordinator.errorMessage = "add_items_error_save_failed".localized
             coordinator.showingErrorAlert = true
         }
-
-        isSavingToDatabase = false
     }
 
-    // MARK: - Data Loading
+    @MainActor
+    private func sendDraftOrderToKitchen(onOrderConfirmed: (() -> Void)?) async {
+        guard !isSavingToDatabase else { return }
+
+        isSavingToDatabase = true
+        defer {
+            isSavingToDatabase = false
+        }
+
+        do {
+            _ = try await orderManager.confirmOrderToKitchen(orderId: localDraftOrderId)
+            onOrderConfirmed?()
+            dismiss()
+        } catch {
+            print("❌ Error confirming local draft order: \(error)")
+            coordinator.errorMessage = "add_items_error_save_failed".localized
+            coordinator.showingErrorAlert = true
+        }
+    }
 
     @MainActor
     private func loadMenuData() async {
         isLoading = true
-        
+
+        defer {
+            isLoading = false
+        }
+
         do {
             guard supabaseManager.currentRestaurantId != nil else {
                 coordinator.errorMessage = "add_items_error_no_restaurant".localized
                 coordinator.showingErrorAlert = true
-                isLoading = false
                 return
             }
-            
-            // Load both categories and menu items
+
             async let categoriesTask = supabaseManager.fetchAllCategories()
             async let menuItemsTask = supabaseManager.fetchAllMenuItems()
-            
-            self.categories = try await categoriesTask
-            self.menuItems = try await menuItemsTask
-            
+
+            categories = try await categoriesTask
+            menuItems = try await menuItemsTask
         } catch {
             print("Error loading menu data: \(error.localizedDescription)")
             coordinator.errorMessage = "add_items_error_load_failed".localized
             coordinator.showingErrorAlert = true
         }
-        
-        isLoading = false
     }
-    
-    // MARK: - Order Summary Updates
 
     @MainActor
     private func updateOrderSummary() async {
@@ -304,22 +370,15 @@ struct AddItemToOrderView: View {
 
 #if DEBUG
 #Preview {
-    // Mock Environment Objects
     let orderManager = OrderManager.shared
-    let printerManager = PrinterManager.shared
-    let localizationManager = LocalizationManager.shared
-
-    // Populate with mock data for preview
-    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Đồ uống", position: 1)
-    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Cà phê nóng", price: 5.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
-    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 5.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Do uong", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Ca phe", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Ca phe nong", price: 500.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 500.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
     let mockTable = Table(id: "1", restaurant_id: "1", name: "Table 1", status: .occupied, capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil, created_at: "", updated_at: "")
-    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "1", guest_count: 2, status: .new, total_amount: 10.0, order_number: 1, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [mockOrderItem], payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil)
+    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "1", guest_count: 2, status: .new, total_amount: 1000.0, order_number: 1, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [mockOrderItem], payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil)
 
     return AddItemToOrderView(order: mockOrder)
         .environmentObject(orderManager)
-        .environmentObject(printerManager)
-        .environmentObject(localizationManager)
         .environmentObject(SupabaseManager.shared)
 }
 #endif

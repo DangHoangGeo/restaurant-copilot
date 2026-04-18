@@ -2,19 +2,43 @@
 //  CartSheet.swift
 //  SOder
 //
-//  Displays cart items with ability to edit quantity, add notes, and confirm order
+//  Displays shared cart items for both new-order and add-to-existing-order flows.
 //
 
 import SwiftUI
 
 struct CartSheet: View {
     let order: Order
+    let title: String
+    let subtitle: String?
+    let confirmLabel: String
+    let confirmIcon: String
     let onDismiss: () -> Void
     let onConfirm: () -> Void
     let onEditItem: (OrderItem) -> Void
 
     @EnvironmentObject var orderManager: OrderManager
     @Environment(\.dismiss) var dismiss
+
+    init(
+        order: Order,
+        title: String = "cart_title".localized,
+        subtitle: String? = nil,
+        confirmLabel: String = "pos_confirm_order".localized,
+        confirmIcon: String = "checkmark.circle.fill",
+        onDismiss: @escaping () -> Void,
+        onConfirm: @escaping () -> Void,
+        onEditItem: @escaping (OrderItem) -> Void
+    ) {
+        self.order = order
+        self.title = title
+        self.subtitle = subtitle
+        self.confirmLabel = confirmLabel
+        self.confirmIcon = confirmIcon
+        self.onDismiss = onDismiss
+        self.onConfirm = onConfirm
+        self.onEditItem = onEditItem
+    }
 
     private var orderItems: [OrderItem] {
         order.order_items ?? []
@@ -29,15 +53,24 @@ struct CartSheet: View {
     }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Cart Items List
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                Color.appBackground
+                    .ignoresSafeArea()
+
                 if orderItems.isEmpty {
                     EmptyCartView()
                 } else {
                     ScrollView {
-                        VStack(spacing: Spacing.md) {
-                            ForEach(Array(orderItems.enumerated()), id: \.element.id) { index, item in
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            if let subtitle, !subtitle.isEmpty {
+                                Text(subtitle)
+                                    .font(.bodyMedium)
+                                    .foregroundColor(.appTextSecondary)
+                                    .padding(.horizontal, Spacing.md)
+                            }
+
+                            ForEach(orderItems) { item in
                                 CartItemRow(
                                     item: item,
                                     onTap: { onEditItem(item) },
@@ -59,83 +92,73 @@ struct CartSheet: View {
                                         }
                                     }
                                 )
+                                .padding(.horizontal, Spacing.md)
                             }
                         }
-                        .padding()
+                        .padding(.top, Spacing.md)
+                        .padding(.bottom, 120)
                     }
+                }
+
+                footer
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        onDismiss()
+                        dismiss()
+                    } label: {
+                        Label("pos_continue_adding".localized, systemImage: "chevron.left")
+                    }
+                    .foregroundColor(.appTextSecondary)
+                }
+            }
+        }
+    }
+
+    private var footer: some View {
+        VStack(spacing: Spacing.md) {
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("pos_total_items".localized)
+                        .font(.captionBold)
+                        .foregroundColor(.appTextSecondary)
+                    Text(String(format: "pos_items_count_format".localized, totalItems))
+                        .font(.bodyMedium)
+                        .foregroundColor(.appTextPrimary)
                 }
 
                 Spacer()
 
-                // Footer with total and confirm button
-                VStack(spacing: 0) {
-                    Divider()
-
-                    VStack(spacing: Spacing.md) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: Spacing.xs) {
-                                Text("pos_total_items".localized)
-                                    .font(.captionRegular)
-                                    .foregroundColor(.appTextSecondary)
-                                Text(String(format: "pos_items_count_format".localized, totalItems))
-                                    .font(.bodyMedium)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.appTextPrimary)
-                            }
-
-                            Spacer()
-
-                            VStack(alignment: .trailing, spacing: Spacing.xs) {
-                                Text("total".localized)
-                                    .font(.captionRegular)
-                                    .foregroundColor(.appTextSecondary)
-                                Text(String(format: "price_format".localized, totalAmount))
-                                    .font(.cardTitle)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.appPrimary)
-                            }
-                        }
-
-                        Button(action: {
-                            onConfirm()
-                        }) {
-                            HStack {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.subheadline)
-                                Text("pos_confirm_order".localized)
-                                    .font(.buttonLarge)
-                                    .fontWeight(.semibold)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(orderItems.isEmpty ? Color.appDisabled : Color.appPrimary)
-                            .foregroundColor(.white)
-                            .cornerRadius(CornerRadius.md)
-                        }
-                        .disabled(orderItems.isEmpty)
-                    }
-                    .padding()
-                    .background(Color.appSurfaceElevated)
-                }
-            }
-            .navigationTitle("cart_title".localized)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        onDismiss()
-                        dismiss()
-                    }) {
-                        HStack(spacing: Spacing.xs) {
-                            Image(systemName: "chevron.left")
-                            Text("pos_continue_adding".localized)
-                        }
-                        .font(.bodyMedium)
+                VStack(alignment: .trailing, spacing: Spacing.xs) {
+                    Text("total".localized)
+                        .font(.captionBold)
+                        .foregroundColor(.appTextSecondary)
+                    Text(String(format: "price_format".localized, totalAmount))
+                        .font(.sectionHeader)
                         .foregroundColor(.appPrimary)
-                    }
                 }
             }
+
+            Button(action: onConfirm) {
+                Label(confirmLabel, systemImage: confirmIcon)
+            }
+            .buttonStyle(PrimaryButtonStyle(isEnabled: !orderItems.isEmpty))
+            .disabled(orderItems.isEmpty)
         }
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.lg)
+        .background(
+            LinearGradient(
+                colors: [Color.appBackground.opacity(0), Color.appBackground.opacity(0.92), Color.appBackground],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .bottom)
+        )
     }
 }
 
@@ -145,102 +168,130 @@ struct CartItemRow: View {
     let onQuantityChange: (Int) -> Void
     let onRemove: () -> Void
 
+    private var menuItem: MenuItem? {
+        item.menu_item
+    }
+
+    private var sizeDisplay: String? {
+        guard let sizeId = item.menu_item_size_id,
+              let size = menuItem?.availableSizes?.first(where: { $0.id == sizeId }) else {
+            return nil
+        }
+
+        return size.staffSecondaryName.map { "\(size.displayName) / \($0)" } ?? size.displayName
+    }
+
+    private var toppingDisplay: String? {
+        guard let toppingIds = item.topping_ids,
+              !toppingIds.isEmpty,
+              let allToppings = menuItem?.availableToppings else {
+            return nil
+        }
+
+        let selectedToppings = allToppings.filter { toppingIds.contains($0.id) }
+        guard !selectedToppings.isEmpty else { return nil }
+
+        return selectedToppings.map { topping in
+            topping.staffSecondaryName.map { "\(topping.displayName) / \($0)" } ?? topping.displayName
+        }.joined(separator: ", ")
+    }
+
     var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text(item.menu_item?.displayName ?? "Unknown Item")
-                            .font(.bodyMedium)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.appTextPrimary)
-                            .multilineTextAlignment(.leading)
-
-                        // Show size if selected
-                        if let sizeId = item.menu_item_size_id,
-                           let size = item.menu_item?.availableSizes?.first(where: { $0.id == sizeId }) {
-                            Text("Size: \(size.displayName)")
-                                .font(.captionRegular)
-                                .foregroundColor(.appTextSecondary)
-                        }
-
-                        // Show toppings if selected
-                        if let toppingIds = item.topping_ids, !toppingIds.isEmpty,
-                           let allToppings = item.menu_item?.availableToppings {
-                            let selectedToppings = allToppings.filter { toppingIds.contains($0.id) }
-                            if !selectedToppings.isEmpty {
-                                Text("Toppings: \(selectedToppings.map { $0.displayName }.joined(separator: ", "))")
-                                    .font(.captionRegular)
-                                    .foregroundColor(.appTextSecondary)
-                            }
-                        }
-
-                        // Show notes if exists
-                        if let notes = item.notes, !notes.isEmpty {
-                            Text("Note: \(notes)")
-                                .font(.captionRegular)
-                                .foregroundColor(.appTextSecondary)
-                                .italic()
-                        }
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    if let code = menuItem?.code, !code.isEmpty {
+                        Text(code)
+                            .font(.captionBold)
+                            .foregroundColor(.appPrimary)
                     }
 
-                    Spacer()
+                    Text(menuItem?.displayName ?? "orders_unknown_item".localized)
+                        .font(.bodyMedium)
+                        .foregroundColor(.appTextPrimary)
+                        .multilineTextAlignment(.leading)
 
-                    Button(action: onRemove) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title3)
+                    if let secondaryName = menuItem?.staffSecondaryName {
+                        Text(secondaryName)
+                            .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
+                            .multilineTextAlignment(.leading)
                     }
-                    .buttonStyle(.plain)
                 }
 
-                HStack {
-                    // Quantity controls
-                    HStack(spacing: Spacing.sm) {
-                        Button(action: {
-                            onQuantityChange(item.quantity - 1)
-                        }) {
-                            Image(systemName: "minus.circle.fill")
-                                .font(.title3)
-                                .foregroundColor(item.quantity > 1 ? .appPrimary : .appDisabled)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(item.quantity <= 1)
+                Spacer()
 
-                        Text("\(item.quantity)")
-                            .font(.bodyMedium)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.appTextPrimary)
-                            .frame(minWidth: 30)
+                Button(action: onRemove) {
+                    Image(systemName: "xmark")
+                }
+                .buttonStyle(IconButtonStyle())
+                .accessibilityLabel("pos_remove_item_button".localized)
+            }
 
-                        Button(action: {
-                            onQuantityChange(item.quantity + 1)
-                        }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title3)
-                                .foregroundColor(.appPrimary)
-                        }
-                        .buttonStyle(.plain)
-                    }
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                if let sizeDisplay, !sizeDisplay.isEmpty {
+                    detailLine(label: "pos_size_section_title".localized, value: sizeDisplay)
+                }
 
-                    Spacer()
+                if let toppingDisplay, !toppingDisplay.isEmpty {
+                    detailLine(label: "pos_toppings_section_title".localized, value: toppingDisplay)
+                }
 
-                    // Price
-                    Text(String(format: "price_format".localized, item.price_at_order * Double(item.quantity)))
-                        .font(.bodyMedium)
-                        .fontWeight(.bold)
-                        .foregroundColor(.appTextPrimary)
+                if let notes = item.notes, !notes.isEmpty {
+                    detailLine(label: "pos_notes_section_title".localized, value: notes)
                 }
             }
-            .padding()
-            .background(Color.appSurfaceElevated)
-            .cornerRadius(CornerRadius.md)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.md)
-                    .stroke(Color.appBorderLight, lineWidth: 1)
-            )
+
+            HStack {
+                HStack(spacing: Spacing.md) {
+                    Button {
+                        onQuantityChange(item.quantity - 1)
+                    } label: {
+                        Image(systemName: "minus")
+                    }
+                    .buttonStyle(IconButtonStyle())
+                    .disabled(item.quantity <= 1)
+
+                    Text("\(item.quantity)")
+                        .font(.sectionHeader)
+                        .foregroundColor(.appTextPrimary)
+                        .frame(minWidth: 28)
+
+                    Button {
+                        onQuantityChange(item.quantity + 1)
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .buttonStyle(IconButtonStyle())
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: Spacing.xs) {
+                    Text("pos_edit_item_button".localized)
+                        .font(.captionBold)
+                        .foregroundColor(.appTextSecondary)
+                    Text(String(format: "price_format".localized, item.price_at_order * Double(item.quantity)))
+                        .font(.sectionHeader)
+                        .foregroundColor(.appPrimary)
+                }
+            }
         }
-        .buttonStyle(.plain)
+        .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.lg)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
+    }
+
+    private func detailLine(label: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
+            Text(label.uppercased())
+                .font(.captionBold)
+                .foregroundColor(.appTextSecondary)
+            Text(value)
+                .font(.captionRegular)
+                .foregroundColor(.appTextSecondary)
+                .multilineTextAlignment(.leading)
+        }
     }
 }
 
@@ -248,12 +299,11 @@ struct EmptyCartView: View {
     var body: some View {
         VStack(spacing: Spacing.lg) {
             Image(systemName: "cart")
-                .font(.system(size: 60))
+                .font(.system(size: 56))
                 .foregroundColor(.appTextTertiary)
 
             Text("cart_empty_title".localized)
                 .font(.cardTitle)
-                .fontWeight(.semibold)
                 .foregroundColor(.appTextPrimary)
 
             Text("cart_empty_subtitle".localized)
@@ -261,17 +311,17 @@ struct EmptyCartView: View {
                 .foregroundColor(.appTextSecondary)
                 .multilineTextAlignment(.center)
         }
-        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(Spacing.xl)
     }
 }
 
 #Preview {
     let mockMenuItem = MenuItem(
         id: "1", restaurant_id: "1", category_id: "1",
-        name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê",
+        name_en: "Coffee", name_ja: "コーヒー", name_vi: "Ca phe",
         code: "COF", description_en: "Hot coffee", description_ja: nil, description_vi: nil,
-        price: 5.0, tags: nil, image_url: nil, stock_level: nil, available: true,
+        price: 500.0, tags: nil, image_url: nil, stock_level: nil, available: true,
         position: 1, created_at: "", updated_at: "",
         category: nil, availableSizes: [], availableToppings: []
     )
@@ -279,13 +329,13 @@ struct EmptyCartView: View {
     let mockOrderItem = OrderItem(
         id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1",
         quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [],
-        price_at_order: 5.0, status: .new, created_at: "", updated_at: "",
+        price_at_order: 500.0, status: .draft, created_at: "", updated_at: "",
         menu_item: mockMenuItem
     )
 
     let mockOrder = Order(
         id: "1", restaurant_id: "1", table_id: "1", session_id: "1",
-        guest_count: 2, status: .draft, total_amount: 10.0, order_number: 1,
+        guest_count: 2, status: .draft, total_amount: 1000.0, order_number: 1,
         created_at: "", updated_at: "", table: nil,
         order_items: [mockOrderItem], payment_method: nil,
         discount_amount: nil, tax_amount: nil, tip_amount: nil

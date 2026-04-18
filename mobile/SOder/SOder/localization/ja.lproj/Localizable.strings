@@ -128,6 +128,7 @@
 "checkout_discount_type_picker_label" = "割引タイプ";
 "checkout_discount_type_percentage" = "パーセンテージ";
 "checkout_discount_type_fixed" = "固定金額";
+"checkout_price_breakdown" = "金額内訳";
 "checkout_price_after_discount_label" = "割引後";
 "checkout_price_tax_label" = "税金 (%d%%)";
 "checkout_total_label" = "合計:";
@@ -1032,3 +1033,58 @@
 "branch_code_hint" = "レストランのユニークなワークスペースID（サブドメイン）";
 "login_show_password" = "パスワードを表示";
 "login_hide_password" = "パスワードを非表示";
+
+// MARK: - Order Detail Refinements
+"table_status_serving" = "提供中";
+"order_detail_title" = "注文詳細";
+"order_detail_cancel_item_title" = "商品をキャンセル";
+"order_detail_remove_item" = "商品を外す";
+"order_detail_keep_item" = "そのままにする";
+"order_detail_cancel_item_message" = "%@をこの注文から外しますか？";
+"order_detail_reprint_kitchen" = "キッチン再印刷";
+"order_detail_tip_label" = "チップ";
+"order_detail_totals_title" = "合計";
+"order_detail_guest_count_short" = "%d席";
+"order_detail_placed_time" = "%@に注文";
+"order_detail_manage_title" = "管理";
+"checkout_order_reference" = "ID: %@";
+"order_status_update_items_failed" = "一部の商品の更新に失敗しました。";
+
+// MARK: - Order Item Detail
+"order_item_detail_summary_title" = "概要";
+"order_item_detail_quantity_label" = "数量";
+"order_item_detail_elapsed_label" = "経過";
+"order_item_detail_price_label" = "価格";
+"order_item_detail_current_status" = "現在の状態";
+"order_item_detail_notes_title" = "メモ";
+"order_item_detail_notes_placeholder" = "特記事項を追加";
+"order_item_detail_no_notes" = "特記事項はありません";
+"order_item_detail_status_title" = "進行状況";
+"order_item_detail_status_direct_hint" = "進めたい状態をタップすると直接更新できます。";
+"order_item_detail_status_hint" = "次のステップ: %@";
+"order_item_detail_mark_as" = "%@にする";
+"order_item_detail_cancel_item" = "商品をキャンセル";
+"order_item_detail_cancel_title" = "商品をキャンセル";
+"order_item_detail_cancel_message" = "%@をキャンセルしますか？この操作は元に戻せません。";
+"order_item_detail_cancel_success" = "商品をキャンセルしました。";
+"order_item_detail_cancelling" = "キャンセル中...";
+"order_item_detail_notes_saved" = "メモを更新しました。";
+"order_item_detail_status_updated" = "状態を%@に更新しました。";
+"add_items_existing_order_subtitle" = "%@ • 参照 %@";
+"add_items_new_order_subtitle" = "%@ • 新規注文";
+"add_items_review_title" = "内容確認";
+"add_items_review_existing_subtitle" = "この商品を%@の注文へ追加";
+"add_items_review_new_subtitle" = "%@の注文を確定";
+"add_items_save_button" = "現在の注文へ追加";
+"add_items_send_to_kitchen_button" = "キッチンへ送信";
+"add_items_loading_order_title" = "注文を読み込み中";
+"add_items_loading_order_subtitle" = "%@を準備しています";
+"pos_update_item_title" = "商品を更新";
+"pos_update_item_button" = "商品を更新";
+"pos_unit_price_label" = "単価";
+"pos_included_price" = "込み";
+"pos_remove_item_button" = "商品を削除";
+"pos_edit_item_button" = "タップして編集";
+"order_detail_checkout_blocked_title" = "先に状態を更新してください";
+"order_detail_checkout_blocked_message" = "すべての商品を提供済みまたはキャンセルにしてから会計できます。";
+"order_detail_checkout_blocked_hint" = "先に商品状態を更新";

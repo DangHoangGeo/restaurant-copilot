@@ -2,382 +2,265 @@ import SwiftUI
 
 struct OrderStatusUpdateView: View {
     let order: Order
-    
-    @EnvironmentObject var orderManager: OrderManager
-    @Environment(\.dismiss) var dismiss
-    
-    @State private var newOrderStatus: OrderStatus
+
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var orderManager: OrderManager
+
     @State private var itemStatusUpdates: [String: OrderItemStatus] = [:]
     @State private var hasChanges = false
     @State private var isUpdating = false
-    @State private var errorMessage: String? = nil
+    @State private var errorMessage: String?
     @State private var showingErrorAlert = false
-    
-    init(order: Order) {
-        self.order = order
-        self._newOrderStatus = State(initialValue: order.status)
-    }
-    
+
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: Spacing.lg) {
-                    // Enhanced Order Header
-                    VStack(spacing: Spacing.md) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: Spacing.xs) {
-                                Text(order.table?.name ?? "Table \(order.table_id)")
-                                    .font(.cardTitle)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.appTextPrimary)
-                                
-                                HStack(spacing: Spacing.md) {
-                                    Label("\(order.guest_count ?? 1)", systemImage: "person.2.fill")
-                                        .font(.captionRegular)
-                                        .foregroundColor(.appTextTertiary)
-                                    
-                                    Label("ID: \(String(order.id.prefix(6).uppercased()))", systemImage: "number")
-                                        .font(.captionRegular)
-                                        .foregroundColor(.appTextTertiary)
-                                }
-                            }
-                            Spacer()
-                            EnhancedStatusBadge(status: order.status)
-                        }
-                    }
-                    .elevatedCardStyle()
-                    
-                    // Enhanced Order Status Section
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        HStack {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.title3)
-                                .foregroundColor(.appPrimary)
-                            Text("order_status_update_section_header".localized)
-                                .font(.sectionHeader)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.appTextPrimary)
-                            Spacer()
-                        }
-                        
-                        VStack(spacing: Spacing.sm) {
-                            HStack {
-                                Text("order_status_update_current_status_label".localized)
-                                    .font(.captionRegular)
-                                    .foregroundColor(.appTextSecondary)
-                                Spacer()
-                                EnhancedStatusBadge(status: order.status)
-                            }
-                            
-                            Divider()
-                            
-                            VStack(alignment: .leading, spacing: Spacing.xs) {
-                                Text("order_status_update_new_status_label".localized)
-                                    .font(.captionRegular)
-                                    .foregroundColor(.appTextSecondary)
-                                
-                                Menu {
-                                    ForEach(OrderStatus.allCases, id: \.self) { status in
-                                        Button(action: { 
-                                            newOrderStatus = status
-                                            hasChanges = true
-                                        }) {
-                                            HStack {
-                                                Circle()
-                                                    .fill(statusColor(for: status))
-                                                    .frame(width: 12, height: 12)
-                                                Text(status.displayName)
-                                                Spacer()
-                                                if newOrderStatus == status {
-                                                    Image(systemName: "checkmark")
-                                                        .foregroundColor(.appPrimary)
-                                                }
-                                            }
-                                        }
-                                    }
-                                } label: {
-                                    HStack {
-                                        Circle()
-                                            .fill(statusColor(for: newOrderStatus))
-                                            .frame(width: 16, height: 16)
-                                        Text(newOrderStatus.displayName)
-                                            .font(.bodyMedium)
-                                            .fontWeight(.medium)
-                                            .foregroundColor(.appTextPrimary)
-                                        Spacer()
-                                        Image(systemName: "chevron.down")
-                                            .font(.captionRegular)
-                                            .foregroundColor(.appTextSecondary)
-                                    }
-                                    .padding()
-                                    .background(Color.appSurfaceSecondary)
-                                    .cornerRadius(CornerRadius.md)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: CornerRadius.md)
-                                            .stroke(Color.appBorderLight, lineWidth: 1)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    .elevatedCardStyle()
-                    
-                    // Enhanced Individual Items Section
+        ZStack {
+            AppScreenBackground()
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: Spacing.xl) {
+                    statusHeader
+
                     if let orderItems = order.order_items, !orderItems.isEmpty {
                         VStack(alignment: .leading, spacing: Spacing.md) {
-                            HStack {
-                                Image(systemName: "list.bullet.circle")
-                                    .font(.title3)
-                                    .foregroundColor(.appPrimary)
-                                Text("order_status_update_item_status_section_header".localized)
-                                    .font(.sectionHeader)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.appTextPrimary)
-                                Spacer()
-                                Text("(\(orderItems.count))")
-                                    .font(.captionRegular)
-                                    .foregroundColor(.appTextSecondary)
-                            }
-                            
-                            VStack(spacing: Spacing.sm) {
+                            Text("order_status_update_item_status_section_header".localized.uppercased())
+                                .font(.monoLabel)
+                                .kerning(1.6)
+                                .foregroundColor(.appTextSecondary)
+
+                            VStack(spacing: Spacing.md) {
                                 ForEach(orderItems) { item in
-                                    enhancedOrderItemStatusRow(item)
+                                    statusRow(for: item)
                                 }
                             }
                         }
-                        .elevatedCardStyle()
                     }
-                    
-                    // Enhanced Action Section
-                    VStack(spacing: Spacing.md) {
-                        if hasChanges {
-                            HStack {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.appWarning)
-                                Text("order_status_update_unsaved_changes_warning".localized)
-                                    .font(.captionRegular)
-                                    .foregroundColor(.appWarning)
-                                Spacer()
-                            }
-                            .padding(.horizontal, Spacing.sm)
-                            .padding(.vertical, Spacing.xs)
-                            .background(Color.appWarningLight)
-                            .cornerRadius(CornerRadius.sm)
-                        }
-                        
-                        Button { Task { await updateStatuses() } } label: {
-                            HStack {
-                                if isUpdating { 
-                                    ProgressView()
-                                        .scaleEffect(0.9)
-                                        .padding(.trailing, 4) 
-                                } else { 
-                                    Image(systemName: "checkmark.circle.fill") 
-                                }
-                                Text(isUpdating ? "order_status_update_updating".localized : "order_status_update_button".localized)
-                                    .fontWeight(.semibold)
-                            }
-                        }
-                        .buttonStyle(PrimaryButtonStyle(isEnabled: hasChanges && !isUpdating))
-                        .disabled(!hasChanges || isUpdating)
-                        
-                        if !hasChanges {
-                            Text("order_status_update_disabled_hint".localized)
-                                .font(.captionRegular)
-                                .foregroundColor(.appTextTertiary)
-                                .multilineTextAlignment(.center)
-                        }
-                    }
-                    .padding()
+
+                    saveSection
                 }
-                .padding()
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.xxl)
             }
-            .background(Color.appBackground)
-            .navigationTitle("order_status_update_title".localized)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("cancel".localized) { dismiss() }
-                        .foregroundColor(.appTextSecondary)
-                }
-            }
-            .alert("error".localized, isPresented: $showingErrorAlert) {
-                Button("ok".localized) {}
-            } message: {
-                Text(errorMessage ?? "order_status_update_default_error".localized)
-            }
+        }
+        .navigationTitle("order_status_update_title".localized)
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("error".localized, isPresented: $showingErrorAlert) {
+            Button("ok".localized) {}
+        } message: {
+            Text(errorMessage ?? "order_status_update_default_error".localized)
         }
         .onAppear {
             initializeItemStatuses()
         }
     }
-    
-    private func enhancedOrderItemStatusRow(_ item: OrderItem) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                // Quantity badge
-                Text("\(item.quantity)")
-                    .font(.captionBold)
-                    .foregroundColor(.appTextSecondary)
-                    .frame(width: 24, height: 24)
-                    .background(Circle().fill(Color.appSurfaceSecondary))
-                
-                // Item info
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
+}
+
+private extension OrderStatusUpdateView {
+    var statusHeader: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            AppSectionEyebrow(String(order.id.suffix(6)).uppercased())
+
+            HStack(alignment: .top, spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    Text(order.table?.name ?? String(format: "order_detail_table_fallback".localized, order.table_id))
+                        .font(.cardTitle)
+                        .foregroundColor(.appHighlight)
+                }
+
+                Spacer()
+
+                EnhancedStatusBadge(status: order.status)
+            }
+        }
+        .padding(Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.xl)
+                .fill(Color.appSurface.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.xl)
+                        .stroke(Color.appBorderLight, lineWidth: 1)
+                )
+        )
+    }
+
+    func statusRow(for item: OrderItem) -> some View {
+        let selectedStatus = itemStatusUpdates[item.id] ?? item.status
+
+        return VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                Text("\(item.quantity)x")
+                    .font(.sectionHeader)
+                    .foregroundColor(.appPrimary)
+                    .frame(minWidth: 28, alignment: .leading)
+
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
-                        .font(.bodyMedium)
-                        .fontWeight(.medium)
+                        .font(.bodyLarge.weight(.medium))
                         .foregroundColor(.appTextPrimary)
-                    
+
                     if let code = item.menu_item?.code, !code.isEmpty {
                         Text(code)
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextTertiary)
-                    }
-                }
-                
-                Spacer()
-                
-                // Current status
-                OrderItemStatusBadge(status: item.status)
-            }
-            
-            // Status picker with enhanced design
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("order_status_update_item_new_status_label".localized)
-                    .font(.captionRegular)
-                    .foregroundColor(.appTextSecondary)
-                
-                Menu {
-                    ForEach(OrderItemStatus.allCases, id: \.self) { status in
-                        Button(action: { 
-                            itemStatusUpdates[item.id] = status
-                            hasChanges = true
-                        }) {
-                            HStack {
-                                Circle()
-                                    .fill(itemStatusColor(for: status))
-                                    .frame(width: 12, height: 12)
-                                Text(status.displayName)
-                                Spacer()
-                                if (itemStatusUpdates[item.id] ?? item.status) == status {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.appPrimary)
-                                }
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        let currentStatus = itemStatusUpdates[item.id] ?? item.status
-                        Circle()
-                            .fill(itemStatusColor(for: currentStatus))
-                            .frame(width: 14, height: 14)
-                        Text(currentStatus.displayName)
-                            .font(.captionBold)
-                            .foregroundColor(.appTextPrimary)
-                        Spacer()
-                        Image(systemName: "chevron.down")
-                            .font(.caption2)
+                            .font(.monoCaption)
                             .foregroundColor(.appTextSecondary)
                     }
-                    .padding(.horizontal, Spacing.sm)
-                    .padding(.vertical, Spacing.xs)
-                    .background(Color.appSurfaceSecondary)
-                    .cornerRadius(CornerRadius.sm)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.sm)
-                            .stroke(Color.appBorderLight, lineWidth: 0.5)
-                    )
+                }
+
+                Spacer()
+
+                OrderItemStatusBadge(status: selectedStatus)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.sm) {
+                    ForEach(availableStatuses(for: item), id: \.self) { status in
+                        StatusChoiceChip(
+                            title: status.displayName,
+                            isSelected: selectedStatus == status,
+                            tint: status.statusColor
+                        ) {
+                            itemStatusUpdates[item.id] = status
+                            hasChanges = true
+                        }
+                    }
                 }
             }
         }
-        .padding(Spacing.sm)
-        .background(Color.appSurfaceSecondary)
-        .cornerRadius(CornerRadius.sm)
+        .padding(Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                .fill(Color.appSurface.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.lg)
+                        .stroke(Color.appBorderLight, lineWidth: 1)
+                )
+        )
     }
-    
-    private func statusColor(for status: OrderStatus) -> Color {
-        switch status {
-        case .draft: return .appTextSecondary
-        case .new: return .appInfo
-        case .serving: return .appWarning
-        case .completed: return .appSuccess
-        case .canceled: return .appError
-        }
-    }
-    
-    private func itemStatusColor(for status: OrderItemStatus) -> Color {
-        switch status {
-        case .draft: return .appTextSecondary
-        case .new: return .appInfo
-        case .preparing: return .appWarning
-        case .ready: return .appSuccess
-        case .served: return .appTextSecondary
-        case .canceled: return .appError
-        }
-    }
-    
-    private func initializeItemStatuses() {
-        // Initialize with current statuses if not already set
-        if let orderItems = order.order_items {
-            for item in orderItems {
-                if itemStatusUpdates[item.id] == nil {
-                    itemStatusUpdates[item.id] = item.status
+
+    var saveSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            if hasChanges {
+                Text("order_status_update_unsaved_changes_warning".localized)
+                    .font(.captionRegular)
+                    .foregroundColor(.appWarning)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.sm)
+                    .background(Color.appWarningLight)
+                    .cornerRadius(CornerRadius.md)
+            }
+
+            Button {
+                Task {
+                    await updateStatuses()
                 }
+            } label: {
+                HStack(spacing: Spacing.sm) {
+                    if isUpdating {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.appOnHighlight)
+                    } else {
+                        Image(systemName: "checkmark.circle.fill")
+                    }
+
+                    Text(isUpdating ? "order_status_update_updating".localized : "order_status_update_button".localized)
+                        .font(.bodyLarge.weight(.semibold))
+                }
+                .foregroundColor(.appOnHighlight)
+                .frame(maxWidth: .infinity)
+                .frame(height: 58)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.lg)
+                        .fill(hasChanges && !isUpdating ? Color.appPrimary : Color.appDisabled)
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(!hasChanges || isUpdating)
+
+            if !hasChanges {
+                Text("order_status_update_disabled_hint".localized)
+                    .font(.captionRegular)
+                    .foregroundColor(.appTextTertiary)
             }
         }
     }
-    
+
+    func availableStatuses(for item: OrderItem) -> [OrderItemStatus] {
+        let activeProgression: [OrderItemStatus] = [.new, .preparing, .ready, .served]
+
+        switch item.status {
+        case .draft:
+            return activeProgression + [.canceled]
+        case .new:
+            return Array(activeProgression.drop(while: { $0 != .new })) + [.canceled]
+        case .preparing:
+            return Array(activeProgression.drop(while: { $0 != .preparing })) + [.canceled]
+        case .ready:
+            return Array(activeProgression.drop(while: { $0 != .ready })) + [.canceled]
+        case .served:
+            return [.served]
+        case .canceled:
+            return [.canceled]
+        }
+    }
+
+    func initializeItemStatuses() {
+        guard let orderItems = order.order_items else { return }
+
+        for item in orderItems {
+            itemStatusUpdates[item.id] = item.status
+        }
+    }
+
     @MainActor
-    private func updateStatuses() async {
+    func updateStatuses() async {
         isUpdating = true
         errorMessage = nil
 
-        // Haptic feedback at start
-        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-        impactFeedback.impactOccurred()
+        defer {
+            isUpdating = false
+        }
 
         do {
-            // Update order status if changed
-            if newOrderStatus != order.status {
-                try await orderManager.updateOrderStatus(orderId: order.id, newStatus: newOrderStatus)
-            }
-
-            // Update individual item statuses if changed
             if let orderItems = order.order_items {
                 for item in orderItems {
                     if let newStatus = itemStatusUpdates[item.id], newStatus != item.status {
-                        do {
-                            try await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: newStatus)
-                        } catch {
-                            print("Failed to update status for item \(item.id): \(error.localizedDescription)")
-                            errorMessage = "Failed to update some item statuses"
-                            
-                            // Error haptic
-                            let feedback = UINotificationFeedbackGenerator()
-                            feedback.notificationOccurred(.error)
-                            return // Exit early if any update fails
-                        }
+                        try await orderManager.updateOrderItemStatus(orderItemId: item.id, newStatus: newStatus)
                     }
                 }
             }
 
-            // Success haptic
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.success)
-
-            // Success - dismiss the view
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
             dismiss()
-
         } catch {
-            errorMessage = "Failed to update status: \(error.localizedDescription)"
+            errorMessage = "order_status_update_items_failed".localized
             showingErrorAlert = true
-            // Error haptic
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
+    }
+}
 
-        isUpdating = false
+private struct StatusChoiceChip: View {
+    let title: String
+    let isSelected: Bool
+    let tint: Color
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.buttonSmall)
+                .foregroundColor(isSelected ? .appBackground : tint)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(isSelected ? tint : tint.opacity(0.14))
+                        .overlay(
+                            Capsule()
+                                .stroke(tint.opacity(0.24), lineWidth: 1)
+                        )
+                )
+        }
+        .buttonStyle(.plain)
     }
 }

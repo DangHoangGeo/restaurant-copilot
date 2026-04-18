@@ -128,6 +128,7 @@
 "checkout_discount_type_picker_label" = "Discount Type";
 "checkout_discount_type_percentage" = "Percentage";
 "checkout_discount_type_fixed" = "Fixed Amount";
+"checkout_price_breakdown" = "Price Breakdown";
 "checkout_price_after_discount_label" = "After Discount";
 "checkout_price_tax_label" = "Tax (%d%%)";
 "checkout_total_label" = "Total:";
@@ -1100,3 +1101,58 @@
 "branch_code_hint" = "Your restaurant's unique workspace identifier (subdomain)";
 "login_show_password" = "Show password";
 "login_hide_password" = "Hide password";
+
+// MARK: - Order Detail Refinements
+"table_status_serving" = "Serving";
+"order_detail_title" = "Order detail";
+"order_detail_cancel_item_title" = "Cancel item";
+"order_detail_remove_item" = "Remove item";
+"order_detail_keep_item" = "Keep item";
+"order_detail_cancel_item_message" = "Remove %@ from this order?";
+"order_detail_reprint_kitchen" = "Reprint kitchen";
+"order_detail_tip_label" = "Tip";
+"order_detail_totals_title" = "Totals";
+"order_detail_guest_count_short" = "%d seats";
+"order_detail_placed_time" = "placed %@";
+"order_detail_manage_title" = "Manage";
+"checkout_order_reference" = "ID: %@";
+"order_status_update_items_failed" = "Failed to update one or more items.";
+
+// MARK: - Order Item Detail
+"order_item_detail_summary_title" = "Summary";
+"order_item_detail_quantity_label" = "Quantity";
+"order_item_detail_elapsed_label" = "Elapsed";
+"order_item_detail_price_label" = "Price";
+"order_item_detail_current_status" = "Current status";
+"order_item_detail_notes_title" = "Notes";
+"order_item_detail_notes_placeholder" = "Add special instructions";
+"order_item_detail_no_notes" = "No special notes";
+"order_item_detail_status_title" = "Progress";
+"order_item_detail_status_direct_hint" = "Tap a step to update directly.";
+"order_item_detail_status_hint" = "Next step: %@";
+"order_item_detail_mark_as" = "Mark as %@";
+"order_item_detail_cancel_item" = "Cancel item";
+"order_item_detail_cancel_title" = "Cancel item";
+"order_item_detail_cancel_message" = "Cancel %@? This cannot be undone.";
+"order_item_detail_cancel_success" = "Item canceled.";
+"order_item_detail_cancelling" = "Cancelling...";
+"order_item_detail_notes_saved" = "Notes updated.";
+"order_item_detail_status_updated" = "Status updated to %@.";
+"add_items_existing_order_subtitle" = "%@ • Ref %@";
+"add_items_new_order_subtitle" = "%@ • New order";
+"add_items_review_title" = "Review Items";
+"add_items_review_existing_subtitle" = "Save these items to %@";
+"add_items_review_new_subtitle" = "Confirm this order for %@";
+"add_items_save_button" = "Add to Current Order";
+"add_items_send_to_kitchen_button" = "Send to Kitchen";
+"add_items_loading_order_title" = "Loading Order";
+"add_items_loading_order_subtitle" = "Preparing %@";
+"pos_update_item_title" = "Update Item";
+"pos_update_item_button" = "Update Item";
+"pos_unit_price_label" = "Unit Price";
+"pos_included_price" = "Included";
+"pos_remove_item_button" = "Remove item";
+"pos_edit_item_button" = "Tap to edit";
+"order_detail_checkout_blocked_title" = "Update status first";
+"order_detail_checkout_blocked_message" = "Serve or cancel all items before checkout.";
+"order_detail_checkout_blocked_hint" = "Update item status first";
