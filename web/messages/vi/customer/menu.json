@@ -62,10 +62,10 @@
     "recommended": "Gợi ý"
   },
   "item_detail": {
-    "choose_size": "Chọn kích cỡ",
-    "add_toppings": "Thêm topping",
-    "special_instructions": "Yêu cầu đặc biệt (tùy chọn)",
-    "special_instructions_placeholder": "Yêu cầu hoặc chế độ ăn đặc biệt...",
+    "choose_size": "SIZE",
+    "add_toppings": "TOPPING",
+    "special_instructions": "YÊU CẦU ĐẶC BIỆT",
+    "special_instructions_placeholder": "Dị ứng, sở thích, hoặc cách chế biến mong muốn…",
     "price_details": "Chi tiết giá",
     "base_price": "Giá gốc",
     "quantity": "Số lượng",
