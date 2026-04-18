@@ -1088,3 +1088,15 @@
 "branch_picker_switch_branch" = "Switch Branch";
 "branch_picker_current_branch" = "Current Branch";
 "branch_picker_sign_out" = "Sign Out";
+
+// MARK: - Welcome Screen
+"welcome_tagline" = "Restaurant operations, simplified.";
+"welcome_feature_orders" = "Manage orders in real time";
+"welcome_feature_kitchen" = "Keep the kitchen in sync";
+"welcome_feature_finance" = "Track sales and revenue";
+"welcome_get_started" = "Get Started";
+
+// MARK: - Login Improvements
+"branch_code_hint" = "Your restaurant's unique workspace identifier (subdomain)";
+"login_show_password" = "Show password";
+"login_hide_password" = "Hide password";
