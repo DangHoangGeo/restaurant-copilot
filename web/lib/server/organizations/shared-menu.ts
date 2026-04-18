@@ -32,6 +32,12 @@ type SharedMenuCategoryInsert = {
   position?: number;
 };
 
+type SharedMenuCategorySeed = {
+  name_en: string;
+  name_ja?: string | null;
+  name_vi?: string | null;
+};
+
 type SharedMenuItemInsert = {
   organization_id: string;
   category_id: string;
@@ -46,6 +52,10 @@ type SharedMenuItemInsert = {
   available?: boolean;
   position?: number;
 };
+
+function normalizeCategoryName(value: string | null | undefined) {
+  return value?.trim().toLowerCase() ?? '';
+}
 
 export async function listOrganizationSharedMenu(
   organizationId: string
@@ -133,6 +143,56 @@ export async function createOrganizationSharedCategory(
     position: data.position,
     items: [],
   };
+}
+
+export async function ensureOrganizationSharedCategories(
+  organizationId: string,
+  categories: SharedMenuCategorySeed[]
+): Promise<boolean> {
+  if (categories.length === 0) {
+    return true;
+  }
+
+  const existingCategories = await listOrganizationSharedMenu(organizationId);
+  const existingNames = new Set(
+    existingCategories.flatMap((category) =>
+      [category.name_en, category.name_ja, category.name_vi]
+        .map(normalizeCategoryName)
+        .filter((value) => value.length > 0)
+    )
+  );
+
+  let nextPosition = existingCategories.length;
+
+  for (const category of categories) {
+    const normalizedNames = [category.name_en, category.name_ja, category.name_vi]
+      .map(normalizeCategoryName)
+      .filter((value) => value.length > 0);
+
+    if (normalizedNames.length === 0 || normalizedNames.some((value) => existingNames.has(value))) {
+      continue;
+    }
+
+    const createdCategory = await createOrganizationSharedCategory({
+      organization_id: organizationId,
+      name_en: category.name_en,
+      name_ja: category.name_ja ?? null,
+      name_vi: category.name_vi ?? null,
+      position: nextPosition,
+    });
+
+    if (!createdCategory) {
+      return false;
+    }
+
+    nextPosition += 1;
+    [createdCategory.name_en, createdCategory.name_ja, createdCategory.name_vi]
+      .map(normalizeCategoryName)
+      .filter((value) => value.length > 0)
+      .forEach((value) => existingNames.add(value));
+  }
+
+  return true;
 }
 
 export async function createOrganizationSharedMenuItem(

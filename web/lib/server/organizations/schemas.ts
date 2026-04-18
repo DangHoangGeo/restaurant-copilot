@@ -158,6 +158,12 @@ export const organizationSharedMenuCategorySchema = z.object({
   position: z.number().int().min(0).optional(),
 });
 
+const onboardingSharedMenuCategorySchema = z.object({
+  name_en: z.string().min(1, "Category name is required").max(100),
+  name_ja: z.string().max(100).nullable().optional(),
+  name_vi: z.string().max(100).nullable().optional(),
+});
+
 export const organizationSharedMenuItemSchema = z.object({
   category_id: z.string().uuid("Valid category ID required"),
   name_en: z.string().min(1, "Item name is required").max(100),
@@ -187,6 +193,7 @@ export const organizationOnboardingSchema = z.object({
   description_en: z.string().max(1000).nullable().optional(),
   description_ja: z.string().max(1000).nullable().optional(),
   description_vi: z.string().max(1000).nullable().optional(),
+  shared_menu_categories: z.array(onboardingSharedMenuCategorySchema).optional(),
   primary_branch: z.object({
     id: z.string().uuid("Valid branch ID required"),
     name: z.string().min(1).max(100),

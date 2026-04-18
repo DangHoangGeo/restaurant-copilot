@@ -714,7 +714,35 @@ export async function updateOrganizationSettings(
     >
   >,
 ): Promise<Organization | null> {
-  const { data: currentOrganization, error: currentOrganizationError } =
+  const optionalOrgColumns = new Set([
+    "logo_url",
+    "brand_color",
+    "description_en",
+    "description_ja",
+    "description_vi",
+    "address",
+    "website",
+    "phone",
+    "email",
+  ]);
+
+  const extractMissingColumn = (error: { code?: string; message?: string } | null) => {
+    if (!error || error.code !== "PGRST204" || !error.message) {
+      return null;
+    }
+
+    const match = error.message.match(/Could not find the '([^']+)' column/);
+    return match?.[1] ?? null;
+  };
+
+  let currentOrganization:
+    | {
+        logo_url?: string | null;
+        brand_color?: string | null;
+      }
+    | null = null;
+
+  const { data: currentOrganizationData, error: currentOrganizationError } =
     await supabaseAdmin
       .from("owner_organizations")
       .select("logo_url, brand_color")
@@ -722,36 +750,80 @@ export async function updateOrganizationSettings(
       .maybeSingle();
 
   if (currentOrganizationError) {
-    console.error(
-      "Failed to load current organization branding before update:",
-      currentOrganizationError,
+    const missingColumn = extractMissingColumn(currentOrganizationError);
+
+    if (!missingColumn || !optionalOrgColumns.has(missingColumn)) {
+      console.error(
+        "Failed to load current organization branding before update:",
+        currentOrganizationError,
+      );
+      return null;
+    }
+
+    console.warn(
+      `Skipping current organization branding preload because '${missingColumn}' is not available in this database schema yet.`,
     );
-    return null;
+  } else {
+    currentOrganization = currentOrganizationData;
   }
 
-  const { data, error } = await supabaseAdmin
-    .from("owner_organizations")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", orgId)
-    .select("*")
-    .single();
+  const patch: Record<string, unknown> = {
+    ...updates,
+    updated_at: new Date().toISOString(),
+  };
+  const ignoredColumns: string[] = [];
 
-  if (error || !data) {
-    console.error("Failed to update organization:", error);
-    return null;
+  while (true) {
+    const { data, error } = await supabaseAdmin
+      .from("owner_organizations")
+      .update(patch)
+      .eq("id", orgId)
+      .select("*")
+      .single();
+
+    if (!error && data) {
+      if (ignoredColumns.length > 0) {
+        console.warn(
+          `Updated organization ${orgId} without unsupported columns: ${ignoredColumns.join(", ")}`,
+        );
+      }
+
+      if ("logo_url" in patch || "brand_color" in patch) {
+        await syncOrganizationBrandingToRestaurants(
+          orgId,
+          {
+            logo_url: currentOrganization?.logo_url ?? null,
+            brand_color: currentOrganization?.brand_color ?? null,
+          },
+          {
+            logo_url:
+              typeof patch.logo_url === "string" || patch.logo_url === null
+                ? (patch.logo_url as string | null)
+                : undefined,
+            brand_color:
+              typeof patch.brand_color === "string" || patch.brand_color === null
+                ? (patch.brand_color as string | null)
+                : undefined,
+          },
+        );
+      }
+
+      return data as Organization;
+    }
+
+    const missingColumn = extractMissingColumn(error);
+    if (
+      !missingColumn ||
+      !optionalOrgColumns.has(missingColumn) ||
+      !(missingColumn in patch)
+    ) {
+      console.error("Failed to update organization:", error);
+      return null;
+    }
+
+    ignoredColumns.push(missingColumn);
+    delete patch[missingColumn];
   }
-
-  if ("logo_url" in updates || "brand_color" in updates) {
-    await syncOrganizationBrandingToRestaurants(orgId, {
-      logo_url: currentOrganization?.logo_url ?? null,
-      brand_color: currentOrganization?.brand_color ?? null,
-    }, {
-      logo_url: updates.logo_url,
-      brand_color: updates.brand_color,
-    });
-  }
-
-  return data as Organization;
 }
 
 /**
