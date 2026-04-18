@@ -28,7 +28,7 @@ export function buildOrganizationOnboardingPrompt(
     .join('\n');
 
   return `
-You are helping a restaurant founder in Japan prepare calm, trustworthy homepage copy for a new restaurant company.
+You are helping a restaurant founder in Japan prepare calm, trustworthy brand foundations for a new restaurant company.
 
 Business context:
 ${contextInfo}
@@ -38,7 +38,6 @@ Return valid JSON only in this exact shape:
   "description_en": "English brand introduction, 70-110 words",
   "description_ja": "Japanese brand introduction, 70-110 words",
   "description_vi": "Vietnamese brand introduction, 70-110 words",
-  "brand_color": "#RRGGBB",
   "hero_title_en": "Short English homepage headline, 4-8 words",
   "hero_title_ja": "Short Japanese homepage headline, 4-8 words",
   "hero_title_vi": "Short Vietnamese homepage headline, 4-8 words",
@@ -48,7 +47,43 @@ Return valid JSON only in this exact shape:
   "owner_story_en": "English founder story, 60-120 words",
   "owner_story_ja": "Japanese founder story, 60-120 words",
   "owner_story_vi": "Vietnamese founder story, 60-120 words",
-  "logo_svg": "<svg ...>...</svg>"
+  "brand_options": [
+    {
+      "name": "Short concept name",
+      "summary": "One-sentence explanation of the direction",
+      "brand_color": "#RRGGBB",
+      "accent_color": "#RRGGBB",
+      "logo_svg": "<svg ...>...</svg>"
+    },
+    {
+      "name": "Short concept name",
+      "summary": "One-sentence explanation of the direction",
+      "brand_color": "#RRGGBB",
+      "accent_color": "#RRGGBB",
+      "logo_svg": "<svg ...>...</svg>"
+    },
+    {
+      "name": "Short concept name",
+      "summary": "One-sentence explanation of the direction",
+      "brand_color": "#RRGGBB",
+      "accent_color": "#RRGGBB",
+      "logo_svg": "<svg ...>...</svg>"
+    }
+  ],
+  "food_category_suggestions": [
+    {
+      "name_en": "Starters",
+      "name_ja": "前菜",
+      "name_vi": "Món khai vị",
+      "kind": "basic"
+    },
+    {
+      "name_en": "Main dishes",
+      "name_ja": "メイン",
+      "name_vi": "Món chính",
+      "kind": "basic"
+    }
+  ]
 }
 
 Guidelines:
@@ -59,12 +94,20 @@ Guidelines:
 - Make each language natural, not literal.
 - The hero copy should feel clean and premium, not noisy.
 - The owner story should sound human and grounded in daily restaurant work.
-- Pick one calm, memorable brand color that fits a Japan-based restaurant business.
-- The logo SVG must be simple, elegant, and production-safe:
+- Return exactly 3 brand options that feel distinct but still calm and practical.
+- The logo SVG for each option must be simple, elegant, and production-safe:
   - valid standalone SVG only
   - no scripts
   - no external assets
   - use the company or branch initials if helpful
   - work on light backgrounds
+- Use one primary brand color and one accent color for each option.
+- The category list must include practical basics first:
+  - Starters
+  - Main dishes
+  - Drinks
+  - Desserts
+- Then add 2-4 categories tailored to the company's unique food or service style.
+- Keep categories reusable at the company level so future branches can inherit them first.
 `;
 }

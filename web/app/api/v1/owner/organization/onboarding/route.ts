@@ -6,6 +6,7 @@ import {
   requireOrgContext,
 } from "@/lib/server/authorization/service";
 import { organizationOnboardingSchema } from "@/lib/server/organizations/schemas";
+import { ensureOrganizationSharedCategories } from "@/lib/server/organizations/shared-menu";
 import {
   resolveOrgContext,
   updateOrganization,
@@ -246,6 +247,20 @@ export async function POST(request: NextRequest) {
         );
         return NextResponse.json(
           { error: "Failed to save starter signature dishes" },
+          { status: 500 },
+        );
+      }
+    }
+
+    if (input.shared_menu_categories && input.shared_menu_categories.length > 0) {
+      const syncedCategories = await ensureOrganizationSharedCategories(
+        ctx!.organization.id,
+        input.shared_menu_categories,
+      );
+
+      if (!syncedCategories) {
+        return NextResponse.json(
+          { error: "Failed to save shared menu categories" },
           { status: 500 },
         );
       }
