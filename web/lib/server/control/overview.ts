@@ -28,6 +28,7 @@ export interface FounderControlBranchOverview {
   has_closed_snapshot: boolean;
   monthly_revenue: number;
   monthly_gross_profit: number;
+  monthly_spending: number;
 }
 
 export interface DailyRevenuPoint {
@@ -61,6 +62,7 @@ export interface FounderControlOverviewData {
   total_today_revenue: number;
   total_open_orders: number;
   total_employees: number;
+  total_month_spending: number;
   branches_with_employees: number;
   branches_with_open_orders: number;
   current_month: {
@@ -131,6 +133,7 @@ export async function getFounderControlOverview({
     total_today_revenue: 0,
     total_open_orders: 0,
     total_employees: 0,
+    total_month_spending: 0,
     branches_with_employees: 0,
     branches_with_open_orders: 0,
     current_month: {
@@ -157,6 +160,9 @@ export async function getFounderControlOverview({
   const branchIds = branches.map((b) => b.id);
   const localToday = getLocalDateString(tz);
   const dayRange = getLocalDayRange(localToday, tz);
+  const mm = String(month).padStart(2, '0');
+  const fromDate = `${year}-${mm}-01`;
+  const toDate = `${year}-${mm}-${String(new Date(year, month, 0).getDate()).padStart(2, '0')}`;
 
   // 30-day window for daily chart and top items
   const dates30 = getLocalDateRange(localToday, 30);
@@ -170,6 +176,8 @@ export async function getFounderControlOverview({
     openOrdersResult,
     employees,
     monthlyRollup,
+    purchaseOrdersResult,
+    expensesResult,
     orders30dResult,
     snapshots6mResult,
   ] = await Promise.all([
@@ -192,6 +200,21 @@ export async function getFounderControlOverview({
     listOrganizationEmployees(branchIds),
 
     getMonthlyRollupForBranches({ branchIds, year, month }),
+
+    supabaseAdmin
+      .from('purchase_orders')
+      .select('restaurant_id, total_amount')
+      .in('restaurant_id', branchIds)
+      .neq('status', 'cancelled')
+      .gte('order_date', fromDate)
+      .lte('order_date', toDate),
+
+    supabaseAdmin
+      .from('expenses')
+      .select('restaurant_id, amount')
+      .in('restaurant_id', branchIds)
+      .gte('expense_date', fromDate)
+      .lte('expense_date', toDate),
 
     // Last 30 days of completed orders (for daily chart + top items)
     supabaseAdmin
@@ -235,6 +258,21 @@ export async function getFounderControlOverview({
   const snapshotByBranch = new Map(
     monthlyRollup.snapshots.map((s) => [s.restaurant_id, s])
   );
+  const spendingByBranch = new Map<string, number>();
+
+  for (const order of purchaseOrdersResult.data ?? []) {
+    spendingByBranch.set(
+      order.restaurant_id,
+      (spendingByBranch.get(order.restaurant_id) ?? 0) + (order.total_amount ?? 0)
+    );
+  }
+
+  for (const expense of expensesResult.data ?? []) {
+    spendingByBranch.set(
+      expense.restaurant_id,
+      (spendingByBranch.get(expense.restaurant_id) ?? 0) + (expense.amount ?? 0)
+    );
+  }
 
   const branchOverviews: FounderControlBranchOverview[] = branches.map((branch) => {
     const snapshot = snapshotByBranch.get(branch.id);
@@ -248,6 +286,7 @@ export async function getFounderControlOverview({
       has_closed_snapshot: Boolean(snapshot),
       monthly_revenue: snapshot?.revenue_total ?? 0,
       monthly_gross_profit: snapshot?.gross_profit_estimate ?? 0,
+      monthly_spending: spendingByBranch.get(branch.id) ?? 0,
     };
   });
 
@@ -255,6 +294,10 @@ export async function getFounderControlOverview({
   const branches_with_employees = branchOverviews.filter((b) => b.employee_count > 0).length;
   const branches_missing_snapshot = monthlyRollup.branch_count - monthlyRollup.branches_with_snapshot;
   const branches_without_employees = branchOverviews.length - branches_with_employees;
+  const total_month_spending = branchOverviews.reduce(
+    (sum, branch) => sum + branch.monthly_spending,
+    0
+  );
 
   // ── Daily revenue chart (last 30 days) ─────────────────────────────────────
   const dailyMap = new Map<string, { revenue: number; orders: number }>();
@@ -337,6 +380,7 @@ export async function getFounderControlOverview({
     total_today_revenue: branchOverviews.reduce((s, b) => s + b.today_revenue, 0),
     total_open_orders: branchOverviews.reduce((s, b) => s + b.open_orders_count, 0),
     total_employees: employees.length,
+    total_month_spending,
     branches_with_employees,
     branches_with_open_orders,
     current_month: {

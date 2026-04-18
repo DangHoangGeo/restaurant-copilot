@@ -1,51 +1,193 @@
 {
   "pageTitle": "Tài Chính Tháng",
-  "pageDescription": "Tóm tắt doanh thu, lao động và chi phí hàng tháng để bàn giao kế toán",
-
-  "statusLive": "Trực tiếp (chưa chốt)",
+  "pageDescription": "Tóm tắt doanh thu, giờ công và chi phí hàng tháng để bàn giao kế toán",
+  "statusLive": "Đang chạy (chưa chốt)",
   "statusClosed": "Đã chốt",
   "statusDraft": "Bản nháp",
-
   "prevMonth": "Tháng trước",
   "nextMonth": "Tháng sau",
   "noData": "Không có dữ liệu cho kỳ này.",
-
   "revenue": "Doanh thu",
   "grossSales": "Doanh thu gộp",
   "discounts": "Giảm giá",
   "netRevenue": "Doanh thu thuần",
-  "orderCount": "{count} đơn hàng",
-
-  "grossProfit": "Lợi nhuận gộp (ước tính)",
-  "grossProfitHint": "Doanh thu − Chi phí",
-
+  "orderCount": "{count, plural, =0 {0 đơn} one {1 đơn} other {# đơn}}",
+  "grossProfit": "Lợi nhuận gộp",
+  "grossProfitHint": "Doanh thu trừ giảm giá và chi phí",
   "totalCosts": "Tổng chi phí",
-  "laborHours": "Giờ làm đã duyệt",
-  "laborEntries": "{count} bản ghi",
-
+  "laborHours": "Giờ công đã duyệt",
+  "laborEntries": "{count, plural, =0 {0 bản ghi} one {1 bản ghi} other {# bản ghi}}",
   "purchaseOrders": "Đơn mua hàng",
   "otherExpenses": "Chi phí khác",
   "combinedCosts": "Tổng chi phí",
-
-  "orders": "Đơn hàng",
+  "orders": "Đơn mua",
   "expenses": "Chi phí",
-
-  "liveNotice": "Các số liệu được tính theo dữ liệu thực và có thể thay đổi trước khi chốt tháng.",
-
-  "notes": "Ghi chú cho kế toán",
+  "liveNotice": "Các số liệu đang được tính trực tiếp và có thể thay đổi trước khi chốt tháng.",
+  "notes": "Ghi chú kế toán",
   "notesPlaceholder": "Ghi chú tùy chọn cho kế toán hoặc chuẩn bị thuế…",
-
   "exportCsv": "Xuất CSV",
   "exporting": "Đang xuất…",
   "exportError": "Xuất thất bại. Vui lòng thử lại.",
-
   "closeMonth": "Chốt tháng",
   "closeConfirmTitle": "Chốt tháng này?",
-  "closeConfirmBody": "Chốt {period} sẽ cố định tất cả số liệu. Thao tác này không thể hoàn tác.",
-  "confirmClose": "Xác nhận & Chốt",
+  "closeConfirmBody": "Chốt {period} sẽ cố định toàn bộ số liệu. Thao tác này không thể hoàn tác.",
+  "confirmClose": "Xác nhận & chốt",
   "closing": "Đang chốt…",
   "cancel": "Hủy",
   "closeError": "Chốt tháng thất bại. Vui lòng thử lại.",
-
-  "recentSnapshots": "Các tháng gần đây"
+  "recentSnapshots": "Các tháng gần đây",
+  "ledger": {
+    "tabs": {
+      "summary": "Tổng hợp",
+      "income": "Thu vào",
+      "spending": "Chi ra"
+    },
+    "summary": {
+      "expenseByCategory": "Chi nhanh theo danh mục",
+      "purchaseByCategory": "Đơn mua theo danh mục",
+      "noExpenseCategories": "Chưa có khoản chi nhanh nào trong tháng này.",
+      "noPurchaseCategories": "Chưa có đơn mua nào trong tháng này."
+    },
+    "income": {
+      "title": "Tóm tắt thu vào",
+      "discountHint": "Giảm giá đã áp dụng trong tháng",
+      "grossSales": "Doanh thu gộp",
+      "discounts": "Giảm giá",
+      "netSales": "Doanh thu thuần",
+      "completedOrders": "Đơn hoàn tất",
+      "recentSales": "Giao dịch gần đây",
+      "table": "Bàn",
+      "items": "Món",
+      "amount": "Số tiền",
+      "empty": "Chưa có giao dịch hoàn tất trong tháng này.",
+      "walkIn": "Khách lẻ"
+    },
+    "spending": {
+      "title": "Tóm tắt chi ra",
+      "purchaseOrders": "Đơn mua hàng",
+      "quickExpenses": "Chi nhanh",
+      "totalSpending": "Tổng chi",
+      "totalCostsHint": "Đơn mua hàng và chi nhanh",
+      "categoryBreakdown": "Danh mục chi nhanh",
+      "noSpendCategories": "Chưa có danh mục chi nhanh nào trong tháng này."
+    }
+  },
+  "spending": {
+    "addExpenseTitle": "Thêm chi phí chi nhánh",
+    "addExpenseHint": "Ghi nhanh một khoản chi của chi nhánh tại đây. Hệ thống sẽ tự lưu người tạo.",
+    "dialogHint": "Ghi nhanh một khoản chi cho {branch}. Người tạo sẽ được lưu tự động để kiểm tra.",
+    "auditHint": "Chi nhánh, người ghi nhận và thời gian tạo được lưu tự động.",
+    "expenseSaved": "Đã lưu chi phí cho {branch}.",
+    "manageLocked": "Bạn có thể xem chi tiêu của chi nhánh tại đây, nhưng vai trò hiện tại không được thêm hoặc xóa chi phí.",
+    "expenseLedger": "Sổ chi phí",
+    "purchaseLedger": "Sổ mua hàng",
+    "recordedBy": "Người ghi nhận",
+    "actions": "Thao tác",
+    "emptyExpenses": "Chưa có khoản chi nhanh nào trong tháng này.",
+    "emptyPurchases": "Chưa có đơn mua nào trong tháng này.",
+    "unknownCreator": "Không rõ"
+  },
+  "company": {
+    "sectionLabel": "Tài chính công ty",
+    "pageTitle": "Tài chính công ty",
+    "pageDescription": "Xem tài chính toàn công ty trước, rồi lọc xuống từng chi nhánh khi cần đọc kỹ hơn.",
+    "controls": {
+      "month": "Tháng",
+      "quarter": "Quý",
+      "previousPeriod": "Kỳ trước",
+      "nextPeriod": "Kỳ sau",
+      "branchFilter": "Lọc chi nhánh",
+      "allBranches": "Tất cả chi nhánh"
+    },
+    "stats": {
+      "netSalesExTax": "Doanh thu thuần chưa thuế",
+      "netSalesExTaxHint": "Sau giảm giá, trước chi phí",
+      "salesTax": "Thuế bán hàng ước tính",
+      "salesTaxHint": "Ước tính từ cài đặt thuế của chi nhánh",
+      "totalSpend": "Tổng chi",
+      "totalSpendHint": "Gồm mua hàng, chi nhánh và chi phí chung công ty",
+      "branchSpend": "Chi phí chi nhánh",
+      "branchSpendHint": "Chỉ chi phí vận hành của chi nhánh đang chọn",
+      "grossProfit": "Lợi nhuận vận hành",
+      "grossProfitHint": "Doanh thu chưa thuế trừ chi phí trong phạm vi xem",
+      "branchProfit": "Lợi nhuận vận hành chi nhánh",
+      "branchProfitHint": "Không phân bổ chi phí chung công ty vào đây",
+      "branchesInScope": "Chi nhánh trong phạm vi",
+      "branchesInScopeHint": "Số chi nhánh đang nằm trong màn hình này"
+    },
+    "tabs": {
+      "summary": "Tổng hợp",
+      "branches": "Chi nhánh",
+      "tax": "Thuế",
+      "sharedExpenses": "Chi phí chung"
+    },
+    "selectedBranchCompanyExpenseNotice": "Có {amount} chi phí chung công ty được ghi trong kỳ này. Khoản này chỉ hiển thị để tham khảo và không bị trừ khỏi lợi nhuận vận hành của chi nhánh đang chọn.",
+    "summary": {
+      "trendTitle": "Xu hướng kỳ",
+      "trendDescription": "Xem doanh thu chưa thuế, chi phí và lợi nhuận vận hành trong quý đã chọn.",
+      "branchCompareTitle": "So sánh chi nhánh",
+      "branchCompareDescription": "So sánh các chi nhánh ngay trong màn hình tài chính công ty.",
+      "chartEmpty": "Chưa có dữ liệu tài chính cho phạm vi này.",
+      "salesSeries": "Doanh thu chưa thuế",
+      "spendingSeries": "Chi phí",
+      "profitSeries": "Lợi nhuận vận hành",
+      "snapshotTitle": "Ảnh chụp kỳ",
+      "snapshotDescription": "Góc nhìn dành cho chủ trước khi đi sâu vào từng chi nhánh.",
+      "netSalesInclusive": "Doanh thu thuần gồm thuế",
+      "salesTax": "Thuế bán hàng ước tính",
+      "netSalesExTax": "Doanh thu thuần chưa thuế",
+      "branchExpenses": "Chi phí chi nhánh",
+      "companyExpenses": "Chi phí chung công ty",
+      "totalSpend": "Tổng chi",
+      "branchOperatingSpend": "Chi phí vận hành chi nhánh",
+      "grossProfit": "Lợi nhuận vận hành",
+      "branchOperatingProfit": "Lợi nhuận vận hành chi nhánh",
+      "periodTableTitle": "Bảng theo kỳ",
+      "periodTableDescription": "Theo dõi theo tháng và quý thay vì nhồi tất cả số liệu vào một khối.",
+      "periodColumn": "Kỳ"
+    },
+    "branches": {
+      "title": "Bảng tài chính chi nhánh",
+      "description": "Lọc tại đây hoặc mở chi tiết chủ sở hữu khi một chi nhánh cần xử lý riêng.",
+      "branch": "Chi nhánh",
+      "close": "Chốt sổ",
+      "action": "Thao tác",
+      "open": "Mở chi nhánh"
+    },
+    "tax": {
+      "title": "Góc nhìn thuế bán hàng",
+      "description": "Ước tính từ thiết lập thuế của từng chi nhánh và tổng tiền khách đã thanh toán trong đơn hàng.",
+      "empty": "Không có dữ liệu thuế cho phạm vi này.",
+      "taxSeries": "Thuế bán hàng ước tính",
+      "salesSeries": "Doanh thu chưa thuế",
+      "tableTitle": "Chi tiết thuế",
+      "tableDescription": "Giúp chủ và kế toán xem doanh thu chịu thuế ngay trong không gian tài chính công ty.",
+      "scope": "Phạm vi",
+      "taxRate": "Thuế suất"
+    },
+    "sharedExpenses": {
+      "title": "Chi phí chung công ty",
+      "description": "Dùng cho chi phí văn phòng, công cụ dùng chung, kế toán, tiền thuê hoặc bất kỳ khoản nào phải giữ ở cấp công ty.",
+      "add": "Thêm chi phí chung",
+      "dialogTitle": "Thêm chi phí chung công ty",
+      "dialogDescription": "Ghi một khoản chi ở cấp công ty tại đây. Hệ thống sẽ lưu người ghi để phục vụ đối soát.",
+      "descriptionPlaceholder": "Khoản chi công ty này dùng cho việc gì?",
+      "vendor": "Nhà cung cấp",
+      "vendorPlaceholder": "Tùy chọn nhà cung cấp hoặc người nhận tiền",
+      "auditHint": "Người ghi nhận và thời gian tạo được lưu tự động.",
+      "saved": "Đã lưu chi phí chung công ty.",
+      "total": "Chi phí chung trong kỳ",
+      "totalHint": "Chỉ tính các khoản ở cấp công ty",
+      "entryCount": "Số dòng",
+      "entryCountHint": "Các khoản chi chung đã ghi nhận",
+      "empty": "Chưa có chi phí chung công ty trong kỳ này.",
+      "ledgerTitle": "Sổ chi phí chung",
+      "ledgerDescription": "Xem overhead của công ty mà không trộn vào vận hành của từng chi nhánh.",
+      "date": "Ngày",
+      "category": "Danh mục",
+      "descriptionColumn": "Mô tả",
+      "recordedBy": "Người ghi nhận",
+      "amount": "Số tiền"
+    }
+  }
 }

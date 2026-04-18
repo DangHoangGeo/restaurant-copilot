@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu as MenuIcon, Moon, Sun, ChevronDown, User, LogOut } from 'lucide-react';
+import { Menu as MenuIcon, Moon, Sun, ChevronDown, User, LogOut, ArrowLeft } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { LanguageSwitcher } from '@/components/common/language-switcher';
 import { usePathname, useRouter, useParams } from 'next/navigation';
@@ -42,12 +42,14 @@ interface AdminHeaderProps {
   };
   currentLocale: string;
   onLocaleChange: (locale: string) => void;
+  ownerControlHref?: string | null;
 }
 
 export function AdminHeader({ 
   toggleSidebar,
   currentLocale,
-  onLocaleChange 
+  onLocaleChange,
+  ownerControlHref,
 }: AdminHeaderProps) {
   const { theme, setTheme } = useTheme();
   const t = useTranslations('owner.dashboard');
@@ -129,6 +131,21 @@ export function AdminHeader({
           </h1>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-3">
+          {ownerControlHref ? (
+            <>
+              <Button asChild variant="outline" size="icon" className="rounded-xl md:hidden">
+                <Link href={ownerControlHref} aria-label="Back to owner">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="hidden rounded-xl md:inline-flex">
+                <Link href={ownerControlHref}>
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to owner
+                </Link>
+              </Button>
+            </>
+          ) : null}
           <LanguageSwitcher currentLocale={currentLocale} onLocaleChange={onLocaleChange} />
           <Button
             variant="ghost"
