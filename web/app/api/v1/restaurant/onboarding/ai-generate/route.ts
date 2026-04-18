@@ -27,7 +27,9 @@ export async function POST(request: NextRequest) {
       specialties: specialties?.trim(),
     };
 
-    const gemini = createGeminiHelper();
+    const gemini = createGeminiHelper({
+      model: process.env.GEMINI_TEXT_MODEL_FAST,
+    });
     const prompt = buildOnboardingPrompt(aiRequest);
 
     // Generate content using Gemini AI

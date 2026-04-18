@@ -29,6 +29,13 @@ export const inviteOrgMemberSchema = z
     },
   );
 
+const phoneSchema = z
+  .string()
+  .max(50)
+  .regex(/^\+?[\d\s\-().]{7,50}$/, "Invalid phone number format")
+  .nullable()
+  .optional();
+
 export const updateOrgSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   country: z.string().length(2).optional(),
@@ -44,10 +51,19 @@ export const updateOrgSchema = z.object({
   description_en: z.string().max(1000).nullable().optional(),
   description_ja: z.string().max(1000).nullable().optional(),
   description_vi: z.string().max(1000).nullable().optional(),
-  website: z.string().url("Invalid URL").nullable().optional(),
-  phone: z.string().max(50).nullable().optional(),
+  address: z.string().max(500).nullable().optional(),
+  phone: phoneSchema,
   email: z.string().email("Invalid email").max(100).nullable().optional(),
 });
+
+const openingHoursDaySchema = z.object({
+  isOpen: z.boolean(),
+  openTime: z.string().optional(),
+  closeTime: z.string().optional(),
+  isClosed: z.boolean().optional(),
+});
+
+const openingHoursSchema = z.record(z.string(), openingHoursDaySchema);
 
 // Schema for creating a pending invite (invite by email, user need not exist yet)
 export const createPendingInviteSchema = z
@@ -120,7 +136,12 @@ export const addBranchSchema = z.object({
     .optional(),
   tax: z.number().min(0).max(1).optional(),
   address: z.string().max(500).optional(),
-  phone: z.string().max(50).optional(),
+  phone: z
+    .string()
+    .max(50)
+    .regex(/^\+?[\d\s\-().]{7,50}$/, "Invalid phone number format")
+    .optional()
+    .or(z.literal("")),
   email: z
     .string()
     .email("Invalid email")
@@ -160,8 +181,8 @@ export const organizationOnboardingSchema = z.object({
   brand_color: z
     .string()
     .regex(/^#([0-9A-Fa-f]{6})$/, "Must be a valid hex color"),
-  website: z.string().url("Invalid URL").nullable().optional(),
-  phone: z.string().max(50).nullable().optional(),
+  address: z.string().max(500).nullable().optional(),
+  phone: phoneSchema,
   email: z.string().email("Invalid email").max(100).nullable().optional(),
   description_en: z.string().max(1000).nullable().optional(),
   description_ja: z.string().max(1000).nullable().optional(),
@@ -180,12 +201,11 @@ export const organizationOnboardingSchema = z.object({
     default_language: z.enum(["en", "ja", "vi"]),
     tax: z.number().min(0).max(1),
     address: z.string().max(500).nullable().optional(),
-    opening_hours: z.string().max(1000).nullable().optional(),
-    phone: z.string().max(50).nullable().optional(),
+    opening_hours: openingHoursSchema.optional(),
+    phone: phoneSchema,
     email: z.string().email("Invalid email").max(100).nullable().optional(),
-    website: z.string().url("Invalid URL").max(200).nullable().optional(),
     logo_url: z.string().url("Invalid logo URL").nullable().optional(),
-    hero_title_en: z.string().max(100).nullable().optional(),
+    hero_title_en: z.string().min(1, "English hero title is required").max(100),
     hero_title_ja: z.string().max(100).nullable().optional(),
     hero_title_vi: z.string().max(100).nullable().optional(),
     hero_subtitle_en: z.string().max(200).nullable().optional(),

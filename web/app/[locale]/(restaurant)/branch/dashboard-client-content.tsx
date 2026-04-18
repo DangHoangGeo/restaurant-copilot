@@ -123,7 +123,7 @@ export function DashboardClientContent() {
                   <li>✓ Homepage configuration</li>
                 </ul>
               </div>
-              <Link href={`/${locale}/control/onboarding`}>
+              <Link href={`/${locale}/branch/onboarding`}>
                 <Button size="lg" className="w-full">
                   Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />

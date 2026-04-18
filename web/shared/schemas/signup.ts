@@ -10,6 +10,7 @@ export const signupSchema = z.object({
   confirmPassword: z.string().min(8).optional(),
   defaultLanguage: z.enum(["ja","en","vi"]),
   selectedPlan: z.enum(["starter", "growth", "enterprise"]).optional(),
+  selectedBillingCycle: z.enum(["monthly", "yearly"]).optional(),
   captchaToken: z.string().min(1).optional(),
   policyAgreement: z.boolean().refine(val => val === true, {
     message: "You must agree to the Terms of Service and Privacy Policy",

@@ -40,6 +40,9 @@ export const verifyRestaurantSchema = z.object({
 export const organizationApprovalSchema = z.object({
   status: z.enum(['approved', 'rejected']),
   notes: z.string().optional(),
+  plan_id: z.enum(['starter', 'growth', 'enterprise']).optional(),
+  billing_cycle: z.enum(['monthly', 'yearly']).optional(),
+  trial_days: z.coerce.number().int().min(0).max(365).optional(),
 });
 
 export const suspendRestaurantSchema = z.object({
@@ -66,7 +69,9 @@ export const getSubscriptionsQuerySchema = z.object({
 export const updateSubscriptionSchema = z.object({
   plan_id: z.enum(['starter', 'growth', 'enterprise']).optional(),
   status: subscriptionStatusSchema.optional(),
+  billing_cycle: z.enum(['monthly', 'yearly']).optional(),
   trial_ends_at: z.string().datetime().optional(),
+  current_period_start: z.string().datetime().optional(),
   current_period_end: z.string().datetime().optional(),
   notes: z.string().optional()
 });

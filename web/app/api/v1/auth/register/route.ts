@@ -5,6 +5,7 @@ import { z } from "zod";
 import { ZodError } from "zod"; // Import ZodError explicitly
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { bootstrapOrganizationForRestaurant } from "@/lib/server/organizations/service";
+import { verifyRecaptchaToken } from "@/lib/utils/captcha";
 
 const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
 
@@ -47,9 +48,26 @@ export async function POST(req: NextRequest) {
       email,
       password,
       defaultLanguage,
+      selectedBillingCycle,
       policyAgreement,
+      selectedPlan,
+      captchaToken,
     } = signupSchema.parse(body);
-    const selectedPlan = 'starter' as const;
+
+    // Server-side CAPTCHA verification — client-side check alone is bypassable.
+    const captchaValid = typeof captchaToken === 'string' && captchaToken.length > 0
+      ? await verifyRecaptchaToken(captchaToken)
+      : false;
+
+    if (!captchaValid) {
+      await logEvent({
+        level: "WARN",
+        endpoint: "/api/v1/register",
+        message: "Registration blocked: invalid or missing CAPTCHA token",
+        metadata: { ip, email },
+      });
+      return NextResponse.json({ error: "CAPTCHA verification failed" }, { status: 400 });
+    }
 
     // Ensure user has agreed to the policy (this is already validated by the schema, but explicit check for clarity)
     if (!policyAgreement) {
@@ -154,8 +172,9 @@ export async function POST(req: NextRequest) {
         message: `Auth user metadata update failed: ${updateAuthError.message}`,
         metadata: { userId: userData.user.id, restaurantId, stack: updateAuthError.stack },
       });
-      // This is a critical error, but the user is already created.
-      // We might need a background job to clean this up or manual intervention.
+      // Compensating rollback: auth user and restaurant already exist but are incomplete.
+      await supabaseAdmin.from("restaurants").delete().eq("id", restaurantId);
+      await supabaseAdmin.auth.admin.deleteUser(userData.user.id);
       return NextResponse.json({ error: "User metadata update failed" }, { status: 500 });
     }
 
@@ -185,7 +204,8 @@ export async function POST(req: NextRequest) {
     const bootstrapResult = await bootstrapOrganizationForRestaurant(userData.user.id, restaurantId, {
       name,
       slug: subdomain,
-      requested_plan: selectedPlan,
+      requested_plan: selectedPlan ?? 'starter',
+      requested_billing_cycle: selectedBillingCycle ?? 'monthly',
     });
 
     if (!bootstrapResult) {
@@ -235,7 +255,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 8. Send the founder into the pending-approval flow on the root domain.
-    const redirectUrl = `/${defaultLanguage}/signup/pending-approval?org=${encodeURIComponent(subdomain)}`;
+    const redirectUrl =
+      `/${defaultLanguage}/signup/pending-approval?org=${encodeURIComponent(subdomain)}` +
+      `&plan=${encodeURIComponent(selectedPlan ?? 'starter')}` +
+      `&billing=${encodeURIComponent(selectedBillingCycle ?? 'monthly')}`;
     await logEvent({
       level: "INFO",
       endpoint: "/api/v1/register",

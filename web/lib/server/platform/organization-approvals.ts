@@ -1,3 +1,9 @@
+import { PRICING_CONFIG } from '@/config/pricing';
+import {
+  loadBillingPlan,
+  upsertTenantSubscription,
+  type BillingCycle,
+} from '@/lib/server/billing/subscriptions';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export interface PendingOrganizationApprovalSummary {
@@ -5,6 +11,7 @@ export interface PendingOrganizationApprovalSummary {
   name: string;
   public_subdomain: string;
   requested_plan: string | null;
+  requested_billing_cycle: BillingCycle | null;
   created_at: string;
   founder_email: string | null;
   founder_name: string | null;
@@ -18,20 +25,6 @@ type ApprovalRestaurant = {
   name: string;
   subdomain: string;
 };
-
-type SubscriptionPlanRow = {
-  id: string;
-  max_staff_seats: number | null;
-  max_storage_gb: number | null;
-  max_ai_calls_per_month: number | null;
-  max_customers_per_day: number | null;
-};
-
-function addMonths(date: Date, months: number): Date {
-  const copy = new Date(date);
-  copy.setMonth(copy.getMonth() + months);
-  return copy;
-}
 
 async function resolveOrganizationRestaurants(
   organizationId: string
@@ -82,90 +75,10 @@ async function resolveOrganizationRestaurants(
   return (restaurants ?? []) as ApprovalRestaurant[];
 }
 
-async function loadSubscriptionPlan(planId: string): Promise<SubscriptionPlanRow | null> {
-  const { data: plan, error } = await supabaseAdmin
-    .from('subscription_plans')
-    .select('id, max_staff_seats, max_storage_gb, max_ai_calls_per_month, max_customers_per_day')
-    .eq('id', planId)
-    .maybeSingle();
-
-  if (error || !plan) {
-    console.error('Failed to load subscription plan for org approval:', error);
-    return null;
-  }
-
-  return plan as SubscriptionPlanRow;
-}
-
-async function ensureTrialSubscription(
-  restaurantId: string,
-  plan: SubscriptionPlanRow,
-  notes: string | null
-): Promise<boolean> {
-  const now = new Date();
-  const trialEndsAt = addMonths(now, 6);
-  const nowIso = now.toISOString();
-  const trialEndsAtIso = trialEndsAt.toISOString();
-
-  const payload = {
-    plan_id: plan.id,
-    status: 'trial',
-    billing_cycle: 'monthly',
-    trial_starts_at: nowIso,
-    trial_ends_at: trialEndsAtIso,
-    current_period_start: nowIso,
-    current_period_end: trialEndsAtIso,
-    seat_limit: plan.max_staff_seats,
-    storage_limit_gb: plan.max_storage_gb,
-    ai_calls_limit: plan.max_ai_calls_per_month,
-    customers_per_day_limit: plan.max_customers_per_day,
-    activated_at: null,
-    canceled_at: null,
-    cancellation_reason: null,
-    notes: notes ?? 'Approved organization starter trial',
-  };
-
-  const { data: existingSubscription } = await supabaseAdmin
-    .from('tenant_subscriptions')
-    .select('id')
-    .eq('restaurant_id', restaurantId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (existingSubscription?.id) {
-    const { error } = await supabaseAdmin
-      .from('tenant_subscriptions')
-      .update(payload)
-      .eq('id', existingSubscription.id);
-
-    if (error) {
-      console.error('Failed to update trial subscription for restaurant:', error);
-      return false;
-    }
-
-    return true;
-  }
-
-  const { error } = await supabaseAdmin
-    .from('tenant_subscriptions')
-    .insert({
-      restaurant_id: restaurantId,
-      ...payload,
-    });
-
-  if (error) {
-    console.error('Failed to create trial subscription for restaurant:', error);
-    return false;
-  }
-
-  return true;
-}
-
 export async function listPendingOrganizationApprovals(): Promise<PendingOrganizationApprovalSummary[]> {
   const { data: organizations, error } = await supabaseAdmin
     .from('owner_organizations')
-    .select('id, name, public_subdomain, requested_plan, created_at, created_by')
+    .select('id, name, public_subdomain, requested_plan, requested_billing_cycle, created_at, created_by')
     .eq('approval_status', 'pending')
     .order('created_at', { ascending: true });
 
@@ -231,6 +144,7 @@ export async function listPendingOrganizationApprovals(): Promise<PendingOrganiz
       name: organization.name,
       public_subdomain: organization.public_subdomain,
       requested_plan: organization.requested_plan ?? 'starter',
+      requested_billing_cycle: organization.requested_billing_cycle ?? 'monthly',
       created_at: organization.created_at,
       founder_email: founder?.email ?? null,
       founder_name: founder?.name ?? null,
@@ -244,11 +158,16 @@ export async function listPendingOrganizationApprovals(): Promise<PendingOrganiz
 export async function approveOrganizationLifecycle(
   organizationId: string,
   adminId: string,
-  notes: string | null
+  options: {
+    notes: string | null;
+    planId?: string;
+    billingCycle?: BillingCycle;
+    trialDays?: number;
+  }
 ): Promise<{ success: boolean; error?: string; restaurantIds?: string[] }> {
   const { data: organization } = await supabaseAdmin
     .from('owner_organizations')
-    .select('id, requested_plan')
+    .select('id, requested_plan, requested_billing_cycle')
     .eq('id', organizationId)
     .maybeSingle();
 
@@ -261,7 +180,10 @@ export async function approveOrganizationLifecycle(
     return { success: false, error: 'Organization has no linked restaurants to approve' };
   }
 
-  const plan = await loadSubscriptionPlan(organization.requested_plan ?? 'starter');
+  const planId = options.planId ?? organization.requested_plan ?? 'starter';
+  const billingCycle = options.billingCycle ?? organization.requested_billing_cycle ?? 'monthly';
+  const trialDays = options.trialDays ?? PRICING_CONFIG.trialDays;
+  const plan = await loadBillingPlan(planId);
   if (!plan) {
     return { success: false, error: 'Requested subscription plan is missing' };
   }
@@ -274,8 +196,9 @@ export async function approveOrganizationLifecycle(
       approval_status: 'approved',
       approved_at: nowIso,
       approved_by: adminId,
-      approval_notes: notes,
-      requested_plan: organization.requested_plan ?? 'starter',
+      approval_notes: options.notes,
+      requested_plan: planId,
+      requested_billing_cycle: billingCycle,
       updated_at: nowIso,
     })
     .eq('id', organizationId);
@@ -297,7 +220,7 @@ export async function approveOrganizationLifecycle(
       suspend_notes: null,
       verified_at: nowIso,
       verified_by: adminId,
-      verification_notes: notes,
+      verification_notes: options.notes,
     })
     .in('id', restaurantIds);
 
@@ -307,12 +230,19 @@ export async function approveOrganizationLifecycle(
   }
 
   for (const restaurantId of restaurantIds) {
-    const ok = await ensureTrialSubscription(
+    const subscription = await upsertTenantSubscription({
       restaurantId,
       plan,
-      notes ?? 'Approved organization starter trial (6 months)'
-    );
-    if (!ok) {
+      billingCycle,
+      status: trialDays > 0 ? 'trial' : 'active',
+      trialDays,
+      notes:
+        options.notes ??
+        (trialDays > 0
+          ? `Approved organization trial (${trialDays} days)`
+          : 'Approved organization paid subscription'),
+    });
+    if (!subscription) {
       return { success: false, error: 'Organization approved but trial subscription setup failed' };
     }
   }

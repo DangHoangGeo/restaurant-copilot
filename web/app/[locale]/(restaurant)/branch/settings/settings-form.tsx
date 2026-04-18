@@ -42,6 +42,10 @@ import imageCompression from 'browser-image-compression';
 import { OperatingHoursEditor } from "@/components/features/admin/dashboard/OperatingHoursEditor";
 import { SocialLinksEditor } from "@/components/features/admin/dashboard/SocialLinksEditor";
 import { DescriptionGenerator } from "@/components/features/admin/dashboard/DescriptionGenerator";
+import {
+  createDefaultOpeningHours,
+  normalizeOpeningHours,
+} from "@/lib/utils/opening-hours";
 import { Restaurant } from "@/shared/types";
 import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 
@@ -109,43 +113,11 @@ export default function SettingsForm({ initialSettings, locale }: SettingsFormPr
   const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<string>("basic");
 
-  // Initialize operating hours from existing data or defaults
-  const [operatingHours, setOperatingHours] = useState(() => {
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    const defaultHours: Record<string, { isOpen: boolean; openTime: string; closeTime: string; isClosed: boolean }> = {};
-    
-    days.forEach(day => {
-      defaultHours[day] = {
-        isOpen: true,
-        openTime: '09:00',
-        closeTime: '21:00',
-        isClosed: false
-      };
-    });
-
-    if (initialSettings.opening_hours) {
-      try {
-        const existing = typeof initialSettings.opening_hours === 'string' 
-          ? JSON.parse(initialSettings.opening_hours) 
-          : initialSettings.opening_hours;
-        
-        days.forEach(day => {
-          if (existing[day]) {
-            defaultHours[day] = {
-              isOpen: !existing[day].isClosed,
-              openTime: existing[day].openTime || '09:00',
-              closeTime: existing[day].closeTime || '21:00',
-              isClosed: existing[day].isClosed || false
-            };
-          }
-        });
-      } catch {
-        console.error('Error parsing opening hours');
-      }
-    }
-
-    return defaultHours;
-  });
+  const [operatingHours, setOperatingHours] = useState(() =>
+    initialSettings.opening_hours
+      ? normalizeOpeningHours(initialSettings.opening_hours)
+      : createDefaultOpeningHours()
+  );
 
   // Parse social links from initialSettings
   const initialSocialLinks = useState(() => {

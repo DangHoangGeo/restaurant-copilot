@@ -31,6 +31,7 @@ export interface Organization {
   approved_by?: string | null;
   approval_notes?: string | null;
   requested_plan?: string | null;
+  requested_billing_cycle?: "monthly" | "yearly" | null;
   onboarding_completed_at?: string | null;
   country: string;
   timezone: string;
@@ -45,6 +46,7 @@ export interface Organization {
   description_en?: string | null;
   description_ja?: string | null;
   description_vi?: string | null;
+  address?: string | null;
   website?: string | null;
   phone?: string | null;
   email?: string | null;
@@ -112,6 +114,7 @@ export interface CreateOrganizationInput {
   name: string;
   slug: string;
   requested_plan?: "starter" | "growth" | "enterprise";
+  requested_billing_cycle?: "monthly" | "yearly";
   country?: string;
   timezone?: string;
   currency?: string;

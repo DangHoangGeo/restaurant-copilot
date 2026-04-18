@@ -4,6 +4,8 @@ import {
   CheckCircle2,
   Clock3,
   Globe,
+  Mail,
+  RefreshCw,
   ShieldAlert,
   Sparkles,
 } from 'lucide-react';
@@ -39,13 +41,15 @@ export default async function PendingApprovalPage({
   searchParams,
   params,
 }: {
-  searchParams: Promise<{ org?: string; status?: string }>;
+  searchParams: Promise<{ org?: string; status?: string; plan?: string; billing?: string }>;
   params: Promise<{ locale: string }>;
 }) {
-  const [{ org, status }, { locale }] = await Promise.all([searchParams, params]);
+  const [{ org, status, plan, billing }, { locale }] = await Promise.all([searchParams, params]);
   const user = await getUserFromRequest();
   const isRejected = status === 'rejected';
   const companyCode = org || 'your-company';
+  const selectedPlan = plan || 'starter';
+  const selectedBilling = billing || 'monthly';
 
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.22),_transparent_30%),linear-gradient(180deg,#fffdf8_0%,#ffffff_45%,#f8fafc_100%)]">
@@ -93,8 +97,8 @@ export default async function PendingApprovalPage({
               />
               <StepCard
                 icon={Sparkles}
-                title="Next step"
-                value="Owner onboarding in control"
+                title="Plan"
+                value={`${selectedPlan} · ${selectedBilling}`}
               />
             </div>
 
@@ -122,6 +126,29 @@ export default async function PendingApprovalPage({
                 </div>
               </div>
             </div>
+
+            {isRejected && (
+              <div className="mt-6 rounded-[28px] border border-destructive/20 bg-destructive/5 px-5 py-5 sm:px-6">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
+                    <RefreshCw className="h-4 w-4 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-destructive">Next steps for your application</p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Our team needs to review your application details before granting access.
+                      Please contact support so we can resolve this together.
+                    </p>
+                    <Button asChild variant="outline" className="mt-3 rounded-2xl border-destructive/30 px-4 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                      <a href="mailto:support@coorder.ai">
+                        <Mail className="mr-2 h-4 w-4" />
+                        Contact support
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button asChild className="rounded-2xl px-5">

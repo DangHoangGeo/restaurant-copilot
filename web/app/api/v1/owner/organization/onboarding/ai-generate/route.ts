@@ -8,6 +8,7 @@ import { createGeminiHelper } from '@/lib/gemini';
 import { buildOrganizationOnboardingPrompt } from '@/lib/ai/prompts/organization-onboarding';
 import { resolveOrgContext } from '@/lib/server/organizations/service';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { sanitizeGeneratedLogoSvg } from '@/lib/utils/branding-assets';
 
 export async function POST(request: NextRequest) {
   const ctx = await resolveOrgContext();
@@ -42,7 +43,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Owner introduction is required' }, { status: 400 });
     }
 
-    const gemini = createGeminiHelper();
+    const gemini = createGeminiHelper({
+      model: process.env.GEMINI_TEXT_MODEL_FAST,
+    });
     const prompt = buildOrganizationOnboardingPrompt({
       companyName,
       branchName: body.branchName?.trim(),
@@ -55,7 +58,13 @@ export async function POST(request: NextRequest) {
       specialties: body.specialties?.trim(),
     });
 
-    const result = await gemini.generateContent(prompt, 'organization-onboarding');
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('AI generation timed out after 30 seconds')), 30_000)
+    );
+    const result = await Promise.race([
+      gemini.generateContent(prompt, 'organization-onboarding'),
+      timeoutPromise,
+    ]);
     const jsonMatch = result.match(/\{[\s\S]*\}/);
 
     if (!jsonMatch) {
@@ -80,9 +89,13 @@ export async function POST(request: NextRequest) {
     };
 
     let logoUrl: string | null = null;
-    if (parsed.logo_svg?.trim().startsWith('<svg')) {
+    const safeLogoSvg = parsed.logo_svg
+      ? sanitizeGeneratedLogoSvg(parsed.logo_svg)
+      : null;
+
+    if (safeLogoSvg) {
       const svgPath = `organizations/${ctx!.organization.id}/branding/ai_logo_${Date.now()}.svg`;
-      const svgBuffer = new Uint8Array(Buffer.from(parsed.logo_svg.trim(), 'utf8'));
+      const svgBuffer = new Uint8Array(Buffer.from(safeLogoSvg, 'utf8'));
       const { data: uploadedLogo, error: uploadError } = await supabaseAdmin.storage
         .from('restaurant-uploads')
         .upload(svgPath, svgBuffer, {

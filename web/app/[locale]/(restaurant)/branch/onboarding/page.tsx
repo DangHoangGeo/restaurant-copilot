@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { Building2, Clock } from "lucide-react";
 import { resolveFounderControlContext } from "@/lib/server/control/access";
 import { Button } from "@/components/ui/button";
+import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
+import { buildRootControlSectionUrl } from "@/lib/server/organizations/root-dashboard";
 
 export default async function OnboardingPage({
   params
@@ -10,10 +12,34 @@ export default async function OnboardingPage({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params;
-  const founderContext = await resolveFounderControlContext();
+  const [founderContext, user] = await Promise.all([
+    resolveFounderControlContext(),
+    getUserFromRequest(),
+  ]);
 
   if (founderContext) {
-    redirect(`/${locale}/control/onboarding`);
+    if (!founderContext.organization.onboarding_completed_at) {
+      redirect(
+        buildRootControlSectionUrl(
+          locale,
+          "/control/onboarding",
+          founderContext.organization.public_subdomain,
+        ),
+      );
+    }
+
+    if (
+      user?.restaurantId &&
+      founderContext.accessibleRestaurantIds.includes(user.restaurantId)
+    ) {
+      redirect(
+        buildRootControlSectionUrl(
+          locale,
+          `/control/restaurants/${user.restaurantId}?tab=setup`,
+          founderContext.organization.public_subdomain,
+        ),
+      );
+    }
   }
 
   return (

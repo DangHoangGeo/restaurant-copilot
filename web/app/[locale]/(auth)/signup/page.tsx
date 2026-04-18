@@ -7,11 +7,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AuthCard, FormField, PasswordInput, PolicyAgreement } from "@/components/auth";
+import { PRICING_PLANS } from "@/config/pricing";
 
 type SignupFormInputs = z.infer<typeof signupSchema>;
 
@@ -19,6 +21,7 @@ export default function SignupPage() {
   const t = useTranslations('auth');
   const tCommon = useTranslations('common');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [subdomainAvailability, setSubdomainAvailability] = useState<"checking" | "available" | "not-available" | null>(null);
@@ -41,6 +44,7 @@ export default function SignupPage() {
       confirmPassword: "",
       defaultLanguage: "en",
       selectedPlan: "starter",
+      selectedBillingCycle: "monthly",
       captchaToken: "",
       policyAgreement: false,
     },
@@ -75,6 +79,7 @@ export default function SignupPage() {
       } catch (error) {
         console.error("Error checking subdomain availability:", error);
         setSubdomainAvailability("not-available");
+        toast.error("Could not check subdomain availability — please try again");
         setError("subdomain", {
           type: "manual",
           message: t("subdomainErrors.check_failed"),
@@ -95,11 +100,34 @@ export default function SignupPage() {
   }, [subdomainValue, checkSubdomainAvailability]);
 
   useEffect(() => {
-    setValue('selectedPlan', 'starter');
-  }, [setValue]);
+    const queryPlan = searchParams.get('plan');
+    const queryBilling = searchParams.get('billing');
+    const savedPlan = window.localStorage.getItem('selectedPlan');
+    const savedBilling = window.localStorage.getItem('selectedBillingCycle');
+    const plan = queryPlan || savedPlan || 'starter';
+    const billingCycle = queryBilling || savedBilling || 'monthly';
+
+    if (plan === 'starter' || plan === 'growth' || plan === 'enterprise') {
+      setValue('selectedPlan', plan);
+    }
+
+    if (billingCycle === 'monthly' || billingCycle === 'yearly') {
+      setValue('selectedBillingCycle', billingCycle);
+    }
+  }, [searchParams, setValue]);
 
   const onSubmit = async (data: SignupFormInputs) => {
     setServerError(null);
+
+    if (subdomainAvailability === 'checking') {
+      toast.error("Still checking subdomain availability — please wait a moment");
+      return;
+    }
+    if (subdomainAvailability !== 'available') {
+      toast.error("Please choose an available subdomain before continuing");
+      return;
+    }
+
     if (!captchaToken) {
       setError("captchaToken", {
         type: "manual",
@@ -142,7 +170,9 @@ export default function SignupPage() {
           password: data.password,
           defaultLanguage: data.defaultLanguage,
           selectedPlan: data.selectedPlan,
+          selectedBillingCycle: data.selectedBillingCycle,
           policyAgreement: data.policyAgreement,
+          captchaToken,
         }),
       });
 
@@ -161,10 +191,18 @@ export default function SignupPage() {
     }
   };
 
+  const selectedPlan = watch("selectedPlan") || "starter";
+  const selectedBillingCycle = watch("selectedBillingCycle") || "monthly";
+  const selectedPlanConfig = PRICING_PLANS.find((plan) => plan.id === selectedPlan);
+  const selectedPrice =
+    selectedBillingCycle === "yearly"
+      ? selectedPlanConfig?.price.yearly
+      : selectedPlanConfig?.price.monthly;
+
   return (
     <AuthCard 
       title="Create your company"
-      description="Choose your company subdomain, create the founder account, and send the business for approval."
+      description="Choose your plan, create the founder account, and send the company for approval."
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Company Name */}
@@ -241,6 +279,62 @@ export default function SignupPage() {
         {/* Default Language */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Plan
+          </label>
+          <Select
+            value={selectedPlan}
+            onValueChange={(value) =>
+              setValue("selectedPlan", value as "starter" | "growth" | "enterprise")
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRICING_PLANS.map((plan) => (
+                <SelectItem key={plan.id} value={plan.id}>
+                  {plan.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Billing cycle
+          </label>
+          <Select
+            value={selectedBillingCycle}
+            onValueChange={(value) =>
+              setValue("selectedBillingCycle", value as "monthly" | "yearly")
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="yearly">Yearly</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="rounded-2xl border bg-blue-50/70 p-4 dark:bg-blue-950/20">
+          <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+            {selectedPlanConfig?.name ?? "Selected plan"}
+          </p>
+          <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+            {selectedBillingCycle === "yearly" ? "Yearly billing" : "Monthly billing"}
+            {selectedPrice != null ? ` · $${selectedPrice}` : ""}
+          </p>
+          <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
+            Your requested plan will be confirmed by our team during approval. You may receive a free trial before billing starts.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
             {tCommon('defaultLanguageLabel')}
           </label>
           <Select 
@@ -259,15 +353,6 @@ export default function SignupPage() {
           {errors.defaultLanguage && (
             <p className="text-sm text-red-600">{errors.defaultLanguage.message}</p>
           )}
-        </div>
-
-        <div className="rounded-2xl border bg-blue-50/70 p-4 dark:bg-blue-950/20">
-          <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-            Starter trial
-          </p>
-          <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
-            6 months free after approval
-          </p>
         </div>
 
         {/* Policy Agreement */}
