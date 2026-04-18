@@ -29,6 +29,7 @@ interface Branch {
   branchCode?: string | null;
   employeeCount?: number;
   isActive?: boolean;
+  onboarded?: boolean;
 }
 
 interface ControlRestaurantsClientProps {
@@ -176,7 +177,9 @@ export function ControlRestaurantsClient({
             {branches.map((branch) => (
               <article
                 key={branch.id}
-                className="rounded-[28px] border bg-card p-4 transition hover:border-slate-300"
+                className={`rounded-[28px] border bg-card p-4 transition hover:border-slate-300 ${
+                  branch.onboarded ? '' : 'border-amber-300 bg-amber-50/40'
+                }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-3">
@@ -189,6 +192,11 @@ export function ControlRestaurantsClient({
                         {branch.isActive ? (
                           <Badge variant="secondary" className="rounded-full">
                             Active branch
+                          </Badge>
+                        ) : null}
+                        {!branch.onboarded ? (
+                          <Badge variant="outline" className="rounded-full border-amber-300 bg-amber-100 text-amber-700">
+                            Setup needed
                           </Badge>
                         ) : null}
                       </div>
@@ -208,7 +216,7 @@ export function ControlRestaurantsClient({
                     className="rounded-xl gap-1.5"
                     onClick={() => handleOpen(branch.id)}
                   >
-                    Open
+                    {branch.onboarded ? 'Open' : 'Finish setup'}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -233,10 +241,16 @@ export function ControlRestaurantsClient({
                   <div className="rounded-2xl bg-muted/20 px-3 py-3">
                     <div className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
                       <Globe className="h-3.5 w-3.5" />
-                      Public
+                      Setup
                     </div>
-                    <p className="mt-2 text-sm font-semibold">Customer entry</p>
-                    <p className="text-xs text-muted-foreground">Branch-aware link ready</p>
+                    <p className="mt-2 text-sm font-semibold">
+                      {branch.onboarded ? 'Customer entry' : 'Needs owner review'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {branch.onboarded
+                        ? 'Branch-aware link ready'
+                        : 'Complete hours, contact, and defaults'}
+                    </p>
                   </div>
                 </div>
               </article>

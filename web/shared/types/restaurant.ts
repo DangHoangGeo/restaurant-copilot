@@ -45,7 +45,7 @@ export type Restaurant = {
   phone: string | null;
   email: string | null;
   website: string | null;
-  opening_hours: string | null; // JSON string or structured data
+  opening_hours: OpeningHours | string | null;
   description_en: string | null;
   description_ja: string | null;
   description_vi: string | null;
@@ -72,3 +72,4 @@ export type Restaurant = {
   updated_at?: string | null; // Add if needed
   user_id?: string | null; // Add if needed
 };
+import type { OpeningHours } from "@/lib/utils/opening-hours";

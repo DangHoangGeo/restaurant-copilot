@@ -21,6 +21,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { OperatingHoursEditor } from '@/components/features/admin/dashboard/OperatingHoursEditor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,6 +41,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { normalizeOpeningHours } from '@/lib/utils/opening-hours';
 import { cn } from '@/lib/utils';
 import type { OrgEmployeeRow } from '@/lib/server/organizations/queries';
 import type { BranchOverviewData } from '@/lib/server/control/branch-overview';
@@ -124,6 +126,7 @@ export function ControlBranchDetailClient({
     currency: initialBranch.currency ?? 'JPY',
     tax: initialBranch.tax != null ? String(Math.round(initialBranch.tax * 100)) : '10',
     default_language: initialBranch.default_language ?? 'ja',
+    opening_hours: normalizeOpeningHours(initialBranch.opening_hours),
   });
   const [savingSetup, setSavingSetup] = useState(false);
 
@@ -149,6 +152,8 @@ export function ControlBranchDetailClient({
           currency: settings.currency || null,
           tax: !isNaN(taxDecimal) ? taxDecimal : undefined,
           default_language: settings.default_language || undefined,
+          opening_hours: settings.opening_hours,
+          mark_ready: initialBranch.onboarded !== true,
         }),
       });
       if (res.ok) {
@@ -504,6 +509,12 @@ export function ControlBranchDetailClient({
       {/* ── SETUP TAB ───────────────────────────────────────────── */}
       {activeTab === 'setup' && (
         <div className="max-w-2xl space-y-8">
+          {initialBranch.onboarded !== true ? (
+            <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+              Saving this setup will mark the branch ready for operations.
+            </div>
+          ) : null}
+
           {/* Basic info */}
           <section className="space-y-4">
             <h2 className="text-sm font-semibold text-muted-foreground">Basic information</h2>
@@ -626,9 +637,19 @@ export function ControlBranchDetailClient({
             </div>
           </section>
 
+          <section className="space-y-4">
+            <h2 className="text-sm font-semibold text-muted-foreground">Opening hours</h2>
+            <div className="rounded-3xl border bg-card p-4">
+              <OperatingHoursEditor
+                value={settings.opening_hours}
+                onChange={(opening_hours) => setSettings((current) => ({ ...current, opening_hours }))}
+              />
+            </div>
+          </section>
+
           <Button onClick={handleSaveSetup} disabled={savingSetup} className="rounded-lg gap-2">
             {savingSetup && <Loader2 className="h-4 w-4 animate-spin" />}
-            Save settings
+            {initialBranch.onboarded ? 'Save settings' : 'Save and mark ready'}
           </Button>
         </div>
       )}

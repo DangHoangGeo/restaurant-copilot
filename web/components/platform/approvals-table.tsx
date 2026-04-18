@@ -6,6 +6,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -38,6 +46,9 @@ export default function ApprovalsTable() {
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [approveNotes, setApproveNotes] = useState('');
+  const [approvePlanId, setApprovePlanId] = useState<'starter' | 'growth' | 'enterprise'>('starter');
+  const [approveBillingCycle, setApproveBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [approveTrialDays, setApproveTrialDays] = useState('14');
   const [rejectReason, setRejectReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -97,7 +108,13 @@ export default function ApprovalsTable() {
       const response = await fetch(`/api/v1/platform/organizations/${selectedOrganization.id}/approval`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'approved', notes: approveNotes })
+        body: JSON.stringify({
+          status: 'approved',
+          notes: approveNotes,
+          plan_id: approvePlanId,
+          billing_cycle: approveBillingCycle,
+          trial_days: Number(approveTrialDays) || 0,
+        })
       });
       const body = await response.json().catch(() => null);
 
@@ -107,6 +124,7 @@ export default function ApprovalsTable() {
 
       setApproveDialogOpen(false);
       setApproveNotes('');
+      setApproveTrialDays('14');
       setSelectedOrganization(null);
       fetchPendingApprovals();
     } catch (error) {
@@ -201,7 +219,12 @@ export default function ApprovalsTable() {
               </TableCell>
               <TableCell>{new Date(organization.created_at).toLocaleDateString()}</TableCell>
               <TableCell>
-                <Badge variant="outline">{organization.requested_plan ?? 'starter'}</Badge>
+                <div className="space-y-1">
+                  <Badge variant="outline">{organization.requested_plan ?? 'starter'}</Badge>
+                  <p className="text-xs text-muted-foreground">
+                    {organization.requested_billing_cycle ?? 'monthly'}
+                  </p>
+                </div>
               </TableCell>
               <TableCell>
                 <div className="min-w-0">
@@ -219,6 +242,13 @@ export default function ApprovalsTable() {
                   variant="outline"
                   onClick={() => {
                     setSelectedOrganization(organization);
+                    setApprovePlanId(
+                      (organization.requested_plan as 'starter' | 'growth' | 'enterprise' | null) ?? 'starter'
+                    );
+                    setApproveBillingCycle(
+                      (organization.requested_billing_cycle as 'monthly' | 'yearly' | null) ?? 'monthly'
+                    );
+                    setApproveTrialDays('14');
                     setApproveDialogOpen(true);
                   }}
                 >
@@ -250,6 +280,54 @@ export default function ApprovalsTable() {
             <DialogDescription>{t('approve_dialog.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Plan</Label>
+              <Select
+                value={approvePlanId}
+                onValueChange={(value) =>
+                  setApprovePlanId(value as 'starter' | 'growth' | 'enterprise')
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="starter">Starter</SelectItem>
+                  <SelectItem value="growth">Growth</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Billing cycle</Label>
+              <Select
+                value={approveBillingCycle}
+                onValueChange={(value) =>
+                  setApproveBillingCycle(value as 'monthly' | 'yearly')
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="approve-trial-days">Free trial days</Label>
+              <Input
+                id="approve-trial-days"
+                type="number"
+                min={0}
+                max={365}
+                value={approveTrialDays}
+                onChange={(event) => setApproveTrialDays(event.target.value)}
+              />
+            </div>
             <div>
               <Label htmlFor="approve-notes">{t('approve_dialog.notes_label')}</Label>
               <Textarea

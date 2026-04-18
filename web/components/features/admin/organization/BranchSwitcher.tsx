@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Building2, ChevronDown, CheckCircle2, Loader2 } from "lucide-react";
+import { Building2, CheckCircle2, ChevronDown, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Branch {
   id: string;
@@ -12,6 +14,7 @@ interface Branch {
 
 interface BranchSwitcherProps {
   accessibleRestaurantIds: string[];
+  className?: string;
 }
 
 /**
@@ -21,8 +24,13 @@ interface BranchSwitcherProps {
  *   PUT /api/v1/owner/organization/active-branch  → set new branch
  *   GET /api/v1/owner/organization/restaurants    → list of accessible branches
  */
-export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps) {
+export function BranchSwitcher({
+  accessibleRestaurantIds,
+  className,
+}: BranchSwitcherProps) {
   const t = useTranslations("owner.organization");
+  const tControl = useTranslations("owner.control");
+  const router = useRouter();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [activeBranchId, setActiveBranchId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -89,8 +97,7 @@ export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps)
 
       if (res.ok) {
         setActiveBranchId(restaurantId);
-        // Reload the page so all data re-fetches with the new branch context
-        window.location.reload();
+        router.refresh();
       }
     } finally {
       setSwitching(false);
@@ -100,11 +107,11 @@ export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps)
   const activeBranch = branches.find((b) => b.id === activeBranchId);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className={cn("relative", className)}>
       <button
         onClick={() => setOpen((v) => !v)}
         disabled={switching}
-        className="flex items-center gap-2 w-full rounded-lg border bg-muted/60 px-3 py-2 text-sm hover:bg-muted transition-colors"
+        className="flex w-full items-center gap-2 rounded-2xl border border-slate-200 bg-white/90 px-3 py-3 text-left text-sm shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -113,8 +120,13 @@ export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps)
         ) : (
           <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
         )}
-        <span className="flex-1 text-left truncate text-foreground">
-          {activeBranch?.name ?? t("selectBranch")}
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            {tControl("branchScope.label")}
+          </span>
+          <span className="mt-1 block truncate text-sm font-semibold text-foreground">
+            {activeBranch?.name ?? t("selectBranch")}
+          </span>
         </span>
         <ChevronDown
           className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
@@ -122,7 +134,7 @@ export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps)
       </button>
 
       {open && branches.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-lg border bg-popover shadow-md overflow-hidden">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border bg-popover shadow-md">
           <ul role="listbox" className="py-1">
             {branches.map((branch) => (
               <li key={branch.id}>
@@ -130,9 +142,16 @@ export function BranchSwitcher({ accessibleRestaurantIds }: BranchSwitcherProps)
                   role="option"
                   aria-selected={branch.id === activeBranchId}
                   onClick={() => switchBranch(branch.id)}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-muted text-left transition-colors"
+                  className="flex w-full items-center gap-2 px-3 py-3 text-left text-sm transition-colors hover:bg-muted"
                 >
-                  <span className="flex-1 truncate">{branch.name}</span>
+                  <span className="flex-1">
+                    <span className="block truncate font-medium text-foreground">
+                      {branch.name}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {branch.subdomain}.coorder.ai
+                    </span>
+                  </span>
                   {branch.id === activeBranchId && (
                     <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                   )}

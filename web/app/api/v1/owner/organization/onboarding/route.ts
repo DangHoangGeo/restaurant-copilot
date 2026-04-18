@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       currency: input.currency,
       logo_url: input.logo_url ?? null,
       brand_color: input.brand_color,
-      website: input.website ?? null,
+      address: input.address ?? null,
       phone: input.phone ?? null,
       email: input.email ?? null,
       description_en: input.description_en ?? null,
@@ -77,10 +77,11 @@ export async function POST(request: NextRequest) {
       default_language: branch.default_language,
       tax: branch.tax,
       address: branch.address ?? null,
-      opening_hours: branch.opening_hours ?? null,
+      opening_hours: branch.opening_hours
+        ? JSON.stringify(branch.opening_hours)
+        : null,
       phone: branch.phone ?? null,
       email: branch.email ?? null,
-      website: branch.website ?? null,
       logo_url: input.logo_url ?? null,
       brand_color: input.brand_color,
       hero_title_en: branch.hero_title_en ?? null,

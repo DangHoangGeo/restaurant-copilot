@@ -348,7 +348,11 @@ export async function POST(req: NextRequest) {
     const rootDashboardAccess = await getRootDashboardAccess(data.user.id);
 
     const redirectUrl = rootDashboardAccess
-      ? buildRootControlUrl(defaultLanguage, rootDashboardAccess.public_subdomain)
+      ? buildRootControlUrl(
+          defaultLanguage,
+          rootDashboardAccess.public_subdomain,
+          rootDashboardAccess.onboarding_completed_at,
+        )
       : buildBranchDashboardUrl(appSubdomain, defaultLanguage);
 
     const response = NextResponse.json({

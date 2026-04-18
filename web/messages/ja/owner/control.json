@@ -2,6 +2,11 @@
   "eyebrow": "Founder Control",
   "subtitle": "まず組織全体を見て、必要なときだけ各店舗へ入って現場操作を行います。",
   "singleBranch": "アクセス可能な店舗は1件です",
+  "allBranches": "アクセス可能な店舗は {count} 件です",
+  "branchScope": {
+    "label": "店舗別ツール",
+    "hint": "組織全体ページは会社スコープのまま維持され、店舗別ツールだけが選択中の店舗で開きます。"
+  },
   "nav": {
     "overview": "概要",
     "restaurants": "店舗",

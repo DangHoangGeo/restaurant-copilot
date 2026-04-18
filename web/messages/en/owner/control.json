@@ -2,6 +2,11 @@
   "eyebrow": "Founder Control",
   "subtitle": "Run the organization from the top: read the whole business first, then drop into a branch only when local action is needed.",
   "singleBranch": "1 accessible branch",
+  "allBranches": "{count} accessible branches",
+  "branchScope": {
+    "label": "Active branch tools",
+    "hint": "Branch-specific tools will open for the selected branch while organization-wide pages stay at company scope."
+  },
   "nav": {
     "overview": "Overview",
     "restaurants": "Restaurants",

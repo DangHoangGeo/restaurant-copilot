@@ -17,6 +17,8 @@ export interface BranchSettings {
   currency: string | null;
   tax: number | null;
   default_language: string | null;
+  opening_hours: unknown | null;
+  onboarded: boolean | null;
 }
 
 export type BranchDetailTab = 'overview' | 'team' | 'setup';
@@ -45,7 +47,7 @@ export default async function ControlBranchDetailPage({
   const [branchResult, employees, overview] = await Promise.all([
     supabaseAdmin
       .from('restaurants')
-      .select('id, name, subdomain, address, phone, email, timezone, currency, tax, default_language')
+      .select('id, name, subdomain, address, phone, email, timezone, currency, tax, default_language, opening_hours, onboarded')
       .eq('id', branchId)
       .single(),
     listOrganizationEmployees([branchId]),
