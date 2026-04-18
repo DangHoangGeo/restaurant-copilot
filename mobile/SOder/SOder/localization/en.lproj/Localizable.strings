@@ -1225,3 +1225,25 @@
 "print_queue_job_type_customer_receipt" = "Customer receipt";
 "print_queue_job_type_test_receipt" = "Test receipt";
 "print_queue_job_type_kitchen_test" = "Kitchen test";
+
+// MARK: - Select Table View
+"select_table_title" = "Select a Table";
+"no_tables_found" = "No tables found for this restaurant.";
+"table_capacity_format" = "Capacity: %d seats";
+"refresh_tables_button" = "Refresh Tables";
+
+// MARK: - Draft Order View
+"draft_table_label_format" = "Table: %@";
+"draft_preparing_order_format" = "Preparing order for %@...";
+"draft_size_custom" = "Custom size";
+"draft_toppings_count_format" = "+ %d toppings";
+"price_each_format" = "¥%.0f each";
+"draft_add_items_to_continue" = "Add items to continue";
+"draft_add_items_accessibility" = "Add items before placing order";
+"draft_add_items_hint" = "Tap to add menu items";
+
+// MARK: - Kitchen Live Label
+"kitchen_live_label" = "live kitchen";
+
+// MARK: - Timeout Error
+"timeout_error" = "Request timed out";

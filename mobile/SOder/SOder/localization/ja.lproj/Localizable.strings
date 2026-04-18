@@ -1157,3 +1157,25 @@
 "print_queue_job_type_customer_receipt" = "お客様レシート";
 "print_queue_job_type_test_receipt" = "テストレシート";
 "print_queue_job_type_kitchen_test" = "キッチンテスト";
+
+// MARK: - Select Table View
+"select_table_title" = "テーブルを選択";
+"no_tables_found" = "このレストランにテーブルが見つかりません。";
+"table_capacity_format" = "定員: %d 名";
+"refresh_tables_button" = "テーブルを更新";
+
+// MARK: - Draft Order View
+"draft_table_label_format" = "テーブル: %@";
+"draft_preparing_order_format" = "%@ の注文を準備中...";
+"draft_size_custom" = "カスタムサイズ";
+"draft_toppings_count_format" = "+ %d トッピング";
+"price_each_format" = "¥%.0f / 個";
+"draft_add_items_to_continue" = "続けるには商品を追加してください";
+"draft_add_items_accessibility" = "注文前に商品を追加";
+"draft_add_items_hint" = "タップして商品を追加";
+
+// MARK: - Kitchen Live Label
+"kitchen_live_label" = "ライブキッチン";
+
+// MARK: - Timeout Error
+"timeout_error" = "リクエストがタイムアウトしました";

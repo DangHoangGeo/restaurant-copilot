@@ -364,13 +364,13 @@ class OrderManager: ObservableObject {
             let resultItem: OrderItem
             
             if let index = existingItemIndex {
-                // Update existing item quantity
-                var existingItem = updatedOrder.order_items![index]
-                existingItem.quantity += quantity
-                existingItem.updated_at = ISO8601DateFormatter().string(from: Date())
-                updatedOrder.order_items![index] = existingItem
-                resultItem = existingItem
-                print("Updated existing item quantity: \(existingItem.id), new quantity: \(existingItem.quantity)")
+                // Update existing item quantity — order_items is guaranteed non-nil here
+                // because existingItemIndex was derived from order_items?.firstIndex
+                var items = updatedOrder.order_items ?? []
+                items[index].quantity += quantity
+                items[index].updated_at = ISO8601DateFormatter().string(from: Date())
+                updatedOrder.order_items = items
+                resultItem = items[index]
             } else {
                 // Create new item
                 let newOrderItem = OrderItem(
@@ -1766,10 +1766,9 @@ class OrderManager: ObservableObject {
                 printedReadyItems.insert(item.id)
                 autoPrintStats.recordReadyItemPrint()
                 
-                let itemName = item.menu_item?.displayName ?? "Unknown Item"
-                let tableInfo = order.table?.name ?? "Table \(order.table_id)"
-                lastAutoPrintResult = "✅ Auto-printed ready: \(itemName) for \(tableInfo)"
-                print("Auto-printed ready item: \(item.id) - \(itemName)")
+                let itemName = item.menu_item?.displayName ?? "orders_unknown_item".localized
+                let tableInfo = order.table?.name ?? String(format: "orders_table_prefix".localized, order.table_id)
+                lastAutoPrintResult = String(format: "autoprint_success_new_item".localized, itemName, tableInfo)
                 
             } catch {
                 autoPrintStats.recordPrintFailure()
@@ -1927,8 +1926,7 @@ class OrderManager: ObservableObject {
         printedReadyItems.removeAll()
         printedNewItems.removeAll()
         autoPrintStats.reset()
-        lastAutoPrintResult = "🔄 Print history cleared"
-        print("Print history and statistics cleared")
+        lastAutoPrintResult = "kitchen_clear_print_history".localized
         
         // Clear the result message after 3 seconds
         Task {
@@ -2023,6 +2021,6 @@ class OrderManager: ObservableObject {
 
 struct TimeoutError: LocalizedError {
     var errorDescription: String? {
-        return "Request timed out"
+        return "timeout_error".localized
     }
 }

@@ -6,17 +6,8 @@ struct PrinterSettingsView: View {
     @State private var showingAllLogs = false
 
     var body: some View {
-        Group {
-            if #available(iOS 16.0, *) {
-                NavigationStack {
-                    mainContent
-                }
-            } else {
-                NavigationView {
-                    mainContent
-                }
-                .navigationViewStyle(StackNavigationViewStyle())
-            }
+        NavigationStack {
+            mainContent
         }
         .sheet(isPresented: $showingAllLogs) {
             AllPrintLogsView(printerManager: printerManager)

@@ -109,7 +109,7 @@ struct KitchenHeaderView: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack(alignment: .top, spacing: Spacing.md) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    AppSectionEyebrow("live kitchen")
+                    AppSectionEyebrow("kitchen_live_label".localized)
 
                     Text("kitchen".localized)
                         .font(.heroTitle)
