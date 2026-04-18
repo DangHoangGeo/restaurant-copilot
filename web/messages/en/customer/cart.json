@@ -79,6 +79,7 @@
     "items_count": "{count} items",
     "total": "Total: {amount}",
     "view_cart": "View Cart",
+    "place_order": "Place Order",
     "checkout": "Checkout",
     "placing_order": "Placing Order",
     "empty_message": "Your cart is empty",

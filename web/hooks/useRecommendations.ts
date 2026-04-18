@@ -111,6 +111,7 @@ export function useRecommendations(params: RecommendationParams) {
   const {
     data,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch
@@ -121,6 +122,7 @@ export function useRecommendations(params: RecommendationParams) {
     gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     retry: 2,
+    placeholderData: (previousData) => previousData,
   });
 
   const recommendedItems = useMemo(() => data?.items || [], [data?.items]);
@@ -132,6 +134,7 @@ export function useRecommendations(params: RecommendationParams) {
     confidence: data?.confidence || 0,
     categories: data?.categories || [],
     isLoading,
+    isFetching,
     isError,
     error,
     refetch

@@ -27,6 +27,8 @@
   "view_classic": "クラシックメニューを見る",
   "browse_categories": "カテゴリを閲覧",
   "no_items_found": "このカテゴリにはアイテムがありません。",
+  "item_load_error_title": "商品を開けませんでした",
+  "item_load_error_description": "この商品のオプションを読み込めませんでした。もう一度お試しください。",
   "categories": {
     "all": "すべて",
     "featured": "注目",
@@ -79,6 +81,8 @@
     "reviews": "レビュー",
     "rating": "評価",
     "description": "説明",
+    "show_more": "もっと見る",
+    "show_less": "閉じる",
     "decrease_quantity": "数量を減らす",
     "increase_quantity": "数量を増やす"
   },

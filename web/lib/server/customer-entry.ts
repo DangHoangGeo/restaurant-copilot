@@ -16,6 +16,7 @@ interface RestaurantPublicRow {
   subdomain: string;
   branch_code: string | null;
   logo_url: string | null;
+  allow_order_notes: boolean | null;
   brand_color: string | null;
   default_language: string | null;
   address: string | null;
@@ -76,6 +77,7 @@ function mapRestaurantSettings(
     branchCode: restaurant.branch_code ?? restaurant.subdomain,
     companyPublicSubdomain: company.publicSubdomain,
     logoUrl: restaurant.logo_url,
+    allowOrderNotes: restaurant.allow_order_notes ?? true,
     primaryColor: restaurant.brand_color || '#3B82F6',
     defaultLocale: restaurant.default_language || 'en',
     address: restaurant.address,
@@ -142,6 +144,7 @@ async function getRestaurantById(
       subdomain,
       branch_code,
       logo_url,
+      allow_order_notes,
       brand_color,
       default_language,
       address,

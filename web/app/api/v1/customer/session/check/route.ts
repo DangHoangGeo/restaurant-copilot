@@ -7,15 +7,16 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  */
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("sessionId");
+  const restaurantId = req.nextUrl.searchParams.get("restaurantId");
 
   if (!sessionId) {
-    return NextResponse.json({ 
-      error: "Session ID required" 
+    return NextResponse.json({
+      error: "Session ID required"
     }, { status: 400 });
   }
 
   try {
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("orders")
       .select(`
         id,
@@ -31,8 +32,14 @@ export async function GET(req: NextRequest) {
           capacity
         )
       `)
-      .eq("session_id", sessionId)
-      .single();
+      .eq("session_id", sessionId);
+
+    // Reject sessions that don't belong to the requesting restaurant
+    if (restaurantId) {
+      query = query.eq("restaurant_id", restaurantId);
+    }
+
+    const { data, error } = await query.single();
 
     if (error || !data) {
       return NextResponse.json({

@@ -30,6 +30,7 @@ export interface RestaurantSettings {
   branchCode?: string | null;
   companyPublicSubdomain?: string | null;
   logoUrl?: string | null;
+  allowOrderNotes?: boolean;
   defaultLocale?: string;
   contactInfo?: string | null;
   address?: string | null;
@@ -56,6 +57,7 @@ export interface RestaurantData {
   branchCode?: string | null;
   companyPublicSubdomain?: string | null;
   logoUrl?: string | null;
+  allowOrderNotes?: boolean;
   tagline_en?: string | null;
   tagline_ja?: string | null;
   tagline_vi?: string | null;

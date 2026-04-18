@@ -39,6 +39,55 @@ interface CustomerDataContextType {
 
 const CustomerDataContext = createContext<CustomerDataContextType | null>(null);
 
+// ─── Session storage helpers (restaurant-scoped + 12-hour expiry) ────────────
+
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+
+function sessionKey(restaurantId: string): string {
+  return `coorder_session_${restaurantId}`;
+}
+
+function readStoredSession(restaurantId: string): string | null {
+  try {
+    const raw = localStorage.getItem(sessionKey(restaurantId));
+    if (!raw) return null;
+
+    let sessionId: string;
+    let expiresAt: number | undefined;
+    try {
+      const parsed = JSON.parse(raw);
+      sessionId = parsed.sessionId;
+      expiresAt = parsed.expiresAt;
+    } catch {
+      // Legacy plain-string format — treat as unexpired for one read, then it
+      // will be overwritten with the new format on the next write.
+      sessionId = raw;
+    }
+
+    if (expiresAt !== undefined && Date.now() > expiresAt) {
+      localStorage.removeItem(sessionKey(restaurantId));
+      return null;
+    }
+
+    return sessionId || null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSession(restaurantId: string, sessionId: string): void {
+  localStorage.setItem(
+    sessionKey(restaurantId),
+    JSON.stringify({ sessionId, expiresAt: Date.now() + SESSION_TTL_MS }),
+  );
+}
+
+function clearStoredSession(restaurantId: string): void {
+  localStorage.removeItem(sessionKey(restaurantId));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface CustomerDataProviderProps {
   children: React.ReactNode;
   initialSettings?: RestaurantSettings | null;
@@ -56,7 +105,7 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
     sessionStatus: 'new',
     canAddItems: false,
   });
-  
+
   const searchParams = useSearchParams();
 
   // Extract session parameters from URL
@@ -71,13 +120,16 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
 
   // Session management functions
   const checkStoredSession = async () => {
-    const storedSessionId = localStorage.getItem('coorder_session_id');
-    
+    if (!restaurantSettings?.id) return;
+    const storedSessionId = readStoredSession(restaurantSettings.id);
+
     if (storedSessionId) {
       try {
-        const response = await fetch(`/api/v1/customer/session/check?sessionId=${storedSessionId}`);
+        const response = await fetch(
+          `/api/v1/customer/session/check?sessionId=${storedSessionId}&restaurantId=${restaurantSettings.id}`
+        );
         const result = await response.json();
-        
+
         if (result.success) {
           if (result.sessionStatus === 'active') {
             setSessionData({
@@ -100,17 +152,17 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
             });
           }
         } else {
-          // Invalid session, clear it
-          localStorage.removeItem('coorder_session_id');
+          // Invalid or wrong-restaurant session — clear it
+          clearStoredSession(restaurantSettings.id);
           setSessionData({
             sessionId: null,
-            sessionStatus: 'invalid',
+            sessionStatus: 'new',
             canAddItems: false,
           });
         }
-      } catch (error) {
-        console.error('Error checking stored session:', error);
-        localStorage.removeItem('coorder_session_id');
+      } catch (err) {
+        console.error('Error checking stored session:', err);
+        clearStoredSession(restaurantSettings.id);
         setSessionData({
           sessionId: null,
           sessionStatus: 'invalid',
@@ -121,7 +173,9 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
   };
 
   const setSessionId = (sessionId: string) => {
-    localStorage.setItem('coorder_session_id', sessionId);
+    if (restaurantSettings?.id) {
+      writeStoredSession(restaurantSettings.id, sessionId);
+    }
     setSessionData(prev => ({
       ...prev,
       sessionId,
@@ -131,7 +185,9 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
   };
 
   const clearSession = () => {
-    localStorage.removeItem('coorder_session_id');
+    if (restaurantSettings?.id) {
+      clearStoredSession(restaurantSettings.id);
+    }
     setSessionData({
       sessionId: null,
       sessionStatus: 'new',
@@ -139,16 +195,19 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
     });
   };
 
-  // Check stored session when user accesses menu directly (no sessionId in URL)
-  // If session is expired, clear it instead of keeping it for auto-redirect
+  // Check stored session when user accesses menu directly (no sessionId in URL).
+  // If session is expired or belongs to another restaurant, clear it silently.
   const checkStoredSessionForDirectAccess = async () => {
-    const storedSessionId = localStorage.getItem('coorder_session_id');
-    
+    if (!restaurantSettings?.id) return;
+    const storedSessionId = readStoredSession(restaurantSettings.id);
+
     if (storedSessionId) {
       try {
-        const response = await fetch(`/api/v1/customer/session/check?sessionId=${storedSessionId}`);
+        const response = await fetch(
+          `/api/v1/customer/session/check?sessionId=${storedSessionId}&restaurantId=${restaurantSettings.id}`
+        );
         const result = await response.json();
-        
+
         if (result.success && result.sessionStatus === 'active') {
           // Only keep active sessions for direct access
           setSessionData({
@@ -160,17 +219,17 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
             guestCount: result.sessionData?.guestCount,
           });
         } else {
-          // For expired or invalid sessions, clear them when accessing menu directly
-          localStorage.removeItem('coorder_session_id');
+          // Expired, invalid, or wrong-restaurant session — clear silently
+          clearStoredSession(restaurantSettings.id);
           setSessionData({
             sessionId: null,
             sessionStatus: 'new',
             canAddItems: false,
           });
         }
-      } catch (error) {
-        console.error('Error checking stored session for direct access:', error);
-        localStorage.removeItem('coorder_session_id');
+      } catch (err) {
+        console.error('Error checking stored session for direct access:', err);
+        clearStoredSession(restaurantSettings.id);
         setSessionData({
           sessionId: null,
           sessionStatus: 'new',
@@ -221,36 +280,26 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
 
   // Check for stored session on mount and URL parameters
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // First check URL parameters for sessionId
+    if (typeof window !== 'undefined' && restaurantSettings?.id) {
       if (sessionParams.sessionId) {
-        // Set the session from URL parameter and validate it
-        setSessionData(prev => ({
-          ...prev,
-          sessionId: sessionParams.sessionId || null,
-          sessionStatus: 'active',
-          canAddItems: true,
-        }));
-        
-        // Also store it locally for persistence
-        localStorage.setItem('coorder_session_id', sessionParams.sessionId);
-        
-        // Validate the session with the server
+        // Persist to restaurant-scoped storage before validating
+        writeStoredSession(restaurantSettings.id, sessionParams.sessionId);
         validateSessionFromUrl(sessionParams.sessionId);
       } else {
-        // Check for stored session if no URL parameter
-        // If user is accessing menu page directly without sessionId, 
-        // check if stored session is active, if expired clear it
         checkStoredSessionForDirectAccess();
       }
     }
-  }, [sessionParams.sessionId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionParams.sessionId, restaurantSettings?.id]);
 
   const validateSessionFromUrl = async (urlSessionId: string) => {
+    if (!restaurantSettings?.id) return;
     try {
-      const response = await fetch(`/api/v1/customer/session/check?sessionId=${urlSessionId}`);
+      const response = await fetch(
+        `/api/v1/customer/session/check?sessionId=${urlSessionId}&restaurantId=${restaurantSettings.id}`
+      );
       const result = await response.json();
-      
+
       if (result.success) {
         if (result.sessionStatus === 'active') {
           setSessionData({
@@ -262,7 +311,6 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
             guestCount: result.sessionData?.guestCount,
           });
         } else if (result.sessionStatus === 'expired') {
-          // Session exists but is completed - set as expired, don't clear
           setSessionData({
             sessionId: urlSessionId,
             sessionStatus: 'expired',
@@ -273,16 +321,16 @@ export function CustomerDataProvider({ children, initialSettings }: CustomerData
           });
         }
       } else {
-        // Session doesn't exist - invalid session, clear it
-        localStorage.removeItem('coorder_session_id');
+        // Session doesn't exist or belongs to a different restaurant
+        clearStoredSession(restaurantSettings.id);
         setSessionData({
           sessionId: null,
           sessionStatus: 'invalid',
           canAddItems: false,
         });
       }
-    } catch (error) {
-      console.error('Error validating session from URL:', error);
+    } catch (err) {
+      console.error('Error validating session from URL:', err);
       setSessionData({
         sessionId: null,
         sessionStatus: 'invalid',

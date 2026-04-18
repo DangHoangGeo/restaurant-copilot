@@ -18,20 +18,6 @@ interface MenuDataResponse {
   lastUpdated: string;
 }
 
-interface MenuDataParams {
-  restaurantId?: string;
-  locale: string;
-  sessionId?: string;
-  tableId?: string;
-}
-
-interface MenuDataResponse {
-  categories: Category[];
-  popularItems: string[];
-  recommendations: string[];
-  lastUpdated: string;
-}
-
 // Process menu data for performance - lite variant excludes sizes/toppings
 const trimMenuItems = (categories: Category[]): Category[] => {
   return categories.map(category => ({
@@ -129,8 +115,16 @@ export function useMenuData(params: MenuDataParams) {
   // Prefetch menu item details
   const prefetchItemDetails = async (itemId: string) => {
     return queryClient.prefetchQuery({
-      queryKey: ['menu-item', itemId],
-      queryFn: () => fetchItemDetails(itemId),
+      queryKey: ['menu-item', params.restaurantId, itemId],
+      queryFn: () => fetchItemDetails(itemId, params.restaurantId),
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const getItemDetails = async (itemId: string) => {
+    return queryClient.fetchQuery({
+      queryKey: ['menu-item', params.restaurantId, itemId],
+      queryFn: () => fetchItemDetails(itemId, params.restaurantId),
       staleTime: 5 * 60 * 1000,
     });
   };
@@ -151,54 +145,38 @@ export function useMenuData(params: MenuDataParams) {
     error,
     refetch,
     isFetching,
-    prefetchItemDetails
+    prefetchItemDetails,
+    getItemDetails
   };
 }
 
 // Separate hook for item details (loaded on demand)
-const fetchItemDetails = async (itemId: string) => {
-  try {
-    // For now, we'll return basic structure as the API doesn't have item details endpoint yet
-    // In future, this could call `/api/v1/customer/menu/items/${itemId}`
-    const response = await fetch(`/api/v1/customer/menu/items/${itemId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      return {
-        ...data,
-        sizes: data.menu_item_sizes || [],
-        toppings: data.menu_item_toppings || [],
-        fullDescription: data.description_en || data.description_ja || data.description_vi || '',
-        nutritionInfo: {},
-        allergens: data.tags?.filter((tag: string) => tag.startsWith('allergen:')) || []
-      };
-    } else {
-      // Fallback for now if endpoint doesn't exist
-      return {
-        id: itemId,
-        sizes: [],
-        toppings: [],
-        fullDescription: '',
-        nutritionInfo: {},
-        allergens: []
-      };
-    }
-  } catch (error) {
-    console.warn('Item details API not available, using fallback:', error);
-    return {
-      id: itemId,
-      sizes: [],
-      toppings: [],
-      fullDescription: '',
-      nutritionInfo: {},
-      allergens: []
-    };
+const fetchItemDetails = async (itemId: string, restaurantId?: string) => {
+  const searchParams = new URLSearchParams();
+  if (restaurantId) {
+    searchParams.set('restaurantId', restaurantId);
   }
+
+  const response = await fetch(`/api/v1/customer/menu/items/${itemId}?${searchParams.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to load item details: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return {
+    ...data,
+    menu_item_sizes: data.menu_item_sizes || [],
+    toppings: data.toppings || [],
+    fullDescription: data.description_en || data.description_ja || data.description_vi || '',
+    nutritionInfo: {},
+    allergens: data.tags?.filter((tag: string) => tag.startsWith('allergen:')) || []
+  };
 };
 
 export function useMenuItemDetails(itemId: string | null) {

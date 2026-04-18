@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         id: restaurant.id,
         name: restaurant.name,
         logoUrl: restaurant.logoUrl,
+        allowOrderNotes: restaurant.allowOrderNotes ?? true,
         subdomain: restaurant.subdomain,
         branchCode: restaurant.branchCode,
         companyPublicSubdomain: restaurant.companyPublicSubdomain,
