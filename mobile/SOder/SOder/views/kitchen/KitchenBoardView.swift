@@ -112,6 +112,8 @@ struct KitchenBoardView: View {
     
     var body: some View {
         ZStack {
+            AppScreenBackground()
+
             // Main kitchen view - always visible
             VStack(spacing: 0) {
                 // Header with stats and filters
@@ -155,7 +157,7 @@ struct KitchenBoardView: View {
                             .scaleEffect(1.2)
                         Text("kitchen_loading_data".localized)
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.appTextSecondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -178,7 +180,7 @@ struct KitchenBoardView: View {
                 if let errorMessage = orderManager.errorMessage {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
+                            .foregroundColor(.appWarning)
                         Text(errorMessage)
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
@@ -196,6 +198,12 @@ struct KitchenBoardView: View {
                     }
                     .padding()
                     .background(Color.appSurface)
+                    .overlay(
+                        Rectangle()
+                            .fill(Color.appBorderLight)
+                            .frame(height: 1),
+                        alignment: .top
+                    )
                 }
             }
             
@@ -502,4 +510,3 @@ struct KitchenBoardView: View {
         .environmentObject(SupabaseManager.shared)
 }
 #endif
-

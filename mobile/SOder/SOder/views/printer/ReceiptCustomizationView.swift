@@ -5,169 +5,24 @@ struct ReceiptCustomizationView: View {
     @State private var showingPreview = false
     @State private var editingHeader: ReceiptHeaderSettings
     @State private var showSaveSuccessAlert = false
-    
-    
+
     init() {
         _editingHeader = State(initialValue: PrinterSettingsManager.shared.receiptHeader)
     }
-    
+
     var body: some View {
-        Form {
-            // Languages Section (moved here from setup)
-            Section(header: headerView(icon: "globe", title: "languages_section_title".localized)) {
-                HStack {
-                    Image(systemName: "doc.text")
-                        .foregroundColor(.appPrimary)
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text("receipt_language_title".localized)
-                            .fontWeight(.medium)
-                        Text(settingsManager.selectedReceiptLanguage.displayName)
-                            .font(.caption)
-                            .foregroundColor(.appTextSecondary)
-                    }
-                    Spacer()
-                    Picker("", selection: $settingsManager.selectedReceiptLanguage) {
-                        ForEach(PrintLanguage.allCases, id: \.self) { lang in
-                            Text(lang.displayName).tag(lang)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .accessibilityLabel("receipt_language_title".localized)
-                }
-                HStack {
-                    Image(systemName: "list.clipboard")
-                        .foregroundColor(.appPrimary)
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text("kitchen_language_title".localized)
-                            .fontWeight(.medium)
-                        Text(settingsManager.selectedKitchenLanguage.displayName)
-                            .font(.caption)
-                            .foregroundColor(.appTextSecondary)
-                    }
-                    Spacer()
-                    Picker("", selection: $settingsManager.selectedKitchenLanguage) {
-                        ForEach(PrintLanguage.allCases, id: \.self) { lang in
-                            Text(lang.displayName).tag(lang)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .accessibilityLabel("kitchen_language_title".localized)
-                }
-                Text("languages_section_help".localized)
-                    .font(.caption)
-                    .foregroundColor(.appTextSecondary)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                standardReceiptCard
+                languageSection
+                businessDetailsSection
+                optionalDetailsSection
+                actionsSection
             }
-            
-            // Restaurant Information Section
-            Section(header: headerView(icon: "building.2", title: "restaurant_information_title".localized)) {
-                TextField("restaurant_name_placeholder".localized, text: $editingHeader.restaurantName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                
-                TextField("address_placeholder".localized, text: $editingHeader.address)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                
-                TextField("phone_number_placeholder".localized, text: $editingHeader.phone)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .keyboardType(.phonePad)
-                
-                TextField("website_optional_placeholder".localized, text: $editingHeader.website)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .keyboardType(.URL)
-                    .autocapitalization(.none)
-                
-                Toggle("show_website_on_receipt".localized, isOn: $editingHeader.showWebsite)
-            }
-            
-            // Tax Information Section
-            Section(header: headerView(icon: "doc.text", title: "tax_information_title".localized)) {
-                TextField("tax_code_optional_placeholder".localized, text: $editingHeader.taxCode)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                
-                Toggle("show_tax_code_on_receipt".localized, isOn: $editingHeader.showTaxCode)
-            }
-            
-            // Footer Customization Section
-            Section(header: headerView(icon: "text.quote", title: "footer_messages_title".localized)) {
-                TextField("thank_you_message_placeholder".localized, text: $editingHeader.footerMessage)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                
-                TextField("promotional_text_optional_placeholder".localized, text: $editingHeader.promotionalText)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                
-                Toggle("show_promotional_text".localized, isOn: $editingHeader.showPromotionalText)
-            }
-            
-            // Template Theme Selection Section
-            Section(header: headerView(icon: "paintbrush", title: "receipt_theme_title".localized)) {
-                
-                Picker("receipt_style_label".localized, selection: $settingsManager.selectedReceiptTheme) {
-                    ForEach(TemplateTheme.allCases, id: \.self) { theme in
-                        VStack(alignment: .leading) {
-                            Text(theme.displayName)
-                                .font(.headline)
-                        }
-                        .tag(theme)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                
-                Picker("kitchen_order_style_label".localized, selection: $settingsManager.selectedKitchenTheme) {
-                    ForEach(TemplateTheme.allCases, id: \.self) { theme in
-                        VStack(alignment: .leading) {
-                            Text(theme.displayName)
-                                .font(.headline)
-                        }
-                        .tag(theme)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                
-                Text("template_theme_help".localized)
-                    .font(.caption)
-                    .foregroundColor(.appTextSecondary)
-            }
-            
-            Section("encoding_settings".localized) {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    HStack {
-                        Image(systemName: "textformat")
-                            .foregroundColor(.appPrimary)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("receipt_encoding_strategy".localized)
-                                .fontWeight(.medium)
-                            
-                            let strategy = settingsManager.getStrategy(for: nil, target: .receipt)
-                            let currentLanguage = settingsManager.selectedReceiptLanguage
-                            let currentEncoding = PrinterConfig.EncodingUtils.getEncoding(for: currentLanguage, strategy: strategy)
-                            
-                            Text(getEncodingDisplayName(currentEncoding, strategy: strategy, language: currentLanguage))
-                                .font(.caption)
-                                .foregroundColor(.appTextSecondary)
-                        }
-                        Spacer()
-                    }
-                }
-                
-                Text("encoding_strategy_description".localized)
-                    .font(.caption)
-                    .foregroundColor(.appTextSecondary)
-            }
-            
-            // Removed: Custom Template editor and Template Help sections
-            
-            // Actions
-            Section("actions".localized) {
-                Button {
-                    persistSettings(showAlert: false)
-                    showingPreview = true
-                } label: {
-                    Label("save_and_preview".localized, systemImage: "checkmark.circle")
-                }
-                .buttonStyle(PrimaryButtonStyle())
-                .accessibilityLabel("save_and_preview".localized)
-                .accessibilityHint("save_and_preview_hint".localized)
-            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.lg)
         }
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("receipt_customization".localized)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
@@ -187,54 +42,161 @@ struct ReceiptCustomizationView: View {
             Text("receipt_settings_saved_message".localized)
         }
         .onAppear {
+            settingsManager.syncFromCurrentRestaurant()
             loadCurrentSettings()
         }
     }
-    
+
     private func loadCurrentSettings() {
         editingHeader = settingsManager.receiptHeader
     }
-    
-    @ViewBuilder
-    private func headerView(icon: String, title: String) -> some View {
-        HStack {
+
+    private var standardReceiptCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("printer_standard_receipt_title".localized)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+
+            Text("printer_standard_receipt_subtitle".localized)
+                .font(.bodyMedium)
+                .foregroundColor(.appTextSecondary)
+
+            Button {
+                settingsManager.syncFromCurrentRestaurant()
+                editingHeader = settingsManager.receiptHeader
+            } label: {
+                HStack {
+                    Image(systemName: "arrow.clockwise")
+                    Text("receipt_header_auto_fetch_button".localized)
+                }
+            }
+            .buttonStyle(SecondaryButtonStyle())
+        }
+        .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.xl, surfaceColor: Color.appSurface.opacity(0.94))
+    }
+
+    private var languageSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            sectionHeader(title: "languages_section_title".localized, icon: "globe")
+
+            simplePickerRow(
+                icon: "doc.text",
+                title: "receipt_language_title".localized,
+                selection: $settingsManager.selectedReceiptLanguage
+            )
+
+            simplePickerRow(
+                icon: "list.clipboard",
+                title: "kitchen_language_title".localized,
+                selection: $settingsManager.selectedKitchenLanguage
+            )
+        }
+    }
+
+    private var businessDetailsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            sectionHeader(title: "restaurant_information_title".localized, icon: "building.2")
+
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                TextField("restaurant_name_placeholder".localized, text: $editingHeader.restaurantName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                TextField("address_placeholder".localized, text: $editingHeader.address)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                TextField("phone_number_placeholder".localized, text: $editingHeader.phone)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.phonePad)
+
+                TextField("website_optional_placeholder".localized, text: $editingHeader.website)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.URL)
+                    .textInputAutocapitalization(.never)
+
+                Toggle("show_website_on_receipt".localized, isOn: $editingHeader.showWebsite)
+                    .toggleStyle(SwitchToggleStyle(tint: .appPrimary))
+            }
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+        }
+    }
+
+    private var optionalDetailsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            sectionHeader(title: "printer_optional_details_title".localized, icon: "slider.horizontal.3")
+
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                TextField("tax_code_optional_placeholder".localized, text: $editingHeader.taxCode)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                Toggle("show_tax_code_on_receipt".localized, isOn: $editingHeader.showTaxCode)
+                    .toggleStyle(SwitchToggleStyle(tint: .appPrimary))
+
+                TextField("thank_you_message_placeholder".localized, text: $editingHeader.footerMessage)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+            }
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+        }
+    }
+
+    private var actionsSection: some View {
+        VStack(spacing: Spacing.md) {
+            Button {
+                persistSettings(showAlert: false)
+                showingPreview = true
+            } label: {
+                HStack {
+                    Image(systemName: "doc.text.magnifyingglass")
+                    Text("save_and_preview".localized)
+                }
+            }
+            .buttonStyle(PrimaryButtonStyle())
+
+            Text("printer_receipt_preview_help".localized)
+                .font(.caption)
+                .foregroundColor(.appTextSecondary)
+        }
+    }
+
+    private func sectionHeader(title: String, icon: String) -> some View {
+        HStack(spacing: Spacing.sm) {
             Image(systemName: icon)
                 .foregroundColor(.appPrimary)
             Text(title)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
         }
     }
-    
+
+    private func simplePickerRow(
+        icon: String,
+        title: String,
+        selection: Binding<PrintLanguage>
+    ) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(.appPrimary)
+
+            Text(title)
+                .font(.bodyMedium.weight(.semibold))
+                .foregroundColor(.appTextPrimary)
+
+            Spacer()
+
+            Picker("", selection: selection) {
+                ForEach(PrintLanguage.allCases, id: \.self) { language in
+                    Text(language.displayName).tag(language)
+                }
+            }
+            .pickerStyle(.menu)
+        }
+        .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+    }
+
     private func persistSettings(showAlert: Bool) {
+        settingsManager.setReceiptTheme(.standard)
+        settingsManager.setKitchenTheme(.standard)
         settingsManager.updateReceiptHeader(editingHeader)
         if showAlert { showSaveSuccessAlert = true }
-    }
-    
-    private func getEncodingDisplayName(_ encoding: String.Encoding, strategy: PrinterConfig.EncodingUtils.Strategy, language: PrintLanguage) -> String {
-        let encodingName: String
-        switch encoding {
-        case .utf8:
-            encodingName = "UTF-8"
-        case .shiftJIS:
-            encodingName = "Shift JIS"
-        case .japaneseEUC:
-            encodingName = "Japanese EUC"
-        case .iso2022JP:
-            encodingName = "ISO 2022 JP"
-        default:
-            encodingName = "Unknown"
-        }
-        
-        let strategyName: String
-        switch strategy {
-        case .utf8Primary:
-            strategyName = "encoding_strategy_utf8_primary".localized
-        case .utf8Fallback:
-            strategyName = "encoding_strategy_utf8_fallback".localized
-        case .legacyEncoding:
-            strategyName = "encoding_strategy_legacy".localized
-        }
-        
-        return "\(encodingName) (\(strategyName))"
     }
 }
 

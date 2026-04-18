@@ -18,23 +18,29 @@ struct OrderSidebarHeaderView: View {
             filterPills
             newOrderButton
         }
-        .padding(.horizontal)
+        .padding(.horizontal, Spacing.md)
         .padding(.top, Spacing.md)
         .padding(.bottom, Spacing.lg)
         .background(Color.appSurface)
-        .overlay(Divider(), alignment: .bottom)
+        .overlay(
+            Rectangle()
+                .fill(Color.appBorderLight)
+                .frame(height: 1),
+            alignment: .bottom
+        )
     }
 
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
+                AppSectionEyebrow("live operations")
                 if let restaurantName = supabaseManager.currentRestaurant?.name {
                     Text(restaurantName)
-                        .font(.title2.weight(.bold))
+                        .font(.cardTitle)
                         .foregroundColor(.appTextPrimary)
                 } else {
                     Text("orders".localized)
-                        .font(.title2.weight(.bold))
+                        .font(.cardTitle)
                         .foregroundColor(.appTextPrimary)
                 }
             }
@@ -70,7 +76,16 @@ struct OrderSidebarHeaderView: View {
 
                 Button("orders_sign_out".localized, action: onSignOut)
             } label: {
-                Image(systemName: "ellipsis.circle").font(.title2)
+                Image(systemName: "ellipsis")
+                    .font(.title3)
+                    .foregroundColor(.appTextPrimary)
+                    .frame(width: 44, height: 44)
+                    .background(Color.appSurfaceSecondary)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.appBorderLight, lineWidth: 1)
+                    )
+                    .clipShape(Circle())
             }
         }
     }
@@ -96,13 +111,7 @@ struct OrderSidebarHeaderView: View {
                 Image(systemName: "plus.circle")
                 Text("tab_new_order".localized)
             }
-            .font(.buttonMedium)
-            .foregroundColor(.white)
-            .padding(.vertical, Spacing.md)
-            .frame(maxWidth: .infinity)
-            .background(Color.appPrimary)
-            .cornerRadius(CornerRadius.md)
-            .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
         }
+        .buttonStyle(PrimaryButtonStyle())
     }
 }

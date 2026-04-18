@@ -67,20 +67,20 @@ struct EnhancedStatusBadge: View {
     
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: display.icon)
-                .font(.caption2)
-                .fontWeight(.semibold)
+            Circle()
+                .fill(display.color)
+                .frame(width: 8, height: 8)
             Text(display.text)
-                .fontWeight(.semibold)
+                .tracking(1.8)
         }
-        .font(.caption)
+        .font(.monoLabel)
         .padding(.horizontal, Spacing.sm)
         .padding(.vertical, 6)
         .background(display.backgroundColor)
         .foregroundColor(display.color)
-        .cornerRadius(12)
+        .cornerRadius(14)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(display.color.opacity(0.2), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
@@ -142,40 +142,26 @@ struct FilterChip: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.xs) {
-                Text(title)
-                    .fontWeight(.semibold)
-                
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.captionBold)
-                        .foregroundColor(isSelected ? .white : color)
-                        .padding(.horizontal, Spacing.xs)
-                        .padding(.vertical, 2)
-                        .background(
-                            Capsule()
-                                .fill(isSelected ? .white.opacity(0.25) : color.opacity(0.15))
-                        )
-                }
+            HStack(spacing: Spacing.sm) {
+                Text(title.uppercased())
+                    .font(.monoLabel)
+                    .tracking(1.4)
+
+                Text("\(count)")
+                    .font(.monoLabel)
+                    .foregroundColor(isSelected ? .appOnHighlight : .appTextSecondary)
             }
-            .font(.buttonMedium)
             .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.sm)
+            .padding(.vertical, Spacing.md)
             .background(
-                Capsule()
-                    .fill(isSelected ? color : Color.appSurface)
-                    .shadow(
-                        color: isSelected ? color.opacity(0.3) : Elevation.level1.color,
-                        radius: isSelected ? 3 : Elevation.level1.radius,
-                        y: isSelected ? 2 : Elevation.level1.y
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .fill(isSelected ? Color.appHighlight : Color.appSurfaceSecondary)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.md)
+                            .stroke(isSelected ? Color.clear : Color.appBorderLight, lineWidth: 1)
                     )
             )
-            .foregroundColor(isSelected ? .white : color)
-            .overlay(
-                Capsule()
-                    .stroke(isSelected ? Color.clear : color.opacity(0.3), lineWidth: 1)
-            )
-            .scaleEffect(isSelected ? 1.0 : 0.95)
+            .foregroundColor(isSelected ? .appOnHighlight : .appTextSecondary)
             .animation(.easeInOut(duration: Motion.fast), value: isSelected)
         }
         .buttonStyle(PlainButtonStyle())
@@ -191,20 +177,21 @@ struct EmptyOrdersView: View {
         VStack(spacing: 20) {
             Image(systemName: emptyStateIcon)
                 .font(.system(size: 60))
-                .foregroundColor(.gray.opacity(0.6))
+                .foregroundColor(.appTextTertiary)
             
             Text(emptyStateTitle)
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
+                .font(.cardTitle)
+                .foregroundColor(.appTextPrimary)
             
             Text(emptyStateMessage)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(.bodyMedium)
+                .foregroundColor(.appTextSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .appPanel(padding: Spacing.xl, cornerRadius: CornerRadius.xl)
+        .padding(.horizontal, Spacing.md)
     }
     
     private var emptyStateIcon: String {
@@ -262,99 +249,56 @@ struct OrderRowView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            // Header with table info and status
             HStack(alignment: .top, spacing: Spacing.md) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    // Table name and new badge
                     HStack(spacing: Spacing.sm) {
                         Text(order.table?.name ?? String(format: "orders_table_format".localized, order.table_id))
                             .font(.cardTitle)
-                            .fontWeight(.bold)
                             .foregroundColor(.appTextPrimary)
                         
                         if isNew {
                             Text("orders_new_badge".localized)
                                 .font(.captionBold)
-                                .foregroundColor(.white)
+                                .foregroundColor(.appError)
                                 .padding(.horizontal, Spacing.sm)
                                 .padding(.vertical, 4)
                                 .background(
                                     Capsule()
-                                        .fill(Color.appInfo)
-                                        .shadow(color: Color.appInfo.opacity(0.3), radius: 2, y: 1)
+                                        .fill(Color.appErrorLight)
                                 )
                         }
                         
                         Spacer()
                     }
                     
-                    // Order metadata
-                    HStack(spacing: Spacing.md) {
-                        Label("\(order.guest_count ?? 1)", systemImage: "person.2")
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextTertiary)
-                        
-                        Label(formatTime(order.created_at), systemImage: "clock")
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextTertiary)
-                        
-                        // Order ID for staff reference
-                        Text(String(format: "orders_id_format".localized, String(order.id.prefix(6).uppercased())))
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextTertiary)
-                            .padding(.horizontal, Spacing.xs)
-                            .padding(.vertical, 2)
-                            .background(Color.appBackground)
-                            .cornerRadius(4)
-                    }
+                    Text("\(String(format: "orders_id_format".localized, String(order.id.suffix(6)).uppercased())) • \(formatTime(order.created_at))")
+                        .font(.monoCaption)
+                        .foregroundColor(.appTextSecondary)
                 }
                 
                 VStack(alignment: .trailing, spacing: Spacing.xs) {
                     EnhancedStatusBadge(status: order.status)
-                    
-                    if let total = order.total_amount {
-                        Text(String(format: "price_format".localized, total))
-                            .font(.bodyMedium)
-                            .fontWeight(.bold)
-                            .foregroundColor(.appTextPrimary)
-                    }
                 }
             }
             
-            // Order items preview with better styling
             if let items = order.order_items?.prefix(2) {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
                     ForEach(Array(items), id: \.id) { item in
                         HStack(spacing: Spacing.sm) {
-                            // Quantity badge
-                            Text("\(item.quantity)")
-                                .font(.captionBold)
+                            Text("\(item.quantity)x")
+                                .font(.monoLabel)
                                 .foregroundColor(.appTextSecondary)
-                                .frame(width: 20, height: 20)
-                                .background(Circle().fill(Color.appSurfaceSecondary))
-                            
-                            // Item info
-                            HStack(spacing: Spacing.xs) {
-                                if let code = item.menu_item?.code, !code.isEmpty {
-                                    Text(code)
-                                        .font(.captionBold)
-                                        .foregroundColor(.appPrimary)
-                                }
-                                
-                                Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
-                                    .font(.captionRegular)
-                                    .foregroundColor(.appTextSecondary)
-                                    .lineLimit(1)
-                            }
+
+                            Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
+                                .font(.bodyMedium)
+                                .foregroundColor(.appTextPrimary)
+                                .lineLimit(1)
                             
                             Spacer()
-                            
-                            OrderItemStatusBadge(status: item.status)
                         }
                         .padding(.vertical, 2)
                     }
                     
-                    // Show more items indicator
                     if let totalItems = order.order_items?.count, totalItems > 2 {
                         HStack {
                             Image(systemName: "ellipsis")
@@ -369,12 +313,29 @@ struct OrderRowView: View {
                         .padding(.top, Spacing.xs)
                     }
                 }
-                .padding(Spacing.sm)
-                .background(Color.appSurfaceSecondary)
-                .cornerRadius(CornerRadius.sm)
+                .padding(.top, Spacing.sm)
+                .overlay(alignment: .top) {
+                    Rectangle()
+                        .fill(Color.appBorderLight.opacity(0.7))
+                        .frame(height: 1)
+                }
+            }
+
+            HStack {
+                if let total = order.total_amount {
+                    Text(String(format: "price_format".localized, total))
+                        .font(.metricValue)
+                        .foregroundColor(.appTextPrimary)
+                }
+
+                Spacer()
+
+                Text("OPEN")
+                    .font(.monoLabel)
+                    .foregroundColor(.appTextSecondary)
             }
         }
-        .elevatedCardStyle(padding: Spacing.md, cornerRadius: CornerRadius.md)
+        .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
     }
@@ -465,8 +426,12 @@ struct SkeletonOrderRow: View {
         .padding(.vertical, Spacing.sm)
         .padding(.horizontal, Spacing.md)
         .background(Color.appSurface)
-        .cornerRadius(CornerRadius.md)
+        .cornerRadius(CornerRadius.lg)
         .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                .stroke(Color.appBorderLight, lineWidth: 1)
+        )
         .accessibilityHidden(true)
     }
 }

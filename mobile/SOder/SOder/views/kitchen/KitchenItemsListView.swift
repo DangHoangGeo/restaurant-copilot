@@ -106,33 +106,89 @@ struct KitchenHeaderView: View {
     @EnvironmentObject var orderManager: OrderManager
     
     var body: some View {
-        VStack(spacing: 8) {
-            // Compact header with essential info only
-            HStack {
-                // Simplified title with urgent indicator
-                HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    AppSectionEyebrow("live kitchen")
+
                     Text("kitchen".localized)
-                        .font(.sectionHeader)
-                        .fontWeight(.semibold)
+                        .font(.heroTitle)
                         .foregroundColor(.appTextPrimary)
-                    
+
+                    Text(
+                        urgentItemsCount > 0
+                            ? String(format: "kitchen_header_urgent_subtitle".localized, urgentItemsCount)
+                            : String(format: "kitchen_header_subtitle".localized, totalItemsCount)
+                    )
+                    .font(.bodyMedium)
+                    .foregroundColor(.appTextSecondary)
+                }
+
+                Spacer()
+
+                HStack(spacing: Spacing.sm) {
+                    if orderManager.autoPrintingEnabled {
+                        AppHeaderPill("AUTO")
+                    }
+
                     if urgentItemsCount > 0 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.appError)
-                            Text("\(urgentItemsCount)")
-                                .font(.captionRegular)
-                                .foregroundColor(.appError)
-                        }
-                        .padding(Spacing.xs)
-                        .background(Color.appError.opacity(0.1))
-                        .cornerRadius(CornerRadius.sm)
+                        AppHeaderPill("\(urgentItemsCount)")
                     }
                 }
-                
-                Spacer()
-                
-                // Compact menu with essential actions
+            }
+
+            HStack(spacing: Spacing.sm) {
+                Button(action: onRefresh) {
+                    HStack {
+                        Image(systemName: "arrow.clockwise")
+                        Text("kitchen_refresh".localized)
+                    }
+                }
+                .buttonStyle(SecondaryButtonStyle())
+
+                Button(action: onPrintSummary) {
+                    HStack {
+                        Image(systemName: "printer.fill")
+                        Text("kitchen_print_summary".localized)
+                    }
+                }
+                .buttonStyle(SecondaryButtonStyle())
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.sm) {
+                    ForEach(KitchenViewMode.allCases, id: \.self) { mode in
+                        viewModeChip(mode: mode)
+                    }
+                }
+            }
+
+            HStack {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        let allLabel = "kitchen_all".localized
+                        CategoryFilterChip(
+                            title: allLabel,
+                            count: totalItemsCount,
+                            isSelected: selectedCategoryFilter == allLabel,
+                            color: .appPrimary
+                        ) {
+                            onCategoryFilterChange(allLabel)
+                        }
+                        
+                        ForEach(categories.sorted(), id: \.self) { category in
+                            CategoryFilterChip(
+                                title: category,
+                                count: countForCategory(category),
+                                isSelected: selectedCategoryFilter == category,
+                                color: KitchenBoardConfig.colorForCategory(category)
+                            ) {
+                                onCategoryFilterChange(category)
+                            }
+                        }
+                    }
+                }
+
                 Menu {
                     ForEach(KitchenViewMode.allCases, id: \.self) { mode in
                         Button {
@@ -189,55 +245,38 @@ struct KitchenHeaderView: View {
                         onSignOut()
                     }
                 } label: {
-                    HStack {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.title2)
-                            .foregroundColor(.primary)
-                        
-                        // Show auto-print indicator
-                        if orderManager.autoPrintingEnabled {
-                            Image(systemName: "printer.fill")
-                                .foregroundColor(.appSuccess)
-                                .font(.caption)
-                        }
-                    }
+                    Image(systemName: "ellipsis.circle")
+                        .font(.title2)
+                        .foregroundColor(.appTextPrimary)
                 }
-            }
-            
-            // Category Filter Pills - the most important for chefs
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    let allLabel = "kitchen_all".localized
-                    CategoryFilterChip(
-                        title: allLabel,
-                        count: totalItemsCount,
-                        isSelected: selectedCategoryFilter == allLabel,
-                        color: .appPrimary
-                    ) {
-                        onCategoryFilterChange(allLabel)
-                    }
-                    
-                    ForEach(categories.sorted(), id: \.self) { category in
-                        CategoryFilterChip(
-                            title: category,
-                            count: countForCategory(category),
-                            isSelected: selectedCategoryFilter == category,
-                            color: KitchenBoardConfig.colorForCategory(category)
-                        ) {
-                            onCategoryFilterChange(category)
-                        }
-                    }
-                }
-                .padding(.horizontal)
             }
         }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-        .background(Color.appSurface)
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.sm)
+        .background(Color.clear)
     }
     
     private func countForCategory(_ category: String) -> Int {
         return categoryCounts[category] ?? 0
+    }
+
+    private func viewModeChip(mode: KitchenViewMode) -> some View {
+        Button {
+            onViewModeChange(mode)
+        } label: {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: mode.icon)
+                Text(mode.displayName)
+            }
+            .font(.captionBold)
+            .foregroundColor(viewMode == mode ? .appOnHighlight : .appTextPrimary)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
+            .background(viewMode == mode ? Color.appHighlight : Color.appSurface)
+            .cornerRadius(CornerRadius.md)
+        }
+        .buttonStyle(.plain)
     }
 }
 

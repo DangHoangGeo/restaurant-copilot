@@ -12,7 +12,7 @@ struct MainTabView: View {
             OrdersView()
                 .environmentObject(printerManager)
                 .tabItem {
-                    Label("tab_orders".localized, systemImage: "list.bullet.rectangle.portrait")
+                    Label("tab_orders".localized, systemImage: "list.bullet")
                 }
                 .tag(0)
             
@@ -20,7 +20,7 @@ struct MainTabView: View {
             KitchenBoardView()
                 .environmentObject(printerManager)
                 .tabItem {
-                    Label("tab_kitchen".localized, systemImage: "flame")
+                    Label("tab_kitchen".localized, systemImage: "square.grid.2x2")
                 }
                 .tag(1)
 
@@ -40,10 +40,8 @@ struct MainTabView: View {
                 }
                 .tag(3)
 
-
-
         }
-        .accentColor(Color.appAccent)
+        .tint(Color.appHighlight)
     }
 }
 

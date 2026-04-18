@@ -12,6 +12,7 @@ struct LoginView: View {
     @State private var errorMessage = ""
     @State private var showError = false
     @State private var showLanguageSelector = false
+    @State private var animateIn = false
 
     @FocusState private var focusedField: LoginField?
 
@@ -28,33 +29,37 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - Main Content
-
     private var contentView: some View {
         ZStack {
-            // Subtle tinted background consistent with welcome screen palette
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color.appWelcomeGradientStart.opacity(0.05),
-                    Color.appBackground,
-                    Color.appAccent.opacity(0.04)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            AppScreenBackground()
 
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: Spacing.lg) {
-                    languageSelectorRow
-                    headerSection
+                    topBar
+
+                    AuthHeroCluster(
+                        variant: .signIn,
+                        subtitle: "sign_in".localized
+                    )
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.top, Spacing.sm)
+                    .scaleEffect(animateIn ? 1 : 0.96)
+                    .opacity(animateIn ? 1 : 0)
+
                     if showError && !errorMessage.isEmpty {
                         errorBanner
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
+
                     formCard
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 24)
+
                     legalFooter
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 20)
                 }
+                .padding(.bottom, Spacing.xxl)
                 .animation(.spring(response: 0.4, dampingFraction: 0.75), value: showError)
             }
             .scrollDismissesKeyboard(.interactively)
@@ -64,79 +69,46 @@ struct LoginView: View {
             LanguageSelectorView()
                 .environmentObject(localizationManager)
         }
-        .onAppear { loadSavedCredentials() }
+        .onAppear {
+            loadSavedCredentials()
+            withAnimation(.spring(response: 0.72, dampingFraction: 0.84)) {
+                animateIn = true
+            }
+        }
     }
 
-    // MARK: - Language Selector
-
-    private var languageSelectorRow: some View {
+    private var topBar: some View {
         HStack {
             Spacer()
-            Button(action: { showLanguageSelector = true }) {
-                HStack(spacing: Spacing.xs) {
-                    Image(systemName: "globe")
-                        .font(.system(size: 13, weight: .medium))
-                    Text(localizationManager.supportedLanguageNames[localizationManager.currentLanguage] ?? "English")
-                        .font(.system(size: 13, weight: .medium))
-                }
-                .foregroundColor(.appPrimary)
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, Spacing.sm)
-                .background(Color.appPrimary.opacity(0.08))
-                .cornerRadius(CornerRadius.lg)
-            }
+
+            AuthLanguageButton(
+                title: localizationManager.supportedLanguageNames[localizationManager.currentLanguage] ?? "English",
+                action: { showLanguageSelector = true }
+            )
             .accessibilityLabel("language_selector".localized)
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.top, Spacing.sm)
     }
 
-    // MARK: - Header
-
-    private var headerSection: some View {
-        VStack(spacing: Spacing.sm) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.appPrimary.opacity(0.12), Color.appPrimary.opacity(0.04)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 88, height: 88)
-                Image(systemName: "fork.knife.circle.fill")
-                    .font(.system(size: 44))
-                    .foregroundColor(.appPrimary)
-            }
-            VStack(spacing: 4) {
-                Text("login_title".localized)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.appTextPrimary)
-                Text("login_subtitle".localized)
-                    .font(.bodyMedium)
-                    .foregroundColor(.appTextSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.lg)
-            }
-        }
-        .padding(.top, Spacing.md)
-    }
-
-    // MARK: - Error Banner
-
     private var errorBanner: some View {
         HStack(spacing: Spacing.sm) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.body)
                 .foregroundColor(.appError)
+
             Text(errorMessage)
                 .font(.bodyMedium)
                 .foregroundColor(.appError)
                 .fixedSize(horizontal: false, vertical: true)
+
             Spacer()
+
             Button(action: {
-                withAnimation { showError = false; errorMessage = "" }
+                withAnimation {
+                    showError = false
+                    errorMessage = ""
+                }
             }) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.body)
@@ -146,24 +118,20 @@ struct LoginView: View {
         }
         .padding(Spacing.md)
         .background(Color.appErrorLight)
-        .cornerRadius(CornerRadius.md)
+        .cornerRadius(CornerRadius.lg)
         .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.md)
-                .stroke(Color.appError.opacity(0.25), lineWidth: 1)
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                .stroke(Color.appError.opacity(0.3), lineWidth: 1)
         )
         .padding(.horizontal, Spacing.md)
         .accessibilityElement(children: .combine)
     }
 
-    // MARK: - Form Card
-
     private var formCard: some View {
         VStack(spacing: Spacing.md) {
-            // Branch Code / Workspace field
             formField(
                 label: "branch_code".localized,
                 icon: "building.2.fill",
-                hint: "branch_code_hint".localized,
                 isFocused: focusedField == .branchCode
             ) {
                 TextField("branch_code_placeholder".localized, text: $branchCode)
@@ -176,7 +144,6 @@ struct LoginView: View {
                     .accessibilityLabel("branch_code".localized)
             }
 
-            // Email field
             formField(
                 label: "email".localized,
                 icon: "envelope.fill",
@@ -193,7 +160,6 @@ struct LoginView: View {
                     .accessibilityLabel("email".localized)
             }
 
-            // Password field with show/hide toggle
             formField(
                 label: "password".localized,
                 icon: "lock.fill",
@@ -238,13 +204,25 @@ struct LoginView: View {
         .padding(.horizontal, Spacing.md)
     }
 
-    // MARK: - Form Field Builder
+    private var legalFooter: some View {
+        HStack(spacing: Spacing.xs) {
+            Link("terms_of_service".localized, destination: legalURL(path: "terms"))
+                .foregroundColor(.appTextSecondary)
+
+            Text("·")
+                .foregroundColor(.appTextTertiary)
+
+            Link("privacy_policy".localized, destination: legalURL(path: "privacy"))
+                .foregroundColor(.appTextSecondary)
+        }
+        .font(.captionRegular)
+        .padding(.bottom, Spacing.md)
+    }
 
     @ViewBuilder
     private func formField<Content: View>(
         label: String,
         icon: String,
-        hint: String? = nil,
         isFocused: Bool,
         @ViewBuilder trailingIcon: () -> some View = { EmptyView() },
         @ViewBuilder content: () -> Content
@@ -257,88 +235,52 @@ struct LoginView: View {
             HStack(spacing: Spacing.sm) {
                 Image(systemName: icon)
                     .font(.system(size: 16))
-                    .foregroundColor(isFocused ? .appPrimary : .appTextSecondary)
+                    .foregroundColor(isFocused ? .appHighlight : .appTextSecondary)
                     .frame(width: 20)
                     .animation(.easeInOut(duration: 0.15), value: isFocused)
 
                 content()
+                    .foregroundColor(.appTextPrimary)
 
                 trailingIcon()
             }
             .padding(Spacing.md)
-            .background(Color.appSurface)
+            .background(Color.appSurfaceSecondary)
             .cornerRadius(CornerRadius.md)
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.md)
                     .stroke(
-                        isFocused ? Color.appPrimary : Color.appBorder,
+                        isFocused ? Color.appHighlightSoft : Color.appBorder,
                         lineWidth: isFocused ? 2 : 1
                     )
                     .animation(.easeInOut(duration: 0.18), value: isFocused)
             )
             .shadow(
-                color: isFocused ? Color.appPrimary.opacity(0.1) : Elevation.level1.color,
+                color: isFocused ? Color.appHighlight.opacity(0.12) : Elevation.level1.color,
                 radius: isFocused ? 6 : 2,
                 y: 1
             )
             .animation(.easeInOut(duration: 0.18), value: isFocused)
-
-            if let hint = hint {
-                HStack(spacing: Spacing.xs) {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 10))
-                    Text(hint)
-                        .font(.captionRegular)
-                }
-                .foregroundColor(.appTextTertiary)
-                .padding(.leading, 2)
-            }
         }
     }
-
-    // MARK: - Sign In Button
 
     private var signInButton: some View {
         Button(action: { Task { await signIn() } }) {
             HStack(spacing: Spacing.sm) {
                 if isLoading {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .progressViewStyle(CircularProgressViewStyle(tint: .appOnHighlight))
                         .scaleEffect(0.9)
                 } else {
                     Image(systemName: "arrow.right.circle.fill")
                         .font(.system(size: 18))
                 }
+
                 Text(isLoading ? "signing_in".localized : "sign_in".localized)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.buttonLarge)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .background(
-                Group {
-                    if isFormValid && !isLoading {
-                        LinearGradient(
-                            colors: [Color.appPrimary, Color.appPrimary.opacity(0.82)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    } else {
-                        LinearGradient(
-                            colors: [Color.appDisabled, Color.appDisabled],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    }
-                }
-            )
-            .foregroundColor(.white)
-            .cornerRadius(CornerRadius.lg)
-            .shadow(
-                color: isFormValid ? Color.appPrimary.opacity(0.32) : Color.clear,
-                radius: 10,
-                y: 5
-            )
         }
+        .buttonStyle(PrimaryButtonStyle(isEnabled: isFormValid && !isLoading))
         .disabled(!isFormValid || isLoading)
         .scaleEffect(isLoading ? 0.98 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isLoading)
@@ -346,23 +288,15 @@ struct LoginView: View {
         .accessibilityLabel("sign_in".localized)
     }
 
-    // MARK: - Legal Footer
-
-    private var legalFooter: some View {
-        Text("login_legal_footer".localized)
-            .font(.captionRegular)
-            .foregroundColor(.appTextTertiary)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, Spacing.xl)
-            .padding(.bottom, Spacing.md)
-    }
-
-    // MARK: - Helpers
-
     private var isFormValid: Bool {
         !branchCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !password.isEmpty
+    }
+
+    private func legalURL(path: String) -> URL {
+        let locale = localizationManager.currentLanguage
+        return URL(string: "https://coorder.ai/\(locale)/\(path)")!
     }
 
     private func loadSavedCredentials() {
@@ -375,7 +309,10 @@ struct LoginView: View {
         guard isFormValid else { return }
         focusedField = nil
         isLoading = true
-        withAnimation { showError = false; errorMessage = "" }
+        withAnimation {
+            showError = false
+            errorMessage = ""
+        }
 
         do {
             let trimmedBranchCode = branchCode.trimmingCharacters(in: .whitespacesAndNewlines)

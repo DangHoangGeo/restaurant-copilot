@@ -2,139 +2,82 @@ import SwiftUI
 
 struct TableQRPrintView: View {
     let table: Table
+
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var printerManager: PrinterManager
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
+    @StateObject private var supabaseManager = SupabaseManager.shared
     @State private var isPrinting = false
     @State private var showSuccessAlert = false
     @State private var showErrorAlert = false
     @State private var errorMessage = ""
-    @State private var isViewReady = false
 
     private var qrCodeUrl: String {
-        // Construct the QR code URL
-        let rootDomain = "coorder.ai" // This should ideally come from config
-        let subdomain = settingsManager.restaurantSettings.name
+        let rootDomain = "coorder.ai"
+        let subdomain = resolvedSubdomain
+
+        if let qrCode = table.qr_code, !qrCode.isEmpty {
+            return "https://\(subdomain).\(rootDomain)/en/menu?code=\(qrCode)"
+        }
+
+        return "https://\(subdomain).\(rootDomain)/en/menu"
+    }
+
+    private var resolvedSubdomain: String {
+        if let branchSubdomain = supabaseManager.currentRestaurant?.subdomain, !branchSubdomain.isEmpty {
+            return branchSubdomain
+        }
+
+        let fallbackName = settingsManager.receiptHeader.restaurantName.isEmpty
+            ? settingsManager.restaurantSettings.name
+            : settingsManager.receiptHeader.restaurantName
+
+        let sanitized = fallbackName
             .lowercased()
             .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "[^a-z0-9-]", with: "", options: .regularExpression)
 
-        if let qrCode = table.qr_code {
-            return "https://\(subdomain).\(rootDomain)/en/menu?code=\(qrCode)"
-        } else {
-            return "https://\(subdomain).\(rootDomain)/en/menu"
-        }
+        return sanitized.isEmpty ? "restaurant" : sanitized
+    }
+
+    private var displayRestaurantName: String {
+        settingsManager.receiptHeader.restaurantName.isEmpty
+            ? (supabaseManager.currentRestaurant?.name ?? settingsManager.restaurantSettings.name)
+            : settingsManager.receiptHeader.restaurantName
     }
 
     var body: some View {
         NavigationView {
-            Group {
-                if isViewReady {
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            // Preview Card
-                            PreviewCard(
-                                restaurantName: settingsManager.restaurantSettings.name,
-                                tableName: table.name,
-                                qrCodeUrl: qrCodeUrl,
-                                wifiSsid: settingsManager.restaurantSettings.wifiSsid,
-                                wifiPassword: settingsManager.restaurantSettings.wifiPassword
-                            )
-                            .padding()
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    previewCard
+                    tableDetailsCard
 
-                    // Table Information
-                    GroupBox {
-                        VStack(alignment: .leading, spacing: 12) {
-                            InfoRow(label: "tables_print_table_name".localized, value: table.name)
-                            InfoRow(label: "tables_print_capacity".localized, value: "\(table.capacity)")
-                            InfoRow(label: "tables_print_status".localized, value: table.status.displayName)
-
-                            if let notes = table.notes, !notes.isEmpty {
-                                InfoRow(label: "tables_print_notes".localized, value: notes)
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    } label: {
-                        Label("tables_print_info".localized, systemImage: "info.circle")
-                    }
-                    .padding(.horizontal)
-
-                    // WiFi Information
-                    if let ssid = settingsManager.restaurantSettings.wifiSsid,
-                       !ssid.isEmpty {
-                        GroupBox {
-                            VStack(alignment: .leading, spacing: 12) {
-                                InfoRow(label: "tables_print_wifi_ssid".localized, value: ssid)
-                                if let password = settingsManager.restaurantSettings.wifiPassword, !password.isEmpty {
-                                    InfoRow(label: "tables_print_wifi_password".localized, value: password)
-                                }
-                            }
-                            .padding(.vertical, 4)
-                        } label: {
-                            Label("tables_print_wifi_info".localized, systemImage: "wifi")
-                        }
-                        .padding(.horizontal)
+                    if let ssid = settingsManager.restaurantSettings.wifiSsid, !ssid.isEmpty {
+                        wifiDetailsCard(ssid: ssid, password: settingsManager.restaurantSettings.wifiPassword)
                     }
 
-                    // Printer Status
-                    GroupBox {
-                        HStack {
-                            Image(systemName: printerManager.isConnected ? "printer.fill" : "printer")
-                                .foregroundColor(printerManager.isConnected ? .green : .gray)
+                    printerStatusCard
 
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(printerManager.isConnected ? "tables_print_printer_connected".localized : "tables_print_printer_disconnected".localized)
-                                    .font(.headline)
-
-                                if let printer = printerManager.selectedPrinter {
-                                    Text(printer.name)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-
-                            Spacer()
-
-                            if printerManager.isConnected {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    } label: {
-                        Label("tables_print_printer_status".localized, systemImage: "antenna.radiowaves.left.and.right")
-                    }
-                    .padding(.horizontal)
-
-                    // Print Button
                     Button(action: printQRCode) {
                         HStack {
                             if isPrinting {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .progressViewStyle(.circular)
                             } else {
                                 Image(systemName: "printer.fill")
                             }
 
                             Text(isPrinting ? "tables_print_printing".localized : "tables_print_button".localized)
-                                .fontWeight(.semibold)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(printerManager.isConnected && !isPrinting ? Color.blue : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
                     }
+                    .buttonStyle(PrimaryButtonStyle(isEnabled: printerManager.isConnected && !isPrinting))
                     .disabled(!printerManager.isConnected || isPrinting)
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    }
-                    .padding(.vertical)
                 }
-                } else {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.lg)
             }
+            .background(Color.appBackground.ignoresSafeArea())
             .navigationTitle("tables_print_title".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -156,12 +99,126 @@ struct TableQRPrintView: View {
             } message: {
                 Text(errorMessage)
             }
-            .onAppear {
-                // Ensure view is ready before rendering content
-                DispatchQueue.main.async {
-                    isViewReady = true
+        }
+    }
+
+    private var previewCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("tables_print_preview".localized)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+
+            VStack(spacing: Spacing.md) {
+                Text(displayRestaurantName)
+                    .font(.cardTitle)
+                    .foregroundColor(.appTextPrimary)
+                    .multilineTextAlignment(.center)
+
+                Text(table.name)
+                    .font(.heroTitle)
+                    .foregroundColor(.appTextPrimary)
+                    .multilineTextAlignment(.center)
+
+                ZStack {
+                    RoundedRectangle(cornerRadius: CornerRadius.lg)
+                        .fill(Color.appSurfaceSecondary)
+                        .frame(width: 180, height: 180)
+
+                    VStack(spacing: Spacing.sm) {
+                        Image(systemName: "qrcode")
+                            .font(.system(size: 56, weight: .medium))
+                            .foregroundColor(.appTextSecondary)
+
+                        Text("tables_print_qr_preview".localized)
+                            .font(.caption)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                }
+
+                Text(qrCodeUrl)
+                    .font(.caption)
+                    .foregroundColor(.appTextSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.xl, surfaceColor: Color.appSurface.opacity(0.96))
+        }
+    }
+
+    private var tableDetailsCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("tables_print_info".localized)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                infoRow(label: "tables_print_table_name".localized, value: table.name)
+                infoRow(label: "tables_print_capacity".localized, value: "\(table.capacity)")
+                infoRow(label: "tables_print_status".localized, value: table.status.displayName)
+
+                if let notes = table.notes, !notes.isEmpty {
+                    infoRow(label: "tables_print_notes".localized, value: notes)
                 }
             }
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+        }
+    }
+
+    private func wifiDetailsCard(ssid: String, password: String?) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("tables_print_wifi_info".localized)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                infoRow(label: "tables_print_wifi_ssid".localized, value: ssid)
+
+                if let password, !password.isEmpty {
+                    infoRow(label: "tables_print_wifi_password".localized, value: password)
+                }
+            }
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+        }
+    }
+
+    private var printerStatusCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("tables_print_printer_status".localized)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+
+            HStack(spacing: Spacing.md) {
+                Image(systemName: printerManager.isConnected ? "printer.fill" : "printer.dotmatrix")
+                    .foregroundColor(printerManager.isConnected ? .appSuccess : .appWarning)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(printerManager.isConnected ? "tables_print_printer_connected".localized : "tables_print_printer_disconnected".localized)
+                        .font(.bodyMedium.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
+
+                    Text(printerManager.selectedPrinter?.name ?? "tables_floor_printer_hint".localized)
+                        .font(.caption)
+                        .foregroundColor(.appTextSecondary)
+                }
+
+                Spacer()
+            }
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+        }
+    }
+
+    private func infoRow(label: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.md) {
+            Text(label)
+                .font(.monoCaption)
+                .foregroundColor(.appTextSecondary)
+
+            Spacer()
+
+            Text(value)
+                .font(.bodyMedium)
+                .foregroundColor(.appTextPrimary)
+                .multilineTextAlignment(.trailing)
         }
     }
 
@@ -185,102 +242,6 @@ struct TableQRPrintView: View {
     }
 }
 
-// MARK: - Preview Card
-struct PreviewCard: View {
-    let restaurantName: String
-    let tableName: String
-    let qrCodeUrl: String
-    let wifiSsid: String?
-    let wifiPassword: String?
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("tables_print_preview".localized)
-                .font(.headline)
-                .foregroundColor(.secondary)
-
-            // Preview of printed output
-            VStack(spacing: 12) {
-                // Restaurant Name
-                Text(restaurantName)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-
-                // Table Name
-                Text(tableName)
-                    .font(.system(size: 36, weight: .bold))
-                    .multilineTextAlignment(.center)
-
-                // QR Code Placeholder
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray5))
-                        .frame(width: 180, height: 180)
-
-                    VStack(spacing: 8) {
-                        Image(systemName: "qrcode")
-                            .font(.system(size: 60))
-                            .foregroundColor(.gray)
-
-                        Text("tables_print_qr_preview".localized)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                // Footer
-                VStack(spacing: 4) {
-                    Text("tables_print_thank_you".localized)
-                        .font(.subheadline)
-
-                    if let ssid = wifiSsid, !ssid.isEmpty {
-                        Text("WiFi: \(ssid)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        if let password = wifiPassword, !password.isEmpty {
-                            Text("Pass: \(password)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-
-                    Text("powered by coorder.ai")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .padding(.top, 4)
-                }
-            }
-            .padding(24)
-            .background(Color.white)
-            .cornerRadius(16)
-            .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 4)
-        }
-    }
-}
-
-// MARK: - Info Row
-struct InfoRow: View {
-    let label: String
-    let value: String
-
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Spacer()
-
-            Text(value)
-                .font(.subheadline)
-                .fontWeight(.medium)
-        }
-    }
-}
-
-// MARK: - Preview
 struct TableQRPrintView_Previews: PreviewProvider {
     static var previews: some View {
         let mockTable = Table(

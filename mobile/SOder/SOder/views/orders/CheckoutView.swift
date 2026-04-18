@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CheckoutView: View {
     let order: Order
+    let showsCancelButton: Bool
     let onComplete: () -> Void
     
     @EnvironmentObject var orderManager: OrderManager
@@ -25,6 +26,12 @@ struct CheckoutView: View {
     
     // Focus state for cash input
     @FocusState private var isReceivedAmountFocused: Bool
+
+    init(order: Order, showsCancelButton: Bool = false, onComplete: @escaping () -> Void) {
+        self.order = order
+        self.showsCancelButton = showsCancelButton
+        self.onComplete = onComplete
+    }
     
     enum PaymentMethod: String, CaseIterable {
         case cash = "cash"
@@ -54,7 +61,17 @@ struct CheckoutView: View {
     }
     
     private var subtotal: Double {
-        order.total_amount ?? 0
+        let activeItems = (order.order_items ?? []).filter { $0.status != .canceled }
+        let liveSubtotal = activeItems.reduce(0) { partial, item in
+            partial + (Double(item.quantity) * item.price_at_order)
+        }
+
+        if order.order_items != nil {
+            return liveSubtotal
+        }
+
+        let total = order.total_amount ?? 0
+        return max(0, total - (order.tax_amount ?? 0) - (order.tip_amount ?? 0) + (order.discount_amount ?? 0))
     }
     
     private var discountAmount: Double {
@@ -98,7 +115,9 @@ struct CheckoutView: View {
     }
 
     var body: some View {
-        NavigationView {
+        ZStack {
+            AppScreenBackground()
+
             ScrollView {
                 VStack(spacing: Spacing.lg) {
                     // Enhanced Payment Selection
@@ -113,27 +132,45 @@ struct CheckoutView: View {
                     
                     // Enhanced Price Breakdown
                     priceBreakdown
+
+                    if paymentMethod == .cash {
+                        cashCollectionSection
+                    }
                     
                     // Enhanced Action Buttons
                     actionButtons
                 }
                 .padding(Spacing.md)
             }
-            .background(Color.appBackground)
-            .navigationTitle("checkout".localized)
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) { Button("cancel".localized) { dismiss() } }
-            }
-            .task {
-                receivedAmount = totalAmount
-                // Auto focus cash input if cash is selected
-                if paymentMethod == .cash {
-                    // Delay to ensure view has appeared before focusing
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        isReceivedAmountFocused = true
+            .scrollDismissesKeyboard(.interactively)
+        }
+        .toolbar(.hidden, for: .tabBar)
+        .navigationTitle("checkout".localized)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if showsCancelButton {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("cancel".localized) {
+                        dismiss()
                     }
                 }
+            }
+
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+
+                Button("done".localized) {
+                    isReceivedAmountFocused = false
+                }
+            }
+        }
+        .task {
+            receivedAmount = totalAmount
+        }
+        .onChange(of: paymentMethod) { _, newValue in
+            if newValue != .cash {
+                isReceivedAmountFocused = false
+                receivedAmount = totalAmount
             }
         }
         .alert("error".localized, isPresented: $showingError) {
@@ -183,7 +220,7 @@ struct CheckoutView: View {
             // Enhanced order header
             HStack {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(order.table?.name ?? "Table \(order.table_id)")
+                    Text(order.table?.name ?? String(format: "order_detail_table_fallback".localized, order.table_id))
                         .font(.cardTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.appTextPrimary)
@@ -195,7 +232,7 @@ struct CheckoutView: View {
                         Label(formatTime(order.created_at), systemImage: "clock.fill")
                             .font(.captionRegular)
                             .foregroundColor(.appTextTertiary)
-                        Label("ID: \(String(order.id.prefix(6).uppercased()))", systemImage: "number")
+                        Label("checkout_order_reference".localized(with: String(order.id.suffix(6)).uppercased()), systemImage: "number")
                             .font(.captionRegular)
                             .foregroundColor(.appTextTertiary)
                     }
@@ -263,167 +300,151 @@ struct CheckoutView: View {
                     .accessibilityLabel(String(format: "checkout_payment_method_accessibility".localized, method.displayName))
                 }
             }
-            // Enhanced cash payment section
-            if paymentMethod == .cash {
-                VStack(spacing: Spacing.md) {
-                    Divider()
-                    
-                    HStack {
-                        Image(systemName: "yensign.circle.fill")
-                            .font(.title3)
+        }
+        .elevatedCardStyle()
+    }
+
+    private var cashCollectionSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack {
+                Image(systemName: "banknote.fill")
+                    .font(.title3)
+                    .foregroundColor(.appPrimary)
+                Text("checkout_cash_details".localized)
+                    .font(.sectionHeader)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.appTextPrimary)
+                Spacer()
+            }
+
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("received_amount".localized)
+                    .font(.captionBold)
+                    .foregroundColor(.appTextSecondary)
+
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "yensign.circle")
+                        .foregroundColor(.appTextTertiary)
+
+                    TextField("checkout_received_amount_placeholder".localized, value: $receivedAmount, format: .currency(code: "JPY"))
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .keyboardType(.decimalPad)
+                        .focused($isReceivedAmountFocused)
+                        .onChange(of: receivedAmount) { oldValue, newValue in
+                            if newValue != oldValue {
+                                let impactFeedback = UISelectionFeedbackGenerator()
+                                impactFeedback.selectionChanged()
+                            }
+                        }
+
+                    Button(action: {
+                        isReceivedAmountFocused = false
+                        receivedAmount = totalAmount
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                        impactFeedback.impactOccurred()
+                    }) {
+                        Text("checkout_exact_amount".localized)
+                            .font(.buttonSmall)
                             .foregroundColor(.appPrimary)
-                        Text("checkout_cash_details".localized)
-                            .font(.bodyMedium)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.appTextPrimary)
-                        Spacer()
-                    }
-                    
-                    VStack(spacing: Spacing.sm) {
-                        // Total amount display
-                        HStack {
-                            Text("checkout_total_label".localized)
-                                .font(.bodyMedium)
-                                .fontWeight(.medium)
-                                .foregroundColor(.appTextPrimary)
-                            Spacer()
-                            Text(String(format: "price_format".localized, totalAmount))
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(.appPrimary)
-                        }
-                        .padding(.horizontal, Spacing.sm)
-                        .padding(.vertical, Spacing.sm)
-                        .background(Color.appPrimary.opacity(0.1))
-                        .cornerRadius(CornerRadius.md)
-                        
-                        // Received amount input with better styling
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("received_amount".localized)
-                                .font(.captionBold)
-                                .foregroundColor(.appTextSecondary)
-
-                            HStack {
-                                Image(systemName: "banknote.fill")
-                                    .foregroundColor(.appTextTertiary)
-
-                                TextField("checkout_received_amount_placeholder".localized, value: $receivedAmount, format: .currency(code: "JPY"))
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .keyboardType(.decimalPad)
-                                    .focused($isReceivedAmountFocused)
-                                    .onChange(of: receivedAmount) { oldValue, newValue in
-                                        // Haptic feedback when amount changes
-                                        if newValue != oldValue {
-                                            let impactFeedback = UISelectionFeedbackGenerator()
-                                            impactFeedback.selectionChanged()
-                                        }
-                                    }
-
-                                // Quick set buttons
-                                Button(action: {
-                                    receivedAmount = totalAmount
-                                    // Haptic feedback
-                                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                                    impactFeedback.impactOccurred()
-                                }) {
-                                    Text("checkout_exact_amount".localized)
-                                        .font(.captionBold)
-                                        .foregroundColor(.appPrimary)
-                                        .padding(.horizontal, Spacing.sm)
-                                        .padding(.vertical, Spacing.xs)
-                                        .background(Color.appPrimary.opacity(0.15))
-                                        .cornerRadius(CornerRadius.xs)
-                                }
-                            }
                             .padding(.horizontal, Spacing.md)
-                            .padding(.vertical, Spacing.md)
-                            .background(Color.appSurfaceSecondary)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(receivedAmount < totalAmount ? Color.appWarning : Color.appBorderLight, lineWidth: receivedAmount < totalAmount ? 2 : 1)
-                            )
-                        }
-
-                        // Quick amount buttons
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("checkout_quick_amounts".localized)
-                                .font(.captionBold)
-                                .foregroundColor(.appTextSecondary)
-
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: Spacing.sm) {
-                                ForEach(quickAmounts, id: \.self) { amount in
-                                    Button(action: {
-                                        receivedAmount = amount
-                                        // Haptic feedback
-                                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                                        impactFeedback.impactOccurred()
-                                    }) {
-                                        Text(String(format: "¥%.0f", amount))
-                                            .font(.buttonMedium)
-                                            .fontWeight(.medium)
-                                            .foregroundColor(.appPrimary)
-                                            .frame(maxWidth: .infinity)
-                                            .padding(.vertical, Spacing.sm)
-                                            .background(Color.appSurfaceSecondary)
-                                            .cornerRadius(CornerRadius.sm)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: CornerRadius.sm)
-                                                    .stroke(receivedAmount == amount ? Color.appPrimary : Color.appBorderLight, lineWidth: receivedAmount == amount ? 2 : 1)
-                                            )
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // Change calculation with enhanced styling
-                        if changeAmount > 0 {
-                            HStack {
-                                Image(systemName: "arrow.clockwise.circle.fill")
-                                    .foregroundColor(.appSuccess)
-                                Text("checkout_change_label".localized)
-                                    .font(.bodyMedium)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.appTextPrimary)
-                                Spacer()
-                                Text(String(format: "price_format".localized, changeAmount))
-                                    .font(.bodyMedium)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.appSuccess)
-                            }
-                            .padding(.horizontal, Spacing.sm)
                             .padding(.vertical, Spacing.sm)
-                            .background(Color.appSuccessLight)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appSuccess.opacity(0.3), lineWidth: 1)
+                            .background(
+                                Capsule()
+                                    .fill(Color.appPrimary.opacity(0.14))
                             )
-                        } else if receivedAmount > 0 && receivedAmount < totalAmount {
-                            HStack {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.appWarning)
-                                Text("insufficient_amount".localized)
-                                    .font(.bodyMedium)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.appWarning)
-                                Spacer()
-                                Text(String(format: "price_format".localized, totalAmount - receivedAmount))
-                                    .font(.captionBold)
-                                    .foregroundColor(.appWarning)
-                            }
-                            .padding(.horizontal, Spacing.sm)
-                            .padding(.vertical, Spacing.sm)
-                            .background(Color.appWarningLight)
-                            .cornerRadius(CornerRadius.md)
                             .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appWarning.opacity(0.3), lineWidth: 1)
+                                Capsule()
+                                    .stroke(Color.appPrimary.opacity(0.35), lineWidth: 1)
                             )
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.md)
+                .background(Color.appSurfaceSecondary)
+                .cornerRadius(CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(receivedAmount < totalAmount ? Color.appWarning : Color.appBorderLight, lineWidth: receivedAmount < totalAmount ? 2 : 1)
+                )
+            }
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("checkout_quick_amounts".localized)
+                    .font(.captionBold)
+                    .foregroundColor(.appTextSecondary)
+
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: Spacing.sm) {
+                    ForEach(quickAmounts, id: \.self) { amount in
+                        Button(action: {
+                            isReceivedAmountFocused = false
+                            receivedAmount = amount
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                            impactFeedback.impactOccurred()
+                        }) {
+                            Text(String(format: "¥%.0f", amount))
+                                .font(.buttonMedium)
+                                .foregroundColor(receivedAmount == amount ? .appOnHighlight : .appTextPrimary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.sm)
+                                .background(
+                                    RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                        .fill(receivedAmount == amount ? Color.appHighlight : Color.appSurfaceSecondary)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                        .stroke(receivedAmount == amount ? Color.appHighlight : Color.appBorderLight, lineWidth: 1)
+                                )
                         }
+                        .buttonStyle(.plain)
                     }
                 }
+            }
+
+            if changeAmount > 0 {
+                HStack {
+                    Image(systemName: "arrow.clockwise.circle.fill")
+                        .foregroundColor(.appSuccess)
+                    Text("checkout_change_label".localized)
+                        .font(.bodyMedium)
+                        .fontWeight(.medium)
+                        .foregroundColor(.appTextPrimary)
+                    Spacer()
+                    Text(String(format: "price_format".localized, changeAmount))
+                        .font(.bodyMedium)
+                        .fontWeight(.bold)
+                        .foregroundColor(.appSuccess)
+                }
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.sm)
+                .background(Color.appSuccessLight)
+                .cornerRadius(CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(Color.appSuccess.opacity(0.3), lineWidth: 1)
+                )
+            } else if receivedAmount > 0 && receivedAmount < totalAmount {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.appWarning)
+                    Text("insufficient_amount".localized)
+                        .font(.bodyMedium)
+                        .fontWeight(.medium)
+                        .foregroundColor(.appWarning)
+                    Spacer()
+                    Text(String(format: "price_format".localized, totalAmount - receivedAmount))
+                        .font(.captionBold)
+                        .foregroundColor(.appWarning)
+                }
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.sm)
+                .background(Color.appWarningLight)
+                .cornerRadius(CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(Color.appWarning.opacity(0.3), lineWidth: 1)
+                )
             }
         }
         .elevatedCardStyle()
@@ -608,16 +629,16 @@ struct CheckoutView: View {
                     Text(String(format: "price_format".localized, totalAmount))
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.appPrimary)
+                        .foregroundColor(.appTextPrimary)
                 }
                 .padding(.horizontal, Spacing.sm)
                 .padding(.vertical, Spacing.sm)
                 .background(
                     RoundedRectangle(cornerRadius: CornerRadius.md)
-                        .fill(Color.appPrimary.opacity(0.05))
+                        .fill(Color.appSurfaceElevated)
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.md)
-                                .stroke(Color.appPrimary.opacity(0.2), lineWidth: 2)
+                                .stroke(Color.appBorderLight, lineWidth: 1)
                         )
                 )
             }
@@ -627,55 +648,89 @@ struct CheckoutView: View {
 
     private var actionButtons: some View {
         VStack(spacing: Spacing.md) {
-            // Main checkout button with enhanced styling
             Button(action: processCheckout) {
-                HStack(spacing: Spacing.sm) {
-                    if isProcessing { 
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .scaleEffect(0.9)
-                    } else { 
-                        Image(systemName: paymentMethod.icon)
-                            .font(.title3)
-                    }
-                    
-                    VStack(spacing: 2) {
+                HStack(spacing: Spacing.md) {
+                    Image(systemName: isProcessing ? "hourglass" : "checkmark.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(canCompleteCheckout && !isProcessing ? .appOnHighlight : .appTextTertiary)
+
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(isProcessing ? "checkout_processing".localized : "complete_checkout".localized)
-                            .fontWeight(.bold)
-                        
-                        if !isProcessing {
-                            Text(paymentMethod.displayName)
-                                .font(.captionRegular)
-                                .opacity(0.9)
-                        }
+                            .font(.buttonLarge)
+                            .foregroundColor(canCompleteCheckout && !isProcessing ? .appOnHighlight : .appTextTertiary)
+
+                        Text(paymentMethod.displayName.uppercased())
+                            .font(.monoCaption)
+                            .foregroundColor(canCompleteCheckout && !isProcessing ? .appOnHighlight.opacity(0.78) : .appTextTertiary)
                     }
-                    
-                    if !isProcessing && canCompleteCheckout {
-                        Spacer()
-                        Image(systemName: "arrow.right.circle.fill")
-                            .font(.title3)
+
+                    Spacer()
+
+                    if isProcessing {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .appOnHighlight))
+                            .scaleEffect(0.95)
+                    } else {
+                        Image(systemName: "arrow.right")
+                            .font(.captionBold)
+                            .foregroundColor(canCompleteCheckout ? .appOnHighlight.opacity(0.85) : .appTextTertiary)
                     }
                 }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.md)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 72)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.xl)
+                        .fill(canCompleteCheckout && !isProcessing ? Color.appHighlight : Color.appDisabled)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.xl)
+                                .stroke(Color.white.opacity(canCompleteCheckout && !isProcessing ? 0.16 : 0), lineWidth: 1)
+                        )
+                        .shadow(
+                            color: canCompleteCheckout && !isProcessing ? Color.appHighlight.opacity(0.18) : .clear,
+                            radius: 18,
+                            y: 10
+                        )
+                )
             }
-            .buttonStyle(PrimaryButtonStyle(isEnabled: canCompleteCheckout && !isProcessing))
+            .buttonStyle(.plain)
             .disabled(isProcessing || !canCompleteCheckout)
             
-            // Print receipt only button with better styling
             Button(action: printReceiptOnly) {
-                HStack {
+                HStack(spacing: Spacing.md) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("print_receipt_only".localized)
+                            .font(.buttonMedium)
+                            .foregroundColor(isProcessing ? .appTextTertiary : .appTextPrimary)
+
+                        Text("orders_print_receipt".localized.uppercased())
+                            .font(.monoCaption)
+                            .foregroundColor(isProcessing ? .appTextTertiary : .appTextSecondary)
+                    }
+
+                    Spacer()
+
                     Image(systemName: "printer.fill")
                         .font(.title3)
-                    Text("print_receipt_only".localized)
-                        .fontWeight(.medium)
-                    Spacer()
-                    Image(systemName: "arrow.right")
-                        .font(.captionRegular)
+                        .foregroundColor(isProcessing ? .appTextTertiary : .appTextPrimary)
                 }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.md)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 64)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.xl)
+                        .fill(Color.appSurfaceSecondary)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.xl)
+                                .stroke(isProcessing ? Color.appDisabled : Color.appBorderLight, lineWidth: 1)
+                        )
+                )
             }
-            .buttonStyle(SecondaryButtonStyle(isEnabled: !isProcessing))
+            .buttonStyle(.plain)
             .disabled(isProcessing)
             
-            // Helper text for payment validation
             if !canCompleteCheckout && paymentMethod == .cash {
                 HStack {
                     Image(systemName: "info.circle.fill")
@@ -700,12 +755,14 @@ struct CheckoutView: View {
     }
     
     private func processCheckout() {
+        isReceivedAmountFocused = false
         Task {
             await performCheckout(printReceipt: true)
         }
     }
     
     private func printReceiptOnly() {
+        isReceivedAmountFocused = false
         Task {
             await printReceipt()
         }
@@ -720,8 +777,14 @@ struct CheckoutView: View {
         impactFeedback.impactOccurred()
 
         do {
-            // Update order status to completed
-            try await orderManager.updateOrderStatus(orderId: order.id, newStatus: .completed)
+            try await orderManager.completeCheckout(
+                orderId: order.id,
+                paymentMethod: paymentMethod.rawValue,
+                discountAmount: discountAmount,
+                taxAmount: taxAmount,
+                tipAmount: order.tip_amount ?? 0,
+                totalAmount: totalAmount
+            )
 
             // Print receipt if requested
             if printReceipt {
