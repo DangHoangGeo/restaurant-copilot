@@ -3,37 +3,31 @@ import SwiftUI
 struct LoginView: View {
     @StateObject private var supabaseManager = SupabaseManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
-    
-    @State private var subdomain = ""
+
+    @State private var branchCode = ""
     @State private var email = ""
     @State private var password = ""
     @State private var isLoading = false
     @State private var errorMessage = ""
     @State private var showError = false
     @State private var showLanguageSelector = false
-    @State private var appearAnimation = false
-    
+
     var body: some View {
         if #available(iOS 16.0, *) {
-            NavigationStack {
-                contentView
-            }
+            NavigationStack { contentView }
         } else {
-            NavigationView {
-                contentView
-            }
-            .navigationViewStyle(StackNavigationViewStyle())
+            NavigationView { contentView }
+                .navigationViewStyle(StackNavigationViewStyle())
         }
     }
 
     private var contentView: some View {
         ZStack {
-            // Enhanced gradient background matching web design
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(red: 0.93, green: 0.95, blue: 1.0).opacity(0.5),  // from-blue-50/50
+                    Color.appInfoLight.opacity(0.5),
                     Color.appBackground,
-                    Color(red: 0.98, green: 0.95, blue: 1.0).opacity(0.5)   // to-purple-50/50
+                    Color.appSurfaceSecondary.opacity(0.5)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -42,12 +36,10 @@ struct LoginView: View {
 
             ScrollView {
                 VStack(spacing: 24) {
-                    // Language Selector - Enhanced styling
+                    // Language Selector
                     HStack {
                         Spacer()
-                        Button(action: {
-                            showLanguageSelector = true
-                        }) {
+                        Button(action: { showLanguageSelector = true }) {
                             HStack(spacing: 6) {
                                 Image(systemName: "globe")
                                     .font(.subheadline)
@@ -61,15 +53,15 @@ struct LoginView: View {
                             .cornerRadius(20)
                             .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
                         }
+                        .accessibilityLabel("language_selector".localized)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 10)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.top, Spacing.sm)
 
-                    Spacer().frame(height: 20)
+                    Spacer().frame(height: Spacing.md)
 
-                    // Header - Enhanced with gradient and better spacing
+                    // Header
                     VStack(spacing: 12) {
-                        // Icon with gradient background
                         ZStack {
                             Circle()
                                 .fill(
@@ -83,55 +75,39 @@ struct LoginView: View {
                                     )
                                 )
                                 .frame(width: 100, height: 100)
-
                             Image(systemName: "fork.knife.circle.fill")
                                 .font(.system(size: 50))
                                 .foregroundColor(.appPrimary)
                         }
-
                         Text("app_name".localized)
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.appTextPrimary, Color.appTextPrimary.opacity(0.7)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-
+                            .font(.displayTitle)
+                            .foregroundColor(.appTextPrimary)
                         Text("app_subtitle".localized)
                             .font(.bodyRegular)
                             .foregroundColor(.appTextSecondary)
                             .multilineTextAlignment(.center)
                     }
-                    .padding(.top, 20)
-                    
-                    Spacer(minLength: 0)
-                    
-                    // Error Banner - Enhanced matching web design
+                    .padding(.top, Spacing.md)
+
+                    // Error Banner
                     if showError && !errorMessage.isEmpty {
                         HStack(spacing: 12) {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .font(.body)
                                 .foregroundColor(.appError)
-
                             Text(errorMessage)
                                 .font(.bodyMedium)
                                 .foregroundColor(.appError)
                                 .fixedSize(horizontal: false, vertical: true)
-
                             Spacer()
-
                             Button(action: {
-                                withAnimation {
-                                    showError = false
-                                    errorMessage = ""
-                                }
+                                withAnimation { showError = false; errorMessage = "" }
                             }) {
                                 Image(systemName: "xmark.circle.fill")
                                     .font(.body)
                                     .foregroundColor(.appError.opacity(0.6))
                             }
+                            .accessibilityLabel("close".localized)
                         }
                         .padding(Spacing.md)
                         .background(Color.appErrorLight)
@@ -141,96 +117,51 @@ struct LoginView: View {
                                 .stroke(Color.appError.opacity(0.3), lineWidth: 1)
                         )
                         .transition(.move(edge: .top).combined(with: .opacity))
+                        .padding(.horizontal, Spacing.lg)
                     }
 
-                    // Login Form - Enhanced with elevation and better styling
-                    VStack(spacing: 20) {
-                        // Subdomain field with icon
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("restaurant_subdomain".localized)
-                                .font(.sectionHeader)
-                                .foregroundColor(.appTextPrimary)
-
-                            HStack(spacing: 12) {
-                                Image(systemName: "building.2.fill")
-                                    .font(.body)
-                                    .foregroundColor(.appTextSecondary)
-                                    .frame(width: 20)
-
-                                TextField("restaurant_subdomain_placeholder".localized, text: $subdomain)
+                    // Login Form Card
+                    VStack(spacing: Spacing.md) {
+                        // Branch Code field
+                        formField(
+                            label: "branch_code".localized,
+                            icon: "building.2.fill",
+                            content: {
+                                TextField("branch_code_placeholder".localized, text: $branchCode)
                                     .font(.bodyRegular)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
+                                    .accessibilityLabel("branch_code".localized)
                             }
-                            .padding(Spacing.md)
-                            .background(Color.appSurface)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appBorder, lineWidth: 1)
-                            )
-                            .shadow(color: Elevation.level1.color, radius: 2, y: 1)
-                        }
+                        )
 
-                        // Email field with icon
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("email".localized)
-                                .font(.sectionHeader)
-                                .foregroundColor(.appTextPrimary)
-
-                            HStack(spacing: 12) {
-                                Image(systemName: "envelope.fill")
-                                    .font(.body)
-                                    .foregroundColor(.appTextSecondary)
-                                    .frame(width: 20)
-
+                        // Email field
+                        formField(
+                            label: "email".localized,
+                            icon: "envelope.fill",
+                            content: {
                                 TextField("email_placeholder".localized, text: $email)
                                     .font(.bodyRegular)
                                     .keyboardType(.emailAddress)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
+                                    .accessibilityLabel("email".localized)
                             }
-                            .padding(Spacing.md)
-                            .background(Color.appSurface)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appBorder, lineWidth: 1)
-                            )
-                            .shadow(color: Elevation.level1.color, radius: 2, y: 1)
-                        }
+                        )
 
-                        // Password field with icon
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("password".localized)
-                                .font(.sectionHeader)
-                                .foregroundColor(.appTextPrimary)
-
-                            HStack(spacing: 12) {
-                                Image(systemName: "lock.fill")
-                                    .font(.body)
-                                    .foregroundColor(.appTextSecondary)
-                                    .frame(width: 20)
-
+                        // Password field
+                        formField(
+                            label: "password".localized,
+                            icon: "lock.fill",
+                            content: {
                                 SecureField("password_placeholder".localized, text: $password)
                                     .font(.bodyRegular)
+                                    .accessibilityLabel("password".localized)
                             }
-                            .padding(Spacing.md)
-                            .background(Color.appSurface)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appBorder, lineWidth: 1)
-                            )
-                            .shadow(color: Elevation.level1.color, radius: 2, y: 1)
-                        }
+                        )
 
-                        // Enhanced gradient button matching web design
-                        Button(action: {
-                            Task {
-                                await signIn()
-                            }
-                        }) {
+                        // Sign In button
+                        Button(action: { Task { await signIn() } }) {
                             HStack(spacing: 8) {
                                 if isLoading {
                                     ProgressView()
@@ -247,10 +178,7 @@ struct LoginView: View {
                                 Group {
                                     if isFormValid {
                                         LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color(red: 0.26, green: 0.47, blue: 0.85),  // blue-600
-                                                Color(red: 0.22, green: 0.42, blue: 0.78)   // blue-700
-                                            ]),
+                                            gradient: Gradient(colors: [Color.appPrimary, Color.appPrimary.opacity(0.85)]),
                                             startPoint: .leading,
                                             endPoint: .trailing
                                         )
@@ -274,46 +202,30 @@ struct LoginView: View {
                         .disabled(!isFormValid || isLoading)
                         .scaleEffect(isLoading ? 0.98 : 1.0)
                         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isLoading)
-                        .padding(.top, 8)
+                        .padding(.top, Spacing.sm)
+                        .accessibilityLabel("sign_in".localized)
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, Spacing.lg)
                     .padding(.vertical, 28)
-                    .background(
-                        ZStack {
-                            // Base surface
-                            Color.appSurface
-
-                            // Subtle gradient overlay matching web design
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color(red: 0.93, green: 0.95, blue: 1.0).opacity(0.3),
-                                    Color.clear,
-                                    Color(red: 0.98, green: 0.95, blue: 1.0).opacity(0.3)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        }
-                    )
+                    .background(Color.appSurface)
                     .cornerRadius(20)
                     .shadow(color: Elevation.level3.color, radius: Elevation.level3.radius, y: Elevation.level3.y)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.appBorderLight, lineWidth: 1)
                     )
-                    
-                    Spacer(minLength: 0)
+                    .padding(.horizontal, Spacing.md)
 
-                    // Footer text with better styling
-                    Text("login_subtitle".localized)
-                        .font(.captionRegular)
-                        .foregroundColor(.appTextSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                        .padding(.bottom, 20)
+                    // Legal footer
+                    VStack(spacing: 4) {
+                        Text("login_legal_footer".localized)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextTertiary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, Spacing.xl)
+                    }
+                    .padding(.bottom, Spacing.md)
                 }
-                .frame(maxHeight: .infinity)
-                .padding(.horizontal, 20)
             }
             .scrollDismissesKeyboard(.interactively)
         }
@@ -322,54 +234,66 @@ struct LoginView: View {
             LanguageSelectorView()
                 .environmentObject(localizationManager)
         }
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.6)) {
-                // Trigger any appearance animations
+        .onAppear { loadSavedCredentials() }
+    }
+
+    @ViewBuilder
+    private func formField<Content: View>(
+        label: String,
+        icon: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.body)
+                    .foregroundColor(.appTextSecondary)
+                    .frame(width: 20)
+                content()
             }
-            // Load previously used credentials for convenience
-            subdomain = UserDefaults.standard.string(forKey: "lastSubdomain") ?? ""
-            email = UserDefaults.standard.string(forKey: "lastEmail") ?? ""
-            loadCredentials()
+            .padding(Spacing.md)
+            .background(Color.appSurface)
+            .cornerRadius(CornerRadius.md)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .stroke(Color.appBorder, lineWidth: 1)
+            )
+            .shadow(color: Elevation.level1.color, radius: 2, y: 1)
         }
     }
-    
-    private func loadCredentials() {
-        let defaults = UserDefaults.standard
-        if let savedSubdomain = defaults.string(forKey: "lastUsedSubdomain") {
-            self.subdomain = savedSubdomain
-        }
-        if let savedEmail = defaults.string(forKey: "lastUsedEmail") {
-            self.email = savedEmail
-            
-        }
+
+    private func loadSavedCredentials() {
+        branchCode = UserDefaults.standard.string(forKey: "lastUsedBranchCode") ?? ""
+        email = UserDefaults.standard.string(forKey: "lastUsedEmail") ?? ""
     }
-    
+
     private var isFormValid: Bool {
-        !subdomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !branchCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !password.isEmpty
     }
-    
+
     @MainActor
     private func signIn() async {
         isLoading = true
-        withAnimation {
-            showError = false
-            errorMessage = ""
-        }
+        withAnimation { showError = false; errorMessage = "" }
 
         do {
-            let trimmedSubdomain = subdomain.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedBranchCode = branchCode.trimmingCharacters(in: .whitespacesAndNewlines)
             let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
 
             try await supabaseManager.signIn(
-                subdomain: trimmedSubdomain,
+                branchCode: trimmedBranchCode,
                 email: trimmedEmail,
                 password: password
             )
+
             if supabaseManager.isAuthenticated {
-                UserDefaults.standard.set(subdomain, forKey: "lastSubdomain")
-                UserDefaults.standard.set(email, forKey: "lastEmail")
+                UserDefaults.standard.set(trimmedBranchCode, forKey: "lastUsedBranchCode")
+                UserDefaults.standard.set(trimmedEmail, forKey: "lastUsedEmail")
             }
         } catch {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
@@ -384,4 +308,9 @@ struct LoginView: View {
 
         isLoading = false
     }
+}
+
+#Preview {
+    LoginView()
+        .environmentObject(LocalizationManager.shared)
 }

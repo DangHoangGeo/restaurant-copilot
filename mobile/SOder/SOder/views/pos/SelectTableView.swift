@@ -11,18 +11,8 @@ extension TableStatus {
         return self == .available
     }
 
-    // Convert the string color from the canonical model to a SwiftUI.Color
     var swiftUIColor: Color {
-        switch self.color {
-        case "green": return .appSuccess
-        case "orange": return .appWarning
-        case "purple": return .purple
-        case "gray": return .appTextSecondary
-        case "red": return .appError
-        case "blue": return .appPrimary
-        case "teal": return .teal
-        default: return .appAccent
-        }
+        return statusColor
     }
 }
 

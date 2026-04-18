@@ -9,9 +9,9 @@
 
 // MARK: - Login Screen
 "login_title" = "Sign In";
-"login_subtitle" = "Enter your restaurant staff credentials";
-"restaurant_subdomain" = "Restaurant Subdomain";
-"restaurant_subdomain_placeholder" = "e.g., myrestaurant";
+"login_subtitle" = "Enter your branch code and staff credentials";
+"branch_code" = "Branch Code";
+"branch_code_placeholder" = "e.g., tokyo-main";
 "email" = "Email";
 "email_placeholder" = "staff@restaurant.com";
 "password" = "Password";
@@ -20,6 +20,10 @@
 "signing_in" = "Signing In...";
 "login_error" = "Login Error";
 "ok" = "OK";
+"privacy_policy" = "Privacy Policy";
+"terms_of_service" = "Terms of Service";
+"login_legal_footer" = "By signing in, you agree to our Terms of Service and Privacy Policy.";
+"language_selector" = "Select language";
 
 // MARK: - Common Terms
 "cancel" = "Cancel";
@@ -1066,3 +1070,21 @@
 "checkout_cash_details" = "Cash Payment";
 "checkout_processing" = "Processing...";
 "checkout_insufficient_cash_hint" = "Please enter an amount equal to or greater than the total";
+
+// MARK: - Table Status
+"table_status_available" = "Available";
+"table_status_occupied" = "Occupied";
+"table_status_reserved" = "Reserved";
+"table_status_maintenance" = "Maintenance";
+
+// MARK: - Branch Picker
+"branch_picker_title" = "Select Branch";
+"branch_picker_subtitle" = "Choose a branch to start working";
+"branch_picker_continue_button" = "Continue";
+"branch_picker_no_branches" = "No branches available";
+"branch_picker_no_branches_subtitle" = "Contact your administrator to get access.";
+"branch_picker_loading" = "Loading branches...";
+"branch_picker_error" = "Failed to load branches";
+"branch_picker_switch_branch" = "Switch Branch";
+"branch_picker_current_branch" = "Current Branch";
+"branch_picker_sign_out" = "Sign Out";

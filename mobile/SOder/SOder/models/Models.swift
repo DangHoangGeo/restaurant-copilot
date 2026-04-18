@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 // MARK: - Typealiases for ID types
 
@@ -63,13 +64,13 @@ enum OrderStatus: String, Codable, CaseIterable { // Changed to Codable
         }
     }
     
-    var color: String {
+    var statusColor: Color {
         switch self {
-        case .draft: return "teal" // Example color for draft
-        case .new: return "blue"
-        case .serving: return "orange"
-        case .completed: return "gray"
-        case .canceled: return "red"
+        case .draft: return .appAccent
+        case .new: return .appInfo
+        case .serving: return .appWarning
+        case .completed: return .appTextSecondary
+        case .canceled: return .appError
         }
     }
 }
@@ -124,14 +125,14 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
         }
     }
     
-    var color: String {
+    var statusColor: Color {
         switch self {
-        case .draft: return "purple" // Example color
-        case .new: return "blue"
-        case .preparing: return "orange"
-        case .ready: return "green"
-        case .served: return "gray"
-        case .canceled: return "red"
+        case .draft: return .appAccent
+        case .new: return .appInfo
+        case .preparing: return .appWarning
+        case .ready: return .appSuccess
+        case .served: return .appTextSecondary
+        case .canceled: return .appError
         }
     }
     
@@ -324,19 +325,19 @@ enum TableStatus: String, Codable, CaseIterable { // Changed to Codable
     
     var displayName: String {
         switch self {
-        case .available: return "Available"
-        case .occupied: return "Occupied"
-        case .reserved: return "Reserved"
-        case .maintenance: return "Maintenance"
+        case .available: return "table_status_available".localized
+        case .occupied: return "table_status_occupied".localized
+        case .reserved: return "table_status_reserved".localized
+        case .maintenance: return "table_status_maintenance".localized
         }
     }
 
-    var color: String { // Added color property, useful for UI
+    var statusColor: Color {
         switch self {
-        case .available: return "green"
-        case .occupied: return "orange"
-        case .reserved: return "purple"
-        case .maintenance: return "gray"
+        case .available: return .appSuccess
+        case .occupied: return .appWarning
+        case .reserved: return .appAccent
+        case .maintenance: return .appTextSecondary
         }
     }
 }
