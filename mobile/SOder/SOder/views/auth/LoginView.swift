@@ -24,6 +24,8 @@ struct LoginView: View {
         NavigationStack { contentView }
     }
 
+    // MARK: - Main Content
+
     private var contentView: some View {
         ZStack {
             AppScreenBackground()
