@@ -70,6 +70,7 @@ export interface OrganizationApprovalSummary {
   name: string;
   public_subdomain: string;
   requested_plan: string | null;
+  requested_billing_cycle: 'monthly' | 'yearly' | null;
   created_at: string;
   founder_email: string | null;
   founder_name: string | null;
@@ -125,6 +126,27 @@ export interface TenantSubscription {
   canceled_at: string | null;
   cancellation_reason: string | null;
   notes: string | null;
+}
+
+export interface SubscriptionReceipt {
+  id: string;
+  subscription_id: string;
+  organization_id: string | null;
+  restaurant_id: string;
+  receipt_number: string;
+  plan_id: string;
+  billing_cycle: 'monthly' | 'yearly';
+  currency: string;
+  subtotal: number;
+  total: number;
+  status: 'issued' | 'paid' | 'void';
+  period_start: string;
+  period_end: string;
+  issued_at: string;
+  paid_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // ============================================

@@ -219,12 +219,14 @@ export type OrgSettingsUpdates = {
   approved_by?: string | null;
   approval_notes?: string | null;
   requested_plan?: 'starter' | 'growth' | 'enterprise' | null;
+  requested_billing_cycle?: 'monthly' | 'yearly' | null;
   onboarding_completed_at?: string | null;
   logo_url?: string | null;
   brand_color?: string | null;
   description_en?: string | null;
   description_ja?: string | null;
   description_vi?: string | null;
+  address?: string | null;
   website?: string | null;
   phone?: string | null;
   email?: string | null;

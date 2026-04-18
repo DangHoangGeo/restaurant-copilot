@@ -62,10 +62,10 @@
     "recommended": "おすすめ"
   },
   "item_detail": {
-    "choose_size": "サイズを選択",
-    "add_toppings": "トッピングを追加",
-    "special_instructions": "特別な指示（任意）",
-    "special_instructions_placeholder": "ご要望やアレルギー情報など…",
+    "choose_size": "サイズ",
+    "add_toppings": "トッピング",
+    "special_instructions": "特別なリクエスト",
+    "special_instructions_placeholder": "アレルギー、好み、調理のご希望など…",
     "price_details": "価格詳細",
     "base_price": "基本価格",
     "quantity": "数量",

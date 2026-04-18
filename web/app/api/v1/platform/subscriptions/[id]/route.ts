@@ -4,6 +4,10 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import {
+  loadBillingPlan,
+  upsertTenantSubscription,
+} from '@/lib/server/billing/subscriptions';
+import {
   requirePlatformAdmin,
   platformApiResponse,
   platformApiError,
@@ -39,63 +43,46 @@ export async function PATCH(
       return platformApiError('Subscription not found', 404);
     }
 
-    // Build update object
-    const updateData: Record<string, unknown> = {};
+    const targetPlanId = validated.plan_id ?? currentSub.plan_id;
+    const targetPlan = await loadBillingPlan(targetPlanId);
 
-    if (validated.plan_id) {
-      updateData.plan_id = validated.plan_id;
-
-      // Fetch plan quotas and update cached values
-      const { data: plan } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .eq('id', validated.plan_id)
-        .single();
-
-      if (plan) {
-        updateData.seat_limit = plan.max_staff_seats;
-        updateData.storage_limit_gb = plan.max_storage_gb;
-        updateData.ai_calls_limit = plan.max_ai_calls_per_month;
-        updateData.customers_per_day_limit = plan.max_customers_per_day;
-      }
+    if (!targetPlan) {
+      return platformApiError('Subscription plan not found', 404);
     }
 
-    if (validated.status) {
-      updateData.status = validated.status;
+    const status = validated.status ?? currentSub.status;
+    const billingCycle = validated.billing_cycle ?? currentSub.billing_cycle;
+    const currentPeriodStart =
+      validated.current_period_start ?? currentSub.current_period_start;
+    const currentPeriodEnd =
+      validated.current_period_end ?? currentSub.current_period_end;
+    const trialEndsAt =
+      validated.trial_ends_at ?? currentSub.trial_ends_at ?? null;
+    const trialDays =
+      status === 'trial' && trialEndsAt
+        ? Math.max(
+            0,
+            Math.ceil(
+              (new Date(trialEndsAt).getTime() -
+                new Date(currentPeriodStart).getTime()) /
+                (24 * 60 * 60 * 1000)
+            )
+          )
+        : 0;
 
-      // If activating, set activated_at
-      if (validated.status === 'active' && !currentSub.activated_at) {
-        updateData.activated_at = new Date().toISOString();
-      }
+    const updatedSub = await upsertTenantSubscription({
+      restaurantId: currentSub.restaurant_id,
+      plan: targetPlan,
+      billingCycle,
+      status,
+      trialDays,
+      notes: validated.notes ?? currentSub.notes ?? null,
+      currentPeriodStart,
+      currentPeriodEnd,
+      trialEndsAt,
+    });
 
-      // If canceling, set canceled_at
-      if (validated.status === 'canceled' && !currentSub.canceled_at) {
-        updateData.canceled_at = new Date().toISOString();
-      }
-    }
-
-    if (validated.trial_ends_at) {
-      updateData.trial_ends_at = validated.trial_ends_at;
-    }
-
-    if (validated.current_period_end) {
-      updateData.current_period_end = validated.current_period_end;
-    }
-
-    if (validated.notes) {
-      updateData.notes = validated.notes;
-    }
-
-    // Update subscription
-    const { data: updatedSub, error } = await supabase
-      .from('tenant_subscriptions')
-      .update(updateData)
-      .eq('id', subscriptionId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating subscription:', error);
+    if (!updatedSub) {
       return platformApiError('Failed to update subscription', 500);
     }
 

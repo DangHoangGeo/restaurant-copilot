@@ -6,29 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-interface OperatingHour {
-  isOpen: boolean;
-  openTime: string;
-  closeTime: string;
-  isClosed: boolean;
-}
+import {
+  OPENING_HOURS_DAYS,
+  type OpeningHours,
+  type OpeningHoursDay,
+  type OpeningHoursDayKey,
+} from "@/lib/utils/opening-hours";
 
 interface OperatingHoursProps {
-  value: Record<string, OperatingHour>;
-  onChange: (hours: Record<string, OperatingHour>) => void;
+  value: OpeningHours;
+  onChange: (hours: OpeningHours) => void;
   disabled?: boolean;
 }
-
-const DAYS = [
-  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
-];
 
 export function OperatingHoursEditor({ value, onChange, disabled = false }: OperatingHoursProps) {
   const t = useTranslations("owner.settings");
   const tCommon = useTranslations("common");
 
-  const updateDay = (day: string, updates: Partial<OperatingHour>) => {
+  const updateDay = (day: OpeningHoursDayKey, updates: Partial<OpeningHoursDay>) => {
     onChange({
       ...value,
       [day]: {
@@ -38,9 +33,9 @@ export function OperatingHoursEditor({ value, onChange, disabled = false }: Oper
     });
   };
 
-  const setAllDays = (template: OperatingHour) => {
-    const newHours: Record<string, OperatingHour> = {};
-    DAYS.forEach(day => {
+  const setAllDays = (template: OpeningHoursDay) => {
+    const newHours = {} as OpeningHours;
+    OPENING_HOURS_DAYS.forEach(day => {
       newHours[day] = { ...template };
     });
     onChange(newHours);
@@ -87,7 +82,7 @@ export function OperatingHoursEditor({ value, onChange, disabled = false }: Oper
       </div>
 
       <div className="space-y-3">
-        {DAYS.map(day => {
+        {OPENING_HOURS_DAYS.map(day => {
           const dayHours = value[day] || { isOpen: true, openTime: '09:00', closeTime: '21:00', isClosed: false };
           
           return (

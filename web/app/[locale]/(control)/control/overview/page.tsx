@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { ControlOverviewClient } from '@/components/features/admin/control/control-overview-client';
 import { resolveFounderControlContext } from '@/lib/server/control/access';
 import { getFounderControlOverview } from '@/lib/server/control/overview';
@@ -24,6 +24,10 @@ export default async function ControlOverviewPage({
 
   if (!ctx) {
     notFound();
+  }
+
+  if (!ctx.organization.onboarding_completed_at) {
+    redirect(`/${locale}/control/onboarding`);
   }
 
   const data = await getFounderControlOverview({

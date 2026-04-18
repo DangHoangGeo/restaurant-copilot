@@ -53,7 +53,7 @@ export default async function ControlOnboardingPage({
           description_en: org.description_en ?? '',
           description_ja: org.description_ja ?? '',
           description_vi: org.description_vi ?? '',
-          website: org.website ?? '',
+          address: org.address ?? '',
           phone: org.phone ?? '',
           email: org.email ?? '',
         }}

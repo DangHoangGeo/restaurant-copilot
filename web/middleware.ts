@@ -505,7 +505,8 @@ export async function middleware(req: NextRequest) {
           new URL(
             buildRootControlUrl(
               currentLocaleForLogic,
-              rootDashboardAccess.public_subdomain
+              rootDashboardAccess.public_subdomain,
+              rootDashboardAccess.onboarding_completed_at,
             )
           )
         );
@@ -717,7 +718,8 @@ export async function middleware(req: NextRequest) {
           new URL(
             buildRootControlUrl(
               currentLocaleForLogic,
-              rootDashboardAccess.public_subdomain
+              rootDashboardAccess.public_subdomain,
+              rootDashboardAccess.onboarding_completed_at,
             )
           )
         );

@@ -12,6 +12,7 @@ import {
 } from '@/lib/server/authorization/service';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
+import { normalizeOpeningHours } from '@/lib/utils/opening-hours';
 
 const branchSettingsSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -30,6 +31,8 @@ const branchSettingsSchema = z.object({
   currency: z.enum(['JPY', 'USD', 'VND', 'SGD']).nullable().optional(),
   tax: z.number().min(0).max(1).nullable().optional(),
   default_language: z.enum(['ja', 'en', 'vi']).optional(),
+  opening_hours: z.record(z.string(), z.any()).optional(),
+  mark_ready: z.boolean().optional(),
 });
 
 export async function PATCH(
@@ -70,11 +73,30 @@ export async function PATCH(
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
   }
 
+  const {
+    opening_hours,
+    mark_ready,
+    ...updates
+  } = parsed.data;
+
+  const payload: Record<string, unknown> = {
+    ...updates,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (opening_hours) {
+    payload.opening_hours = JSON.stringify(normalizeOpeningHours(opening_hours));
+  }
+
+  if (mark_ready) {
+    payload.onboarded = true;
+  }
+
   const { data: updated, error } = await supabaseAdmin
     .from('restaurants')
-    .update({ ...parsed.data, updated_at: new Date().toISOString() })
+    .update(payload)
     .eq('id', branchId)
-    .select('id, name, subdomain, address, phone, email, timezone, currency, tax, default_language')
+    .select('id, name, subdomain, address, phone, email, timezone, currency, tax, default_language, opening_hours, onboarded')
     .single();
 
   if (error) {

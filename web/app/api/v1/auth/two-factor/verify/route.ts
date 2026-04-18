@@ -92,7 +92,8 @@ export async function POST(req: NextRequest) {
     const redirectUrl = rootDashboardAccess
       ? buildRootControlUrl(
           restaurant.default_language,
-          rootDashboardAccess.public_subdomain
+          rootDashboardAccess.public_subdomain,
+          rootDashboardAccess.onboarding_completed_at,
         )
       : buildBranchDashboardUrl(
           appSubdomain,

@@ -33,7 +33,12 @@ export async function PATCH(
       const result = await approveOrganizationLifecycle(
         organizationId,
         admin.id,
-        validated.notes ?? null
+        {
+          notes: validated.notes ?? null,
+          planId: validated.plan_id,
+          billingCycle: validated.billing_cycle,
+          trialDays: validated.trial_days,
+        }
       );
 
       if (!result.success) {
@@ -47,6 +52,9 @@ export async function PATCH(
         result.restaurantIds?.[0] ?? null ?? undefined,
         {
           notes: validated.notes ?? null,
+          plan_id: validated.plan_id ?? null,
+          billing_cycle: validated.billing_cycle ?? null,
+          trial_days: validated.trial_days ?? null,
           restaurant_ids: result.restaurantIds ?? [],
         }
       );

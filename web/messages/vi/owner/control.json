@@ -2,6 +2,11 @@
   "eyebrow": "Founder Control",
   "subtitle": "Nhìn toàn doanh nghiệp trước, rồi chỉ đi vào từng chi nhánh khi cần xử lý vận hành tại chỗ.",
   "singleBranch": "Có 1 chi nhánh khả dụng",
+  "allBranches": "Có {count} chi nhánh khả dụng",
+  "branchScope": {
+    "label": "Công cụ theo chi nhánh",
+    "hint": "Các trang cấp tổ chức vẫn ở phạm vi công ty, còn công cụ theo chi nhánh sẽ mở theo chi nhánh đang chọn."
+  },
   "nav": {
     "overview": "Tổng quan",
     "restaurants": "Chi nhánh",

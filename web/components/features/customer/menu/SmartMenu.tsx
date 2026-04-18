@@ -656,7 +656,7 @@ export function SmartMenu({
               onClick={() =>
                 setView("history", { tableId, sessionId, tableNumber })
               }
-              className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+              className="h-10 w-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
               aria-label="Order history"
             >
               <Clock className="h-4 w-4" />
@@ -664,7 +664,7 @@ export function SmartMenu({
           )}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+            className="h-10 w-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
             aria-label={
               theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
             }
@@ -675,7 +675,7 @@ export function SmartMenu({
               <Moon className="h-4 w-4" />
             )}
           </button>
-          <div className="[&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:h-9 [&_button]:rounded-full [&_button]:bg-white/15">
+          <div className="[&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:h-10 [&_button]:rounded-full [&_button]:bg-white/15">
             <LanguageSwitcher
               currentLocale={selectedLocale}
               onLocaleChange={setSelectedLocale}
@@ -684,8 +684,8 @@ export function SmartMenu({
         </div>
 
         {/* Main content */}
-        <div className="relative px-5 pt-3 pb-12">
-          <div className="flex items-center gap-4">
+        <div className="relative px-4 pt-2 pb-8">
+          <div className="flex items-center gap-3">
             {/* Logo or initial */}
             <motion.div
               initial={{ scale: 0.7, opacity: 0 }}
@@ -694,48 +694,43 @@ export function SmartMenu({
               className="flex-shrink-0"
             >
               {logoUrl ? (
-                <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/40 shadow-2xl">
+                <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-white/40 shadow-xl">
                   <Image
                     src={logoUrl}
                     alt={restaurantName}
-                    width={64}
-                    height={64}
+                    width={48}
+                    height={48}
                     className="w-full h-full object-cover"
                   />
                 </div>
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/30 shadow-2xl flex items-center justify-center">
-                  <UtensilsCrossed className="h-7 w-7 text-white/80" />
+                <div className="w-12 h-12 rounded-xl bg-white/20 border-2 border-white/30 shadow-xl flex items-center justify-center">
+                  <UtensilsCrossed className="h-6 w-6 text-white/80" />
                 </div>
               )}
             </motion.div>
 
-            {/* Restaurant name + subtitle */}
+            {/* Restaurant name + branch */}
             <div className="flex-1 min-w-0">
               <motion.h1
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.12 }}
-                className="font-bold text-white text-xl leading-tight truncate"
+                transition={{ delay: 0.1 }}
+                className="font-bold text-white text-lg leading-tight truncate"
                 style={{ textShadow: "0 1px 4px rgba(0,0,0,0.15)" }}
               >
                 {restaurantName}
               </motion.h1>
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.18 }}
-                className="mt-1 flex flex-wrap items-center gap-2"
-              >
-                {branchName && branchName !== restaurantName ? (
-                  <span className="inline-flex items-center rounded-full bg-white/18 px-2.5 py-1 text-xs font-semibold text-white/95">
-                    {branchName}
-                  </span>
-                ) : null}
-                <p className="text-white/70 text-sm leading-snug line-clamp-1">
-                  {contextualInfo.weatherSuggestion}
-                </p>
-              </motion.div>
+              {branchName && branchName !== restaurantName && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.16 }}
+                  className="inline-flex items-center rounded-full bg-white/18 px-2 py-0.5 text-xs font-medium text-white/90 mt-0.5"
+                >
+                  {branchName}
+                </motion.span>
+              )}
             </div>
 
             {/* Table badge */}
@@ -743,37 +738,18 @@ export function SmartMenu({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.22 }}
-                className="flex-shrink-0 bg-white/20 border border-white/30 rounded-2xl px-3 py-2 text-center shadow-lg backdrop-blur-sm"
+                transition={{ delay: 0.18 }}
+                className="flex-shrink-0 bg-white/20 border border-white/30 rounded-xl px-3 py-1.5 text-center shadow-md backdrop-blur-sm"
               >
-                <p className="text-white/60 text-xs uppercase tracking-widest font-medium leading-none">
+                <p className="text-white/60 text-[10px] uppercase tracking-widest font-medium leading-none">
                   Table
                 </p>
-                <p className="text-white font-bold text-xl leading-none mt-1">
+                <p className="text-white font-bold text-lg leading-none mt-0.5">
                   {tableNumber}
                 </p>
               </motion.div>
             )}
           </div>
-
-          {/* Greeting strip */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.28 }}
-            className="mt-4 flex items-center gap-2.5 bg-black/10 rounded-xl px-4 py-2.5"
-          >
-            <Clock className="h-3.5 w-3.5 text-white/70 flex-shrink-0" />
-            <p className="text-sm leading-snug">
-              <span className="font-semibold text-white">
-                {contextualInfo.timeGreeting}
-              </span>
-              <span className="text-white/60 mx-1.5">·</span>
-              <span className="text-white/75">
-                {contextualInfo.greeting.split("!")[0]}!
-              </span>
-            </p>
-          </motion.div>
         </div>
 
         {/* Wave bottom divider */}
@@ -828,10 +804,10 @@ export function SmartMenu({
 
         {/* Category pills */}
         {activeCategories.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto px-4 py-2.5 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-hide">
             <button
               onClick={() => setActiveCategoryFilter(null)}
-              className="flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 border focus:outline-none"
+              className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus:outline-none"
               style={
                 !activeCategoryFilter
                   ? {
@@ -864,7 +840,7 @@ export function SmartMenu({
                   onClick={() =>
                     setActiveCategoryFilter(isActive ? null : cat.id)
                   }
-                  className="flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 border focus:outline-none"
+                  className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus:outline-none"
                   style={
                     isActive
                       ? {
@@ -1141,18 +1117,19 @@ export function SmartMenu({
         </Suspense>
 
         {/* Quick Access Actions */}
-        <div className="mt-12 flex justify-center gap-4">
-          {/* Hide AI assistant for now */}
-          <Button
-            variant="outline"
-            onClick={() =>
-              setView("history", { tableId, sessionId, tableNumber })
-            }
-          >
-            {t("view_history")}
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
+        {sessionId && (
+          <div className="mt-12 flex justify-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() =>
+                setView("history", { tableId, sessionId, tableNumber })
+              }
+            >
+              {t("view_history")}
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Item Detail Modal */}

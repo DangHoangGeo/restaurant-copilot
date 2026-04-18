@@ -61,6 +61,7 @@ export default async function ControlRestaurantsPage({
     branchCode: branch.branch_code ?? branch.subdomain,
     employeeCount: employeeCountByBranch.get(branch.id) ?? 0,
     isActive: branch.id === activeBranchId,
+    onboarded: branch.onboarded ?? false,
   }));
 
   return (

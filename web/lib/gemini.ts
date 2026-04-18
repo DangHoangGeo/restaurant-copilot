@@ -474,6 +474,10 @@ Focus on:
 // Factory function to create Gemini helper instance
 export function createGeminiHelper(config?: Partial<GeminiConfig>): GeminiHelper {
   const apiKey = config?.apiKey || process.env.GEMINI_API_KEY;
+  const model =
+    config?.model ||
+    process.env.GEMINI_MODEL ||
+    process.env.NEXT_PUBLIC_GEMINI_MODEL;
   
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY environment variable is required');
@@ -481,7 +485,7 @@ export function createGeminiHelper(config?: Partial<GeminiConfig>): GeminiHelper
 
   return new GeminiHelper({
     apiKey,
-    model: config?.model
+    model,
   });
 }
 
