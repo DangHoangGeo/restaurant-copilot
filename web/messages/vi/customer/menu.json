@@ -27,6 +27,8 @@
   "view_classic": "Xem thực đơn cổ điển",
   "browse_categories": "Duyệt danh mục",
   "no_items_found": "Không tìm thấy món nào trong danh mục này.",
+  "item_load_error_title": "Không thể mở món này",
+  "item_load_error_description": "Không thể tải tùy chọn của món này. Vui lòng thử lại.",
   "categories": {
     "all": "Tất cả món",
     "featured": "Nổi bật",
@@ -79,10 +81,10 @@
     "reviews": "Đánh giá",
     "rating": "Đánh giá",
     "description": "Mô tả",
-    "decrease_quantity": "Giảm số lượng",
-    "increase_quantity": "Tăng số lượng",
     "show_more": "Xem thêm",
-    "show_less": "Thu gọn"
+    "show_less": "Thu gọn",
+    "decrease_quantity": "Giảm số lượng",
+    "increase_quantity": "Tăng số lượng"
   },
   "ai_assistant": {
     "title": "Trợ lý nhà hàng",

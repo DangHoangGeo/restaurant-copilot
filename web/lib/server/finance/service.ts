@@ -167,6 +167,51 @@ export async function listMonthlySnapshots(
   return listSnapshots(restaurantId, limit);
 }
 
+export async function getMonthlyRollupForBranches(params: {
+  branchIds: string[];
+  year: number;
+  month: number;
+}): Promise<{
+  year: number;
+  month: number;
+  branch_count: number;
+  branches_with_snapshot: number;
+  revenue_total: number;
+  discount_total: number;
+  approved_labor_hours: number;
+  combined_cost_total: number;
+  gross_profit_estimate: number;
+  snapshots: MonthlyFinanceSnapshot[];
+}> {
+  const { branchIds, year, month } = params;
+  const snapshots = await getClosedSnapshotsForBranches(branchIds, year, month);
+
+  const revenue_total = snapshots.reduce((sum, snapshot) => sum + snapshot.revenue_total, 0);
+  const discount_total = snapshots.reduce((sum, snapshot) => sum + snapshot.discount_total, 0);
+  const approved_labor_hours = snapshots.reduce(
+    (sum, snapshot) => sum + snapshot.approved_labor_hours,
+    0
+  );
+  const combined_cost_total = snapshots.reduce(
+    (sum, snapshot) => sum + snapshot.combined_cost_total,
+    0
+  );
+  const gross_profit_estimate = revenue_total - discount_total - combined_cost_total;
+
+  return {
+    year,
+    month,
+    branch_count: branchIds.length,
+    branches_with_snapshot: snapshots.length,
+    revenue_total,
+    discount_total,
+    approved_labor_hours: parseFloat(approved_labor_hours.toFixed(2)),
+    combined_cost_total,
+    gross_profit_estimate,
+    snapshots,
+  };
+}
+
 /**
  * Org-level monthly rollup: aggregate closed snapshots across all branches
  * in the organization. Branches without a closed snapshot for that month
@@ -191,26 +236,11 @@ export async function getOrgMonthlyRollup(params: {
   const { organizationId, year, month } = params;
 
   const branchIds = await getBranchIdsForOrg(organizationId);
-  const snapshots = await getClosedSnapshotsForBranches(branchIds, year, month);
-
-  const revenue_total        = snapshots.reduce((s, r) => s + r.revenue_total, 0);
-  const discount_total       = snapshots.reduce((s, r) => s + r.discount_total, 0);
-  const approved_labor_hours = snapshots.reduce((s, r) => s + r.approved_labor_hours, 0);
-  const combined_cost_total  = snapshots.reduce((s, r) => s + r.combined_cost_total, 0);
-  const gross_profit_estimate = revenue_total - discount_total - combined_cost_total;
-
-  return {
+  return getMonthlyRollupForBranches({
+    branchIds,
     year,
     month,
-    branch_count: branchIds.length,
-    branches_with_snapshot: snapshots.length,
-    revenue_total,
-    discount_total,
-    approved_labor_hours: parseFloat(approved_labor_hours.toFixed(2)),
-    combined_cost_total,
-    gross_profit_estimate,
-    snapshots,
-  };
+  });
 }
 
 /**

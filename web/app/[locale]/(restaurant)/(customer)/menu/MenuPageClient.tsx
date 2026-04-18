@@ -38,12 +38,13 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoiningSession, setIsJoiningSession] = useState<boolean>(false);
   const [resolveError, setResolveError] = useState<string | null>(null);
+  const [passcodeCopied, setPasscodeCopied] = useState<boolean>(false);
 
   const brandColor = restaurantSettings?.primaryColor || '#3b82f6';
 
   // Handle session resolution for QR codes and session parameters
   useEffect(() => {
-    if (!sessionParams.code && !sessionParams.sessionId) {
+    if (!sessionParams.code && !sessionParams.sessionId && !(sessionParams.branch && sessionParams.table)) {
       return;
     }
 
@@ -55,6 +56,31 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         // Handle existing sessionId parameter (direct session access)
         if (sessionParams.sessionId) {
           // Context already handles this, we just need to verify it's still valid
+        }
+        else if (sessionParams.branch && sessionParams.table) {
+          const params = new URLSearchParams({
+            branch: sessionParams.branch,
+            table: sessionParams.table,
+          });
+          const orgIdentifier = getSubdomainFromHost(window.location.host);
+          if (orgIdentifier) params.set('org', orgIdentifier);
+
+          const response = await fetch(`/api/v1/customer/entry/resolve?${params.toString()}`);
+          const result = await response.json();
+
+          if (result.success) {
+            setTableId(result.table.id);
+
+            if (result.activeSessionId) {
+              setPendingSessionId(result.activeSessionId);
+              setRequirePasscode(result.requirePasscode || false);
+              setShowJoinDialog(true);
+            } else {
+              setShowGuestDialog(true);
+            }
+          } else {
+            setResolveError(t('invalid_session_message'));
+          }
         }
         // Handle QR code scanning (code parameter)
         else if (sessionParams.code) {
@@ -86,7 +112,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     };
 
     resolveSession();
-  }, [sessionParams.code, sessionParams.sessionId, t]);
+  }, [sessionParams.branch, sessionParams.code, sessionParams.sessionId, sessionParams.table, t]);
 
   // Start new session (called when guest count dialog is submitted)
   const startSession = async () => {
@@ -188,6 +214,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     setShowGuestDialog(false);
     setGuestDialogStep('guests');
     setStartSessionError(null);
+    setPasscodeCopied(false);
   };
 
   const handleGuestDialogOpenChange = (open: boolean) => {
@@ -195,6 +222,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       setShowGuestDialog(false);
       setGuestDialogStep('guests');
       setStartSessionError(null);
+      setPasscodeCopied(false);
     }
   };
 
@@ -204,6 +232,18 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
       setPasscode('');
       setJoinError(null);
       setIsJoiningSession(false);
+    }
+  };
+
+  const handleCopyPasscode = async () => {
+    if (!sessionPasscode) return;
+
+    try {
+      await navigator.clipboard.writeText(sessionPasscode);
+      setPasscodeCopied(true);
+      window.setTimeout(() => setPasscodeCopied(false), 1500);
+    } catch (error) {
+      console.error('Failed to copy session passcode:', error);
     }
   };
 
@@ -299,7 +339,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-100-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">{t('redirecting_to_history')}</p>
         </div>
       </div>
@@ -318,7 +358,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         restaurantId={restaurantSettings?.id || ''}
         restaurantName={restaurantSettings?.name}
         logoUrl={restaurantSettings?.logoUrl}
-        allowOrderNotes={restaurantSettings?.allow_order_notes ?? true}
+        allowOrderNotes={restaurantSettings?.allowOrderNotes ?? true}
       />
 
       {/* Guest Count + Passcode Dialog (combined 2-step) */}
@@ -449,6 +489,15 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               </div>
 
               <p className="text-xs text-gray-400 mb-6">{t('passcode_instructions')}</p>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCopyPasscode}
+                className="w-full h-11 mb-3"
+              >
+                {passcodeCopied ? t('copied') : t('copy_passcode')}
+              </Button>
 
               <Button
                 onClick={handleContinueToMenu}

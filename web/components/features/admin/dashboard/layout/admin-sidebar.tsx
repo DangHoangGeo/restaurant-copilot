@@ -6,22 +6,17 @@ import { usePathname, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Home,
-  Settings,
   ClipboardList,
   TableIcon as TableSimpleIcon,
   UserCog,
   BarChartBig,
-  Eye,
   X,
   BookUser,
   List,
   LucideIcon,
   Sparkles,
-  Building2,
-  Layers,
   ShoppingCart,
-  FileText,
-  Tag,
+  LayoutGrid,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -78,13 +73,13 @@ export function AdminSidebar({
             {
               icon: Home,
               labelKey: "admin_sidebar_dashboard",
-              href: "/dashboard",
+              href: "/branch",
               exact: true,
             },
             {
               icon: Sparkles,
               labelKey: "admin_sidebar_onboarding",
-              href: "/dashboard/onboarding",
+              href: "/control/onboarding",
             },
           ],
         },
@@ -96,34 +91,34 @@ export function AdminSidebar({
             {
               icon: Home,
               labelKey: "admin_sidebar_dashboard",
-              href: "/dashboard",
+              href: "/branch",
               exact: true,
             },
             {
               icon: List,
               labelKey: "admin_sidebar_orders",
-              href: "/dashboard/orders",
+              href: "/branch/orders",
             },
             {
               icon: ClipboardList,
               labelKey: "admin_sidebar_menu_management",
-              href: "/dashboard/menu",
+              href: "/branch/menu",
             },
             {
               icon: TableSimpleIcon,
               labelKey: "admin_sidebar_table_qr_management",
-              href: "/dashboard/tables",
+              href: "/branch/tables",
             },
             {
               icon: BookUser,
               labelKey: "admin_sidebar_bookings_preorders",
-              href: "/dashboard/bookings",
+              href: "/branch/bookings",
               featureFlag: FEATURE_FLAGS.tableBooking,
             },
             {
               icon: BarChartBig,
               labelKey: "admin_sidebar_reports_analytics",
-              href: "/dashboard/reports",
+              href: "/branch/reports",
             },
           ],
         },
@@ -133,7 +128,7 @@ export function AdminSidebar({
             {
               icon: UserCog,
               labelKey: "admin_sidebar_employees_schedules",
-              href: "/dashboard/employees",
+              href: "/branch/employees",
             },
           ],
         },
@@ -143,17 +138,7 @@ export function AdminSidebar({
             {
               icon: ShoppingCart,
               labelKey: "admin_sidebar_purchasing",
-              href: "/dashboard/purchasing",
-            },
-            {
-              icon: FileText,
-              labelKey: "admin_sidebar_finance",
-              href: "/dashboard/finance",
-            },
-            {
-              icon: Tag,
-              labelKey: "admin_sidebar_promotions",
-              href: "/dashboard/promotions",
+              href: "/branch/purchasing",
             },
           ],
         },
@@ -161,24 +146,10 @@ export function AdminSidebar({
           headingKey: "nav_group_settings",
           items: [
             {
-              icon: Layers,
-              labelKey: "admin_sidebar_branches",
-              href: "/dashboard/branches",
-            },
-            {
-              icon: Building2,
-              labelKey: "admin_sidebar_organization",
-              href: "/dashboard/organization",
-            },
-            {
-              icon: Eye,
-              labelKey: "admin_sidebar_homepage_management",
-              href: "/dashboard/homepage",
-            },
-            {
-              icon: Settings,
-              labelKey: "admin_sidebar_restaurant_settings",
-              href: "/dashboard/settings",
+              icon: LayoutGrid,
+              labelKey: "admin_sidebar_overview",
+              href: "/branch",
+              exact: true,
             },
           ],
         },
@@ -197,7 +168,7 @@ export function AdminSidebar({
       : pathname.startsWith(fullHref);
 
     return (
-      <Link href={fullHref} passHref legacyBehavior prefetch={false}>
+      <Link href={fullHref} passHref legacyBehavior>
         <a
           onClick={() => {
             if (isOpen && window.innerWidth < 1024) setIsOpen(false);
@@ -235,8 +206,7 @@ export function AdminSidebar({
       >
         <div className="flex items-center justify-between h-16 px-4 border-b flex-shrink-0">
           <Link
-            href={`/${locale}/dashboard`}
-            prefetch={false}
+            href={`/${locale}/branch`}
             className="flex items-center"
             onClick={() => setIsOpen(false)}
           >

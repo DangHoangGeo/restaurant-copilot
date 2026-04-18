@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logEvent } from "@/lib/logger";
+import {
+  buildBranchDashboardUrl,
+  buildRootControlUrl,
+  getRootDashboardAccess,
+} from "@/lib/server/organizations/root-dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -305,6 +310,16 @@ export async function POST(req: NextRequest) {
 
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
     const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
+    const { data: orgLink } = await supabaseAdmin
+      .from("organization_restaurants")
+      .select("owner_organizations(public_subdomain)")
+      .eq("restaurant_id", restaurantId)
+      .maybeSingle();
+
+    const ownerOrganization = Array.isArray(orgLink?.owner_organizations)
+      ? orgLink.owner_organizations[0]
+      : orgLink?.owner_organizations;
+    const appSubdomain = ownerOrganization?.public_subdomain || restaurantSubdomain;
 
     // Check approval/suspension status before allowing access to the dashboard.
     const isSuspended = restaurant.suspended_at != null;
@@ -330,10 +345,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let redirectUrl = `https://${restaurantSubdomain}.${productionUrl}/${defaultLanguage}/dashboard`;
-    if (isDevelopment) {
-      redirectUrl = `http://${restaurantSubdomain}.localhost:3000/${defaultLanguage}/dashboard`;
-    }
+    const rootDashboardAccess = await getRootDashboardAccess(data.user.id);
+
+    const redirectUrl = rootDashboardAccess
+      ? buildRootControlUrl(defaultLanguage, rootDashboardAccess.public_subdomain)
+      : buildBranchDashboardUrl(appSubdomain, defaultLanguage);
 
     const response = NextResponse.json({
       message: "Login successful",

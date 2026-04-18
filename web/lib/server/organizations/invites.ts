@@ -5,8 +5,8 @@
 // the invited person — who may or may not already have a Supabase auth account.
 //
 // Flow:
-//   1. Founder calls createPendingInvite()    → invite row + token returned
-//   2. Token is shared with invitee (email TBD; token returned to API caller for now)
+//   1. Founder calls createPendingInvite()    → invite row + token returned, email sent
+//   2. Invitee receives branded email with acceptance link (or token for manual distribution)
 //   3. Invitee calls acceptPendingInvite()    → validated, org member created
 //   4. Founder may call revokePendingInvite() → sets is_active = false
 
@@ -14,6 +14,7 @@ import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { addOrganizationMember } from './queries';
 import type { PendingInvite, OrgMemberRole, ShopScope } from './types';
+import { sendInviteEmail, sendResendInviteEmail } from '@/lib/server/email';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Invite queries (admin client — callers are validated at route level via RLS)
@@ -23,14 +24,19 @@ function generateInviteToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-/** Create a pending invite. Returns the full invite row including the token. */
+/**
+ * Create a pending invite. Returns the full invite row including the token.
+ * Also dispatches a branded invite email to the invitee (non-blocking, best-effort).
+ * orgName is used in the email subject and body.
+ */
 export async function createPendingInvite(
   orgId: string,
   invitedByUserId: string,
   email: string,
   role: OrgMemberRole,
   shopScope: ShopScope,
-  selectedRestaurantIds?: string[]
+  selectedRestaurantIds?: string[],
+  orgName?: string
 ): Promise<PendingInvite | null> {
   const token = generateInviteToken();
 
@@ -55,6 +61,12 @@ export async function createPendingInvite(
     console.error('Failed to create pending invite:', error);
     return null;
   }
+
+  // Send invite email asynchronously — failure is non-fatal (token still returned)
+  const name = orgName ?? 'your organization';
+  sendInviteEmail(email.toLowerCase().trim(), name, token).catch((err) =>
+    console.error('[invites] Failed to send invite email:', err)
+  );
 
   return data as PendingInvite;
 }
@@ -115,6 +127,58 @@ export async function revokePendingInvite(inviteId: string): Promise<boolean> {
   return !error;
 }
 
+/**
+ * Resend a pending invite: generates a fresh token and extends expiry by 7 days.
+ * Returns the new token on success, null on failure.
+ * Validates that the invite belongs to the given org and has not been accepted.
+ * orgName is used in the resend email subject and body.
+ */
+export async function resendPendingInvite(
+  inviteId: string,
+  orgId: string,
+  orgName?: string
+): Promise<{ invite_token: string; expires_at: string } | null> {
+  // Fetch the current invite to validate state and get current resend_count
+  const { data: invite, error: fetchError } = await supabaseAdmin
+    .from('organization_pending_invites')
+    .select('id, organization_id, email, is_active, accepted_at, resend_count')
+    .eq('id', inviteId)
+    .single();
+
+  if (fetchError || !invite) return null;
+  if (invite.organization_id !== orgId) return null;
+  if (!invite.is_active || invite.accepted_at !== null) return null;
+
+  const newToken = generateInviteToken();
+  const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const currentCount: number = (invite.resend_count as number | null) ?? 0;
+
+  const { data: updated, error: updateError } = await supabaseAdmin
+    .from('organization_pending_invites')
+    .update({
+      invite_token: newToken,
+      expires_at: newExpiry,
+      last_resent_at: new Date().toISOString(),
+      resend_count: currentCount + 1,
+    })
+    .eq('id', inviteId)
+    .select('invite_token, expires_at')
+    .single();
+
+  if (updateError || !updated) {
+    console.error('Failed to resend invite:', updateError);
+    return null;
+  }
+
+  // Send resend email asynchronously — failure is non-fatal
+  const name = orgName ?? 'your organization';
+  sendResendInviteEmail(invite.email as string, name, updated.invite_token).catch((err) =>
+    console.error('[invites] Failed to send resend email:', err)
+  );
+
+  return { invite_token: updated.invite_token, expires_at: updated.expires_at };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Accept invite — handles both new and existing users
 // ─────────────────────────────────────────────────────────────────────────────
@@ -156,15 +220,18 @@ export async function acceptPendingInvite(
   let userId: string;
   let newUserCreated = false;
 
-  // 2. Check if user already exists in Supabase auth
-  const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-  const existingAuthUser = existingUsers?.users?.find(
-    (u) => u.email?.toLowerCase() === email
-  );
+  // 2. Check if user already exists by looking up the users table (indexed on email).
+  //    Using the users table avoids an unbounded auth.admin.listUsers() scan that would
+  //    only return the first page of results and miss users beyond the page limit.
+  const { data: existingUserRow } = await supabaseAdmin
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .single();
 
-  if (existingAuthUser) {
+  if (existingUserRow) {
     // User already has an auth account — just resolve their user_id
-    userId = existingAuthUser.id;
+    userId = existingUserRow.id;
   } else {
     // New user — require name and password
     if (!name || !password) {

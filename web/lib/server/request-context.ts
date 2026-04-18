@@ -32,7 +32,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     // does not need to make a separate DB call.
     const { data: userRecords, error: userRecordError } = await supabase
       .from('users')
-      .select('restaurant_id, role, restaurants(id, name, logo_url, subdomain, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi, is_verified, is_active, suspended_at)')
+      .select('restaurant_id, role, restaurants(id, name, logo_url, subdomain, branch_code, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi, is_verified, is_active, suspended_at)')
       .eq('id', supabaseUser.id);
 
     if (userRecordError || !userRecords || userRecords.length === 0) {
@@ -63,6 +63,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       name: string;
       logo_url: string | null;
       subdomain: string;
+      branch_code?: string | null;
       brand_color: string | null;
       default_language: string | null;
       onboarded: boolean | null;
@@ -117,7 +118,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
         // everything they need (subdomain, name, logo, etc.) without an extra query.
         const { data: activeBranchRow } = await supabaseAdmin
           .from('restaurants')
-          .select('id, name, logo_url, subdomain, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi')
+          .select('id, name, logo_url, subdomain, branch_code, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi')
           .eq('id', activeBranchCookie)
           .single();
         subdomain = activeBranchRow?.subdomain ?? null;
@@ -127,6 +128,23 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       }
       // If validation fails (access revoked, stale cookie), fall through to
       // the base restaurantId — the stale cookie is silently ignored.
+    }
+
+    if (restaurantId && restaurantSettings) {
+      const { data: orgLink } = await supabaseAdmin
+        .from('organization_restaurants')
+        .select('owner_organizations(public_subdomain)')
+        .eq('restaurant_id', restaurantId)
+        .maybeSingle();
+
+      const ownerOrganization = Array.isArray(orgLink?.owner_organizations)
+        ? orgLink?.owner_organizations[0]
+        : orgLink?.owner_organizations;
+
+      restaurantSettings = {
+        ...restaurantSettings,
+        company_public_subdomain: ownerOrganization?.public_subdomain ?? null,
+      };
     }
 
     return {
@@ -155,6 +173,7 @@ function buildRestaurantSettings(row: {
   name: string;
   logo_url: string | null;
   subdomain: string;
+  branch_code?: string | null;
   brand_color: string | null;
   default_language: string | null;
   onboarded: boolean | null;
@@ -172,6 +191,8 @@ function buildRestaurantSettings(row: {
     name: row.name,
     logoUrl: row.logo_url,
     subdomain: row.subdomain,
+    branch_code: row.branch_code ?? null,
+    company_public_subdomain: null,
     primaryColor: row.brand_color || '#3B82F6',
     defaultLocale: row.default_language || 'en',
     onboarded: row.onboarded || false,

@@ -122,6 +122,7 @@ export async function PATCH(
         .eq('restaurant_id', restaurantId)
         .in('status', ['trial', 'active'])
 
+
       await logPlatformAction('suspend_restaurant', 'restaurant', restaurantId, restaurantId, {
         reason: validated.reason,
         notes: validated.notes,

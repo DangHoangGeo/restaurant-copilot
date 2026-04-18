@@ -1,235 +1,188 @@
-CoOrder is a mobile-first, AI-augmented SaaS platform that empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet. Each restaurant gets its own subdomain (e.g. `restaurantabc.coorder`) and full data isolation via Supabase’s Row-Level Security. Customers can browse a multilingual menu, book a table, preorder dishes, place orders via QR codes, and leave reviews. Staff use an iOS app to receive and process orders in real time, print kitchen tickets and customer receipts over Bluetooth ESC/POS, manage bookings, and view smart analytics. Advanced features—including credit-card/PayPay payments, an AI-powered chatbot assistant, and messaging integrations—are feature-flagged for a smooth, iterative rollout.
+# Restaurant Copilot
 
----
+Restaurant Copilot exists to help a founder fully operate one or more restaurants from a phone.
 
-## Key Features
+That means the product must stay simple under pressure, powerful in real operations, and trustworthy enough for daily use by founders, managers, and staff. We are not building a complex admin panel. We are building a calm, mobile-first operating system for running restaurants.
 
-* **Multi-Tenant Architecture & Subdomains**
-  • Each restaurant registers its own subdomain (e.g. `yourbrand.coorder`).
-  • Supabase RLS ensures total data isolation: users and staff in one restaurant cannot access another’s data.
+## Mission
 
-* **Restaurant Admin Dashboard (Web)**
-  • **Branding & Localization**—Set restaurant name, logo, brand colors, contact info, and default language (Japanese, English, Vietnamese).
-  • **Menu Management**—Create/edit categories and items (multi-language names/descriptions, price, images, tags, availability per weekday, ratings, feedback).
-  • **Table & QR Code Management**—Define tables, generate/download per-table QR codes for ordering or booking.
-  • **Employee & Schedule Management**—Assign roles (chef/server/cashier/manager). Enhanced features include comprehensive weekly schedule management, attendance tracking via QR code check-in/out, verification of attendance records, and basic performance overviews (total hours).
-  • **Booking & Pre-Ordering**—Accept table reservations, take preorders, check for time conflicts, and let staff confirm or cancel bookings.
-  • **Reports & Analytics**—
-     • **Dashboard Cards**: Today’s sales, active orders count, top-seller, low-stock alerts.
-     • **Sales Reports**: Revenue charts (daily/weekly/monthly), category breakdown pie-chart.
-     • **Items Report**: Quantity sold, revenue, average rating per item (sortable, exportable).
-     • **Feedback Management**: View or resolve customer reviews.
-     • **Recommendations & Next-Week Planner**: Generate top-seller suggestions, auto-populate a “Featured” category for next week.
+- Help founders run the business from their phone with less stress.
+- Keep daily operations clear: what needs attention now, today, this week, and this month.
+- Preserve the current customer ordering flow as a stable product surface.
+- Expand the system around multi-branch operations, founder control, staff execution, and clean monthly numbers.
 
-* **Customer-Facing Website (Web)**
-  • **Fully Multilingual** (ja, en, vi)—Menu, buttons, prompts, errors—all localized via `next-intl`.
-  • **QR Code Ordering & Booking**—
-     1. Scan table’s QR code → creates a new “session” tied to that table.
-     2. Browse menu (only items available on the current weekday).
-     3. Sort by “Top Seller”/price/rating, adjust quantity, see inline star ratings and review counts.
-     4. Checkout (current version: cash; future: card/PayPay) or submit a booking with optional preorder.
-     5. Session expires upon checkout or booking confirmation.
-  • **Booking Flow**—Select date/time, party size, enter contact info, optionally preorder dishes. Staff see incoming bookings in their iOS app.
-  • **Reviews**—After ordering or booking, customers can rate each dish (1–5 stars) and leave comments inline.
+## Product North Star
 
-* **Staff iOS App**
-  • **Realtime Order Management**—
-     • Orders created on the web appear instantly via Supabase Realtime.
-     • View order details (table, dishes, notes, total).
-     • Transition status: New → Preparing → Ready → Completed.
-     • “Complete & Print” sends an ESC/POS receipt to a Bluetooth printer.
-  • **Kitchen Grouping Board (iPad-Optimized)**—Automatically group identical dishes from multiple orders placed in the last 10 minutes. Display quantity and table numbers; tap “Mark Done” to clear the group and print a consolidated ticket.
-  • **Table Booking Management**—View pending bookings, confirm or cancel, view any preorders included, all in one screen.
-  • **Low-Stock Alerts & Notifications**—Realtime subscriptions to inventory levels trigger in-app banners when stock falls below thresholds.
-  • **Printer Setup & ESC/POS Print**—Scan for nearby ESC/POS Bluetooth printers, connect, test-print, and handle retry logic.
-  • **Feature Flag Support**—If “Payments” or “AI Chat” flags are off, related UI elements remain hidden.
+The best version of this product lets a founder:
 
-* **Advanced Modules (Feature-Flagged for Future Phases)**
-  • **Online Payments (Stripe & PayPay)**—Web checkout with Stripe Elements or PayPay button; iOS PaymentSheet integration; webhooks confirm payment and trigger receipt printing.
-  • **AI Assistant (Chatbot)**—Customers ask “What should I order?” in their language; the AI responds with tailored recommendations based on that restaurant’s current menu. All chat calls are rate-limited and logged.
-  • **Messaging Integrations**—Link the dashboard to Facebook Messenger, LINE, WhatsApp, etc., for two-way communication (e.g., booking confirmations, customer support).
+- switch between branches in seconds
+- see what needs attention first
+- monitor sales, staffing, attendance, and purchases
+- approve important exceptions without digging through settings
+- trust the numbers enough to use them for payroll and accountant review
 
----
+If a feature does not help a founder, manager, or staff member operate faster and with more confidence from a phone, it should be questioned.
 
-## Technology Stack
+## Non-Negotiable Foundation Rules
 
-**Web (Admin Dashboard & Customer Site)**
+These come from the active foundation documents in [`docs/foundation/README.md`](docs/foundation/README.md), [`docs/foundation/00_owner_business_operations_plan.md`](docs/foundation/00_owner_business_operations_plan.md), [`docs/foundation/01_organization_branch_menu_foundation.md`](docs/foundation/01_organization_branch_menu_foundation.md), and [`docs/foundation/02_ai_agent_execution_plan.md`](docs/foundation/02_ai_agent_execution_plan.md).
 
-* **Framework**: Next.js (App Router, TypeScript)
-* **Styling**: Tailwind CSS
-* **i18n**: next-intl (ja, en, vi)
-* **QR Generation**: react-qr-code
-* **Drag-and-Drop**: react-beautiful-dnd (or headless DnD)
-* **Charts**: recharts (bar, pie)
-* **Forms & Validation**: React Hook Form + Zod
-* **Auth, Database, Realtime, Storage**: Supabase (Postgres + RLS + Auth + Storage + Realtime + Edge Functions + pg\_cron)
-* **Deployment & CI**: Vercel (wildcard domains), GitHub Actions (lint, test, audit, deploy)
+1. Do not break the current customer menu ordering flow.
+2. Treat the current `restaurant` as the branch-level operating unit.
+3. Add multi-branch support through an organization layer above branches.
+4. Keep branch menus independent first.
+5. Keep the owner and manager experience mobile-first and operationally simple.
+6. Keep permissions, finance, and attendance explicit and auditable.
+7. Separate language preference from country-specific business rules.
 
-**Mobile (Staff iOS App)**
+## Product Principles
 
-* **UI Framework**: SwiftUI
-* **Realtime & Auth**: supabase-swift SDK
-* **Bluetooth ESC/POS**: CoreBluetooth + ESCManager
-* **Payments (future)**: Stripe iOS SDK (PaymentSheet)
-* **Localization**: `Localizable.strings` (ja, en, vi)
-* **Dependency Management**: Swift Package Manager
-* **Linting**: SwiftLint
-* **CI/CD (iOS)**: Xcodebuild + TestFlight (GitHub Actions)
+- Mobile-first before desktop polish.
+- Fewer screens, fewer taps, less setup.
+- Operational language over technical language.
+- Guided defaults over configuration overload.
+- Modern, beautiful, professional UI without decorative clutter.
+- Simple for busy founders, managers, and staff.
+- Powerful through good workflow design, not through dense menus.
+- Branch scope must always be obvious in data, UI, and permissions.
 
----
+## UX Standard
 
-## Security & Extensibility-by-Design
+Every important workflow should feel usable on a phone while standing in a restaurant.
 
-1. **Row-Level Security (RLS)**
-   • Every table includes a `restaurant_id` column. RLS policies ensure that any SELECT/INSERT/UPDATE/DELETE is allowed only if `restaurant_id = auth.jwt()→>'restaurant_id'`.
-   • Supabase Storage has a single bucket (`restaurant-uploads`) with RLS on object paths (e.g. `restaurants/{restaurant_id}/…`).
+- Show urgent actions first.
+- Avoid deep navigation trees.
+- Prefer one clear primary action per screen.
+- Keep labels short and concrete.
+- Reduce modal-heavy and settings-heavy flows.
+- Use progressive disclosure for advanced controls.
+- Design for low attention, interruptions, and one-handed use.
 
-2. **Rate Limiting & WAF**
-   • Critical Edge Functions (signup/login, order creation, booking creation, AI chatbot) use a token-bucket approach to throttle abusive traffic.
-   • Vercel Web Application Firewall is enabled (“Attack Challenge”) for all routes.
+Founders should not need training to understand the main owner experience. Managers should be able to act quickly. Staff should not have to decode system language.
 
-3. **CAPTCHA on Auth Flows**
-   • hCaptcha/reCAPTCHA on Signup, Login, and Forgot Password pages. Edge Function `/verify-captcha` validates tokens before any credential processing.
+## Engineering Standard
 
-4. **Environment & Secrets**
-   • All sensitive keys (Supabase Service-Role, Stripe Secret, OpenAI API Key, CAPTCHA Secret) live in CI/CD-injected environment variables (`.env` never committed).
-   • Frontend bundles expose only `NEXT_PUBLIC_…` variables.
+This codebase should be easy to extend safely by strong human engineers and AI agents.
 
-5. **Audit Logging**
-   • Triggers on `orders`, `menu_items`, `inventory_items`, `bookings` capture `OLD` vs. `NEW` in an `audit_logs` table (tenant-scoped via RLS).
-   • Supabase query logs and RLS failure logs are enabled. Custom `logs` table records errors and key actions (e.g. failed login, order creation).
+- Keep domains explicit: organization, branch, menu, orders, people, attendance, money, settings.
+- Do not hide cross-domain logic in UI components or route handlers.
+- Centralize authorization and branch-scope resolution.
+- Keep finance calculations in dedicated domain logic.
+- Keep background jobs separate from request handling.
+- Add migrations for schema changes; do not rely on undocumented manual drift.
+- Prefer small, composable modules over oversized shared utilities.
+- Keep feature boundaries clean so changes in one area do not quietly break another.
+- Write code that is readable first, clever second.
 
-6. **Feature Flags & API Versioning**
-   • `/config/feature-flags.ts` in the repo centralizes flags (`payments`, `aiAssistant`, `onlineReviews`, `lowStockAlerts`, `tableBooking`).
-   • All new/experimental features are gated behind flags to minimize refactoring.
-   • Production APIs live under `/api/v1/…`; any breaking or major additions go under `/api/v2/…` with a deprecation schedule for v1.
+## AI Agent Working Contract
 
----
+Before changing code, every AI agent must:
 
-## Getting Started
+1. Read the four active foundation documents.
+2. Restate the core constraints in its own words.
+3. Read the relevant local architecture in the repository areas it will touch.
+4. Define the task boundary, expected changes, and what must remain stable.
+5. State where the code belongs before creating files.
+6. Only then begin implementation.
 
-1. **Clone the Repository**
+Every implementation should protect:
 
-   ```bash
-   git clone git@github.com:<your-org>/coorder.git
-   cd coorder
-   ```
+- customer ordering stability
+- branch-scoped operations
+- shared founder support
+- mobile usability
+- clean domain boundaries
 
-2. **Environment Setup (Web)**
+## Architecture Workflow
 
-   * Copy `/web/.env.example → /web/.env.local` and fill in:
+Agents should work architecture-first, not patch-first.
 
-     ```
-     NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-     SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-     NEXT_PUBLIC_FEATURE_PAYMENTS=false
-     NEXT_PUBLIC_FEATURE_AI=false
-     NEXT_PUBLIC_FEATURE_REVIEWS=true
-     NEXT_PUBLIC_FEATURE_LOWSTOCK=true
-     NEXT_PUBLIC_FEATURE_TABLEBOOKING=true
-     NEXT_PUBLIC_CAPTCHA_SITE_KEY=your-captcha-site-key
-     NEXT_PRIVATE_CAPTCHA_SECRET=your-captcha-secret
-     NEXT_PRIVATE_STRIPE_SECRET_KEY=your-stripe-secret
-     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your-stripe-publishable
-     NEXT_PRIVATE_OPENAI_API_KEY=your-openai-key
-     ```
-   * Install dependencies:
+- Read the relevant existing modules before introducing new files.
+- Reuse current patterns before inventing new abstractions.
+- Explain where new code fits and which layers consume it.
+- Stop and ask if a requested change conflicts with the active foundation.
+- Update the relevant architecture or foundation docs when structural assumptions change.
 
-     ```bash
-     cd web
-     npm install
-     ```
+## File Placement and Naming
 
-3. **Supabase Setup**
+- Keep frontend, backend-style route handling, database, and shared types separated cleanly.
+- Place web UI in `web/components/`, route logic in `web/app/`, domain/services in `web/lib/`, shared contracts in `web/shared/`, translations in `web/messages/`.
+- Place iOS views in `mobile/SOder/SOder/views/`, services in `mobile/SOder/SOder/services/`, models in `mobile/SOder/SOder/models/`, and localization in `mobile/SOder/SOder/localization/`.
+- Use `PascalCase` for React and SwiftUI components/types, `camelCase` for functions and variables, and `kebab-case` for web file names unless the local framework pattern requires otherwise.
+- Keep TypeScript fully typed. Avoid implicit `any`.
 
-   * Create a Supabase project (staging/production).
-   * In SQL editor, run the migration scripts from `/infra/migrations/001_init.sql`, `/002_inventory_triggers.sql`, etc., to create all tables, RLS policies, triggers, and functions.
-   * Enable Realtime and Storage for your project.
-   * Create a second Supabase project for staging, repeat migrations there.
+## Quality Baseline
 
-4. **Run the Web App Locally**
+- Add or update tests for new or changed critical logic.
+- Use the repo tooling that already exists: Jest and Testing Library for web, XCTest and UI tests for iOS, ESLint and Prettier for web formatting and linting.
+- Keep error handling explicit, validate inputs, and never hardcode secrets.
+- Note meaningful technical debt directly in code comments or docs when it cannot be resolved in the current task.
 
-   ```bash
-   cd web
-   npm run dev
-   ```
+## Repository Structure
 
-   • Visit `http://localhost:3000/signup` to register a new restaurant.
-   • In development, use `app.usePreviewAuth` or manually set a JWT with Supabase Auth Helpers.
+```text
+├── web/                    # Next.js admin dashboard and customer site
+│   ├── app/                # App Router pages and API routes
+│   ├── components/         # Reusable UI components
+│   ├── lib/                # Services, domain helpers, utilities
+│   ├── messages/           # next-intl translations
+│   └── shared/             # Shared types and schemas
+├── mobile/SOder/           # SwiftUI iOS app
+│   ├── SOder/              # App source
+│   ├── SOderTests/         # Unit tests
+│   └── SOderUITests/       # UI tests
+├── infra/                  # Migrations and production scripts
+└── docs/                   # Foundation docs and supporting plans
+```
 
-5. **iOS App Setup**
+## Core Architecture
 
-   * Open `mobile/SOder.jp.xcodeproj` in Xcode.
-   * In `Info.plist`, add your Supabase URL and Anon Key under `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
-   * Install SPM dependencies (Supabase-Swift, ESCManager).
-   * Run the app on a Simulator or device (Bluetooth capabilities require a real device for printing).
+- Web: Next.js 15, TypeScript, Tailwind CSS
+- Mobile: SwiftUI iOS app for staff operations
+- Database: Supabase PostgreSQL with Row-Level Security
+- Auth: Supabase Auth with scoped JWTs
+- Realtime: Supabase Realtime for order and operational updates
+- i18n: Japanese, English, Vietnamese
 
-6. **CI/CD & Deployment**
+## Development Commands
 
-   * Configure GitHub Actions workflows:
-     • **Web**: ESLint, Prettier, Jest tests, npm audit, deploy to Vercel (staging on `develop`, production on `main`).
-     • **iOS**: SwiftLint, XCTest, archive, and upload to TestFlight (requires App Store Connect API key in GitHub secrets).
+### Web
 
-7. **Feature Flags & Versioning**
+```bash
+cd web
+npm install
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run format
+```
 
-   * Toggling a new feature (e.g. payments) is as simple as setting `NEXT_PUBLIC_FEATURE_PAYMENTS=true` in Vercel’s environment variables.
-   * New endpoints go under `/api/v2`, alongside v1. When stable, deprecate v1 after 3 months.
+### iOS
 
-## **i18n Contribution Cheat-Sheet**
+```bash
+cd mobile/SOder
+xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug build
+xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug test
+xcodebuild -project SOder.xcodeproj -scheme SOder clean
+xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0' build
+```
 
-1. **Choose the right namespace**
+### Database
 
-   * Public: `landing`, `auth`, `legal`
-   * Service-admin: `serviceAdmin/<feature>`
-   * Restaurant owner: `owner/<page>`
-   * Customer: `customer/<page>`
-   * Global shared: `common`
+```bash
+# Migrations live in infra/migrations/
+# Run production scripts from infra/production/
+```
 
-2. **Don’t duplicate**
+## Delivery Expectations
 
-   * Search `/src/locales/**` first.
-   * If it’s global (buttons/errors/weekdays), put it in `common.json`.
+Good changes in this repository are:
 
-3. **File & key conventions**
+- clearly tied to the mission
+- scoped to the right domain
+- easy to review
+- verified at the appropriate level
+- documented when behavior or architecture changes
 
-   * Files: `/src/locales/en/<namespace>.json` (folders for sub-namespaces).
-   * Keys: camelCase or nested objects, e.g.
-
-     ```json
-     { "titles": { "addItem": "Add Menu Item" } }
-     ```
-
-4. **Load it**
-
-   * Add your `<namespace>.json` to `NAMESPACES` in `src/i18n.ts`.
-
-5. **Use it**
-
-   * No hard-coded text:
-
-     ```ts
-     const t = useTranslations('owner/menu');
-     t('titles.addItem');
-     ```
-   * For globals: `useTranslations('common')`.
-
-6. **New feature flow**
-
-   1. Create `…/<namespace>.json`.
-   2. Add to `NAMESPACES`.
-   3. Move any truly shared strings to `common.json`.
-   4. Use `useTranslations` in your component.
-   5. Test all locales.
-
-
----
-
-## Why CoOrder?
-
-* **Mobile-First Staff Experience**: Kitchen staff and servers never need to juggle a laptop—everything works on iPads and iPhones.
-* **Smart, AI-Ready Foundation**: Generative AI chatbot, payment integrations, messaging hooks, and advanced analytics can be adopted gradually via feature flags—no large refactor later.
-* **Turnkey Multi-Language & Multi-Tenant**: Full Japanese/English/Vietnamese support from day one, with each restaurant on an auto-provisioned subdomain.
-* **Built for Growth**: RLS, rate limiting, WAF, audit logging, and CI/CD ensure security and reliability at every scale.
-
-With CoOrder, small restaurants can modernize their operations, delight customers with seamless ordering/booking, and leverage data-driven insights—all from the palm of their hand.
+The standard is not just shipping features. The standard is building a product founders can actually rely on while keeping the system clean enough to grow well.

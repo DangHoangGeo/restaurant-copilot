@@ -36,6 +36,7 @@ import { CompactFoodCard } from './CompactFoodCard';
 import { MenuSection } from './MenuSection';
 import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/components/common/language-switcher';
+import { useToast } from '@/components/ui/use-toast';
 
 // Enhanced interfaces for smart features
 interface SmartMenuItem extends FoodItem {
@@ -63,6 +64,19 @@ interface SmartCategory {
   description?: string;
   count: number;
 }
+
+const hashString = (value: string): number => {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+};
+
+const normalizedHash = (value: string, salt: string): number => {
+  const hash = hashString(`${value}:${salt}`);
+  return hash / 0xffffffff;
+};
 
 interface SmartMenuProps {
   categories?: Category[]; // Optional fallback data
@@ -108,6 +122,12 @@ const transformToSmartMenuItems = (
       )
       .map((item): SmartMenuItem => {
         const isRecommended = recommendedItems.includes(item.id);
+        const stableSeed = item.id || item.name_en || `${category.id}-${item.position}`;
+        const rating = 4 + normalizedHash(stableSeed, 'rating');
+        const reviewCount = 5 + Math.floor(normalizedHash(stableSeed, 'reviews') * 50);
+        const estimatedPrepTime = 5 + Math.floor(normalizedHash(stableSeed, 'prep') * 20);
+        const calories = 200 + Math.floor(normalizedHash(stableSeed, 'calories') * 400);
+
         return {
           ...item,
           categoryId: category.id,
@@ -119,13 +139,13 @@ const transformToSmartMenuItems = (
             { name_en: item.name_en || '', name_ja: item.name_ja || '', name_vi: item.name_vi || '' },
             locale
           )} ${item.description_en || ''} ${item.description_ja || ''} ${item.description_vi || ''}`.toLowerCase(),
-          rating: 4.0 + Math.random() * 1.0, // Mock rating 4.0-5.0
-          reviewCount: Math.floor(Math.random() * 50) + 5, // Mock review count 5-55
-          isPopular: Math.random() > 0.7,
-          isNew: Math.random() > 0.9,
+          rating,
+          reviewCount,
+          isPopular: normalizedHash(stableSeed, 'popular') > 0.7,
+          isNew: normalizedHash(stableSeed, 'new') > 0.9,
           tags: item.tags || [],
-          estimatedPrepTime: Math.floor(Math.random() * 20) + 5, // 5-25 minutes
-          calories: Math.floor(Math.random() * 400) + 200, // 200-600 calories
+          estimatedPrepTime,
+          calories,
           isRecommended,
           recommendationReason: isRecommended ? recommendationReasons[item.id] : undefined
         };
@@ -151,6 +171,7 @@ export function SmartMenu({
 }: SmartMenuProps) {
   const { addToCart, getQuantityByItemId, cart } = useCart();
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
   const [selectedLocale, setSelectedLocale] = useState(locale);
 
   // State management
@@ -163,8 +184,10 @@ export function SmartMenu({
   const [selectedItem, setSelectedItem] = useState<SmartMenuItem | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const t  = useTranslations("common");
+  const tMenu = useTranslations('customer.menu');
   // Search input ref for focus management
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const itemDetailRequestRef = useRef(0);
   
   // Data fetching hooks
   const { 
@@ -172,6 +195,7 @@ export function SmartMenu({
     isLoading: menuLoading, 
     isError: menuError,
     prefetchItemDetails,
+    getItemDetails,
     refetch: refetchMenu
   } = useMenuData({
     restaurantId,
@@ -213,7 +237,7 @@ export function SmartMenu({
   const { 
     recommendedItems, 
     recommendationReasons,
-    isLoading: recommendationsLoading 
+    isLoading: recommendationsLoading,
   } = useRecommendations({
     sessionId,
     tableId,
@@ -325,14 +349,49 @@ export function SmartMenu({
   }, [allMenuItems, debouncedSearchTerm, activeSmartCategory, smartCategories, activeCategoryFilter]);
 
   // Optimized event handlers
-  const handleItemClick = useCallback((item: FoodItem) => {
-    // Convert FoodItem to SmartMenuItem for modal
+  const mergeItemDetails = useCallback((
+    item: SmartMenuItem,
+    fullItem: Awaited<ReturnType<typeof getItemDetails>>
+  ): SmartMenuItem => ({
+    ...item,
+    ...fullItem,
+    menu_item_sizes: fullItem.menu_item_sizes || [],
+    toppings: fullItem.toppings || [],
+  } as SmartMenuItem), []);
+
+  const showItemDetailsError = useCallback(() => {
+    toast({
+      title: tMenu('item_load_error_title'),
+      description: tMenu('item_load_error_description'),
+      variant: 'destructive',
+    });
+  }, [tMenu, toast]);
+
+  const handleItemClick = useCallback(async (item: FoodItem) => {
     const smartItem = item as SmartMenuItem;
-    setSelectedItem(smartItem);
-    setIsItemModalOpen(true);
-  }, []);
+    const requestId = itemDetailRequestRef.current + 1;
+    itemDetailRequestRef.current = requestId;
+
+    try {
+      const fullItem = await getItemDetails(item.id);
+      if (itemDetailRequestRef.current !== requestId) {
+        return;
+      }
+
+      setSelectedItem(mergeItemDetails(smartItem, fullItem));
+      setIsItemModalOpen(true);
+    } catch (error) {
+      console.error('Failed to load full item details:', error);
+      if (itemDetailRequestRef.current !== requestId) {
+        return;
+      }
+
+      showItemDetailsError();
+    }
+  }, [getItemDetails, mergeItemDetails, showItemDetailsError]);
 
   const handleModalClose = useCallback(() => {
+    itemDetailRequestRef.current += 1;
     setIsItemModalOpen(false);
     setSelectedItem(null);
   }, []);
@@ -357,23 +416,50 @@ export function SmartMenu({
 
   const handleAddToCart = useCallback((item: SmartMenuItem) => {
     if (!canAddItems) return;
-    
-    // Check if item has sizes or toppings - if so, open detail modal instead
-    const hasSizes = item.menu_item_sizes && item.menu_item_sizes.length > 0;
-    const hasToppings = item.toppings && item.toppings.length > 0;
-    
-    if (hasSizes || hasToppings) {
-      // Redirect to item detail modal for customization
-      handleItemClick(item);
+
+    const addSimpleItem = () => {
+      if (onAddToCart) {
+        onAddToCart(item);
+      } else {
+        addToCart(item, 1);
+      }
+    };
+
+    if ((item.menu_item_sizes?.length ?? 0) > 0 || (item.toppings?.length ?? 0) > 0) {
+      void handleItemClick(item);
       return;
     }
-    
-    if (onAddToCart) {
-      onAddToCart(item);
-    } else {
-      addToCart(item, 1);
-    }
-  }, [canAddItems, onAddToCart, addToCart, handleItemClick]);
+
+    const requestId = itemDetailRequestRef.current + 1;
+    itemDetailRequestRef.current = requestId;
+
+    void getItemDetails(item.id)
+      .then((fullItem) => {
+        if (itemDetailRequestRef.current !== requestId) {
+          return;
+        }
+
+        const hasCustomizations =
+          (fullItem.menu_item_sizes?.length ?? 0) > 0 ||
+          (fullItem.toppings?.length ?? 0) > 0;
+
+        if (hasCustomizations) {
+          setSelectedItem(mergeItemDetails(item, fullItem));
+          setIsItemModalOpen(true);
+          return;
+        }
+
+        addSimpleItem();
+      })
+      .catch((error) => {
+        console.error('Failed to load item details before add:', error);
+        if (itemDetailRequestRef.current !== requestId) {
+          return;
+        }
+
+        showItemDetailsError();
+      });
+  }, [canAddItems, onAddToCart, addToCart, handleItemClick, getItemDetails, mergeItemDetails, showItemDetailsError]);
 
 
 
@@ -402,7 +488,7 @@ export function SmartMenu({
   }, [recommendationsLoading, recommendedItems.length, hasUserInteracted, activeSmartCategory]);
 
   // Loading states
-  const isLoading = menuLoading || recommendationsLoading;
+  const isLoading = menuLoading;
 
   if (isLoading) {
     return <SmartMenuSkeleton />;

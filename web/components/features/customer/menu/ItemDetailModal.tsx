@@ -100,9 +100,12 @@ export function ItemDetailModal({
     if (!isOpen) return;
     const timer = setTimeout(() => sheetRef.current?.focus(), 80);
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleKey);
     return () => {
       clearTimeout(timer);
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKey);
     };
   }, [isOpen, onClose]);

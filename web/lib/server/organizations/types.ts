@@ -25,6 +25,13 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
+  public_subdomain: string;
+  approval_status: 'pending' | 'approved' | 'rejected';
+  approved_at?: string | null;
+  approved_by?: string | null;
+  approval_notes?: string | null;
+  requested_plan?: string | null;
+  onboarding_completed_at?: string | null;
   country: string;
   timezone: string;
   currency: string;
@@ -32,6 +39,15 @@ export interface Organization {
   created_by: string;
   created_at: string;
   updated_at: string;
+  // Shared branding (migration 043) — inherited by all branches unless overridden
+  logo_url?: string | null;
+  brand_color?: string | null;
+  description_en?: string | null;
+  description_ja?: string | null;
+  description_vi?: string | null;
+  website?: string | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export interface OrganizationMember {
@@ -77,6 +93,8 @@ export interface OrganizationMemberPermission {
 export interface OrganizationMemberWithUser extends OrganizationMember {
   email: string;
   name: string | null;
+  /** Populated only when shop_scope === 'selected_shops'; undefined for all_shops members. */
+  accessible_restaurant_ids?: string[];
 }
 
 // Full org context loaded for an authenticated user
@@ -93,6 +111,7 @@ export interface OrgContext {
 export interface CreateOrganizationInput {
   name: string;
   slug: string;
+  requested_plan?: 'starter' | 'growth' | 'enterprise';
   country?: string;
   timezone?: string;
   currency?: string;
@@ -104,6 +123,19 @@ export interface InviteOrgMemberInput {
   role: OrgMemberRole;
   shop_scope: ShopScope;
   selected_restaurant_ids?: string[];
+}
+
+// Payload for adding a new branch/restaurant to an existing org
+export interface AddBranchInput {
+  name: string;
+  subdomain: string;
+  default_language: 'en' | 'ja' | 'vi';
+  brand_color: string;
+  tax?: number;
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
 }
 
 // Pending invite (stored in organization_pending_invites)
@@ -121,4 +153,7 @@ export interface PendingInvite {
   accepted_by_user_id: string | null;
   is_active: boolean;
   created_at: string;
+  /** Populated after migration 042 */
+  last_resent_at?: string | null;
+  resend_count?: number;
 }

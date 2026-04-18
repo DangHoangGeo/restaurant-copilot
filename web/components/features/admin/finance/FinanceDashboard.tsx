@@ -29,6 +29,9 @@ interface FinanceDashboardProps {
   locale: string;
   restaurantName: string;
   canClose: boolean;
+  financeHref?: string;
+  hidePageChrome?: boolean;
+  embedded?: boolean;
 }
 
 export function FinanceDashboard({
@@ -40,6 +43,9 @@ export function FinanceDashboard({
   locale,
   restaurantName,
   canClose,
+  financeHref,
+  hidePageChrome = false,
+  embedded = false,
 }: FinanceDashboardProps) {
   const t = useTranslations("owner.finance");
   const router = useRouter();
@@ -124,22 +130,44 @@ export function FinanceDashboard({
     ? `${d.year} / ${String(d.month).padStart(2, "0")}`
     : `${year} / ${String(month).padStart(2, "0")}`;
 
+  const wrapperClassName = embedded
+    ? "space-y-6"
+    : "container mx-auto py-8 px-4 sm:px-6 lg:px-8";
+  const contentClassName = embedded
+    ? "mx-auto max-w-2xl space-y-6"
+    : "max-w-2xl mx-auto space-y-6";
+
   return (
-    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className={wrapperClassName}>
+      <div className={contentClassName}>
+        {!hidePageChrome ? (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <FileText className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold">{t("pageTitle")}</h1>
+                <p className="text-xs text-muted-foreground">{t("pageDescription")}</p>
+              </div>
+            </div>
 
-        {/* Page header */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <FileText className="h-5 w-5" />
+            <MoneySectionNav
+              locale={locale}
+              financeHref={financeHref}
+            />
+          </>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <FileText className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold">{restaurantName}</h1>
+              <p className="text-xs text-muted-foreground">{t("pageDescription")}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-semibold">{t("pageTitle")}</h1>
-            <p className="text-xs text-muted-foreground">{t("pageDescription")}</p>
-          </div>
-        </div>
-
-        <MoneySectionNav locale={locale} />
+        )}
 
         {/* Month navigator */}
         <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">

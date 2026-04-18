@@ -41,6 +41,8 @@ export interface ApiOrganizationMember {
   is_active: boolean;
   email: string;
   name: string | null;
+  /** Populated only when shop_scope === 'selected_shops'; undefined for all_shops members. */
+  accessible_restaurant_ids?: string[];
 }
 
 /** Response shape for GET /api/v1/owner/organization */
@@ -78,6 +80,32 @@ export interface GetOrganizationRestaurantsResponse {
     timezone: string;
     currency: string;
   }>;
+}
+
+/** Request body for PATCH /api/v1/owner/organization */
+export interface UpdateOrganizationRequest {
+  name?: string;
+  timezone?: string;
+  currency?: string;
+}
+
+/** Response shape for PATCH /api/v1/owner/organization */
+export interface UpdateOrganizationResponse {
+  success: true;
+  organization: ApiOrganization;
+}
+
+/** Request body for PATCH /api/v1/owner/organization/members/[id] */
+export interface UpdateMemberRequest {
+  role?: OrgMemberRole;
+  shop_scope?: ShopScope;
+  selected_restaurant_ids?: string[];
+}
+
+/** Response shape for PATCH /api/v1/owner/organization/members/[id] */
+export interface UpdateMemberResponse {
+  success: true;
+  member: ApiOrganizationMember;
 }
 
 /** Human-readable labels for each org role */
@@ -136,6 +164,13 @@ export interface AcceptInviteRequest {
   password?: string;
 }
 
+/** Response shape for POST /api/v1/owner/organization/invites/[id]/resend */
+export interface ResendInviteResponse {
+  success: true;
+  invite_token: string;
+  expires_at: string;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Active branch types (Phase 2)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -151,8 +186,107 @@ export interface SetActiveBranchRequest {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Branch menu types (Phase 3)
+// Add branch types (Sprint 2)
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** Request body for POST /api/v1/owner/organization/restaurants */
+export interface AddBranchRequest {
+  name: string;
+  subdomain: string;
+  default_language: 'en' | 'ja' | 'vi';
+  brand_color: string;
+  tax?: number;
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+}
+
+/** Response shape for POST /api/v1/owner/organization/restaurants */
+export interface AddBranchResponse {
+  success: true;
+  restaurant: {
+    id: string;
+    name: string;
+    subdomain: string;
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Organization overview types (Sprint 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface OrgBranchOverview {
+  restaurant_id: string;
+  name: string;
+  subdomain: string;
+  today_revenue: number;
+  open_orders_count: number;
+}
+
+/** Response shape for GET /api/v1/owner/organization/overview */
+export interface OrgOverviewResponse {
+  branches: OrgBranchOverview[];
+  total_today_revenue: number;
+  total_open_orders: number;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Permission override types (Sprint 3 — B2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One permission entry returned by GET /api/v1/owner/organization/members/[id]/permissions */
+export interface MemberPermissionState {
+  permission: OrgPermission;
+  /** Effective value — override when present, otherwise role default */
+  granted: boolean;
+  /** True when an explicit override row exists in organization_member_permissions */
+  is_override: boolean;
+  /** The value that role defaults would give without any override */
+  role_default: boolean;
+}
+
+/** Response shape for GET /api/v1/owner/organization/members/[id]/permissions */
+export interface GetMemberPermissionsResponse {
+  permissions: MemberPermissionState[];
+}
+
+/** Request body for PATCH /api/v1/owner/organization/members/[id]/permissions */
+export interface UpdateMemberPermissionsRequest {
+  /** Partial map of permissions to set as explicit overrides */
+  permissions?: Partial<Record<OrgPermission, boolean>>;
+  /** When true, removes ALL override rows — restores role defaults */
+  reset?: boolean;
+}
+
+/** Response shape for PATCH /api/v1/owner/organization/members/[id]/permissions */
+export interface UpdateMemberPermissionsResponse {
+  success: true;
+  permissions: MemberPermissionState[];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cross-branch employee types (Sprint 3 — B3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One employee row returned by GET /api/v1/owner/organization/employees */
+export interface OrgEmployee {
+  employee_id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  job_title: string;
+  restaurant_id: string;
+  restaurant_name: string;
+  restaurant_subdomain: string;
+}
+
+/** Response shape for GET /api/v1/owner/organization/employees */
+export interface GetOrgEmployeesResponse {
+  employees: OrgEmployee[];
+  total_count: number;
+}
+
 
 /** Request body for POST /api/v1/owner/organization/menu/copy */
 export interface CopyMenuRequest {

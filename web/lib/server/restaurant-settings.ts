@@ -59,7 +59,7 @@ export async function getCustomerRestaurantFromSubdomain(
   try {
     const { data: restaurant, error } = await supabaseAdmin
       .from('restaurants')
-      .select('id, name, logo_url, subdomain, brand_color, default_language, address, phone, email, website, description_en, description_ja, description_vi, opening_hours, timezone')
+      .select('id, name, logo_url, subdomain, brand_color, default_language, address, phone, email, website, description_en, description_ja, description_vi, opening_hours, timezone, allow_order_notes')
       .eq('subdomain', subdomain)
       .single();
 
@@ -87,6 +87,7 @@ export async function getCustomerRestaurantFromSubdomain(
       name: restaurant.name,
       subdomain: restaurant.subdomain,
       logoUrl: restaurant.logo_url,
+      allowOrderNotes: restaurant.allow_order_notes ?? true,
       primaryColor: restaurant.brand_color || '#3B82F6',
       defaultLocale: restaurant.default_language || 'en',
       address: restaurant.address,

@@ -214,11 +214,5 @@
     "JPY": "Japanese Yen (¥)",
     "USD": "US Dollar ($)",
     "VND": "Vietnamese Dong (₫)"
-  },
-  "orderExperience": {
-    "title": "Order Experience",
-    "description": "Customize what customers see when ordering",
-    "allowOrderNotes": "Allow special instructions",
-    "allowOrderNotesDescription": "Let customers add notes or special requests to individual items (e.g. \"no onions\", \"extra sauce\")."
   }
 }

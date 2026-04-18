@@ -6,6 +6,12 @@ import { getSubdomainFromHost } from '@/lib/utils';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
+import {
+  buildBranchDashboardUrl,
+  buildRootControlUrl,
+  buildRootControlSectionUrl,
+  getRootDashboardAccess,
+} from '@/lib/server/organizations/root-dashboard';
 
 // ---------------------------------------------------------------------------
 // In-process cache: subdomain → restaurant_id
@@ -54,11 +60,69 @@ function setCachedUserRestaurant(userId: string, restaurant: UserRestaurantAcces
 type UserRestaurantAccess = {
   id: string;
   subdomain: string;
+  company_public_subdomain: string | null;
   onboarded: boolean;
   is_verified: boolean;
   is_active: boolean;
   suspended_at: string | null;
 };
+
+/**
+ * Check if userId is an org member with access to the restaurant at `subdomain`.
+ * Used to allow multi-branch org owners to access branch dashboards.
+ */
+async function getOrgBranchAccess(userId: string, subdomain: string): Promise<UserRestaurantAccess | null> {
+  // 1. Resolve the restaurant at this subdomain
+  const { data: restaurant } = await supabaseAdmin
+    .from('restaurants')
+    .select('id, subdomain, onboarded, is_verified, is_active, suspended_at')
+    .eq('subdomain', subdomain)
+    .maybeSingle();
+
+  if (!restaurant) return null;
+
+  // 2. Find which org this restaurant belongs to
+  const { data: orgLink } = await supabaseAdmin
+    .from('organization_restaurants')
+    .select('organization_id')
+    .eq('restaurant_id', restaurant.id)
+    .maybeSingle();
+
+  if (!orgLink) return null;
+
+  // 3. Verify the user is an active member of that org
+  const { data: orgMember } = await supabaseAdmin
+    .from('organization_members')
+    .select('id, shop_scope')
+    .eq('user_id', userId)
+    .eq('organization_id', orgLink.organization_id)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (!orgMember) return null;
+
+  // 4. For selected_shops members, confirm access to this specific restaurant
+  if (orgMember.shop_scope === 'selected_shops') {
+    const { data: scope } = await supabaseAdmin
+      .from('organization_member_shop_scopes')
+      .select('id')
+      .eq('member_id', orgMember.id)
+      .eq('restaurant_id', restaurant.id)
+      .maybeSingle();
+
+    if (!scope) return null;
+  }
+
+  return {
+    id: restaurant.id,
+    subdomain: restaurant.subdomain,
+    company_public_subdomain: null,
+    onboarded: Boolean(restaurant.onboarded),
+    is_verified: Boolean(restaurant.is_verified),
+    is_active: Boolean(restaurant.is_active),
+    suspended_at: restaurant.suspended_at ?? null,
+  };
+}
 
 async function getRestaurantForUser(userId: string): Promise<UserRestaurantAccess | null> {
   // Check in-process cache first to avoid DB round-trips on every request.
@@ -121,11 +185,25 @@ async function getRestaurantForUser(userId: string): Promise<UserRestaurantAcces
   const result: UserRestaurantAccess = {
     id: restaurant.id,
     subdomain: restaurant.subdomain,
+    company_public_subdomain: null,
     onboarded: Boolean(restaurant.onboarded),
     is_verified: Boolean(restaurant.is_verified),
     is_active: Boolean(restaurant.is_active),
     suspended_at: restaurant.suspended_at ?? null,
   };
+
+  const { data: orgLink } = await supabaseAdmin
+    .from('organization_restaurants')
+    .select('owner_organizations(public_subdomain)')
+    .eq('restaurant_id', restaurant.id)
+    .maybeSingle();
+
+  const ownerOrganization = Array.isArray(orgLink?.owner_organizations)
+    ? orgLink.owner_organizations[0]
+    : orgLink?.owner_organizations;
+
+  result.company_public_subdomain = ownerOrganization?.public_subdomain ?? null;
+
   setCachedUserRestaurant(userId, result);
   return result;
 }
@@ -186,7 +264,13 @@ function addSecurityHeaders(response: NextResponse, request: NextRequest) {
   
   // Cache control for sensitive pages
   const pathname = request.nextUrl.pathname;
-  if (pathname.includes('/dashboard') || pathname.includes('/login') || pathname.includes('/admin')) {
+  if (
+    pathname.includes('/dashboard') ||
+    pathname.includes('/branch') ||
+    pathname.includes('/control') ||
+    pathname.includes('/login') ||
+    pathname.includes('/admin')
+  ) {
     response.headers.set('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
@@ -236,7 +320,7 @@ async function handleSupabaseAndRls(
           .from('restaurants')
           .select('id')
           .eq('subdomain', subdomainForRls)
-          .single();
+          .maybeSingle();
 
         if (restaurantError) {
           logger.warn('middleware', `Error fetching restaurant ID for RLS (subdomain ${subdomainForRls})`, { error: restaurantError.message });
@@ -377,22 +461,134 @@ export async function middleware(req: NextRequest) {
     currentPathnameForLogic = new URL(i18nRewriteHeader).pathname;
   }
   
-  // Dashboard protection
-  if (currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/dashboard(/.*)?$`))) {
+  const host = req.headers.get("host") || req.nextUrl.host;
+  const subdomain = getSubdomainFromHost(host);
+
+  // Founder control protection
+  if (currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/control(/.*)?$`))) {
     if (!supabaseUser) {
       const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
       return NextResponse.redirect(loginUrl);
     }
 
-    // Restaurant ownership verification for subdomain access
-    const host = req.headers.get("host") || req.nextUrl.host;
-    const subdomain = getSubdomainFromHost(host);
+    try {
+      const rootDashboardAccess = await getRootDashboardAccess(supabaseUser.id);
+      if (!rootDashboardAccess) {
+        const restaurant = await getRestaurantForUser(supabaseUser.id);
+
+        if (restaurant?.subdomain) {
+          const ownerHost = restaurant.company_public_subdomain || restaurant.subdomain;
+          return NextResponse.redirect(
+            new URL(buildBranchDashboardUrl(ownerHost, currentLocaleForLogic))
+          );
+        }
+
+        const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
+        return NextResponse.redirect(loginUrl);
+      }
+
+      const isOnboardingPath = currentPathnameForLogic === `/${currentLocaleForLogic}/control/onboarding`;
+      if (!rootDashboardAccess.onboarding_completed_at && !isOnboardingPath) {
+        const targetUrl = new URL(
+          buildRootControlSectionUrl(
+            currentLocaleForLogic,
+            '/control/onboarding',
+            rootDashboardAccess.public_subdomain
+          )
+        );
+        targetUrl.search = req.nextUrl.search;
+        return NextResponse.redirect(targetUrl);
+      }
+
+      if (rootDashboardAccess.onboarding_completed_at && isOnboardingPath) {
+        return NextResponse.redirect(
+          new URL(
+            buildRootControlUrl(
+              currentLocaleForLogic,
+              rootDashboardAccess.public_subdomain
+            )
+          )
+        );
+      }
+
+      if (rootDashboardAccess.public_subdomain && subdomain !== rootDashboardAccess.public_subdomain) {
+        const targetUrl = new URL(
+          buildRootControlSectionUrl(
+            currentLocaleForLogic,
+            currentPathnameForLogic.replace(`/${currentLocaleForLogic}`, ''),
+            rootDashboardAccess.public_subdomain
+          )
+        );
+        targetUrl.search = req.nextUrl.search;
+        return NextResponse.redirect(targetUrl);
+      }
+    } catch (error) {
+      logger.error('middleware', 'Error checking founder control access', {
+        error: error instanceof Error ? error.message : String(error),
+        userId: supabaseUser.id,
+      });
+      const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  const legacyFounderPathMap: Record<string, string> = {
+    [`/${currentLocaleForLogic}/dashboard/overview`]: '/control/overview',
+    [`/${currentLocaleForLogic}/dashboard/branches`]: '/control/restaurants',
+    [`/${currentLocaleForLogic}/dashboard/organization`]: '/control/people',
+    [`/${currentLocaleForLogic}/dashboard/finance`]: '/control/finance',
+    [`/${currentLocaleForLogic}/dashboard/settings`]: '/control/settings',
+    [`/${currentLocaleForLogic}/dashboard/homepage`]: '/control/homepage',
+    [`/${currentLocaleForLogic}/dashboard/promotions`]: '/control/promotions',
+    [`/${currentLocaleForLogic}/dashboard/onboarding`]: '/control/onboarding',
+  };
+
+  const redirectedFounderPath = legacyFounderPathMap[currentPathnameForLogic];
+  if (redirectedFounderPath && supabaseUser) {
+    try {
+      const rootDashboardAccess = await getRootDashboardAccess(supabaseUser.id);
+      if (rootDashboardAccess) {
+        const targetUrl = new URL(
+          buildRootControlSectionUrl(
+            currentLocaleForLogic,
+            redirectedFounderPath,
+            rootDashboardAccess.public_subdomain
+          )
+        );
+        targetUrl.search = req.nextUrl.search;
+        return NextResponse.redirect(targetUrl);
+      }
+    } catch (error) {
+      logger.error('middleware', 'Error redirecting legacy founder dashboard path', {
+        error: error instanceof Error ? error.message : String(error),
+        userId: supabaseUser.id,
+        pathname: currentPathnameForLogic,
+      });
+    }
+  }
+
+  if (currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/dashboard(/.*)?$`))) {
+    const targetPath = currentPathnameForLogic.replace(
+      `/${currentLocaleForLogic}/dashboard`,
+      `/${currentLocaleForLogic}/branch`
+    );
+    const targetUrl = new URL(targetPath, req.url);
+    targetUrl.search = req.nextUrl.search;
+    return NextResponse.redirect(targetUrl);
+  }
+
+  // Branch route protection
+  if (currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/branch(/.*)?$`))) {
+    if (!supabaseUser) {
+      const loginUrl = new URL(`/${currentLocaleForLogic}/login`, req.url);
+      return NextResponse.redirect(loginUrl);
+    }
 
     if (subdomain && subdomain !== 'www') {
       try {
-        const restaurant = await getRestaurantForUser(supabaseUser.id);
+        const primaryRestaurant = await getRestaurantForUser(supabaseUser.id);
 
-        if (!restaurant) {
+        if (!primaryRestaurant) {
           logger.error('middleware', 'Error fetching restaurant for user', {
             userId: supabaseUser.id,
           });
@@ -400,22 +596,36 @@ export async function middleware(req: NextRequest) {
           return NextResponse.redirect(loginUrl);
         }
 
-        // Verify that the user's restaurant matches the current subdomain
-        if (restaurant.subdomain !== subdomain) {
-          logger.warn('middleware', 'User attempting to access dashboard for different restaurant', {
-            userSubdomain: restaurant.subdomain,
-            accessedSubdomain: subdomain,
-            userId: supabaseUser.id,
-            restaurantId: restaurant.id,
-          });
-          const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
-          if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
-            return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+        // Determine the effective restaurant for this request.
+        // For multi-branch org members the current subdomain may belong to a
+        // branch that is different from their primary (users.restaurant_id) restaurant.
+        let restaurant = primaryRestaurant;
+
+        const ownerHost = primaryRestaurant.company_public_subdomain || primaryRestaurant.subdomain;
+
+        if (restaurant.subdomain !== subdomain && ownerHost !== subdomain) {
+          // Check if the user has org-level access to the restaurant at this subdomain.
+          const orgBranch = await getOrgBranchAccess(supabaseUser.id, subdomain);
+
+          if (!orgBranch) {
+            // No org access — redirect to the user's primary restaurant.
+            logger.warn('middleware', 'User attempting to access branch route for different restaurant', {
+              userSubdomain: restaurant.subdomain,
+              accessedSubdomain: subdomain,
+              userId: supabaseUser.id,
+              restaurantId: restaurant.id,
+            });
+            return NextResponse.redirect(
+              new URL(buildBranchDashboardUrl(ownerHost, currentLocaleForLogic))
+            );
           }
-          return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+
+          // Org member accessing a branch they own — use branch data for
+          // subsequent active/onboarding checks.
+          restaurant = orgBranch;
         }
 
-        // Block dashboard access for suspended or unverified/inactive restaurants.
+        // Block branch access for suspended or unverified/inactive restaurants.
         const isSuspended = restaurant.suspended_at != null;
         const isPendingApproval = !restaurant.is_verified || !restaurant.is_active;
         if (isSuspended || isPendingApproval) {
@@ -425,12 +635,20 @@ export async function middleware(req: NextRequest) {
 
         // Check onboarding status (data already fetched above — no extra query needed)
         if (FEATURE_FLAGS.onboarding) {
-          const isOnboardingPage = currentPathnameForLogic.includes('/dashboard/onboarding');
+          const isOnboardingPage = currentPathnameForLogic.includes('/branch/onboarding');
           if (!restaurant.onboarded && !isOnboardingPage) {
-            return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/dashboard/onboarding`, req.url));
+            const rootDashboardAccess = await getRootDashboardAccess(supabaseUser.id);
+            const onboardingPath = rootDashboardAccess
+              ? `/${currentLocaleForLogic}/control/onboarding`
+              : `/${currentLocaleForLogic}/branch/onboarding`;
+            return NextResponse.redirect(new URL(onboardingPath, req.url));
           }
           if (restaurant.onboarded && isOnboardingPage) {
-            return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/dashboard`, req.url));
+            const rootDashboardAccess = await getRootDashboardAccess(supabaseUser.id);
+            const targetPath = rootDashboardAccess
+              ? `/${currentLocaleForLogic}/control/overview`
+              : `/${currentLocaleForLogic}/branch`;
+            return NextResponse.redirect(new URL(targetPath, req.url));
           }
         }
       } catch (error) {
@@ -443,19 +661,40 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(loginUrl);
       }
     } else {
-      // User is on the root/www domain accessing /dashboard — redirect to their restaurant subdomain.
+      // User is on the root/www domain accessing /branch.
+      // Founder/finance roles stay on the root domain; branch-scoped users are
+      // redirected to their primary restaurant subdomain.
       try {
-        const restaurant = await getRestaurantForUser(supabaseUser.id);
+        const rootDashboardAccess = await getRootDashboardAccess(supabaseUser.id);
+        if (!rootDashboardAccess) {
+          const restaurant = await getRestaurantForUser(supabaseUser.id);
 
-        if (restaurant?.subdomain) {
-          const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
-          if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
-            return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
+          if (restaurant?.subdomain) {
+            const ownerHost = restaurant.company_public_subdomain || restaurant.subdomain;
+            const branchPath = currentPathnameForLogic.replace(`/${currentLocaleForLogic}`, '');
+            return NextResponse.redirect(
+              new URL(
+                buildRootControlSectionUrl(
+                  currentLocaleForLogic,
+                  branchPath,
+                  ownerHost
+                )
+              )
+            );
           }
-          return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+        } else {
+          return NextResponse.redirect(
+            new URL(
+              buildRootControlSectionUrl(
+                currentLocaleForLogic,
+                currentPathnameForLogic.replace(`/${currentLocaleForLogic}`, ''),
+                rootDashboardAccess.public_subdomain
+              )
+            )
+          );
         }
       } catch (error) {
-        logger.error('middleware', 'Error fetching restaurant for root-domain dashboard redirect', {
+        logger.error('middleware', 'Error fetching restaurant for root-domain branch redirect', {
           error: error instanceof Error ? error.message : String(error),
           userId: supabaseUser.id,
         });
@@ -463,19 +702,32 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Redirect logged-in users from login/signup/forgot-password pages to their restaurant dashboard
+  // Redirect logged-in users from login/signup/forgot-password pages to their restaurant branch route
   const authPagePatterns = [
     new RegExp(`^/${currentLocaleForLogic}/login$`),
     new RegExp(`^/${currentLocaleForLogic}/signup$`),
     new RegExp(`^/${currentLocaleForLogic}/forgot-password$`),
   ];
   if (supabaseUser && authPagePatterns.some(p => p.test(currentPathnameForLogic))) {
-    // Look up the user's restaurant subdomain so we redirect to the correct host, not just the path.
+    // Founder/finance org roles stay on the root domain after auth pages.
     try {
+      const rootDashboardAccess = await getRootDashboardAccess(supabaseUser.id);
+      if (rootDashboardAccess) {
+        return NextResponse.redirect(
+          new URL(
+            buildRootControlUrl(
+              currentLocaleForLogic,
+              rootDashboardAccess.public_subdomain
+            )
+          )
+        );
+      }
+
+      // Look up the user's restaurant subdomain so we redirect to the correct host, not just the path.
       const restaurant = await getRestaurantForUser(supabaseUser.id);
 
       if (restaurant) {
-        // Redirect suspended/pending restaurants to the pending-approval page instead of dashboard.
+        // Redirect suspended/pending restaurants to the pending-approval page instead of branch.
         const isSuspended = restaurant.suspended_at != null;
         const isPendingApproval = !restaurant.is_verified || !restaurant.is_active;
         if (isSuspended || isPendingApproval) {
@@ -484,27 +736,28 @@ export async function middleware(req: NextRequest) {
         }
 
         if (restaurant.subdomain) {
-          const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || 'coorder.ai';
-          if (process.env.NEXT_PRIVATE_DEVELOPMENT === 'true') {
-            return NextResponse.redirect(new URL(`http://${restaurant.subdomain}.localhost:3000/${currentLocaleForLogic}/dashboard`));
-          }
-          return NextResponse.redirect(new URL(`https://${restaurant.subdomain}.${productionUrl}/${currentLocaleForLogic}/dashboard`));
+          const ownerHost = restaurant.company_public_subdomain || restaurant.subdomain;
+          return NextResponse.redirect(
+            new URL(buildBranchDashboardUrl(ownerHost, currentLocaleForLogic))
+          );
         }
       }
     } catch {
       // Fall back to a same-host redirect if the lookup fails
     }
-    return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/dashboard`, req.url));
+    return NextResponse.redirect(
+      new URL(`/${currentLocaleForLogic}/branch`, req.url)
+    );
   }
 
   // Subdomain specific logic
-  const host = req.headers.get("host") || req.nextUrl.host;
-  const subdomain = getSubdomainFromHost(host);
-
   if (subdomain && subdomain !== 'www') {
-    // Block access to /admin on subdomains
-    if (currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/admin(/.*)?$`))) {
-      return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/`, req.url)); // Redirect to subdomain's homepage
+    // Block root-only platform/admin pages on organization or branch subdomains
+    if (
+      currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/admin(/.*)?$`)) ||
+      currentPathnameForLogic.match(new RegExp(`^/${currentLocaleForLogic}/platform(/.*)?$`))
+    ) {
+      return NextResponse.redirect(new URL(`/${currentLocaleForLogic}/`, req.url));
     }
   }
 

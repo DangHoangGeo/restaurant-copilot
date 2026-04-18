@@ -20,7 +20,7 @@ interface CustomerLayoutProps {
 
 function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   const t = useTranslations("customer");
-  const tSession = useTranslations("customer/session");
+  const tSession = useTranslations("customer.session");
   //const params = useParams();
   const router = useRouter();
   const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();

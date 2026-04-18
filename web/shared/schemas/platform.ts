@@ -37,6 +37,11 @@ export const verifyRestaurantSchema = z.object({
   notes: z.string().optional()
 });
 
+export const organizationApprovalSchema = z.object({
+  status: z.enum(['approved', 'rejected']),
+  notes: z.string().optional(),
+});
+
 export const suspendRestaurantSchema = z.object({
   reason: z.string().min(1, 'Suspension reason is required'),
   notes: z.string().optional()
@@ -133,6 +138,7 @@ export const getDashboardOverviewQuerySchema = z.object({
 // Export types inferred from schemas
 export type GetRestaurantsQuery = z.infer<typeof getRestaurantsQuerySchema>;
 export type VerifyRestaurantBody = z.infer<typeof verifyRestaurantSchema>;
+export type OrganizationApprovalBody = z.infer<typeof organizationApprovalSchema>;
 export type SuspendRestaurantBody = z.infer<typeof suspendRestaurantSchema>;
 export type GetSubscriptionsQuery = z.infer<typeof getSubscriptionsQuerySchema>;
 export type UpdateSubscriptionBody = z.infer<typeof updateSubscriptionSchema>;

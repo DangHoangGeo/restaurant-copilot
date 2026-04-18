@@ -27,7 +27,10 @@ export interface RestaurantSettings {
   id: string;
   name: string;
   subdomain: string;
+  branchCode?: string | null;
+  companyPublicSubdomain?: string | null;
   logoUrl?: string | null;
+  allowOrderNotes?: boolean;
   defaultLocale?: string;
   contactInfo?: string | null;
   address?: string | null;
@@ -45,14 +48,16 @@ export interface RestaurantSettings {
   delivery_options?: string[];
   primaryColor?: string;
   secondaryColor?: string;
-  allow_order_notes?: boolean;
 }
 
 export interface RestaurantData {
   id: string;
   name: string;
   subdomain: string;
+  branchCode?: string | null;
+  companyPublicSubdomain?: string | null;
   logoUrl?: string | null;
+  allowOrderNotes?: boolean;
   tagline_en?: string | null;
   tagline_ja?: string | null;
   tagline_vi?: string | null;

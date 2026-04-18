@@ -25,16 +25,16 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { RestaurantSummary } from '@/shared/types/platform';
+import type { OrganizationApprovalSummary } from '@/shared/types/platform';
 
 export default function ApprovalsTable() {
   const t = useTranslations('platform.approvals');
   const tc = useTranslations('platform.common');
 
-  const [restaurants, setRestaurants] = useState<RestaurantSummary[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationApprovalSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantSummary | null>(null);
+  const [selectedOrganization, setSelectedOrganization] = useState<OrganizationApprovalSummary | null>(null);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [approveNotes, setApproveNotes] = useState('');
@@ -56,7 +56,7 @@ export default function ApprovalsTable() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/v1/platform/restaurants?verified=unverified', {
+      const response = await fetch('/api/v1/platform/organizations/pending', {
         signal: controller.signal
       });
       const body = await response.json().catch(() => null);
@@ -67,7 +67,7 @@ export default function ApprovalsTable() {
 
       if (requestId !== requestIdRef.current) return;
 
-      setRestaurants(body.data || []);
+      setOrganizations(body.data || []);
     } catch (error) {
       if (controller.signal.aborted || requestId !== requestIdRef.current) return;
       console.error('Error fetching approvals:', error);
@@ -90,14 +90,14 @@ export default function ApprovalsTable() {
   }, [fetchPendingApprovals]);
 
   const handleApprove = async () => {
-    if (!selectedRestaurant) return;
+    if (!selectedOrganization) return;
 
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/v1/platform/restaurants/${selectedRestaurant.id}/verify`, {
+      const response = await fetch(`/api/v1/platform/organizations/${selectedOrganization.id}/approval`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: approveNotes })
+        body: JSON.stringify({ status: 'approved', notes: approveNotes })
       });
       const body = await response.json().catch(() => null);
 
@@ -107,10 +107,10 @@ export default function ApprovalsTable() {
 
       setApproveDialogOpen(false);
       setApproveNotes('');
-      setSelectedRestaurant(null);
+      setSelectedOrganization(null);
       fetchPendingApprovals();
     } catch (error) {
-      console.error('Error approving restaurant:', error);
+      console.error('Error approving organization:', error);
       setError(error instanceof Error ? error.message : errorLabel);
     } finally {
       setSubmitting(false);
@@ -118,16 +118,16 @@ export default function ApprovalsTable() {
   };
 
   const handleReject = async () => {
-    if (!selectedRestaurant || !rejectReason) return;
+    if (!selectedOrganization || !rejectReason) return;
 
     try {
       setSubmitting(true);
-      const response = await fetch('/api/v1/platform/restaurants/reject', {
-        method: 'POST',
+      const response = await fetch(`/api/v1/platform/organizations/${selectedOrganization.id}/approval`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          restaurant_id: selectedRestaurant.id,
-          reason: rejectReason
+          status: 'rejected',
+          notes: rejectReason
         })
       });
       const body = await response.json().catch(() => null);
@@ -138,10 +138,10 @@ export default function ApprovalsTable() {
 
       setRejectDialogOpen(false);
       setRejectReason('');
-      setSelectedRestaurant(null);
+      setSelectedOrganization(null);
       fetchPendingApprovals();
     } catch (error) {
-      console.error('Error rejecting restaurant:', error);
+      console.error('Error rejecting organization:', error);
       setError(error instanceof Error ? error.message : errorLabel);
     } finally {
       setSubmitting(false);
@@ -163,7 +163,7 @@ export default function ApprovalsTable() {
     );
   }
 
-  if (restaurants.length === 0) {
+  if (organizations.length === 0) {
     return <div className="text-center py-8 text-gray-500">{t('empty')}</div>;
   }
 
@@ -172,32 +172,53 @@ export default function ApprovalsTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t('table.restaurant')}</TableHead>
-            <TableHead>{t('table.email')}</TableHead>
-            <TableHead>{t('table.created_at')}</TableHead>
-            <TableHead>{t('table.plan')}</TableHead>
-            <TableHead className="text-right">{t('table.actions')}</TableHead>
+            <TableHead>Company</TableHead>
+            <TableHead>Founder</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Plan</TableHead>
+            <TableHead>Branches</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {restaurants.map((restaurant) => (
-            <TableRow key={restaurant.id}>
-              <TableCell className="font-medium">{restaurant.name}</TableCell>
-              <TableCell>{restaurant.email}</TableCell>
-              <TableCell>{new Date(restaurant.created_at).toLocaleDateString()}</TableCell>
+          {organizations.map((organization) => (
+            <TableRow key={organization.id}>
+              <TableCell className="font-medium">
+                <div className="min-w-0">
+                  <p className="truncate">{organization.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {organization.public_subdomain}.coorder.ai
+                  </p>
+                </div>
+              </TableCell>
               <TableCell>
-                {restaurant.subscription_plan ? (
-                  <Badge variant="outline">{restaurant.subscription_plan}</Badge>
-                ) : (
-                  '-'
-                )}
+                <div className="min-w-0">
+                  <p className="truncate">{organization.founder_name || organization.founder_email || '-'}</p>
+                  {organization.founder_email ? (
+                    <p className="truncate text-xs text-muted-foreground">{organization.founder_email}</p>
+                  ) : null}
+                </div>
+              </TableCell>
+              <TableCell>{new Date(organization.created_at).toLocaleDateString()}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{organization.requested_plan ?? 'starter'}</Badge>
+              </TableCell>
+              <TableCell>
+                <div className="min-w-0">
+                  <p>{organization.branch_count}</p>
+                  {organization.primary_branch_name ? (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {organization.primary_branch_name}
+                    </p>
+                  ) : null}
+                </div>
               </TableCell>
               <TableCell className="text-right space-x-2">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setSelectedRestaurant(restaurant);
+                    setSelectedOrganization(organization);
                     setApproveDialogOpen(true);
                   }}
                 >
@@ -208,7 +229,7 @@ export default function ApprovalsTable() {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setSelectedRestaurant(restaurant);
+                    setSelectedOrganization(organization);
                     setRejectDialogOpen(true);
                   }}
                 >

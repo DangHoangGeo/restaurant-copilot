@@ -9,11 +9,15 @@ import {
   getAccessibleRestaurantIds,
   getMemberPermissionOverrides,
   createOrganizationForNewRestaurant,
+  createRestaurantInOrg,
   addOrganizationMember,
   deactivateOrganizationMember,
+  updateOrganizationSettings,
+  updateOrganizationMember,
 } from './queries';
 import type {
   Organization,
+  OrganizationMember,
   OrganizationMemberWithUser,
   OrganizationRestaurant,
   OrgContext,
@@ -21,6 +25,7 @@ import type {
   ShopScope,
   InviteOrgMemberInput,
   CreateOrganizationInput,
+  AddBranchInput,
 } from './types';
 import { createClient } from '@/lib/supabase/server';
 
@@ -47,6 +52,7 @@ export async function resolveOrgContext(): Promise<OrgContext | null> {
     .select('*, owner_organizations(*)')
     .eq('user_id', supabaseUser.id)
     .eq('is_active', true)
+    .order('created_at', { ascending: true })
     .limit(1)
     .single();
 
@@ -121,6 +127,30 @@ export async function bootstrapOrganizationForRestaurant(
 }
 
 /**
+ * Add a new branch (restaurant) to an existing organization.
+ * Validates subdomain uniqueness before creating.
+ * Caller must be founder_full_control (enforced at route level).
+ */
+export async function addBranchToOrganization(
+  orgId: string,
+  addedByUserId: string,
+  input: AddBranchInput
+): Promise<{
+  success: boolean;
+  restaurant?: { id: string; name: string; subdomain: string };
+  error?: string;
+  conflict?: boolean;
+}> {
+  const restaurant = await createRestaurantInOrg(orgId, addedByUserId, input);
+  if (!restaurant) {
+    // Attempt to distinguish subdomain conflict vs other errors
+    // createRestaurantInOrg returns null for conflicts too; route handler does the pre-check
+    return { success: false, error: 'Failed to create branch' };
+  }
+  return { success: true, restaurant };
+}
+
+/**
  * Invite a user into the organization.
  * The inviter must already be an org member (validated by RLS).
  * The target user must already have a Supabase auth account.
@@ -177,4 +207,52 @@ export async function inviteOrganizationMember(
 export async function removeMember(memberId: string): Promise<{ success: boolean }> {
   const ok = await deactivateOrganizationMember(memberId);
   return { success: ok };
+}
+
+export type OrgSettingsUpdates = {
+  name?: string;
+  country?: string;
+  timezone?: string;
+  currency?: string;
+  approval_status?: 'pending' | 'approved' | 'rejected';
+  approved_at?: string | null;
+  approved_by?: string | null;
+  approval_notes?: string | null;
+  requested_plan?: 'starter' | 'growth' | 'enterprise' | null;
+  onboarding_completed_at?: string | null;
+  logo_url?: string | null;
+  brand_color?: string | null;
+  description_en?: string | null;
+  description_ja?: string | null;
+  description_vi?: string | null;
+  website?: string | null;
+  phone?: string | null;
+  email?: string | null;
+};
+
+/**
+ * Update organization settings including branding fields.
+ * The caller must have organization_settings permission (enforced at route level).
+ */
+export async function updateOrganization(
+  orgId: string,
+  updates: OrgSettingsUpdates
+): Promise<{ success: boolean; organization?: Organization; error?: string }> {
+  const org = await updateOrganizationSettings(orgId, updates);
+  if (!org) return { success: false, error: 'Failed to update organization' };
+  return { success: true, organization: org };
+}
+
+/**
+ * Update a member's role and/or branch access scope.
+ * The caller must be able to manage members (enforced at route level).
+ */
+export async function editMember(
+  memberId: string,
+  orgId: string,
+  updates: { role?: OrgMemberRole; shop_scope?: ShopScope; selected_restaurant_ids?: string[] }
+): Promise<{ success: boolean; member?: OrganizationMember; error?: string }> {
+  const member = await updateOrganizationMember(memberId, orgId, updates);
+  if (!member) return { success: false, error: 'Failed to update member' };
+  return { success: true, member };
 }

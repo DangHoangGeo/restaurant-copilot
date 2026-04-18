@@ -13,11 +13,13 @@ This document is the complete business-operations review and implementation plan
 The current product already has a usable single-restaurant dashboard for menu, orders, tables, employees, bookings, reports, homepage, and settings. However, the owner product requested here is not complete yet. The biggest gaps are:
 
 1. Multi-shop ownership is not supported.
-2. Promotions and discount codes are not implemented as a real owner feature.
-3. Attendance and scheduling exist in basic form, but the QR approval workflow is not secure or complete enough for payroll-grade use.
-4. Reports are not yet reliable enough for monthly cashflow review or tax submission.
-5. Purchase and expense management are effectively missing from the owner dashboard.
-6. Some existing owner report and inventory paths are out of sync with the current database schema.
+2. Founder control and branch operations are still mixed into one dashboard surface.
+3. Restaurant basic setup is not clearly owned by founders yet.
+4. Promotions and discount codes are not implemented as a real owner feature.
+5. Attendance and scheduling exist in basic form, but the QR approval workflow is not secure or complete enough for payroll-grade use.
+6. Reports are not yet reliable enough for monthly cashflow review or tax submission.
+7. Purchase and expense management are effectively missing from the owner dashboard.
+8. Some existing owner report and inventory paths are out of sync with the current database schema.
 
 This plan is intentionally written as a business-operations plan, not just a feature plan. The goal is not simply to let owners click more buttons. The goal is to help an owner run one or more restaurants in Japan with less stress, better control, and cleaner monthly numbers.
 
@@ -42,6 +44,8 @@ The owner experience should support:
 2. Employee scheduling and daily working hours with QR-based check-in/check-out and approval.
 3. Dynamic monthly cashflow reports that are clean enough to hand to an accountant or use for tax preparation.
 4. Purchase management for equipment, supplier invoices, and daily food procurement.
+5. A dedicated founder route that is separate from the branch operating route.
+6. Founder-controlled setup for each restaurant's basic information and business configuration.
 
 Product principles:
 
@@ -183,6 +187,57 @@ That separation is important for:
 - correct audit logs
 - cleaner payroll logic
 - easier future maintenance
+
+## Route Separation Rule
+
+The system should no longer treat founder work and branch work as one combined dashboard.
+
+### Founder / Co-Founder route
+
+- canonical login destination should be the root domain, not a branch subdomain
+- this is the control plane for founders, co-founders, finance partners, and accountants
+- this route owns organization-level control and founder-level branch control
+
+### Branch route
+
+- canonical destination should be the branch-scoped restaurant route
+- this route is for branch managers and local operators running the restaurant day to day
+- this route should stay focused on high-frequency operational work
+
+### Product rule
+
+Do not keep extending founder workflows inside the current branch-scoped dashboard structure.
+
+The current codebase mixes founder work and branch work too heavily.  
+That should now be treated as refactor work, not as the base structure for future features.
+
+## Founder-Owned Restaurant Setup
+
+For the new direction, the founder or co-founder should set up each restaurant's basic information.
+
+That includes:
+
+- restaurant name
+- subdomain
+- address and contact details
+- branding and homepage basics
+- tax and currency defaults
+- payment method configuration
+- QR and operating defaults
+- who can access the branch
+
+Branch managers should not be the primary owner of these setup tasks.
+
+Branch managers should focus on:
+
+- menu
+- employees
+- schedules and attendance review
+- expenses and purchases
+- bookings
+- local branch operations
+
+If a branch manager needs basic restaurant information changed, that should flow through founder-controlled settings or a future approval/request mechanism.
 
 ---
 
@@ -453,87 +508,155 @@ Impact:
 
 ---
 
-## Target Product Structure
+## Required Application Routes
 
-## 1. Shops
+## 1. Founder / Co-Founder Route
 
-Purpose:
+Canonical destination:
 
-- let an owner or founder group manage one or many branches
-
-Mobile-first screens:
-
-- shop switcher sheet
-- shop list cards
-- shop summary cards
-- branch settings
-
-Primary actions:
-
-- add shop
-- archive shop
-- switch current shop
-- view group summary
-- manage access for founders and trusted partners
-
-## 2. People
+- root domain after login
 
 Purpose:
 
-- handle employees, schedules, attendance, and approvals
+- let founders manage one or many restaurants from one control surface
+- keep business control separate from branch execution
 
-Mobile-first screens:
+Recommended primary navigation:
 
-- employee list
-- employee detail sheet
-- weekly schedule board
-- attendance inbox
-- payroll summary view
+- `Overview`
+- `Restaurants`
+- `People With Access`
+- `Money`
+- `Settings`
 
-Primary actions:
+Core founder responsibilities:
 
-- add employee
-- assign shifts
-- scan check-in or check-out
-- approve hours
-- export monthly hours
+- create restaurant
+- set restaurant basic information
+- manage restaurant subdomain and identity
+- manage branding and homepage basics
+- manage tax, payment, and configuration defaults
+- manage founders, co-founders, accountants, and managers
+- review branch health across the organization
+- manage month-end and cross-branch finance outputs
+- manage promotions and branch-level rollout decisions
 
-## 3. Money
+Founder route screens should feel like:
 
-Purpose:
+- control
+- review
+- setup
+- approval
+- finance
 
-- handle promotions, reports, cashflow, purchases, and tax prep
+Not like a branch operator's task list.
 
-Mobile-first screens:
+## 2. Branch Route
 
-- daily sales summary
-- monthly cashflow view
-- promotions list
-- purchases list
-- expense detail sheet
-- monthly report export sheet
+Canonical destination:
 
-Primary actions:
-
-- create promotion
-- create supplier purchase
-- mark invoice paid
-- export month report
-- view tax summary
-
-## 4. Settings
+- branch-scoped restaurant route
 
 Purpose:
 
-- keep restaurant profile, operating rules, taxes, payment methods, and printer or QR preferences simple
+- let branch managers and local operators run the restaurant smoothly every day
 
-Mobile-first screens:
+Recommended primary navigation:
 
-- basic info
-- tax and currency
-- QR and attendance settings
-- payment methods
-- notification rules
+- `Dashboard`
+- `Orders`
+- `Menu`
+- `People`
+- `Expenses`
+- `Bookings`
+
+Core branch responsibilities:
+
+- manage day-to-day menu operations
+- manage employees and schedules
+- review attendance exceptions
+- record expenses and purchases
+- manage bookings
+- monitor low stock and branch alerts
+- handle daily branch execution
+
+Branch route screens should feel like:
+
+- action
+- speed
+- local branch context
+- today and this week
+
+Not like company administration or founder setup.
+
+## 3. Explicit Separation of Ownership
+
+Founder route owns:
+
+- organization settings
+- restaurant creation and archive
+- restaurant basic information
+- branch identity and subdomain
+- brand and homepage control
+- tax and payment defaults
+- access management
+- finance close and accountant export
+- promotion policy and rollout
+
+Branch route owns:
+
+- menu management
+- employee operations
+- attendance review
+- expenses and purchases
+- bookings
+- daily branch reports and alerts
+
+Branch route should not own:
+
+- organization membership
+- billing
+- restaurant basic identity
+- subdomain changes
+- tax configuration
+- founder-level finance close
+- company-wide settings
+
+## 4. Refactor Rule for Current Codebase
+
+The current branch dashboard contains a mix of:
+
+- founder setup
+- founder controls
+- branch operations
+- some low-value screens that do not belong in the launch-critical workflow
+
+The plan now requires an explicit refactor:
+
+### Move to founder route
+
+- organization management
+- restaurant basic info and profile
+- homepage and branding ownership
+- settings that change identity, subdomain, tax, payment, or organization access
+- multi-branch finance and promotion control
+
+### Keep in branch route
+
+- menu
+- employees
+- attendance review
+- expenses and purchases
+- bookings
+- orders and tables
+- local operational dashboard
+
+### Remove, defer, or simplify
+
+- low-frequency screens that do not help the founder control the business
+- low-frequency screens that do not help the branch manager run the restaurant
+- duplicated settings surfaces
+- admin-style features that add complexity without operational value
 
 ---
 
@@ -571,6 +694,63 @@ This plan assumes:
 - invoice or receipt attachment and export, not full ERP
 
 That is the right first-release scope.
+
+## Production Readiness Additions
+
+Executing the feature roadmap alone is not enough to make the owner system production-ready.
+
+Before release, the plan also needs explicit work for rollout safety, monitoring, recovery, and support operations.
+
+### 1. Release operations
+
+- staging environment should mirror the production auth, RLS, scheduled jobs, storage, and branch-switching behavior closely enough for rehearsal
+- every migration that changes owner data, organization membership, attendance, or finance must be rehearsed on production-like data first
+- every risky feature should have a feature-flagged rollout or an equivalent controlled release path
+- iOS release and web release should have one coordinated launch checklist for owner-critical features
+
+### 2. Observability and alerts
+
+The first release should include dashboards and alerts for:
+
+- failed or delayed scheduled finance snapshot jobs
+- invite acceptance failures
+- active-branch or branch-scope authorization failures
+- attendance approval backlog or stuck correction flows
+- month-end export failures
+- unusual error spikes on owner dashboard APIs
+
+If these are not visible, owners will discover failures before the team does.
+
+### 3. Data safety and correction workflows
+
+The first release should define:
+
+- backup and recovery expectations for critical owner data
+- reconciliation scripts or queries for finance snapshots
+- explicit correction workflows for attendance summaries and monthly close data
+- immutable closed-month outputs with controlled reopen or adjustment rules
+- secure storage rules for invoice, receipt, and attachment uploads
+
+### 4. Supportability
+
+The team should have runbooks for:
+
+- resending or repairing organization invites
+- correcting branch membership or scope problems
+- rerunning failed scheduled jobs safely
+- correcting attendance after approval disputes
+- reopening or adjusting a month-end close when a late expense or refund is discovered
+
+### 5. Performance and reliability expectations
+
+The owner product should define acceptable production behavior for:
+
+- mobile branch switching responsiveness
+- owner dashboard load on poor mobile connections
+- month-end export generation time
+- degraded behavior when a background job is delayed or fails
+
+These do not need enterprise-grade SLO language for the first release, but they do need explicit targets and fallback expectations.
 
 ---
 
@@ -806,8 +986,8 @@ Operational note:
 
 ## 5. Purchasing Flow
 
-1. Owner creates supplier.
-2. Owner records a purchase or raises a PO.
+1. Founder or authorized branch manager creates or selects supplier.
+2. Branch manager records a purchase or raises a PO.
 3. Goods are received.
 4. Stock is updated where relevant.
 5. Receipt or invoice is attached.
@@ -916,12 +1096,12 @@ The current usage snapshot and reporting SQL must be corrected to the actual sch
 - one primary action per screen
 - lists as cards on mobile
 - use sheets and drawers instead of desktop-heavy modals
-- default to current branch context with easy switching
-- default every page to the one question the owner is trying to answer
+- founder route and branch route must not share the same navigation model by default
+- default every page to the one question the user is trying to answer
 
-## Home Dashboard
+## Founder Route UX
 
-Replace the current broad dashboard with a simpler owner dashboard:
+Replace the current broad mixed dashboard with a clearer founder home:
 
 - today sales
 - pending approvals
@@ -937,19 +1117,47 @@ Secondary information only after that:
 
 Quick actions:
 
-- add employee
-- create promotion
-- record purchase
+- add restaurant
+- switch branch
+- manage access
 - export month report
 
 Primary mobile home card groups:
 
 - `Today`
-- `People`
+- `Restaurants`
+- `People With Access`
 - `Money`
 - `Attention Needed`
 
-## Shops UX
+Founder route should also own:
+
+- branch list and health summary
+- organization members and access
+- restaurant basic setup
+- founder-level finance close
+
+## Branch Route UX
+
+Branch route should feel like the branch manager's operating tool, not the founder's control panel.
+
+Branch route home should prioritize:
+
+- today's bookings
+- today's staffing issues
+- low-stock alerts
+- expenses to record
+- branch sales snapshot
+
+Quick actions:
+
+- update menu item availability
+- add employee shift
+- resolve attendance issue
+- record expense
+- confirm booking
+
+## Founder Restaurants UX
 
 - branch cards with health summary:
   - today sales
@@ -958,7 +1166,7 @@ Primary mobile home card groups:
   - alerts
 - access-management sheet for founders and trusted partners
 
-## People UX
+## Branch People UX
 
 Tabs:
 
@@ -976,7 +1184,7 @@ Prioritize:
 - missing scan resolution
 - export monthly hours
 
-## Money UX
+## Founder Money UX
 
 Tabs:
 
@@ -1005,7 +1213,7 @@ Start with:
 
 Then map advanced accounting logic underneath those simple labels.
 
-## Access Management UX
+## Founder Access Management UX
 
 This should be simple enough for a non-technical founder.
 
@@ -1031,13 +1239,25 @@ Example presets:
 - Branch Owner
 - General Manager
 
+## Branch Manager UX Scope Rule
+
+Branch managers should not spend their time in:
+
+- restaurant basic info setup
+- branding and homepage management
+- organization membership settings
+- tax or payment configuration
+- billing or subscription
+
+If a screen is rarely used and mainly about business control, it belongs in the founder route, not the branch route.
+
 ---
 
 ## Implementation Roadmap
 
 ## Phase 0: Stabilization and Schema Alignment
 
-**Goal**: fix the current owner data layer before adding major features
+**Goal**: fix the current owner data layer and lock the route separation direction before adding major features
 
 ### Tasks
 
@@ -1048,6 +1268,10 @@ Example presets:
 5. Add regression tests for owner reports, bookings, and attendance.
 6. Define Japan-first finance output shape before further report work.
 7. Define unified authorization architecture before adding shared-founder features.
+8. Audit the current branch dashboard and classify every major screen as:
+   - founder route
+   - branch route
+   - remove or defer
 
 ### Deliverables
 
@@ -1057,34 +1281,94 @@ Example presets:
 - bookings can be confirmed or canceled successfully
 - owner month-end numbers have a stable calculation base
 - the next phases have one permission model instead of route-by-route permission drift
+- the team has an approved founder-route vs branch-route map before more UI is added
 
-## Phase 1: Multi-Shop Foundation
+## Phase 1: Shared Foundation and Architecture Reset
 
-**Goal**: let one owner manage multiple shops without breaking tenant isolation
+**Goal**: build the shared database, domain, auth, component, and route foundations before executing founder or branch surfaces
 
 ### Tasks
 
-1. Add organization or group data model.
-2. Add organization membership logic.
-3. Add shared-founder and delegated-control model.
-4. Add branch switcher UI.
-5. Add group overview dashboard.
-6. Add organization access-management UI.
-7. Update auth and login redirect behavior for multi-shop owners.
+1. Finalize organization or group data model.
+2. Finalize organization membership and permission model.
+3. Centralize shared authorization, organization context, and branch context.
+4. Create shared server domain modules, schemas, and types.
+5. Create shared UI primitives and route shells for founder route and branch route.
+6. Define the target folder and module structure for the refactor.
+7. Allow codebase reorganization where the existing layout blocks the new architecture.
+
+### Deliverables
+
+- shared database and service foundations support the target architecture
+- shared auth and permission model is centralized
+- shared types, schemas, and UI foundations exist before route-specific implementation
+- the team has a clear target code structure and is free to reorganize toward it
+
+## Phase 2: Founder Control Route Foundation
+
+**Goal**: let one founder manage multiple shops from a dedicated founder route without breaking tenant isolation
+
+### Tasks
+
+1. Add root-domain founder route shell.
+2. Add branch switcher inside founder route.
+3. Add group overview dashboard.
+4. Add organization access-management UI.
+5. Move restaurant basic information ownership into the founder route.
+6. Update auth and login redirect behavior so founders and co-founders land on the root domain.
 
 ### Deliverables
 
 - one owner account can manage multiple branches
 - one organization can have multiple founders or partners
 - members can be scoped to selected shops
-- branch context switching works on mobile and desktop
+- branch context switching works on mobile and desktop inside the founder route
 - group-level summary is available
+- founder or co-founder login lands on the root-domain control surface
+- restaurant basic information is managed from the founder route
 - operational data remains safely branch-scoped
 - sensitive actions are capability-checked and audit logged
 
-## Phase 2: People Operations
+## Phase 3: Founder Feature Execution
 
-**Goal**: turn employees, schedules, and attendance into a complete owner workflow
+**Goal**: build founder features first on top of the new shared foundation and founder route
+
+### Tasks
+
+1. Implement founder-controlled restaurant setup and profile flows.
+2. Implement founder-controlled organization and access workflows.
+3. Implement founder-level finance review, cross-branch overview, and month-end surfaces.
+4. Implement founder-level promotion policy and rollout controls.
+
+### Deliverables
+
+- founder route is useful as a real business control surface
+- founders can manage restaurants, access, and finance from the root domain
+- founder-only workflows no longer depend on branch-owned pages
+
+## Phase 4: Branch Route Refactor
+
+**Goal**: refactor the existing branch dashboard into a focused branch operations route
+
+### Tasks
+
+1. Move founder-only screens out of the branch route.
+2. Keep branch operations screens only where they support daily restaurant execution.
+3. Remove, defer, or simplify low-value screens that add noise without helping founders or branch managers.
+4. Define branch-manager permissions so they align with the reduced operational route.
+5. Ensure branch managers no longer own restaurant basic information setup.
+
+### Deliverables
+
+- branch route is clearly operational, not founder-administrative
+- branch manager sees menu, employees, attendance, expenses, bookings, and local dashboard tools
+- branch manager no longer owns restaurant identity, organization access, or tax/payment setup
+- duplicate settings surfaces are reduced
+- the codebase has a clear separation between founder route and branch route
+
+## Phase 5: People Operations
+
+**Goal**: turn employees, schedules, and attendance into a complete branch operations workflow with founder oversight where needed
 
 ### Tasks
 
@@ -1100,11 +1384,11 @@ Example presets:
 - employee can check in or out securely
 - manager can review and approve hours
 - monthly hours export is available
-- owner can understand labor issues in minutes, not by reading raw attendance rows
+- founder can understand labor issues in minutes without needing to live inside the branch route
 
-## Phase 3: Finance and Tax Reporting
+## Phase 6: Finance and Tax Reporting
 
-**Goal**: produce clean monthly cashflow and tax-ready outputs for Japan-first operations
+**Goal**: produce clean monthly cashflow and tax-ready outputs in the founder route for Japan-first operations
 
 ### Tasks
 
@@ -1117,12 +1401,12 @@ Example presets:
 
 ### Deliverables
 
-- owner can review month-to-date cashflow
-- owner can export monthly tax and accounting package
+- founder can review month-to-date cashflow
+- founder can export monthly tax and accounting package
 - multi-shop owners can view consolidated totals
 - month-end close is a guided workflow, not a raw report page
 
-## Phase 4: Purchasing and Expenses
+## Phase 7: Purchasing and Expenses
 
 **Goal**: add the missing purchase layer
 
@@ -1136,14 +1420,14 @@ Example presets:
 
 ### Deliverables
 
-- owner can record food purchases
-- owner can record equipment purchases
+- branch manager can record food purchases
+- branch manager can record equipment purchases
 - monthly expenses are visible in reports
-- owner has a usable daily procurement workflow on mobile
+- branch team has a usable daily procurement workflow on mobile
 
-## Phase 5: Promotions and Discounts
+## Phase 8: Promotions and Discounts
 
-**Goal**: give owners a simple promotion system that actually affects checkout and reports
+**Goal**: give founders a simple promotion system that actually affects checkout and reports
 
 ### Tasks
 
@@ -1155,12 +1439,12 @@ Example presets:
 
 ### Deliverables
 
-- owner can create and manage promotions
+- founder can create and manage promotions
 - discount codes are validated by backend
 - orders store real discount objects, not just text input
-- owner can measure whether a promotion helped or hurt margin
+- founder can measure whether a promotion helped or hurt margin
 
-## Phase 6: Polish and Operations
+## Phase 9: Polish and Operations
 
 **Goal**: make the system easy to maintain and safe to operate
 
@@ -1378,6 +1662,7 @@ The best way is:
 - organization can have more than one founder-level member
 - founder or partner can be scoped to selected shops only
 - owner can switch shops in under two taps on mobile
+- founder login lands on the root domain rather than a branch subdomain
 - all shop pages remain isolated by `restaurant_id`
 - group overview shows branch summaries without exposing cross-tenant writes
 
@@ -1412,7 +1697,7 @@ The best way is:
 
 ## Purchasing
 
-- owner can add supplier, create purchase, attach invoice, and mark paid
+- founder or authorized branch manager can add supplier, create purchase, attach invoice, and mark paid
 - purchases appear in monthly expense totals
 - food purchases can optionally affect stock levels
 
@@ -1422,6 +1707,14 @@ The best way is:
 - employee can select Japanese, Vietnamese, or English UI independently
 - core daily actions can be completed comfortably on phone
 - home dashboard answers "what needs attention now?" within a few seconds
+
+## Route Separation
+
+- founder or co-founder uses a dedicated root-domain route
+- branch manager uses a branch-scoped operational route
+- founder-only setup does not remain mixed into the branch route
+- branch manager does not own restaurant basic information or organization settings
+- branch route keeps only high-frequency operational features
 
 ## AI-Agent Maintainability
 
@@ -1439,16 +1732,22 @@ The best way is:
 If implementation starts immediately, the order should be:
 
 1. Stabilize reporting, low-stock, bookings, and job SQL.
-2. Build multi-shop and shared-founder foundation.
-3. Complete attendance and approval workflow.
-4. Add monthly finance close and tax exports.
-5. Add purchasing and expenses.
-6. Add promotions and validated discount codes.
+2. Build the shared database, auth, service, type, and component foundation.
+3. Build multi-shop and shared-founder foundation with the new founder route.
+4. Execute founder features first on the new control route.
+5. Refactor the branch route and remove founder-only surfaces from it.
+6. Complete attendance and approval workflow.
+7. Add monthly finance close and tax exports.
+8. Add purchasing and expenses.
+9. Add promotions and validated discount codes.
 
 This order keeps the product coherent:
 
 - multi-shop changes the platform shape
+- shared foundation reduces duplicated logic before large UI changes
 - shared-founder access changes the control model
+- founder feature execution proves the new architecture before branch migration
+- route separation changes where the product lives and who owns each surface
 - attendance affects payroll and labor reporting
 - finance outputs are needed early for owner trust
 - purchases affect expenses and cashflow
@@ -1466,22 +1765,37 @@ This order keeps the product coherent:
 
 ## Milestone 2
 
-- add organizations, shared founders, and branch switching
-- add group overview dashboard
+- build shared database, auth, service, type, and component foundation
+- define the target code structure and refactor boundaries
 
 ## Milestone 3
 
-- rebuild attendance with secure QR and approval inbox
+- add organizations, shared founders, and root-domain founder route
+- add branch switching and group overview dashboard
 
 ## Milestone 4
 
-- add month-end finance close and accountant export
+- execute founder features on the new control route
+- move founder setup and control fully out of legacy branch screens
 
 ## Milestone 5
 
-- add suppliers, purchases, and expense capture
+- refactor the branch route to keep only operational features
+- move founder-only setup screens out of branch dashboard
 
 ## Milestone 6
+
+- rebuild attendance with secure QR and approval inbox
+
+## Milestone 7
+
+- add month-end finance close and accountant export
+
+## Milestone 8
+
+- add suppliers, purchases, and expense capture
+
+## Milestone 9
 
 - add promotions and coupon redemption
 
@@ -1493,13 +1807,15 @@ For the first Japan release to Vietnamese owners, the recommended launch scope i
 
 ### Must have
 
+- founder root-domain route
 - multi-shop management
 - shared founder and delegated access management
 - branch switcher
+- refactored branch route focused on operations
 - employee scheduling
 - secure attendance
 - attendance approval
-- daily operational dashboard
+- daily branch operational dashboard
 - monthly cashflow
 - expenses and purchases
 - accountant-ready monthly export
@@ -1519,6 +1835,8 @@ For the first Japan release to Vietnamese owners, the recommended launch scope i
 - full payroll engine
 - country-agnostic compliance framework before Japan is stable
 - decentralized permission logic that future AI agents cannot reason about
+- founder setup screens buried inside branch manager workflows
+- branch manager ownership of restaurant identity and business configuration
 
 ---
 
@@ -1529,6 +1847,7 @@ Do not start with UI-only changes.
 The correct first move is to stabilize the owner data layer and redesign the owner domain model around:
 
 - organization -> restaurant
+- founder route -> branch route
 - organization members -> scoped permissions
 - attendance events -> approved payroll hours
 - orders + promotions + expenses -> monthly financial snapshots

@@ -8,29 +8,36 @@ import { cn } from "@/lib/utils";
 
 interface MoneySectionNavProps {
   locale: string;
+  financeHref?: string;
+  purchasingHref?: string;
+  promotionsHref?: string;
 }
 
-const items = [
-  {
-    href: "/dashboard/finance",
-    labelKey: "admin_sidebar_finance",
-    icon: FileText,
-  },
-  {
-    href: "/dashboard/purchasing",
-    labelKey: "admin_sidebar_purchasing",
-    icon: ShoppingCart,
-  },
-  {
-    href: "/dashboard/promotions",
-    labelKey: "admin_sidebar_promotions",
-    icon: Tag,
-  },
-] as const;
-
-export function MoneySectionNav({ locale }: MoneySectionNavProps) {
+export function MoneySectionNav({
+  locale,
+  financeHref = "/branch/finance",
+  purchasingHref = "/branch/purchasing",
+  promotionsHref = "/branch/promotions",
+}: MoneySectionNavProps) {
   const pathname = usePathname();
   const t = useTranslations("owner.dashboard");
+  const items = [
+    {
+      href: financeHref,
+      labelKey: "admin_sidebar_finance",
+      icon: FileText,
+    },
+    {
+      href: purchasingHref,
+      labelKey: "admin_sidebar_purchasing",
+      icon: ShoppingCart,
+    },
+    {
+      href: promotionsHref,
+      labelKey: "admin_sidebar_promotions",
+      icon: Tag,
+    },
+  ] as const;
 
   return (
     <div className="space-y-2">

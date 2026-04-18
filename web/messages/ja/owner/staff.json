@@ -1,0 +1,10 @@
+{
+  "pageTitle": "全スタッフ",
+  "totalCount": "全店舗合計 {count} 名",
+  "employeeCount": "{count} 名",
+  "searchPlaceholder": "名前・メール・役職で検索…",
+  "allBranches": "全店舗",
+  "noEmployees": "店舗にスタッフが見つかりません。",
+  "noResults": "検索条件に一致するスタッフがいません。",
+  "loadError": "スタッフの読み込みに失敗しました。もう一度お試しください。"
+}

@@ -19,17 +19,17 @@ export function QuickActions() {
       </CardHeader>
       <CardContent className="space-y-3">
         <Button variant="default" className="w-full justify-start" asChild>
-          <Link href={`/${locale}/dashboard/menu?action=addItem`}>
+          <Link href={`/${locale}/branch/menu?action=addItem`}>
             <PlusCircle className="mr-2 h-4 w-4" /> {t('quick_actions.add_menu_item')}
           </Link>
         </Button>
         <Button variant="secondary" className="w-full justify-start" asChild>
-          <Link href={`/${locale}/dashboard/tables?action=generateQr`}>
+          <Link href={`/${locale}/branch/tables?action=generateQr`}>
             <QrCode className="mr-2 h-4 w-4" /> {t('quick_actions.generate_qr')}
           </Link>
         </Button>
         <Button variant="secondary" className="w-full justify-start" asChild>
-          <Link href={`/${locale}/dashboard/employees?action=addEmployee`}>
+          <Link href={`/${locale}/branch/employees?action=addEmployee`}>
             <UserPlus className="mr-2 h-4 w-4" /> {t('quick_actions.add_employee')}
           </Link>
         </Button>

@@ -36,6 +36,8 @@ export type Restaurant = {
   id: string;
   name: string | null;
   subdomain: string | null;
+  branch_code?: string | null;
+  company_public_subdomain?: string | null;
   default_language: "en" | "ja" | "vi" | null;
   brand_color: string | null;
   tax: number | null;
@@ -51,7 +53,6 @@ export type Restaurant = {
   currency: string | null;
   payment_methods: string[] | null;
   delivery_options: string[] | null;
-  allow_order_notes: boolean | null;
   logo_url: string | null;
   onboarded: boolean | null;
   // Hero content fields for homepage

@@ -140,7 +140,13 @@ export default function AccountsTable() {
             className="pl-9"
           />
         </div>
-        <Button variant="ghost" size="icon" onClick={fetchRestaurants} title={tc('refresh')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={fetchRestaurants}
+          title={tc('refresh')}
+          aria-label={tc('refresh')}
+        >
           <RefreshCw className="w-4 h-4" />
         </Button>
       </div>

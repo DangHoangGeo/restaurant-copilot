@@ -82,17 +82,17 @@ export function MenuSection({
     const container = scrollContainerRef.current;
     if (!container) return;
     const containerCenter = container.scrollLeft + container.clientWidth / 2;
-    const fadeDistance = container.clientWidth * 0.55;
+    const fadeDistance = container.clientWidth * 0.52;
 
     itemRefs.current.forEach((el) => {
       if (!el) return;
       const itemCenter = el.offsetLeft + el.offsetWidth / 2;
       const distance = Math.abs(itemCenter - containerCenter);
       const progress = Math.max(0, 1 - distance / fadeDistance);
-      // Subtle scale: 0.93 (edge) → 1.0 (center). Never above 1.0 so nothing looks inflated.
-      const scale = 0.93 + 0.07 * progress;
+      const eased = progress * (2 - progress);
+      const scale = 0.9 + 0.24 * eased;
       el.style.transform = `scale(${scale.toFixed(3)})`;
-      el.style.zIndex = String(Math.round(progress * 10));
+      el.style.zIndex = String(Math.round(eased * 10));
     });
   }, [resetItemScales]);
 
@@ -170,14 +170,17 @@ export function MenuSection({
             <div
               key={item.id}
               ref={(el) => { itemRefs.current[index] = el; }}
-              style={{ willChange: 'transform', transition: 'transform 0.18s ease-out', flexShrink: 0 }}
+              style={{ willChange: 'transform', transition: 'transform 0.12s ease-out', flexShrink: 0 }}
             >
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{
-                  delay: Math.min(index * 0.04, 0.3),
-                  duration: 0.25,
+                  delay: index * 0.05,
+                  duration: 0.3,
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30
                 }}
               >
                 <CompactFoodCard

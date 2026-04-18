@@ -38,22 +38,36 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Check if subdomain already exists
-    const { data: existingRestaurant, error } = await supabase
-      .from('restaurants')
-      .select('id')
-      .eq('subdomain', subdomain)
-      .single();
+    const [{ data: existingRestaurant, error: restaurantError }, { data: existingOrganization, error: organizationError }] = await Promise.all([
+      supabase
+        .from('restaurants')
+        .select('id')
+        .eq('subdomain', subdomain)
+        .maybeSingle(),
+      supabase
+        .from('owner_organizations')
+        .select('id')
+        .or(`public_subdomain.eq.${subdomain},slug.eq.${subdomain}`)
+        .maybeSingle(),
+    ]);
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
-      console.error('Error checking subdomain availability:', error);
+    if (restaurantError) {
+      console.error('Error checking restaurant subdomain availability:', restaurantError);
       return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
     }
 
-    const available = !existingRestaurant;
+    if (organizationError) {
+      console.error('Error checking organization subdomain availability:', organizationError);
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      );
+    }
+
+    const available = !existingRestaurant && !existingOrganization;
 
     return NextResponse.json({
       available,

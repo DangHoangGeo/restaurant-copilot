@@ -27,6 +27,8 @@
   "view_classic": "View Classic Menu",
   "browse_categories": "Browse Categories",
   "no_items_found": "No items found in this category.",
+  "item_load_error_title": "Unable to open item",
+  "item_load_error_description": "We couldn't load this item's options. Please try again.",
   "categories": {
     "all": "All Items",
     "featured": "Featured",
@@ -79,10 +81,10 @@
     "reviews": "Reviews",
     "rating": "Rating",
     "description": "Description",
+    "show_more": "Show more",
+    "show_less": "Show less",
     "decrease_quantity": "Decrease quantity",
-    "increase_quantity": "Increase quantity",
-    "show_more": "See more",
-    "show_less": "See less"
+    "increase_quantity": "Increase quantity"
   },
   "ai_assistant": {
     "title": "Restaurant Assistant",

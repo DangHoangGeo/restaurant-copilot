@@ -47,7 +47,6 @@ const settingsSchema = z.object({
   // WiFi settings for table QR codes
   wifi_ssid: z.string().max(100).nullable().optional(),
   wifi_password: z.string().max(100).nullable().optional(),
-  allow_order_notes: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -70,6 +69,7 @@ export async function GET() {
         id,
         name,
         subdomain,
+        branch_code,
         logo_url,
         brand_color,
         default_language,
@@ -99,8 +99,7 @@ export async function GET() {
         owner_story_vi,
         owner_photo_url,
         wifi_ssid,
-        wifi_password,
-        allow_order_notes
+        wifi_password
       `)
       .eq("id", user.restaurantId) // Use authenticated user's restaurant ID
       .single();
@@ -115,6 +114,16 @@ export async function GET() {
     if (!restaurant) { // Should be caught by PGRST116, but as a safeguard
         return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
     }
+
+    const { data: orgLink } = await supabaseAdmin
+      .from('organization_restaurants')
+      .select('owner_organizations(public_subdomain)')
+      .eq('restaurant_id', user.restaurantId)
+      .maybeSingle();
+
+    const ownerOrganization = Array.isArray(orgLink?.owner_organizations)
+      ? orgLink?.owner_organizations[0]
+      : orgLink?.owner_organizations;
 
     // Parse JSON strings back to objects for consistent API response
     let parsedOpeningHours = null;
@@ -146,6 +155,8 @@ export async function GET() {
       id: restaurant.id,
       name: restaurant.name,
       subdomain: restaurant.subdomain,
+      branch_code: restaurant.branch_code,
+      company_public_subdomain: ownerOrganization?.public_subdomain ?? null,
       logo_url: restaurant.logo_url,
       brand_color: restaurant.brand_color || "#3B82F6",
       default_language: restaurant.default_language || "en",
@@ -178,8 +189,6 @@ export async function GET() {
       // WiFi settings
       wifi_ssid: restaurant.wifi_ssid,
       wifi_password: restaurant.wifi_password,
-      // Ordering options
-      allow_order_notes: restaurant.allow_order_notes ?? true,
     };
 
     console.log('Restaurant settings response - onboarded:', restaurant.onboarded, 'type:', typeof restaurant.onboarded);

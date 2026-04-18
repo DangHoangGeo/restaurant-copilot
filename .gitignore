@@ -9,13 +9,8 @@
 /coverage
 
 *.plist
-mobile/SOder/SOder.xcodeproj/*
-mobile/SOder/SOder.xcworkspace/*
-mobile/SOder/Pods/*
-mobile/SOder/fastlane/*
-mobile/SOder/DerivedData/*
-mobile/SOder/build/*
-mobile/SOder/xcuserdata/*
+mobile/SOder/SOder.xcodeproj
+
 # next.js
 /.next/
 /out/

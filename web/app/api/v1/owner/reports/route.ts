@@ -3,6 +3,15 @@ import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
 import { checkAuthorization } from '@/lib/server/rolePermissions';
+import {
+  mapInventoryRowsToLowStockItems,
+  type InventoryLowStockRow,
+} from '@/lib/server/dashboard/low-stock';
+import {
+  DEFAULT_RESTAURANT_TIMEZONE,
+  getLocalDateString,
+  getLocalDayRange,
+} from '@/lib/server/dashboard/dates';
 
 export async function GET() {
   const user = await getUserFromRequest();
@@ -16,19 +25,27 @@ export async function GET() {
 
   try {
 
-    // Get today's date for filtering
-    const today = new Date().toISOString().split('T')[0];
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    // Resolve the branch's local day so "today's sales" reflects the restaurant's
+    // wall clock instead of UTC. Phase 0 defaults to Asia/Tokyo if a branch has
+    // no timezone set yet.
+    const { data: restaurantRow } = await supabaseAdmin
+      .from('restaurants')
+      .select('timezone')
+      .eq('id', user.restaurantId)
+      .maybeSingle();
+    const timezone: string = restaurantRow?.timezone ?? DEFAULT_RESTAURANT_TIMEZONE;
+    const today = getLocalDateString(timezone);
+    const todayRange = getLocalDayRange(today, timezone);
 
     // Fetch dashboard metrics
     const [todaySalesResult, ordersCountResult, topSellerResult, lowStockResult] = await Promise.all([
-      // Today's sales
+      // Today's sales (restaurant-local day)
       supabaseAdmin
         .from('orders')
         .select('total_amount')
         .eq('restaurant_id', user.restaurantId)
-        .gte('created_at', `${today}T00:00:00`)
-        .lte('created_at', `${today}T23:59:59`)
+        .gte('created_at', todayRange.start)
+        .lte('created_at', todayRange.end)
         .eq('status', 'completed'),
 
       // Active orders count
@@ -39,23 +56,18 @@ export async function GET() {
         .neq('status', 'completed'),
 
       // Top seller this week
-      supabaseAdmin
-        .from('order_items')
-        .select(`
-          quantity,
-          menu_items(id, name),
-          orders!inner(restaurant_id, created_at)
-        `)
-        .eq('orders.restaurant_id', user.restaurantId)
-        .gte('orders.created_at', `${sevenDaysAgo}T00:00:00`)
-        .lte('orders.created_at', `${today}T23:59:59`),
+      supabaseAdmin.rpc('get_top_sellers_7days', {
+        p_restaurant_id: user.restaurantId,
+        p_limit: 1,
+      }),
 
-      // Low stock items (placeholder for now)
+      // Low stock items count
       supabaseAdmin
-        .from('menu_items')
-        .select('id, name', { count: 'exact' })
+        .from('inventory_items')
+        .select('id, stock_level, threshold, menu_items!inner(name_en, name_ja, name_vi, categories!inner(name_en, name_ja, name_vi))')
         .eq('restaurant_id', user.restaurantId)
-        .limit(5) // Placeholder: assume first 5 items are "low stock"
+        .not('stock_level', 'is', null)
+        .not('threshold', 'is', null)
     ]);
 
     // Calculate today's total sales
@@ -66,34 +78,17 @@ export async function GET() {
 
     // Calculate top seller
     let topSeller = null;
-    if (topSellerResult.data) {
-      const itemSales: Record<string, { name: string; quantity: number }> = {};
-      
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      topSellerResult.data.forEach((item: any) => {
-        const menuItem = item.menu_items;
-        if (menuItem) {
-          const key = menuItem.id;
-          if (!itemSales[key]) {
-            itemSales[key] = { name: menuItem.name, quantity: 0 };
-          }
-          itemSales[key].quantity += item.quantity;
-        }
-      });
-
-      const topSellerEntry = Object.entries(itemSales)
-        .sort(([,a], [,b]) => b.quantity - a.quantity)[0];
-      
-      if (topSellerEntry) {
-        topSeller = {
-          name: topSellerEntry[1].name,
-          metricValue: `${topSellerEntry[1].quantity} sold`
-        };
-      }
+    if (topSellerResult.data && topSellerResult.data.length > 0) {
+      const topItem = topSellerResult.data[0];
+      topSeller = {
+        name: topItem.name_en || topItem.name_ja || topItem.name_vi || 'Unknown Item',
+        metricValue: `${topItem.total_sold} sold`
+      };
     }
 
-    // Low stock count (placeholder)
-    const lowStockItemsCount = lowStockResult.count || 0;
+    const lowStockItemsCount = lowStockResult.data
+      ? mapInventoryRowsToLowStockItems(lowStockResult.data as InventoryLowStockRow[]).length
+      : 0;
 
     const metrics = {
       todaySales,

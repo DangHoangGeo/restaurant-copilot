@@ -41,7 +41,15 @@ export async function POST(req: NextRequest) {
     }
 
     body = await req.json(); // Assign to the outer-scoped body
-    const { name, subdomain, email, password, defaultLanguage, policyAgreement } = signupSchema.parse(body);
+    const {
+      name,
+      subdomain,
+      email,
+      password,
+      defaultLanguage,
+      policyAgreement,
+    } = signupSchema.parse(body);
+    const selectedPlan = 'starter' as const;
 
     // Ensure user has agreed to the policy (this is already validated by the schema, but explicit check for clarity)
     if (!policyAgreement) {
@@ -54,14 +62,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "You must agree to the Terms of Service and Privacy Policy" }, { status: 400 });
     }
 
-    // 2. Recheck subdomain in restaurants; if taken, return 409.
-    const { data: existingRestaurant, error: checkError } = await supabaseAdmin
-      .from("restaurants")
-      .select("id")
-      .eq("subdomain", subdomain)
-      .single();
+    // 2. Recheck subdomain in restaurants and organizations; if taken, return 409.
+    const [{ data: existingRestaurant, error: restaurantCheckError }, { data: existingOrganization, error: organizationCheckError }] = await Promise.all([
+      supabaseAdmin
+        .from("restaurants")
+        .select("id")
+        .eq("subdomain", subdomain)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("owner_organizations")
+        .select("id")
+        .or(`public_subdomain.eq.${subdomain},slug.eq.${subdomain}`)
+        .maybeSingle(),
+    ]);
 
-    if (existingRestaurant) {
+    if (existingRestaurant || existingOrganization) {
       await logEvent({
         level: "INFO",
         endpoint: "/api/v1/register",
@@ -70,8 +85,11 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json({ error: "Subdomain already taken" }, { status: 409 });
     }
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows found
-      throw checkError;
+    if (restaurantCheckError) {
+      throw restaurantCheckError;
+    }
+    if (organizationCheckError) {
+      throw organizationCheckError;
     }
     // 3. Create Supabase Auth user
     const { data: userData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -99,7 +117,14 @@ export async function POST(req: NextRequest) {
     // 4. Insert into restaurants with { name, subdomain, default_language, brand_color }, returning restaurant_id.
     const { data: restaurantData, error: restaurantError } = await supabaseAdmin
       .from("restaurants")
-      .insert([{ name, subdomain, default_language: defaultLanguage, brand_color: "#00a3d7" }])
+      .insert([{
+        name,
+        subdomain,
+        branch_code: subdomain,
+        default_language: defaultLanguage,
+        brand_color: "#00a3d7",
+        is_verified: false,
+      }])
       .select("id")
       .single();
 
@@ -157,24 +182,65 @@ export async function POST(req: NextRequest) {
     }
 
     // 7. Bootstrap organization for the new restaurant (Phase 1)
-    await bootstrapOrganizationForRestaurant(userData.user.id, restaurantId, {
+    const bootstrapResult = await bootstrapOrganizationForRestaurant(userData.user.id, restaurantId, {
       name,
       slug: subdomain,
+      requested_plan: selectedPlan,
     });
 
-    // 8. Return { success: true, redirect: "https://{subdomain}.coorder.ai/en/login" }.
+    if (!bootstrapResult) {
+      await logEvent({
+        level: "ERROR",
+        endpoint: "/api/v1/register",
+        message: "Organization bootstrap failed after restaurant and user creation",
+        metadata: { userId: userData.user.id, restaurantId, subdomain },
+      });
 
-    const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
-    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
-    let redirectUrl = `https://${subdomain}.${productionUrl}/${defaultLanguage}/login`;
-    if (isDevelopment) {
-      redirectUrl = `http://${subdomain}.localhost:3000/${defaultLanguage}/login`;
+      // Best-effort compensating rollback. Order matters: rows in `users` have a
+      // FK back to `restaurants`, and `auth.users` is deleted last so we still
+      // have an admin handle for the other two cleanups. Any step that fails
+      // must be logged so an operator can finish the cleanup manually — silent
+      // failures here leave orphan rows behind.
+      const usersDelete = await supabaseAdmin.from("users").delete().eq("id", userData.user.id);
+      if (usersDelete.error) {
+        await logEvent({
+          level: "ERROR",
+          endpoint: "/api/v1/register",
+          message: `Rollback failed: could not delete users row: ${usersDelete.error.message}`,
+          metadata: { userId: userData.user.id, restaurantId, subdomain },
+        });
+      }
+
+      const restaurantsDelete = await supabaseAdmin.from("restaurants").delete().eq("id", restaurantId);
+      if (restaurantsDelete.error) {
+        await logEvent({
+          level: "ERROR",
+          endpoint: "/api/v1/register",
+          message: `Rollback failed: could not delete restaurants row: ${restaurantsDelete.error.message}`,
+          metadata: { userId: userData.user.id, restaurantId, subdomain },
+        });
+      }
+
+      const authDelete = await supabaseAdmin.auth.admin.deleteUser(userData.user.id);
+      if (authDelete.error) {
+        await logEvent({
+          level: "ERROR",
+          endpoint: "/api/v1/register",
+          message: `Rollback failed: could not delete auth user: ${authDelete.error.message}`,
+          metadata: { userId: userData.user.id, restaurantId, subdomain },
+        });
+      }
+
+      return NextResponse.json({ error: "Organization bootstrap failed" }, { status: 500 });
     }
+
+    // 8. Send the founder into the pending-approval flow on the root domain.
+    const redirectUrl = `/${defaultLanguage}/signup/pending-approval?org=${encodeURIComponent(subdomain)}`;
     await logEvent({
       level: "INFO",
       endpoint: "/api/v1/register",
-      message: "User registered successfully",
-      metadata: { email, subdomain, restaurantId },
+      message: "User registered successfully and is waiting for approval",
+      metadata: { email, subdomain, restaurantId, selectedPlan },
     });
     return NextResponse.json({ success: true, redirect: redirectUrl });
   } catch (error: unknown) {

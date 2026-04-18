@@ -111,16 +111,18 @@ export function useRecommendations(params: RecommendationParams) {
   const {
     data,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch
   } = useQuery({
-    queryKey: ['recommendations', params.sessionId, params.timeOfDay, params.restaurantId],
+    queryKey: ['recommendations', params.sessionId, params.timeOfDay, params.currentCartItems, params.restaurantId],
     queryFn: () => fetchRecommendations(params),
     staleTime: 2 * 60 * 1000, // 2 minutes - recommendations can be more dynamic
     gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     retry: 2,
+    placeholderData: (previousData) => previousData,
   });
 
   const recommendedItems = useMemo(() => data?.items || [], [data?.items]);
@@ -132,6 +134,7 @@ export function useRecommendations(params: RecommendationParams) {
     confidence: data?.confidence || 0,
     categories: data?.categories || [],
     isLoading,
+    isFetching,
     isError,
     error,
     refetch

@@ -7,17 +7,11 @@ import {
   Home,
   List,
   UserCog,
-  Wallet,
+  BarChartBig,
   MoreHorizontal,
   ClipboardList,
   TableIcon as TableSimpleIcon,
-  BarChartBig,
   ShoppingCart,
-  Tag,
-  Building2,
-  Layers,
-  Eye,
-  Settings,
   LucideIcon,
   Sparkles,
 } from 'lucide-react';
@@ -56,29 +50,24 @@ export function AdminBottomNav() {
 
   const navItems: NavItem[] = [];
   const moreItems: ActionItem[] = [
-    { icon: ClipboardList, labelKey: 'admin_sidebar_menu_management', href: '/dashboard/menu' },
-    { icon: TableSimpleIcon, labelKey: 'admin_sidebar_table_qr_management', href: '/dashboard/tables' },
-    { icon: BarChartBig, labelKey: 'admin_sidebar_reports_analytics', href: '/dashboard/reports' },
-    { icon: ShoppingCart, labelKey: 'admin_sidebar_purchasing', href: '/dashboard/purchasing' },
-    { icon: Tag, labelKey: 'admin_sidebar_promotions', href: '/dashboard/promotions' },
-    { icon: Building2, labelKey: 'admin_sidebar_organization', href: '/dashboard/organization' },
-    { icon: Layers, labelKey: 'admin_sidebar_branches', href: '/dashboard/branches' },
-    { icon: Eye, labelKey: 'admin_sidebar_homepage_management', href: '/dashboard/homepage' },
-    { icon: Settings, labelKey: 'admin_sidebar_restaurant_settings', href: '/dashboard/settings' },
+    { icon: ClipboardList, labelKey: 'admin_sidebar_menu_management', href: '/branch/menu' },
+    { icon: TableSimpleIcon, labelKey: 'admin_sidebar_table_qr_management', href: '/branch/tables' },
+    { icon: BarChartBig, labelKey: 'admin_sidebar_reports_analytics', href: '/branch/reports' },
+    { icon: ShoppingCart, labelKey: 'admin_sidebar_purchasing', href: '/branch/purchasing' },
   ];
 
   if (needsOnboarding && FEATURE_FLAGS.onboarding) {
     navItems.push({
       icon: Sparkles,
       labelKey: 'admin_sidebar_onboarding',
-      href: '/dashboard/onboarding',
+      href: '/control/onboarding',
     });
   } else {
     navItems.push(
-      { icon: Home, labelKey: 'admin_sidebar_dashboard', href: '/dashboard', exact: true },
-      { icon: List, labelKey: 'admin_sidebar_orders', href: '/dashboard/orders' },
-      { icon: Wallet, labelKey: 'bottom_nav_money', href: '/dashboard/finance' },
-      { icon: UserCog, labelKey: 'bottom_nav_people', href: '/dashboard/employees' },
+      { icon: Home, labelKey: 'admin_sidebar_dashboard', href: '/branch', exact: true },
+      { icon: List, labelKey: 'admin_sidebar_orders', href: '/branch/orders' },
+      { icon: BarChartBig, labelKey: 'admin_sidebar_reports_analytics', href: '/branch/reports' },
+      { icon: UserCog, labelKey: 'bottom_nav_people', href: '/branch/employees' },
     );
   }
 
@@ -98,7 +87,6 @@ export function AdminBottomNav() {
               <li key={href} className="flex-1">
                 <Link
                   href={fullHref}
-                  prefetch={false}
                   className={cn(
                     'flex min-h-16 flex-col items-center justify-center py-2 text-xs',
                     isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
@@ -139,7 +127,6 @@ export function AdminBottomNav() {
               <Link
                 key={href}
                 href={`/${locale}${href}`}
-                prefetch={false}
                 onClick={() => setIsMoreOpen(false)}
                 className="flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >

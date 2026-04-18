@@ -132,6 +132,7 @@
     "settings": "Settings"
   },
   "admin_sidebar_organization": "Organization",
+  "admin_sidebar_overview": "Overview",
   "admin_sidebar_branches": "Branches",
   "admin_sidebar_dashboard": "Dashboard",
   "admin_sidebar_onboarding": "Get Started",
