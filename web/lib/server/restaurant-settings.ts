@@ -1,47 +1,100 @@
-import 'server-only';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
-import type { RestaurantSettings } from '@/shared/types/customer';
+import "server-only";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
+import type { RestaurantSettings } from "@/shared/types/customer";
+
+async function getOrganizationBrandingForRestaurant(
+  restaurantId: string,
+): Promise<{
+  name: string | null;
+  publicSubdomain: string | null;
+  logoUrl: string | null;
+  brandColor: string | null;
+} | null> {
+  const { data, error } = await supabaseAdmin
+    .from("organization_restaurants")
+    .select(
+      "owner_organizations(name, public_subdomain, logo_url, brand_color)",
+    )
+    .eq("restaurant_id", restaurantId)
+    .maybeSingle();
+
+  if (error || !data?.owner_organizations) {
+    return null;
+  }
+
+  const organization = Array.isArray(data.owner_organizations)
+    ? data.owner_organizations[0]
+    : data.owner_organizations;
+
+  if (!organization) return null;
+
+  return {
+    name: organization.name ?? null,
+    publicSubdomain: organization.public_subdomain ?? null,
+    logoUrl: organization.logo_url ?? null,
+    brandColor: organization.brand_color ?? null,
+  };
+}
 
 export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
   if (!subdomain) return null;
-  
+
   try {
     const { data: restaurant, error } = await supabaseAdmin
-      .from('restaurants')
-      .select('id, name, logo_url, subdomain, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi')
-      .eq('subdomain', subdomain)
+      .from("restaurants")
+      .select(
+        "id, name, logo_url, subdomain, branch_code, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi",
+      )
+      .eq("subdomain", subdomain)
       .single();
 
     if (error) {
-      await logger.error('getRestaurantSettingsFromSubdomain', 'Error fetching restaurant by subdomain', {
-        subdomain,
-        error: error.message
-      });
+      await logger.error(
+        "getRestaurantSettingsFromSubdomain",
+        "Error fetching restaurant by subdomain",
+        {
+          subdomain,
+          error: error.message,
+        },
+      );
       return null;
     }
     if (!restaurant) {
       return null;
     }
+
+    const organizationBranding = await getOrganizationBrandingForRestaurant(
+      restaurant.id,
+    );
     return {
       id: restaurant.id,
       name: restaurant.name,
-      logoUrl: restaurant.logo_url,
+      companyName: organizationBranding?.name ?? restaurant.name,
+      logoUrl: organizationBranding?.logoUrl ?? restaurant.logo_url,
       subdomain: restaurant.subdomain,
-      primaryColor: restaurant.brand_color || '#3B82F6',
-      defaultLocale: restaurant.default_language || 'en',
+      branchCode: restaurant.branch_code ?? restaurant.subdomain,
+      companyPublicSubdomain: organizationBranding?.publicSubdomain ?? null,
+      primaryColor:
+        (organizationBranding?.brandColor ?? restaurant.brand_color) ||
+        "#3B82F6",
+      defaultLocale: restaurant.default_language || "en",
       onboarded: restaurant.onboarded || false,
       owner_photo_url: restaurant.owner_photo_url || null,
-      owner_story_en: restaurant.owner_story_en || '',
-      owner_story_ja: restaurant.owner_story_ja || '',
-      owner_story_vi: restaurant.owner_story_vi || ''
+      owner_story_en: restaurant.owner_story_en || "",
+      owner_story_ja: restaurant.owner_story_ja || "",
+      owner_story_vi: restaurant.owner_story_vi || "",
     };
   } catch (e) {
-    await logger.error('getRestaurantSettingsFromSubdomain', 'Exception fetching restaurant by subdomain', {
-      subdomain,
-      error: e instanceof Error ? e.message : 'Unknown error'
-    });
+    await logger.error(
+      "getRestaurantSettingsFromSubdomain",
+      "Exception fetching restaurant by subdomain",
+      {
+        subdomain,
+        error: e instanceof Error ? e.message : "Unknown error",
+      },
+    );
     return null;
   }
 }
@@ -52,28 +105,37 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
  * eliminating the client-side fetch that previously caused a skeleton flash on every page.
  */
 export async function getCustomerRestaurantFromSubdomain(
-  subdomain: string
+  subdomain: string,
 ): Promise<RestaurantSettings | null> {
   if (!subdomain) return null;
 
   try {
     const { data: restaurant, error } = await supabaseAdmin
-      .from('restaurants')
-      .select('id, name, logo_url, subdomain, brand_color, default_language, address, phone, email, website, description_en, description_ja, description_vi, opening_hours, timezone')
-      .eq('subdomain', subdomain)
+      .from("restaurants")
+      .select(
+        "id, name, logo_url, subdomain, branch_code, brand_color, default_language, address, phone, email, website, description_en, description_ja, description_vi, opening_hours, timezone, allow_order_notes",
+      )
+      .eq("subdomain", subdomain)
       .single();
 
     if (error || !restaurant) {
-      await logger.error('getCustomerRestaurantFromSubdomain', 'Error fetching customer restaurant', {
-        subdomain,
-        error: error?.message,
-      });
+      await logger.error(
+        "getCustomerRestaurantFromSubdomain",
+        "Error fetching customer restaurant",
+        {
+          subdomain,
+          error: error?.message,
+        },
+      );
       return null;
     }
 
     let parsedOpeningHours: Record<string, string> | undefined = undefined;
     try {
-      if (restaurant.opening_hours && typeof restaurant.opening_hours === 'string') {
+      if (
+        restaurant.opening_hours &&
+        typeof restaurant.opening_hours === "string"
+      ) {
         parsedOpeningHours = JSON.parse(restaurant.opening_hours);
       } else if (restaurant.opening_hours) {
         parsedOpeningHours = restaurant.opening_hours as Record<string, string>;
@@ -82,13 +144,23 @@ export async function getCustomerRestaurantFromSubdomain(
       parsedOpeningHours = undefined;
     }
 
+    const organizationBranding = await getOrganizationBrandingForRestaurant(
+      restaurant.id,
+    );
+
     return {
       id: restaurant.id,
       name: restaurant.name,
+      companyName: organizationBranding?.name ?? restaurant.name,
       subdomain: restaurant.subdomain,
-      logoUrl: restaurant.logo_url,
-      primaryColor: restaurant.brand_color || '#3B82F6',
-      defaultLocale: restaurant.default_language || 'en',
+      branchCode: restaurant.branch_code ?? restaurant.subdomain,
+      companyPublicSubdomain: organizationBranding?.publicSubdomain ?? null,
+      logoUrl: organizationBranding?.logoUrl ?? restaurant.logo_url,
+      allowOrderNotes: restaurant.allow_order_notes ?? true,
+      primaryColor:
+        (organizationBranding?.brandColor ?? restaurant.brand_color) ||
+        "#3B82F6",
+      defaultLocale: restaurant.default_language || "en",
       address: restaurant.address,
       phone: restaurant.phone,
       email: restaurant.email,
@@ -100,38 +172,52 @@ export async function getCustomerRestaurantFromSubdomain(
       timezone: restaurant.timezone,
     };
   } catch (e) {
-    await logger.error('getCustomerRestaurantFromSubdomain', 'Exception fetching customer restaurant', {
-      subdomain,
-      error: e instanceof Error ? e.message : 'Unknown error',
-    });
+    await logger.error(
+      "getCustomerRestaurantFromSubdomain",
+      "Exception fetching customer restaurant",
+      {
+        subdomain,
+        error: e instanceof Error ? e.message : "Unknown error",
+      },
+    );
     return null;
   }
 }
 
-export async function getRestaurantIdFromSubdomain(subdomain: string): Promise<string | null> {
+export async function getRestaurantIdFromSubdomain(
+  subdomain: string,
+): Promise<string | null> {
   if (!subdomain) return null;
 
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
-      .from('restaurants')
-      .select('id')
-      .eq('subdomain', subdomain)
+      .from("restaurants")
+      .select("id")
+      .eq("subdomain", subdomain)
       .single();
-    
+
     if (error) {
-      await logger.error('getRestaurantIdFromSubdomain', 'Error fetching restaurant ID for subdomain', {
-        subdomain,
-        error: error.message
-      });
+      await logger.error(
+        "getRestaurantIdFromSubdomain",
+        "Error fetching restaurant ID for subdomain",
+        {
+          subdomain,
+          error: error.message,
+        },
+      );
       return null;
     }
     return data?.id || null;
   } catch (e) {
-    await logger.error('getRestaurantIdFromSubdomain', 'Exception fetching restaurant ID for subdomain', {
-      subdomain,
-      error: e instanceof Error ? e.message : 'Unknown error'
-    });
+    await logger.error(
+      "getRestaurantIdFromSubdomain",
+      "Exception fetching restaurant ID for subdomain",
+      {
+        subdomain,
+        error: e instanceof Error ? e.message : "Unknown error",
+      },
+    );
     return null;
   }
 }

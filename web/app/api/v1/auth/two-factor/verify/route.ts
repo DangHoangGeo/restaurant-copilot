@@ -55,6 +55,17 @@ export async function POST(req: NextRequest) {
       return new Response("Restaurant not found", { status: 500 });
     }
 
+    const { data: orgLink } = await supabaseAdmin
+      .from("organization_restaurants")
+      .select("owner_organizations(public_subdomain)")
+      .eq("restaurant_id", restaurantId)
+      .maybeSingle();
+
+    const ownerOrganization = Array.isArray(orgLink?.owner_organizations)
+      ? orgLink.owner_organizations[0]
+      : orgLink?.owner_organizations;
+    const appSubdomain = ownerOrganization?.public_subdomain || restaurant.subdomain;
+
     const authToken = await new SignJWT({
       userId,
       restaurantId,
@@ -79,9 +90,12 @@ export async function POST(req: NextRequest) {
 
     const rootDashboardAccess = await getRootDashboardAccess(userId);
     const redirectUrl = rootDashboardAccess
-      ? buildRootControlUrl(restaurant.default_language)
+      ? buildRootControlUrl(
+          restaurant.default_language,
+          rootDashboardAccess.public_subdomain
+        )
       : buildBranchDashboardUrl(
-          restaurant.subdomain,
+          appSubdomain,
           restaurant.default_language
         );
 

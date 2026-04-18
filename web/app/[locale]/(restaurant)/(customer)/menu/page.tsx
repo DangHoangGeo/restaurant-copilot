@@ -12,6 +12,8 @@ interface MenuPageProps {
     sessionId?: string;
     tableNumber?: string;
     code?: string;
+    branch?: string;
+    table?: string;
   }>;
 }
 

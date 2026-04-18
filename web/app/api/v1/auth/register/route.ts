@@ -47,9 +47,9 @@ export async function POST(req: NextRequest) {
       email,
       password,
       defaultLanguage,
-      selectedPlan,
       policyAgreement,
     } = signupSchema.parse(body);
+    const selectedPlan = 'starter' as const;
 
     // Ensure user has agreed to the policy (this is already validated by the schema, but explicit check for clarity)
     if (!policyAgreement) {

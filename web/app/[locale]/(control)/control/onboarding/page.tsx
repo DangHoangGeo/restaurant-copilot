@@ -35,12 +35,9 @@ export default async function ControlOnboardingPage({
   const org = ctx.organization;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-lg font-semibold">Owner onboarding</h1>
-        <p className="text-sm text-muted-foreground">
-          Finish the first company setup after approval so the control workspace and future homepage tools start from clean defaults.
-        </p>
+        <h1 className="text-xl font-semibold">Owner setup</h1>
       </div>
 
       <ControlOnboardingContent

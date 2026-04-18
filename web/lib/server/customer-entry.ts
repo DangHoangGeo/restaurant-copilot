@@ -1,13 +1,15 @@
-import 'server-only';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { getSubdomainFromHost } from '@/lib/utils';
-import type { RestaurantSettings } from '@/shared/types/customer';
+import "server-only";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSubdomainFromHost } from "@/lib/utils";
+import type { RestaurantSettings } from "@/shared/types/customer";
 
 interface OrganizationPublicRow {
   id: string;
   name: string;
   slug: string;
   public_subdomain: string;
+  logo_url: string | null;
+  brand_color: string | null;
 }
 
 interface RestaurantPublicRow {
@@ -16,6 +18,7 @@ interface RestaurantPublicRow {
   subdomain: string;
   branch_code: string | null;
   logo_url: string | null;
+  allow_order_notes: boolean | null;
   brand_color: string | null;
   default_language: string | null;
   address: string | null;
@@ -34,6 +37,8 @@ export interface CompanyContext {
   name: string;
   slug: string;
   publicSubdomain: string;
+  logoUrl: string | null;
+  brandColor: string | null;
 }
 
 export interface CompanyRestaurantContext {
@@ -55,7 +60,7 @@ function normalizePublicCode(value: string | null | undefined): string | null {
 
 function parseOpeningHours(value: unknown): Record<string, string> | undefined {
   if (!value) return undefined;
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     try {
       return JSON.parse(value) as Record<string, string>;
     } catch {
@@ -67,17 +72,19 @@ function parseOpeningHours(value: unknown): Record<string, string> | undefined {
 
 function mapRestaurantSettings(
   restaurant: RestaurantPublicRow,
-  company: CompanyContext
+  company: CompanyContext,
 ): RestaurantSettings {
   return {
     id: restaurant.id,
     name: restaurant.name,
+    companyName: company.name,
     subdomain: restaurant.subdomain,
     branchCode: restaurant.branch_code ?? restaurant.subdomain,
     companyPublicSubdomain: company.publicSubdomain,
-    logoUrl: restaurant.logo_url,
-    primaryColor: restaurant.brand_color || '#3B82F6',
-    defaultLocale: restaurant.default_language || 'en',
+    logoUrl: company.logoUrl ?? restaurant.logo_url,
+    allowOrderNotes: restaurant.allow_order_notes ?? true,
+    primaryColor: company.brandColor ?? restaurant.brand_color ?? "#3B82F6",
+    defaultLocale: restaurant.default_language || "en",
     address: restaurant.address,
     phone: restaurant.phone,
     email: restaurant.email,
@@ -91,14 +98,14 @@ function mapRestaurantSettings(
 }
 
 async function getOrganizationByIdentifier(
-  identifier: string
+  identifier: string,
 ): Promise<OrganizationPublicRow | null> {
   const normalized = normalizePublicCode(identifier);
   if (!normalized) return null;
 
   const { data, error } = await supabaseAdmin
-    .from('owner_organizations')
-    .select('id, name, slug, public_subdomain')
+    .from("owner_organizations")
+    .select("id, name, slug, public_subdomain, logo_url, brand_color")
     .or(`public_subdomain.eq.${normalized},slug.eq.${normalized}`)
     .maybeSingle();
 
@@ -107,12 +114,14 @@ async function getOrganizationByIdentifier(
 }
 
 async function getCompanyForRestaurant(
-  restaurantId: string
+  restaurantId: string,
 ): Promise<CompanyContext | null> {
   const { data, error } = await supabaseAdmin
-    .from('organization_restaurants')
-    .select('owner_organizations(id, name, slug, public_subdomain)')
-    .eq('restaurant_id', restaurantId)
+    .from("organization_restaurants")
+    .select(
+      "owner_organizations(id, name, slug, public_subdomain, logo_url, brand_color)",
+    )
+    .eq("restaurant_id", restaurantId)
     .maybeSingle();
 
   if (error || !data?.owner_organizations) return null;
@@ -128,20 +137,24 @@ async function getCompanyForRestaurant(
     name: org.name,
     slug: org.slug,
     publicSubdomain: org.public_subdomain,
+    logoUrl: org.logo_url ?? null,
+    brandColor: org.brand_color ?? null,
   };
 }
 
 async function getRestaurantById(
-  restaurantId: string
+  restaurantId: string,
 ): Promise<CompanyRestaurantContext | null> {
   const { data, error } = await supabaseAdmin
-    .from('restaurants')
-    .select(`
+    .from("restaurants")
+    .select(
+      `
       id,
       name,
       subdomain,
       branch_code,
       logo_url,
+      allow_order_notes,
       brand_color,
       default_language,
       address,
@@ -153,8 +166,9 @@ async function getRestaurantById(
       description_vi,
       opening_hours,
       timezone
-    `)
-    .eq('id', restaurantId)
+    `,
+    )
+    .eq("id", restaurantId)
     .maybeSingle();
 
   if (error || !data) return null;
@@ -169,15 +183,15 @@ async function getRestaurantById(
 }
 
 async function getRestaurantByLegacySubdomain(
-  subdomain: string
+  subdomain: string,
 ): Promise<CompanyRestaurantContext | null> {
   const normalized = normalizePublicCode(subdomain);
   if (!normalized) return null;
 
   const { data, error } = await supabaseAdmin
-    .from('restaurants')
-    .select('id')
-    .eq('subdomain', normalized)
+    .from("restaurants")
+    .select("id")
+    .eq("subdomain", normalized)
     .maybeSingle();
 
   if (error || !data?.id) return null;
@@ -192,18 +206,20 @@ async function getRestaurantByCompanyAndBranch(params: {
   if (!normalizedBranchCode) return null;
 
   const { data: links, error: linksError } = await supabaseAdmin
-    .from('organization_restaurants')
-    .select('restaurant_id')
-    .eq('organization_id', params.organization.id);
+    .from("organization_restaurants")
+    .select("restaurant_id")
+    .eq("organization_id", params.organization.id);
 
   if (linksError || !links?.length) return null;
 
   const restaurantIds = links.map((row) => row.restaurant_id as string);
   const { data, error } = await supabaseAdmin
-    .from('restaurants')
-    .select('id')
-    .in('id', restaurantIds)
-    .or(`branch_code.eq.${normalizedBranchCode},subdomain.eq.${normalizedBranchCode}`)
+    .from("restaurants")
+    .select("id")
+    .in("id", restaurantIds)
+    .or(
+      `branch_code.eq.${normalizedBranchCode},subdomain.eq.${normalizedBranchCode}`,
+    )
     .maybeSingle();
 
   if (error || !data?.id) return null;
@@ -263,7 +279,7 @@ export async function resolveCustomerEntryContext(params: {
   const normalizedTableCode = normalizePublicCode(params.tableCode);
   if (!restaurantContext || !normalizedTableCode) return null;
 
-  const { data, error } = await supabaseAdmin.rpc('get_table_session_by_code', {
+  const { data, error } = await supabaseAdmin.rpc("get_table_session_by_code", {
     input_code: normalizedTableCode,
     input_restaurant_id: restaurantContext.restaurant.id,
   });

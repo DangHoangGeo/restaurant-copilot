@@ -1,36 +1,59 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo, useCallback, useRef, Suspense, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDebounce } from 'use-debounce';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Clock, 
-  TrendingUp, 
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  Suspense,
+  useEffect,
+} from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDebounce } from "use-debounce";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Search,
+  Clock,
+  TrendingUp,
   Sparkles,
   ChefHat,
   ArrowRight,
   Heart,
   RefreshCw,
-  Menu,
-  X
-} from 'lucide-react';
-import { getLocalizedText } from '@/lib/customerUtils';
-import { ContextualGreeting, generateContextualInfo } from '@/components/common/ContextualGreeting';
-import { ItemDetailModal } from '@/components/features/customer/menu/ItemDetailModal';
-import { SmartMenuSkeleton, MenuCardSkeleton } from '@/components/ui/enhanced-skeleton';
-import { useCart } from '@/components/features/customer/CartContext';
-import { useMenuData } from '@/hooks/useMenuData';
-import { useRecommendations } from '@/hooks/useRecommendations';
-import { useSessionData } from '@/hooks/useSessionData';
-import type { Category, FoodItem, MenuItemSize, Topping } from '@/shared/types/menu';
-import type { ViewType, ViewProps } from '@/components/features/customer/screens/types';
-import { CompactFoodCard } from './CompactFoodCard';
-import { MenuSection } from './MenuSection';
-import { useTranslations } from 'next-intl';
+  UtensilsCrossed,
+  Moon,
+  Sun,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { getLocalizedText } from "@/lib/customerUtils";
+import { generateContextualInfo } from "@/components/common/ContextualGreeting";
+import { ItemDetailModal } from "@/components/features/customer/menu/ItemDetailModal";
+import {
+  SmartMenuSkeleton,
+  MenuCardSkeleton,
+} from "@/components/ui/enhanced-skeleton";
+import { useCart } from "@/components/features/customer/CartContext";
+import { useMenuData } from "@/hooks/useMenuData";
+import { useRecommendations } from "@/hooks/useRecommendations";
+import { useSessionData } from "@/hooks/useSessionData";
+import type {
+  Category,
+  FoodItem,
+  MenuItemSize,
+  Topping,
+} from "@/shared/types/menu";
+import type {
+  ViewType,
+  ViewProps,
+} from "@/components/features/customer/screens/types";
+import { CompactFoodCard } from "./CompactFoodCard";
+import { MenuSection } from "./MenuSection";
+import { useTranslations } from "next-intl";
+import { LanguageSwitcher } from "@/components/common/language-switcher";
+import { useToast } from "@/components/ui/use-toast";
 
 // Enhanced interfaces for smart features
 interface SmartMenuItem extends FoodItem {
@@ -59,6 +82,19 @@ interface SmartCategory {
   count: number;
 }
 
+const hashString = (value: string): number => {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+};
+
+const normalizedHash = (value: string, salt: string): number => {
+  const hash = hashString(`${value}:${salt}`);
+  return hash / 0xffffffff;
+};
+
 interface SmartMenuProps {
   categories?: Category[]; // Optional fallback data
   onAddToCart?: (item: SmartMenuItem) => void;
@@ -71,58 +107,80 @@ interface SmartMenuProps {
   sessionId?: string;
   tableNumber?: string;
   restaurantName?: string;
+  branchName?: string;
   restaurantId?: string;
+  logoUrl?: string | null;
+  allowOrderNotes?: boolean;
 }
 
 // Helper function to get time of day classification
 const getTimeOfDay = (): string => {
   const hour = new Date().getHours();
-  if (hour >= 6 && hour < 11) return 'breakfast';
-  if (hour >= 11 && hour < 15) return 'lunch';
-  if (hour >= 15 && hour < 17) return 'afternoon';
-  if (hour >= 17 && hour < 22) return 'dinner';
-  return 'late';
+  if (hour >= 6 && hour < 11) return "breakfast";
+  if (hour >= 11 && hour < 15) return "lunch";
+  if (hour >= 15 && hour < 17) return "afternoon";
+  if (hour >= 17 && hour < 22) return "dinner";
+  return "late";
 };
 
 // Transform categories into enhanced smart menu items
 const transformToSmartMenuItems = (
-  categories: Category[], 
-  locale: string, 
+  categories: Category[],
+  locale: string,
   recommendedItems: string[] = [],
-  recommendationReasons: Record<string, string> = {}
+  recommendationReasons: Record<string, string> = {},
 ): SmartMenuItem[] => {
   const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
-  
+
   return categories.flatMap((category) =>
     category.menu_items
-      .filter((item) => 
-        item.available && 
-        item.weekday_visibility.includes(today)
+      .filter(
+        (item) => item.available && item.weekday_visibility.includes(today),
       )
       .map((item): SmartMenuItem => {
         const isRecommended = recommendedItems.includes(item.id);
+        const stableSeed =
+          item.id || item.name_en || `${category.id}-${item.position}`;
+        const rating = 4 + normalizedHash(stableSeed, "rating");
+        const reviewCount =
+          5 + Math.floor(normalizedHash(stableSeed, "reviews") * 50);
+        const estimatedPrepTime =
+          5 + Math.floor(normalizedHash(stableSeed, "prep") * 20);
+        const calories =
+          200 + Math.floor(normalizedHash(stableSeed, "calories") * 400);
+
         return {
           ...item,
           categoryId: category.id,
           categoryName: getLocalizedText(
-            { name_en: category.name_en || '', name_ja: category.name_ja || '', name_vi: category.name_vi || '' },
-            locale
+            {
+              name_en: category.name_en || "",
+              name_ja: category.name_ja || "",
+              name_vi: category.name_vi || "",
+            },
+            locale,
           ),
           searchText: `${getLocalizedText(
-            { name_en: item.name_en || '', name_ja: item.name_ja || '', name_vi: item.name_vi || '' },
-            locale
-          )} ${item.description_en || ''} ${item.description_ja || ''} ${item.description_vi || ''}`.toLowerCase(),
-          rating: 4.0 + Math.random() * 1.0, // Mock rating 4.0-5.0
-          reviewCount: Math.floor(Math.random() * 50) + 5, // Mock review count 5-55
-          isPopular: Math.random() > 0.7,
-          isNew: Math.random() > 0.9,
+            {
+              name_en: item.name_en || "",
+              name_ja: item.name_ja || "",
+              name_vi: item.name_vi || "",
+            },
+            locale,
+          )} ${item.description_en || ""} ${item.description_ja || ""} ${item.description_vi || ""}`.toLowerCase(),
+          rating,
+          reviewCount,
+          isPopular: normalizedHash(stableSeed, "popular") > 0.7,
+          isNew: normalizedHash(stableSeed, "new") > 0.9,
           tags: item.tags || [],
-          estimatedPrepTime: Math.floor(Math.random() * 20) + 5, // 5-25 minutes
-          calories: Math.floor(Math.random() * 400) + 200, // 200-600 calories
+          estimatedPrepTime,
+          calories,
           isRecommended,
-          recommendationReason: isRecommended ? recommendationReasons[item.id] : undefined
+          recommendationReason: isRecommended
+            ? recommendationReasons[item.id]
+            : undefined,
         };
-      })
+      }),
   );
 };
 
@@ -138,59 +196,70 @@ export function SmartMenu({
   sessionId,
   tableNumber,
   restaurantName = "Our Restaurant",
-  restaurantId
+  branchName,
+  restaurantId,
+  logoUrl,
+  allowOrderNotes = true,
 }: SmartMenuProps) {
   const { addToCart, getQuantityByItemId, cart } = useCart();
-  
+  const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const [selectedLocale, setSelectedLocale] = useState(locale);
+
   // State management
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-  const [activeSmartCategory, setActiveSmartCategory] = useState<string>('all');
-  // Category filter modal state
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [categorySearchTerm, setCategorySearchTerm] = useState('');
-  const [debouncedCategorySearchTerm] = useDebounce(categorySearchTerm, 300);
-  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string | null>(null);
+  const [activeSmartCategory, setActiveSmartCategory] = useState<string>("all");
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<
+    string | null
+  >(null);
   // const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [selectedItem, setSelectedItem] = useState<SmartMenuItem | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  const t  = useTranslations("common");
+  const t = useTranslations("common");
+  const tMenu = useTranslations("customer.menu");
   // Search input ref for focus management
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
+  const itemDetailRequestRef = useRef(0);
+
   // Data fetching hooks
-  const { 
-    categories: fetchedCategories, 
-    isLoading: menuLoading, 
+  const {
+    categories: fetchedCategories,
+    isLoading: menuLoading,
     isError: menuError,
     prefetchItemDetails,
-    refetch: refetchMenu
+    getItemDetails,
+    refetch: refetchMenu,
   } = useMenuData({
     restaurantId,
     locale,
     sessionId,
-    tableId
+    tableId,
   });
 
   const { sessionData } = useSessionData({
     sessionId,
     tableId,
-    restaurantId
+    restaurantId,
   });
 
   const timeOfDay = useMemo(() => getTimeOfDay(), []);
-  const cartItems = useMemo(() => cart.map((item: { itemId: string }) => item.itemId), [cart]);
+  const cartItems = useMemo(
+    () => cart.map((item: { itemId: string }) => item.itemId),
+    [cart],
+  );
 
   // Use fetched data or fallback
-  const activeCategories = fetchedCategories.length > 0 ? fetchedCategories : fallbackCategories;
+  const activeCategories =
+    fetchedCategories.length > 0 ? fetchedCategories : fallbackCategories;
 
   // Prepare menu items for recommendations
   const availableMenuItems = useMemo(() => {
-    return activeCategories.flatMap(category => 
+    return activeCategories.flatMap((category) =>
       category.menu_items
-        .filter(item => item.available)
-        .map(item => ({
+        .filter((item) => item.available)
+        .map((item) => ({
           id: item.id,
           name_en: item.name_en,
           name_ja: item.name_ja,
@@ -198,15 +267,15 @@ export function SmartMenu({
           description_en: item.description_en || undefined,
           description_ja: item.description_ja || undefined,
           description_vi: item.description_vi || undefined,
-          categoryId: category.id
-        }))
+          categoryId: category.id,
+        })),
     );
   }, [activeCategories]);
 
-  const { 
-    recommendedItems, 
+  const {
+    recommendedItems,
     recommendationReasons,
-    isLoading: recommendationsLoading 
+    isLoading: recommendationsLoading,
   } = useRecommendations({
     sessionId,
     tableId,
@@ -214,7 +283,7 @@ export function SmartMenu({
     currentCartItems: cartItems,
     previousOrders: sessionData?.orderHistory || [],
     restaurantId,
-    availableMenuItems
+    availableMenuItems,
   });
 
   // Generate contextual information
@@ -225,71 +294,89 @@ export function SmartMenu({
   // Transform categories into smart menu items
   const allMenuItems = useMemo((): SmartMenuItem[] => {
     return transformToSmartMenuItems(
-      activeCategories, 
-      locale, 
-      recommendedItems, 
-      recommendationReasons
+      activeCategories,
+      locale,
+      recommendedItems,
+      recommendationReasons,
     );
   }, [activeCategories, locale, recommendedItems, recommendationReasons]);
 
   // Smart categorization logic with enhanced algorithms
   const smartCategories = useMemo((): Record<string, SmartCategory> => {
     const popularItems = allMenuItems
-      .filter(item => item.reviewCount && item.reviewCount > 10)
+      .filter((item) => item.reviewCount && item.reviewCount > 10)
       .sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
       .slice(0, 8);
 
     const recommendedItemsData = allMenuItems
-      .filter(item => item.isRecommended)
+      .filter((item) => item.isRecommended)
       .slice(0, 8);
 
     const timeBasedKeywords = {
-      breakfast: ['coffee', 'tea', 'pastry', 'egg', 'toast', 'pancake', 'cereal', 'morning'],
-      lunch: ['sandwich', 'salad', 'soup', 'bowl', 'wrap', 'burger', 'quick'],
-      afternoon: ['snack', 'light', 'tea', 'coffee', 'sweet'],
-      dinner: ['main', 'pasta', 'rice', 'meat', 'fish', 'steak', 'dinner'],
-      late: ['snack', 'light', 'drink', 'dessert', 'simple']
+      breakfast: [
+        "coffee",
+        "tea",
+        "pastry",
+        "egg",
+        "toast",
+        "pancake",
+        "cereal",
+        "morning",
+      ],
+      lunch: ["sandwich", "salad", "soup", "bowl", "wrap", "burger", "quick"],
+      afternoon: ["snack", "light", "tea", "coffee", "sweet"],
+      dinner: ["main", "pasta", "rice", "meat", "fish", "steak", "dinner"],
+      late: ["snack", "light", "drink", "dessert", "simple"],
     };
 
-    const keywords = timeBasedKeywords[timeOfDay as keyof typeof timeBasedKeywords] || [];
+    const keywords =
+      timeBasedKeywords[timeOfDay as keyof typeof timeBasedKeywords] || [];
     const timeBasedItems = allMenuItems
-      .filter(item => 
-        keywords.some(keyword => 
-          item.searchText.toLowerCase().includes(keyword.toLowerCase())
-        )
+      .filter((item) =>
+        keywords.some((keyword) =>
+          item.searchText.toLowerCase().includes(keyword.toLowerCase()),
+        ),
       )
       .slice(0, 8);
 
     return {
       recommended: {
-        id: 'recommended',
-        name: 'Perfect for You',
+        id: "recommended",
+        name: "Perfect for You",
         items: recommendedItemsData,
         icon: Sparkles,
-        color: 'from-purple-500 to-pink-500',
+        color: "from-purple-500 to-pink-500",
         description: `AI-curated picks for ${contextualInfo.timeContext.toLowerCase()}`,
-        count: recommendedItemsData.length
+        count: recommendedItemsData.length,
       },
       popular: {
-        id: 'popular',
-        name: 'Customer Favorites',
+        id: "popular",
+        name: "Customer Favorites",
         items: popularItems,
         icon: TrendingUp,
-        color: 'from-orange-500 to-red-500',
-        description: 'Most loved by our customers',
-        count: popularItems.length
+        color: "from-orange-500 to-red-500",
+        description: "Most loved by our customers",
+        count: popularItems.length,
       },
       [timeOfDay]: {
         id: timeOfDay,
         name: `Perfect for ${timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}`,
         items: timeBasedItems,
-        icon: timeOfDay === 'breakfast' ? ChefHat : timeOfDay === 'lunch' ? Clock : Heart,
-        color: timeOfDay === 'breakfast' ? 'from-yellow-500 to-orange-500' : 
-               timeOfDay === 'lunch' ? 'from-green-500 to-blue-500' : 
-               'from-blue-500 to-purple-500',
+        icon:
+          timeOfDay === "breakfast"
+            ? ChefHat
+            : timeOfDay === "lunch"
+              ? Clock
+              : Heart,
+        color:
+          timeOfDay === "breakfast"
+            ? "from-yellow-500 to-orange-500"
+            : timeOfDay === "lunch"
+              ? "from-green-500 to-blue-500"
+              : "from-blue-500 to-purple-500",
         description: `Ideal choices for your ${timeOfDay} cravings`,
-        count: timeBasedItems.length
-      }
+        count: timeBasedItems.length,
+      },
     };
   }, [allMenuItems, contextualInfo.timeContext, timeOfDay]);
 
@@ -298,104 +385,216 @@ export function SmartMenu({
     let items = allMenuItems;
     // apply selected category filter first
     if (activeCategoryFilter) {
-      items = items.filter(item => item.categoryId === activeCategoryFilter);
+      items = items.filter((item) => item.categoryId === activeCategoryFilter);
     }
 
     // Apply search filter
     if (debouncedSearchTerm) {
-      items = items.filter(item =>
-        item.searchText.includes(debouncedSearchTerm.toLowerCase())
+      items = items.filter((item) =>
+        item.searchText.includes(debouncedSearchTerm.toLowerCase()),
       );
     }
 
     // Apply smart category filter
-    if (activeSmartCategory && activeSmartCategory !== 'all') {
+    if (activeSmartCategory && activeSmartCategory !== "all") {
       const categoryItems = smartCategories[activeSmartCategory]?.items || [];
       items = debouncedSearchTerm ? items : categoryItems;
     }
 
     return items;
-  }, [allMenuItems, debouncedSearchTerm, activeSmartCategory, smartCategories, activeCategoryFilter]);
+  }, [
+    allMenuItems,
+    debouncedSearchTerm,
+    activeSmartCategory,
+    smartCategories,
+    activeCategoryFilter,
+  ]);
 
   // Optimized event handlers
-  const handleItemClick = useCallback((item: FoodItem) => {
-    // Convert FoodItem to SmartMenuItem for modal
-    const smartItem = item as SmartMenuItem;
-    setSelectedItem(smartItem);
-    setIsItemModalOpen(true);
-  }, []);
+  const mergeItemDetails = useCallback(
+    (
+      item: SmartMenuItem,
+      fullItem: Awaited<ReturnType<typeof getItemDetails>>,
+    ): SmartMenuItem =>
+      ({
+        ...item,
+        ...fullItem,
+        menu_item_sizes: fullItem.menu_item_sizes || [],
+        toppings: fullItem.toppings || [],
+      }) as SmartMenuItem,
+    [],
+  );
+
+  const showItemDetailsError = useCallback(() => {
+    toast({
+      title: tMenu("item_load_error_title"),
+      description: tMenu("item_load_error_description"),
+      variant: "destructive",
+    });
+  }, [tMenu, toast]);
+
+  const handleItemClick = useCallback(
+    async (item: FoodItem) => {
+      const smartItem = item as SmartMenuItem;
+      const requestId = itemDetailRequestRef.current + 1;
+      itemDetailRequestRef.current = requestId;
+
+      try {
+        const fullItem = await getItemDetails(item.id);
+        if (itemDetailRequestRef.current !== requestId) {
+          return;
+        }
+
+        setSelectedItem(mergeItemDetails(smartItem, fullItem));
+        setIsItemModalOpen(true);
+      } catch (error) {
+        console.error("Failed to load full item details:", error);
+        if (itemDetailRequestRef.current !== requestId) {
+          return;
+        }
+
+        showItemDetailsError();
+      }
+    },
+    [getItemDetails, mergeItemDetails, showItemDetailsError],
+  );
 
   const handleModalClose = useCallback(() => {
+    itemDetailRequestRef.current += 1;
     setIsItemModalOpen(false);
     setSelectedItem(null);
   }, []);
 
-  const handleModalAddToCart = useCallback((
-    item: FoodItem, 
-    quantity: number, 
-    selectedSize?: MenuItemSize, 
-    selectedToppings?: Topping[], 
-    notes?: string
-  ) => {
-    console.log('Adding to cart:', { item: item.id, quantity, selectedSize, selectedToppings, notes });
-    
-    // Use the cart context's addToCart function which properly handles size, toppings, and notes
-    addToCart(item as SmartMenuItem, quantity, selectedSize, selectedToppings, notes);
-  }, [addToCart]);
+  const handleModalAddToCart = useCallback(
+    (
+      item: FoodItem,
+      quantity: number,
+      selectedSize?: MenuItemSize,
+      selectedToppings?: Topping[],
+      notes?: string,
+    ) => {
+      console.log("Adding to cart:", {
+        item: item.id,
+        quantity,
+        selectedSize,
+        selectedToppings,
+        notes,
+      });
 
-  const handleItemHover = useCallback(async (itemId: string) => {
-    // Prefetch item details for faster loading
-    await prefetchItemDetails(itemId);
-  }, [prefetchItemDetails]);
+      // Use the cart context's addToCart function which properly handles size, toppings, and notes
+      addToCart(
+        item as SmartMenuItem,
+        quantity,
+        selectedSize,
+        selectedToppings,
+        notes,
+      );
+    },
+    [addToCart],
+  );
 
-  const handleAddToCart = useCallback((item: SmartMenuItem) => {
-    if (!canAddItems) return;
-    
-    // Check if item has sizes or toppings - if so, open detail modal instead
-    const hasSizes = item.menu_item_sizes && item.menu_item_sizes.length > 0;
-    const hasToppings = item.toppings && item.toppings.length > 0;
-    
-    if (hasSizes || hasToppings) {
-      // Redirect to item detail modal for customization
-      handleItemClick(item);
-      return;
-    }
-    
-    if (onAddToCart) {
-      onAddToCart(item);
-    } else {
-      addToCart(item, 1);
-    }
-  }, [canAddItems, onAddToCart, addToCart, handleItemClick]);
+  const handleItemHover = useCallback(
+    async (itemId: string) => {
+      // Prefetch item details for faster loading
+      await prefetchItemDetails(itemId);
+    },
+    [prefetchItemDetails],
+  );
 
+  const handleAddToCart = useCallback(
+    (item: SmartMenuItem) => {
+      if (!canAddItems) return;
 
+      const addSimpleItem = () => {
+        if (onAddToCart) {
+          onAddToCart(item);
+        } else {
+          addToCart(item, 1);
+        }
+      };
+
+      if (
+        (item.menu_item_sizes?.length ?? 0) > 0 ||
+        (item.toppings?.length ?? 0) > 0
+      ) {
+        void handleItemClick(item);
+        return;
+      }
+
+      const requestId = itemDetailRequestRef.current + 1;
+      itemDetailRequestRef.current = requestId;
+
+      void getItemDetails(item.id)
+        .then((fullItem) => {
+          if (itemDetailRequestRef.current !== requestId) {
+            return;
+          }
+
+          const hasCustomizations =
+            (fullItem.menu_item_sizes?.length ?? 0) > 0 ||
+            (fullItem.toppings?.length ?? 0) > 0;
+
+          if (hasCustomizations) {
+            setSelectedItem(mergeItemDetails(item, fullItem));
+            setIsItemModalOpen(true);
+            return;
+          }
+
+          addSimpleItem();
+        })
+        .catch((error) => {
+          console.error("Failed to load item details before add:", error);
+          if (itemDetailRequestRef.current !== requestId) {
+            return;
+          }
+
+          showItemDetailsError();
+        });
+    },
+    [
+      canAddItems,
+      onAddToCart,
+      addToCart,
+      handleItemClick,
+      getItemDetails,
+      mergeItemDetails,
+      showItemDetailsError,
+    ],
+  );
 
   // Get smart category display order
   const smartCategoryOrder = useMemo(() => {
-    return ['recommended', 'popular', timeOfDay].filter(key => 
-      smartCategories[key] && smartCategories[key].count > 0
+    return ["recommended", "popular", timeOfDay].filter(
+      (key) => smartCategories[key] && smartCategories[key].count > 0,
     );
   }, [smartCategories, timeOfDay]);
 
   // Apply restaurant brand color
   useEffect(() => {
     if (brandColor) {
-      document.documentElement.style.setProperty('--brand-color', brandColor);
+      document.documentElement.style.setProperty("--brand-color", brandColor);
     }
   }, [brandColor]);
 
   // Auto-switch to recommended when recommendations load (only if user hasn't interacted)
   useEffect(() => {
-    if (!hasUserInteracted && 
-        !recommendationsLoading && 
-        recommendedItems.length > 0 && 
-        activeSmartCategory === 'all') {
-      setActiveSmartCategory('recommended');
+    if (
+      !hasUserInteracted &&
+      !recommendationsLoading &&
+      recommendedItems.length > 0 &&
+      activeSmartCategory === "all"
+    ) {
+      setActiveSmartCategory("recommended");
     }
-  }, [recommendationsLoading, recommendedItems.length, hasUserInteracted, activeSmartCategory]);
+  }, [
+    recommendationsLoading,
+    recommendedItems.length,
+    hasUserInteracted,
+    activeSmartCategory,
+  ]);
 
   // Loading states
-  const isLoading = menuLoading || recommendationsLoading;
+  const isLoading = menuLoading;
 
   if (isLoading) {
     return <SmartMenuSkeleton />;
@@ -405,10 +604,12 @@ export function SmartMenu({
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="text-red-500 text-xl">{t('menu.failed_to_load_menu')}</div>
+          <div className="text-red-500 text-xl">
+            {t("menu.failed_to_load_menu")}
+          </div>
           <Button onClick={() => refetchMenu()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
-            {t('retry')}
+            {t("retry")}
           </Button>
         </div>
       </div>
@@ -417,29 +618,186 @@ export function SmartMenu({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-      {/* Compact Header for mobile-first design */}
-      <div 
-        className="pb-2"
+      {/* Restaurant Hero Header */}
+      <div
+        className="relative overflow-hidden"
         style={{
-          background: brandColor 
-            ? `linear-gradient(135deg, ${brandColor} 0%, ${brandColor}cc 50%, ${brandColor}aa 100%)`
-            : 'linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%)', // fallback cyan gradient
+          background: brandColor
+            ? `linear-gradient(150deg, ${brandColor} 0%, ${brandColor}e0 55%, ${brandColor}a0 100%)`
+            : "linear-gradient(150deg, #0891b2 0%, #0e7490 55%, #155e75 100%)",
         }}
       >
-        <ContextualGreeting 
-          contextualInfo={contextualInfo}
-          variant="minimal"
-          className="text-center text-white p-4"
-          showWeather={false}
-          showTimeInfo={true}
+        {/* Decorative blobs */}
+        <div
+          className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10"
+          style={{ filter: "blur(28px)" }}
         />
+        <div
+          className="absolute -bottom-8 -left-6 w-36 h-36 rounded-full bg-white/10"
+          style={{ filter: "blur(22px)" }}
+        />
+        {/* Subtle dot pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, white 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+          }}
+        />
+
+        {/* ── Action bar: language / theme / history ── */}
+        <div
+          className="relative z-10 flex items-center justify-end gap-1 px-3"
+          style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 10px)" }}
+        >
+          {sessionId && (
+            <button
+              onClick={() =>
+                setView("history", { tableId, sessionId, tableNumber })
+              }
+              className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+              aria-label="Order history"
+            >
+              <Clock className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </button>
+          <div className="[&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:h-9 [&_button]:rounded-full [&_button]:bg-white/15">
+            <LanguageSwitcher
+              currentLocale={selectedLocale}
+              onLocaleChange={setSelectedLocale}
+            />
+          </div>
+        </div>
+
+        {/* Main content */}
+        <div className="relative px-5 pt-3 pb-12">
+          <div className="flex items-center gap-4">
+            {/* Logo or initial */}
+            <motion.div
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="flex-shrink-0"
+            >
+              {logoUrl ? (
+                <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/40 shadow-2xl">
+                  <Image
+                    src={logoUrl}
+                    alt={restaurantName}
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/30 shadow-2xl flex items-center justify-center">
+                  <UtensilsCrossed className="h-7 w-7 text-white/80" />
+                </div>
+              )}
+            </motion.div>
+
+            {/* Restaurant name + subtitle */}
+            <div className="flex-1 min-w-0">
+              <motion.h1
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 }}
+                className="font-bold text-white text-xl leading-tight truncate"
+                style={{ textShadow: "0 1px 4px rgba(0,0,0,0.15)" }}
+              >
+                {restaurantName}
+              </motion.h1>
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18 }}
+                className="mt-1 flex flex-wrap items-center gap-2"
+              >
+                {branchName && branchName !== restaurantName ? (
+                  <span className="inline-flex items-center rounded-full bg-white/18 px-2.5 py-1 text-xs font-semibold text-white/95">
+                    {branchName}
+                  </span>
+                ) : null}
+                <p className="text-white/70 text-sm leading-snug line-clamp-1">
+                  {contextualInfo.weatherSuggestion}
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Table badge */}
+            {tableNumber && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.22 }}
+                className="flex-shrink-0 bg-white/20 border border-white/30 rounded-2xl px-3 py-2 text-center shadow-lg backdrop-blur-sm"
+              >
+                <p className="text-white/60 text-xs uppercase tracking-widest font-medium leading-none">
+                  Table
+                </p>
+                <p className="text-white font-bold text-xl leading-none mt-1">
+                  {tableNumber}
+                </p>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Greeting strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28 }}
+            className="mt-4 flex items-center gap-2.5 bg-black/10 rounded-xl px-4 py-2.5"
+          >
+            <Clock className="h-3.5 w-3.5 text-white/70 flex-shrink-0" />
+            <p className="text-sm leading-snug">
+              <span className="font-semibold text-white">
+                {contextualInfo.timeGreeting}
+              </span>
+              <span className="text-white/60 mx-1.5">·</span>
+              <span className="text-white/75">
+                {contextualInfo.greeting.split("!")[0]}!
+              </span>
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Wave bottom divider */}
+        <div className="absolute bottom-0 left-0 right-0 h-6 overflow-hidden">
+          <svg
+            viewBox="0 0 1440 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 24L80 20C160 16 320 8 480 6C640 4 800 8 960 12C1120 16 1280 20 1360 22L1440 24V24H1360C1280 24 1120 24 960 24C800 24 640 24 480 24C320 24 160 24 80 24H0Z"
+              className="fill-slate-50 dark:fill-slate-900"
+            />
+          </svg>
+        </div>
       </div>
 
-      {/* Search and Content with tighter spacing */}
-      <div className="container mx-auto px-4 py-4">
-        {/* Enhanced Search Bar with better mobile touch targets */}
-        <div className="mb-4">
-          <div className="relative max-w-md mx-auto">
+      {/* ── Sticky search + category bar ── */}
+      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm">
+        {/* Search bar */}
+        <div className="px-4 pt-3 pb-0">
+          <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               ref={searchInputRef}
@@ -447,7 +805,7 @@ export function SmartMenu({
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 pr-12 w-full h-12 text-base rounded-2xl border-2 border-gray-200 focus:border-[var(--brand-color)] transition-colors shadow-sm"
+              className="pl-12 pr-12 w-full h-11 text-base rounded-xl border border-gray-200 dark:border-slate-700 focus:border-[var(--brand-color)] transition-colors bg-slate-50 dark:bg-slate-800"
             />
             {searchTerm && (
               <motion.div
@@ -458,7 +816,7 @@ export function SmartMenu({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => setSearchTerm("")}
                   className="h-6 w-6 p-0 rounded-full"
                 >
                   ×
@@ -468,61 +826,132 @@ export function SmartMenu({
           </div>
         </div>
 
+        {/* Category pills */}
+        {activeCategories.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto px-4 py-2.5 scrollbar-hide">
+            <button
+              onClick={() => setActiveCategoryFilter(null)}
+              className="flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 border focus:outline-none"
+              style={
+                !activeCategoryFilter
+                  ? {
+                      backgroundColor: brandColor,
+                      borderColor: brandColor,
+                      color: "#fff",
+                    }
+                  : {
+                      backgroundColor: "transparent",
+                      borderColor: "#e2e8f0",
+                      color: "#64748b",
+                    }
+              }
+            >
+              {t("menu.show_all_categories")}
+            </button>
+            {activeCategories.map((cat) => {
+              const label = getLocalizedText(
+                {
+                  name_en: cat.name_en || "",
+                  name_ja: cat.name_ja || "",
+                  name_vi: cat.name_vi || "",
+                },
+                locale,
+              );
+              const isActive = activeCategoryFilter === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() =>
+                    setActiveCategoryFilter(isActive ? null : cat.id)
+                  }
+                  className="flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 border focus:outline-none"
+                  style={
+                    isActive
+                      ? {
+                          backgroundColor: brandColor,
+                          borderColor: brandColor,
+                          color: "#fff",
+                        }
+                      : {
+                          backgroundColor: "transparent",
+                          borderColor: "#e2e8f0",
+                          color: "#64748b",
+                        }
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Scrollable content ── */}
+      <div className="container mx-auto px-4 py-4">
         {/* Smart Category Tabs - Hidden when not searching */}
         {debouncedSearchTerm && (
           <div className="mb-8">
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <Button
-                variant={activeSmartCategory === 'all' ? 'default' : 'outline'}
+                variant={activeSmartCategory === "all" ? "default" : "outline"}
                 onClick={() => {
-                  setActiveSmartCategory('all');
+                  setActiveSmartCategory("all");
                   setHasUserInteracted(true);
                 }}
                 className={`flex-shrink-0 ${
-                  activeSmartCategory === 'all' ? 'text-white font-medium border-0' : ''
+                  activeSmartCategory === "all"
+                    ? "text-white font-medium border-0"
+                    : ""
                 }`}
                 style={{
-                  whiteSpace: 'nowrap',
-                  ...(activeSmartCategory === 'all' ? {
-                    backgroundColor: 'var(--brand-color)',
-                    color: 'white',
-                    borderColor: 'var(--brand-color)'
-                  } : {})
+                  whiteSpace: "nowrap",
+                  ...(activeSmartCategory === "all"
+                    ? {
+                        backgroundColor: "var(--brand-color)",
+                        color: "white",
+                        borderColor: "var(--brand-color)",
+                      }
+                    : {}),
                 }}
               >
-                {t('menu.all_items')}
+                {t("menu.all_items")}
               </Button>
               {smartCategoryOrder.map((categoryKey) => {
                 const category = smartCategories[categoryKey];
                 const IconComponent = category.icon || Sparkles;
                 const isActive = activeSmartCategory === categoryKey;
-                
+
                 return (
                   <Button
                     key={categoryKey}
-                    variant={isActive ? 'default' : 'outline'}
+                    variant={isActive ? "default" : "outline"}
                     onClick={() => {
                       setActiveSmartCategory(categoryKey);
                       setHasUserInteracted(true);
                     }}
                     className={`flex-shrink-0 flex items-center gap-2 ${
-                      isActive ? 'text-white font-medium border-0' : ''
+                      isActive ? "text-white font-medium border-0" : ""
                     }`}
                     style={{
-                      whiteSpace: 'nowrap',
-                      ...(isActive ? {
-                        backgroundColor: 'var(--brand-color)',
-                        color: 'white',
-                        borderColor: 'var(--brand-color)'
-                      } : {})
+                      whiteSpace: "nowrap",
+                      ...(isActive
+                        ? {
+                            backgroundColor: "var(--brand-color)",
+                            color: "white",
+                            borderColor: "var(--brand-color)",
+                          }
+                        : {}),
                     }}
                   >
-                    <IconComponent className={`h-4 w-4 ${isActive ? 'text-white' : ''}`} />
+                    <IconComponent
+                      className={`h-4 w-4 ${isActive ? "text-white" : ""}`}
+                    />
                     {category.name}
-                    <Badge 
-                      variant={isActive ? 'outline' : 'secondary'} 
+                    <Badge
+                      variant={isActive ? "outline" : "secondary"}
                       className={`ml-1 text-xs ${
-                        isActive ? 'bg-white/20 text-white border-white/30' : ''
+                        isActive ? "bg-white/20 text-white border-white/30" : ""
                       }`}
                     >
                       {category.count}
@@ -531,17 +960,19 @@ export function SmartMenu({
                 );
               })}
             </div>
-            
+
             {/* Category Description */}
-            {activeSmartCategory && activeSmartCategory !== 'all' && smartCategories[activeSmartCategory] && (
-              <motion.p
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-sm text-gray-600 mt-2 text-center"
-              >
-                {smartCategories[activeSmartCategory].description}
-              </motion.p>
-            )}
+            {activeSmartCategory &&
+              activeSmartCategory !== "all" &&
+              smartCategories[activeSmartCategory] && (
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-gray-600 mt-2 text-center"
+                >
+                  {smartCategories[activeSmartCategory].description}
+                </motion.p>
+              )}
           </div>
         )}
 
@@ -585,18 +1016,20 @@ export function SmartMenu({
                     <div className="text-gray-400 mb-4">
                       <Search className="h-16 w-16 mx-auto" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{t('menu.no_items_found')}</h3>
+                    <h3 className="text-xl font-semibold mb-2">
+                      {t("menu.no_items_found")}
+                    </h3>
                     <p className="text-gray-600 mb-4">
-                      {t('menu.try_adjusting_search')}
+                      {t("menu.try_adjusting_search")}
                     </p>
                     <Button
                       variant="outline"
                       onClick={() => {
-                        setSearchTerm('');
-                        setActiveSmartCategory('recommended');
+                        setSearchTerm("");
+                        setActiveSmartCategory("recommended");
                       }}
                     >
-                      {t('menu.clear_filters')}
+                      {t("menu.clear_filters")}
                     </Button>
                   </div>
                 )}
@@ -609,12 +1042,21 @@ export function SmartMenu({
                   /* Single category view */
                   <MenuSection
                     title={getLocalizedText(
-                      { 
-                        name_en: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_en || '', 
-                        name_ja: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_ja || '', 
-                        name_vi: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_vi || '' 
+                      {
+                        name_en:
+                          activeCategories.find(
+                            (cat) => cat.id === activeCategoryFilter,
+                          )?.name_en || "",
+                        name_ja:
+                          activeCategories.find(
+                            (cat) => cat.id === activeCategoryFilter,
+                          )?.name_ja || "",
+                        name_vi:
+                          activeCategories.find(
+                            (cat) => cat.id === activeCategoryFilter,
+                          )?.name_vi || "",
                       },
-                      locale
+                      locale,
                     )}
                     items={filteredItems}
                     brandColor={brandColor}
@@ -628,67 +1070,58 @@ export function SmartMenu({
                   /* Normal sectioned view */
                   <>
                     {/* Popular Section */}
-                    {smartCategories.popular && smartCategories.popular.count > 0 && (
-                      <MenuSection
-                        title={t('menu.popular')}
-                        description={t('menu.popular_description')}
-                        items={smartCategories.popular.items}
-                        brandColor={brandColor}
-                        locale={locale}
-                        canAddItems={canAddItems}
-                        onItemClick={handleItemClick}
-                        onAddToCart={handleAddToCart}
-                        getQuantity={getQuantityByItemId}
-                        showPopularBadge={true}
-                        icon={<TrendingUp className="h-5 w-5" />}
-                      />
-                    )}
+                    {smartCategories.popular &&
+                      smartCategories.popular.count > 0 && (
+                        <MenuSection
+                          title={t("menu.popular")}
+                          description={t("menu.popular_description")}
+                          items={smartCategories.popular.items}
+                          brandColor={brandColor}
+                          locale={locale}
+                          canAddItems={canAddItems}
+                          onItemClick={handleItemClick}
+                          onAddToCart={handleAddToCart}
+                          getQuantity={getQuantityByItemId}
+                          showPopularBadge={true}
+                          icon={<TrendingUp className="h-5 w-5" />}
+                        />
+                      )}
 
                     {/* Recommended Section */}
-                    {smartCategories.recommended && smartCategories.recommended.count > 0 && (
-                      <MenuSection
-                        title={t('menu.perfect_for_you')}
-                        description={t('menu.perfect_for_you_description')}
-                        items={smartCategories.recommended.items}
-                        brandColor={brandColor}
-                        locale={locale}
-                        canAddItems={canAddItems}
-                        onItemClick={handleItemClick}
-                        onAddToCart={handleAddToCart}
-                        getQuantity={getQuantityByItemId}
-                        showRecommendedBadge={true}
-                        icon={<Sparkles className="h-5 w-5" />}
-                      />
-                    )}
-
-                    {/* Time-based Section */}
-                    {smartCategories[timeOfDay] && smartCategories[timeOfDay].count > 0 && (
-                      <MenuSection
-                        title={t(`menu.perfect_for_${timeOfDay}`)}
-                        description={t(`menu.perfect_for_${timeOfDay}_description`)}
-                        items={smartCategories[timeOfDay].items}
-                        brandColor={brandColor}
-                        locale={locale}
-                        canAddItems={canAddItems}
-                        onItemClick={handleItemClick}
-                        onAddToCart={handleAddToCart}
-                        getQuantity={getQuantityByItemId}
-                        icon={timeOfDay === 'breakfast' ? <ChefHat className="h-5 w-5" /> : 
-                              timeOfDay === 'lunch' ? <Clock className="h-5 w-5" /> : <Heart className="h-5 w-5" />}
-                      />
-                    )}
+                    {smartCategories.recommended &&
+                      smartCategories.recommended.count > 0 && (
+                        <MenuSection
+                          title={t("menu.perfect_for_you")}
+                          description={t("menu.perfect_for_you_description")}
+                          items={smartCategories.recommended.items}
+                          brandColor={brandColor}
+                          locale={locale}
+                          canAddItems={canAddItems}
+                          onItemClick={handleItemClick}
+                          onAddToCart={handleAddToCart}
+                          getQuantity={getQuantityByItemId}
+                          showRecommendedBadge={true}
+                          icon={<Sparkles className="h-5 w-5" />}
+                        />
+                      )}
 
                     {/* Regular Categories */}
                     {activeCategories.map((category) => {
-                      const categoryItems = allMenuItems.filter(item => item.categoryId === category.id);
+                      const categoryItems = allMenuItems.filter(
+                        (item) => item.categoryId === category.id,
+                      );
                       if (categoryItems.length === 0) return null;
-                      
+
                       return (
                         <MenuSection
                           key={category.id}
                           title={getLocalizedText(
-                            { name_en: category.name_en || '', name_ja: category.name_ja || '', name_vi: category.name_vi || '' },
-                            locale
+                            {
+                              name_en: category.name_en || "",
+                              name_ja: category.name_ja || "",
+                              name_vi: category.name_vi || "",
+                            },
+                            locale,
                           )}
                           items={categoryItems}
                           brandColor={brandColor}
@@ -712,184 +1145,14 @@ export function SmartMenu({
           {/* Hide AI assistant for now */}
           <Button
             variant="outline"
-            onClick={() => setView('checkout', { tableId, sessionId, tableNumber })}
+            onClick={() =>
+              setView("history", { tableId, sessionId, tableNumber })
+            }
           >
-            {t('view_history')}
+            {t("view_history")}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
-      </div>
-
-      {/* Category Filter Bottom Sheet */}
-      <AnimatePresence>
-        {isCategoryModalOpen && (
-          /* Bottom Sheet - No backdrop, menu stays fully visible */
-          <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ 
-                type: 'spring', 
-                damping: 30, 
-                stiffness: 300,
-                mass: 0.8
-              }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl max-h-[70vh] overflow-hidden"
-            >
-              {/* Handle */}
-              <div className="flex justify-center py-3">
-                <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-              </div>
-              
-              {/* Header */}
-              <div className="px-6 pb-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {t('menu.filter_categories')}
-                  </h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsCategoryModalOpen(false)}
-                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                {activeCategoryFilter && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {t('menu.currently_showing')}: {getLocalizedText(
-                      { 
-                        name_en: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_en || '', 
-                        name_ja: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_ja || '', 
-                        name_vi: activeCategories.find(cat => cat.id === activeCategoryFilter)?.name_vi || '' 
-                      },
-                      locale
-                    )}
-                  </p>
-                )}
-              </div>
-              
-              {/* Search */}
-              <div className="px-6 pb-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="search"
-                    placeholder={t('menu.search_categories')}
-                    value={categorySearchTerm}
-                    onChange={e => setCategorySearchTerm(e.target.value)}
-                    className="pl-10 w-full rounded-xl border-gray-200 dark:border-gray-700"
-                  />
-                </div>
-              </div>
-              
-              {/* Categories List */}
-              <div className="px-6 pb-6 overflow-y-auto max-h-[40vh]">
-                {/* Show All Option */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`w-full text-left p-3 rounded-xl mb-2 transition-all duration-200 ${
-                    !activeCategoryFilter
-                      ? 'bg-[var(--brand-color)] text-white shadow-md'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                  onClick={() => {
-                    setActiveCategoryFilter(null);
-                    setIsCategoryModalOpen(false);
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">
-                      {t('menu.show_all_categories')}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                      {allMenuItems.length}
-                    </Badge>
-                  </div>
-                </motion.button>
-                
-                {/* Category Options */}
-                {activeCategories
-                  .filter(cat =>
-                    getLocalizedText(
-                      { name_en: cat.name_en || '', name_ja: cat.name_ja || '', name_vi: cat.name_vi || '' },
-                      locale
-                    )
-                      .toLowerCase()
-                      .includes(debouncedCategorySearchTerm.toLowerCase())
-                  )
-                  .map(cat => {
-                    const categoryItems = allMenuItems.filter(item => item.categoryId === cat.id);
-                    const isActive = activeCategoryFilter === cat.id;
-                    
-                    return (
-                      <motion.button
-                        key={cat.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`w-full text-left p-3 rounded-xl mb-2 transition-all duration-200 ${
-                          isActive
-                            ? 'bg-[var(--brand-color)] text-white shadow-md'
-                            : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
-                        onClick={() => {
-                          setActiveCategoryFilter(cat.id);
-                          setIsCategoryModalOpen(false);
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">
-                            {getLocalizedText(
-                              { name_en: cat.name_en || '', name_ja: cat.name_ja || '', name_vi: cat.name_vi || '' },
-                              locale
-                            )}
-                          </span>
-                          <Badge 
-                            variant={isActive ? "outline" : "secondary"} 
-                            className={`text-xs ${isActive ? 'border-white text-white' : ''}`}
-                          >
-                            {categoryItems.length}
-                          </Badge>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
-              </div>
-            </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Floating Category Filter Button */}
-      <div className="fixed bottom-6 right-4 z-30">
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Button
-            className="p-4 rounded-lg shadow-2xl border-2 border-white dark:border-gray-700"
-            style={{
-              background: brandColor 
-                ? `linear-gradient(135deg, ${brandColor} 0%, ${brandColor}dd 100%)`
-                : 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
-            }}
-            onClick={() => setIsCategoryModalOpen(true)}
-          >
-            <Menu className="h-6 w-6 text-white" />
-          </Button>
-        </motion.div>
-        
-        {/* Category Filter Indicator */}
-        {activeCategoryFilter && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold"
-          >
-            1
-          </motion.div>
-        )}
       </div>
 
       {/* Item Detail Modal */}
@@ -899,8 +1162,12 @@ export function SmartMenu({
         item={selectedItem}
         locale={locale}
         brandColor={brandColor}
+        companyName={restaurantName}
+        branchName={branchName}
+        logoUrl={logoUrl}
         onAddToCart={handleModalAddToCart}
         canAddItems={canAddItems}
+        showOrderNotes={allowOrderNotes}
       />
     </div>
   );

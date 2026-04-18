@@ -1,25 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  X, 
-  Star, 
-  Minus, 
-  Plus, 
-  ShoppingCart,
-  ChevronDown
-} from 'lucide-react';
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-import { getLocalizedText } from '@/lib/customerUtils';
-import type { FoodItem, MenuItemSize, Topping } from '@/shared/types/menu';
-
-
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { X, Star, Minus, Plus, ShoppingCart, Check } from "lucide-react";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import { getLocalizedText } from "@/lib/customerUtils";
+import type { FoodItem, MenuItemSize, Topping } from "@/shared/types/menu";
 
 interface ItemDetailModalProps {
   isOpen: boolean;
@@ -27,13 +24,23 @@ interface ItemDetailModalProps {
   item: FoodItem | null;
   locale: string;
   brandColor: string;
-  onAddToCart: (item: FoodItem, quantity: number, selectedSize?: MenuItemSize, selectedToppings?: Topping[], notes?: string) => void;
+  companyName?: string;
+  branchName?: string;
+  logoUrl?: string | null;
+  onAddToCart: (
+    item: FoodItem,
+    quantity: number,
+    selectedSize?: MenuItemSize,
+    selectedToppings?: Topping[],
+    notes?: string,
+  ) => void;
   canAddItems?: boolean;
   initialQuantity?: number;
   initialSelectedSize?: MenuItemSize | null;
   initialSelectedToppings?: Topping[];
   initialNotes?: string;
   isEditMode?: boolean;
+  showOrderNotes?: boolean;
 }
 
 export function ItemDetailModal({
@@ -42,511 +49,511 @@ export function ItemDetailModal({
   item,
   locale,
   brandColor,
+  companyName,
+  branchName,
+  logoUrl,
   onAddToCart,
   canAddItems = true,
   initialQuantity = 1,
   initialSelectedSize = null,
   initialSelectedToppings = [],
   initialNotes = "",
-  isEditMode = false
+  isEditMode = false,
+  showOrderNotes = true,
 }: ItemDetailModalProps) {
-  // Internationalization
-  const t = useTranslations('customer.menu.item_detail');
-  
-  // State for customization
+  const t = useTranslations("customer.menu.item_detail");
+
+  // Portal mount guard (SSR safety)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Keep a stable snapshot of the item so exit animation can still render it
+  // after the parent sets item → null at the same time as isOpen → false.
+  const stableItemRef = useRef<FoodItem | null>(item);
+  if (item) stableItemRef.current = item;
+  const displayItem = isOpen ? item : stableItemRef.current;
+
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  // Customisation state
   const [quantity, setQuantity] = useState(initialQuantity);
-  const [selectedSize, setSelectedSize] = useState<MenuItemSize | null>(initialSelectedSize);
-  const [selectedToppings, setSelectedToppings] = useState<Topping[]>(initialSelectedToppings);
+  const [selectedSize, setSelectedSize] = useState<MenuItemSize | null>(
+    initialSelectedSize,
+  );
+  const [selectedToppings, setSelectedToppings] = useState<Topping[]>(
+    initialSelectedToppings,
+  );
   const [notes, setNotes] = useState(initialNotes);
   const [isAdding, setIsAdding] = useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
 
-  // Reset state when modal opens with fresh props
-  React.useEffect(() => {
+  // Reset state every time a new item opens
+  useEffect(() => {
     if (isOpen && item) {
       setQuantity(initialQuantity);
-      // Set initial size (prioritize passed initial size, then default size)
-      const defaultSize = initialSelectedSize || (item.menu_item_sizes?.[1] || item.menu_item_sizes?.[0] || null);
-      setSelectedSize(defaultSize && defaultSize.id ? defaultSize : null);
+      const defaultSize =
+        initialSelectedSize ||
+        item.menu_item_sizes?.[1] ||
+        item.menu_item_sizes?.[0] ||
+        null;
+      setSelectedSize(defaultSize?.id ? defaultSize : null);
       setSelectedToppings([...initialSelectedToppings]);
       setNotes(initialNotes);
+      setDescExpanded(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, item?.id]); // Only depend on isOpen and item.id to avoid infinite loops
+  }, [isOpen, item?.id]);
 
-  // Memoized values
+  // Focus sheet & Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => sheetRef.current?.focus(), 80);
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKey);
+    return () => {
+      clearTimeout(timer);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, [isOpen, onClose]);
+
+  // ── Derived values ────────────────────────────────────────────────────────
   const itemName = useMemo(() => {
-    if (!item) return '';
-    return getLocalizedText(
-      { name_en: item.name_en, name_vi: item.name_vi || '', name_ja: item.name_ja || '' },
-      locale
-    );
-  }, [item, locale]);
-
-  const itemDescription = useMemo(() => {
-    if (!item) return '';
+    if (!displayItem) return "";
     return getLocalizedText(
       {
-        en: item.description_en || '',
-        vi: item.description_vi || '',
-        ja: item.description_ja || ''
+        name_en: displayItem.name_en,
+        name_vi: displayItem.name_vi || "",
+        name_ja: displayItem.name_ja || "",
       },
-      locale
+      locale,
     );
-  }, [item, locale]);
+  }, [displayItem, locale]);
 
-  // Calculate total price
+  const itemDescription = useMemo(() => {
+    if (!displayItem) return "";
+    return getLocalizedText(
+      {
+        en: displayItem.description_en || "",
+        vi: displayItem.description_vi || "",
+        ja: displayItem.description_ja || "",
+      },
+      locale,
+    );
+  }, [displayItem, locale]);
+
   const totalPrice = useMemo(() => {
-    if (!item) return 0;
-    
-    const basePrice = selectedSize ? selectedSize.price : item.price;
-    const toppingsPrice = selectedToppings.reduce((sum, topping) => sum + topping.price, 0);
-    
-    return (basePrice + toppingsPrice) * quantity;
-  }, [item, selectedSize, selectedToppings, quantity]);
+    if (!displayItem) return 0;
+    const base = selectedSize ? selectedSize.price : displayItem.price;
+    const toppingSum = selectedToppings.reduce((s, tp) => s + tp.price, 0);
+    return (base + toppingSum) * quantity;
+  }, [displayItem, selectedSize, selectedToppings, quantity]);
 
-  // Handle quantity changes
-  const handleQuantityDecrease = useCallback(() => {
-    setQuantity(prev => Math.max(1, prev - 1));
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const decQty = useCallback(() => setQuantity((p) => Math.max(1, p - 1)), []);
+  const incQty = useCallback(() => setQuantity((p) => p + 1), []);
+  const selectSize = useCallback((s: MenuItemSize) => setSelectedSize(s), []);
+  const toggleTopping = useCallback((tp: Topping) => {
+    setSelectedToppings((prev) =>
+      prev.some((t) => t.id === tp.id)
+        ? prev.filter((t) => t.id !== tp.id)
+        : [...prev, tp],
+    );
   }, []);
 
-  const handleQuantityIncrease = useCallback(() => {
-    setQuantity(prev => prev + 1);
-  }, []);
-
-  // Handle size selection
-  const handleSizeSelect = useCallback((size: MenuItemSize) => {
-    setSelectedSize(size);
-  }, []);
-
-  // Handle topping selection
-  const handleToppingToggle = useCallback((topping: Topping) => {
-    setSelectedToppings(prev => {
-      const isSelected = prev.some(t => t.id === topping.id);
-      if (isSelected) {
-        return prev.filter(t => t.id !== topping.id);
-      } else {
-        return [...prev, topping];
-      }
-    });
-  }, []);
-
-  // Handle add to cart
   const handleAddToCart = useCallback(async () => {
-    if (!item || !canAddItems) return;
-    
+    if (!displayItem || !canAddItems) return;
     setIsAdding(true);
     try {
-      await onAddToCart(item, quantity, selectedSize || undefined, selectedToppings, notes);
+      onAddToCart(
+        displayItem,
+        quantity,
+        selectedSize || undefined,
+        selectedToppings,
+        notes,
+      );
       onClose();
-    } catch (error) {
-      console.error('Failed to add item to cart:', error);
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsAdding(false);
     }
-  }, [item, quantity, selectedSize, selectedToppings, notes, onAddToCart, onClose, canAddItems]);
+  }, [
+    displayItem,
+    quantity,
+    selectedSize,
+    selectedToppings,
+    notes,
+    onAddToCart,
+    onClose,
+    canAddItems,
+  ]);
 
-  if (!item) return null;
+  // ── Early return ──────────────────────────────────────────────────────────
+  if (!mounted) return null;
 
-  const availableSizes = item.menu_item_sizes || [];
-  const availableToppings = item.toppings || [];
+  const availableSizes = displayItem?.menu_item_sizes ?? [];
+  const availableToppings = displayItem?.toppings ?? [];
+  const DESC_LIMIT = 130;
+  const isDescLong = itemDescription.length > DESC_LIMIT;
 
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent 
-        className="w-full max-w-2xl h-[85vh] max-h-[90vh] overflow-hidden p-0 gap-0 bg-white dark:bg-gray-900 flex flex-col rounded-2xl sm:h-auto"
-        showCloseButton={false}
-      >
-        <DialogTitle className="sr-only">{itemName}</DialogTitle>
-        
-        {/* Enhanced Hero Image Section */}
-        <div className="relative h-56 sm:h-72 w-full flex-shrink-0">
-          {item.image_url && (
-            <Image
-              src={item.image_url}
-              alt={itemName}
-              fill
-              className="object-cover transition-opacity duration-300"
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-              onLoad={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.opacity = '1';
-              }}
-              onError={(e) => {
-                // Hide the image if it fails to load
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-              style={{ opacity: 0 }}
-            />
-          )}
-          
-          {/* Fallback for missing images */}
-          {!item.image_url && (
-            <div className="absolute inset-0 bg-gradient-to-br from-green-100 via-emerald-50 to-lime-100 dark:from-green-900/20 dark:via-emerald-900/10 dark:to-lime-900/20 flex flex-col items-center justify-center">
-              <div className="text-center flex flex-col items-center justify-center h-full">
-                <span className="text-4xl sm:text-9xl mb-4 block opacity-60">
-                  🍽️
-                </span>
-                <span className="text-lg sm:text-xl font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide bg-white/30 dark:bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm">
-                  {itemName.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            </div>
-          )}
-          
-          {/* Enhanced gradient overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
-          
-          {/* Item title overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <h1 className="text-white text-xl sm:text-2xl font-bold leading-tight drop-shadow-2xl">
-                {itemName}
-              </h1>
-            </motion.div>
-          </div>
-          
-          {/* Enhanced close button */}
-          <Button
-            variant="secondary"
-            size="icon"
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && displayItem && (
+        <>
+          {/* ── Backdrop ── */}
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 z-[9998] bg-black/60"
             onClick={onClose}
-            className="absolute top-4 right-4 rounded-full bg-white/95 hover:bg-white z-10 shadow-lg backdrop-blur-sm h-10 w-10"
-            aria-label="Close"
+            aria-hidden="true"
+          />
+
+          {/* ── Bottom Sheet ── */}
+          <motion.div
+            key="sheet"
+            ref={sheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="item-modal-title"
+            tabIndex={-1}
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 340,
+              mass: 0.9,
+            }}
+            className="fixed bottom-0 left-0 right-0 z-[9999] flex flex-col bg-white dark:bg-slate-900 rounded-t-[16px] focus:outline-none sm:left-1/2 sm:max-w-lg sm:w-full sm:-translate-x-1/2 sm:bottom-5 sm:rounded-2xl overflow-hidden"
+            style={{ maxHeight: "92dvh" }}
           >
-            <X className="h-5 w-5" />
-          </Button>
-
-          {/* Enhanced rating badge */}
-          {item.averageRating && item.averageRating > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="absolute top-4 left-4 bg-black/90 text-white px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5 backdrop-blur-sm shadow-lg"
+            {/* ── Image ── */}
+            <div
+              className="relative w-full flex-shrink-0"
+              style={{ height: 310 }}
             >
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              {item.averageRating.toFixed(1)}
-            </motion.div>
-          )}
+              {displayItem.image_url ? (
+                <Image
+                  src={displayItem.image_url}
+                  alt={itemName}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 512px) 100vw, 512px"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-900/20 dark:to-yellow-900/20 flex items-center justify-center">
+                  <span className="text-8xl opacity-40">🍽️</span>
+                </div>
+              )}
+              {/* Bottom fade-into-sheet */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-slate-900 to-transparent" />
 
-          {/* Availability overlay */}
-          {!item.available && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-              <Badge variant="destructive" className="text-lg px-6 py-3 font-semibold">
-                {t('currently_unavailable')}
-              </Badge>
-            </div>
-          )}
-        </div>
+              {/* Rating pill */}
+              {displayItem.averageRating && displayItem.averageRating > 0 && (
+                <div className="absolute top-3 left-3 flex items-center gap-1 bg-black/65 text-white px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
+                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                  {displayItem.averageRating.toFixed(1)}
+                </div>
+              )}
 
-        {/* Enhanced Content Section - Scrollable with smooth scrolling */}
-        <div className="flex-1 overflow-y-auto scroll-smooth">
-          <div className="p-4 space-y-4 min-h-0">
-            {/* Item Description - Collapsible */}
-            {itemDescription && itemDescription.trim().length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-2"
-              >
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                  <div 
-                    className="flex items-center justify-between cursor-pointer"
-                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              {/* Unavailable overlay */}
+              {!displayItem.available && (
+                <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
+                  <Badge
+                    variant="destructive"
+                    className="text-sm px-4 py-2 font-semibold"
                   >
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                      {t('description')}
-                    </h3>
-                    <motion.div
-                      animate={{ rotate: isDescriptionExpanded ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className="h-4 w-4 text-gray-500" />
-                    </motion.div>
-                  </div>
-                  <AnimatePresence>
-                    {isDescriptionExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="overflow-visible"
-                      >
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed whitespace-pre-wrap break-words">
-                          {itemDescription}
+                    {t("currently_unavailable")}
+                  </Badge>
+                </div>
+              )}
+
+              {/* Close button */}
+              <button
+                onClick={onClose}
+                className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/45 flex items-center justify-center text-white hover:bg-black/65 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* ── Scrollable body ── */}
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+              <div className="px-5 pt-1 pb-3 space-y-5">
+                {companyName ? (
+                  <div className="flex items-center gap-3 rounded-2xl bg-slate-100/90 p-3 dark:bg-slate-800/90">
+                    {logoUrl ? (
+                      <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-white/60">
+                        <Image
+                          src={logoUrl}
+                          alt={companyName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : null}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                        {companyName}
+                      </p>
+                      {branchName && branchName !== companyName ? (
+                        <p className="truncate text-xs text-slate-500 dark:text-slate-300">
+                          {branchName}
                         </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  {!isDescriptionExpanded && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
-                      {itemDescription}
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            )}
-            {/* Size Selection - Compact Pills */}
-            {availableSizes.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-                className="space-y-2"
-              >
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                  {t('choose_size')}
-                </h3>
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-                  {availableSizes
-                    .sort((a, b) => a.position - b.position)
-                    .map((size) => {
-                      const sizeName = getLocalizedText(
-                        { name_en: size.name_en, name_vi: size.name_vi || '', name_ja: size.name_ja || '' },
-                        locale
-                      );
-                      
-                      const isSelected = selectedSize?.id === size.id;
-                      
-                      return (
-                        <Button
-                          key={size.id}
-                          variant={isSelected ? 'default' : 'outline'}
-                          onClick={() => handleSizeSelect(size)}
-                          className={`flex-shrink-0 h-8 min-w-[60px] px-2 text-xs rounded-lg border transition-colors ${
-                            isSelected 
-                              ? 'shadow-sm' 
-                              : 'hover:border-gray-300'
-                          }`}
-                          style={isSelected ? { 
-                            backgroundColor: brandColor, 
-                            borderColor: brandColor,
-                            color: 'white'
-                          } : undefined}
-                          aria-label={`Select ${sizeName} size for ¥${size.price}`}
-                        >
-                          <span className="font-medium">{sizeName}</span>
-                          <span className="ml-1 opacity-90">¥{size.price}</span>
-                        </Button>
-                      );
-                    })}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Topping Selection - Compact Grid */}
-            {availableToppings.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-                className="space-y-2"
-              >
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                  {t('add_toppings')}
-                </h3>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {availableToppings
-                    .sort((a, b) => (a.position || 0) - (b.position || 0))
-                    .map((topping) => {
-                      const toppingName = getLocalizedText(
-                        { name_en: topping.name_en, name_vi: topping.name_vi || '', name_ja: topping.name_ja || '' },
-                        locale
-                      );
-                      
-                      const isSelected = selectedToppings.some(t => t.id === topping.id);
-                      
-                      return (
-                        <Button
-                          key={topping.id}
-                          variant={isSelected ? 'default' : 'outline'}
-                          onClick={() => handleToppingToggle(topping)}
-                          className={`h-8 px-2 text-xs rounded-lg border transition-colors w-full ${
-                            isSelected 
-                              ? 'shadow-sm' 
-                              : 'hover:border-gray-300'
-                          }`}
-                          style={isSelected ? { 
-                            backgroundColor: brandColor, 
-                            borderColor: brandColor,
-                            color: 'white'
-                          } : undefined}
-                          aria-label={`${isSelected ? 'Remove' : 'Add'} ${toppingName} topping for ¥${topping.price}`}
-                        >
-                          <span className="font-medium truncate text-xs mr-1">
-                            {toppingName}
-                          </span>
-                          <span className="opacity-90">+¥{topping.price}</span>
-                        </Button>
-                      );
-                    })}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Compact Special Notes Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-              className="space-y-2"
-            >
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                {t('special_instructions')}
-              </h3>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={t('special_instructions_placeholder')}
-                className="min-h-[40px] max-h-[60px] resize-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors text-sm"
-                style={{ fontSize: '16px' }} // Prevent mobile zoom
-                maxLength={200}
-                aria-describedby="notes-counter"
-              />
-              <p 
-                id="notes-counter"
-                className="text-xs text-gray-500 dark:text-gray-400 text-right"
-              >
-                {notes.length}/200
-              </p>
-            </motion.div>
-
-            {/* Compact Price Breakdown */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-              className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2 border border-gray-200 dark:border-gray-700"
-            >
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                {t('price_details')}
-              </h3>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {t('base_price')}{selectedSize ? ` (${getLocalizedText({ name_en: selectedSize.name_en, name_vi: selectedSize.name_vi || '', name_ja: selectedSize.name_ja || '' }, locale)})` : ''}
-                  </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    ¥{selectedSize ? selectedSize.price : item.price}
-                  </span>
-                </div>
-                {selectedToppings.length > 0 && selectedToppings.map((topping) => (
-                  <div key={topping.id} className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400 truncate">
-                      + {getLocalizedText({ name_en: topping.name_en, name_vi: topping.name_vi || '', name_ja: topping.name_ja || '' }, locale)}
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">¥{topping.price}</span>
+                      ) : null}
+                    </div>
                   </div>
-                ))}
-                {quantity > 1 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">{t('quantity')}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">× {quantity}</span>
+                ) : null}
+
+                {/* Name + base price */}
+                <div className="flex items-start justify-between gap-3">
+                  <h1
+                    id="item-modal-title"
+                    className="text-xl font-bold text-slate-900 dark:text-white leading-snug flex-1"
+                  >
+                    {itemName}
+                  </h1>
+                  <span
+                    className="text-xl font-bold flex-shrink-0 pt-0.5"
+                    style={{ color: brandColor }}
+                  >
+                    ¥{selectedSize ? selectedSize.price : displayItem.price}
+                  </span>
+                </div>
+
+                {/* Description */}
+                {itemDescription.trim() && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed -mt-1">
+                    {isDescLong && !descExpanded
+                      ? `${itemDescription.slice(0, DESC_LIMIT).trimEnd()}…`
+                      : itemDescription}
+                    {isDescLong && (
+                      <button
+                        onClick={() => setDescExpanded((p) => !p)}
+                        className="ml-1.5 text-xs font-semibold underline-offset-2 hover:underline transition-colors"
+                        style={{ color: brandColor }}
+                      >
+                        {descExpanded ? t("show_less") : t("show_more")}
+                      </button>
+                    )}
+                  </p>
+                )}
+
+                {/* ── Size selector ── */}
+                {availableSizes.length > 0 && (
+                  <div className="space-y-2.5">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      {t("choose_size")}
+                    </p>
+                    <div className="flex gap-2">
+                      {availableSizes
+                        .sort((a, b) => a.position - b.position)
+                        .map((size) => {
+                          const sizeName = getLocalizedText(
+                            {
+                              name_en: size.name_en,
+                              name_vi: size.name_vi || "",
+                              name_ja: size.name_ja || "",
+                            },
+                            locale,
+                          );
+                          const active = selectedSize?.id === size.id;
+                          return (
+                            <button
+                              key={size.id}
+                              onClick={() => selectSize(size)}
+                              aria-pressed={active}
+                              className="flex-1 min-w-0 py-2.5 px-3 rounded-xl border-2 transition-all text-center"
+                              style={{
+                                borderColor: active ? brandColor : undefined,
+                                backgroundColor: active
+                                  ? brandColor
+                                  : undefined,
+                                color: active ? "white" : undefined,
+                              }}
+                            >
+                              <span className="block text-sm font-semibold leading-tight">
+                                {sizeName}
+                              </span>
+                              <span className="block text-xs opacity-75 mt-0.5">
+                                ¥{size.price}
+                              </span>
+                            </button>
+                          );
+                        })}
+                    </div>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-base border-t border-gray-200 dark:border-gray-600 pt-2 text-gray-900 dark:text-white">
-                  <span>{t('total')}</span>
-                  <span>¥{totalPrice}</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
 
-        {/* Enhanced Sticky Bottom Section with Safe Area Support */}
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.5 }}
-          className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-2xl p-4"
-          style={{
-            paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))'
-          }}
-        >
-          {/* Quantity Selector and Add to Cart on Same Line */}
-          <div className="flex items-center gap-3">
-            {/* Compact Quantity Selector */}
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5 gap-0.5 shadow-sm">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleQuantityDecrease}
-                disabled={quantity <= 1}
-                className="h-8 w-8 rounded-lg p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                aria-label={t('decrease_quantity')}
-              >
-                <Minus className="h-3.5 w-3.5" />
-              </Button>
-              <span className="font-bold min-w-[2.5rem] text-center text-base px-2 text-gray-900 dark:text-white">
-                {quantity}
-              </span>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleQuantityIncrease}
-                className="h-8 w-8 rounded-lg p-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                aria-label={t('increase_quantity')}
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </Button>
+                {/* ── Topping selector ── */}
+                {availableToppings.length > 0 && (
+                  <div className="space-y-2.5">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      {t("add_toppings")}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {availableToppings
+                        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+                        .map((topping) => {
+                          const name = getLocalizedText(
+                            {
+                              name_en: topping.name_en,
+                              name_vi: topping.name_vi || "",
+                              name_ja: topping.name_ja || "",
+                            },
+                            locale,
+                          );
+                          const active = selectedToppings.some(
+                            (t) => t.id === topping.id,
+                          );
+                          return (
+                            <button
+                              key={topping.id}
+                              onClick={() => toggleTopping(topping)}
+                              aria-pressed={active}
+                              className="flex items-center gap-2.5 h-12 px-3 rounded-xl border-2 text-left transition-all"
+                              style={{
+                                borderColor: active ? brandColor : undefined,
+                                backgroundColor: active
+                                  ? `${brandColor}12`
+                                  : undefined,
+                              }}
+                            >
+                              {/* Checkbox indicator */}
+                              <span
+                                className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
+                                style={{
+                                  borderColor: active ? brandColor : undefined,
+                                  backgroundColor: active
+                                    ? brandColor
+                                    : undefined,
+                                }}
+                              >
+                                {active && (
+                                  <Check
+                                    className="h-2.5 w-2.5 text-white"
+                                    strokeWidth={3}
+                                  />
+                                )}
+                              </span>
+                              <span className="flex-1 min-w-0">
+                                <span className="block text-xs font-medium text-slate-800 dark:text-slate-200 truncate leading-tight">
+                                  {name}
+                                </span>
+                                <span className="block text-[10px] text-slate-400 mt-0.5">
+                                  +¥{topping.price}
+                                </span>
+                              </span>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Notes (hidden when restaurant disables it) ── */}
+                {showOrderNotes && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      {t("special_instructions")}
+                    </p>
+                    <Textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder={t("special_instructions_placeholder")}
+                      className="min-h-[72px] resize-none rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus-visible:ring-1"
+                      style={
+                        {
+                          fontSize: "16px",
+                          "--tw-ring-color": brandColor,
+                        } as React.CSSProperties
+                      }
+                      maxLength={200}
+                    />
+                    <p className="text-[11px] text-slate-400 text-right">
+                      {notes.length}/200
+                    </p>
+                  </div>
+                )}
+
+                <div className="h-0.5" />
+              </div>
             </div>
 
-            {/* Add to Cart Button with Enhanced Styling */}
-            <Button
-              onClick={handleAddToCart}
-              disabled={!canAddItems || !item.available || isAdding}
-              className="flex-1 h-12 text-base font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ 
-                backgroundColor: canAddItems && item.available ? brandColor : undefined,
-                borderColor: canAddItems && item.available ? brandColor : undefined
+            {/* ── Sticky footer: qty + CTA ── */}
+            <div
+              className="flex-shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-4"
+              style={{
+                paddingBottom: "max(16px, env(safe-area-inset-bottom, 0px))",
               }}
-              aria-label={`${isEditMode ? t('update') : t('add_to_cart')} - ¥${totalPrice}`}
             >
-              <AnimatePresence mode="wait">
-                {isAdding ? (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex items-center gap-3"
+              <div className="flex items-center gap-3">
+                {/* Quantity stepper */}
+                <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={decQty}
+                    disabled={quantity <= 1}
+                    className="w-10 h-11 rounded-none hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"
+                    aria-label={t("decrease_quantity")}
                   >
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                    <span>{t('adding')}</span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="add"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex items-center justify-between w-full px-2"
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-8 text-center font-bold text-slate-900 dark:text-white text-base select-none">
+                    {quantity}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={incQty}
+                    className="w-10 h-11 rounded-none hover:bg-slate-200 dark:hover:bg-slate-700"
+                    aria-label={t("increase_quantity")}
                   >
-                    <div className="flex items-center gap-3">
-                      <ShoppingCart className="h-5 w-5" />
-                      <span>{isEditMode ? t('update') : t('add_to_cart')}</span>
-                    </div>
-                    <span className="text-base font-bold bg-white/20 px-2 py-0.5 rounded-md">
-                      ¥{totalPrice}
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Button>
-          </div>
-        </motion.div>
-      </DialogContent>
-    </Dialog>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Add-to-cart CTA */}
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!canAddItems || !displayItem.available || isAdding}
+                  className="flex-1 h-11 rounded-xl text-white font-bold text-sm flex items-center justify-between px-4 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: brandColor }}
+                  aria-label={`${isEditMode ? t("update") : t("add_to_cart")} — ¥${totalPrice}`}
+                >
+                  <div className="flex items-center gap-2">
+                    {isAdding ? (
+                      <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    ) : (
+                      <ShoppingCart className="h-4 w-4" />
+                    )}
+                    <span>{isEditMode ? t("update") : t("add_to_cart")}</span>
+                  </div>
+                  <span className="bg-white/20 px-2.5 py-0.5 rounded-lg font-bold text-sm">
+                    ¥{totalPrice}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>,
+    document.body,
   );
 }

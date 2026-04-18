@@ -1,16 +1,17 @@
 "use client";
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CartProvider, useCart } from "../CartContext";
 import { CustomerDataProvider, useCustomerData } from "./CustomerDataContext";
 import type { CartItem } from "../CartContext";
 import type { RestaurantSettings } from "@/shared/types/customer";
-import { CustomerHeader } from "./CustomerHeader";
 import { CustomerFooter } from "./CustomerFooter";
 import { FloatingCart } from "../FloatingCart";
 //import { AIAssistant } from "./AIAssistant";
 import { Skeleton } from "@/components/ui/skeletons/skeleton";
+import { useToast } from "@/components/ui/use-toast";
+import { buildCustomerPath } from "@/lib/customer-branch";
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
@@ -20,37 +21,40 @@ interface CustomerLayoutProps {
 
 function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   const t = useTranslations("customer");
-  const params = useParams();
+  const tSession = useTranslations("customer.session");
+  //const params = useParams();
   const router = useRouter();
-  //const pathname = usePathname();
-  const [selectedLocale, setSelectedLocale] = useState(locale);
   const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();
-  const { restaurantSettings, sessionData, isLoading, error } = useCustomerData();
+  const {
+    restaurantSettings,
+    sessionData,
+    activeBranchCode,
+    isLoading,
+    error,
+  } = useCustomerData();
+  const { toast } = useToast();
 
   //const [isAIOpen, setIsAIOpen] = useState(false);
 
   // Determine current context for AI Assistant
   //const currentContext = pathname.includes('/menu') ? 'menu': pathname.includes('/order') ? 'order' : 'menu';
 
-  // Handle navigation
-  const handleCartClick = () => {
-    router.push(`/${params.locale}/cart`);
-  };
-
-  const handleOrderHistoryClick = () => {
-    router.push(`/${params.locale}/history`);
-  };
-
   // Handle order placement
   const handlePlaceOrder = async () => {
     if (!sessionData.sessionId) {
-      console.error('No session ID available for order placement');
-      // TODO: Show error toast or redirect to session creation
+      toast({
+        title: tSession("session_required"),
+        description: tSession("session_required_message"),
+        variant: "destructive",
+      });
       return;
     }
     if (!restaurantSettings) {
-      console.error('No restaurant settings available for order placement');
-      // TODO: Show error toast or redirect to restaurant selection
+      toast({
+        title: tSession("order_failed"),
+        description: tSession("try_again_later"),
+        variant: "destructive",
+      });
       return;
     }
 
@@ -64,10 +68,10 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
         topping_ids: cartItem.selectedToppings?.map((t) => t.id) || undefined,
       }));
 
-      const response = await fetch('/api/v1/customer/orders/create', {
-        method: 'POST',
+      const response = await fetch("/api/v1/customer/orders/create", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           sessionId: sessionData.sessionId,
@@ -79,22 +83,35 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to place order');
+        throw new Error(data.error || "Failed to place order");
       }
 
       if (data.success) {
         // Clear the cart after successful order
         clearCart();
-        
+
         // Redirect to order history page
-        router.push(`/${params.locale}/history?sessionId=${sessionData.sessionId}`);
+        const params = new URLSearchParams();
+        params.set("sessionId", sessionData.sessionId);
+        router.push(
+          buildCustomerPath({
+            locale,
+            path: "history",
+            branchCode: activeBranchCode,
+            searchParams: params,
+          }),
+        );
       } else {
-        throw new Error(data.error || 'Order placement failed');
+        throw new Error(data.error || "Order placement failed");
       }
     } catch (error) {
-      console.error('Error placing order:', error);
-      // TODO: Show error toast notification
-      // For now, just log the error
+      console.error("Error placing order:", error);
+      toast({
+        title: tSession("order_failed"),
+        description:
+          error instanceof Error ? error.message : tSession("try_again_later"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -147,28 +164,18 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
-      <CustomerHeader
-        restaurantSettings={restaurantSettings}
-        onCartClick={handleCartClick}
-        currentLocale={selectedLocale}
-        onLocaleChange={setSelectedLocale}
-        onOrderHistoryClick={handleOrderHistoryClick}
-        cartItemCount={totalCartItems}
-        showOrderHistory={!!sessionData.sessionId}
-      />
-      
-      <main className="flex-1">
-        {children}
-      </main>
-      
+      <main className="flex-1">{children}</main>
+
       <CustomerFooter restaurantSettings={restaurantSettings} />
-      
+
       {totalCartItems > 0 && (
         <FloatingCart
           count={totalCartItems}
           total={totalCartPrice}
           onPlaceOrder={handlePlaceOrder}
           brandColor={restaurantSettings.primaryColor || "#4f46e5"}
+          branchCode={activeBranchCode}
+          restaurantId={restaurantSettings.id}
         />
       )}
       {/**  AI Assistant Component 
@@ -182,7 +189,11 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   );
 }
 
-export function CustomerLayout({ children, locale, initialSettings }: CustomerLayoutProps) {
+export function CustomerLayout({
+  children,
+  locale,
+  initialSettings,
+}: CustomerLayoutProps) {
   return (
     <CustomerDataProvider initialSettings={initialSettings}>
       <CartProvider>

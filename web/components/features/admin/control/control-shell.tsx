@@ -2,21 +2,33 @@
 
 import Link from 'next/link';
 import type { ComponentType, ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   Building2,
   CircleDollarSign,
+  LogOut,
   LayoutGrid,
   Settings,
   ShieldCheck,
+  User,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface ControlShellProps {
   children: ReactNode;
   locale: string;
   organizationName: string;
+  userEmail: string;
   accessControls: {
     restaurants: boolean;
     people: boolean;
@@ -68,14 +80,28 @@ export function ControlShell({
   children,
   locale,
   organizationName,
+  userEmail,
   accessControls,
 }: ControlShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const t = useTranslations('owner.control');
+  const tDashboard = useTranslations('owner.dashboard');
 
   const navItems = CONTROL_NAV_ITEMS.filter(
     ({ requiredAccess }) => !requiredAccess || accessControls[requiredAccess]
   );
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/v1/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } finally {
+      router.push(`/${locale}/login`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -86,29 +112,62 @@ export function ControlShell({
             <span className="truncate text-sm font-semibold">{organizationName}</span>
           </div>
 
-          <nav className="hidden items-center gap-1 md:flex">
-            {navItems.map(({ href, icon: Icon, labelKey }) => {
-              const fullHref = `/${locale}${href}`;
-              const isActive = pathname.startsWith(fullHref);
+          <div className="hidden items-center gap-2 md:flex">
+            <nav className="flex items-center gap-1">
+              {navItems.map(({ href, icon: Icon, labelKey }) => {
+                const fullHref = `/${locale}${href}`;
+                const isActive = pathname.startsWith(fullHref);
 
-              return (
-                <Link
-                  key={href}
-                  href={fullHref}
-                  className={cn(
-                    'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-muted text-foreground'
-                      : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
-                  )}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{t(labelKey)}</span>
+                return (
+                  <Link
+                    key={href}
+                    href={fullHref}
+                    className={cn(
+                      'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-muted text-foreground'
+                        : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                    )}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{t(labelKey)}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-10 gap-2 rounded-xl px-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <span className="max-w-40 truncate text-sm">{userEmail}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel>{tDashboard('user_menu.my_account_label')}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <Link href={`/${locale}/control/profile`} passHref legacyBehavior>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <a>
+                      <User className="mr-2 h-4 w-4" />
+                      {tDashboard('user_menu.profile_link')}
+                    </a>
+                  </DropdownMenuItem>
                 </Link>
-              );
-            })}
-          </nav>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600 dark:text-red-400 dark:focus:bg-red-900/50 dark:focus:text-red-400"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {tDashboard('user_menu.logout_button')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
 
