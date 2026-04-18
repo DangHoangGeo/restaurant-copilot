@@ -11,6 +11,7 @@ import { FloatingCart } from "../FloatingCart";
 //import { AIAssistant } from "./AIAssistant";
 import { Skeleton } from "@/components/ui/skeletons/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import { buildCustomerPath } from "@/lib/customer-branch";
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
@@ -24,7 +25,13 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   //const params = useParams();
   const router = useRouter();
   const { totalCartItems, totalCartPrice, cart, clearCart } = useCart();
-  const { restaurantSettings, sessionData, isLoading, error } = useCustomerData();
+  const {
+    restaurantSettings,
+    sessionData,
+    activeBranchCode,
+    isLoading,
+    error,
+  } = useCustomerData();
   const { toast } = useToast();
 
   //const [isAIOpen, setIsAIOpen] = useState(false);
@@ -61,10 +68,10 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
         topping_ids: cartItem.selectedToppings?.map((t) => t.id) || undefined,
       }));
 
-      const response = await fetch('/api/v1/customer/orders/create', {
-        method: 'POST',
+      const response = await fetch("/api/v1/customer/orders/create", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           sessionId: sessionData.sessionId,
@@ -76,23 +83,33 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to place order');
+        throw new Error(data.error || "Failed to place order");
       }
 
       if (data.success) {
         // Clear the cart after successful order
         clearCart();
-        
+
         // Redirect to order history page
-        router.push(`/${locale}/history?sessionId=${sessionData.sessionId}`);
+        const params = new URLSearchParams();
+        params.set("sessionId", sessionData.sessionId);
+        router.push(
+          buildCustomerPath({
+            locale,
+            path: "history",
+            branchCode: activeBranchCode,
+            searchParams: params,
+          }),
+        );
       } else {
-        throw new Error(data.error || 'Order placement failed');
+        throw new Error(data.error || "Order placement failed");
       }
     } catch (error) {
-      console.error('Error placing order:', error);
+      console.error("Error placing order:", error);
       toast({
         title: tSession("order_failed"),
-        description: error instanceof Error ? error.message : tSession("try_again_later"),
+        description:
+          error instanceof Error ? error.message : tSession("try_again_later"),
         variant: "destructive",
       });
     }
@@ -147,18 +164,18 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
-      <main className="flex-1">
-        {children}
-      </main>
-      
+      <main className="flex-1">{children}</main>
+
       <CustomerFooter restaurantSettings={restaurantSettings} />
-      
+
       {totalCartItems > 0 && (
         <FloatingCart
           count={totalCartItems}
           total={totalCartPrice}
           onPlaceOrder={handlePlaceOrder}
           brandColor={restaurantSettings.primaryColor || "#4f46e5"}
+          branchCode={activeBranchCode}
+          restaurantId={restaurantSettings.id}
         />
       )}
       {/**  AI Assistant Component 
@@ -172,7 +189,11 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   );
 }
 
-export function CustomerLayout({ children, locale, initialSettings }: CustomerLayoutProps) {
+export function CustomerLayout({
+  children,
+  locale,
+  initialSettings,
+}: CustomerLayoutProps) {
   return (
     <CustomerDataProvider initialSettings={initialSettings}>
       <CartProvider>

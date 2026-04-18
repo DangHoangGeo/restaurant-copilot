@@ -88,6 +88,8 @@
     "cancel": "Cancel Order",
     "confirm": "Confirm Order",
     "from_price": "From {price}",
+    "unavailable": "Unavailable",
+    "branch": "branch",
     "restaurant_not_found": "Restaurant not found. Please check the URL or contact support.",
     "error_loading_menu": "Error loading menu. Please try again later.",
     "error_loading_cart": "Error loading cart. Please try again later.",
@@ -103,7 +105,59 @@
     "cta_secondary": "Make Reservation",
     "view_menu": "View Menu",
     "make_reservation": "Make a Reservation",
-    "loading": "Loading hero section..."
+    "loading": "Loading hero section...",
+    "companyBadge": "Company Homepage",
+    "branchBadge": "Branch Homepage",
+    "collectionLabel": "Restaurant Group",
+    "branchLabel": "Restaurant",
+    "currentBranchLabel": "Start Here",
+    "viewMenu": "Browse the menu",
+    "viewLocations": "See all locations",
+    "contactLabel": "Call this branch",
+    "ratingLabel": "Guest rating",
+    "ratingValue": "{rating} stars from {count} reviews",
+    "ratingFallback": "Ratings will appear after guests leave reviews",
+    "openBranches": "{count} of {total} branches open now",
+    "closedToday": "Closed today",
+    "stats": {
+      "branches": "Branches",
+      "featured": "Featured dishes",
+      "todayHours": "Today"
+    }
+  },
+  "featured": {
+    "eyebrow": "Recommended Across The Company",
+    "title": "Popular dishes worth starting with",
+    "fullMenu": "Open current menu",
+    "sharedBadge": "Shared menu",
+    "branchBadge": "Branch pick",
+    "sharedAvailability": "Available through company menus",
+    "fromBranch": "From {branch}",
+    "viewItemCta": "View menu",
+    "descriptionFallback": "Browse this dish in the full menu for the latest details and availability.",
+    "emptyTitle": "Featured dishes are coming soon",
+    "emptyDescription": "This company has not highlighted menu items on the homepage yet."
+  },
+  "story": {
+    "eyebrow": "Brand Story",
+    "title": "A calmer way to choose where to order",
+    "ownerLabel": "Founder or owner",
+    "fallbackDescription": "Visit the menu or pick a branch to see what is available today."
+  },
+  "locations": {
+    "eyebrow": "Branches",
+    "title": "Choose the branch that works for you",
+    "description": "Each branch keeps its own menu, hours, and local details. Pick a location first, then continue into the right menu and booking flow.",
+    "currentBranch": "Current",
+    "openNow": "Open now",
+    "closedNow": "Closed now",
+    "hoursFallback": "Check branch hours in the menu flow",
+    "viewMenu": "View menu",
+    "reserve": "Reserve"
+  },
+  "notFound": {
+    "title": "Company homepage not available",
+    "description": "We could not load this restaurant company page right now. Please check the address and try again."
   },
   "gallery": {
     "title": "Our Restaurant",
@@ -162,7 +216,7 @@
     "title": "Contact Us",
     "subtitle": "We'd love to hear from you",
     "phone": "Phone",
-    "email": "Email", 
+    "email": "Email",
     "address": "Address",
     "hours": "Opening Hours",
     "social_media": "Follow Us",

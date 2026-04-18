@@ -1,4 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  appendBranchContext,
+  getOrgIdentifierFromHost,
+} from "@/lib/customer-branch";
 
 interface UseApiDataOptions {
   autoFetch?: boolean;
@@ -17,11 +22,11 @@ interface ApiResponse<T> {
  * Includes automatic retry, error handling, and refresh capabilities
  */
 export function useCustomerApiData<T>(
-  endpoint: string, 
-  options: UseApiDataOptions = {}
+  endpoint: string,
+  options: UseApiDataOptions = {},
 ): ApiResponse<T> {
   const { autoFetch = true, refreshInterval } = options;
-  
+
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
@@ -32,21 +37,24 @@ export function useCustomerApiData<T>(
       setError(null);
 
       const response = await fetch(endpoint, {
-        credentials: 'include',
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(
+          errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        );
       }
 
       const result = await response.json();
       setData(result);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
       setError(errorMessage);
       console.error(`Error fetching ${endpoint}:`, err);
     } finally {
@@ -81,13 +89,29 @@ export function useCustomerApiData<T>(
  * Hook for restaurant data (name, logo, settings)
  */
 export function useRestaurantData() {
+  const searchParams = useSearchParams();
+  const endpoint = useCallback(() => {
+    const params = new URLSearchParams();
+    appendBranchContext(params, {
+      branchCode: searchParams.get("branch"),
+      orgIdentifier:
+        typeof window !== "undefined"
+          ? getOrgIdentifierFromHost(window.location.host)
+          : null,
+    });
+    return `/api/v1/customer/restaurant${params.toString() ? `?${params.toString()}` : ""}`;
+  }, [searchParams]);
+
   return useCustomerApiData<{
     restaurant: {
       id: string;
       name: string;
+      companyName?: string | null;
       logoUrl: string | null;
       primaryColor: string;
       defaultLocale: string;
+      branchCode?: string | null;
+      subdomain?: string;
       contactInfo?: string;
       address?: string;
       opening_hours?: {
@@ -98,13 +122,26 @@ export function useRestaurantData() {
         };
       };
     };
-  }>('/api/v1/customer/restaurant');
+  }>(endpoint());
 }
 
 /**
  * Hook for menu data (categories and items)
  */
 export function useMenuData() {
+  const searchParams = useSearchParams();
+  const endpoint = useCallback(() => {
+    const params = new URLSearchParams();
+    appendBranchContext(params, {
+      branchCode: searchParams.get("branch"),
+      orgIdentifier:
+        typeof window !== "undefined"
+          ? getOrgIdentifierFromHost(window.location.host)
+          : null,
+    });
+    return `/api/v1/customer/menu${params.toString() ? `?${params.toString()}` : ""}`;
+  }, [searchParams]);
+
   return useCustomerApiData<{
     categories: Array<{
       id: string;
@@ -140,13 +177,26 @@ export function useMenuData() {
         }>;
       }>;
     }>;
-  }>('/api/v1/customer/menu');
+  }>(endpoint());
 }
 
 /**
  * Hook for tables data
  */
 export function useTablesData() {
+  const searchParams = useSearchParams();
+  const endpoint = useCallback(() => {
+    const params = new URLSearchParams();
+    appendBranchContext(params, {
+      branchCode: searchParams.get("branch"),
+      orgIdentifier:
+        typeof window !== "undefined"
+          ? getOrgIdentifierFromHost(window.location.host)
+          : null,
+    });
+    return `/api/v1/customer/tables${params.toString() ? `?${params.toString()}` : ""}`;
+  }, [searchParams]);
+
   return useCustomerApiData<{
     tables: Array<{
       id: string;
@@ -157,7 +207,7 @@ export function useTablesData() {
       is_accessible?: boolean;
       notes?: string;
     }>;
-  }>('/api/v1/customer/tables');
+  }>(endpoint());
 }
 
 /**
@@ -166,10 +216,10 @@ export function useTablesData() {
  */
 export function useSessionStatus(sessionId: string | null) {
   const [shouldRefresh, setShouldRefresh] = useState(false);
-  
+
   const response = useCustomerApiData<{
     success: boolean;
-    sessionStatus: 'active' | 'expired';
+    sessionStatus: "active" | "expired";
     canAddItems: boolean;
     sessionData: {
       sessionId: string;
@@ -179,21 +229,18 @@ export function useSessionStatus(sessionId: string | null) {
       status: string;
       totalAmount: number;
     };
-  }>(
-    sessionId ? `/api/v1/customer/session/check?sessionId=${sessionId}` : '',
-    { 
-      autoFetch: !!sessionId,
-      // Refresh every 30 seconds for active sessions
-      refreshInterval: shouldRefresh ? 30000 : 0
-    }
-  );
+  }>(sessionId ? `/api/v1/customer/session/check?sessionId=${sessionId}` : "", {
+    autoFetch: !!sessionId,
+    // Refresh every 30 seconds for active sessions
+    refreshInterval: shouldRefresh ? 30000 : 0,
+  });
 
   // Enable auto-refresh for active sessions
   useEffect(() => {
-    if (response.data?.success && response.data.sessionStatus === 'active') {
+    if (response.data?.success && response.data.sessionStatus === "active") {
       const status = response.data.sessionData.status;
       // Only refresh if order is not completed or canceled
-      setShouldRefresh(!['completed', 'canceled', 'expired'].includes(status));
+      setShouldRefresh(!["completed", "canceled", "expired"].includes(status));
     } else {
       setShouldRefresh(false);
     }
@@ -214,13 +261,9 @@ export function useCustomerPageData() {
   const loading = restaurant.loading || menu.loading || tables.loading;
   const error = restaurant.error || menu.error || tables.error;
 
-  const reload = useCallback(async () => {
-    await Promise.all([
-      restaurant.reload(),
-      menu.reload(),
-      tables.reload(),
-    ]);
-  }, [restaurant.reload, menu.reload, tables.reload]);
+  const reload = async () => {
+    await Promise.all([restaurant.reload(), menu.reload(), tables.reload()]);
+  };
 
   return {
     restaurant: restaurant.data?.restaurant || null,

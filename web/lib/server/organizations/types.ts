@@ -2,31 +2,31 @@
 // These types mirror the database schema added in migration 037_organization_foundation.
 
 export type OrgMemberRole =
-  | 'founder_full_control'
-  | 'founder_operations'
-  | 'founder_finance'
-  | 'accountant_readonly'
-  | 'branch_general_manager';
+  | "founder_full_control"
+  | "founder_operations"
+  | "founder_finance"
+  | "accountant_readonly"
+  | "branch_general_manager";
 
-export type ShopScope = 'all_shops' | 'selected_shops';
+export type ShopScope = "all_shops" | "selected_shops";
 
 export type OrgPermission =
-  | 'reports'
-  | 'finance_exports'
-  | 'purchases'
-  | 'promotions'
-  | 'employees'
-  | 'attendance_approvals'
-  | 'restaurant_settings'
-  | 'organization_settings'
-  | 'billing';
+  | "reports"
+  | "finance_exports"
+  | "purchases"
+  | "promotions"
+  | "employees"
+  | "attendance_approvals"
+  | "restaurant_settings"
+  | "organization_settings"
+  | "billing";
 
 export interface Organization {
   id: string;
   name: string;
   slug: string;
   public_subdomain: string;
-  approval_status: 'pending' | 'approved' | 'rejected';
+  approval_status: "pending" | "approved" | "rejected";
   approved_at?: string | null;
   approved_by?: string | null;
   approval_notes?: string | null;
@@ -111,7 +111,7 @@ export interface OrgContext {
 export interface CreateOrganizationInput {
   name: string;
   slug: string;
-  requested_plan?: 'starter' | 'growth' | 'enterprise';
+  requested_plan?: "starter" | "growth" | "enterprise";
   country?: string;
   timezone?: string;
   currency?: string;
@@ -129,8 +129,8 @@ export interface InviteOrgMemberInput {
 export interface AddBranchInput {
   name: string;
   subdomain: string;
-  default_language: 'en' | 'ja' | 'vi';
-  brand_color: string;
+  default_language: "en" | "ja" | "vi";
+  brand_color?: string;
   tax?: number;
   address?: string;
   phone?: string;

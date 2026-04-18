@@ -2,9 +2,9 @@
 // All queries are scoped to the calling user via RLS.
 // Use supabaseAdmin only in server-side admin contexts (e.g. registration).
 
-import { createClient } from '@/lib/supabase/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { ROLE_DEFAULT_PERMISSIONS } from '@/lib/server/authorization/types';
+import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/server/authorization/types";
 import type {
   Organization,
   OrganizationMember,
@@ -15,7 +15,7 @@ import type {
   OrgPermission,
   CreateOrganizationInput,
   AddBranchInput,
-} from './types';
+} from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Read queries (use RLS-scoped client)
@@ -26,10 +26,10 @@ export async function getMyOrganization(): Promise<Organization | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('organization_members')
-    .select('organization_id, owner_organizations(*)')
-    .eq('is_active', true)
-    .order('created_at', { ascending: true })
+    .from("organization_members")
+    .select("organization_id, owner_organizations(*)")
+    .eq("is_active", true)
+    .order("created_at", { ascending: true })
     .limit(1)
     .single();
 
@@ -43,13 +43,15 @@ export async function getMyOrganization(): Promise<Organization | null> {
 }
 
 /** Get organization by ID (RLS ensures the caller is a member). */
-export async function getOrganizationById(orgId: string): Promise<Organization | null> {
+export async function getOrganizationById(
+  orgId: string,
+): Promise<Organization | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('owner_organizations')
-    .select('*')
-    .eq('id', orgId)
+    .from("owner_organizations")
+    .select("*")
+    .eq("id", orgId)
     .single();
 
   if (error || !data) return null;
@@ -58,16 +60,16 @@ export async function getOrganizationById(orgId: string): Promise<Organization |
 
 /** List all members of an organization (RLS-scoped). */
 export async function listOrganizationMembers(
-  orgId: string
+  orgId: string,
 ): Promise<OrganizationMemberWithUser[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('organization_members')
-    .select('*')
-    .eq('organization_id', orgId)
-    .eq('is_active', true)
-    .order('created_at', { ascending: true });
+    .from("organization_members")
+    .select("*")
+    .eq("organization_id", orgId)
+    .eq("is_active", true)
+    .order("created_at", { ascending: true });
 
   if (error || !data) return [];
 
@@ -75,25 +77,28 @@ export async function listOrganizationMembers(
   const members = data as OrganizationMember[];
   const userIds = members.map((m) => m.user_id);
   const { data: users } = await supabaseAdmin
-    .from('users')
-    .select('id, email, name')
-    .in('id', userIds);
+    .from("users")
+    .select("id, email, name")
+    .in("id", userIds);
 
   const userMap = new Map((users ?? []).map((u) => [u.id, u]));
 
   // Fetch shop scopes for members with selected_shops scope
   const selectedShopsMemberIds = members
-    .filter((m) => m.shop_scope === 'selected_shops')
+    .filter((m) => m.shop_scope === "selected_shops")
     .map((m) => m.id);
 
   const scopeMap = new Map<string, string[]>();
   if (selectedShopsMemberIds.length > 0) {
     const { data: scopes } = await supabaseAdmin
-      .from('organization_member_shop_scopes')
-      .select('member_id, restaurant_id')
-      .in('member_id', selectedShopsMemberIds);
+      .from("organization_member_shop_scopes")
+      .select("member_id, restaurant_id")
+      .in("member_id", selectedShopsMemberIds);
 
-    for (const row of (scopes ?? []) as { member_id: string; restaurant_id: string }[]) {
+    for (const row of (scopes ?? []) as {
+      member_id: string;
+      restaurant_id: string;
+    }[]) {
       const existing = scopeMap.get(row.member_id) ?? [];
       existing.push(row.restaurant_id);
       scopeMap.set(row.member_id, existing);
@@ -104,10 +109,10 @@ export async function listOrganizationMembers(
     const u = userMap.get(member.user_id);
     return {
       ...member,
-      email: u?.email ?? '',
+      email: u?.email ?? "",
       name: u?.name ?? null,
       accessible_restaurant_ids:
-        member.shop_scope === 'selected_shops'
+        member.shop_scope === "selected_shops"
           ? (scopeMap.get(member.id) ?? [])
           : undefined,
     };
@@ -128,69 +133,78 @@ export interface OrgBranch {
  * List org branches with their display names and subdomains.
  * Used anywhere the UI needs to show a branch picker with real labels.
  */
-export async function listOrganizationBranches(orgId: string): Promise<OrgBranch[]> {
+export async function listOrganizationBranches(
+  orgId: string,
+): Promise<OrgBranch[]> {
   const supabase = await createClient();
 
   // Fetch restaurant IDs from organization_restaurants using RLS-scoped client
   // (ensures the caller is a member of this org)
   const { data, error } = await supabase
-    .from('organization_restaurants')
-    .select('restaurant_id')
-    .eq('organization_id', orgId)
-    .order('added_at', { ascending: true });
+    .from("organization_restaurants")
+    .select("restaurant_id")
+    .eq("organization_id", orgId)
+    .order("added_at", { ascending: true });
 
   if (error || !data) return [];
 
-  const restaurantIds = (data as Array<{ restaurant_id: string }>).map((r) => r.restaurant_id);
+  const restaurantIds = (data as Array<{ restaurant_id: string }>).map(
+    (r) => r.restaurant_id,
+  );
   if (restaurantIds.length === 0) return [];
 
   // Use admin client to fetch restaurant details so RLS on the restaurants
   // table (which is keyed to the user's primary restaurant) doesn't hide
   // newly-added org branches.
   const { data: restaurants } = await supabaseAdmin
-    .from('restaurants')
-    .select('id, name, subdomain, branch_code, address, phone, email')
-    .in('id', restaurantIds);
+    .from("restaurants")
+    .select("id, name, subdomain, branch_code, address, phone, email")
+    .in("id", restaurantIds);
 
   const restaurantMap = new Map(
-    (restaurants ?? []).map((r) => [r.id, r as {
-      id: string;
-      name: string;
-      subdomain: string;
-      branch_code?: string | null;
-      address?: string | null;
-      phone?: string | null;
-      email?: string | null;
-    }])
+    (restaurants ?? []).map((r) => [
+      r.id,
+      r as {
+        id: string;
+        name: string;
+        subdomain: string;
+        branch_code?: string | null;
+        address?: string | null;
+        phone?: string | null;
+        email?: string | null;
+      },
+    ]),
   );
 
   // Preserve the ordering returned by organization_restaurants
   return restaurantIds.flatMap((id) => {
     const r = restaurantMap.get(id);
     if (!r) return [];
-    return [{
-      id: r.id,
-      name: r.name,
-      subdomain: r.subdomain,
-      branch_code: r.branch_code ?? null,
-      address: r.address ?? null,
-      phone: r.phone ?? null,
-      email: r.email ?? null,
-    }];
+    return [
+      {
+        id: r.id,
+        name: r.name,
+        subdomain: r.subdomain,
+        branch_code: r.branch_code ?? null,
+        address: r.address ?? null,
+        phone: r.phone ?? null,
+        email: r.email ?? null,
+      },
+    ];
   });
 }
 
 /** List restaurants belonging to an organization (RLS-scoped). */
 export async function listOrganizationRestaurants(
-  orgId: string
+  orgId: string,
 ): Promise<OrganizationRestaurant[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('organization_restaurants')
-    .select('*')
-    .eq('organization_id', orgId)
-    .order('added_at', { ascending: true });
+    .from("organization_restaurants")
+    .select("*")
+    .eq("organization_id", orgId)
+    .order("added_at", { ascending: true });
 
   if (error || !data) return [];
   return data as OrganizationRestaurant[];
@@ -200,18 +214,18 @@ export async function listOrganizationRestaurants(
 export async function getAccessibleRestaurantIds(
   orgId: string,
   memberId: string,
-  shopScope: ShopScope
+  shopScope: ShopScope,
 ): Promise<string[]> {
-  if (shopScope === 'all_shops') {
+  if (shopScope === "all_shops") {
     const restaurants = await listOrganizationRestaurants(orgId);
     return restaurants.map((r) => r.restaurant_id);
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from('organization_member_shop_scopes')
-    .select('restaurant_id')
-    .eq('member_id', memberId);
+    .from("organization_member_shop_scopes")
+    .select("restaurant_id")
+    .eq("member_id", memberId);
 
   if (error || !data) return [];
   return data.map((row: { restaurant_id: string }) => row.restaurant_id);
@@ -219,14 +233,14 @@ export async function getAccessibleRestaurantIds(
 
 /** Get explicit permission overrides for a member. */
 export async function getMemberPermissionOverrides(
-  memberId: string
+  memberId: string,
 ): Promise<Map<OrgPermission, boolean>> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('organization_member_permissions')
-    .select('permission, granted')
-    .eq('member_id', memberId);
+    .from("organization_member_permissions")
+    .select("permission, granted")
+    .eq("member_id", memberId);
 
   const map = new Map<OrgPermission, boolean>();
   if (error || !data) return map;
@@ -244,30 +258,40 @@ export async function getMemberPermissionOverrides(
  */
 export async function getMemberPermissionsWithOverrides(
   memberId: string,
-  role: OrgMemberRole
-): Promise<Array<{ permission: OrgPermission; granted: boolean; is_override: boolean; role_default: boolean }>> {
+  role: OrgMemberRole,
+): Promise<
+  Array<{
+    permission: OrgPermission;
+    granted: boolean;
+    is_override: boolean;
+    role_default: boolean;
+  }>
+> {
   const roleDefaults = ROLE_DEFAULT_PERMISSIONS[role];
   const ALL_PERMISSIONS: OrgPermission[] = [
-    'reports',
-    'finance_exports',
-    'purchases',
-    'promotions',
-    'employees',
-    'attendance_approvals',
-    'restaurant_settings',
-    'organization_settings',
-    'billing',
+    "reports",
+    "finance_exports",
+    "purchases",
+    "promotions",
+    "employees",
+    "attendance_approvals",
+    "restaurant_settings",
+    "organization_settings",
+    "billing",
   ];
 
   // Fetch explicit overrides from DB
   const { data, error } = await supabaseAdmin
-    .from('organization_member_permissions')
-    .select('permission, granted')
-    .eq('member_id', memberId);
+    .from("organization_member_permissions")
+    .select("permission, granted")
+    .eq("member_id", memberId);
 
   const overrideMap = new Map<OrgPermission, boolean>();
   if (!error && data) {
-    for (const row of data as { permission: OrgPermission; granted: boolean }[]) {
+    for (const row of data as {
+      permission: OrgPermission;
+      granted: boolean;
+    }[]) {
       overrideMap.set(row.permission, row.granted);
     }
   }
@@ -276,7 +300,12 @@ export async function getMemberPermissionsWithOverrides(
     const roleDefault = roleDefaults[permission] ?? false;
     const isOverride = overrideMap.has(permission);
     const granted = isOverride ? overrideMap.get(permission)! : roleDefault;
-    return { permission, granted, is_override: isOverride, role_default: roleDefault };
+    return {
+      permission,
+      granted,
+      is_override: isOverride,
+      role_default: roleDefault,
+    };
   });
 }
 
@@ -289,7 +318,7 @@ export async function upsertMemberPermissions(
   orgId: string,
   memberId: string,
   grantedByUserId: string,
-  permissions: Partial<Record<OrgPermission, boolean>>
+  permissions: Partial<Record<OrgPermission, boolean>>,
 ): Promise<boolean> {
   const rows = Object.entries(permissions).map(([permission, granted]) => ({
     organization_id: orgId,
@@ -302,11 +331,11 @@ export async function upsertMemberPermissions(
   if (rows.length === 0) return true;
 
   const { error } = await supabaseAdmin
-    .from('organization_member_permissions')
-    .upsert(rows, { onConflict: 'member_id,permission' });
+    .from("organization_member_permissions")
+    .upsert(rows, { onConflict: "member_id,permission" });
 
   if (error) {
-    console.error('Failed to upsert member permissions:', error);
+    console.error("Failed to upsert member permissions:", error);
     return false;
   }
   return true;
@@ -315,14 +344,16 @@ export async function upsertMemberPermissions(
 /**
  * Delete all permission overrides for a member, restoring role defaults.
  */
-export async function resetMemberPermissions(memberId: string): Promise<boolean> {
+export async function resetMemberPermissions(
+  memberId: string,
+): Promise<boolean> {
   const { error } = await supabaseAdmin
-    .from('organization_member_permissions')
+    .from("organization_member_permissions")
     .delete()
-    .eq('member_id', memberId);
+    .eq("member_id", memberId);
 
   if (error) {
-    console.error('Failed to reset member permissions:', error);
+    console.error("Failed to reset member permissions:", error);
     return false;
   }
   return true;
@@ -340,51 +371,54 @@ export async function resetMemberPermissions(memberId: string): Promise<boolean>
 export async function createOrganizationForNewRestaurant(
   userId: string,
   restaurantId: string,
-  input: CreateOrganizationInput
+  input: CreateOrganizationInput,
 ): Promise<{ organizationId: string; memberId: string } | null> {
   let organizationId: string | null = null;
   let memberId: string | null = null;
 
   // 1. Create organization
   const { data: org, error: orgError } = await supabaseAdmin
-    .from('owner_organizations')
+    .from("owner_organizations")
     .insert({
       name: input.name,
       slug: input.slug,
       public_subdomain: input.slug,
-      approval_status: 'pending',
+      approval_status: "pending",
       requested_plan: input.requested_plan ?? null,
-      country: input.country ?? 'JP',
-      timezone: input.timezone ?? 'Asia/Tokyo',
-      currency: input.currency ?? 'JPY',
+      country: input.country ?? "JP",
+      timezone: input.timezone ?? "Asia/Tokyo",
+      currency: input.currency ?? "JPY",
       created_by: userId,
     })
-    .select('id')
+    .select("id")
     .single();
 
   if (orgError || !org) {
-    console.error('Failed to create organization:', orgError);
+    console.error("Failed to create organization:", orgError);
     return null;
   }
   organizationId = org.id;
 
   // 2. Add user as founder_full_control
   const { data: member, error: memberError } = await supabaseAdmin
-    .from('organization_members')
+    .from("organization_members")
     .insert({
       organization_id: org.id,
       user_id: userId,
-      role: 'founder_full_control' as OrgMemberRole,
-      shop_scope: 'all_shops' as ShopScope,
+      role: "founder_full_control" as OrgMemberRole,
+      shop_scope: "all_shops" as ShopScope,
       joined_at: new Date().toISOString(),
     })
-    .select('id')
+    .select("id")
     .single();
 
   if (memberError || !member) {
-    console.error('Failed to create organization member:', memberError);
+    console.error("Failed to create organization member:", memberError);
     if (organizationId) {
-      await supabaseAdmin.from('owner_organizations').delete().eq('id', organizationId);
+      await supabaseAdmin
+        .from("owner_organizations")
+        .delete()
+        .eq("id", organizationId);
     }
     return null;
   }
@@ -392,7 +426,7 @@ export async function createOrganizationForNewRestaurant(
 
   // 3. Link restaurant to organization
   const { error: linkError } = await supabaseAdmin
-    .from('organization_restaurants')
+    .from("organization_restaurants")
     .insert({
       organization_id: org.id,
       restaurant_id: restaurantId,
@@ -400,12 +434,18 @@ export async function createOrganizationForNewRestaurant(
     });
 
   if (linkError) {
-    console.error('Failed to link restaurant to organization:', linkError);
+    console.error("Failed to link restaurant to organization:", linkError);
     if (memberId) {
-      await supabaseAdmin.from('organization_members').delete().eq('id', memberId);
+      await supabaseAdmin
+        .from("organization_members")
+        .delete()
+        .eq("id", memberId);
     }
     if (organizationId) {
-      await supabaseAdmin.from('owner_organizations').delete().eq('id', organizationId);
+      await supabaseAdmin
+        .from("owner_organizations")
+        .delete()
+        .eq("id", organizationId);
     }
     return null;
   }
@@ -420,10 +460,10 @@ export async function addOrganizationMember(
   invitedByUserId: string,
   role: OrgMemberRole,
   shopScope: ShopScope,
-  selectedRestaurantIds?: string[]
+  selectedRestaurantIds?: string[],
 ): Promise<OrganizationMember | null> {
   const { data: member, error } = await supabaseAdmin
-    .from('organization_members')
+    .from("organization_members")
     .insert({
       organization_id: orgId,
       user_id: targetUserId,
@@ -433,27 +473,27 @@ export async function addOrganizationMember(
       joined_at: null,
       is_active: true,
     })
-    .select('*')
+    .select("*")
     .single();
 
   if (error || !member) {
-    console.error('Failed to add org member:', error);
+    console.error("Failed to add org member:", error);
     return null;
   }
 
   // If selected_shops, insert scope rows
-  if (shopScope === 'selected_shops' && selectedRestaurantIds?.length) {
+  if (shopScope === "selected_shops" && selectedRestaurantIds?.length) {
     const scopeRows = selectedRestaurantIds.map((rid) => ({
       organization_id: orgId,
       member_id: member.id,
       restaurant_id: rid,
     }));
     const { error: scopeError } = await supabaseAdmin
-      .from('organization_member_shop_scopes')
+      .from("organization_member_shop_scopes")
       .insert(scopeRows);
 
     if (scopeError) {
-      console.error('Failed to insert shop scopes:', scopeError);
+      console.error("Failed to insert shop scopes:", scopeError);
     }
   }
 
@@ -468,16 +508,22 @@ export async function addOrganizationMember(
 export async function createRestaurantInOrg(
   orgId: string,
   addedByUserId: string,
-  input: AddBranchInput
+  input: AddBranchInput,
 ): Promise<{ id: string; name: string; subdomain: string } | null> {
   // 1. Check subdomain uniqueness
   const { data: existing } = await supabaseAdmin
-    .from('restaurants')
-    .select('id')
-    .eq('subdomain', input.subdomain)
+    .from("restaurants")
+    .select("id")
+    .eq("subdomain", input.subdomain)
     .single();
 
   if (existing) return null; // caller should surface a 409
+
+  const { data: organization } = await supabaseAdmin
+    .from("owner_organizations")
+    .select("logo_url, brand_color")
+    .eq("id", orgId)
+    .maybeSingle();
 
   // 2. Create the restaurant row
   const insert: Record<string, unknown> = {
@@ -485,7 +531,8 @@ export async function createRestaurantInOrg(
     subdomain: input.subdomain,
     branch_code: input.subdomain,
     default_language: input.default_language,
-    brand_color: input.brand_color,
+    logo_url: organization?.logo_url ?? null,
+    brand_color: organization?.brand_color ?? input.brand_color ?? "#EA580C",
     // Branches added to an existing org inherit verified/active status and
     // skip the standard onboarding flow — the owner already configured them
     // via the AddBranchModal.
@@ -500,19 +547,19 @@ export async function createRestaurantInOrg(
   if (input.website) insert.website = input.website;
 
   const { data: restaurant, error: restaurantError } = await supabaseAdmin
-    .from('restaurants')
+    .from("restaurants")
     .insert(insert)
-    .select('id, name, subdomain')
+    .select("id, name, subdomain")
     .single();
 
   if (restaurantError || !restaurant) {
-    console.error('Failed to create restaurant:', restaurantError);
+    console.error("Failed to create restaurant:", restaurantError);
     return null;
   }
 
   // 3. Link restaurant to organization
   const { error: linkError } = await supabaseAdmin
-    .from('organization_restaurants')
+    .from("organization_restaurants")
     .insert({
       organization_id: orgId,
       restaurant_id: restaurant.id,
@@ -520,9 +567,9 @@ export async function createRestaurantInOrg(
     });
 
   if (linkError) {
-    console.error('Failed to link restaurant to org:', linkError);
+    console.error("Failed to link restaurant to org:", linkError);
     // Attempt cleanup — best effort
-    await supabaseAdmin.from('restaurants').delete().eq('id', restaurant.id);
+    await supabaseAdmin.from("restaurants").delete().eq("id", restaurant.id);
     return null;
   }
 
@@ -530,31 +577,110 @@ export async function createRestaurantInOrg(
 }
 
 /** Deactivate an organization member (soft delete). */
-export async function deactivateOrganizationMember(memberId: string): Promise<boolean> {
+export async function deactivateOrganizationMember(
+  memberId: string,
+): Promise<boolean> {
   const { error } = await supabaseAdmin
-    .from('organization_members')
+    .from("organization_members")
     .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq('id', memberId);
+    .eq("id", memberId);
 
   return !error;
+}
+
+async function syncOrganizationBrandingToRestaurants(
+  orgId: string,
+  updates: { logo_url?: string | null; brand_color?: string | null },
+): Promise<void> {
+  const brandingPatch: Record<string, unknown> = {};
+
+  if ("logo_url" in updates) brandingPatch.logo_url = updates.logo_url ?? null;
+  if ("brand_color" in updates) {
+    brandingPatch.brand_color = updates.brand_color ?? null;
+  }
+
+  if (Object.keys(brandingPatch).length === 0) {
+    return;
+  }
+
+  const { data: orgRestaurants, error: orgRestaurantsError } =
+    await supabaseAdmin
+      .from("organization_restaurants")
+      .select("restaurant_id")
+      .eq("organization_id", orgId);
+
+  if (orgRestaurantsError || !orgRestaurants?.length) {
+    if (orgRestaurantsError) {
+      console.error(
+        "Failed to load organization restaurants for brand sync:",
+        orgRestaurantsError,
+      );
+    }
+    return;
+  }
+
+  const restaurantIds = orgRestaurants.map(
+    (row) => row.restaurant_id as string,
+  );
+  const { error: syncError } = await supabaseAdmin
+    .from("restaurants")
+    .update({ ...brandingPatch, updated_at: new Date().toISOString() })
+    .in("id", restaurantIds);
+
+  if (syncError) {
+    console.error(
+      "Failed to sync organization branding to restaurants:",
+      syncError,
+    );
+  }
 }
 
 /** Update organization-level settings including branding. Uses admin client. */
 export async function updateOrganizationSettings(
   orgId: string,
-  updates: Partial<Pick<Organization, 'name' | 'country' | 'timezone' | 'currency' | 'logo_url' | 'brand_color' | 'description_en' | 'description_ja' | 'description_vi' | 'website' | 'phone' | 'email' | 'onboarding_completed_at' | 'approval_status' | 'approved_at' | 'approved_by' | 'approval_notes' | 'requested_plan'>>
+  updates: Partial<
+    Pick<
+      Organization,
+      | "name"
+      | "country"
+      | "timezone"
+      | "currency"
+      | "logo_url"
+      | "brand_color"
+      | "description_en"
+      | "description_ja"
+      | "description_vi"
+      | "website"
+      | "phone"
+      | "email"
+      | "onboarding_completed_at"
+      | "approval_status"
+      | "approved_at"
+      | "approved_by"
+      | "approval_notes"
+      | "requested_plan"
+    >
+  >,
 ): Promise<Organization | null> {
   const { data, error } = await supabaseAdmin
-    .from('owner_organizations')
+    .from("owner_organizations")
     .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq('id', orgId)
-    .select('*')
+    .eq("id", orgId)
+    .select("*")
     .single();
 
   if (error || !data) {
-    console.error('Failed to update organization:', error);
+    console.error("Failed to update organization:", error);
     return null;
   }
+
+  if ("logo_url" in updates || "brand_color" in updates) {
+    await syncOrganizationBrandingToRestaurants(orgId, {
+      logo_url: updates.logo_url,
+      brand_color: updates.brand_color,
+    });
+  }
+
   return data as Organization;
 }
 
@@ -565,33 +691,39 @@ export async function updateOrganizationSettings(
 export async function updateOrganizationMember(
   memberId: string,
   orgId: string,
-  updates: { role?: OrgMemberRole; shop_scope?: ShopScope; selected_restaurant_ids?: string[] }
+  updates: {
+    role?: OrgMemberRole;
+    shop_scope?: ShopScope;
+    selected_restaurant_ids?: string[];
+  },
 ): Promise<OrganizationMember | null> {
   const { role, shop_scope, selected_restaurant_ids } = updates;
 
-  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const patch: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
   if (role !== undefined) patch.role = role;
   if (shop_scope !== undefined) patch.shop_scope = shop_scope;
 
   const { data: member, error } = await supabaseAdmin
-    .from('organization_members')
+    .from("organization_members")
     .update(patch)
-    .eq('id', memberId)
-    .eq('organization_id', orgId)
-    .select('*')
+    .eq("id", memberId)
+    .eq("organization_id", orgId)
+    .select("*")
     .single();
 
   if (error || !member) {
-    console.error('Failed to update org member:', error);
+    console.error("Failed to update org member:", error);
     return null;
   }
 
   // Sync shop scope rows when scope changes
-  if (shop_scope === 'selected_shops' && selected_restaurant_ids?.length) {
+  if (shop_scope === "selected_shops" && selected_restaurant_ids?.length) {
     await supabaseAdmin
-      .from('organization_member_shop_scopes')
+      .from("organization_member_shop_scopes")
       .delete()
-      .eq('member_id', memberId);
+      .eq("member_id", memberId);
 
     const scopeRows = selected_restaurant_ids.map((rid) => ({
       organization_id: orgId,
@@ -599,14 +731,14 @@ export async function updateOrganizationMember(
       restaurant_id: rid,
     }));
     const { error: scopeError } = await supabaseAdmin
-      .from('organization_member_shop_scopes')
+      .from("organization_member_shop_scopes")
       .insert(scopeRows);
-    if (scopeError) console.error('Failed to update shop scopes:', scopeError);
-  } else if (shop_scope === 'all_shops') {
+    if (scopeError) console.error("Failed to update shop scopes:", scopeError);
+  } else if (shop_scope === "all_shops") {
     await supabaseAdmin
-      .from('organization_member_shop_scopes')
+      .from("organization_member_shop_scopes")
       .delete()
-      .eq('member_id', memberId);
+      .eq("member_id", memberId);
   }
 
   return member as OrganizationMember;
@@ -632,41 +764,55 @@ export interface OrgEmployeeRow {
  * Uses admin client — called server-side after authorization check.
  */
 export async function listOrganizationEmployees(
-  restaurantIds: string[]
+  restaurantIds: string[],
 ): Promise<OrgEmployeeRow[]> {
   if (restaurantIds.length === 0) return [];
 
   const { data, error } = await supabaseAdmin
-    .from('employees')
-    .select('id, role, user_id, restaurant_id, restaurants(id, name, subdomain), users(id, email, name)')
-    .in('restaurant_id', restaurantIds)
-    .order('restaurant_id', { ascending: true });
+    .from("employees")
+    .select(
+      "id, role, user_id, restaurant_id, restaurants(id, name, subdomain), users(id, email, name)",
+    )
+    .in("restaurant_id", restaurantIds)
+    .order("restaurant_id", { ascending: true });
 
   if (error || !data) {
-    console.error('Failed to list org employees:', error);
+    console.error("Failed to list org employees:", error);
     return [];
   }
 
-  return (data as Array<{
-    id: string;
-    role: string;
-    user_id: string;
-    restaurant_id: string;
-    restaurants: { id: string; name: string; subdomain: string } | Array<{ id: string; name: string; subdomain: string }> | null;
-    users: { id: string; email: string; name: string } | Array<{ id: string; email: string; name: string }> | null;
-  }>).flatMap((row) => {
-    const restaurant = Array.isArray(row.restaurants) ? row.restaurants[0] : row.restaurants;
+  return (
+    data as Array<{
+      id: string;
+      role: string;
+      user_id: string;
+      restaurant_id: string;
+      restaurants:
+        | { id: string; name: string; subdomain: string }
+        | Array<{ id: string; name: string; subdomain: string }>
+        | null;
+      users:
+        | { id: string; email: string; name: string }
+        | Array<{ id: string; email: string; name: string }>
+        | null;
+    }>
+  ).flatMap((row) => {
+    const restaurant = Array.isArray(row.restaurants)
+      ? row.restaurants[0]
+      : row.restaurants;
     const user = Array.isArray(row.users) ? row.users[0] : row.users;
     if (!restaurant || !user) return [];
-    return [{
-      employee_id: row.id,
-      user_id: row.user_id,
-      name: user.name,
-      email: user.email,
-      job_title: row.role,
-      restaurant_id: row.restaurant_id,
-      restaurant_name: restaurant.name,
-      restaurant_subdomain: restaurant.subdomain,
-    }];
+    return [
+      {
+        employee_id: row.id,
+        user_id: row.user_id,
+        name: user.name,
+        email: user.email,
+        job_title: row.role,
+        restaurant_id: row.restaurant_id,
+        restaurant_name: restaurant.name,
+        restaurant_subdomain: restaurant.subdomain,
+      },
+    ];
   });
 }
