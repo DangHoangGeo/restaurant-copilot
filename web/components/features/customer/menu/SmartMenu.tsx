@@ -657,7 +657,7 @@ export function SmartMenu({
                 setView("history", { tableId, sessionId, tableNumber })
               }
               className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
-              aria-label="Order history"
+              aria-label={t("order_history_label")}
             >
               <Clock className="h-4 w-4" />
             </button>
@@ -666,7 +666,9 @@ export function SmartMenu({
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
             aria-label={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+              theme === "dark"
+                ? t("switch_to_light_mode")
+                : t("switch_to_dark_mode")
             }
           >
             {theme === "dark" ? (

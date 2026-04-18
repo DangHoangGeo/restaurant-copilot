@@ -74,6 +74,8 @@
     "cart_cleared": "カートが空にされました",
     "update_failed": "カートの更新に失敗しました。もう一度お試しください。"
   },
+  "decrease_quantity": "数量を減らす",
+  "increase_quantity": "数量を増やす",
   "floating_cart": {
     "title": "カート",
     "items_count": "{count}点",

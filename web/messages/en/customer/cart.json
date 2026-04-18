@@ -74,6 +74,8 @@
     "cart_cleared": "Cart cleared",
     "update_failed": "Failed to update cart. Please try again."
   },
+  "decrease_quantity": "Decrease quantity",
+  "increase_quantity": "Increase quantity",
   "floating_cart": {
     "title": "Your Cart",
     "items_count": "{count} items",
