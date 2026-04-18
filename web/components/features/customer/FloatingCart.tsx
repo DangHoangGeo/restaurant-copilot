@@ -301,6 +301,7 @@ export function FloatingCart({
                   handleUpdateQuantity(item.uniqueId, item.qty - 1)
                 }
                 className="h-11 w-11 p-0 rounded-full"
+                aria-label={t("decrease_quantity")}
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -314,6 +315,7 @@ export function FloatingCart({
                   handleUpdateQuantity(item.uniqueId, item.qty + 1)
                 }
                 className="h-11 w-11 p-0 rounded-full"
+                aria-label={t("increase_quantity")}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -428,6 +430,7 @@ export function FloatingCart({
                 <button
                   onClick={handleToggleExpanded}
                   className="flex items-center space-x-3 flex-1 text-left"
+                  aria-expanded={isExpanded}
                 >
                   <div className="relative">
                     <ShoppingCart className="h-6 w-6" />

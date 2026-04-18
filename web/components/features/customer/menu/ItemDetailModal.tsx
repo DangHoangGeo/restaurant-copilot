@@ -62,6 +62,7 @@ export function ItemDetailModal({
   showOrderNotes = true,
 }: ItemDetailModalProps) {
   const t = useTranslations("customer.menu.item_detail");
+  const tCommon = useTranslations("common");
 
   // Portal mount guard (SSR safety)
   const [mounted, setMounted] = useState(false);
@@ -285,7 +286,7 @@ export function ItemDetailModal({
               <button
                 onClick={onClose}
                 className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/45 flex items-center justify-center text-white hover:bg-black/65 transition-colors"
-                aria-label="Close"
+                aria-label={tCommon("close_modal")}
               >
                 <X className="h-4 w-4" />
               </button>
