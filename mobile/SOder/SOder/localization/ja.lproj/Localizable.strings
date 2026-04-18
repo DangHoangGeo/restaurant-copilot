@@ -1020,3 +1020,15 @@
 "branch_picker_switch_branch" = "ブランチを切り替え";
 "branch_picker_current_branch" = "現在のブランチ";
 "branch_picker_sign_out" = "サインアウト";
+
+// MARK: - Welcome Screen
+"welcome_tagline" = "レストラン運営を、シンプルに。";
+"welcome_feature_orders" = "リアルタイムで注文を管理";
+"welcome_feature_kitchen" = "キッチンを常に同期";
+"welcome_feature_finance" = "売上と収益を追跡";
+"welcome_get_started" = "はじめる";
+
+// MARK: - Login Improvements
+"branch_code_hint" = "レストランのユニークなワークスペースID（サブドメイン）";
+"login_show_password" = "パスワードを表示";
+"login_hide_password" = "パスワードを非表示";

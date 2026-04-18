@@ -7,10 +7,17 @@ struct LoginView: View {
     @State private var branchCode = ""
     @State private var email = ""
     @State private var password = ""
+    @State private var showPassword = false
     @State private var isLoading = false
     @State private var errorMessage = ""
     @State private var showError = false
     @State private var showLanguageSelector = false
+
+    @FocusState private var focusedField: LoginField?
+
+    private enum LoginField: Hashable {
+        case branchCode, email, password
+    }
 
     var body: some View {
         if #available(iOS 16.0, *) {
@@ -21,13 +28,16 @@ struct LoginView: View {
         }
     }
 
+    // MARK: - Main Content
+
     private var contentView: some View {
         ZStack {
+            // Subtle tinted background consistent with welcome screen palette
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color.appInfoLight.opacity(0.5),
+                    Color.appWelcomeGradientStart.opacity(0.05),
                     Color.appBackground,
-                    Color.appSurfaceSecondary.opacity(0.5)
+                    Color.appAccent.opacity(0.04)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -35,197 +45,17 @@ struct LoginView: View {
             .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 24) {
-                    // Language Selector
-                    HStack {
-                        Spacer()
-                        Button(action: { showLanguageSelector = true }) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "globe")
-                                    .font(.subheadline)
-                                Text(localizationManager.supportedLanguageNames[localizationManager.currentLanguage] ?? "English")
-                                    .font(.subheadline)
-                            }
-                            .foregroundColor(.appPrimary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.appSurface.opacity(0.9))
-                            .cornerRadius(20)
-                            .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
-                        }
-                        .accessibilityLabel("language_selector".localized)
-                    }
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.top, Spacing.sm)
-
-                    Spacer().frame(height: Spacing.md)
-
-                    // Header
-                    VStack(spacing: 12) {
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.appPrimary.opacity(0.15),
-                                            Color.appPrimary.opacity(0.05)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 100, height: 100)
-                            Image(systemName: "fork.knife.circle.fill")
-                                .font(.system(size: 50))
-                                .foregroundColor(.appPrimary)
-                        }
-                        Text("app_name".localized)
-                            .font(.displayTitle)
-                            .foregroundColor(.appTextPrimary)
-                        Text("app_subtitle".localized)
-                            .font(.bodyRegular)
-                            .foregroundColor(.appTextSecondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.top, Spacing.md)
-
-                    // Error Banner
+                VStack(spacing: Spacing.lg) {
+                    languageSelectorRow
+                    headerSection
                     if showError && !errorMessage.isEmpty {
-                        HStack(spacing: 12) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.body)
-                                .foregroundColor(.appError)
-                            Text(errorMessage)
-                                .font(.bodyMedium)
-                                .foregroundColor(.appError)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Spacer()
-                            Button(action: {
-                                withAnimation { showError = false; errorMessage = "" }
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.body)
-                                    .foregroundColor(.appError.opacity(0.6))
-                            }
-                            .accessibilityLabel("close".localized)
-                        }
-                        .padding(Spacing.md)
-                        .background(Color.appErrorLight)
-                        .cornerRadius(CornerRadius.md)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.md)
-                                .stroke(Color.appError.opacity(0.3), lineWidth: 1)
-                        )
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .padding(.horizontal, Spacing.lg)
+                        errorBanner
+                            .transition(.move(edge: .top).combined(with: .opacity))
                     }
-
-                    // Login Form Card
-                    VStack(spacing: Spacing.md) {
-                        // Branch Code field
-                        formField(
-                            label: "branch_code".localized,
-                            icon: "building.2.fill",
-                            content: {
-                                TextField("branch_code_placeholder".localized, text: $branchCode)
-                                    .font(.bodyRegular)
-                                    .autocapitalization(.none)
-                                    .disableAutocorrection(true)
-                                    .accessibilityLabel("branch_code".localized)
-                            }
-                        )
-
-                        // Email field
-                        formField(
-                            label: "email".localized,
-                            icon: "envelope.fill",
-                            content: {
-                                TextField("email_placeholder".localized, text: $email)
-                                    .font(.bodyRegular)
-                                    .keyboardType(.emailAddress)
-                                    .autocapitalization(.none)
-                                    .disableAutocorrection(true)
-                                    .accessibilityLabel("email".localized)
-                            }
-                        )
-
-                        // Password field
-                        formField(
-                            label: "password".localized,
-                            icon: "lock.fill",
-                            content: {
-                                SecureField("password_placeholder".localized, text: $password)
-                                    .font(.bodyRegular)
-                                    .accessibilityLabel("password".localized)
-                            }
-                        )
-
-                        // Sign In button
-                        Button(action: { Task { await signIn() } }) {
-                            HStack(spacing: 8) {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                        .scaleEffect(0.9)
-                                }
-                                Text(isLoading ? "signing_in".localized : "sign_in".localized)
-                                    .font(.buttonLarge)
-                                    .fontWeight(.semibold)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(
-                                Group {
-                                    if isFormValid {
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.appPrimary, Color.appPrimary.opacity(0.85)]),
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    } else {
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.appDisabled, Color.appDisabled]),
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    }
-                                }
-                            )
-                            .foregroundColor(.white)
-                            .cornerRadius(CornerRadius.md)
-                            .shadow(
-                                color: isFormValid ? Color.appPrimary.opacity(0.3) : Color.clear,
-                                radius: 8,
-                                y: 4
-                            )
-                        }
-                        .disabled(!isFormValid || isLoading)
-                        .scaleEffect(isLoading ? 0.98 : 1.0)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isLoading)
-                        .padding(.top, Spacing.sm)
-                        .accessibilityLabel("sign_in".localized)
-                    }
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.vertical, 28)
-                    .background(Color.appSurface)
-                    .cornerRadius(20)
-                    .shadow(color: Elevation.level3.color, radius: Elevation.level3.radius, y: Elevation.level3.y)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.appBorderLight, lineWidth: 1)
-                    )
-                    .padding(.horizontal, Spacing.md)
-
-                    // Legal footer
-                    VStack(spacing: 4) {
-                        Text("login_legal_footer".localized)
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextTertiary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, Spacing.xl)
-                    }
-                    .padding(.bottom, Spacing.md)
+                    formCard
+                    legalFooter
                 }
+                .animation(.spring(response: 0.4, dampingFraction: 0.75), value: showError)
             }
             .scrollDismissesKeyboard(.interactively)
         }
@@ -237,38 +67,297 @@ struct LoginView: View {
         .onAppear { loadSavedCredentials() }
     }
 
+    // MARK: - Language Selector
+
+    private var languageSelectorRow: some View {
+        HStack {
+            Spacer()
+            Button(action: { showLanguageSelector = true }) {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 13, weight: .medium))
+                    Text(localizationManager.supportedLanguageNames[localizationManager.currentLanguage] ?? "English")
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .foregroundColor(.appPrimary)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
+                .background(Color.appPrimary.opacity(0.08))
+                .cornerRadius(CornerRadius.lg)
+            }
+            .accessibilityLabel("language_selector".localized)
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.top, Spacing.sm)
+    }
+
+    // MARK: - Header
+
+    private var headerSection: some View {
+        VStack(spacing: Spacing.sm) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.appPrimary.opacity(0.12), Color.appPrimary.opacity(0.04)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 88, height: 88)
+                Image(systemName: "fork.knife.circle.fill")
+                    .font(.system(size: 44))
+                    .foregroundColor(.appPrimary)
+            }
+            VStack(spacing: 4) {
+                Text("login_title".localized)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundColor(.appTextPrimary)
+                Text("login_subtitle".localized)
+                    .font(.bodyMedium)
+                    .foregroundColor(.appTextSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.lg)
+            }
+        }
+        .padding(.top, Spacing.md)
+    }
+
+    // MARK: - Error Banner
+
+    private var errorBanner: some View {
+        HStack(spacing: Spacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.body)
+                .foregroundColor(.appError)
+            Text(errorMessage)
+                .font(.bodyMedium)
+                .foregroundColor(.appError)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer()
+            Button(action: {
+                withAnimation { showError = false; errorMessage = "" }
+            }) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.body)
+                    .foregroundColor(.appError.opacity(0.6))
+            }
+            .accessibilityLabel("close".localized)
+        }
+        .padding(Spacing.md)
+        .background(Color.appErrorLight)
+        .cornerRadius(CornerRadius.md)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(Color.appError.opacity(0.25), lineWidth: 1)
+        )
+        .padding(.horizontal, Spacing.md)
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: - Form Card
+
+    private var formCard: some View {
+        VStack(spacing: Spacing.md) {
+            // Branch Code / Workspace field
+            formField(
+                label: "branch_code".localized,
+                icon: "building.2.fill",
+                hint: "branch_code_hint".localized,
+                isFocused: focusedField == .branchCode
+            ) {
+                TextField("branch_code_placeholder".localized, text: $branchCode)
+                    .font(.bodyRegular)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .focused($focusedField, equals: .branchCode)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .email }
+                    .accessibilityLabel("branch_code".localized)
+            }
+
+            // Email field
+            formField(
+                label: "email".localized,
+                icon: "envelope.fill",
+                isFocused: focusedField == .email
+            ) {
+                TextField("email_placeholder".localized, text: $email)
+                    .font(.bodyRegular)
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .focused($focusedField, equals: .email)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .password }
+                    .accessibilityLabel("email".localized)
+            }
+
+            // Password field with show/hide toggle
+            formField(
+                label: "password".localized,
+                icon: "lock.fill",
+                isFocused: focusedField == .password,
+                trailingIcon: {
+                    Button(action: { showPassword.toggle() }) {
+                        Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.appTextSecondary)
+                            .frame(width: 28, height: 28)
+                    }
+                    .accessibilityLabel(showPassword ? "login_hide_password".localized : "login_show_password".localized)
+                }
+            ) {
+                Group {
+                    if showPassword {
+                        TextField("password_placeholder".localized, text: $password)
+                            .submitLabel(.go)
+                            .onSubmit { Task { await signIn() } }
+                    } else {
+                        SecureField("password_placeholder".localized, text: $password)
+                            .submitLabel(.go)
+                            .onSubmit { Task { await signIn() } }
+                    }
+                }
+                .font(.bodyRegular)
+                .focused($focusedField, equals: .password)
+                .accessibilityLabel("password".localized)
+            }
+
+            signInButton
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.lg)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.xl)
+        .shadow(color: Elevation.level2.color, radius: Elevation.level2.radius, y: Elevation.level2.y)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.xl)
+                .stroke(Color.appBorderLight, lineWidth: 1)
+        )
+        .padding(.horizontal, Spacing.md)
+    }
+
+    // MARK: - Form Field Builder
+
     @ViewBuilder
     private func formField<Content: View>(
         label: String,
         icon: String,
+        hint: String? = nil,
+        isFocused: Bool,
+        @ViewBuilder trailingIcon: () -> some View = { EmptyView() },
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(.sectionHeader)
                 .foregroundColor(.appTextPrimary)
-            HStack(spacing: 12) {
+
+            HStack(spacing: Spacing.sm) {
                 Image(systemName: icon)
-                    .font(.body)
-                    .foregroundColor(.appTextSecondary)
+                    .font(.system(size: 16))
+                    .foregroundColor(isFocused ? .appPrimary : .appTextSecondary)
                     .frame(width: 20)
+                    .animation(.easeInOut(duration: 0.15), value: isFocused)
+
                 content()
+
+                trailingIcon()
             }
             .padding(Spacing.md)
             .background(Color.appSurface)
             .cornerRadius(CornerRadius.md)
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.md)
-                    .stroke(Color.appBorder, lineWidth: 1)
+                    .stroke(
+                        isFocused ? Color.appPrimary : Color.appBorder,
+                        lineWidth: isFocused ? 2 : 1
+                    )
+                    .animation(.easeInOut(duration: 0.18), value: isFocused)
             )
-            .shadow(color: Elevation.level1.color, radius: 2, y: 1)
+            .shadow(
+                color: isFocused ? Color.appPrimary.opacity(0.1) : Elevation.level1.color,
+                radius: isFocused ? 6 : 2,
+                y: 1
+            )
+            .animation(.easeInOut(duration: 0.18), value: isFocused)
+
+            if let hint = hint {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 10))
+                    Text(hint)
+                        .font(.captionRegular)
+                }
+                .foregroundColor(.appTextTertiary)
+                .padding(.leading, 2)
+            }
         }
     }
 
-    private func loadSavedCredentials() {
-        branchCode = UserDefaults.standard.string(forKey: "lastUsedBranchCode") ?? ""
-        email = UserDefaults.standard.string(forKey: "lastUsedEmail") ?? ""
+    // MARK: - Sign In Button
+
+    private var signInButton: some View {
+        Button(action: { Task { await signIn() } }) {
+            HStack(spacing: Spacing.sm) {
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(0.9)
+                } else {
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 18))
+                }
+                Text(isLoading ? "signing_in".localized : "sign_in".localized)
+                    .font(.system(size: 17, weight: .semibold))
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 54)
+            .background(
+                Group {
+                    if isFormValid && !isLoading {
+                        LinearGradient(
+                            colors: [Color.appPrimary, Color.appPrimary.opacity(0.82)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    } else {
+                        LinearGradient(
+                            colors: [Color.appDisabled, Color.appDisabled],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    }
+                }
+            )
+            .foregroundColor(.white)
+            .cornerRadius(CornerRadius.lg)
+            .shadow(
+                color: isFormValid ? Color.appPrimary.opacity(0.32) : Color.clear,
+                radius: 10,
+                y: 5
+            )
+        }
+        .disabled(!isFormValid || isLoading)
+        .scaleEffect(isLoading ? 0.98 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isLoading)
+        .padding(.top, Spacing.xs)
+        .accessibilityLabel("sign_in".localized)
     }
+
+    // MARK: - Legal Footer
+
+    private var legalFooter: some View {
+        Text("login_legal_footer".localized)
+            .font(.captionRegular)
+            .foregroundColor(.appTextTertiary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, Spacing.xl)
+            .padding(.bottom, Spacing.md)
+    }
+
+    // MARK: - Helpers
 
     private var isFormValid: Bool {
         !branchCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
@@ -276,8 +365,15 @@ struct LoginView: View {
         !password.isEmpty
     }
 
+    private func loadSavedCredentials() {
+        branchCode = UserDefaults.standard.string(forKey: "lastUsedBranchCode") ?? ""
+        email = UserDefaults.standard.string(forKey: "lastUsedEmail") ?? ""
+    }
+
     @MainActor
     private func signIn() async {
+        guard isFormValid else { return }
+        focusedField = nil
         isLoading = true
         withAnimation { showError = false; errorMessage = "" }
 
@@ -296,7 +392,7 @@ struct LoginView: View {
                 UserDefaults.standard.set(trimmedEmail, forKey: "lastUsedEmail")
             }
         } catch {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
                 if let authError = error as? AuthError {
                     errorMessage = authError.errorDescription ?? "Unknown error"
                 } else {

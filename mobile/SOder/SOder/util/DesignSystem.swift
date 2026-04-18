@@ -36,6 +36,13 @@ public extension Color {
     static let appHoverOverlay = Color.black.opacity(0.05)     // For hover effects
     static let appPressedOverlay = Color.black.opacity(0.1)    // For pressed states
     static let appFocusRing = Color.appPrimary.opacity(0.3)    // For focus indicators
+
+    // Welcome Screen - deep dark gradient for branded onboarding
+    static let appWelcomeGradientStart = Color(red: 0.055, green: 0.130, blue: 0.220) // #0E2138 deep navy
+    static let appWelcomeGradientMid   = Color(red: 0.075, green: 0.175, blue: 0.305) // #132C4E navy
+    static let appWelcomeGradientEnd   = Color(red: 0.040, green: 0.240, blue: 0.210) // #0A3D35 deep teal
+    static let appWelcomeAccent        = Color(red: 0.298, green: 0.851, blue: 0.749) // #4CD9BF mint highlight
+    static let appWelcomeOnDark        = Color.white.opacity(0.85)                     // Text on dark bg
 }
 // MARK: - Typography
 public extension Font {
@@ -69,10 +76,11 @@ public struct Spacing {
 
 // MARK: - Corner Radius
 public struct CornerRadius {
-	public static let xs: CGFloat = 4
+    public static let xs: CGFloat = 4
     public static let sm: CGFloat = 8
     public static let md: CGFloat = 12
     public static let lg: CGFloat = 16
+    public static let xl: CGFloat = 24
 }
 
 // MARK: - Motion & Elevation

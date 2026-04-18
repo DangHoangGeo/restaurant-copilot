@@ -1020,3 +1020,15 @@
 "branch_picker_switch_branch" = "Đổi Chi Nhánh";
 "branch_picker_current_branch" = "Chi Nhánh Hiện Tại";
 "branch_picker_sign_out" = "Đăng xuất";
+
+// MARK: - Welcome Screen
+"welcome_tagline" = "Vận hành nhà hàng, đơn giản hóa.";
+"welcome_feature_orders" = "Quản lý đơn hàng theo thời gian thực";
+"welcome_feature_kitchen" = "Giữ bếp đồng bộ";
+"welcome_feature_finance" = "Theo dõi doanh thu";
+"welcome_get_started" = "Bắt đầu";
+
+// MARK: - Login Improvements
+"branch_code_hint" = "Mã định danh không gian làm việc của nhà hàng bạn (subdomain)";
+"login_show_password" = "Hiện mật khẩu";
+"login_hide_password" = "Ẩn mật khẩu";
