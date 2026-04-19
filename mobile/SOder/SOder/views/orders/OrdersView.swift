@@ -50,13 +50,13 @@ struct OrdersView: View {
         
         let byStatus = Dictionary(grouping: baseOrders, by: { $0.status })
 
-        groups[.new] = byStatus[.new] ?? []
-        groups[.serving] = byStatus[.serving] ?? []
-        groups[.completed] = byStatus[.completed] ?? []
-        groups[.canceled] = byStatus[.canceled] ?? []
+        groups[.new] = sortedOrders(byStatus[.new] ?? [])
+        groups[.serving] = sortedOrders(byStatus[.serving] ?? [])
+        groups[.completed] = sortedOrders(byStatus[.completed] ?? [])
+        groups[.canceled] = sortedOrders(byStatus[.canceled] ?? [])
 
         // Active is a combination of new and serving
-        groups[.active] = (groups[.new] ?? []) + (groups[.serving] ?? [])
+        groups[.active] = sortedOrders((groups[.new] ?? []) + (groups[.serving] ?? []))
 
         return groups
     }
@@ -67,6 +67,100 @@ struct OrdersView: View {
 
     private func countForFilter(_ filter: OrderFilter) -> Int {
         filteredOrderGroups[filter]?.count ?? 0
+    }
+
+    private func sortedOrders(_ orders: [Order]) -> [Order] {
+        orders.sorted { lhs, rhs in
+            let lhsRank = orderUrgencyRank(lhs)
+            let rhsRank = orderUrgencyRank(rhs)
+
+            if lhsRank != rhsRank {
+                return lhsRank < rhsRank
+            }
+
+            return sortDate(for: lhs) > sortDate(for: rhs)
+        }
+    }
+
+    private func orderUrgencyRank(_ order: Order) -> Int {
+        let items = sortedOrderItems(for: order)
+
+        if let firstItem = items.first {
+            return statusRank(for: firstItem.status)
+        }
+
+        return statusRank(for: order.status)
+    }
+
+    private func sortedOrderItems(for order: Order) -> [OrderItem] {
+        (order.order_items ?? []).sorted { lhs, rhs in
+            let lhsRank = statusRank(for: lhs.status)
+            let rhsRank = statusRank(for: rhs.status)
+
+            if lhsRank != rhsRank {
+                return lhsRank < rhsRank
+            }
+
+            return parseDate(lhs.created_at) > parseDate(rhs.created_at)
+        }
+    }
+
+    private func sortDate(for order: Order) -> Date {
+        if let prioritizedItem = sortedOrderItems(for: order).first {
+            return parseDate(prioritizedItem.created_at)
+        }
+
+        return parseDate(order.created_at)
+    }
+
+    private func statusRank(for status: OrderItemStatus) -> Int {
+        switch status {
+        case .draft:
+            return 5
+        case .new:
+            return 0
+        case .preparing:
+            return 1
+        case .ready:
+            return 2
+        case .served:
+            return 3
+        case .canceled:
+            return 4
+        }
+    }
+
+    private func statusRank(for status: OrderStatus) -> Int {
+        switch status {
+        case .draft:
+            return 5
+        case .new:
+            return 0
+        case .serving:
+            return 1
+        case .completed:
+            return 3
+        case .canceled:
+            return 4
+        }
+    }
+
+    private func parseDate(_ dateString: String) -> Date {
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            return parsedDate
+        }
+
+        iso8601Formatter.formatOptions = [.withInternetDateTime]
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            return parsedDate
+        }
+
+        let fallbackFormatter = DateFormatter()
+        fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        return fallbackFormatter.date(from: dateString) ?? .distantPast
     }
 
     var body: some View {
@@ -597,6 +691,32 @@ struct SidebarOrderRowView: View {
     let order: Order
     let isNew: Bool
     let isSelected: Bool
+
+    private var sortedItems: [OrderItem] {
+        (order.order_items ?? []).sorted { lhs, rhs in
+            let lhsRank = statusRank(for: lhs.status)
+            let rhsRank = statusRank(for: rhs.status)
+
+            if lhsRank != rhsRank {
+                return lhsRank < rhsRank
+            }
+
+            return parseDate(lhs.created_at) > parseDate(rhs.created_at)
+        }
+    }
+
+    private var hasNewItems: Bool {
+        sortedItems.contains(where: { $0.status == .new }) || isNew
+    }
+
+    private var metadataText: String {
+        let orderId = String(format: "orders_id_format".localized, String(order.id.suffix(6)).uppercased())
+        guard let timeText = formattedTime(order.created_at) else {
+            return orderId
+        }
+
+        return "\(orderId) • \(timeText)"
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
@@ -606,19 +726,9 @@ struct SidebarOrderRowView: View {
                         Text(order.table?.name ?? String(format: "orders_table_format".localized, order.table_id))
                             .font(.cardTitle)
                             .foregroundColor(.appTextPrimary)
-
-                        if isNew {
-                            Text("orders_new_badge".localized)
-                                .font(.captionBold)
-                                .foregroundColor(.appError)
-                                .padding(.horizontal, Spacing.sm)
-                                .padding(.vertical, 4)
-                                .background(Color.appErrorLight)
-                                .cornerRadius(CornerRadius.sm)
-                        }
                     }
 
-                    Text("\(String(format: "orders_id_format".localized, String(order.id.suffix(6)).uppercased())) • \(formatTime(order.created_at))")
+                    Text(metadataText)
                         .font(.monoCaption)
                         .foregroundColor(.appTextSecondary)
                 }
@@ -627,22 +737,18 @@ struct SidebarOrderRowView: View {
 
                 VStack(alignment: .trailing, spacing: Spacing.sm) {
                     EnhancedStatusBadge(status: order.status)
-
-                    if let total = order.total_amount {
-                        Text(AppCurrencyFormatter.format(total))
-                            .font(.bodyMedium.weight(.semibold))
-                            .foregroundColor(.appTextPrimary)
-                    }
                 }
             }
 
-            if let items = order.order_items?.prefix(3) {
+            if !sortedItems.isEmpty {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
-                    ForEach(Array(items), id: \.id) { item in
+                    ForEach(Array(sortedItems.prefix(3)), id: \.id) { item in
                         HStack(spacing: Spacing.sm) {
                             Text("\(item.quantity)x")
                                 .font(.monoLabel)
                                 .foregroundColor(.appTextSecondary)
+
+                            itemStatusIcon(for: item.status)
 
                             Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
                                 .font(.bodyMedium)
@@ -660,14 +766,27 @@ struct SidebarOrderRowView: View {
                         .frame(height: 1)
                 }
             }
+
+            HStack {
+                if let total = order.total_amount {
+                    Text(AppCurrencyFormatter.format(total))
+                        .font(.metricValue)
+                        .foregroundColor(.appTextPrimary)
+                }
+
+                Spacer()
+
+                Text("OPEN")
+                    .font(.monoLabel)
+                    .foregroundColor(.appTextSecondary)
+            }
         }
-        .padding(.vertical, Spacing.sm)
-        .padding(.horizontal, Spacing.md)
+        .padding(Spacing.lg)
         .background(isSelected ? Color.appSurfaceElevated : Color.appSurface)
         .cornerRadius(CornerRadius.lg)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.lg)
-                .stroke(isSelected ? Color.appHighlight.opacity(0.7) : Color.appBorderLight, lineWidth: isSelected ? 2 : 1)
+                .stroke(isSelected ? Color.appHighlight.opacity(0.35) : Color.appBorderLight, lineWidth: 1)
         )
         .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
         .accessibilityElement(children: .combine)
@@ -680,49 +799,99 @@ struct SidebarOrderRowView: View {
         let orderId = String(order.id.suffix(6)).uppercased()
         let status = order.status.displayName
         let guestCount = order.guest_count ?? 1
-        let timeString = formatTime(order.created_at)
+        let timeString = formattedTime(order.created_at)
         let totalString = order.total_amount.map { AppCurrencyFormatter.format($0) } ?? ""
         
-        var label = "\(tableName), \(orderId), \(status), \(guestCount) guests, \(timeString)"
+        var label = "\(tableName), \(orderId), \(status), \(guestCount) guests"
+        if let timeString {
+            label += ", \(timeString)"
+        }
         if !totalString.isEmpty {
             label += ", \(totalString)"
         }
-        if isNew {
-            label += ", \("orders_new_badge".localized)"
+        if hasNewItems {
+            label += ", \("orders_filter_new".localized)"
         }
         return label
     }
     
-    private func formatTime(_ dateString: String) -> String {
-        // Try ISO8601 formatter first (with fractional seconds)
-        let iso8601Formatter = ISO8601DateFormatter()
-        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
-        var date: Date?
-        
-        if let parsedDate = iso8601Formatter.date(from: dateString) {
-            date = parsedDate
-        } else {
-            // Fallback to standard ISO8601 without fractional seconds
-            iso8601Formatter.formatOptions = [.withInternetDateTime]
-            date = iso8601Formatter.date(from: dateString)
-        }
-        
-        // If ISO8601 fails, try standard date formatter as fallback
-        if date == nil {
-            let fallbackFormatter = DateFormatter()
-            fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
-            date = fallbackFormatter.date(from: dateString)
-        }
-        
-        guard let finalDate = date else {
-            print("Failed to parse date string: \(dateString)")
-            return "orders_unknown_time".localized
-        }
-        
+    private func formattedTime(_ dateString: String) -> String? {
         let displayFormatter = DateFormatter()
         displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: finalDate)
+        let parsedDate = parseDate(dateString)
+        guard parsedDate != .distantPast else { return nil }
+        return displayFormatter.string(from: parsedDate)
+    }
+
+    private func parseDate(_ dateString: String) -> Date {
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            return parsedDate
+        }
+
+        iso8601Formatter.formatOptions = [.withInternetDateTime]
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            return parsedDate
+        }
+
+        let fallbackFormatter = DateFormatter()
+        fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        return fallbackFormatter.date(from: dateString) ?? .distantPast
+    }
+
+    private func statusRank(for status: OrderItemStatus) -> Int {
+        switch status {
+        case .draft:
+            return 5
+        case .new:
+            return 0
+        case .preparing:
+            return 1
+        case .ready:
+            return 2
+        case .served:
+            return 3
+        case .canceled:
+            return 4
+        }
+    }
+
+    @ViewBuilder
+    private func itemStatusIcon(for status: OrderItemStatus) -> some View {
+        Image(systemName: itemStatusSymbol(for: status))
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundColor(itemStatusTint(for: status))
+            .frame(width: 12, height: 12)
+    }
+
+    private func itemStatusSymbol(for status: OrderItemStatus) -> String {
+        switch status {
+        case .draft:
+            return "circle.dotted"
+        case .new, .preparing:
+            return "circle.fill"
+        case .ready, .served:
+            return "checkmark.circle.fill"
+        case .canceled:
+            return "xmark.circle.fill"
+        }
+    }
+
+    private func itemStatusTint(for status: OrderItemStatus) -> Color {
+        switch status {
+        case .draft:
+            return .appTextTertiary
+        case .new:
+            return .appAccent
+        case .preparing:
+            return .appWarning
+        case .ready, .served:
+            return .appSuccess
+        case .canceled:
+            return .appError
+        }
     }
 }
 

@@ -4,6 +4,7 @@ struct TablesListView: View {
     @StateObject private var viewModel = TablesViewModel()
     @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject var printerManager: PrinterManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedTable: Table?
     @State private var searchText = ""
 
@@ -34,6 +35,8 @@ struct TablesListView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     headerSection
+                        .padding(.horizontal, -Spacing.md)
+                        .padding(.top, -Spacing.md)
                     SearchBar(text: $searchText, placeholder: "tables_search_placeholder".localized)
                     printerHintSection
                     bodySection
@@ -43,19 +46,7 @@ struct TablesListView: View {
                 .padding(.bottom, 120)
             }
         }
-        .navigationTitle("tables_title".localized)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    Task {
-                        await viewModel.fetchTables()
-                    }
-                }) {
-                    Image(systemName: "arrow.clockwise")
-                }
-            }
-        }
+        .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $selectedTable) { table in
             TableQRPrintView(table: table)
                 .environmentObject(printerManager)
@@ -66,25 +57,34 @@ struct TablesListView: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.lg) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: Spacing.sm) {
-                    AppSectionEyebrow("floor control")
+        AppOperationsHeader(
+            eyebrow: "Floor control",
+            title: "tables_title".localized,
+            compactTitle: "Floor control",
+            subtitle: "tables_floor_control_subtitle".localized,
+            isCompact: isCompactLayout
+        ) {
+            HStack(spacing: Spacing.xs) {
+                Text("\(filteredTables.count)")
+                    .font(.bodyMedium.weight(.semibold))
+                    .foregroundColor(.appTextSecondary)
 
-                    Text("tables_title".localized)
-                        .font(.heroTitle)
+                Button {
+                    Task {
+                        await viewModel.fetchTables()
+                    }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.title3)
                         .foregroundColor(.appTextPrimary)
-
-                    Text("tables_floor_control_subtitle".localized)
-                        .font(.bodyMedium)
-                        .foregroundColor(.appTextSecondary)
+                        .frame(width: 36, height: 36)
                 }
-
-                Spacer()
-
-                AppHeaderPill("\(filteredTables.count)")
             }
         }
+    }
+
+    private var isCompactLayout: Bool {
+        UIDevice.current.userInterfaceIdiom == .phone || horizontalSizeClass == .compact
     }
 
     @ViewBuilder

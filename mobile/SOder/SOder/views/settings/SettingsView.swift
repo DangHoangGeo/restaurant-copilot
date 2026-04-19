@@ -4,6 +4,7 @@ struct SettingsView: View {
     @EnvironmentObject private var printerManager: PrinterManager
     @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject private var supabaseManager: SupabaseManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
 
     @State private var autoPrintEnabled = false
@@ -24,24 +25,28 @@ struct SettingsView: View {
     }
 
     private var mainContent: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.lg) {
-                autoPrintSection
-                printingSection
+        ZStack {
+            AppScreenBackground()
 
-                if let errorMessage = printerManager.errorMessage, !errorMessage.isEmpty {
-                    errorCard(errorMessage)
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    headerSection
+                        .padding(.horizontal, -Spacing.md)
+                    autoPrintSection
+                    printingSection
+
+                    if let errorMessage = printerManager.errorMessage, !errorMessage.isEmpty {
+                        errorCard(errorMessage)
+                    }
+
+                    accountSection
+                    versionFooter
                 }
-
-                accountSection
-                versionFooter
+                .padding(.horizontal, Spacing.md)
+                .padding(.bottom, Spacing.xl)
             }
-            .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.lg)
         }
-        .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle("tab_settings".localized)
-        .navigationBarTitleDisplayMode(.large)
+        .toolbar(.hidden, for: .navigationBar)
         .alert("settings_sign_out_confirm_title".localized, isPresented: $showingSignOutConfirm) {
             Button("cancel".localized, role: .cancel) { }
             Button("settings_sign_out_button".localized, role: .destructive) {
@@ -50,6 +55,37 @@ struct SettingsView: View {
         } message: {
             Text("settings_sign_out_confirm_message".localized)
         }
+    }
+
+    private var headerSection: some View {
+        AppOperationsHeader(
+            eyebrow: "system setup",
+            title: "tab_settings".localized,
+            compactTitle: "tab_settings".localized,
+            subtitle: nil,
+            isCompact: isCompactLayout
+        ) {
+            HStack(spacing: Spacing.xs) {
+                if autoPrintEnabled {
+                    if isCompactLayout {
+                        Text("AUTO")
+                            .font(.monoCaption)
+                            .foregroundColor(.appTextSecondary)
+                    } else {
+                        AppHeaderPill("AUTO")
+                    }
+                }
+
+                Image(systemName: printerManager.isConnected ? "checkmark.circle.fill" : "printer")
+                    .font(.title3)
+                    .foregroundColor(printerManager.isConnected ? .appSuccess : .appWarning)
+                    .frame(width: 36, height: 36)
+            }
+        }
+    }
+
+    private var isCompactLayout: Bool {
+        UIDevice.current.userInterfaceIdiom == .phone || horizontalSizeClass == .compact
     }
 
     // MARK: - Auto-Print (Prominent)

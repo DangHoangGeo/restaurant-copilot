@@ -7,6 +7,7 @@ struct OrderDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.floatingDockClearance) private var floatingDockClearance
     @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject private var printerManager: PrinterManager
     @EnvironmentObject private var supabaseManager: SupabaseManager
@@ -214,8 +215,20 @@ private extension OrderDetailView {
                     total: totalAmount(for: order)
                 )
 
+                if horizontalSizeClass == .regular {
+                    OrderBottomBar(
+                        style: bottomBarStyle(for: order),
+                        amountText: currencyText(totalAmount(for: order)),
+                        isRegularLayout: true,
+                        onTap: {
+                            handleBottomBarTap(for: order)
+                        }
+                    )
+                }
+
                 if order.status != .completed && order.status != .canceled {
                     OrderManagementRow(
+                        isRegularLayout: horizontalSizeClass == .regular,
                         onUpdateStatus: {
                             showingStatusUpdateSheet = true
                         },
@@ -229,25 +242,30 @@ private extension OrderDetailView {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, Spacing.md)
             .padding(.top, Spacing.lg)
-            .padding(.bottom, 120)
+            .padding(.bottom, bottomContentPadding)
         }
         .safeAreaInset(edge: .bottom) {
-            OrderBottomBar(
-                style: bottomBarStyle(for: order),
-                amountText: currencyText(totalAmount(for: order)),
-                onTap: {
-                    handleBottomBarTap(for: order)
-                }
-            )
-            .padding(.horizontal, Spacing.md)
-            .padding(.top, Spacing.sm)
-            .background(
-                LinearGradient(
-                    colors: [Color.appBackground.opacity(0), Color.appBackground.opacity(0.92), Color.appBackground],
-                    startPoint: .top,
-                    endPoint: .bottom
+            if horizontalSizeClass != .regular {
+                OrderBottomBar(
+                    style: bottomBarStyle(for: order),
+                    amountText: currencyText(totalAmount(for: order)),
+                    isRegularLayout: false,
+                    onTap: {
+                        handleBottomBarTap(for: order)
+                    }
                 )
-            )
+                .frame(maxWidth: contentWidth)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.sm)
+                .background(
+                    LinearGradient(
+                        colors: [Color.appBackground.opacity(0), Color.appBackground.opacity(0.92), Color.appBackground],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+            }
         }
     }
 
@@ -266,6 +284,14 @@ private extension OrderDetailView {
             .tint(.appPrimary)
         }
         .padding(Spacing.xl)
+    }
+
+    var bottomContentPadding: CGFloat {
+        if horizontalSizeClass == .regular {
+            return max(Spacing.xl, floatingDockClearance + Spacing.lg)
+        }
+
+        return 120
     }
 
     @ToolbarContentBuilder
@@ -712,7 +738,8 @@ private struct OrderItemsCard: View {
                 if let onAddItem {
                     OrderPillButton(
                         label: addItemLabel,
-                        tint: .appSurfaceElevated,
+                        systemImage: "plus",
+                        tint: .appHighlight,
                         foreground: .appTextPrimary,
                         action: onAddItem
                     )
@@ -764,17 +791,15 @@ private struct OrderItemRow: View {
                     .frame(minWidth: 28, alignment: .leading)
 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
+                    HStack(alignment: .top, spacing: Spacing.sm) {
                         Text(item.menu_item?.displayName ?? item.menu_item_id)
                             .font(.bodyLarge.weight(.medium))
                             .foregroundColor(.appTextPrimary)
                             .multilineTextAlignment(.leading)
+                        
+                        Spacer(minLength: Spacing.sm)
 
-                        if item.status != .new {
-                            Text(item.status.displayName.uppercased())
-                                .font(.buttonSmall)
-                                .foregroundColor(item.status.statusColor)
-                        }
+                        OrderItemStatusPill(status: item.status)
                     }
 
                     if let notes = item.notes, !notes.isEmpty {
@@ -901,6 +926,7 @@ private struct TotalsRow: View {
 }
 
 private struct OrderManagementRow: View {
+    let isRegularLayout: Bool
     let onUpdateStatus: () -> Void
     let onCancelOrder: (() -> Void)?
 
@@ -925,6 +951,7 @@ private struct OrderManagementRow: View {
                     Text("order_detail_cancel_order_button".localized)
                         .font(.buttonMedium)
                         .foregroundColor(.appError)
+                        .frame(maxWidth: isRegularLayout ? .infinity : nil, alignment: .leading)
                 }
                 .buttonStyle(.plain)
             }
@@ -934,32 +961,84 @@ private struct OrderManagementRow: View {
 
 private struct OrderPillButton: View {
     let label: String
+    let systemImage: String?
     let tint: Color
     let foreground: Color
     let action: () -> Void
     var isFilled = false
     var isDisabled = false
 
+    init(
+        label: String,
+        systemImage: String? = nil,
+        tint: Color,
+        foreground: Color,
+        action: @escaping () -> Void,
+        isFilled: Bool = false,
+        isDisabled: Bool = false
+    ) {
+        self.label = label
+        self.systemImage = systemImage
+        self.tint = tint
+        self.foreground = foreground
+        self.action = action
+        self.isFilled = isFilled
+        self.isDisabled = isDisabled
+    }
+
     var body: some View {
         Button(action: action) {
-            Text(label)
-                .font(.buttonMedium)
-                .foregroundColor(foreground)
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity)
-                .background(
-                    Capsule()
-                        .fill(tint.opacity(isFilled ? 1 : 0.18))
-                        .overlay(
-                            Capsule()
-                                .stroke(tint.opacity(0.28), lineWidth: 1)
-                        )
-                )
+            HStack(spacing: Spacing.xs) {
+                if let systemImage, !systemImage.isEmpty {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 13, weight: .semibold))
+                }
+
+                Text(label)
+                    .font(.buttonMedium)
+            }
+            .foregroundColor(foreground)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .background(
+                Capsule()
+                    .fill(tint.opacity(isFilled ? 1 : 0.14))
+                    .overlay(
+                        Capsule()
+                            .stroke(tint.opacity(isFilled ? 0.18 : 0.42), lineWidth: 1)
+                    )
+            )
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.5 : 1)
+    }
+}
+
+private struct OrderItemStatusPill: View {
+    let status: OrderItemStatus
+
+    var body: some View {
+        HStack(spacing: Spacing.xs) {
+            Circle()
+                .fill(status.statusColor)
+                .frame(width: 7, height: 7)
+
+            Text(status.displayName.uppercased())
+                .font(.buttonSmall)
+                .foregroundColor(status.statusColor)
+        }
+        .padding(.horizontal, Spacing.sm)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(status.statusColor.opacity(0.12))
+                .overlay(
+                    Capsule()
+                        .stroke(status.statusColor.opacity(0.24), lineWidth: 1)
+                )
+        )
     }
 }
 
@@ -973,6 +1052,7 @@ private struct OrderBottomBar: View {
 
     let style: Style
     let amountText: String
+    let isRegularLayout: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -981,32 +1061,18 @@ private struct OrderBottomBar: View {
             EmptyView()
 
         case .checkoutReady:
-            Button(action: onTap) {
-                HStack(spacing: Spacing.sm) {
-                    Image(systemName: "creditcard")
-                        .font(.system(size: 15, weight: .semibold))
-
-                    Text("checkout".localized)
-                        .font(.bodyLarge.weight(.semibold))
-
-                    Text("· \(amountText)")
-                        .font(.bodyLarge.weight(.semibold))
-                }
-                .foregroundColor(.appOnHighlight)
-                .frame(maxWidth: .infinity)
-                .frame(height: 62)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.lg)
-                        .fill(Color.appHighlight)
+            if isRegularLayout {
+                regularActionPanel(
+                    title: "checkout".localized,
+                    detail: amountText,
+                    systemImage: "creditcard",
+                    tint: .appHighlight,
+                    foreground: .appOnHighlight
                 )
-            }
-            .buttonStyle(.plain)
-
-        case .checkoutBlocked:
-            Button(action: onTap) {
-                VStack(spacing: 4) {
+            } else {
+                Button(action: onTap) {
                     HStack(spacing: Spacing.sm) {
-                        Image(systemName: "clock.badge.exclamationmark")
+                        Image(systemName: "creditcard")
                             .font(.system(size: 15, weight: .semibold))
 
                         Text("checkout".localized)
@@ -1015,46 +1081,154 @@ private struct OrderBottomBar: View {
                         Text("· \(amountText)")
                             .font(.bodyLarge.weight(.semibold))
                     }
-
-                    Text("order_detail_checkout_blocked_hint".localized)
-                        .font(.buttonSmall)
+                    .foregroundColor(.appOnHighlight)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 62)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.lg)
+                            .fill(Color.appHighlight)
+                    )
                 }
-                .foregroundColor(.appTextSecondary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 62)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.lg)
-                        .fill(Color.appSurface.opacity(0.94))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.lg)
-                                .stroke(Color.appBorderLight, lineWidth: 1)
-                        )
-                )
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+
+        case .checkoutBlocked:
+            if isRegularLayout {
+                regularActionPanel(
+                    title: "checkout".localized,
+                    detail: amountText,
+                    systemImage: "clock.badge.exclamationmark",
+                    tint: .appSurfaceSecondary,
+                    foreground: .appTextPrimary,
+                    hint: "order_detail_checkout_blocked_hint".localized,
+                    borderColor: .appBorderLight
+                )
+            } else {
+                Button(action: onTap) {
+                    VStack(spacing: 4) {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "clock.badge.exclamationmark")
+                                .font(.system(size: 15, weight: .semibold))
+
+                            Text("checkout".localized)
+                                .font(.bodyLarge.weight(.semibold))
+
+                            Text("· \(amountText)")
+                                .font(.bodyLarge.weight(.semibold))
+                        }
+
+                        Text("order_detail_checkout_blocked_hint".localized)
+                            .font(.buttonSmall)
+                    }
+                    .foregroundColor(.appTextSecondary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 62)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.lg)
+                            .fill(Color.appSurface.opacity(0.94))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.lg)
+                                    .stroke(Color.appBorderLight, lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+            }
 
         case .receipt:
-            Button(action: onTap) {
+            if isRegularLayout {
+                regularActionPanel(
+                    title: "orders_print_receipt".localized,
+                    detail: amountText,
+                    systemImage: "printer.fill",
+                    tint: .appHighlight,
+                    foreground: .appOnHighlight
+                )
+            } else {
+                Button(action: onTap) {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "printer.fill")
+                            .font(.system(size: 15, weight: .semibold))
+
+                        Text("orders_print_receipt".localized)
+                            .font(.bodyLarge.weight(.semibold))
+
+                        Text("· \(amountText)")
+                            .font(.bodyLarge.weight(.semibold))
+                    }
+                    .foregroundColor(.appBackground)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 62)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.lg)
+                            .fill(Color.appHighlight)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func regularActionPanel(
+        title: String,
+        detail: String,
+        systemImage: String,
+        tint: Color,
+        foreground: Color,
+        hint: String? = nil,
+        borderColor: Color? = nil
+    ) -> some View {
+        Button(action: onTap) {
+            HStack(spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text("total".localized.uppercased())
+                        .font(.monoCaption)
+                        .kerning(1.2)
+                        .foregroundColor(.appTextSecondary)
+
+                    Text(detail)
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
+
+                    if let hint {
+                        Text(hint)
+                            .font(.buttonSmall)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                }
+
+                Spacer(minLength: Spacing.md)
+
                 HStack(spacing: Spacing.sm) {
-                    Image(systemName: "printer.fill")
+                    Image(systemName: systemImage)
                         .font(.system(size: 15, weight: .semibold))
 
-                    Text("orders_print_receipt".localized)
-                        .font(.bodyLarge.weight(.semibold))
-
-                    Text("· \(amountText)")
-                        .font(.bodyLarge.weight(.semibold))
+                    Text(title)
+                        .font(.bodyMedium.weight(.semibold))
+                        .lineLimit(1)
                 }
-                .foregroundColor(.appBackground)
-                .frame(maxWidth: .infinity)
-                .frame(height: 62)
+                .foregroundColor(foreground)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, 12)
                 .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.lg)
-                        .fill(Color.appHighlight)
+                    Capsule()
+                        .fill(tint)
                 )
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.lg)
+                    .fill(Color.appSurface.opacity(0.98))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.lg)
+                            .stroke(borderColor ?? tint.opacity(0.16), lineWidth: 1)
+                    )
+            )
         }
+        .buttonStyle(.plain)
+        .shadow(color: Color.black.opacity(0.08), radius: 16, y: 6)
     }
 }
 

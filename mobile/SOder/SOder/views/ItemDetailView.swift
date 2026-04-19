@@ -66,7 +66,7 @@ struct ItemDetailView: View {
                     .foregroundColor(.appTextPrimary)
                 
                 HStack(spacing: 16) {
-                    Label("×\(item.quantity)", systemImage: "number.circle")
+                    Label("\(item.quantity)", systemImage: "number.circle")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     
@@ -142,23 +142,34 @@ struct ItemDetailView: View {
                     }
                 }
                 
-                // Quantity and tables
+                // Quantity and merged tables
                 HStack {
                     Text("Quantity:")
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
-                    Text("×\(item.quantity)")
+                    Text("\(item.quantity)")
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(.orange)
-                    
-                    Spacer()
-                    
-                    Text("Tables: \(item.tables.sorted().joined(separator: ", "))")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                }
+
+                if !item.tableNames.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(item.tableNames, id: \.self) { table in
+                                Text(table)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Color.appPrimary.opacity(0.1))
+                                    .foregroundColor(.appPrimary)
+                                    .cornerRadius(8)
+                            }
+                        }
+                    }
                 }
                 
                 // Toppings/modifications

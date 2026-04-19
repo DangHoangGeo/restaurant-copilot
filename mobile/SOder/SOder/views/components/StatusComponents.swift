@@ -246,6 +246,32 @@ struct OrderRowView: View {
     let orderManager: OrderManager
     let printerManager: PrinterManager
     let onPrintResult: (String) -> Void
+
+    private var sortedItems: [OrderItem] {
+        (order.order_items ?? []).sorted { lhs, rhs in
+            let lhsRank = statusRank(for: lhs.status)
+            let rhsRank = statusRank(for: rhs.status)
+
+            if lhsRank != rhsRank {
+                return lhsRank < rhsRank
+            }
+
+            return parseDate(lhs.created_at) > parseDate(rhs.created_at)
+        }
+    }
+
+    private var hasNewItems: Bool {
+        sortedItems.contains(where: { $0.status == .new }) || isNew
+    }
+
+    private var metadataText: String {
+        let orderId = String(format: "orders_id_format".localized, String(order.id.suffix(6)).uppercased())
+        guard let timeText = formattedTime(order.created_at) else {
+            return orderId
+        }
+
+        return "\(orderId) • \(timeText)"
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
@@ -255,23 +281,11 @@ struct OrderRowView: View {
                         Text(order.table?.name ?? String(format: "orders_table_format".localized, order.table_id))
                             .font(.cardTitle)
                             .foregroundColor(.appTextPrimary)
-                        
-                        if isNew {
-                            Text("orders_new_badge".localized)
-                                .font(.captionBold)
-                                .foregroundColor(.appError)
-                                .padding(.horizontal, Spacing.sm)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.appErrorLight)
-                                )
-                        }
-                        
+
                         Spacer()
                     }
                     
-                    Text("\(String(format: "orders_id_format".localized, String(order.id.suffix(6)).uppercased())) • \(formatTime(order.created_at))")
+                    Text(metadataText)
                         .font(.monoCaption)
                         .foregroundColor(.appTextSecondary)
                 }
@@ -281,13 +295,15 @@ struct OrderRowView: View {
                 }
             }
             
-            if let items = order.order_items?.prefix(2) {
+            if !sortedItems.isEmpty {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
-                    ForEach(Array(items), id: \.id) { item in
+                    ForEach(Array(sortedItems.prefix(2)), id: \.id) { item in
                         HStack(spacing: Spacing.sm) {
                             Text("\(item.quantity)x")
                                 .font(.monoLabel)
                                 .foregroundColor(.appTextSecondary)
+
+                            itemStatusIcon(for: item.status)
 
                             Text(item.menu_item?.displayName ?? "orders_unknown_item".localized)
                                 .font(.bodyMedium)
@@ -299,12 +315,12 @@ struct OrderRowView: View {
                         .padding(.vertical, 2)
                     }
                     
-                    if let totalItems = order.order_items?.count, totalItems > 2 {
+                    if sortedItems.count > 2 {
                         HStack {
                             Image(systemName: "ellipsis")
                                 .font(.captionRegular)
                                 .foregroundColor(.appTextTertiary)
-                            Text(String(format: "orders_more_items".localized, totalItems - 2))
+                            Text(String(format: "orders_more_items".localized, sortedItems.count - 2))
                                 .font(.captionRegular)
                                 .foregroundColor(.appTextTertiary)
                                 .italic()
@@ -344,26 +360,99 @@ struct OrderRowView: View {
         let tableName = order.table?.name ?? String(format: "orders_table_format".localized, order.table_id)
         let status = order.status.displayName
         let guestCount = order.guest_count ?? 1
-        let timeString = formatTime(order.created_at)
+        let timeString = formattedTime(order.created_at)
         let totalString = order.total_amount.map { AppCurrencyFormatter.format($0) } ?? ""
         
-        var label = "\(tableName), \(status), \(guestCount) guests, \(timeString)"
+        var label = "\(tableName), \(status), \(guestCount) guests"
+        if let timeString {
+            label += ", \(timeString)"
+        }
         if !totalString.isEmpty {
             label += ", \(totalString)"
         }
-        if isNew {
-            label += ", \("orders_new_badge".localized)"
+        if hasNewItems {
+            label += ", \("orders_filter_new".localized)"
         }
         return label
     }
     
-    private func formatTime(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else { return "orders_unknown_time".localized }
-        
+    private func formattedTime(_ dateString: String) -> String? {
         let displayFormatter = DateFormatter()
         displayFormatter.timeStyle = .short
+        let date = parseDate(dateString)
+        guard date != .distantPast else { return nil }
         return displayFormatter.string(from: date)
+    }
+
+    private func parseDate(_ dateString: String) -> Date {
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            return parsedDate
+        }
+
+        iso8601Formatter.formatOptions = [.withInternetDateTime]
+        if let parsedDate = iso8601Formatter.date(from: dateString) {
+            return parsedDate
+        }
+
+        let fallbackFormatter = DateFormatter()
+        fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        return fallbackFormatter.date(from: dateString) ?? .distantPast
+    }
+
+    private func statusRank(for status: OrderItemStatus) -> Int {
+        switch status {
+        case .draft:
+            return 5
+        case .new:
+            return 0
+        case .preparing:
+            return 1
+        case .ready:
+            return 2
+        case .served:
+            return 3
+        case .canceled:
+            return 4
+        }
+    }
+
+    @ViewBuilder
+    private func itemStatusIcon(for status: OrderItemStatus) -> some View {
+        Image(systemName: itemStatusSymbol(for: status))
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundColor(itemStatusTint(for: status))
+            .frame(width: 12, height: 12)
+    }
+
+    private func itemStatusSymbol(for status: OrderItemStatus) -> String {
+        switch status {
+        case .draft:
+            return "circle.dotted"
+        case .new, .preparing:
+            return "circle.fill"
+        case .ready, .served:
+            return "checkmark.circle.fill"
+        case .canceled:
+            return "xmark.circle.fill"
+        }
+    }
+
+    private func itemStatusTint(for status: OrderItemStatus) -> Color {
+        switch status {
+        case .draft:
+            return .appTextTertiary
+        case .new:
+            return .appAccent
+        case .preparing:
+            return .appWarning
+        case .ready, .served:
+            return .appSuccess
+        case .canceled:
+            return .appError
+        }
     }
 }
 

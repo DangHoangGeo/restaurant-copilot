@@ -1,6 +1,20 @@
 import SwiftUI
 import UIKit
 
+private extension UIColor {
+    static func appDynamic(light: UIColor, dark: UIColor) -> UIColor {
+        UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? dark : light
+        }
+    }
+}
+
+private extension Color {
+    static func appDynamic(light: UIColor, dark: UIColor) -> Color {
+        Color(UIColor.appDynamic(light: light, dark: dark))
+    }
+}
+
 public extension Color {
     static let appPrimary = Color("iappPrimary")
     static let appSecondaryText = Color("iappSecondaryText")
@@ -8,8 +22,14 @@ public extension Color {
 
     static let appBackground = Color("iappBackground")
     static let appSurface = Color("iappSurface")
-    static let appSurfaceSecondary = Color(red: 0.135, green: 0.103, blue: 0.075)
-    static let appSurfaceElevated = Color(red: 0.170, green: 0.132, blue: 0.095)
+    static let appSurfaceSecondary = Color.appDynamic(
+        light: UIColor(red: 0.941, green: 0.922, blue: 0.892, alpha: 1.0),
+        dark: UIColor(red: 0.157, green: 0.118, blue: 0.091, alpha: 1.0)
+    )
+    static let appSurfaceElevated = Color.appDynamic(
+        light: UIColor(red: 1.000, green: 0.985, blue: 0.963, alpha: 1.0),
+        dark: UIColor(red: 0.200, green: 0.150, blue: 0.116, alpha: 1.0)
+    )
 
     static let appError = Color("iappError")
     static let appSuccess = Color("iappSuccess")
@@ -26,28 +46,59 @@ public extension Color {
     static let appBorderLight = Color.appBorder.opacity(0.7)
     static let appTextPrimary = Color("iappTextPrimary")
     static let appTextSecondary = Color("iappTextSecondary")
-    static let appTextTertiary = Color(red: 0.55, green: 0.49, blue: 0.43)
+    static let appTextTertiary = Color.appDynamic(
+        light: UIColor(red: 0.520, green: 0.452, blue: 0.390, alpha: 1.0),
+        dark: UIColor(red: 0.655, green: 0.592, blue: 0.534, alpha: 1.0)
+    )
 
     static let appHoverOverlay = Color.white.opacity(0.05)
     static let appPressedOverlay = Color.black.opacity(0.2)
     static let appFocusRing = Color.appHighlight.opacity(0.3)
 
-    static let appWelcomeGradientStart = Color(red: 0.056, green: 0.040, blue: 0.030)
-    static let appWelcomeGradientMid = Color(red: 0.095, green: 0.068, blue: 0.047)
-    static let appWelcomeGradientEnd = Color(red: 0.115, green: 0.082, blue: 0.056)
-    static let appWelcomeAccent = Color(red: 0.306, green: 0.850, blue: 0.620)
-    static let appWelcomeOnDark = Color(red: 0.945, green: 0.906, blue: 0.855)
+    static let appWelcomeGradientStart = Color.appDynamic(
+        light: UIColor(red: 0.980, green: 0.955, blue: 0.918, alpha: 1.0),
+        dark: UIColor(red: 0.090, green: 0.064, blue: 0.048, alpha: 1.0)
+    )
+    static let appWelcomeGradientMid = Color.appDynamic(
+        light: UIColor(red: 0.961, green: 0.924, blue: 0.869, alpha: 1.0),
+        dark: UIColor(red: 0.133, green: 0.097, blue: 0.069, alpha: 1.0)
+    )
+    static let appWelcomeGradientEnd = Color.appDynamic(
+        light: UIColor(red: 0.949, green: 0.900, blue: 0.839, alpha: 1.0),
+        dark: UIColor(red: 0.165, green: 0.117, blue: 0.081, alpha: 1.0)
+    )
+    static let appWelcomeAccent = Color.appDynamic(
+        light: UIColor(red: 0.212, green: 0.690, blue: 0.502, alpha: 1.0),
+        dark: UIColor(red: 0.306, green: 0.850, blue: 0.620, alpha: 1.0)
+    )
+    static let appWelcomeOnDark = Color.appDynamic(
+        light: UIColor(red: 0.180, green: 0.129, blue: 0.090, alpha: 1.0),
+        dark: UIColor(red: 0.968, green: 0.944, blue: 0.913, alpha: 1.0)
+    )
 
-    static let appHighlight = Color(red: 0.935, green: 0.886, blue: 0.795)
-    static let appHighlightSoft = Color(red: 0.780, green: 0.692, blue: 0.563)
-    static let appOnHighlight = Color(red: 0.145, green: 0.102, blue: 0.072)
-    static let appHeroGlow = Color(red: 0.294, green: 0.784, blue: 0.580).opacity(0.15)
+    static let appHighlight = Color.appDynamic(
+        light: UIColor(red: 0.671, green: 0.431, blue: 0.235, alpha: 1.0),
+        dark: UIColor(red: 0.952, green: 0.900, blue: 0.812, alpha: 1.0)
+    )
+    static let appHighlightSoft = Color.appDynamic(
+        light: UIColor(red: 0.784, green: 0.624, blue: 0.435, alpha: 1.0),
+        dark: UIColor(red: 0.824, green: 0.734, blue: 0.611, alpha: 1.0)
+    )
+    static let appOnHighlight = Color.appDynamic(
+        light: UIColor.white,
+        dark: UIColor(red: 0.145, green: 0.102, blue: 0.072, alpha: 1.0)
+    )
+    static let appHeroGlow = Color.appDynamic(
+        light: UIColor(red: 0.322, green: 0.678, blue: 0.518, alpha: 0.12),
+        dark: UIColor(red: 0.294, green: 0.784, blue: 0.580, alpha: 0.16)
+    )
 }
 
 public extension Font {
     static let displayTitle = Font.system(size: 40, weight: .medium, design: .serif)
     static let heroTitle = Font.system(size: 52, weight: .medium, design: .serif)
     static let cardTitle = Font.system(size: 30, weight: .medium, design: .serif)
+    static let compactPageTitle = Font.system(size: 26, weight: .medium, design: .serif)
     static let sectionHeader = Font.system(size: 16, weight: .semibold, design: .default)
     static let monoLabel = Font.system(size: 13, weight: .medium, design: .monospaced)
     static let monoCaption = Font.system(size: 12, weight: .regular, design: .monospaced)
@@ -89,6 +140,21 @@ public struct Motion {
     public static let medium: Double = 0.28
 }
 
+public enum AppShellMetrics {
+    public static let ipadFloatingDockClearance: CGFloat = 92
+}
+
+private struct FloatingDockClearanceKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+public extension EnvironmentValues {
+    var floatingDockClearance: CGFloat {
+        get { self[FloatingDockClearanceKey.self] }
+        set { self[FloatingDockClearanceKey.self] = newValue }
+    }
+}
+
 public struct Elevation {
     public static let none = (color: Color.clear, radius: CGFloat(0), y: CGFloat(0))
     public static let level1 = (color: Color.black.opacity(0.16), radius: CGFloat(10), y: CGFloat(4))
@@ -104,11 +170,23 @@ enum AppAppearance {
     static func configure() {
         let tabAppearance = UITabBarAppearance()
         tabAppearance.configureWithOpaqueBackground()
-        tabAppearance.backgroundColor = UIColor(red: 0.075, green: 0.056, blue: 0.039, alpha: 1.0)
-        tabAppearance.shadowColor = UIColor(red: 0.235, green: 0.180, blue: 0.140, alpha: 1.0)
+        tabAppearance.backgroundColor = UIColor.appDynamic(
+            light: UIColor(red: 0.985, green: 0.968, blue: 0.941, alpha: 1.0),
+            dark: UIColor(red: 0.096, green: 0.071, blue: 0.054, alpha: 1.0)
+        )
+        tabAppearance.shadowColor = UIColor.appDynamic(
+            light: UIColor(red: 0.812, green: 0.757, blue: 0.698, alpha: 1.0),
+            dark: UIColor(red: 0.310, green: 0.243, blue: 0.196, alpha: 1.0)
+        )
 
-        let selected = UIColor(red: 0.933, green: 0.886, blue: 0.796, alpha: 1.0)
-        let normal = UIColor(red: 0.700, green: 0.646, blue: 0.582, alpha: 1.0)
+        let selected = UIColor.appDynamic(
+            light: UIColor(red: 0.631, green: 0.396, blue: 0.212, alpha: 1.0),
+            dark: UIColor(red: 0.952, green: 0.900, blue: 0.812, alpha: 1.0)
+        )
+        let normal = UIColor.appDynamic(
+            light: UIColor(red: 0.451, green: 0.376, blue: 0.314, alpha: 1.0),
+            dark: UIColor(red: 0.800, green: 0.741, blue: 0.675, alpha: 1.0)
+        )
         let stacked = tabAppearance.stackedLayoutAppearance
         let inline = tabAppearance.inlineLayoutAppearance
         let compact = tabAppearance.compactInlineLayoutAppearance
@@ -152,14 +230,26 @@ enum AppAppearance {
 
         let navAppearance = UINavigationBarAppearance()
         navAppearance.configureWithOpaqueBackground()
-        navAppearance.backgroundColor = UIColor(red: 0.075, green: 0.056, blue: 0.039, alpha: 1.0)
-        navAppearance.shadowColor = UIColor(red: 0.235, green: 0.180, blue: 0.140, alpha: 1.0)
+        navAppearance.backgroundColor = UIColor.appDynamic(
+            light: UIColor(red: 0.985, green: 0.968, blue: 0.941, alpha: 1.0),
+            dark: UIColor(red: 0.096, green: 0.071, blue: 0.054, alpha: 1.0)
+        )
+        navAppearance.shadowColor = UIColor.appDynamic(
+            light: UIColor(red: 0.812, green: 0.757, blue: 0.698, alpha: 1.0),
+            dark: UIColor(red: 0.310, green: 0.243, blue: 0.196, alpha: 1.0)
+        )
         navAppearance.titleTextAttributes = [
-            .foregroundColor: UIColor(red: 0.945, green: 0.906, blue: 0.855, alpha: 1.0),
+            .foregroundColor: UIColor.appDynamic(
+                light: UIColor(red: 0.192, green: 0.141, blue: 0.100, alpha: 1.0),
+                dark: UIColor(red: 0.968, green: 0.944, blue: 0.913, alpha: 1.0)
+            ),
             .font: UIFont.monospacedSystemFont(ofSize: 14, weight: .medium)
         ]
         navAppearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor(red: 0.945, green: 0.906, blue: 0.855, alpha: 1.0),
+            .foregroundColor: UIColor.appDynamic(
+                light: UIColor(red: 0.192, green: 0.141, blue: 0.100, alpha: 1.0),
+                dark: UIColor(red: 0.968, green: 0.944, blue: 0.913, alpha: 1.0)
+            ),
             .font: UIFont.systemFont(ofSize: 32, weight: .medium)
         ]
 
@@ -257,6 +347,62 @@ public struct AppHeaderPill: View {
                         .stroke(Color.appBorderLight, lineWidth: 1)
                 )
         )
+    }
+}
+
+public struct AppOperationsHeader<Actions: View>: View {
+    private let eyebrow: String
+    private let title: String
+    private let compactTitle: String
+    private let subtitle: String?
+    private let isCompact: Bool
+    private let actions: Actions
+
+    public init(
+        eyebrow: String,
+        title: String,
+        compactTitle: String? = nil,
+        subtitle: String? = nil,
+        isCompact: Bool,
+        @ViewBuilder actions: () -> Actions
+    ) {
+        self.eyebrow = eyebrow
+        self.title = title
+        self.compactTitle = compactTitle ?? title
+        self.subtitle = subtitle
+        self.isCompact = isCompact
+        self.actions = actions()
+    }
+
+    public var body: some View {
+        HStack(alignment: isCompact ? .center : .top, spacing: Spacing.sm) {
+            if isCompact {
+                Text(compactTitle)
+                    .font(.compactPageTitle)
+                    .foregroundColor(.appTextPrimary)
+            } else {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    AppSectionEyebrow(eyebrow)
+
+                    Text(title)
+                        .font(.heroTitle)
+                        .foregroundColor(.appTextPrimary)
+
+                    if let subtitle, !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.bodyMedium)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                }
+            }
+
+            Spacer(minLength: Spacing.sm)
+
+            actions
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.sm)
     }
 }
 
