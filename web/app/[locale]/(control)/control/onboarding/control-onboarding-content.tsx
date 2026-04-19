@@ -622,7 +622,7 @@ export function ControlOnboardingContent({
               name_en: category.name_en?.trim() || '',
               name_ja: category.name_ja?.trim() || category.name_en?.trim() || '',
               name_vi: category.name_vi?.trim() || category.name_en?.trim() || '',
-              kind: category.kind === 'specialty' ? 'specialty' : 'basic',
+              kind: category.kind === 'specialty' ? 'specialty' : 'basic' as 'basic' | 'specialty',
             }))
             .filter((category) => category.name_en.length > 0)
         : [];

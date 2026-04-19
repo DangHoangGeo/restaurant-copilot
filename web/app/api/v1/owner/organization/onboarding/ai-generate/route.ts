@@ -361,7 +361,6 @@ export async function POST(request: NextRequest) {
       description_vi:
         'Chúng tôi vận hành nhà hàng với sự chỉn chu, chất lượng ổn định và sự hiếu khách ấm áp để mỗi thực khách đều cảm thấy yên tâm ngay từ lần đầu ghé thăm.',
       brand_color: '#C45B2D',
-      logo_url: null,
       hero_title_en: 'Warm meals, every day',
       hero_title_ja: '毎日に、あたたかい一皿を',
       hero_title_vi: 'Mỗi ngày một bữa ăn ấm áp',
