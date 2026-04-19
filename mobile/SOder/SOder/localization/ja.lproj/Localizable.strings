@@ -724,6 +724,8 @@
 "generating_preview" = "プレビュー生成中...";
 "done" = "完了";
 "preview_not_available" = "プレビューが利用できません";
+"connection_status_unknown" = "不明";
+"connection_status_unknown_restaurant" = "店舗未設定";
 
 // Variable descriptions
 "restaurant_name_desc" = "レストラン名";
@@ -1171,6 +1173,7 @@
 "draft_size_custom" = "カスタムサイズ";
 "draft_toppings_count_format" = "+ %d トッピング";
 "price_each_format" = "¥%.0f / 個";
+"price_each_value_format" = "%@ / 個";
 "draft_add_items_to_continue" = "続けるには商品を追加してください";
 "draft_add_items_accessibility" = "注文前に商品を追加";
 "draft_add_items_hint" = "タップして商品を追加";

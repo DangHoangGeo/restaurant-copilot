@@ -323,7 +323,7 @@ struct OrderRowView: View {
 
             HStack {
                 if let total = order.total_amount {
-                    Text(String(format: "price_format".localized, total))
+                    Text(AppCurrencyFormatter.format(total))
                         .font(.metricValue)
                         .foregroundColor(.appTextPrimary)
                 }
@@ -345,7 +345,7 @@ struct OrderRowView: View {
         let status = order.status.displayName
         let guestCount = order.guest_count ?? 1
         let timeString = formatTime(order.created_at)
-        let totalString = order.total_amount.map { String(format: "price_format".localized, $0) } ?? ""
+        let totalString = order.total_amount.map { AppCurrencyFormatter.format($0) } ?? ""
         
         var label = "\(tableName), \(status), \(guestCount) guests, \(timeString)"
         if !totalString.isEmpty {

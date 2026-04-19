@@ -3,7 +3,6 @@ import SwiftUI
 struct TableQRPrintView: View {
     let table: Table
 
-    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var printerManager: PrinterManager
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @StateObject private var supabaseManager = SupabaseManager.shared
@@ -14,17 +13,44 @@ struct TableQRPrintView: View {
 
     private var qrCodeUrl: String {
         let rootDomain = "coorder.ai"
-        let subdomain = resolvedSubdomain
+        let hostSubdomain = resolvedHostSubdomain
+        let locale = LocalizationManager.shared.currentLanguage
+        let branchCode = resolvedBranchCode
+        let tableCode = table.qr_code?.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if let qrCode = table.qr_code, !qrCode.isEmpty {
-            return "https://\(subdomain).\(rootDomain)/en/menu?code=\(qrCode)"
+        guard !hostSubdomain.isEmpty else {
+            return ""
         }
 
-        return "https://\(subdomain).\(rootDomain)/en/menu"
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "\(hostSubdomain).\(rootDomain)"
+        components.path = "/\(locale)/menu"
+
+        if let branchCode, !branchCode.isEmpty, let tableCode, !tableCode.isEmpty {
+            components.queryItems = [
+                URLQueryItem(name: "branch", value: branchCode),
+                URLQueryItem(name: "table", value: tableCode)
+            ]
+        } else if let tableCode, !tableCode.isEmpty {
+            components.queryItems = [URLQueryItem(name: "code", value: tableCode)]
+        } else if let branchCode, !branchCode.isEmpty {
+            components.queryItems = [URLQueryItem(name: "branch", value: branchCode)]
+        }
+
+        return components.url?.absoluteString ?? "https://\(hostSubdomain).\(rootDomain)/\(locale)/menu"
     }
 
-    private var resolvedSubdomain: String {
-        if let branchSubdomain = supabaseManager.currentRestaurant?.subdomain, !branchSubdomain.isEmpty {
+    private var resolvedHostSubdomain: String {
+        if let companyPublicSubdomain = supabaseManager.currentRestaurant?.companyPublicSubdomain?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !companyPublicSubdomain.isEmpty {
+            return companyPublicSubdomain
+        }
+
+        if let branchSubdomain = supabaseManager.currentRestaurant?.subdomain
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !branchSubdomain.isEmpty {
             return branchSubdomain
         }
 
@@ -40,6 +66,19 @@ struct TableQRPrintView: View {
         return sanitized.isEmpty ? "restaurant" : sanitized
     }
 
+    private var resolvedBranchCode: String? {
+        let candidateValues = [
+            supabaseManager.currentRestaurant?.branchCode,
+            supabaseManager.currentRestaurant?.subdomain
+        ]
+
+        return candidateValues.compactMap { value in
+            let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let trimmed, !trimmed.isEmpty else { return nil }
+            return trimmed
+        }.first
+    }
+
     private var displayRestaurantName: String {
         settingsManager.receiptHeader.restaurantName.isEmpty
             ? (supabaseManager.currentRestaurant?.name ?? settingsManager.restaurantSettings.name)
@@ -47,58 +86,47 @@ struct TableQRPrintView: View {
     }
 
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.lg) {
-                    previewCard
-                    tableDetailsCard
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                previewCard
+                tableDetailsCard
 
-                    if let ssid = settingsManager.restaurantSettings.wifiSsid, !ssid.isEmpty {
-                        wifiDetailsCard(ssid: ssid, password: settingsManager.restaurantSettings.wifiPassword)
-                    }
+                if let ssid = settingsManager.restaurantSettings.wifiSsid, !ssid.isEmpty {
+                    wifiDetailsCard(ssid: ssid, password: settingsManager.restaurantSettings.wifiPassword)
+                }
 
-                    printerStatusCard
+                printerStatusCard
 
-                    Button(action: printQRCode) {
-                        HStack {
-                            if isPrinting {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                            } else {
-                                Image(systemName: "printer.fill")
-                            }
-
-                            Text(isPrinting ? "tables_print_printing".localized : "tables_print_button".localized)
+                Button(action: printQRCode) {
+                    HStack {
+                        if isPrinting {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                        } else {
+                            Image(systemName: "printer.fill")
                         }
-                    }
-                    .buttonStyle(PrimaryButtonStyle(isEnabled: printerManager.isConnected && !isPrinting))
-                    .disabled(!printerManager.isConnected || isPrinting)
-                }
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, Spacing.lg)
-            }
-            .background(Color.appBackground.ignoresSafeArea())
-            .navigationTitle("tables_print_title".localized)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("common_close".localized) {
-                        dismiss()
+
+                        Text(isPrinting ? "tables_print_printing".localized : "tables_print_button".localized)
                     }
                 }
+                .buttonStyle(PrimaryButtonStyle(isEnabled: printerManager.isConnected && !isPrinting))
+                .disabled(!printerManager.isConnected || isPrinting)
             }
-            .alert("tables_print_success_title".localized, isPresented: $showSuccessAlert) {
-                Button("common_ok".localized, role: .cancel) {
-                    dismiss()
-                }
-            } message: {
-                Text("tables_print_success_message".localized)
-            }
-            .alert("tables_print_error_title".localized, isPresented: $showErrorAlert) {
-                Button("common_ok".localized, role: .cancel) { }
-            } message: {
-                Text(errorMessage)
-            }
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.lg)
+        .background(Color.appBackground.ignoresSafeArea())
+        .navigationTitle(table.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("tables_print_success_title".localized, isPresented: $showSuccessAlert) {
+            Button("common_ok".localized, role: .cancel) { }
+        } message: {
+            Text("tables_print_success_message".localized)
+        }
+        .alert("tables_print_error_title".localized, isPresented: $showErrorAlert) {
+            Button("common_ok".localized, role: .cancel) { }
+        } message: {
+            Text(errorMessage)
         }
     }
 

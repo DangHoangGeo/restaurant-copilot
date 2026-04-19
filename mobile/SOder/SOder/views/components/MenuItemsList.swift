@@ -221,7 +221,7 @@ struct MenuItemRowCompactUnified: View {
             
             // Trailing: Price and actions
             VStack(alignment: .trailing, spacing: Spacing.xs) {
-                Text(String(format: "price_format".localized, menuItem.price))
+                Text(AppCurrencyFormatter.format(menuItem.price))
                     .font(.bodyMedium)
                     .fontWeight(.bold)
                     .foregroundColor(.appPrimary)

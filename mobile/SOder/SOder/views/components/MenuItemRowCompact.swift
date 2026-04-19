@@ -89,7 +89,7 @@ struct MenuItemRowCompact: View {
                     }
                     
                     // Show price here on left side for better balance
-                    Text(String(format: "price_format".localized, menuItem.price))
+                    Text(AppCurrencyFormatter.format(menuItem.price))
                         .font(.captionBold)
                         .foregroundColor(.appTextSecondary)
                     

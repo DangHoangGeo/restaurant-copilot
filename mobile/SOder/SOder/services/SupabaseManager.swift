@@ -7,7 +7,12 @@ class SupabaseManager: ObservableObject {
     let client: SupabaseClient
     
     @Published var currentUser: User?
-    @Published var currentRestaurant: Restaurant?
+    @Published var currentRestaurant: Restaurant? {
+        didSet {
+            persistCurrentRestaurant()
+            PrinterSettingsManager.shared.syncFromCurrentRestaurant(currentRestaurant)
+        }
+    }
     @Published var accessibleBranches: [Restaurant] = []
     @Published var isAuthenticated = false
     @Published var needsBranchSelection = false
@@ -30,6 +35,7 @@ class SupabaseManager: ObservableObject {
     private var menuItemsCache: CacheItem<[MenuItem]>?
     private var menuItemDetailsCache: [String: CacheItem<MenuItem>] = [:]
     private let cacheTTL: TimeInterval = 60.0 // 60 seconds TTL as specified in plan
+    private let persistedCurrentRestaurantKey = "persistedCurrentRestaurant"
     
     // Search debounce
     private var searchDebounceTimer: Timer?
@@ -38,6 +44,10 @@ class SupabaseManager: ObservableObject {
     var currentRestaurantId: String? {
         // Prioritize ID from token if available, otherwise from loaded restaurant
         return restaurantIdFromToken ?? currentRestaurant?.id
+    }
+
+    var currentCurrencyCode: String {
+        AppCurrencyFormatter.currentCurrencyCode(from: currentRestaurant)
     }
     
     private init() {
@@ -62,6 +72,8 @@ class SupabaseManager: ObservableObject {
             supabaseURL: supabaseURL,
             supabaseKey: supabaseKey
         )
+
+        loadPersistedCurrentRestaurant()
         
         // Check for existing session
         Task {
@@ -107,6 +119,7 @@ class SupabaseManager: ObservableObject {
         userRole = nil
         restaurantIdFromToken = nil
         clearCache()
+        clearPersistedCurrentRestaurant()
     }
     
     @MainActor
@@ -224,19 +237,35 @@ class SupabaseManager: ObservableObject {
         }
 
         do {
-            // Primary: fetch all branches where JWT org membership grants access.
-            // For backward compatibility the JWT still carries one restaurant_id;
-            // future: org_member_restaurant_ids array in app_metadata.
-            let branch: Restaurant = try await client
-                .from("restaurants")
-                .select("*")
-                .eq("id", value: restaurantIdToLoad)
-                .single()
-                .execute()
-                .value
+            let branch = try await fetchBranchWithFallback(restaurantId: restaurantIdToLoad)
             return [branch]
         } catch {
             throw SupabaseManagerError.fetchError("Failed to load branch data.")
+        }
+    }
+
+    private func fetchBranchWithFallback(restaurantId: String) async throws -> Restaurant {
+        do {
+            // Preferred query: include organization public subdomain when policy/shape allows it.
+            return try await client
+                .from("restaurants")
+                .select("*, organization_restaurants(owner_organizations(public_subdomain))")
+                .eq("id", value: restaurantId)
+                .single()
+                .execute()
+                .value
+        } catch {
+            print("Falling back to base branch fetch: \(error.localizedDescription)")
+
+            // Keep login reliable even if nested organization relations are not readable
+            // for the current role or decode differently than expected.
+            return try await client
+                .from("restaurants")
+                .select("*")
+                .eq("id", value: restaurantId)
+                .single()
+                .execute()
+                .value
         }
     }
 
@@ -268,6 +297,33 @@ class SupabaseManager: ObservableObject {
         restaurantIdFromToken = nil
         // Clear cache when auth fails
         clearCache()
+        clearPersistedCurrentRestaurant()
+    }
+
+    private func loadPersistedCurrentRestaurant() {
+        guard let data = UserDefaults.standard.data(forKey: persistedCurrentRestaurantKey),
+              let restaurant = try? JSONDecoder().decode(Restaurant.self, from: data) else {
+            return
+        }
+
+        currentRestaurant = restaurant
+    }
+
+    private func persistCurrentRestaurant() {
+        guard let currentRestaurant else {
+            clearPersistedCurrentRestaurant()
+            return
+        }
+
+        guard let data = try? JSONEncoder().encode(currentRestaurant) else {
+            return
+        }
+
+        UserDefaults.standard.set(data, forKey: persistedCurrentRestaurantKey)
+    }
+
+    private func clearPersistedCurrentRestaurant() {
+        UserDefaults.standard.removeObject(forKey: persistedCurrentRestaurantKey)
     }
     
     // MARK: - Cache Management
@@ -517,14 +573,45 @@ struct Restaurant: Codable {
     let subdomain: String
     let branchCode: String?
     let timezone: String
+    let currency: String?
+    let address: String?
+    let phone: String?
+    let email: String?
+    let website: String?
+    let paymentMethods: [String]?
+    let organizationLinks: [RestaurantOrganizationLink]?
     let created_at: String
     let updated_at: String
     let taxRate: Double?
 
+    var companyPublicSubdomain: String? {
+        organizationLinks?
+            .compactMap { $0.ownerOrganizations?.first?.publicSubdomain }
+            .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
+    }
+
     enum CodingKeys: String, CodingKey {
-        case id, name, subdomain, timezone, created_at, updated_at
+        case id, name, subdomain, timezone, currency, address, phone, email, website, created_at, updated_at
         case branchCode = "branch_code"
+        case paymentMethods = "payment_methods"
+        case organizationLinks = "organization_restaurants"
         case taxRate = "tax_rate"
+    }
+}
+
+struct RestaurantOrganizationLink: Codable {
+    let ownerOrganizations: [RestaurantOwnerOrganization]?
+
+    enum CodingKeys: String, CodingKey {
+        case ownerOrganizations = "owner_organizations"
+    }
+}
+
+struct RestaurantOwnerOrganization: Codable {
+    let publicSubdomain: String?
+
+    enum CodingKeys: String, CodingKey {
+        case publicSubdomain = "public_subdomain"
     }
 }
 

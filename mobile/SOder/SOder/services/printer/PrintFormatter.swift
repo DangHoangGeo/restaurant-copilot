@@ -40,18 +40,12 @@ class PrintFormatter {
     private let settingsManager = PrinterSettingsManager.shared
     private let commands = PrinterConfig.Commands.self
     private let layout = PrinterConfig.Layout.self
-    private let numberFormatter: NumberFormatter
+    private var numberFormatter: NumberFormatter {
+        AppCurrencyFormatter.printerNumberFormatter()
+    }
     private let templateRenderer = TemplateRenderer()
     private let formatProcessor = TemplateFormatProcessor()
     private let themeManager = TemplateThemeManager.shared
-    
-    init() {
-        numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        numberFormatter.locale = Locale(identifier: "ja_JP")
-        numberFormatter.currencySymbol = "¥"
-        numberFormatter.maximumFractionDigits = 0
-    }
     
     // MARK: - Template-based Formatting
     func format(template: String, data: [String: Any], encoding: String.Encoding = .utf8) -> Data {

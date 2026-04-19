@@ -136,7 +136,7 @@ struct CartSheet: View {
                     Text("total".localized)
                         .font(.captionBold)
                         .foregroundColor(.appTextSecondary)
-                    Text(String(format: "price_format".localized, totalAmount))
+                    Text(AppCurrencyFormatter.format(totalAmount))
                         .font(.sectionHeader)
                         .foregroundColor(.appPrimary)
                 }
@@ -271,7 +271,7 @@ struct CartItemRow: View {
                     Text("pos_edit_item_button".localized)
                         .font(.captionBold)
                         .foregroundColor(.appTextSecondary)
-                    Text(String(format: "price_format".localized, item.price_at_order * Double(item.quantity)))
+                    Text(AppCurrencyFormatter.format(item.price_at_order * Double(item.quantity)))
                         .font(.sectionHeader)
                         .foregroundColor(.appPrimary)
                 }

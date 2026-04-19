@@ -438,7 +438,7 @@ private extension OrderDetailView {
     }
 
     func currencyText(_ amount: Double) -> String {
-        String(format: "price_format".localized, amount)
+        AppCurrencyFormatter.format(amount, currencyCode: supabaseManager.currentCurrencyCode)
     }
 
     func canCheckout(for order: Order) -> Bool {
@@ -784,7 +784,7 @@ private struct OrderItemRow: View {
                             .multilineTextAlignment(.leading)
                     }
 
-                    Text(String(format: "price_format".localized, Double(item.quantity) * item.price_at_order))
+                    Text(AppCurrencyFormatter.format(Double(item.quantity) * item.price_at_order))
                         .font(.monoLabel)
                         .foregroundColor(.appTextSecondary)
                 }
@@ -893,7 +893,7 @@ private struct TotalsRow: View {
 
             Spacer()
 
-            Text(String(format: "price_format".localized, value))
+            Text(AppCurrencyFormatter.format(value))
                 .font(emphasis ? .cardTitle : .bodyLarge.weight(.medium))
                 .foregroundColor(emphasis ? .appTextPrimary : .appHighlight)
         }

@@ -48,7 +48,7 @@ struct CheckoutView: View {
         
         var icon: String {
             switch self {
-            case .cash: return "yensign.circle"
+            case .cash: return "banknote"
             case .card: return "creditcard"
             case .paypay: return "smartphone"
             }
@@ -58,6 +58,14 @@ struct CheckoutView: View {
     // Tax rate - configurable per restaurant
     private var taxRate: Double {
         supabaseManager.currentRestaurant?.taxRate ?? 0.10 // Default to 10% if not configured
+    }
+
+    private var currencyInputFormatter: NumberFormatter {
+        AppCurrencyFormatter.inputFormatter(currencyCode: supabaseManager.currentCurrencyCode)
+    }
+
+    private func currencyText(_ amount: Double) -> String {
+        AppCurrencyFormatter.format(amount, currencyCode: supabaseManager.currentCurrencyCode)
     }
     
     private var subtotal: Double {
@@ -323,10 +331,10 @@ struct CheckoutView: View {
                     .foregroundColor(.appTextSecondary)
 
                 HStack(spacing: Spacing.sm) {
-                    Image(systemName: "yensign.circle")
+                    Image(systemName: "banknote")
                         .foregroundColor(.appTextTertiary)
 
-                    TextField("checkout_received_amount_placeholder".localized, value: $receivedAmount, format: .currency(code: "JPY"))
+                    TextField("checkout_received_amount_placeholder".localized, value: $receivedAmount, formatter: currencyInputFormatter)
                         .font(.title3)
                         .fontWeight(.semibold)
                         .keyboardType(.decimalPad)
@@ -383,7 +391,7 @@ struct CheckoutView: View {
                             let impactFeedback = UIImpactFeedbackGenerator(style: .light)
                             impactFeedback.impactOccurred()
                         }) {
-                            Text(String(format: "¥%.0f", amount))
+                            Text(currencyText(amount))
                                 .font(.buttonMedium)
                                 .foregroundColor(receivedAmount == amount ? .appOnHighlight : .appTextPrimary)
                                 .frame(maxWidth: .infinity)
@@ -411,7 +419,7 @@ struct CheckoutView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.appTextPrimary)
                     Spacer()
-                    Text(String(format: "price_format".localized, changeAmount))
+                    Text(currencyText(changeAmount))
                         .font(.bodyMedium)
                         .fontWeight(.bold)
                         .foregroundColor(.appSuccess)
@@ -433,7 +441,7 @@ struct CheckoutView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.appWarning)
                     Spacer()
-                    Text(String(format: "price_format".localized, totalAmount - receivedAmount))
+                    Text(currencyText(totalAmount - receivedAmount))
                         .font(.captionBold)
                         .foregroundColor(.appWarning)
                 }
@@ -525,7 +533,7 @@ struct CheckoutView: View {
                         Text("discount_amount".localized)
                             .font(.captionRegular)
                             .foregroundColor(.appTextPrimary)
-                        TextField("checkout_custom_discount_placeholder".localized, value: $customDiscountAmount, format: .currency(code: "JPY"))
+                        TextField("checkout_custom_discount_placeholder".localized, value: $customDiscountAmount, formatter: currencyInputFormatter)
                             .textFieldStyle(AppTextFieldStyle())
                             .keyboardType(.decimalPad)
                     }
@@ -558,7 +566,7 @@ struct CheckoutView: View {
                         .font(.bodyMedium)
                         .foregroundColor(.appTextPrimary)
                     Spacer()
-                    Text(String(format: "price_format".localized, subtotal))
+                    Text(currencyText(subtotal))
                         .font(.bodyMedium)
                         .fontWeight(.medium)
                         .foregroundColor(.appTextPrimary)
@@ -581,7 +589,7 @@ struct CheckoutView: View {
                             }
                         }
                         Spacer()
-                        Text(String(format: "-%@", String(format: "price_format".localized, discountAmount)))
+                        Text(currencyText(-discountAmount))
                             .font(.bodyMedium)
                             .fontWeight(.medium)
                             .foregroundColor(.appSuccess)
@@ -592,7 +600,7 @@ struct CheckoutView: View {
                             .font(.bodyMedium)
                             .foregroundColor(.appTextPrimary)
                         Spacer()
-                        Text(String(format: "price_format".localized, afterDiscountAmount))
+                        Text(currencyText(afterDiscountAmount))
                             .font(.bodyMedium)
                             .fontWeight(.medium)
                             .foregroundColor(.appTextPrimary)
@@ -610,7 +618,7 @@ struct CheckoutView: View {
                             .foregroundColor(.appTextPrimary)
                     }
                     Spacer()
-                    Text(String(format: "price_format".localized, taxAmount))
+                    Text(currencyText(taxAmount))
                         .font(.bodyMedium)
                         .fontWeight(.medium)
                         .foregroundColor(.appTextPrimary)
@@ -626,7 +634,7 @@ struct CheckoutView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.appTextPrimary)
                     Spacer()
-                    Text(String(format: "price_format".localized, totalAmount))
+                    Text(currencyText(totalAmount))
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.appTextPrimary)
@@ -899,7 +907,7 @@ struct CheckoutItemRow: View {
                     .fontWeight(.medium)
                 
                 if let price = item.menu_item?.price {
-                    Text(String(format: "price_format".localized, price * Double(item.quantity)))
+                    Text(AppCurrencyFormatter.format(price * Double(item.quantity)))
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)

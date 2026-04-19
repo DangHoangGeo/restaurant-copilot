@@ -194,7 +194,7 @@ private extension OrderItemDetailView {
 
                     SummaryDetailRow(
                         label: "order_item_detail_price_label".localized,
-                        value: String(format: "price_format".localized, Double(item.quantity) * item.price_at_order),
+                        value: AppCurrencyFormatter.format(Double(item.quantity) * item.price_at_order),
                         valueColor: .appTextPrimary,
                         emphasize: true
                     )

@@ -19,7 +19,6 @@ struct SettingsView: View {
         }
         .onAppear {
             autoPrintEnabled = orderManager.autoPrintingEnabled
-            settingsManager.syncFromCurrentRestaurant()
             printerManager.checkAvailablePrinters()
         }
     }

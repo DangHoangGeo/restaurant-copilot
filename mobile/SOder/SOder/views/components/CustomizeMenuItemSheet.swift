@@ -69,7 +69,7 @@ struct CustomizeMenuItemSheet: View {
                                             title: size.displayName,
                                             subtitle: size.staffSecondaryName,
                                             trailingText: size.price > 0
-                                                ? String(format: "pos_additional_price_format".localized, size.price)
+                                                ? AppCurrencyFormatter.formatAdditional(size.price)
                                                 : "pos_included_price".localized,
                                             isSelected: selectedSize?.id == size.id
                                         ) {
@@ -88,7 +88,7 @@ struct CustomizeMenuItemSheet: View {
                                             title: topping.displayName,
                                             subtitle: topping.staffSecondaryName,
                                             trailingText: topping.price > 0
-                                                ? String(format: "pos_additional_price_format".localized, topping.price)
+                                                ? AppCurrencyFormatter.formatAdditional(topping.price)
                                                 : "pos_included_price".localized,
                                             isSelected: selectedToppings.contains(topping.id)
                                         ) {
@@ -221,7 +221,7 @@ struct CustomizeMenuItemSheet: View {
                     Text("pos_unit_price_label".localized)
                         .font(.captionBold)
                         .foregroundColor(.appTextSecondary)
-                    Text(String(format: "price_format".localized, unitPrice))
+                    Text(AppCurrencyFormatter.format(unitPrice))
                         .font(.sectionHeader)
                         .foregroundColor(.appPrimary)
                 }
@@ -299,7 +299,7 @@ struct CustomizeMenuItemSheet: View {
                     .font(.bodyMedium)
                     .foregroundColor(.appTextSecondary)
                 Spacer()
-                Text(String(format: "price_format".localized, unitPrice))
+                Text(AppCurrencyFormatter.format(unitPrice))
                     .font(.bodyMedium)
                     .foregroundColor(.appTextPrimary)
             }
@@ -309,7 +309,7 @@ struct CustomizeMenuItemSheet: View {
                     .font(.bodyMedium)
                     .foregroundColor(.appTextSecondary)
                 Spacer()
-                Text(String(format: "price_format".localized, totalPrice))
+                Text(AppCurrencyFormatter.format(totalPrice))
                     .font(.sectionHeader)
                     .foregroundColor(.appPrimary)
             }

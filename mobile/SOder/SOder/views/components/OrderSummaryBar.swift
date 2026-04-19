@@ -34,7 +34,7 @@ struct OrderSummaryBar: View {
                 Spacer()
                 
                 // Total amount
-                Text(String(format: "price_format".localized, totalAmount))
+                Text(AppCurrencyFormatter.format(totalAmount))
                     .font(.bodyMedium)
                     .fontWeight(.bold)
                     .foregroundColor(.appPrimary)
@@ -66,7 +66,7 @@ struct OrderSummaryBar: View {
             .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
                 isPressed = pressing
             }, perform: {})
-            .accessibilityLabel(String(format: "pos_view_cart_accessibility".localized, itemsCount, String(format: "price_format".localized, totalAmount)))
+            .accessibilityLabel(String(format: "pos_view_cart_accessibility".localized, itemsCount, AppCurrencyFormatter.format(totalAmount)))
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }
@@ -113,7 +113,7 @@ struct FloatingOrderSummaryBar: View {
                         }
                         
                         // Total amount
-                        Text(String(format: "price_format".localized, totalAmount))
+                        Text(AppCurrencyFormatter.format(totalAmount))
                             .font(.bodyMedium)
                             .fontWeight(.bold)
                             .foregroundColor(.white)

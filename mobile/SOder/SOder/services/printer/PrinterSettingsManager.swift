@@ -289,16 +289,39 @@ class PrinterSettingsManager: ObservableObject {
         guard let restaurant else { return }
 
         let resolvedName = resolvedRestaurantName(from: restaurant)
+        let resolvedAddress = restaurant.address?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let resolvedPhone = restaurant.phone?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let resolvedWebsite = restaurant.website?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         var didChangeRestaurantSettings = false
         var didChangeReceiptHeader = false
 
-        if !resolvedName.isEmpty && shouldReplaceRestaurantName(restaurantSettings.name) {
+        if !resolvedName.isEmpty && shouldReplaceRestaurantField(restaurantSettings.name) {
             restaurantSettings.name = resolvedName
             didChangeRestaurantSettings = true
         }
 
-        if !resolvedName.isEmpty && shouldReplaceRestaurantName(receiptHeader.restaurantName) {
+        if !resolvedName.isEmpty && shouldReplaceRestaurantField(receiptHeader.restaurantName) {
             receiptHeader.restaurantName = resolvedName
+            didChangeReceiptHeader = true
+        }
+
+        if !resolvedAddress.isEmpty && shouldReplaceRestaurantField(restaurantSettings.address) {
+            restaurantSettings.address = resolvedAddress
+            didChangeRestaurantSettings = true
+        }
+
+        if !resolvedAddress.isEmpty && shouldReplaceRestaurantField(receiptHeader.address) {
+            receiptHeader.address = resolvedAddress
+            didChangeReceiptHeader = true
+        }
+
+        if !resolvedPhone.isEmpty && shouldReplaceRestaurantField(restaurantSettings.phone) {
+            restaurantSettings.phone = resolvedPhone
+            didChangeRestaurantSettings = true
+        }
+
+        if !resolvedPhone.isEmpty && shouldReplaceRestaurantField(receiptHeader.phone) {
+            receiptHeader.phone = resolvedPhone
             didChangeReceiptHeader = true
         }
 
@@ -307,13 +330,13 @@ class PrinterSettingsManager: ObservableObject {
             didChangeReceiptHeader = true
         }
 
-        if shouldReplaceRestaurantName(restaurantSettings.website) {
-            restaurantSettings.website = ""
+        if !resolvedWebsite.isEmpty && shouldReplaceRestaurantField(restaurantSettings.website) {
+            restaurantSettings.website = resolvedWebsite
             didChangeRestaurantSettings = true
         }
 
-        if shouldReplaceRestaurantName(receiptHeader.website) {
-            receiptHeader.website = restaurantSettings.website
+        if !resolvedWebsite.isEmpty && shouldReplaceRestaurantField(receiptHeader.website) {
+            receiptHeader.website = resolvedWebsite
             didChangeReceiptHeader = true
         }
 
@@ -756,7 +779,7 @@ class PrinterSettingsManager: ObservableObject {
         }.first ?? ""
     }
 
-    private func shouldReplaceRestaurantName(_ value: String) -> Bool {
+    private func shouldReplaceRestaurantField(_ value: String) -> Bool {
         let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines)
         return normalized.isEmpty ||
             normalized == Defaults.restaurantName ||

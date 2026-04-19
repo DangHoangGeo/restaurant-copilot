@@ -49,7 +49,7 @@ struct DraftOrderView: View {
                                     Text("total_price_label".localized)
                                         .fontWeight(.bold)
                                     Spacer()
-                                    Text(String(format: "price_format".localized, order.total_amount ?? calculateTotalPrice()))
+                                    Text(AppCurrencyFormatter.format(order.total_amount ?? calculateTotalPrice()))
                                         .fontWeight(.bold)
                                 }
                             }
@@ -168,12 +168,12 @@ struct DraftOrderView: View {
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(String(format: "price_format".localized, item.price_at_order * Double(item.quantity)))
+                    Text(AppCurrencyFormatter.format(item.price_at_order * Double(item.quantity)))
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(.appTextPrimary)
 
-                    Text(String(format: "price_each_format".localized, item.price_at_order))
+                    Text(AppCurrencyFormatter.formatPerItem(item.price_at_order))
                         .font(.captionRegular)
                         .foregroundColor(.appTextSecondary)
                 }

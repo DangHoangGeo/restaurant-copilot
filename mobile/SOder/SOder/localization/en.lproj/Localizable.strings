@@ -719,6 +719,7 @@
 
 // MARK: - Connection Status
 "connection_status_unknown" = "Unknown";
+"connection_status_unknown_restaurant" = "Unknown restaurant";
 "connection_status_connected" = "Connected";
 "connection_status_disconnected" = "Disconnected";
 "connection_status_error" = "Error";
@@ -1239,6 +1240,7 @@
 "draft_size_custom" = "Custom size";
 "draft_toppings_count_format" = "+ %d toppings";
 "price_each_format" = "¥%.0f each";
+"price_each_value_format" = "%@ each";
 "draft_add_items_to_continue" = "Add items to continue";
 "draft_add_items_accessibility" = "Add items before placing order";
 "draft_add_items_hint" = "Tap to add menu items";

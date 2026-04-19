@@ -724,6 +724,8 @@
 "generating_preview" = "Đang tạo Xem trước...";
 "done" = "Hoàn tất";
 "preview_not_available" = "Xem trước không khả dụng";
+"connection_status_unknown" = "Không rõ";
+"connection_status_unknown_restaurant" = "Nhà hàng chưa xác định";
 
 // Variable descriptions
 "restaurant_name_desc" = "Tên nhà hàng";
@@ -1171,6 +1173,7 @@
 "draft_size_custom" = "Kích thước tùy chọn";
 "draft_toppings_count_format" = "+ %d topping";
 "price_each_format" = "¥%.0f / món";
+"price_each_value_format" = "%@ / món";
 "draft_add_items_to_continue" = "Thêm món để tiếp tục";
 "draft_add_items_accessibility" = "Thêm món trước khi đặt hàng";
 "draft_add_items_hint" = "Nhấn để thêm món";

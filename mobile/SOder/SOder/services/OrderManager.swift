@@ -453,6 +453,8 @@ class OrderManager: ObservableObject {
                 recalculateCurrentDraftOrderTotal()
             }
 
+            applyAddedOrderItemLocally(createdOrderItem, to: orderId)
+
             print("Item added to draft order: \(createdOrderItem.id)")
             return createdOrderItem
         } catch {
@@ -1393,6 +1395,22 @@ class OrderManager: ObservableObject {
                 }
             }
         }
+        if let orderItemsInsertion = realtimeChannel?.postgresChange(
+            InsertAction.self,
+            schema: "public",
+            table: "order_items"
+        ) {
+            Task { [weak self] in
+                for await _ in orderItemsInsertion {
+                    print("Order item inserted via realtime")
+                    await MainActor.run {
+                        Task { @MainActor in
+                            await self?.handleOrderItemChange()
+                        }
+                    }
+                }
+            }
+        }
         // Listen for subscription status
         if let channel = realtimeChannel {
             Task { [weak self] in
@@ -1474,6 +1492,30 @@ class OrderManager: ObservableObject {
         if autoPrintingEnabled && hasKitchenPrinter() {
             await autoPrintReadyItems(previousOrders: previousOrders)
         }
+    }
+
+    private func applyAddedOrderItemLocally(_ orderItem: OrderItem, to orderId: String) {
+        applyAddedOrderItem(orderItem, to: &orders, orderId: orderId)
+        applyAddedOrderItem(orderItem, to: &allOrders, orderId: orderId)
+    }
+
+    private func applyAddedOrderItem(_ orderItem: OrderItem, to ordersCollection: inout [Order], orderId: String) {
+        guard let orderIndex = ordersCollection.firstIndex(where: { $0.id == orderId }) else {
+            return
+        }
+
+        var order = ordersCollection[orderIndex]
+        var items = order.order_items ?? []
+
+        guard !items.contains(where: { $0.id == orderItem.id }) else {
+            return
+        }
+
+        items.append(orderItem)
+        order.order_items = items
+        order.total_amount = order.subtotal
+        order.updated_at = orderItem.updated_at
+        ordersCollection[orderIndex] = order
     }
     
     // MARK: - Public Methods for Manual Control

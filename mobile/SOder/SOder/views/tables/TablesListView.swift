@@ -5,7 +5,6 @@ struct TablesListView: View {
     @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject var printerManager: PrinterManager
     @State private var selectedTable: Table?
-    @State private var showPrintPreview = false
     @State private var searchText = ""
 
     private var filteredTables: [Table] {
@@ -57,11 +56,9 @@ struct TablesListView: View {
                 }
             }
         }
-        .sheet(isPresented: $showPrintPreview) {
-            if let table = selectedTable {
-                TableQRPrintView(table: table)
-                    .environmentObject(printerManager)
-            }
+        .navigationDestination(item: $selectedTable) { table in
+            TableQRPrintView(table: table)
+                .environmentObject(printerManager)
         }
         .task {
             await viewModel.fetchTables()
@@ -139,7 +136,6 @@ struct TablesListView: View {
                         operationalStatus: orderManager.operationalStatus(for: table),
                         onPrintQR: {
                             selectedTable = table
-                            showPrintPreview = true
                         }
                     )
                 }
