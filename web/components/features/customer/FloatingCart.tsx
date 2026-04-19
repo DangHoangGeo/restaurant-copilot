@@ -42,6 +42,8 @@ export function FloatingCart({
   restaurantId,
 }: Props) {
   const t = useTranslations("customer.cart");
+  const tMenu = useTranslations("customer.menu");
+  const tCommon = useTranslations("common");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
@@ -301,6 +303,7 @@ export function FloatingCart({
                   handleUpdateQuantity(item.uniqueId, item.qty - 1)
                 }
                 className="h-11 w-11 p-0 rounded-full"
+                aria-label={tMenu("decrease_quantity")}
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -314,6 +317,7 @@ export function FloatingCart({
                   handleUpdateQuantity(item.uniqueId, item.qty + 1)
                 }
                 className="h-11 w-11 p-0 rounded-full"
+                aria-label={tMenu("increase_quantity")}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -351,6 +355,7 @@ export function FloatingCart({
                     size="sm"
                     onClick={handleToggleExpanded}
                     className="h-8 w-8 p-0"
+                    aria-label={tCommon("close_modal")}
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -427,7 +432,9 @@ export function FloatingCart({
               <div className="flex items-center justify-between text-white">
                 <button
                   onClick={handleToggleExpanded}
-                  className="flex items-center space-x-3 flex-1 text-left"
+                  className="flex items-center space-x-3 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg"
+                  aria-expanded={isExpanded}
+                  aria-label={isExpanded ? t("floating_cart.title") : t("floating_cart.view_cart")}
                 >
                   <div className="relative">
                     <ShoppingCart className="h-6 w-6" />
@@ -461,6 +468,8 @@ export function FloatingCart({
                     variant="ghost"
                     size="sm"
                     className="text-white hover:bg-white/20 h-8 w-8 p-0"
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded ? tCommon("close_modal") : t("floating_cart.view_cart")}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
