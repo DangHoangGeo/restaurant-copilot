@@ -189,7 +189,7 @@ export default function AcceptInvitePage() {
             />
             <PasswordInput
               id="password"
-              label={t("password")}
+              label={t("passwordLabel")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -198,7 +198,7 @@ export default function AcceptInvitePage() {
             />
             <PasswordInput
               id="confirm-password"
-              label={t("confirmPassword")}
+              label={t("confirmPasswordLabel")}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required

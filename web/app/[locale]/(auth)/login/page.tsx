@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Mail } from "lucide-react";
+import { AlertCircle, Mail, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { AuthCard, FormField, PasswordInput } from "@/components/auth";
 
@@ -33,13 +33,10 @@ export default function LoginPage() {
     try {
       const response = await fetch("/api/v1/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, captchaToken }),
       });
 
-      // Pending-approval / suspended: server returns 403 with a redirectUrl.
       if (response.status === 403) {
         const errorData = await response.json();
         if (errorData.redirectUrl) {
@@ -65,10 +62,8 @@ export default function LoginPage() {
       if (data.twoFactorRequired && data.token) {
         router.push(`/${locale}/two-factor?token=${encodeURIComponent(data.token)}`);
       } else if (data.redirectUrl) {
-        // Use the redirectUrl from the API which includes the correct subdomain
         window.location.href = data.redirectUrl;
       } else {
-        // Founder-safe fallback: control decides whether onboarding or overview comes next
         router.push(`/${locale}/control`);
       }
     } catch (err) {
@@ -83,31 +78,31 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthCard 
-      title={t("title.login") || "Welcome Back"}
-      description={t("subtitle.login") || "Sign in to your account to continue"}
+    <AuthCard
+      title={t("title.login")}
+      description={t("subtitle.login")}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-500" />
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          <div className="flex items-start gap-3 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 rounded-xl">
+            <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+            <p className="text-sm text-red-700 dark:text-red-300 leading-snug">{error}</p>
           </div>
         )}
-        
+
         <FormField
-          label={t("emailLabel") || "Email Address"}
+          label={t("emailLabel")}
           type="email"
-          placeholder={t("emailPlaceholder") || "Enter your email"}
+          placeholder={t("emailPlaceholder")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           leftIcon={<Mail className="h-4 w-4" />}
         />
-        
+
         <PasswordInput
-          label={t("passwordLabel") || "Password"}
-          placeholder={t("passwordPlaceholder") || "Enter your password"}
+          label={t("passwordLabel")}
+          placeholder={t("passwordPlaceholder")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -115,45 +110,52 @@ export default function LoginPage() {
           showRequirements={false}
         />
 
-        <div className="flex justify-center py-2">
+        <div className="flex justify-end -mt-2">
+          <Link
+            href={`/${locale}/forgot-password`}
+            className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#AB6E3C] dark:hover:text-orange-400 transition-colors"
+          >
+            {t("forgotPassword")}
+          </Link>
+        </div>
+
+        <div className="flex justify-center py-1">
           <ReCAPTCHA
             sitekey={process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY!}
             onChange={(token) => setCaptchaToken(token)}
             onExpired={() => setCaptchaToken(null)}
-            theme="light"
           />
         </div>
 
-        <Button 
-          type="submit" 
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-2.5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
+        <Button
+          type="submit"
+          className="w-full h-11 rounded-full text-white font-semibold text-xs tracking-widest uppercase transition-all duration-200 disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)", boxShadow: "0 4px 16px rgba(171,110,60,0.28)" }}
           disabled={loading || !captchaToken}
         >
           {loading ? (
-            <div className="flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-              {t("loggingIn") || "Signing In..."}
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              {t("loggingIn")}
             </div>
           ) : (
-            t("loginButton") || "Sign In"
+            <div className="flex items-center justify-center gap-2">
+              {t("loginButton")}
+              <ArrowRight className="h-4 w-4" />
+            </div>
           )}
         </Button>
       </form>
 
-      {/* Footer Links */}
-      <div className="mt-6 text-center space-y-3">
-        <div className="flex justify-center space-x-4">
-          <Link href={`/${locale}/signup`}>
-            <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
-              {t('signUp') || 'Sign Up'}
-            </Button>
-          </Link>
-          <Link href={`/${locale}/forgot-password`}>
-            <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
-              {t('forgotPassword') || 'Forgot Password'}
-            </Button>
-          </Link>
-        </div>
+      {/* Footer links */}
+      <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+        {t("noAccount")}
+        <Link
+          href={`/${locale}/signup`}
+          className="font-semibold text-[#AB6E3C] hover:text-[#8B5A2B] transition-colors ml-1"
+        >
+          {t("signUp")}
+        </Link>
       </div>
     </AuthCard>
   );

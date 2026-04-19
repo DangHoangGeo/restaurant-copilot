@@ -6,14 +6,6 @@ import {
   ThemeProviderLanding,
   LandingPageHeader,
   HeroSection,
-  SocialProofSection,
-  FeaturesSection,
-  HowItWorksSection,
-  BenefitsSection,
-  PricingSection,
-  FaqSection,
-  CallToActionSection,
-  FooterSection,
 } from "@/components/home";
 import { getSubdomainFromHost } from "@/lib/utils";
 import { NewHomePage } from "@/components/features/customer/homepage";
@@ -32,43 +24,29 @@ async function fetchHomepageData(params: { host: string; subdomain: string }) {
   });
 }
 
-// Main Landing Page Component
 export default async function Page({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  // Server-side subdomain detection
   const headersList = await headers();
   const host = headersList.get("host") || "";
   const subdomain = getSubdomainFromHost(host);
 
-  // If subdomain is detected, fetch homepage data server-side
-  let initialHomepageData = null;
   if (subdomain) {
-    initialHomepageData = await fetchHomepageData({ host, subdomain });
-  }
-
-  // If subdomain is detected, show restaurant homepage instead of general landing
-  if (subdomain) {
+    const initialHomepageData = await fetchHomepageData({ host, subdomain });
     return <NewHomePage locale={locale} initialData={initialHomepageData} />;
   }
 
-  // Original generic landing page content
   return (
     <ThemeProviderLanding>
-      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased">
+      <div
+        className="min-h-screen font-sans antialiased"
+        style={{
+          background: "linear-gradient(160deg, #FAF3EA 0%, #F5EAD8 50%, #EFE0CA 100%)",
+        }}
+      >
         <LandingPageHeader locale={locale} />
-        <main>
-          <HeroSection />
-          <SocialProofSection />
-          <FeaturesSection />
-          <HowItWorksSection />
-          <BenefitsSection />
-          <PricingSection />
-          <FaqSection />
-          <CallToActionSection />
-        </main>
-        <FooterSection locale={locale} />
+        <HeroSection />
       </div>
     </ThemeProviderLanding>
   );

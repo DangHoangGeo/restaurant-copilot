@@ -5,11 +5,20 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || "unknown";
   try {
     const { token } = await req.json();
-    const secret = process.env.NEXT_PRIVATE_CAPTCHA_SECRET!;
+    const secret = process.env.NEXT_PRIVATE_CAPTCHA_SECRET;
+    if (!secret) {
+      await logEvent({
+        level: "ERROR",
+        endpoint: "/api/v1/verify-captcha",
+        message: "NEXT_PRIVATE_CAPTCHA_SECRET is not configured",
+        metadata: { ip },
+      });
+      return NextResponse.json({ valid: false }, { status: 500 });
+    }
     const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `secret=${secret}&response=${token}`,
+      body: `secret=${encodeURIComponent(secret)}&response=${encodeURIComponent(token)}`,
     });
     const data = await res.json();
     if (!data.success) {
