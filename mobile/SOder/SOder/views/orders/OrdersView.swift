@@ -768,11 +768,9 @@ struct SidebarOrderRowView: View {
             }
 
             HStack {
-                if let total = order.total_amount {
-                    Text(AppCurrencyFormatter.format(total))
-                        .font(.metricValue)
-                        .foregroundColor(.appTextPrimary)
-                }
+                Text(AppCurrencyFormatter.format(order.total))
+                    .font(.metricValue)
+                    .foregroundColor(.appTextPrimary)
 
                 Spacer()
 
@@ -800,15 +798,13 @@ struct SidebarOrderRowView: View {
         let status = order.status.displayName
         let guestCount = order.guest_count ?? 1
         let timeString = formattedTime(order.created_at)
-        let totalString = order.total_amount.map { AppCurrencyFormatter.format($0) } ?? ""
+        let totalString = AppCurrencyFormatter.format(order.total)
         
         var label = "\(tableName), \(orderId), \(status), \(guestCount) guests"
         if let timeString {
             label += ", \(timeString)"
         }
-        if !totalString.isEmpty {
-            label += ", \(totalString)"
-        }
+        label += ", \(totalString)"
         if hasNewItems {
             label += ", \("orders_filter_new".localized)"
         }

@@ -1007,9 +1007,12 @@ class OrderManager: ObservableObject {
         }
 
         let updatedAt = ISO8601DateFormatter().string(from: Date())
+        let persistedSubtotal = mergedOrders()
+            .first(where: { $0.id == orderId })?
+            .subtotal ?? max(0, totalAmount - taxAmount + discountAmount - tipAmount)
         let payload = CheckoutUpdatePayload(
             status: OrderStatus.completed.rawValue,
-            total_amount: totalAmount,
+            total_amount: persistedSubtotal,
             updated_at: updatedAt
         )
 
@@ -1026,7 +1029,7 @@ class OrderManager: ObservableObject {
                 orders[index].discount_amount = discountAmount
                 orders[index].tax_amount = taxAmount
                 orders[index].tip_amount = tipAmount
-                orders[index].total_amount = totalAmount
+                orders[index].total_amount = persistedSubtotal
                 orders[index].updated_at = updatedAt
                 orders.remove(at: index)
             }
@@ -1037,7 +1040,7 @@ class OrderManager: ObservableObject {
                 allOrders[index].discount_amount = discountAmount
                 allOrders[index].tax_amount = taxAmount
                 allOrders[index].tip_amount = tipAmount
-                allOrders[index].total_amount = totalAmount
+                allOrders[index].total_amount = persistedSubtotal
                 allOrders[index].updated_at = updatedAt
             }
         } catch {

@@ -241,8 +241,8 @@ export async function computeDiscounts(
     return { discount_total: 0 };
   }
 
-  const rows = (data ?? []) as Array<{ discount_amount: number }>;
-  const discount_total = rows.reduce((sum, r) => sum + (r.discount_amount ?? 0), 0);
+  const rows = (data ?? []) as Array<{ discount_amount: number | null }>;
+  const discount_total = rows.reduce((sum, row) => sum + (row.discount_amount ?? 0), 0);
   return { discount_total: parseFloat(discount_total.toFixed(2)) };
 }
 
