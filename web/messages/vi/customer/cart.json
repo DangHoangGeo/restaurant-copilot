@@ -74,6 +74,8 @@
     "cart_cleared": "Giỏ hàng đã xóa",
     "update_failed": "Không thể cập nhật giỏ hàng. Vui lòng thử lại."
   },
+  "decrease_quantity": "Giảm số lượng",
+  "increase_quantity": "Tăng số lượng",
   "floating_cart": {
     "title": "Giỏ Hàng",
     "items_count": "{count} món",

@@ -303,7 +303,7 @@ export function FloatingCart({
                   handleUpdateQuantity(item.uniqueId, item.qty - 1)
                 }
                 className="h-11 w-11 p-0 rounded-full"
-                aria-label={tMenu("decrease_quantity")}
+                aria-label={t("decrease_quantity")}
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -317,7 +317,7 @@ export function FloatingCart({
                   handleUpdateQuantity(item.uniqueId, item.qty + 1)
                 }
                 className="h-11 w-11 p-0 rounded-full"
-                aria-label={tMenu("increase_quantity")}
+                aria-label={t("increase_quantity")}
               >
                 <Plus className="h-4 w-4" />
               </Button>
