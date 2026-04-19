@@ -357,6 +357,7 @@
 "kitchen_auto_print_new_orders" = "Auto-Print New Orders";
 "kitchen_clear_print_history" = "Clear Print History";
 "kitchen_sign_out" = "Sign Out";
+"kitchen_more_actions" = "More actions";
 
 // MARK: - Auto Print Status
 "status_auto_printing" = "Auto-printing...";

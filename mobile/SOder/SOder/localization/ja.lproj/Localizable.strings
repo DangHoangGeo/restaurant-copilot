@@ -357,6 +357,7 @@
 "kitchen_auto_print_new_orders" = "新しい注文を自動印刷";
 "kitchen_clear_print_history" = "印刷履歴をクリア";
 "kitchen_sign_out" = "サインアウト";
+"kitchen_more_actions" = "その他の操作";
 
 // MARK: - Auto Print Status
 "status_auto_printing" = "自動印刷中...";

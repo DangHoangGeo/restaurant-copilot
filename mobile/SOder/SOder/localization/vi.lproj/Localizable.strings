@@ -357,6 +357,7 @@
 "kitchen_auto_print_new_orders" = "Tự động In Đơn hàng Mới";
 "kitchen_clear_print_history" = "Xóa Lịch sử In";
 "kitchen_sign_out" = "Đăng xuất";
+"kitchen_more_actions" = "Thêm thao tác";
 
 // MARK: - Auto Print Status
 "status_auto_printing" = "Đang tự động in...";

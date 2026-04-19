@@ -106,8 +106,9 @@ struct KitchenHeaderView: View {
     @EnvironmentObject var orderManager: OrderManager
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack(alignment: .top, spacing: Spacing.md) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            // Row 1: Title + quick-access actions
+            HStack(alignment: .top, spacing: Spacing.sm) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     AppSectionEyebrow("kitchen_live_label".localized)
 
@@ -126,46 +127,70 @@ struct KitchenHeaderView: View {
 
                 Spacer()
 
-                HStack(spacing: Spacing.sm) {
+                HStack(spacing: Spacing.xs) {
                     if orderManager.autoPrintingEnabled {
                         AppHeaderPill("AUTO")
                     }
 
                     if urgentItemsCount > 0 {
-                        AppHeaderPill("\(urgentItemsCount)")
+                        AppHeaderPill(
+                            "\(urgentItemsCount)",
+                            tint: .appWarning,
+                            fill: Color.appWarning.opacity(0.1)
+                        )
                     }
-                }
-            }
 
-            HStack(spacing: Spacing.sm) {
-                Button(action: onRefresh) {
-                    HStack {
+                    Button(action: onRefresh) {
                         Image(systemName: "arrow.clockwise")
-                        Text("kitchen_refresh".localized)
+                            .font(.title3)
+                            .foregroundColor(.appTextPrimary)
+                            .frame(width: 36, height: 36)
                     }
-                }
-                .buttonStyle(SecondaryButtonStyle())
+                    .accessibilityLabel("kitchen_refresh".localized)
 
-                Button(action: onPrintSummary) {
-                    HStack {
-                        Image(systemName: "printer.fill")
-                        Text("kitchen_print_summary".localized)
+                    Menu {
+                        Button {
+                            onPrintSummary()
+                        } label: {
+                            Label("kitchen_print_summary".localized, systemImage: "printer.fill")
+                        }
+
+                        Divider()
+
+                        Section("kitchen_auto_printing".localized) {
+                            Button(action: {
+                                orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
+                            }) {
+                                Label(
+                                    "kitchen_auto_print_new_orders".localized,
+                                    systemImage: orderManager.autoPrintingEnabled ? "checkmark.circle.fill" : "circle"
+                                )
+                            }
+
+                            Button("kitchen_clear_print_history".localized) {
+                                orderManager.clearPrintHistory()
+                            }
+                            .disabled(!orderManager.autoPrintingEnabled)
+                        }
+
+                        Divider()
+
+                        Button("kitchen_sign_out".localized, role: .destructive) {
+                            onSignOut()
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.title2)
+                            .foregroundColor(.appTextPrimary)
                     }
+                    .accessibilityLabel("kitchen_more_actions".localized)
                 }
-                .buttonStyle(SecondaryButtonStyle())
             }
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.sm) {
-                    ForEach(KitchenViewMode.allCases, id: \.self) { mode in
-                        viewModeChip(mode: mode)
-                    }
-                }
-            }
-
-            HStack {
+            // Row 2: Category filters + compact view mode switcher
+            HStack(spacing: Spacing.sm) {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: Spacing.sm) {
                         let allLabel = "kitchen_all".localized
                         CategoryFilterChip(
                             title: allLabel,
@@ -175,7 +200,7 @@ struct KitchenHeaderView: View {
                         ) {
                             onCategoryFilterChange(allLabel)
                         }
-                        
+
                         ForEach(categories.sorted(), id: \.self) { category in
                             CategoryFilterChip(
                                 title: category,
@@ -187,68 +212,10 @@ struct KitchenHeaderView: View {
                             }
                         }
                     }
+                    .padding(.vertical, 2)
                 }
 
-                Menu {
-                    ForEach(KitchenViewMode.allCases, id: \.self) { mode in
-                        Button {
-                            onViewModeChange(mode)
-                        } label: {
-                            HStack {
-                                Image(systemName: mode.icon)
-                                Text(mode.displayName)
-                                if viewMode == mode {
-                                    Spacer()
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.appInfo)
-                                }
-                            }
-                        }
-                    }
-                    
-                    Divider()
-                    
-                    Button("kitchen_refresh".localized) {
-                        onRefresh()
-                    }
-                    
-                    Button("kitchen_print_summary".localized) {
-                        onPrintSummary()
-                    }
-                    
-                    Divider()
-                    
-                    // Auto-printing controls
-                    Section("kitchen_auto_printing".localized) {
-                        Button(action: {
-                            orderManager.setAutoPrintingEnabled(!orderManager.autoPrintingEnabled)
-                        }) {
-                            HStack {
-                                Text("kitchen_auto_print_new_orders".localized)
-                                Spacer()
-                                if orderManager.autoPrintingEnabled {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.appSuccess)
-                                }
-                            }
-                        }
-                        
-                        Button("kitchen_clear_print_history".localized) {
-                            orderManager.clearPrintHistory()
-                        }
-                        .disabled(!orderManager.autoPrintingEnabled)
-                    }
-                    
-                    Divider()
-                    
-                    Button("kitchen_sign_out".localized) {
-                        onSignOut()
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.title2)
-                        .foregroundColor(.appTextPrimary)
-                }
+                viewModeSwitcher
             }
         }
         .padding(.horizontal, Spacing.md)
@@ -256,27 +223,38 @@ struct KitchenHeaderView: View {
         .padding(.bottom, Spacing.sm)
         .background(Color.clear)
     }
-    
-    private func countForCategory(_ category: String) -> Int {
-        return categoryCounts[category] ?? 0
+
+    private var viewModeSwitcher: some View {
+        HStack(spacing: 2) {
+            ForEach(KitchenViewMode.allCases, id: \.self) { mode in
+                Button {
+                    onViewModeChange(mode)
+                } label: {
+                    Image(systemName: mode.icon)
+                        .font(.body.weight(viewMode == mode ? .semibold : .regular))
+                        .foregroundColor(viewMode == mode ? .appHighlight : .appTextSecondary)
+                        .frame(width: 32, height: 32)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                .fill(viewMode == mode ? Color.appHighlight.opacity(0.12) : Color.clear)
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(mode.displayName)
+                .accessibilityAddTraits(viewMode == mode ? .isSelected : [])
+            }
+        }
+        .padding(Spacing.xs)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.md)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(Color.appBorderLight, lineWidth: 1)
+        )
     }
 
-    private func viewModeChip(mode: KitchenViewMode) -> some View {
-        Button {
-            onViewModeChange(mode)
-        } label: {
-            HStack(spacing: Spacing.xs) {
-                Image(systemName: mode.icon)
-                Text(mode.displayName)
-            }
-            .font(.captionBold)
-            .foregroundColor(viewMode == mode ? .appOnHighlight : .appTextPrimary)
-            .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.sm)
-            .background(viewMode == mode ? Color.appHighlight : Color.appSurface)
-            .cornerRadius(CornerRadius.md)
-        }
-        .buttonStyle(.plain)
+    private func countForCategory(_ category: String) -> Int {
+        return categoryCounts[category] ?? 0
     }
 }
 
