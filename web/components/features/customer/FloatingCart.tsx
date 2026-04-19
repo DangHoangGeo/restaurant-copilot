@@ -42,7 +42,6 @@ export function FloatingCart({
   restaurantId,
 }: Props) {
   const t = useTranslations("customer.cart");
-  //const tMenu = useTranslations("customer.menu");
   const tCommon = useTranslations("common");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
