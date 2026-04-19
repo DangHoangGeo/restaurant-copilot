@@ -1247,3 +1247,16 @@
 
 // MARK: - Timeout Error
 "timeout_error" = "Request timed out";
+
+// MARK: - Settings View
+"tab_settings" = "Settings";
+"settings_auto_print_title" = "Auto-Print Orders";
+"settings_auto_print_toggle_label" = "Auto-print when ready";
+"settings_auto_print_subtitle" = "Kitchen tickets print automatically when new orders arrive. Leave this off if you do not have a printer.";
+"settings_no_printer_hint" = "Set up a printer in Printing to enable auto-print.";
+"settings_printing_section" = "Printing";
+"settings_account_section" = "Account";
+"settings_sign_out_button" = "Sign Out";
+"settings_sign_out_confirm_title" = "Sign Out";
+"settings_sign_out_confirm_message" = "Are you sure you want to sign out?";
+"settings_app_version_label" = "Version";

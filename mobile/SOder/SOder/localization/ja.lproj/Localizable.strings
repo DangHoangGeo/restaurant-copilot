@@ -1179,3 +1179,16 @@
 
 // MARK: - Timeout Error
 "timeout_error" = "リクエストがタイムアウトしました";
+
+// MARK: - Settings View
+"tab_settings" = "設定";
+"settings_auto_print_title" = "自動印刷";
+"settings_auto_print_toggle_label" = "準備完了時に自動印刷";
+"settings_auto_print_subtitle" = "新しい注文が入ったときにキッチン伝票を自動で印刷します。プリンターがない場合はオフのままにしてください。";
+"settings_no_printer_hint" = "自動印刷を有効にするには、先にプリンターを設定してください。";
+"settings_printing_section" = "印刷";
+"settings_account_section" = "アカウント";
+"settings_sign_out_button" = "サインアウト";
+"settings_sign_out_confirm_title" = "サインアウト";
+"settings_sign_out_confirm_message" = "本当にサインアウトしますか？";
+"settings_app_version_label" = "バージョン";
