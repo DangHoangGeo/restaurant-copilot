@@ -17,7 +17,6 @@ import {
 	Filter,
 	X,
 	Table,
-	List,
 	RefreshCw,
 	ChevronDown
 } from 'lucide-react';
@@ -40,6 +39,7 @@ interface MenuSearchFilterProps {
 	onFiltersChange: (filters: FilterState) => void;
 	viewMode: ViewMode;
 	onViewModeChange: (mode: ViewMode) => void;
+	showViewModeToggle?: boolean;
 	onRefresh?: () => void;
 	isLoading?: boolean;
 	locale: string;
@@ -51,6 +51,7 @@ export function MenuSearchFilter({
 	onFiltersChange,
 	viewMode,
 	onViewModeChange,
+	showViewModeToggle = true,
 	onRefresh,
 	isLoading = false,
 	locale
@@ -294,24 +295,18 @@ export function MenuSearchFilter({
 						</Button>
 					)}
 
-					<div className="flex border rounded-lg p-1">
-						<Button
-							variant={viewMode === 'list' ? 'default' : 'ghost'}
-							size="sm"
-							onClick={() => onViewModeChange('list')}
-							className="px-2"
-						>
-							<List className="h-4 w-4" />
-						</Button>
-						<Button
-							variant={viewMode === 'table' ? 'default' : 'ghost'}
-							size="sm"
-							onClick={() => onViewModeChange('table')}
-							className="px-2"
-						>
-							<Table className="h-4 w-4" />
-						</Button>
-					</div>
+					{showViewModeToggle ? (
+						<div className="flex border rounded-lg p-1">
+							<Button
+								variant={viewMode === 'table' ? 'default' : 'ghost'}
+								size="sm"
+								onClick={() => onViewModeChange('table')}
+								className="px-2"
+							>
+								<Table className="h-4 w-4" />
+							</Button>
+						</div>
+					) : null}
 				</div>
 			</div>
 		</div>

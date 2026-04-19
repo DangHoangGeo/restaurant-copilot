@@ -76,8 +76,6 @@ export default function EmployeeList() {
       }
       const data = await response.json();
 
-      console.log("Fetched employees", data);
-
       // Transform API data to DisplayEmployee format
       const transformedEmployees: DisplayEmployee[] = (data.employees || []).map((emp: ApiEmployee) => ({
         id: emp.id,

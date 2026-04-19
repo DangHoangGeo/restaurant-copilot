@@ -16,9 +16,9 @@ const tableSchema = z.object({
   qrCodeCreatedAt: z.string().optional(),
 });
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ tableId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
-  const tableId = req.nextUrl.searchParams.get("tableId") || "";
+  const { tableId } = await params;
 
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID.' }, { status: 401 });
@@ -70,7 +70,6 @@ export async function DELETE(req: NextRequest) {
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ tableId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
   const {tableId} = await params; //req.nextUrl.searchParams.get('tableId') || '';
-  console.log('PATCH request for tableId:', tableId);
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID.' }, { status: 401 });
   }
