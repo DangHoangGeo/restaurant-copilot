@@ -48,16 +48,16 @@ class AddToOrderCoordinator: ObservableObject {
         selectedSizeId: String? = nil,
         selectedToppingIds: [String]? = nil
     ) -> Double {
+        let normalizedToppingIds = normalizeToppingIds(selectedToppingIds)
         var basePrice = menuItem.price
         
-        // Add size price if selected
+        // Size prices are stored as the full base price for that size.
         if let sizeId = selectedSizeId,
            let size = menuItem.availableSizes?.first(where: { $0.id == sizeId }) {
-            basePrice += size.price
+            basePrice = size.price
         }
         
-        // Add topping prices if selected
-        if let toppingIds = selectedToppingIds {
+        if let toppingIds = normalizedToppingIds {
             for toppingId in toppingIds {
                 if let topping = menuItem.availableToppings?.first(where: { $0.id == toppingId }) {
                     basePrice += topping.price
@@ -135,10 +135,11 @@ class AddToOrderCoordinator: ObservableObject {
         errorMessage = nil
 
         do {
+            let normalizedToppingIds = normalizeToppingIds(selectedToppingIds)
             let price = calculateUnitPrice(
                 for: menuItem,
                 selectedSizeId: selectedSizeId,
-                selectedToppingIds: selectedToppingIds
+                selectedToppingIds: normalizedToppingIds
             )
 
             // Always use local draft for cart-like behavior
@@ -148,7 +149,7 @@ class AddToOrderCoordinator: ObservableObject {
                 quantity: quantity,
                 notes: notes,
                 selectedSizeId: selectedSizeId,
-                selectedToppingIds: selectedToppingIds,
+                selectedToppingIds: normalizedToppingIds,
                 priceAtOrder: price,
                 menuItem: menuItem
             )
@@ -180,10 +181,11 @@ class AddToOrderCoordinator: ObservableObject {
         errorMessage = nil
 
         do {
+            let normalizedToppingIds = normalizeToppingIds(selectedToppingIds)
             let unitPrice = calculateUnitPrice(
                 for: menuItem,
                 selectedSizeId: selectedSizeId,
-                selectedToppingIds: selectedToppingIds
+                selectedToppingIds: normalizedToppingIds
             )
 
             if var localOrder = orderManager.localDraftOrders[orderId],
@@ -203,7 +205,7 @@ class AddToOrderCoordinator: ObservableObject {
                     quantity: quantity,
                     notes: notes,
                     menu_item_size_id: selectedSizeId,
-                    topping_ids: selectedToppingIds,
+                    topping_ids: normalizedToppingIds,
                     price_at_order: unitPrice,
                     status: .draft,
                     created_at: existingItem.created_at,
@@ -228,7 +230,7 @@ class AddToOrderCoordinator: ObservableObject {
                     quantity: quantity,
                     notes: notes,
                     selectedSizeId: selectedSizeId,
-                    selectedToppingIds: selectedToppingIds,
+                    selectedToppingIds: normalizedToppingIds,
                     priceAtOrder: unitPrice,
                     menuItem: menuItem
                 )
@@ -268,6 +270,18 @@ class AddToOrderCoordinator: ObservableObject {
         // For existing orders from OrderDetailView, we should always add to the same session
         // No new session creation should happen
         return true
+    }
+
+    private func normalizeToppingIds(_ toppingIds: [String]?) -> [String]? {
+        guard let toppingIds else {
+            return nil
+        }
+
+        let normalized = toppingIds
+            .filter { !$0.isEmpty }
+            .sorted()
+
+        return normalized.isEmpty ? nil : normalized
     }
 }
 

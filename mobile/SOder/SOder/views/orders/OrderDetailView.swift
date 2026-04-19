@@ -456,10 +456,6 @@ private extension OrderDetailView {
     }
 
     func totalAmount(for order: Order) -> Double {
-        if order.status == .completed, let total = order.total_amount {
-            return total
-        }
-
         return subtotalAmount(for: order) - discountAmount(for: order) + taxAmount(for: order) + tipAmount(for: order)
     }
 
