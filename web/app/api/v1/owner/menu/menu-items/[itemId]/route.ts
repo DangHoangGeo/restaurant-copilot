@@ -222,11 +222,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ itemId: string }> }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ itemId: string }> }) {
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
-	console.log("req", req);
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
   }
 

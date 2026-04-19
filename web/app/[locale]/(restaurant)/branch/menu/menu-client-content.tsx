@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle } from 'lucide-react';
 import { MenuSkeleton } from '@/components/ui/skeletons';
 import { useTranslations } from 'next-intl';
@@ -334,7 +333,7 @@ export function MenuClientContent() {
     availability: 'all',
     stockStatus: 'all'
   });
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
   
   // Delete protection state
   const [deleteProtectionDialog, setDeleteProtectionDialog] = useState<{
@@ -1116,6 +1115,7 @@ export function MenuClientContent() {
         onFiltersChange={handleFiltersChange}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
+        showViewModeToggle={false}
         onRefresh={reloadData}
         isLoading={isLoading}
         locale={locale}
@@ -1123,10 +1123,7 @@ export function MenuClientContent() {
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div>
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
-            <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
-              {t('title')}
-            </h2>
+          <div className="flex justify-end mb-4">
             <Button onClick={() => handleOpenCategoryModal()}>
               <PlusCircle className="mr-2 h-4 w-4" />
               {t('add_category')}
@@ -1143,10 +1140,10 @@ export function MenuClientContent() {
               {filteredMenuData.map((category, index) => (
                 <Draggable key={category.id} draggableId={category.id} index={index}>
                   {(providedDraggable) => (
-                    <Card
+                    <section
                       ref={providedDraggable.innerRef}
                       {...providedDraggable.draggableProps}
-                      className="mb-6"
+                      className="mb-4 rounded-md border bg-background"
                     >
                       <div
                         {...providedDraggable.dragHandleProps}
@@ -1172,62 +1169,31 @@ export function MenuClientContent() {
                       </div>
                       <Droppable droppableId={category.id} type="MENU_ITEM">
                         {(providedDroppableItems) => (
-                          <CardContent
+                          <div
                             ref={providedDroppableItems.innerRef}
                             {...providedDroppableItems.droppableProps}
+                            className="px-2 pb-2"
                           >
                             {category.menu_items.length > 0 ? (
-                              viewMode === 'table' ? (
-                                <div className="overflow-x-auto">
-                                  <table className="w-full">
-                                    <thead>
-                                      <tr className="border-b">
-                                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                                          {t('table_headers.image')}
-                                        </th>
-                                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                                          {t('table_headers.item_details')}
-                                        </th>
-                                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                                          {t('table_headers.actions')}
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {category.menu_items.map((item, itemIndex) => (
-                                        <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
-                                          {(providedDraggableItem) => (
-                                            <MenuItemCard
-                                              item={item}
-                                              locale={locale}
-                                              viewMode={viewMode}
-                                              isLoading={isLoading}
-                                              onEdit={() => handleOpenItemModal(category, item as MenuItemFormData)}
-                                              onDelete={() => handleDeleteItem(item.id)}
-                                              onToggleAvailability={() => handleToggleAvailability(item.id, item.available)}
-                                              t={t}
-                                              dragRef={providedDraggableItem.innerRef}
-                                              dragHandleProps={providedDraggableItem.dragHandleProps}
-                                              draggableProps={providedDraggableItem.draggableProps}
-                                            />
-                                          )}
-                                        </Draggable>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                  {providedDroppableItems.placeholder}
-                                </div>
-                              ) : (
-                                <div className="space-y-3">
-                                  {category.menu_items.map((item, itemIndex) => (
-                                    <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
-                                      {(providedDraggableItem) => (
-                                        <div
-                                          ref={providedDraggableItem.innerRef}
-                                          {...providedDraggableItem.draggableProps}
-                                          {...providedDraggableItem.dragHandleProps}
-                                          className="cursor-grab"
-                                        >
+                              <div className="overflow-x-auto">
+                                <table className="w-full">
+                                  <thead>
+                                    <tr className="border-b">
+                                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        {t('table_headers.image')}
+                                      </th>
+                                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        {t('table_headers.item_details')}
+                                      </th>
+                                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        {t('table_headers.actions')}
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {category.menu_items.map((item, itemIndex) => (
+                                      <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
+                                        {(providedDraggableItem) => (
                                           <MenuItemCard
                                             item={item}
                                             locale={locale}
@@ -1237,14 +1203,17 @@ export function MenuClientContent() {
                                             onDelete={() => handleDeleteItem(item.id)}
                                             onToggleAvailability={() => handleToggleAvailability(item.id, item.available)}
                                             t={t}
+                                            dragRef={providedDraggableItem.innerRef}
+                                            dragHandleProps={providedDraggableItem.dragHandleProps}
+                                            draggableProps={providedDraggableItem.draggableProps}
                                           />
-                                        </div>
-                                      )}
-                                    </Draggable>
-                                  ))}
-                                  {providedDroppableItems.placeholder}
-                                </div>
-                              )
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                  </tbody>
+                                </table>
+                                {providedDroppableItems.placeholder}
+                              </div>
                             ) : (
                               <div className="text-center py-8">
                                 <MenuIcon className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
@@ -1258,10 +1227,10 @@ export function MenuClientContent() {
                                 </div>
                               </div>
                             )}
-                          </CardContent>
+                          </div>
                         )}
                       </Droppable>
-                    </Card>
+                    </section>
                   )}
                 </Draggable>
               ))}

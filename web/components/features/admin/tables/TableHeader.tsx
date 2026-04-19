@@ -10,7 +10,7 @@ interface TableHeaderProps {
   searchQuery: string
   statusFilter: string
   onAddTable: () => void
-  onBulkAdd: () => void
+  onBulkAdd?: () => void
 }
 
 export function TableHeader({
@@ -50,10 +50,12 @@ export function TableHeader({
       </div>
       
       <div className="flex gap-2 w-full sm:w-auto">
-        <Button onClick={onBulkAdd} variant="outline" size="sm">
-          <Layers className="mr-2 h-4 w-4" />
-          <span className="hidden sm:inline">{t('bulk_add.button_text')}</span>
-        </Button>
+        {onBulkAdd ? (
+          <Button onClick={onBulkAdd} variant="outline" size="sm">
+            <Layers className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">{t('bulk_add.button_text')}</span>
+          </Button>
+        ) : null}
         <Button onClick={onAddTable}>
           <PlusCircle className="mr-2 h-4 w-4" />
           <span className="hidden sm:inline">{t('add_table')}</span>

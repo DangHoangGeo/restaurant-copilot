@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 type ViewportType = "desktop" | "tablet" | "mobile";
 
-export function HomepagePreview({locale}: { locale: string }) {
+export function HomepagePreview() {
   const t = useTranslations("owner.homepage.preview");
   const { toast } = useToast();
   const [viewport, setViewport] = useState<ViewportType>("desktop");
@@ -19,7 +19,6 @@ export function HomepagePreview({locale}: { locale: string }) {
 
   const handlePreviewClick = async () => {
     setIsLoading(true);
-	console.log(locale);
     try {
       // Simulate loading time
       await new Promise(resolve => setTimeout(resolve, 1000));

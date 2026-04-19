@@ -208,10 +208,6 @@ export function TablesClientContent() {
     setIsQrModalOpen(true);
   }
 
-  const handleOpenBulkAddModal = () => {
-    toast.info('Bulk add functionality coming soon');
-  };
-
   const clearFilters = () => {
     setSearchQuery('');
     setStatusFilter('all');
@@ -263,7 +259,6 @@ export function TablesClientContent() {
         searchQuery={searchQuery}
         statusFilter={statusFilter}
         onAddTable={() => handleOpenTableModal()}
-        onBulkAdd={handleOpenBulkAddModal}
       />
 
       {/* Stats Cards */}

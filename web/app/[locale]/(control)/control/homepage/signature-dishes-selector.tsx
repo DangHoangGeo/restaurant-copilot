@@ -156,8 +156,7 @@ export function SignatureDishesSelector({ locale }: SignatureDishesProps) {
         throw new Error('Failed to update signature dishes');
       }
 
-      const result = await response.json();
-      console.log('Signature dishes updated successfully:', result);
+      await response.json();
 
       toast.success(
         isSignature 
