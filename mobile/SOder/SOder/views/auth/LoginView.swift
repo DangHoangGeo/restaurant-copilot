@@ -21,12 +21,7 @@ struct LoginView: View {
     }
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack { contentView }
-        } else {
-            NavigationView { contentView }
-                .navigationViewStyle(StackNavigationViewStyle())
-        }
+        NavigationStack { contentView }
     }
 
     private var contentView: some View {
@@ -64,7 +59,7 @@ struct LoginView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showLanguageSelector) {
             LanguageSelectorView()
                 .environmentObject(localizationManager)
@@ -296,7 +291,8 @@ struct LoginView: View {
 
     private func legalURL(path: String) -> URL {
         let locale = localizationManager.currentLanguage
-        return URL(string: "https://coorder.ai/\(locale)/\(path)")!
+        return URL(string: "https://coorder.ai/\(locale)/\(path)")
+            ?? URL(string: "https://coorder.ai/en/\(path)")!
     }
 
     private func loadSavedCredentials() {

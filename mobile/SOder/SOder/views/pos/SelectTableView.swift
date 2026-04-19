@@ -20,12 +20,12 @@ extension TableStatus {
 
 struct SelectTableView: View {
     let onOrderConfirmed: (() -> Void)?
-    
+
     // Using EnvironmentObject to consume the shared OrderManager instance
     @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject var supabaseManager: SupabaseManager // For fetching tables
 
-    @State private var tables: [Table] = [] // This will now be [Models.Table]
+    @State private var tables: [Table] = []
 
     @State private var isLoading = false
     @State private var showingErrorAlert = false
@@ -35,16 +35,12 @@ struct SelectTableView: View {
     @State private var selectedTable: Table? = nil
     @State private var newOrderId: String? = nil
 
-    // Define grid layout: 3 columns for iPad, 2 for iPhone
-    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     private var columns: [GridItem] {
-        UIDevice.current.userInterfaceIdiom == .pad ?
-            Array(repeating: .init(.flexible()), count: 3) :
-            Array(repeating: .init(.flexible()), count: 2)
+        let count = horizontalSizeClass == .regular ? 3 : 2
+        return Array(repeating: .init(.flexible()), count: count)
     }
-    #else // macOS or other platforms
-    private var columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
-    #endif
 
     private func operationalStatus(for table: Table) -> TableOperationalStatus {
         orderManager.operationalStatus(for: table)
@@ -54,11 +50,11 @@ struct SelectTableView: View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView("Loading tables...")
+                    ProgressView("tables_loading".localized)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if tables.isEmpty {
-                    Text("No tables found for this restaurant.")
-                        .foregroundColor(.secondary)
+                    Text("no_tables_found".localized)
+                        .foregroundColor(.appTextSecondary)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView {
@@ -71,7 +67,7 @@ struct SelectTableView: View {
                     }
                 }
             }
-            .navigationTitle("Select a Table")
+            .navigationTitle("select_table_title".localized)
             .navigationDestination(item: $selectedTable) { table in
                 if let orderId = newOrderId {
                     MenuSelectionView(orderId: orderId, table: table, onOrderConfirmed: onOrderConfirmed)
@@ -88,7 +84,7 @@ struct SelectTableView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
-                    .accessibilityLabel("Refresh tables")
+                    .accessibilityLabel("refresh_tables_button".localized)
                 }
             }
             .task {
@@ -96,10 +92,10 @@ struct SelectTableView: View {
                     await fetchTables()
                 }
             }
-            .alert("Error", isPresented: $showingErrorAlert) {
-                Button("OK") {}
+            .alert("error".localized, isPresented: $showingErrorAlert) {
+                Button("ok".localized) {}
             } message: {
-                Text(errorMessage ?? "An unknown error occurred.")
+                Text(errorMessage ?? "unknown_error".localized)
             }
         }
     }
@@ -126,7 +122,7 @@ struct SelectTableView: View {
                     .foregroundColor(status.statusColor)
             }
 
-            Text("Capacity: \(table.capacity)")
+            Text(String(format: "table_capacity_format".localized, table.capacity))
                 .font(.captionRegular)
                 .foregroundColor(.appTextSecondary)
         }
@@ -141,7 +137,7 @@ struct SelectTableView: View {
                 .stroke(status.statusColor.opacity(0.7), lineWidth: status == .available ? 2 : 0.5)
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(table.name), Status: \(status.displayName), Capacity: \(table.capacity)")
+        .accessibilityLabel(String(format: "%@, %@, %@", table.name, status.displayName, String(format: "table_capacity_format".localized, table.capacity)))
         .accessibilityHint(status == .available ? "Tap to start a new order for this table." : (status == .occupied || status == .serving) ? "Tap to add items to the existing order for this table." : "This table is currently \(status.displayName).")
         .onTapGesture {
             if status == .available {
@@ -179,22 +175,16 @@ struct SelectTableView: View {
         do {
             // Ensure SupabaseManager has a valid restaurant ID
             guard supabaseManager.currentRestaurantId != nil else {
-                self.errorMessage = "Restaurant not identified. Please ensure you are logged in correctly."
+                self.errorMessage = "error_missing_restaurant_id".localized
                 self.showingErrorAlert = true
                 self.isLoading = false
-                self.tables = [] // Clear tables if restaurant ID is missing
+                self.tables = []
                 return
             }
 
             self.tables = try await supabaseManager.fetchAllTables()
-            if self.tables.isEmpty {
-                // You might want to set a specific message for "no tables found" vs. an error
-                // For now, the main view handles the empty state text.
-                print("No tables found for the current restaurant.")
-            }
         } catch {
-            print("Error fetching tables: \(error.localizedDescription)")
-            self.errorMessage = "Failed to load tables: \(error.localizedDescription)"
+            self.errorMessage = String(format: "%@: %@", "error_fetch_active_orders".localized, error.localizedDescription)
             self.showingErrorAlert = true
             self.tables = [] // Clear tables on error
         }

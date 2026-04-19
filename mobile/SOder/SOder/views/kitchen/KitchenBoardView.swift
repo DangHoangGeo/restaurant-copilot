@@ -231,7 +231,7 @@ struct KitchenBoardView: View {
                 .animation(.easeInOut(duration: 0.3), value: showingItemDetails)
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .task {
             await orderManager.fetchActiveOrders()
             await MainActor.run {

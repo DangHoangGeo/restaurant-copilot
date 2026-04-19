@@ -357,6 +357,7 @@
 "kitchen_auto_print_new_orders" = "Auto-Print New Orders";
 "kitchen_clear_print_history" = "Clear Print History";
 "kitchen_sign_out" = "Sign Out";
+"kitchen_more_actions" = "More actions";
 
 // MARK: - Auto Print Status
 "status_auto_printing" = "Auto-printing...";
@@ -1225,3 +1226,38 @@
 "print_queue_job_type_customer_receipt" = "Customer receipt";
 "print_queue_job_type_test_receipt" = "Test receipt";
 "print_queue_job_type_kitchen_test" = "Kitchen test";
+
+// MARK: - Select Table View
+"select_table_title" = "Select a Table";
+"no_tables_found" = "No tables found for this restaurant.";
+"table_capacity_format" = "Capacity: %d seats";
+"refresh_tables_button" = "Refresh Tables";
+
+// MARK: - Draft Order View
+"draft_table_label_format" = "Table: %@";
+"draft_preparing_order_format" = "Preparing order for %@...";
+"draft_size_custom" = "Custom size";
+"draft_toppings_count_format" = "+ %d toppings";
+"price_each_format" = "¥%.0f each";
+"draft_add_items_to_continue" = "Add items to continue";
+"draft_add_items_accessibility" = "Add items before placing order";
+"draft_add_items_hint" = "Tap to add menu items";
+
+// MARK: - Kitchen Live Label
+"kitchen_live_label" = "live kitchen";
+
+// MARK: - Timeout Error
+"timeout_error" = "Request timed out";
+
+// MARK: - Settings View
+"tab_settings" = "Settings";
+"settings_auto_print_title" = "Auto-Print Orders";
+"settings_auto_print_toggle_label" = "Auto-print when ready";
+"settings_auto_print_subtitle" = "Kitchen tickets print automatically when new orders arrive. Leave this off if you do not have a printer.";
+"settings_no_printer_hint" = "Set up a printer in Printing to enable auto-print.";
+"settings_printing_section" = "Printing";
+"settings_account_section" = "Account";
+"settings_sign_out_button" = "Sign Out";
+"settings_sign_out_confirm_title" = "Sign Out";
+"settings_sign_out_confirm_message" = "Are you sure you want to sign out?";
+"settings_app_version_label" = "Version";

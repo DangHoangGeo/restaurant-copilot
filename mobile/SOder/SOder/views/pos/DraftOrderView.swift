@@ -49,7 +49,7 @@ struct DraftOrderView: View {
                                     Text("total_price_label".localized)
                                         .fontWeight(.bold)
                                     Spacer()
-                                    Text(String(format: "%.0f円", order.total_amount ?? calculateTotalPrice()))
+                                    Text(String(format: "price_format".localized, order.total_amount ?? calculateTotalPrice()))
                                         .fontWeight(.bold)
                                 }
                             }
@@ -59,11 +59,12 @@ struct DraftOrderView: View {
                     } else {
                         // Empty cart state - show table info and empty state
                         VStack(spacing: 16) {
-                            Text("Table: \(table.name)")
+                            Text(String(format: "draft_table_label_format".localized, table.name))
                                 .font(.title2)
                                 .fontWeight(.semibold)
+                                .foregroundColor(.appTextPrimary)
                             Text("no_items_in_order_text".localized)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.appTextSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .padding()
@@ -76,8 +77,8 @@ struct DraftOrderView: View {
             } else {
                 // No draft order - show loading or error state
                 VStack(spacing: 20) {
-                    Text("Preparing order for \(table.name)...")
-                        .foregroundColor(.secondary)
+                    Text(String(format: "draft_preparing_order_format".localized, table.name))
+                        .foregroundColor(.appTextSecondary)
                         .padding(16)
                 }
                 Spacer()
@@ -144,22 +145,22 @@ struct DraftOrderView: View {
                     if item.menu_item_size_id != nil || !(item.topping_ids?.isEmpty ?? true) {
                         VStack(alignment: .leading, spacing: 2) {
                             if item.menu_item_size_id != nil {
-                                Text("Size: Custom") // In real app, would show actual size name
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                Text("draft_size_custom".localized)
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appTextSecondary)
                             }
                             if let toppingIds = item.topping_ids, !toppingIds.isEmpty {
-                                Text("+ \(toppingIds.count) toppings")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                Text(String(format: "draft_toppings_count_format".localized, toppingIds.count))
+                                    .font(.captionRegular)
+                                    .foregroundColor(.appTextSecondary)
                             }
                         }
                     }
                     
                     if let notes = item.notes, !notes.isEmpty {
-                        Text("📝 \(notes)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Text(notes)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                             .padding(.top, 2)
                     }
                 }
@@ -167,13 +168,14 @@ struct DraftOrderView: View {
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(String(format: "%.0f円", item.price_at_order * Double(item.quantity)))
+                    Text(String(format: "price_format".localized, item.price_at_order * Double(item.quantity)))
                         .font(.headline)
                         .fontWeight(.semibold)
-                    
-                    Text(String(format: "%.0f円 each", item.price_at_order))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appTextPrimary)
+
+                    Text(String(format: "price_each_format".localized, item.price_at_order))
+                        .font(.captionRegular)
+                        .foregroundColor(.appTextSecondary)
                 }
             }
             
@@ -214,7 +216,7 @@ struct DraftOrderView: View {
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.gray.opacity(0.1))
+                .background(Color.appSurfaceSecondary)
                 .cornerRadius(8)
                 
                 Spacer()
@@ -230,7 +232,7 @@ struct DraftOrderView: View {
                 }
                 .buttonStyle(.plain)
                 .frame(width: 36, height: 36)
-                .background(Color.red.opacity(0.1))
+                .background(Color.appError.opacity(0.1))
                 .cornerRadius(8)
             }
         }
@@ -253,13 +255,13 @@ struct DraftOrderView: View {
                 if hasItems {
                     Label("confirm_order_to_kitchen_button_title".localized, systemImage: "paperplane.fill")
                 } else {
-                    Label("Add items to continue", systemImage: "plus.circle.fill")
+                    Label("draft_add_items_to_continue".localized, systemImage: "plus.circle.fill")
                 }
             }
             .buttonStyle(PrimaryButtonStyle())
             .disabled(isProcessingOrder || draftOrder == nil)
-            .accessibilityLabel(hasItems ? "confirm_order_to_kitchen_accessibility_label".localized : "Add items before placing order")
-            .accessibilityHint(hasItems ? "confirm_order_to_kitchen_accessibility_hint".localized : "Tap to add menu items")
+            .accessibilityLabel(hasItems ? "confirm_order_to_kitchen_accessibility_label".localized : "draft_add_items_accessibility".localized)
+            .accessibilityHint(hasItems ? "confirm_order_to_kitchen_accessibility_hint".localized : "draft_add_items_hint".localized)
 
             Button("cancel_entire_order_button_title".localized) {
                 showingCancelConfirmAlert = true
@@ -287,8 +289,7 @@ struct DraftOrderView: View {
                 _ = try await orderManager.getDraftOrder(orderId: orderId)
             }
         } catch {
-            print("Error fetching draft order: \(error.localizedDescription)")
-            self.errorMessage = "Failed to load draft order: \(error.localizedDescription)"
+            self.errorMessage = error.localizedDescription
             self.showingErrorAlert = true
         }
         isLoading = false
@@ -302,8 +303,7 @@ struct DraftOrderView: View {
             try await orderManager.removeDraftOrderItem(orderItemId: orderItemId)
             // No need to fetch - the computed property will automatically update
         } catch {
-            print("Error removing order item: \(error.localizedDescription)")
-            self.errorMessage = "Failed to remove item: \(error.localizedDescription)"
+            self.errorMessage = error.localizedDescription
             self.showingErrorAlert = true
         }
         isProcessingOrder = false
@@ -326,8 +326,7 @@ struct DraftOrderView: View {
             try await orderManager.updateDraftOrderItemQuantity(orderItemId: orderItemId, newQuantity: newQuantity)
             print("🎯 Successfully updated quantity in OrderManager")
         } catch {
-            print("Error updating item quantity: \(error.localizedDescription)")
-            self.errorMessage = "Failed to update quantity: \(error.localizedDescription)"
+            self.errorMessage = error.localizedDescription
             self.showingErrorAlert = true
         }
         isProcessingOrder = false
@@ -336,7 +335,7 @@ struct DraftOrderView: View {
     @MainActor
     private func confirmOrderToKitchen() async {
         guard let order = draftOrder, order.id == orderId else {
-            self.errorMessage = "Draft order details are missing."
+            self.errorMessage = "error_order_update_failed".localized
             self.showingErrorAlert = true
             return
         }
@@ -347,8 +346,7 @@ struct DraftOrderView: View {
             _ = try await orderManager.confirmOrderToKitchen(orderId: order.id)
             self.showOrderConfirmedAlert = true
         } catch {
-            print("Error confirming order: \(error.localizedDescription)")
-            self.errorMessage = "Failed to confirm order: \(error.localizedDescription)"
+            self.errorMessage = error.localizedDescription
             self.showingErrorAlert = true
         }
         isProcessingOrder = false
@@ -357,7 +355,7 @@ struct DraftOrderView: View {
     @MainActor
     private func cancelEntireOrder() async {
         guard let order = draftOrder, order.id == orderId else {
-            self.errorMessage = "Draft order details are missing."
+            self.errorMessage = "error_order_update_failed".localized
             self.showingErrorAlert = true
             return
         }
@@ -368,8 +366,7 @@ struct DraftOrderView: View {
             try await orderManager.clearDraftOrder(orderId: order.id)
             dismiss()
         } catch {
-            print("Error cancelling order: \(error.localizedDescription)")
-            self.errorMessage = "Failed to cancel order: \(error.localizedDescription)"
+            self.errorMessage = error.localizedDescription
             self.showingErrorAlert = true
         }
         isProcessingOrder = false

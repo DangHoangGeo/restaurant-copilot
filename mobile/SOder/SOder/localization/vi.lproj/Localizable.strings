@@ -357,6 +357,7 @@
 "kitchen_auto_print_new_orders" = "Tự động In Đơn hàng Mới";
 "kitchen_clear_print_history" = "Xóa Lịch sử In";
 "kitchen_sign_out" = "Đăng xuất";
+"kitchen_more_actions" = "Thêm thao tác";
 
 // MARK: - Auto Print Status
 "status_auto_printing" = "Đang tự động in...";
@@ -1157,3 +1158,38 @@
 "print_queue_job_type_customer_receipt" = "Hóa đơn khách";
 "print_queue_job_type_test_receipt" = "Hóa đơn thử";
 "print_queue_job_type_kitchen_test" = "Thử bếp";
+
+// MARK: - Select Table View
+"select_table_title" = "Chọn bàn";
+"no_tables_found" = "Không tìm thấy bàn nào cho nhà hàng này.";
+"table_capacity_format" = "Sức chứa: %d chỗ";
+"refresh_tables_button" = "Làm mới danh sách bàn";
+
+// MARK: - Draft Order View
+"draft_table_label_format" = "Bàn: %@";
+"draft_preparing_order_format" = "Đang chuẩn bị order cho %@...";
+"draft_size_custom" = "Kích thước tùy chọn";
+"draft_toppings_count_format" = "+ %d topping";
+"price_each_format" = "¥%.0f / món";
+"draft_add_items_to_continue" = "Thêm món để tiếp tục";
+"draft_add_items_accessibility" = "Thêm món trước khi đặt hàng";
+"draft_add_items_hint" = "Nhấn để thêm món";
+
+// MARK: - Kitchen Live Label
+"kitchen_live_label" = "bếp trực tiếp";
+
+// MARK: - Timeout Error
+"timeout_error" = "Yêu cầu đã hết thời gian chờ";
+
+// MARK: - Settings View
+"tab_settings" = "Cài đặt";
+"settings_auto_print_title" = "Tự động in đơn";
+"settings_auto_print_toggle_label" = "Tự động in khi sẵn sàng";
+"settings_auto_print_subtitle" = "Tự động in phiếu bếp khi có đơn mới. Tắt nếu bạn không có máy in.";
+"settings_no_printer_hint" = "Thiết lập máy in trong phần In ấn để bật tính năng này.";
+"settings_printing_section" = "In ấn";
+"settings_account_section" = "Tài khoản";
+"settings_sign_out_button" = "Đăng xuất";
+"settings_sign_out_confirm_title" = "Đăng xuất";
+"settings_sign_out_confirm_message" = "Bạn có chắc chắn muốn đăng xuất không?";
+"settings_app_version_label" = "Phiên bản";

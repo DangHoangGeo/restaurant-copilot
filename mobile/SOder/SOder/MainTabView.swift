@@ -32,11 +32,11 @@ struct MainTabView: View {
                 }
                 .tag(2)
 
-            // Printer Settings Tab
-            PrinterSettingsView()
+            // Settings Tab
+            SettingsView()
                 .environmentObject(printerManager)
                 .tabItem {
-                    Label("tab_printer_settings".localized, systemImage: "printer")
+                    Label("tab_settings".localized, systemImage: "gearshape.fill")
                 }
                 .tag(3)
 
