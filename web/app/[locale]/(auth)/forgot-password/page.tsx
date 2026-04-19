@@ -63,92 +63,85 @@ export default function ForgotPasswordPage() {
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          <div className="flex items-start gap-3 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 rounded-xl">
+            <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+            <p className="text-sm text-red-700 dark:text-red-300 leading-snug">{error}</p>
           </div>
         )}
-        
+
         {message && (
-          <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-            <p className="text-sm text-green-700 dark:text-green-300">{message}</p>
+          <div className="flex items-start gap-3 px-4 py-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl">
+            <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+            <p className="text-sm text-emerald-700 dark:text-emerald-300 leading-snug">{message}</p>
           </div>
         )}
 
         {!message ? (
           <>
             <FormField
-              label={t("emailLabel") || "Email Address"}
+              label={t("emailLabel")}
               type="email"
-              placeholder={t("emailPlaceholder") || "Enter your email address"}
+              placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               leftIcon={<Mail className="h-4 w-4" />}
-              helpText={t("emailHelp") || "We'll send password reset instructions to this email"}
+              helpText={t("emailHelp")}
             />
 
-            <div className="flex justify-center py-2">
+            <div className="flex justify-center py-1">
               <ReCAPTCHA
                 sitekey={process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY!}
                 onChange={(token) => {
                   setCaptchaToken(token);
                   setError(null);
                 }}
-                theme="light"
               />
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={!captchaToken || !email || loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-2.5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-md shadow-orange-200 dark:shadow-orange-900/30 disabled:opacity-50"
             >
               {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  {t("sending") || "Sending..."}
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {t("sending")}
                 </div>
               ) : (
-                <>
-                  <Mail className="w-4 h-4 mr-2" />
-                  {t("sendResetLink") || "Send Reset Link"}
-                </>
+                <div className="flex items-center justify-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  {t("sendResetLink")}
+                </div>
               )}
             </Button>
           </>
         ) : (
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+          <div className="text-center space-y-4 py-4">
+            <div className="w-16 h-16 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-                {t("success.emailSent") || "Check your email"}
+                {t("success.emailSent")}
               </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {t("success.emailSentDescription") || "If an account with that email exists, we've sent you a password reset link."}
+              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                {t("success.emailSentDescription")}
               </p>
             </div>
           </div>
         )}
       </form>
 
-      {/* Footer Links */}
-      <div className="mt-6 text-center space-y-3">
-        <div className="flex justify-center space-x-4">
-          <Link href={`/${locale}/login`}>
-            <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
-              {t('loginButton') || 'Sign In'}
-            </Button>
-          </Link>
-          <Link href={`/${locale}/signup`}>
-            <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
-              {t('signUp') || 'Sign Up'}
-            </Button>
-          </Link>
-        </div>
+      <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+        <Link href={`/${locale}/login`} className="font-medium hover:text-orange-500 transition-colors">
+          {t("loginButton")}
+        </Link>
+        <span>·</span>
+        <Link href={`/${locale}/signup`} className="font-medium hover:text-orange-500 transition-colors">
+          {t("signUp")}
+        </Link>
       </div>
     </AuthCard>
   );

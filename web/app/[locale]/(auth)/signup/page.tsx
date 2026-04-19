@@ -2,29 +2,32 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "@/shared/schemas/signup";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AuthCard, FormField, PasswordInput, PolicyAgreement } from "@/components/auth";
 import { PRICING_PLANS } from "@/config/pricing";
+import { cn } from "@/lib/utils";
 
 type SignupFormInputs = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
-  const t = useTranslations('auth');
-  const tCommon = useTranslations('common');
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [subdomainAvailability, setSubdomainAvailability] = useState<"checking" | "available" | "not-available" | null>(null);
+  const [subdomainAvailability, setSubdomainAvailability] = useState<
+    "checking" | "available" | "not-available" | null
+  >(null);
 
   const {
     register,
@@ -33,7 +36,7 @@ export default function SignupPage() {
     watch,
     setError,
     clearErrors,
-    setValue
+    setValue,
   } = useForm<SignupFormInputs>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -61,10 +64,11 @@ export default function SignupPage() {
         setSubdomainAvailability(null);
         return;
       }
-
       setSubdomainAvailability("checking");
       try {
-        const response = await fetch(`/api/v1/restaurant/check-subdomain?subdomain=${subdomain}`);
+        const response = await fetch(
+          `/api/v1/restaurant/check-subdomain?subdomain=${subdomain}`
+        );
         const data = await response.json();
         if (data.available) {
           setSubdomainAvailability("available");
@@ -92,42 +96,37 @@ export default function SignupPage() {
   useEffect(() => {
     const handler = setTimeout(() => {
       checkSubdomainAvailability(subdomainValue);
-    }, 300); // Debounce time
-
-    return () => {
-      clearTimeout(handler);
-    };
+    }, 300);
+    return () => clearTimeout(handler);
   }, [subdomainValue, checkSubdomainAvailability]);
 
   useEffect(() => {
-    const queryPlan = searchParams.get('plan');
-    const queryBilling = searchParams.get('billing');
-    const savedPlan = window.localStorage.getItem('selectedPlan');
-    const savedBilling = window.localStorage.getItem('selectedBillingCycle');
-    const plan = queryPlan || savedPlan || 'starter';
-    const billingCycle = queryBilling || savedBilling || 'monthly';
+    const queryPlan = searchParams.get("plan");
+    const queryBilling = searchParams.get("billing");
+    const savedPlan = window.localStorage.getItem("selectedPlan");
+    const savedBilling = window.localStorage.getItem("selectedBillingCycle");
+    const plan = queryPlan || savedPlan || "starter";
+    const billingCycle = queryBilling || savedBilling || "monthly";
 
-    if (plan === 'starter' || plan === 'growth' || plan === 'enterprise') {
-      setValue('selectedPlan', plan);
+    if (plan === "starter" || plan === "growth" || plan === "enterprise") {
+      setValue("selectedPlan", plan);
     }
-
-    if (billingCycle === 'monthly' || billingCycle === 'yearly') {
-      setValue('selectedBillingCycle', billingCycle);
+    if (billingCycle === "monthly" || billingCycle === "yearly") {
+      setValue("selectedBillingCycle", billingCycle);
     }
   }, [searchParams, setValue]);
 
   const onSubmit = async (data: SignupFormInputs) => {
     setServerError(null);
 
-    if (subdomainAvailability === 'checking') {
+    if (subdomainAvailability === "checking") {
       toast.error("Still checking subdomain availability — please wait a moment");
       return;
     }
-    if (subdomainAvailability !== 'available') {
+    if (subdomainAvailability !== "available") {
       toast.error("Please choose an available subdomain before continuing");
       return;
     }
-
     if (!captchaToken) {
       setError("captchaToken", {
         type: "manual",
@@ -136,7 +135,6 @@ export default function SignupPage() {
       return;
     }
 
-    // 1. POST to /api/v1/verify-captcha
     try {
       const captchaRes = await fetch("/api/v1/verify-captcha", {
         method: "POST",
@@ -144,7 +142,6 @@ export default function SignupPage() {
         body: JSON.stringify({ token: captchaToken }),
       });
       const captchaData = await captchaRes.json();
-      console.log("Captcha verification response:", captchaData);
       if (!captchaData.valid) {
         setError("captchaToken", {
           type: "manual",
@@ -158,7 +155,6 @@ export default function SignupPage() {
       return;
     }
 
-    // 2. POST to /api/v1/register
     try {
       const registerRes = await fetch("/api/v1/auth/register", {
         method: "POST",
@@ -175,13 +171,11 @@ export default function SignupPage() {
           captchaToken,
         }),
       });
-
       const registerData = await registerRes.json();
       if (!registerRes.ok) {
         setServerError(registerData.error || t("registrationFailed"));
         return;
       }
-
       if (registerData.redirect) {
         router.push(registerData.redirect);
       }
@@ -193,40 +187,48 @@ export default function SignupPage() {
 
   const selectedPlan = watch("selectedPlan") || "starter";
   const selectedBillingCycle = watch("selectedBillingCycle") || "monthly";
-  const selectedPlanConfig = PRICING_PLANS.find((plan) => plan.id === selectedPlan);
+  const selectedPlanConfig = PRICING_PLANS.find((p) => p.id === selectedPlan);
   const selectedPrice =
     selectedBillingCycle === "yearly"
       ? selectedPlanConfig?.price.yearly
       : selectedPlanConfig?.price.monthly;
 
   return (
-    <AuthCard 
-      title="Create your company"
-      description="Choose your plan, create the founder account, and send the company for approval."
+    <AuthCard
+      title={t("signup.title")}
+      description={t("signup.description")}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Company Name */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Company name */}
         <FormField
-          label="Company name"
+          label={t("signup.companyNameLabel")}
           {...register("name")}
           error={errors.name?.message}
-          placeholder="Pho Tokyo Group"
+          placeholder={t("signup.companyNamePlaceholder")}
         />
 
         {/* Subdomain */}
         <FormField
-          label="Company subdomain"
+          label={t("signup.companySubdomainLabel")}
           {...register("subdomain")}
           error={errors.subdomain?.message}
-          placeholder="photokyo"
+          placeholder={t("signup.companySubdomainPlaceholder")}
           loading={subdomainAvailability === "checking"}
-          success={subdomainAvailability === "available" ? t('subdomainAvailable') : undefined}
-          helpText={subdomainAvailability === "not-available" ? t('subdomainNotAvailable') : undefined}
+          success={
+            subdomainAvailability === "available"
+              ? t("subdomainAvailable")
+              : undefined
+          }
+          helpText={
+            subdomainAvailability === "not-available"
+              ? t("subdomainNotAvailable")
+              : undefined
+          }
           rightIcon={
             subdomainAvailability === "checking" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
             ) : subdomainAvailability === "available" ? (
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-emerald-500" />
             ) : subdomainAvailability === "not-available" ? (
               <AlertCircle className="h-4 w-4 text-red-500" />
             ) : undefined
@@ -235,127 +237,189 @@ export default function SignupPage() {
 
         {/* Email */}
         <FormField
-          label={t('emailLabel')}
+          label={t("emailLabel")}
           type="email"
           {...register("email")}
           error={errors.email?.message}
-          placeholder={t('emailPlaceholder')}
+          placeholder={t("emailPlaceholder")}
         />
 
         {/* Password */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <PasswordInput
-            label={t("password.newPassword") || "Password"}
+            label={t("password.newPassword")}
             {...register("password")}
             value={passwordValue}
             showStrengthIndicator={true}
             showRequirements={true}
             confirmPassword={confirmPasswordValue}
-            placeholder={t("password.newPasswordPlaceholder") || "Enter your password"}
+            placeholder={t("password.newPasswordPlaceholder")}
             onPasswordChange={(password) => setValue("password", password)}
           />
           {errors.password && (
-            <p className="text-sm text-red-600">{errors.password.message}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">{errors.password.message}</p>
           )}
         </div>
 
         {/* Confirm Password */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <PasswordInput
-            label={t("password.confirmPassword") || "Confirm Password"}
+            label={t("password.confirmPassword")}
             {...register("confirmPassword")}
             value={confirmPasswordValue}
             showStrengthIndicator={false}
             showRequirements={false}
             confirmPassword={passwordValue}
-            placeholder={t("password.confirmPasswordPlaceholder") || "Confirm your password"}
+            placeholder={t("password.confirmPasswordPlaceholder")}
             onPasswordChange={(password) => setValue("confirmPassword", password)}
           />
           {errors.confirmPassword && (
-            <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">{errors.confirmPassword.message}</p>
           )}
         </div>
 
-        {/* Default Language */}
+        {/* Plan selector — visual cards */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            Plan
+            {t("signup.planLabel")}
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {PRICING_PLANS.map((plan) => {
+              const isSelected = selectedPlan === plan.id;
+              const price =
+                selectedBillingCycle === "yearly"
+                  ? plan.price.yearly
+                  : plan.price.monthly;
+              return (
+                <button
+                  key={plan.id}
+                  type="button"
+                  onClick={() =>
+                    setValue(
+                      "selectedPlan",
+                      plan.id as "starter" | "growth" | "enterprise"
+                    )
+                  }
+                  className={cn(
+                    "relative flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-center transition-all duration-150",
+                    isSelected
+                      ? "border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-sm"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600"
+                  )}
+                >
+                  {isSelected && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500">
+                      <Check className="h-2.5 w-2.5 text-white" />
+                    </span>
+                  )}
+                  <span
+                    className={cn(
+                      "text-xs font-semibold",
+                      isSelected
+                        ? "text-orange-700 dark:text-orange-300"
+                        : "text-slate-700 dark:text-slate-300"
+                    )}
+                  >
+                    {plan.name}
+                  </span>
+                  {price != null && (
+                    <span
+                      className={cn(
+                        "text-[11px]",
+                        isSelected
+                          ? "text-orange-600 dark:text-orange-400"
+                          : "text-slate-400 dark:text-slate-500"
+                      )}
+                    >
+                      ${price}/mo
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Billing cycle toggle */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {t("signup.billingCycleLabel")}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {(["monthly", "yearly"] as const).map((cycle) => (
+              <button
+                key={cycle}
+                type="button"
+                onClick={() => setValue("selectedBillingCycle", cycle)}
+                className={cn(
+                  "rounded-xl border px-3 py-2 text-sm font-medium transition-all duration-150",
+                  selectedBillingCycle === cycle
+                    ? "border-orange-500 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 shadow-sm"
+                    : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600"
+                )}
+              >
+                {cycle === "monthly" ? t("signup.billingMonthly") : t("signup.billingYearly")}
+                {cycle === "yearly" && (
+                  <span className="ml-1.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    Save
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Plan summary */}
+        <div className="rounded-xl border border-orange-200 dark:border-orange-900/50 bg-orange-50/60 dark:bg-orange-950/20 p-4">
+          <div className="flex items-baseline justify-between">
+            <p className="text-sm font-semibold text-orange-900 dark:text-orange-100">
+              {selectedPlanConfig?.name ?? t("signup.planLabel")}
+            </p>
+            {selectedPrice != null && (
+              <p className="text-sm font-bold text-orange-700 dark:text-orange-300">
+                ${selectedPrice}
+                <span className="text-xs font-normal text-orange-500 dark:text-orange-400 ml-0.5">/mo</span>
+              </p>
+            )}
+          </div>
+          <p className="mt-0.5 text-xs text-orange-700 dark:text-orange-400">
+            {selectedBillingCycle === "yearly"
+              ? t("signup.yearlyBilling")
+              : t("signup.monthlyBilling")}
+          </p>
+          <p className="mt-2 text-xs text-orange-600/80 dark:text-orange-400/70 leading-relaxed">
+            {t("signup.planSelectedNote")}
+          </p>
+        </div>
+
+        {/* Default language */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {tCommon("defaultLanguageLabel")}
           </label>
           <Select
-            value={selectedPlan}
-            onValueChange={(value) =>
-              setValue("selectedPlan", value as "starter" | "growth" | "enterprise")
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PRICING_PLANS.map((plan) => (
-                <SelectItem key={plan.id} value={plan.id}>
-                  {plan.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            Billing cycle
-          </label>
-          <Select
-            value={selectedBillingCycle}
-            onValueChange={(value) =>
-              setValue("selectedBillingCycle", value as "monthly" | "yearly")
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="monthly">Monthly</SelectItem>
-              <SelectItem value="yearly">Yearly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="rounded-2xl border bg-blue-50/70 p-4 dark:bg-blue-950/20">
-          <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-            {selectedPlanConfig?.name ?? "Selected plan"}
-          </p>
-          <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
-            {selectedBillingCycle === "yearly" ? "Yearly billing" : "Monthly billing"}
-            {selectedPrice != null ? ` · $${selectedPrice}` : ""}
-          </p>
-          <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
-            Your requested plan will be confirmed by our team during approval. You may receive a free trial before billing starts.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {tCommon('defaultLanguageLabel')}
-          </label>
-          <Select 
             value={watch("defaultLanguage")}
-            onValueChange={(value) => setValue("defaultLanguage", value as "en" | "ja" | "vi")}
+            onValueChange={(value) =>
+              setValue("defaultLanguage", value as "en" | "ja" | "vi")
+            }
           >
             <SelectTrigger>
-              <SelectValue placeholder={tCommon('defaultLanguagePlaceholder')} />
+              <SelectValue placeholder={tCommon("defaultLanguagePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="en">{tCommon('languageOption.en')}</SelectItem>
-              <SelectItem value="ja">{tCommon('languageOption.ja')}</SelectItem>
-              <SelectItem value="vi">{tCommon('languageOption.vi')}</SelectItem>
+              <SelectItem value="en">{tCommon("languageOption.en")}</SelectItem>
+              <SelectItem value="ja">{tCommon("languageOption.ja")}</SelectItem>
+              <SelectItem value="vi">{tCommon("languageOption.vi")}</SelectItem>
             </SelectContent>
           </Select>
           {errors.defaultLanguage && (
-            <p className="text-sm text-red-600">{errors.defaultLanguage.message}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">
+              {errors.defaultLanguage.message}
+            </p>
           )}
         </div>
 
-        {/* Policy Agreement */}
+        {/* Policy agreement */}
         <PolicyAgreement
           checked={policyAgreementValue}
           onCheckedChange={(checked) => setValue("policyAgreement", checked)}
@@ -363,7 +427,7 @@ export default function SignupPage() {
         />
 
         {/* CAPTCHA */}
-        <div className="flex flex-col items-center space-y-2">
+        <div className="flex flex-col items-center gap-2 py-1">
           <ReCAPTCHA
             sitekey={process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY!}
             onChange={(token) => {
@@ -383,32 +447,55 @@ export default function SignupPage() {
             }}
           />
           {errors.captchaToken && (
-            <p className="text-sm text-red-600">{errors.captchaToken.message}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">{errors.captchaToken.message}</p>
           )}
         </div>
 
-        {/* Server Error */}
+        {/* Server error */}
         {serverError && (
-          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <p className="text-sm text-red-600 dark:text-red-400 text-center">{serverError}</p>
+          <div className="flex items-start gap-3 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 rounded-xl">
+            <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+            <p className="text-sm text-red-700 dark:text-red-300 leading-snug">{serverError}</p>
           </div>
         )}
 
-        {/* Submit Button */}
+        {/* Submit */}
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-md shadow-orange-200 dark:shadow-orange-900/30 hover:shadow-lg disabled:opacity-50"
         >
           {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {t('registering')}
-            </>
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {t("registering")}
+            </div>
           ) : (
-            t('registerButton')
+            <div className="flex items-center justify-center gap-2">
+              {t("registerButton")}
+              <ArrowRight className="h-4 w-4" />
+            </div>
           )}
         </Button>
+
+        {/* Login link */}
+        <div className="text-center text-sm text-slate-500 dark:text-slate-400">
+          {t("navigation.login")
+            .split("?")
+            .map((part, i) =>
+              i === 0 ? (
+                <span key={i}>{part}? </span>
+              ) : (
+                <a
+                  key={i}
+                  href={`/${watch("defaultLanguage") || "en"}/login`}
+                  className="font-semibold text-orange-500 hover:text-orange-600 transition-colors"
+                >
+                  {part.trim()}
+                </a>
+              )
+            )}
+        </div>
       </form>
     </AuthCard>
   );
