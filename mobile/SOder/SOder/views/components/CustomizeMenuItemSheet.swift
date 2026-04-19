@@ -68,7 +68,9 @@ struct CustomizeMenuItemSheet: View {
                                         selectionRow(
                                             title: size.displayName,
                                             subtitle: size.staffSecondaryName,
-                                            trailingText: AppCurrencyFormatter.format(size.price),
+                                            trailingText: size.price > 0
+                                                ? AppCurrencyFormatter.formatAdditional(size.price)
+                                                : "pos_included_price".localized,
                                             isSelected: selectedSize?.id == size.id
                                         ) {
                                             selectedSize = selectedSize?.id == size.id ? nil : size
