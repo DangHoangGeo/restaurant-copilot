@@ -113,7 +113,7 @@ export default function LoginPage() {
         <div className="flex justify-end -mt-2">
           <Link
             href={`/${locale}/forgot-password`}
-            className="text-xs text-slate-500 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+            className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#AB6E3C] dark:hover:text-orange-400 transition-colors"
           >
             {t("forgotPassword")}
           </Link>
@@ -129,7 +129,8 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-md shadow-orange-200 dark:shadow-orange-900/30 hover:shadow-lg hover:shadow-orange-200 dark:hover:shadow-orange-900/40 disabled:opacity-50"
+          className="w-full h-11 rounded-full text-white font-semibold text-xs tracking-widest uppercase transition-all duration-200 disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)", boxShadow: "0 4px 16px rgba(171,110,60,0.28)" }}
           disabled={loading || !captchaToken}
         >
           {loading ? (
@@ -151,7 +152,7 @@ export default function LoginPage() {
         {t("noAccount")}
         <Link
           href={`/${locale}/signup`}
-          className="font-semibold text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors ml-1"
+          className="font-semibold text-[#AB6E3C] hover:text-[#8B5A2B] transition-colors ml-1"
         >
           {t("signUp")}
         </Link>

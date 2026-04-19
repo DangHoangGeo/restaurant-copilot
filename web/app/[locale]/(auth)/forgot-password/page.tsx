@@ -102,7 +102,8 @@ export default function ForgotPasswordPage() {
             <Button
               type="submit"
               disabled={!captchaToken || !email || loading}
-              className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-md shadow-orange-200 dark:shadow-orange-900/30 disabled:opacity-50"
+              className="w-full h-11 rounded-full text-white font-semibold text-xs tracking-widest uppercase transition-all duration-200 disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)", boxShadow: "0 4px 16px rgba(171,110,60,0.28)" }}
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -135,11 +136,11 @@ export default function ForgotPasswordPage() {
       </form>
 
       <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-        <Link href={`/${locale}/login`} className="font-medium hover:text-orange-500 transition-colors">
+        <Link href={`/${locale}/login`} className="font-medium hover:text-[#AB6E3C] transition-colors">
           {t("loginButton")}
         </Link>
         <span>·</span>
-        <Link href={`/${locale}/signup`} className="font-medium hover:text-orange-500 transition-colors">
+        <Link href={`/${locale}/signup`} className="font-medium hover:text-[#AB6E3C] transition-colors">
           {t("signUp")}
         </Link>
       </div>

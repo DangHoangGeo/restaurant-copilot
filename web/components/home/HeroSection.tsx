@@ -1,225 +1,115 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import { ArrowRight, PlayCircle } from 'lucide-react';
-import { Button } from './Button';
+import React from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { UtensilsCrossed, Bell, Sparkles, CheckCircle, ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+// Floating icon positions mirror the iOS AuthHeroCluster (.welcome variant)
+const ICONS = [
+  { Icon: UtensilsCrossed, color: "#36B080", bg: "rgba(54,176,128,0.12)", top: "calc(50% - 110px)", left: "calc(50% - 170px)", delay: "0s",   dur: "5.5s" },
+  { Icon: Bell,            color: "#AB6E3C", bg: "rgba(171,110,60,0.10)", top: "calc(50% - 90px)",  left: "calc(50% + 120px)", delay: "0.9s",  dur: "6.2s" },
+  { Icon: Sparkles,        color: "#AB6E3C", bg: "rgba(171,110,60,0.08)", top: "calc(50% + 50px)",  left: "calc(50% - 130px)", delay: "1.8s",  dur: "5.8s" },
+  { Icon: CheckCircle,     color: "#36B080", bg: "rgba(54,176,128,0.12)", top: "calc(50% + 42px)",  left: "calc(50% + 90px)",  delay: "0.5s",  dur: "6.5s" },
+];
 
 export const HeroSection = () => {
-  const t = useTranslations('landing');
-  const [currentFeature, setCurrentFeature] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  const aiFeatures = [
-    { 
-      title: "AI Menu Analysis", 
-      description: "Smart recommendations based on customer preferences",
-      icon: "🧠",
-      color: "from-blue-500 to-purple-600"
-    },
-    { 
-      title: "Real-time Ordering", 
-      description: "Instant order processing with AI optimization",
-      icon: "⚡",
-      color: "from-green-500 to-blue-500"
-    },
-    { 
-      title: "Smart Analytics", 
-      description: "Predictive insights for better business decisions",
-      icon: "📊",
-      color: "from-purple-500 to-pink-500"
-    }
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsAnimating(true);
-      setTimeout(() => {
-        setCurrentFeature((prev) => (prev + 1) % aiFeatures.length);
-        setIsAnimating(false);
-      }, 200);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [aiFeatures.length]);
+  const t = useTranslations("landing");
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
 
   return (
-    <section className="py-16 sm:py-20 lg:py-28 bg-gradient-to-br from-slate-50 to-indigo-100 dark:from-slate-900 dark:to-indigo-900/30 overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="text-center lg:text-left">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white !leading-tight">
-              {t('hero.headline_part1')} <span className="text-[--brand-color-landing]">{t('hero.headline_part2')}</span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-xl mx-auto lg:mx-0">
-              {t('hero.subheadline')}
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button 
-                href="/signup" 
-                variant="primary" 
-                size="xl" 
-                iconRight={ArrowRight}
-              >
-                {t('hero.cta.signup')}
-              </Button>
-              <Button 
-                href="/demo" 
-                variant="outline" 
-                size="xl" 
-                iconLeft={PlayCircle}
-              >
-                {t('hero.cta.demo')}
-              </Button>
-            </div>
-            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{t('hero.cta.subtext')}</p>
-          </div>
-          
-          {/* AI System Illustration */}
-          <div className="relative">
-            {/* Main SVG Logo with Animation */}
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <svg 
-                  width="300" 
-                  height="96" 
-                  viewBox="0 0 300 96" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="animate-pulse"
-                >
-                  <defs>
-                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{stopColor:"#00B5D9", stopOpacity:1}} />
-                      <stop offset="100%" style={{stopColor:"#0047AB", stopOpacity:1}} />
-                    </linearGradient>
-                  </defs>
-                  <g transform="translate(0, 0)">
-                    <circle 
-                      cx="36" 
-                      cy="48" 
-                      r="30" 
-                      fill="url(#grad1)" 
-                      opacity="0.8"
-                      className="animate-ping"
-                      style={{animationDuration: '2s'}}
-                    />
-                    <circle 
-                      cx="54" 
-                      cy="48" 
-                      r="30" 
-                      fill="url(#grad1)"
-                      className="animate-bounce"
-                      style={{animationDuration: '3s'}}
-                    />
-                  </g>
-                  <text 
-                    x="96" 
-                    y="60" 
-                    fontFamily="Arial, sans-serif" 
-                    fontSize="36" 
-                    fill="currentColor" 
-                    fontWeight="600"
-                    className="text-slate-800 dark:text-white"
-                  >
-                    coorder.ai
-                  </text>
-                </svg>
-                
-                {/* Floating AI particles */}
-                <div className="absolute -top-4 -left-4 w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0s'}}></div>
-                <div className="absolute -top-2 -right-6 w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div>
-                <div className="absolute -bottom-3 -left-6 w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{animationDelay: '1s'}}></div>
-                <div className="absolute -bottom-4 -right-4 w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{animationDelay: '1.5s'}}></div>
-              </div>
-            </div>
+    <section
+      className="relative flex flex-col items-center justify-center min-h-[calc(100vh-56px)] overflow-hidden px-6"
+      style={{
+        background: "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(54,176,128,0.08) 0%, transparent 60%), linear-gradient(160deg, #FAF3EA 0%, #F5EAD8 50%, #EFE0CA 100%)",
+      }}
+    >
+      {/* Dark-mode background override */}
+      <style>{`
+        @media (prefers-color-scheme: dark) {
+          .hero-bg { background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(54,176,128,0.08) 0%, transparent 60%), linear-gradient(160deg, #170F0C 0%, #1E1209 50%, #251810 100%) !important; }
+        }
+        .hero-float { animation: heroFloat var(--dur, 5.5s) ease-in-out infinite; animation-delay: var(--delay, 0s); }
+        @keyframes heroFloat {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-11px); }
+        }
+      `}</style>
 
-            {/* Interactive AI Features Display */}
-            <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-slate-200/50 dark:border-slate-700/50">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-white">AI System Active</h3>
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                </div>
-              </div>
+      {/* Floating icon cluster — absolutely positioned around center */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        {/* Central glow */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: 280,
+            height: 280,
+            top: "calc(50% - 140px)",
+            left: "calc(50% - 140px)",
+            background: "radial-gradient(circle, rgba(54,176,128,0.10) 0%, transparent 70%)",
+            filter: "blur(32px)",
+          }}
+        />
 
-              {/* Animated Feature Card */}
-              <div 
-                className={`transition-all duration-500 transform ${
-                  isAnimating ? 'scale-95 opacity-50' : 'scale-100 opacity-100'
-                }`}
-              >
-                <div className={`p-4 rounded-xl bg-gradient-to-r ${aiFeatures[currentFeature].color} text-white mb-4`}>
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{aiFeatures[currentFeature].icon}</span>
-                    <div>
-                      <h4 className="font-semibold">{aiFeatures[currentFeature].title}</h4>
-                      <p className="text-sm opacity-90">{aiFeatures[currentFeature].description}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress indicators */}
-              <div className="flex space-x-2 justify-center">
-                {aiFeatures.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentFeature(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      index === currentFeature 
-                        ? 'bg-[--brand-color-landing] w-6' 
-                        : 'bg-slate-300 dark:bg-slate-600'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Simulated data stream */}
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-                  <span>Orders processed today</span>
-                  <span className="font-mono text-green-600">1,247</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-                  <span>AI recommendations accepted</span>
-                  <span className="font-mono text-blue-600">94%</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-                  <span>Average order time</span>
-                  <span className="font-mono text-purple-600">2.3min</span>
-                </div>
-              </div>
-
-              {/* Animated progress bars */}
-              <div className="mt-3 space-y-2">
-                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1">
-                  <div className="bg-green-500 h-1 rounded-full animate-pulse" style={{width: '87%'}}></div>
-                </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1">
-                  <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{width: '94%', animationDelay: '0.5s'}}></div>
-                </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1">
-                  <div className="bg-purple-500 h-1 rounded-full animate-pulse" style={{width: '76%', animationDelay: '1s'}}></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Background decorative elements */}
-            <div className="absolute -bottom-4 -right-4 -z-10 w-32 h-32 bg-[--brand-color-landing]/20 rounded-full blur-2xl animate-pulse"></div>
-            <div className="absolute -top-8 -left-8 -z-10 w-40 h-40 bg-pink-500/10 rounded-full blur-2xl animate-pulse" style={{animationDelay: '1s'}}></div>
-            
-            {/* Floating connection lines */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -z-10">
-              <svg width="400" height="300" className="opacity-20">
-                <line x1="50" y1="50" x2="350" y2="100" stroke="currentColor" strokeWidth="2" strokeDasharray="5,5" className="animate-pulse"/>
-                <line x1="100" y1="200" x2="300" y2="50" stroke="currentColor" strokeWidth="2" strokeDasharray="5,5" className="animate-pulse" style={{animationDelay: '0.5s'}}/>
-                <line x1="50" y1="250" x2="350" y2="200" stroke="currentColor" strokeWidth="2" strokeDasharray="5,5" className="animate-pulse" style={{animationDelay: '1s'}}/>
-              </svg>
+        {ICONS.map(({ Icon, color, bg, top, left, delay, dur }, i) => (
+          <div
+            key={i}
+            className="hero-float absolute"
+            style={{ top, left, "--delay": delay, "--dur": dur } as React.CSSProperties}
+          >
+            <div
+              className="flex items-center justify-center rounded-full border"
+              style={{
+                width: 52,
+                height: 52,
+                background: bg,
+                borderColor: `${color}28`,
+                boxShadow: `0 4px 16px ${color}18`,
+              }}
+            >
+              <Icon size={22} style={{ color }} />
             </div>
           </div>
-        </div>
+        ))}
+      </div>
+
+      {/* Center content */}
+      <div className="relative z-10 flex flex-col items-center text-center max-w-sm gap-5">
+        <h1
+          className="text-5xl sm:text-6xl font-medium leading-tight tracking-tight text-[#2E2117] dark:text-[#F7F1E9]"
+          style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+        >
+          coorder<span style={{ color: "#AB6E3C" }}>.ai</span>
+        </h1>
+
+        <p className="text-base text-[#8B6E5A] dark:text-[#B89078] leading-relaxed">
+          {t("hero.subheadline")}
+        </p>
+
+        <Link
+          href={`/${locale}/signup`}
+          className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-semibold text-sm tracking-widest uppercase text-white transition-all duration-200 hover:opacity-90 active:scale-95"
+          style={{
+            background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)",
+            boxShadow: "0 4px 16px rgba(171,110,60,0.30)",
+            letterSpacing: "0.12em",
+          }}
+        >
+          {t("hero.cta.signup")}
+          <ArrowRight size={14} />
+        </Link>
+      </div>
+
+      {/* Legal footer */}
+      <div className="absolute bottom-8 flex items-center gap-4 text-xs text-[#8B6E5A]/70 dark:text-[#B89078]/60">
+        <Link href={`/${locale}/terms`} className="hover:text-[#AB6E3C] transition-colors">
+          {t("footer.legal.terms")}
+        </Link>
+        <span>·</span>
+        <Link href={`/${locale}/privacy`} className="hover:text-[#AB6E3C] transition-colors">
+          {t("footer.legal.privacy")}
+        </Link>
       </div>
     </section>
   );

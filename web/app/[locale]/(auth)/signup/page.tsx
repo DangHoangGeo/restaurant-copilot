@@ -303,7 +303,7 @@ export default function SignupPage() {
                   className={cn(
                     "relative flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-center transition-all duration-150",
                     isSelected
-                      ? "border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-sm"
+                      ? "border-[#AB6E3C] bg-[#FAF3EA] dark:bg-[#2A1810] shadow-sm"
                       : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600"
                   )}
                 >
@@ -316,7 +316,7 @@ export default function SignupPage() {
                     className={cn(
                       "text-xs font-semibold",
                       isSelected
-                        ? "text-orange-700 dark:text-orange-300"
+                        ? "text-[#AB6E3C] dark:text-[#D4945A]"
                         : "text-slate-700 dark:text-slate-300"
                     )}
                   >
@@ -327,7 +327,7 @@ export default function SignupPage() {
                       className={cn(
                         "text-[11px]",
                         isSelected
-                          ? "text-orange-600 dark:text-orange-400"
+                          ? "text-[#8B5A2B] dark:text-[#AB6E3C]"
                           : "text-slate-400 dark:text-slate-500"
                       )}
                     >
@@ -354,7 +354,7 @@ export default function SignupPage() {
                 className={cn(
                   "rounded-xl border px-3 py-2 text-sm font-medium transition-all duration-150",
                   selectedBillingCycle === cycle
-                    ? "border-orange-500 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 shadow-sm"
+                    ? "border-orange-500 bg-orange-50 dark:bg-orange-950/30 text-[#AB6E3C] dark:text-[#D4945A] shadow-sm"
                     : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600"
                 )}
               >
@@ -370,15 +370,15 @@ export default function SignupPage() {
         </div>
 
         {/* Plan summary */}
-        <div className="rounded-xl border border-orange-200 dark:border-orange-900/50 bg-orange-50/60 dark:bg-orange-950/20 p-4">
+        <div className="rounded-xl border border-[#AB6E3C]/20 dark:border-[#AB6E3C]/30 bg-[#FAF3EA] dark:bg-[#2A1810]/40 p-4">
           <div className="flex items-baseline justify-between">
-            <p className="text-sm font-semibold text-orange-900 dark:text-orange-100">
+            <p className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
               {selectedPlanConfig?.name ?? t("signup.planLabel")}
             </p>
             {selectedPrice != null && (
-              <p className="text-sm font-bold text-orange-700 dark:text-orange-300">
+              <p className="text-sm font-bold text-[#AB6E3C] dark:text-[#D4945A]">
                 ${selectedPrice}
-                <span className="text-xs font-normal text-orange-500 dark:text-orange-400 ml-0.5">/mo</span>
+                <span className="text-xs font-normal text-[#8B5A2B] dark:text-[#AB6E3C] ml-0.5">/mo</span>
               </p>
             )}
           </div>
@@ -463,7 +463,8 @@ export default function SignupPage() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-md shadow-orange-200 dark:shadow-orange-900/30 hover:shadow-lg disabled:opacity-50"
+          className="w-full h-11 rounded-full text-white font-semibold text-xs tracking-widest uppercase transition-all duration-200 disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)", boxShadow: "0 4px 16px rgba(171,110,60,0.28)" }}
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center gap-2">

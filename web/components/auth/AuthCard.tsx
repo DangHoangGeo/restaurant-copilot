@@ -27,12 +27,15 @@ export function AuthCard({
   return (
     <div className="flex flex-1 items-start justify-center px-4 py-10 sm:px-8">
       <div className={cn("w-full max-w-md", className)}>
-        {/* Brand mark — mobile only (desktop shows it in hero panel) */}
+        {/* Brand mark — mobile only */}
         <div className="flex lg:hidden items-center justify-center mb-8">
           <Link href={`/${locale}`} className="flex items-center gap-2 group">
-            <Image src="/coorder-ai.png" alt="CoOrder.ai" width={32} height={32} className="w-8 h-8" />
-            <span className="text-lg font-bold text-slate-800 dark:text-slate-100">
-              coorder<span className="text-orange-500">.ai</span>
+            <Image src="/coorder-ai.png" alt="CoOrder.ai" width={28} height={28} className="w-7 h-7" />
+            <span
+              className="text-base font-medium text-[#2E2117] dark:text-[#F7F1E9]"
+              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+            >
+              coorder<span style={{ color: "#AB6E3C" }}>.ai</span>
             </span>
           </Link>
         </div>
@@ -41,10 +44,18 @@ export function AuthCard({
         <div
           role="main"
           aria-labelledby="auth-card-title"
-          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden"
+          className={cn(
+            "rounded-2xl overflow-hidden",
+            "border border-[#AB6E3C]/12",
+            "bg-[#FEFAF6] dark:bg-[#1E1410]",
+            "shadow-[0_8px_32px_rgba(171,110,60,0.08)]"
+          )}
         >
-          {/* Accent bar */}
-          <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500" />
+          {/* iOS-style warm amber accent bar */}
+          <div
+            className="h-[3px] w-full"
+            style={{ background: "linear-gradient(90deg, #36B080 0%, #AB6E3C 50%, #C8954F 100%)" }}
+          />
 
           <div className="px-7 py-8 sm:px-8">
             {/* Header */}
@@ -53,14 +64,15 @@ export function AuthCard({
                 <div className="space-y-1.5">
                   <h1
                     id="auth-card-title"
-                    className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50"
+                    className="text-2xl font-medium tracking-tight text-[#2E2117] dark:text-[#F7F1E9]"
+                    style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
                   >
                     {title}
                   </h1>
                   {description && (
                     <p
                       id="auth-card-description"
-                      className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed"
+                      className="text-sm text-[#8B6E5A] dark:text-[#B89078] leading-relaxed"
                     >
                       {description}
                     </p>
@@ -74,7 +86,7 @@ export function AuthCard({
               </div>
             </div>
 
-            {/* Form content */}
+            {/* Content */}
             <div className="space-y-5">{children}</div>
           </div>
         </div>
