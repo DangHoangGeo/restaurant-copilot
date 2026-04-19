@@ -1,6 +1,7 @@
 import {
   buildBranchDashboardUrl,
   buildRootControlUrl,
+  getRootControlEntryPath,
   buildRootControlSectionUrl,
   canUseRootDashboard,
 } from '@/lib/server/organizations/root-dashboard';
@@ -33,7 +34,7 @@ describe('root dashboard urls', () => {
     process.env.NEXT_PRIVATE_DEVELOPMENT = 'false';
     process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
 
-    expect(buildRootControlUrl('ja', 'bao-an-group')).toBe(
+    expect(buildRootControlUrl('ja', 'bao-an-group', '2026-04-18T00:00:00.000Z')).toBe(
       'https://bao-an-group.coorder.ai/ja/control/overview'
     );
   });
@@ -45,6 +46,11 @@ describe('root dashboard urls', () => {
     expect(buildRootControlUrl('ja')).toBe(
       'https://coorder.ai/ja/control/overview'
     );
+  });
+
+  it('routes incomplete founders into owner onboarding first', () => {
+    expect(getRootControlEntryPath(null)).toBe('/control/onboarding');
+    expect(getRootControlEntryPath('2026-04-18T00:00:00.000Z')).toBe('/control/overview');
   });
 
   it('builds the branch dashboard url', () => {

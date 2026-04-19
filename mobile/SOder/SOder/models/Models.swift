@@ -1,4 +1,35 @@
 import Foundation
+import SwiftUI
+
+private func preferredSecondaryLocalizedText(
+    primary: String,
+    currentLanguage: String,
+    english: String?,
+    japanese: String?,
+    vietnamese: String?
+) -> String? {
+    let candidates: [String?]
+
+    switch currentLanguage {
+    case "ja":
+        candidates = [english, vietnamese]
+    case "vi":
+        candidates = [japanese, english]
+    default:
+        candidates = [japanese, vietnamese]
+    }
+
+    return candidates
+        .compactMap { value in
+            guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !trimmed.isEmpty,
+                  trimmed != primary else {
+                return nil
+            }
+            return trimmed
+        }
+        .first
+}
 
 // MARK: - Typealiases for ID types
 
@@ -63,13 +94,13 @@ enum OrderStatus: String, Codable, CaseIterable { // Changed to Codable
         }
     }
     
-    var color: String {
+    var statusColor: Color {
         switch self {
-        case .draft: return "teal" // Example color for draft
-        case .new: return "blue"
-        case .serving: return "orange"
-        case .completed: return "gray"
-        case .canceled: return "red"
+        case .draft: return .appAccent
+        case .new: return .appInfo
+        case .serving: return .appWarning
+        case .completed: return .appTextSecondary
+        case .canceled: return .appError
         }
     }
 }
@@ -124,14 +155,14 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
         }
     }
     
-    var color: String {
+    var statusColor: Color {
         switch self {
-        case .draft: return "purple" // Example color
-        case .new: return "blue"
-        case .preparing: return "orange"
-        case .ready: return "green"
-        case .served: return "gray"
-        case .canceled: return "red"
+        case .draft: return .appAccent
+        case .new: return .appInfo
+        case .preparing: return .appWarning
+        case .ready: return .appSuccess
+        case .served: return .appTextSecondary
+        case .canceled: return .appError
         }
     }
     
@@ -221,6 +252,16 @@ struct MenuItem: Codable, Identifiable, Hashable { // Changed to Codable, added 
             return description_en
         }
     }
+
+    var staffSecondaryName: String? {
+        preferredSecondaryLocalizedText(
+            primary: displayName,
+            currentLanguage: LocalizationManager.shared.currentLanguage,
+            english: name_en,
+            japanese: name_ja,
+            vietnamese: name_vi
+        )
+    }
     
     // Helper to get category name with fallback
     var categoryDisplayName: String {
@@ -257,6 +298,16 @@ struct MenuItemSize: Codable, Identifiable, Hashable { // Changed to Codable, ad
             return name_en
         }
     }
+
+    var staffSecondaryName: String? {
+        preferredSecondaryLocalizedText(
+            primary: displayName,
+            currentLanguage: LocalizationManager.shared.currentLanguage,
+            english: name_en,
+            japanese: name_ja,
+            vietnamese: name_vi
+        )
+    }
     // In previous stubs, MenuItemSize was sometimes used as just a String ID.
     // This struct makes it a full model. If OrderItem.menu_item_size_id refers to this,
     // then OrderItem.menu_item_size should be of type MenuItemSize?
@@ -288,6 +339,16 @@ struct Topping: Codable, Identifiable, Hashable { // Changed to Codable, added H
         default:
             return name_en
         }
+    }
+
+    var staffSecondaryName: String? {
+        preferredSecondaryLocalizedText(
+            primary: displayName,
+            currentLanguage: LocalizationManager.shared.currentLanguage,
+            english: name_en,
+            japanese: name_ja,
+            vietnamese: name_vi
+        )
     }
 
     // Hashable
@@ -324,19 +385,70 @@ enum TableStatus: String, Codable, CaseIterable { // Changed to Codable
     
     var displayName: String {
         switch self {
-        case .available: return "Available"
-        case .occupied: return "Occupied"
-        case .reserved: return "Reserved"
-        case .maintenance: return "Maintenance"
+        case .available: return "table_status_available".localized
+        case .occupied: return "table_status_occupied".localized
+        case .reserved: return "table_status_reserved".localized
+        case .maintenance: return "table_status_maintenance".localized
         }
     }
 
-    var color: String { // Added color property, useful for UI
+    var statusColor: Color {
         switch self {
-        case .available: return "green"
-        case .occupied: return "orange"
-        case .reserved: return "purple"
-        case .maintenance: return "gray"
+        case .available: return .appSuccess
+        case .occupied: return .appWarning
+        case .reserved: return .appAccent
+        case .maintenance: return .appTextSecondary
+        }
+    }
+}
+
+enum TableOperationalStatus: Hashable {
+    case available
+    case occupied
+    case serving
+    case reserved
+    case maintenance
+
+    init(baseStatus: TableStatus) {
+        switch baseStatus {
+        case .available:
+            self = .available
+        case .occupied:
+            self = .occupied
+        case .reserved:
+            self = .reserved
+        case .maintenance:
+            self = .maintenance
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .available:
+            return "table_status_available".localized
+        case .occupied:
+            return "table_status_occupied".localized
+        case .serving:
+            return "table_status_serving".localized
+        case .reserved:
+            return "table_status_reserved".localized
+        case .maintenance:
+            return "table_status_maintenance".localized
+        }
+    }
+
+    var statusColor: Color {
+        switch self {
+        case .available:
+            return .appSuccess
+        case .occupied:
+            return .appWarning
+        case .serving:
+            return .appPrimary
+        case .reserved:
+            return .appHighlightSoft
+        case .maintenance:
+            return .appTextSecondary
         }
     }
 }
@@ -601,9 +713,13 @@ extension Order {
     var items: [OrderItem] {
         return order_items ?? []
     }
+
+    var activeItems: [OrderItem] {
+        items.filter { $0.status != .canceled }
+    }
     
     var subtotal: Double {
-        return items.reduce(0) { $0 + ($1.price_at_order * Double($1.quantity)) }
+        return activeItems.reduce(0) { $0 + ($1.price_at_order * Double($1.quantity)) }
     }
     
     var tax: Double {
@@ -615,7 +731,11 @@ extension Order {
     }
     
     var total: Double {
-        return total_amount ?? subtotal + tax - discount
+        if !items.isEmpty {
+            return subtotal + tax - discount + (tip_amount ?? 0)
+        }
+
+        return total_amount ?? subtotal + tax - discount + (tip_amount ?? 0)
     }
     
     var createdAt: Date {

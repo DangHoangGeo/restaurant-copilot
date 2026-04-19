@@ -4,6 +4,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useDebounce } from 'use-debounce';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import {
   Table,
   TableBody,
   TableCell,
@@ -45,10 +54,27 @@ export default function SubscriptionsTable() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedSubscription, setSelectedSubscription] = useState<TenantSubscription | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editPlanId, setEditPlanId] = useState<'starter' | 'growth' | 'enterprise'>('starter');
+  const [editStatus, setEditStatus] = useState<TenantSubscription['status']>('active');
+  const [editBillingCycle, setEditBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [editPeriodStart, setEditPeriodStart] = useState('');
+  const [editPeriodEnd, setEditPeriodEnd] = useState('');
+  const [editTrialEnd, setEditTrialEnd] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [runningRenewals, setRunningRenewals] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
   const errorLabel = tc('error');
+
+  const formatDateTimeInput = (value: string | null | undefined) =>
+    value ? new Date(value).toISOString().slice(0, 16) : '';
+
+  const toIso = (value: string) => (value ? new Date(value).toISOString() : undefined);
 
   const fetchSubscriptions = useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -100,10 +126,88 @@ export default function SubscriptionsTable() {
     };
   }, [fetchSubscriptions]);
 
+  const openEditor = (subscription: TenantSubscription) => {
+    setSelectedSubscription(subscription);
+    setEditPlanId(subscription.plan_id as 'starter' | 'growth' | 'enterprise');
+    setEditStatus(subscription.status);
+    setEditBillingCycle(subscription.billing_cycle);
+    setEditPeriodStart(formatDateTimeInput(subscription.current_period_start));
+    setEditPeriodEnd(formatDateTimeInput(subscription.current_period_end));
+    setEditTrialEnd(formatDateTimeInput(subscription.trial_ends_at));
+    setEditNotes(subscription.notes ?? '');
+    setDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!selectedSubscription) return;
+
+    try {
+      setSaving(true);
+      const response = await fetch(`/api/v1/platform/subscriptions/${selectedSubscription.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan_id: editPlanId,
+          status: editStatus,
+          billing_cycle: editBillingCycle,
+          current_period_start: toIso(editPeriodStart),
+          current_period_end: toIso(editPeriodEnd),
+          trial_ends_at: editTrialEnd ? toIso(editTrialEnd) : undefined,
+          notes: editNotes || undefined,
+        })
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(body?.error || errorLabel);
+      }
+
+      setDialogOpen(false);
+      setSelectedSubscription(null);
+      fetchSubscriptions();
+    } catch (err) {
+      console.error('Error updating subscription:', err);
+      setError(err instanceof Error ? err.message : errorLabel);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRunRenewals = async () => {
+    try {
+      setRunningRenewals(true);
+      setError(null);
+      setStatusMessage(null);
+
+      const response = await fetch('/api/v1/platform/subscriptions/renewals', {
+        method: 'POST',
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(body?.error || errorLabel);
+      }
+
+      const summary = body?.data;
+      setStatusMessage(
+        summary
+          ? `Renewed ${summary.renewed} subscription${summary.renewed === 1 ? '' : 's'}`
+          : 'Subscription renewals completed',
+      );
+      await fetchSubscriptions();
+    } catch (err) {
+      console.error('Error running subscription renewals:', err);
+      setError(err instanceof Error ? err.message : errorLabel);
+    } finally {
+      setRunningRenewals(false);
+    }
+  };
+
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       {/* Filters */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-200">
+      <div className="flex flex-wrap items-center gap-3 p-4 border-b border-gray-200">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
@@ -147,7 +251,20 @@ export default function SubscriptionsTable() {
         >
           <RefreshCw className="w-4 h-4" />
         </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRunRenewals}
+          disabled={runningRenewals}
+        >
+          {runningRenewals ? 'Running…' : 'Run renewals'}
+        </Button>
       </div>
+
+      {statusMessage ? (
+        <div className="px-4 text-sm text-emerald-700">{statusMessage}</div>
+      ) : null}
 
       {loading ? (
         <div className="p-8 text-center text-gray-500">{t('loading')}</div>
@@ -186,11 +303,11 @@ export default function SubscriptionsTable() {
                   <TableCell className="capitalize">{sub.billing_cycle}</TableCell>
                   <TableCell>{new Date(sub.current_period_end).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => openEditor(sub)}>
                       {t('actions.view_details')}
                     </Button>
                     {sub.status === 'trial' && (
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => openEditor(sub)}>
                         {t('actions.extend_trial')}
                       </Button>
                     )}
@@ -225,6 +342,122 @@ export default function SubscriptionsTable() {
           )}
         </>
       )}
-    </div>
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update subscription</DialogTitle>
+            <DialogDescription>
+              Keep plan, billing cycle, trial period, and renewal dates aligned with the live subscription.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Plan</Label>
+              <Select
+                value={editPlanId}
+                onValueChange={(value) => setEditPlanId(value as 'starter' | 'growth' | 'enterprise')}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="starter">Starter</SelectItem>
+                  <SelectItem value="growth">Growth</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={editStatus}
+                  onValueChange={(value) => setEditStatus(value as TenantSubscription['status'])}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="trial">Trial</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="past_due">Past due</SelectItem>
+                    <SelectItem value="canceled">Canceled</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Billing cycle</Label>
+                <Select
+                  value={editBillingCycle}
+                  onValueChange={(value) => setEditBillingCycle(value as 'monthly' | 'yearly')}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Current period start</Label>
+                <Input
+                  type="datetime-local"
+                  value={editPeriodStart}
+                  onChange={(event) => setEditPeriodStart(event.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Current period end</Label>
+                <Input
+                  type="datetime-local"
+                  value={editPeriodEnd}
+                  onChange={(event) => setEditPeriodEnd(event.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Trial end</Label>
+              <Input
+                type="datetime-local"
+                value={editTrialEnd}
+                onChange={(event) => setEditTrialEnd(event.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Input
+                value={editNotes}
+                onChange={(event) => setEditNotes(event.target.value)}
+                placeholder="Billing note"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              {tc('cancel')}
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? tc('loading') : tc('save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -10,7 +10,11 @@ import SwiftUI
 @main
 struct SOderApp: App {
     @StateObject private var localizationManager = LocalizationManager.shared
-    
+ 
+    init() {
+        AppAppearance.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

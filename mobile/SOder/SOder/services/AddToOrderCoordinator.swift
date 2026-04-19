@@ -42,12 +42,11 @@ class AddToOrderCoordinator: ObservableObject {
     
     // MARK: - Price Calculation
     
-    /// Calculates the total price for a menu item with selected options
-    func calculatePrice(
+    /// Calculates the unit price for a menu item with selected options.
+    func calculateUnitPrice(
         for menuItem: MenuItem,
         selectedSizeId: String? = nil,
-        selectedToppingIds: [String]? = nil,
-        quantity: Int = 1
+        selectedToppingIds: [String]? = nil
     ) -> Double {
         var basePrice = menuItem.price
         
@@ -66,7 +65,21 @@ class AddToOrderCoordinator: ObservableObject {
             }
         }
         
-        return basePrice * Double(quantity)
+        return basePrice
+    }
+
+    /// Calculates the total display price for a menu item with selected options and quantity.
+    func calculatePrice(
+        for menuItem: MenuItem,
+        selectedSizeId: String? = nil,
+        selectedToppingIds: [String]? = nil,
+        quantity: Int = 1
+    ) -> Double {
+        calculateUnitPrice(
+            for: menuItem,
+            selectedSizeId: selectedSizeId,
+            selectedToppingIds: selectedToppingIds
+        ) * Double(quantity)
     }
     
     // MARK: - Quick Add Methods
@@ -80,7 +93,7 @@ class AddToOrderCoordinator: ObservableObject {
 
         do {
             let defaultSizeId = menuItem.availableSizes?.first?.id
-            let price = calculatePrice(for: menuItem, selectedSizeId: defaultSizeId, quantity: quantity)
+            let price = calculateUnitPrice(for: menuItem, selectedSizeId: defaultSizeId)
 
             // Always use local draft for cart-like behavior
             _ = try await orderManager.addItemToLocalDraftOrder(
@@ -122,11 +135,10 @@ class AddToOrderCoordinator: ObservableObject {
         errorMessage = nil
 
         do {
-            let price = calculatePrice(
+            let price = calculateUnitPrice(
                 for: menuItem,
                 selectedSizeId: selectedSizeId,
-                selectedToppingIds: selectedToppingIds,
-                quantity: quantity
+                selectedToppingIds: selectedToppingIds
             )
 
             // Always use local draft for cart-like behavior
@@ -145,6 +157,86 @@ class AddToOrderCoordinator: ObservableObject {
 
         } catch {
             print("❌ Error adding customized item: \(error)")
+            errorMessage = "pos_add_item_error".localized
+            showingErrorAlert = true
+        }
+
+        isAddingItem = false
+    }
+
+    /// Replaces an existing local draft item so staff can edit size, toppings, notes, and quantity.
+    func replaceItemWithOptions(
+        _ existingItem: OrderItem,
+        menuItem: MenuItem,
+        in orderId: String,
+        quantity: Int,
+        notes: String?,
+        selectedSizeId: String?,
+        selectedToppingIds: [String]?
+    ) async {
+        guard !isAddingItem else { return }
+
+        isAddingItem = true
+        errorMessage = nil
+
+        do {
+            let unitPrice = calculateUnitPrice(
+                for: menuItem,
+                selectedSizeId: selectedSizeId,
+                selectedToppingIds: selectedToppingIds
+            )
+
+            if var localOrder = orderManager.localDraftOrders[orderId],
+               let itemIndex = localOrder.order_items?.firstIndex(where: { $0.id == existingItem.id }) {
+                localOrder.order_items?[itemIndex].quantity = quantity
+                localOrder.order_items?[itemIndex].notes = notes
+                localOrder.order_items?[itemIndex].price_at_order = unitPrice
+                localOrder.order_items?[itemIndex].status = .draft
+                localOrder.order_items?[itemIndex].updated_at = ISO8601DateFormatter().string(from: Date())
+                localOrder.order_items?[itemIndex].menu_item = menuItem
+
+                let updatedItem = OrderItem(
+                    id: existingItem.id,
+                    restaurant_id: existingItem.restaurant_id,
+                    order_id: existingItem.order_id,
+                    menu_item_id: menuItem.id,
+                    quantity: quantity,
+                    notes: notes,
+                    menu_item_size_id: selectedSizeId,
+                    topping_ids: selectedToppingIds,
+                    price_at_order: unitPrice,
+                    status: .draft,
+                    created_at: existingItem.created_at,
+                    updated_at: ISO8601DateFormatter().string(from: Date()),
+                    menu_item: menuItem
+                )
+
+                localOrder.order_items?[itemIndex] = updatedItem
+                localOrder.total_amount = localOrder.order_items?.reduce(0.0) { partialResult, item in
+                    partialResult + (item.price_at_order * Double(item.quantity))
+                } ?? 0.0
+                localOrder.updated_at = ISO8601DateFormatter().string(from: Date())
+                orderManager.localDraftOrders[orderId] = localOrder
+
+                if orderManager.currentDraftOrder?.id == orderId {
+                    orderManager.currentDraftOrder = localOrder
+                }
+            } else {
+                _ = try await orderManager.addItemToLocalDraftOrder(
+                    orderId: orderId,
+                    menuItemId: menuItem.id,
+                    quantity: quantity,
+                    notes: notes,
+                    selectedSizeId: selectedSizeId,
+                    selectedToppingIds: selectedToppingIds,
+                    priceAtOrder: unitPrice,
+                    menuItem: menuItem
+                )
+            }
+
+            print("✅ Updated customized item \(menuItem.displayName) in local cart for order \(orderId)")
+        } catch {
+            print("❌ Error updating customized item: \(error)")
             errorMessage = "pos_add_item_error".localized
             showingErrorAlert = true
         }

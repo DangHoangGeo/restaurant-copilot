@@ -6,13 +6,14 @@ class TemplateRenderer {
     // MARK: - Template Processing
     func render(template: String, data: [String: Any]) -> String {
         var result = template
-        
+
+        // Process loops and conditional sections like {{#items}}...{{/items}} or {{#restaurant.phone}}...{{/restaurant.phone}}
+        result = processInverseSections(in: result, with: data)
+        result = processSections(in: result, with: data)
+
         // Replace simple placeholders like {{order.id}}
         result = replacePlaceholders(in: result, with: data)
-        
-        // Process loops and conditional sections like {{#items}}...{{/items}} or {{#restaurant.phone}}...{{/restaurant.phone}}
-        result = processSections(in: result, with: data)
-        
+
         return result
     }
     
@@ -94,6 +95,32 @@ class TemplateRenderer {
         
         return result
     }
+
+    private func processInverseSections(in template: String, with data: [String: Any]) -> String {
+        var result = template
+
+        let sectionPattern = "\\{\\{\\^([^}]+)\\}\\}([\\s\\S]*?)\\{\\{/\\1\\}\\}"
+        let regex = try! NSRegularExpression(pattern: sectionPattern, options: [])
+        let matches = regex.matches(in: result, options: [], range: NSRange(result.startIndex..., in: result))
+
+        for match in matches.reversed() {
+            let fullRange = match.range
+            let keyRange = match.range(at: 1)
+            let contentRange = match.range(at: 2)
+
+            guard let keyNSRange = Range(keyRange, in: result),
+                  let contentNSRange = Range(contentRange, in: result),
+                  let fullNSRange = Range(fullRange, in: result) else { continue }
+
+            let key = String(result[keyNSRange])
+            let contentTemplate = String(result[contentNSRange])
+            let shouldRender = shouldRenderInverseSection(for: key, from: data)
+            let rendered = shouldRender ? replacePlaceholders(in: contentTemplate, with: data) : ""
+            result.replaceSubrange(fullNSRange, with: rendered)
+        }
+
+        return result
+    }
     
     // MARK: - Data helpers
     private func getRawValue(for key: String, from data: [String: Any]) -> Any? {
@@ -119,6 +146,30 @@ class TemplateRenderer {
             return String(describing: raw)
         }
         return ""
+    }
+
+    private func shouldRenderInverseSection(for key: String, from data: [String: Any]) -> Bool {
+        guard let raw = getRawValue(for: key, from: data) else {
+            return true
+        }
+
+        if let boolValue = raw as? Bool {
+            return !boolValue
+        }
+
+        if let stringValue = raw as? String {
+            return stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+
+        if let arrayValue = raw as? [Any] {
+            return arrayValue.isEmpty
+        }
+
+        if let numberValue = raw as? NSNumber {
+            return numberValue.doubleValue == 0
+        }
+
+        return false
     }
 }
 

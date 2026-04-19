@@ -4,64 +4,57 @@ struct UnifiedPrinterSetupView: View {
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @EnvironmentObject private var printerManager: PrinterManager
     @Environment(\.dismiss) private var dismiss
-    
-    @State private var setupMode: PrinterMode = .single
+
+    @State private var useSeparateKitchenPrinter = false
     @State private var showingAddPrinter = false
     @State private var editingPrinter: ConfiguredPrinter?
-    @State private var showingTestDialog = false
-    @State private var testingPrinter: ConfiguredPrinter?
-    @State private var showingDeleteAlert = false
     @State private var printerToDelete: ConfiguredPrinter?
+    @State private var showingDeleteAlert = false
+    @State private var testingPrinter: ConfiguredPrinter?
     @State private var testResult: TestResult?
     @State private var showingTestResult = false
     @State private var isTesting = false
-    
+    @State private var showingConnectionOptions = false
+    @State private var showingBluetoothSetup = false
+
     var body: some View {
-        Form {
-            // 1. Mode (primary)
-            Section(header: sectionHeader(icon: "1.circle.fill", title: "printer_setup_title".localized, subtitle: "printer_setup_mode_subtitle".localized)) {
-                printerModeSelection
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                introCard
+                printerListSection
+                printerAssignmentSection
+                previewSection
+                testSection
+                advancedSection
             }
-            
-            // 2. Printers (add/configure)
-            Section(header: sectionHeader(icon: "2.circle.fill", title: "printers".localized, subtitle: "add_or_configure_printers".localized)) {
-                printersManagementSection
-            }
-            
-            // 3. Assign roles (single/dual)
-            Section(header: sectionHeader(icon: "3.circle.fill", title: "assignments_title".localized, subtitle: "assignments_subtitle".localized)) {
-                if setupMode == .single {
-                    singlePrinterSetup
-                } else {
-                    dualPrinterSetup
-                }
-            }
-            
-            // 4. Test & Customize
-            Section(header: sectionHeader(icon: "4.circle.fill", title: "test_and_customize_title".localized, subtitle: "test_and_customize_subtitle".localized)) {
-                testAndFinishSection
-            }
-            
-            // Advanced (demoted)
-            Section(header: sectionHeader(icon: "gear", title: "advanced_title".localized, subtitle: "advanced_subtitle".localized)) {
-                advancedSettingsSection
-            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.lg)
         }
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle("printer_setup_title".localized)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) { Button("cancel".localized) { dismiss() } }
-            ToolbarItem(placement: .navigationBarTrailing) { Button("done".localized) { saveAndDismiss() }.fontWeight(.semibold) }
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("cancel".localized) {
+                    dismiss()
+                }
+            }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("done".localized) {
+                    saveAndDismiss()
+                }
+                .fontWeight(.semibold)
+            }
         }
         .sheet(isPresented: $showingAddPrinter) {
             AddEditPrinterView(printer: nil) { printer in
                 settingsManager.addPrinter(printer)
-                // Post-add behavior
-                if setupMode == .single && settingsManager.activePrinter == nil {
-                    settingsManager.setActivePrinter(printer)
+                if settingsManager.primaryReceiptPrinter == nil {
+                    settingsManager.assignPrimaryReceiptPrinter(printer)
                 }
-                if setupMode == .dual {
-                    settingsManager.autoAssignDualPrinters()
+                if useSeparateKitchenPrinter, settingsManager.kitchenPrinter == nil {
+                    settingsManager.setKitchenPrinter(settingsManager.configuredPrinters.first(where: { $0.id != printer.id }))
                 }
             }
         }
@@ -70,536 +63,762 @@ struct UnifiedPrinterSetupView: View {
                 settingsManager.updatePrinter(updatedPrinter)
             }
         }
-        .alert("test_printer_title".localized, isPresented: $showingTestDialog) {
-            Button("cancel".localized, role: .cancel) { }
-            Button("test".localized) {
-                if let printer = testingPrinter {
-                    Task {
-                        isTesting = true
-                        await testPrinter(printer)
-                        isTesting = false
-                    }
-                }
-            }
-            .disabled(isTesting)
-        } message: {
-            if isTesting {
-                Text("printer_test_in_progress".localized)
-            } else {
-                Text("test_printer_message".localized)
-            }
-        }
-        .alert("printer_test_result_title".localized, isPresented: $showingTestResult) {
-            Button("ok".localized, role: .cancel) { }
-            if let result = testResult, !result.success, let suggestion = result.suggestion {
-                Button("printer_test_view_logs".localized) {
-                    // Navigate to logs - add this functionality
-                }
-            }
-        } message: {
-            if let result = testResult {
-                VStack(alignment: .leading, spacing: Spacing.sm) {
-                    Text(result.message)
-                    if let suggestion = result.suggestion {
-                        Text("\n\("printer_test_suggestion".localized): \(suggestion)")
-                    }
-                }
+        .sheet(isPresented: $showingBluetoothSetup) {
+            NavigationView {
+                BluetoothPrinterSetupView()
             }
         }
         .alert("delete_printer_title".localized, isPresented: $showingDeleteAlert) {
             Button("cancel".localized, role: .cancel) { }
-            Button("delete".localized, role: .destructive) { if let printer = printerToDelete { settingsManager.removePrinter(id: printer.id) } }
-        } message: { Text("delete_printer_message".localized) }
-        .onAppear { setupMode = settingsManager.printerMode }
+            Button("delete".localized, role: .destructive) {
+                if let printerToDelete {
+                    settingsManager.removePrinter(id: printerToDelete.id)
+                    if settingsManager.configuredPrinters.count < 2 {
+                        useSeparateKitchenPrinter = false
+                        settingsManager.setSeparateKitchenPrinterEnabled(false)
+                    }
+                }
+            }
+        } message: {
+            Text("delete_printer_message".localized)
+        }
+        .alert("printer_test_result_title".localized, isPresented: $showingTestResult) {
+            Button("ok".localized, role: .cancel) { }
+        } message: {
+            if let testResult {
+                Text(testResult.message)
+            }
+        }
+        .confirmationDialog("printer_connection_options_title".localized, isPresented: $showingConnectionOptions) {
+            Button("printer_open_bluetooth_setup".localized) {
+                showingBluetoothSetup = true
+            }
+
+            Button("cancel".localized, role: .cancel) { }
+        } message: {
+            Text("printer_connection_options_message".localized)
+        }
+        .onAppear {
+            settingsManager.syncFromCurrentRestaurant()
+            useSeparateKitchenPrinter = settingsManager.usesSeparateKitchenPrinter
+        }
+        .onChange(of: useSeparateKitchenPrinter) { _, newValue in
+            guard settingsManager.configuredPrinters.count > 1 || !newValue else {
+                useSeparateKitchenPrinter = false
+                return
+            }
+
+            settingsManager.setSeparateKitchenPrinterEnabled(newValue)
+        }
     }
-    
-    // MARK: - Printer Mode Selection
-    private var printerModeSelection: some View {
+
+    private var introCard: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("printer_mode_selection_header_subtitle".localized)
+            Text("printer_setup_simple_title".localized)
                 .font(.sectionHeader)
                 .foregroundColor(.appTextPrimary)
-            
-            VStack(spacing: Spacing.sm) {
-                PrinterModeCard(
-                    mode: .single,
-                    isSelected: setupMode == .single,
-                    title: "printer_mode_single_display_name".localized,
-                    description: "printer_mode_single_description".localized,
-                    icon: "printer.fill"
-                ) {
-                    setupMode = .single
-                    settingsManager.setPrinterMode(.single)
-                }
-                
-                PrinterModeCard(
-                    mode: .dual,
-                    isSelected: setupMode == .dual,
-                    title: "printer_mode_dual_display_name".localized,
-                    description: "printer_mode_dual_description".localized,
-                    icon: "printer.fill.and.paper.fill"
-                ) {
-                    setupMode = .dual
-                    settingsManager.setPrinterMode(.dual)
+
+            Text("printer_setup_simple_subtitle".localized)
+                .font(.bodyMedium)
+                .foregroundColor(.appTextSecondary)
+
+            HStack(alignment: .top, spacing: Spacing.sm) {
+                Image(systemName: "network")
+                    .foregroundColor(.appPrimary)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text("printer_network_priority_title".localized)
+                        .font(.bodyMedium.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
+
+                    Text("printer_network_priority_subtitle".localized)
+                        .font(.caption)
+                        .foregroundColor(.appTextSecondary)
                 }
             }
-        }
-        .padding(.vertical, Spacing.sm)
-    }
-    
-    // MARK: - Single/Dual Setup (unchanged blocks reused)
-    private var singlePrinterSetup: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            if let activePrinter = settingsManager.activePrinter {
-                PrinterConfigCard(
-                    printer: activePrinter,
-                    role: "main_printer".localized,
-                    onEdit: { editingPrinter = activePrinter },
-                    onTest: { testingPrinter = activePrinter; showingTestDialog = true },
-                    onRemove: { printerToDelete = activePrinter; showingDeleteAlert = true }
-                )
-            } else {
-                EmptyPrinterCard(role: "main_printer".localized) { showingAddPrinter = true }
-            }
-        }
-    }
-    
-    private var dualPrinterSetup: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            if let kitchenPrinter = settingsManager.kitchenPrinter {
-                PrinterConfigCard(
-                    printer: kitchenPrinter,
-                    role: "kitchen_printer".localized,
-                    onEdit: { editingPrinter = kitchenPrinter },
-                    onTest: { testingPrinter = kitchenPrinter; showingTestDialog = true },
-                    onRemove: { printerToDelete = kitchenPrinter; showingDeleteAlert = true }
-                )
-            } else {
-                EmptyPrinterCard(role: "kitchen_printer".localized) { showingAddPrinter = true }
-            }
-            if let checkoutPrinter = settingsManager.checkoutPrinter {
-                PrinterConfigCard(
-                    printer: checkoutPrinter,
-                    role: "checkout_printer".localized,
-                    onEdit: { editingPrinter = checkoutPrinter },
-                    onTest: { testingPrinter = checkoutPrinter; showingTestDialog = true },
-                    onRemove: { printerToDelete = checkoutPrinter; showingDeleteAlert = true }
-                )
-            } else {
-                EmptyPrinterCard(role: "checkout_printer".localized) { showingAddPrinter = true }
-            }
-        }
-    }
-    
-    // MARK: - Printers management
-    private var printersManagementSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            Button(action: { showingAddPrinter = true }) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                    Text("add_printer".localized).fontWeight(.medium)
-                    Spacer()
-                    Image(systemName: "chevron.right").font(.caption).foregroundColor(.appTextSecondary)
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurfaceSecondary.opacity(0.78))
+
+            Toggle(isOn: $useSeparateKitchenPrinter) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text("printer_use_separate_kitchen_title".localized)
+                        .font(.bodyMedium.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
+
+                    Text(
+                        settingsManager.configuredPrinters.count > 1
+                            ? "printer_use_separate_kitchen_subtitle".localized
+                            : "printer_use_separate_kitchen_disabled".localized
+                    )
+                    .font(.caption)
+                    .foregroundColor(.appTextSecondary)
                 }
             }
-            .buttonStyle(PlainButtonStyle())
-            .accessibilityLabel("add_printer".localized)
-            
+            .toggleStyle(SwitchToggleStyle(tint: .appPrimary))
+            .disabled(settingsManager.configuredPrinters.count < 2)
+        }
+        .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.xl, surfaceColor: Color.appSurface.opacity(0.94))
+    }
+
+    private var printerListSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            sectionHeader(
+                title: "printer_saved_printers_title".localized,
+                subtitle: "printer_saved_printers_subtitle".localized
+            )
+
             if settingsManager.configuredPrinters.isEmpty {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("no_printers_configured".localized)
-                        .font(.caption)
-                        .foregroundColor(.appTextSecondary)
-                    Text("using_default_placeholder_printer".localized)
-                        .font(.caption2)
-                        .foregroundColor(.appTextSecondary)
-                }
-                .padding(.top, Spacing.xs)
-            } else {
-                configuredPrintersList
-            }
-        }
-    }
-    
-    private var configuredPrintersList: some View {
-        ForEach(settingsManager.configuredPrinters, id: \.id) { printer in
-            HStack(alignment: .center, spacing: Spacing.sm) {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    HStack(spacing: 6) {
-                        Text(printer.name).font(.headline)
-                        if settingsManager.activePrinter?.id == printer.id && setupMode == .single {
-                            Text("active".localized).font(.caption2).padding(.horizontal, 6).padding(.vertical, 2).background(Color.appSuccess.opacity(0.15)).cornerRadius(6)
-                        }
-                        if settingsManager.kitchenPrinter?.id == printer.id && setupMode == .dual {
-                            Text("kitchen".localized).font(.caption2).padding(.horizontal, 6).padding(.vertical, 2).background(Color.appInfo.opacity(0.15)).cornerRadius(6)
-                        }
-                        if settingsManager.checkoutPrinter?.id == printer.id && setupMode == .dual {
-                            Text("checkout".localized).font(.caption2).padding(.horizontal, 6).padding(.vertical, 2).background(Color.appWarning.opacity(0.15)).cornerRadius(6)
-                        }
-                    }
-                    Text("\(printer.ipAddress):\(printer.port)")
-                        .font(.caption)
-                        .foregroundColor(.appTextSecondary)
-                }
-                Spacer()
-                Menu {
-                    Button("edit".localized) { editingPrinter = printer }
-                    Button("test".localized) { testingPrinter = printer; showingTestDialog = true }
-                    if setupMode == .single {
-                        Button("set_active".localized) { settingsManager.setActivePrinter(printer) }
-                    } else {
-                        Button("assign_to_kitchen".localized) { settingsManager.setKitchenPrinter(printer) }
-                        Button("assign_to_checkout".localized) { settingsManager.setCheckoutPrinter(printer) }
-                    }
-                    Divider()
-                    Button("remove".localized, role: .destructive) { printerToDelete = printer; showingDeleteAlert = true }
-                } label: {
-                    Image(systemName: "ellipsis.circle").font(.title3)
-                }
-            }
-            .padding(.vertical, Spacing.xs)
-            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                Button(role: .destructive) { printerToDelete = printer; showingDeleteAlert = true } label: { Label("delete".localized, systemImage: "trash") }
-                if setupMode == .single {
-                    Button { settingsManager.setActivePrinter(printer) } label: { Label("set_active".localized, systemImage: "checkmark.circle") }.tint(.appSuccess)
-                } else {
-                    Button { settingsManager.setKitchenPrinter(printer) } label: { Label("kitchen".localized, systemImage: "fork.knife") }.tint(.appInfo)
-                    Button { settingsManager.setCheckoutPrinter(printer) } label: { Label("checkout".localized, systemImage: "cart") }.tint(.appWarning)
-                }
-            }
-        }
-    }
-    
-    // MARK: - Test & Finish
-    private var testAndFinishSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            if setupMode == .dual {
-                HStack {
-                    Button {
-                        if let kitchen = settingsManager.kitchenPrinter { testingPrinter = kitchen; showingTestDialog = true }
-                    } label: {
-                        HStack {
-                            Image(systemName: "fork.knife").foregroundColor(.appPrimary)
-                            Text("test_kitchen_printer".localized)
-                        }
-                    }
-                    .accessibilityLabel("test_kitchen_printer".localized)
-                    Spacer(minLength: Spacing.sm)
-                    Button {
-                        if let checkout = settingsManager.checkoutPrinter { testingPrinter = checkout; showingTestDialog = true }
-                    } label: {
-                        HStack {
-                            Image(systemName: "cart").foregroundColor(.appPrimary)
-                            Text("test_checkout_printer".localized)
-                        }
-                    }
-                    .accessibilityLabel("test_checkout_printer".localized)
-                }
-            } else {
                 Button {
-                    if let printer = settingsManager.activePrinter { testingPrinter = printer; showingTestDialog = true }
+                    showingAddPrinter = true
+                } label: {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(.appPrimary)
+                            Text("add_printer".localized)
+                                .font(.bodyMedium.weight(.semibold))
+                                .foregroundColor(.appTextPrimary)
+                        }
+
+                        Text("printer_add_first_hint".localized)
+                            .font(.caption)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+                }
+                .buttonStyle(.plain)
+            } else {
+                ForEach(settingsManager.configuredPrinters, id: \.id) { printer in
+                    PrinterSetupCard(
+                        printer: printer,
+                        role: printerRoleDescription(for: printer),
+                        connectionStatus: settingsManager.getConnectionStatus(for: printer.id),
+                        onEdit: { editingPrinter = printer },
+                        onTest: {
+                            testingPrinter = printer
+                            Task { await runPrinterTest(printer) }
+                        },
+                        onDelete: {
+                            printerToDelete = printer
+                            showingDeleteAlert = true
+                        }
+                    )
+                }
+
+                Button {
+                    showingAddPrinter = true
                 } label: {
                     HStack {
-                        Image(systemName: "testtube.2").foregroundColor(.appPrimary)
-                        Text("test_assigned_printers".localized)
+                        Image(systemName: "plus")
+                        Text("add_printer".localized)
                     }
                 }
-                .accessibilityLabel("test_assigned_printers".localized)
+                .buttonStyle(SecondaryButtonStyle())
             }
         }
     }
-    
-    // MARK: - Advanced (demoted)
-    private var advancedSettingsSection: some View {
-        VStack(spacing: Spacing.xs) {
+
+    private var printerAssignmentSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            sectionHeader(
+                title: "assignments_title".localized,
+                subtitle: "printer_assignment_subtitle_simple".localized
+            )
+
+            if settingsManager.configuredPrinters.isEmpty {
+                assignmentPlaceholder
+            } else {
+                assignmentPickerCard(
+                    title: "printer_receipt_printer_title".localized,
+                    subtitle: "printer_receipt_printer_subtitle".localized,
+                    selectedPrinter: settingsManager.primaryReceiptPrinter,
+                    candidates: settingsManager.configuredPrinters,
+                    onSelect: { printer in
+                        settingsManager.assignPrimaryReceiptPrinter(printer)
+                    }
+                )
+
+                if useSeparateKitchenPrinter {
+                    assignmentPickerCard(
+                        title: "printer_current_config_kitchen".localized,
+                        subtitle: "printer_kitchen_printer_subtitle".localized,
+                        selectedPrinter: settingsManager.kitchenPrinter,
+                        candidates: settingsManager.configuredPrinters.filter { $0.id != settingsManager.primaryReceiptPrinter?.id },
+                        onSelect: { printer in
+                            settingsManager.setKitchenPrinter(printer)
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    private var previewSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            sectionHeader(
+                title: "printer_setup_preview_title".localized,
+                subtitle: "printer_setup_preview_subtitle".localized
+            )
+
+            routingPreviewCard
+            receiptPreviewCard
+
+            if useSeparateKitchenPrinter {
+                kitchenPreviewCard
+            }
+        }
+    }
+
+    private var assignmentPlaceholder: some View {
+        Text("printer_assignment_empty".localized)
+            .font(.caption)
+            .foregroundColor(.appTextSecondary)
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+    }
+
+    private var testSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            sectionHeader(
+                title: "test_and_customize_title".localized,
+                subtitle: "printer_test_section_subtitle_simple".localized
+            )
+
+            if let receiptPrinter = settingsManager.primaryReceiptPrinter {
+                Button {
+                    testingPrinter = receiptPrinter
+                    Task { await runPrinterTest(receiptPrinter) }
+                } label: {
+                    HStack {
+                        Image(systemName: isTesting && testingPrinter?.id == receiptPrinter.id ? "hourglass" : "doc.text")
+                        Text("printer_test_receipt_button".localized)
+                    }
+                }
+                .buttonStyle(PrimaryButtonStyle(isEnabled: !isTesting))
+                .disabled(isTesting)
+            }
+
+            if useSeparateKitchenPrinter, let kitchenPrinter = settingsManager.kitchenPrinter {
+                Button {
+                    testingPrinter = kitchenPrinter
+                    Task { await runPrinterTest(kitchenPrinter) }
+                } label: {
+                    HStack {
+                        Image(systemName: isTesting && testingPrinter?.id == kitchenPrinter.id ? "hourglass" : "list.clipboard")
+                        Text("printer_test_kitchen_button".localized)
+                    }
+                }
+                .buttonStyle(SecondaryButtonStyle(isEnabled: !isTesting))
+                .disabled(isTesting)
+            }
+
+            NavigationLink(destination: ReceiptCustomizationView()) {
+                HStack {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .foregroundColor(.appPrimary)
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        Text("receipt_customization".localized)
+                            .font(.bodyMedium.weight(.semibold))
+                            .foregroundColor(.appTextPrimary)
+                        Text("printer_standard_receipt_subtitle".localized)
+                            .font(.caption)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.appTextSecondary)
+                }
+                .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var advancedSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            sectionHeader(
+                title: "advanced_title".localized,
+                subtitle: "printer_advanced_subtitle_simple".localized
+            )
+
             NavigationLink(destination: PrintLanguageConfigView()) {
-                HStack {
-                    Image(systemName: "textformat").foregroundColor(.appPrimary)
-                    VStack(alignment: .leading) {
-                        Text("language_diagnostics_title".localized)
-                            .fontWeight(.medium)
-                        Text("language_diagnostics_subtitle".localized)
-                            .font(.caption)
-                            .foregroundColor(.appTextSecondary)
-                    }
-                }
-                .accessibilityLabel("language_diagnostics_title".localized)
+                advancedRow(
+                    icon: "textformat",
+                    title: "language_diagnostics_title".localized,
+                    subtitle: "language_diagnostics_subtitle".localized
+                )
             }
+            .buttonStyle(.plain)
 
-            Divider()
-
-            NavigationLink(destination: BluetoothPrinterSetupView()) {
-                HStack {
-                    Image(systemName: "bluetooth").foregroundColor(.appPrimary)
-                    VStack(alignment: .leading) {
-                        Text("bluetooth_printer_setup_title".localized)
-                            .fontWeight(.medium)
-                        Text("bluetooth_printer_setup_subtitle".localized)
-                            .font(.caption)
-                            .foregroundColor(.appTextSecondary)
-                    }
-                }
-                .accessibilityLabel("bluetooth_printer_setup_title".localized)
+            Button {
+                showingConnectionOptions = true
+            } label: {
+                advancedRow(
+                    icon: "questionmark.circle",
+                    title: "printer_other_connection_title".localized,
+                    subtitle: "printer_other_connection_subtitle".localized
+                )
             }
+            .buttonStyle(.plain)
         }
     }
-    
-    // MARK: - Helper Views / Actions
-    @ViewBuilder private func sectionHeader(icon: String, title: String, subtitle: String) -> some View {
-        HStack { Image(systemName: icon).foregroundColor(.appPrimary).font(.title3)
-            VStack(alignment: .leading, spacing: 2) { Text(title).font(.sectionHeader); Text(subtitle).font(.caption).foregroundColor(.appTextSecondary) } }
-    }
-    
-    private func testPrinter(_ printer: ConfiguredPrinter) async {
-        let isKitchen = settingsManager.kitchenPrinter?.id == printer.id
-        let lang = isKitchen ? settingsManager.selectedKitchenLanguage : settingsManager.selectedReceiptLanguage
 
-        let success = await PrinterService.shared.testPrintSampleForPrinter(printer, language: lang)
+    private var routingPreviewCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("printer_setup_preview_routing".localized)
+                .font(.bodyMedium.weight(.semibold))
+                .foregroundColor(.appTextPrimary)
+
+            previewRouteRow(
+                title: "printer_receipt_printer_title".localized,
+                value: settingsManager.primaryReceiptPrinter?.name ?? "printer_select_placeholder".localized
+            )
+
+            previewRouteRow(
+                title: "printer_current_config_kitchen".localized,
+                value: useSeparateKitchenPrinter
+                    ? (settingsManager.kitchenPrinter?.name ?? "printer_select_placeholder".localized)
+                    : (settingsManager.primaryReceiptPrinter?.name ?? "printer_select_placeholder".localized)
+            )
+        }
+        .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+    }
+
+    private var receiptPreviewCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack {
+                Text("printer_setup_preview_receipt".localized)
+                    .font(.bodyMedium.weight(.semibold))
+                    .foregroundColor(.appTextPrimary)
+
+                Spacer()
+
+                previewLanguagePill(settingsManager.selectedReceiptLanguage)
+            }
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text(previewRestaurantName)
+                    .font(.cardTitle)
+                    .foregroundColor(.appTextPrimary)
+
+                if !settingsManager.receiptHeader.address.isEmpty {
+                    Text(settingsManager.receiptHeader.address)
+                        .font(.caption)
+                        .foregroundColor(.appTextSecondary)
+                }
+
+                if !settingsManager.receiptHeader.phone.isEmpty {
+                    Text(settingsManager.receiptHeader.phone)
+                        .font(.caption)
+                        .foregroundColor(.appTextSecondary)
+                }
+
+                if settingsManager.receiptHeader.showTaxCode, !settingsManager.receiptHeader.taxCode.isEmpty {
+                    Text("\("tax_code".localized): \(settingsManager.receiptHeader.taxCode)")
+                        .font(.monoCaption)
+                        .foregroundColor(.appTextSecondary)
+                }
+
+                Divider()
+
+                previewLineItem(
+                    title: "printer_setup_preview_sample_item".localized,
+                    value: "¥1,280"
+                )
+
+                previewLineItem(
+                    title: "subtotal".localized,
+                    value: "¥1,280"
+                )
+
+                previewLineItem(
+                    title: "printer_setup_preview_total".localized,
+                    value: "¥1,408",
+                    emphasized: true
+                )
+
+                if !settingsManager.receiptHeader.footerMessage.isEmpty {
+                    Divider()
+
+                    Text(settingsManager.receiptHeader.footerMessage)
+                        .font(.caption)
+                        .foregroundColor(.appTextSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurfaceSecondary.opacity(0.82))
+        }
+        .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+    }
+
+    private var kitchenPreviewCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack {
+                Text("printer_setup_preview_kitchen".localized)
+                    .font(.bodyMedium.weight(.semibold))
+                    .foregroundColor(.appTextPrimary)
+
+                Spacer()
+
+                previewLanguagePill(settingsManager.selectedKitchenLanguage)
+            }
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("Table 5")
+                    .font(.cardTitle)
+                    .foregroundColor(.appTextPrimary)
+
+                Text("2 x \( "printer_setup_preview_sample_item".localized)")
+                    .font(.bodyMedium)
+                    .foregroundColor(.appTextPrimary)
+
+                Text("No onion")
+                    .font(.caption)
+                    .foregroundColor(.appInfo)
+
+                Text("18m")
+                    .font(.monoCaption)
+                    .foregroundColor(.appWarning)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurfaceSecondary.opacity(0.82))
+        }
+        .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+    }
+
+    private func assignmentPickerCard(
+        title: String,
+        subtitle: String,
+        selectedPrinter: ConfiguredPrinter?,
+        candidates: [ConfiguredPrinter],
+        onSelect: @escaping (ConfiguredPrinter?) -> Void
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text(title)
+                .font(.bodyMedium.weight(.semibold))
+                .foregroundColor(.appTextPrimary)
+
+            Text(subtitle)
+                .font(.caption)
+                .foregroundColor(.appTextSecondary)
+
+            Menu {
+                ForEach(candidates, id: \.id) { printer in
+                    Button(printer.name) {
+                        onSelect(printer)
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(selectedPrinter?.name ?? "printer_select_placeholder".localized)
+                        .foregroundColor(selectedPrinter == nil ? .appTextSecondary : .appTextPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .foregroundColor(.appTextSecondary)
+                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.md)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .fill(Color.appSurfaceSecondary)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(Color.appBorderLight, lineWidth: 1)
+                )
+            }
+        }
+        .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+    }
+
+    private func previewRouteRow(title: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.md) {
+            Text(title)
+                .font(.monoCaption)
+                .foregroundColor(.appTextSecondary)
+
+            Spacer()
+
+            Text(value)
+                .font(.bodyMedium)
+                .foregroundColor(.appTextPrimary)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private func previewLineItem(title: String, value: String, emphasized: Bool = false) -> some View {
+        HStack {
+            Text(title)
+                .font(emphasized ? .bodyMedium.weight(.semibold) : .bodyMedium)
+                .foregroundColor(emphasized ? .appTextPrimary : .appTextSecondary)
+
+            Spacer()
+
+            Text(value)
+                .font(emphasized ? .cardTitle : .bodyMedium)
+                .foregroundColor(.appTextPrimary)
+        }
+    }
+
+    private func previewLanguagePill(_ language: PrintLanguage) -> some View {
+        Text(language.nativeName)
+            .font(.monoCaption)
+            .foregroundColor(.appTextSecondary)
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xs)
+            .background(Color.appSurfaceSecondary)
+            .cornerRadius(CornerRadius.sm)
+    }
+
+    private var previewRestaurantName: String {
+        let headerName = settingsManager.receiptHeader.restaurantName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !headerName.isEmpty {
+            return headerName
+        }
+
+        let restaurantName = settingsManager.restaurantSettings.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return restaurantName.isEmpty ? "SOder Restaurant" : restaurantName
+    }
+
+    private func advancedRow(icon: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: Spacing.md) {
+            Image(systemName: icon)
+                .foregroundColor(.appPrimary)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(title)
+                    .font(.bodyMedium.weight(.semibold))
+                    .foregroundColor(.appTextPrimary)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.appTextSecondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.appTextSecondary)
+        }
+        .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
+    }
+
+    private func sectionHeader(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            Text(title)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+            Text(subtitle)
+                .font(.caption)
+                .foregroundColor(.appTextSecondary)
+        }
+    }
+
+    private func printerRoleDescription(for printer: ConfiguredPrinter) -> String {
+        if settingsManager.primaryReceiptPrinter?.id == printer.id {
+            return "printer_role_receipt".localized
+        }
+
+        if settingsManager.kitchenPrinter?.id == printer.id {
+            return "printer_role_kitchen".localized
+        }
+
+        return printer.printerType.displayName
+    }
+
+    private func runPrinterTest(_ printer: ConfiguredPrinter) async {
+        await MainActor.run {
+            isTesting = true
+        }
+
+        let target: PrinterSettingsManager.PrintTarget = settingsManager.kitchenPrinter?.id == printer.id ? .kitchen : .receipt
+        let language = settingsManager.getSelectedLanguage(for: target)
+        let success = await PrinterService.shared.testPrintSampleForPrinter(printer, language: language)
 
         await MainActor.run {
-            if success {
-                testResult = TestResult(
-                    success: true,
-                    message: String(format: "printer_test_success_message".localized, printer.name),
-                    suggestion: nil
-                )
-                // Update connection status
-                settingsManager.updateConnectionStatus(for: printer.id, status: .connected)
-                // Log success
-                printerManager.addLog(String(format: "printer_test_receipt_success_log".localized, printer.name))
-            } else {
-                testResult = TestResult(
-                    success: false,
-                    message: String(format: "printer_test_failed_message".localized, printer.name),
-                    suggestion: "printer_test_failed_suggestion".localized
-                )
-                // Update connection status
-                settingsManager.updateConnectionStatus(for: printer.id, status: .disconnected)
-                // Log failure
-                printerManager.addLog(String(format: "printer_test_print_failed_log".localized, printer.name))
-            }
+            isTesting = false
+            settingsManager.updateConnectionStatus(for: printer.id, status: success ? .connected : .disconnected)
+            testResult = TestResult(
+                success: success,
+                message: success
+                    ? String(format: "printer_test_success_message".localized, printer.name)
+                    : String(format: "printer_test_failed_message".localized, printer.name),
+                suggestion: success ? nil : "printer_test_failed_suggestion".localized
+            )
             showingTestResult = true
         }
     }
-    
-    private func saveAndDismiss() { dismiss() }
+
+    private func saveAndDismiss() {
+        dismiss()
+    }
 }
 
-// MARK: - Test Result Model
 struct TestResult {
     let success: Bool
     let message: String
     let suggestion: String?
 }
 
-// MARK: - Supporting Views
-struct PrinterModeCard: View {
-    let mode: PrinterMode
-    let isSelected: Bool
-    let title: String
-    let description: String
-    let icon: String
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: Spacing.sm) {
-                Image(systemName: icon)
-                    .foregroundColor(isSelected ? .appSurface : .appPrimary)
-                    .font(.title2)
-                    .frame(width: 30)
-                
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(title)
-                        .font(.headline)
-                        .foregroundColor(isSelected ? .appSurface : .appTextPrimary)
-                    Text(description)
-                        .font(.caption)
-                        .foregroundColor(isSelected ? .appSurface.opacity(0.8) : .appTextSecondary)
-                        .multilineTextAlignment(.leading)
-                }
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.appSurface)
-                        .font(.title3)
-                }
-            }
-            .padding()
-            .background(isSelected ? Color.appPrimary : Color.appBackground)
-            .cornerRadius(CornerRadius.sm)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct PrinterConfigCard: View {
+private struct PrinterSetupCard: View {
     let printer: ConfiguredPrinter
     let role: String
+    let connectionStatus: ConnectionStatus
     let onEdit: () -> Void
     let onTest: () -> Void
-    let onRemove: () -> Void
-    @ObservedObject var settingsManager = PrinterSettingsManager.shared
+    let onDelete: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            HStack {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    HStack(spacing: Spacing.xs) {
-                        Text(role)
-                            .font(.caption)
-                            .foregroundColor(.appTextSecondary)
-                            .textCase(.uppercase)
-
-                        // Connection status badge
-                        let status = settingsManager.getConnectionStatus(for: printer.id)
-                        HStack(spacing: 2) {
-                            Image(systemName: status.icon)
-                                .font(.caption2)
-                            Text(status.displayName)
-                                .font(.caption2)
-                        }
-                        .foregroundColor(status.color)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(status.color.opacity(0.1))
-                        .cornerRadius(4)
-                    }
-
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(printer.name)
-                        .font(.headline)
-                    Text("\(printer.ipAddress):\(printer.port)")
-                        .font(.caption)
+                        .font(.bodyMedium.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
+
+                    Text(role)
+                        .font(.monoLabel)
                         .foregroundColor(.appTextSecondary)
                 }
 
                 Spacer()
-                
+
                 HStack(spacing: Spacing.xs) {
-                    Button(action: onTest) {
-                        Image(systemName: "testtube.2")
-                            .foregroundColor(.appPrimary)
-                    }
-                    .buttonStyle(BorderlessButtonStyle())
-                    .accessibilityLabel("test".localized)
-                    
-                    Button(action: onEdit) {
-                        Image(systemName: "pencil")
-                            .foregroundColor(.appWarning)
-                    }
-                    .buttonStyle(BorderlessButtonStyle())
-                    .accessibilityLabel("edit".localized)
-                    
-                    Button(action: onRemove) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.appError)
-                    }
-                    .buttonStyle(BorderlessButtonStyle())
-                    .accessibilityLabel("remove".localized)
+                    Image(systemName: connectionStatus.icon)
+                        .foregroundColor(connectionStatus.color)
+                    Text(connectionStatus.displayName)
+                        .font(.caption)
+                        .foregroundColor(connectionStatus.color)
                 }
+            }
+
+            Text("\(printer.ipAddress):\(printer.port)")
+                .font(.caption)
+                .foregroundColor(.appTextSecondary)
+
+            HStack(spacing: Spacing.sm) {
+                actionButton(icon: "pencil", title: "edit".localized, action: onEdit)
+                actionButton(icon: "testtube.2", title: "test".localized, action: onTest)
+                actionButton(icon: "trash", title: "delete".localized, action: onDelete, tint: .appError)
             }
         }
-        .padding()
-        .background(Color.appSuccess.opacity(0.1))
-        .cornerRadius(CornerRadius.xs)
+        .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
     }
-}
 
-struct EmptyPrinterCard: View {
-    let role: String
-    let onAdd: () -> Void
-    
-    var body: some View {
-        Button(action: onAdd) {
-            VStack(spacing: Spacing.sm) {
-                Image(systemName: "plus.circle.dashed")
-                    .font(.largeTitle)
-                    .foregroundColor(.appBorder)
-                
-                VStack(spacing: Spacing.xs) {
-                    Text("add_role_format".localized(with: role))
-                        .font(.headline)
-                        .foregroundColor(.appTextPrimary)
-                    Text("tap_to_configure_network_printer".localized)
-                        .font(.caption)
-                        .foregroundColor(.appTextSecondary)
-                }
+    private func actionButton(
+        icon: String,
+        title: String,
+        action: @escaping () -> Void,
+        tint: Color = .appPrimary
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: icon)
+                Text(title)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.appBackground)
-            .cornerRadius(CornerRadius.xs)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.xs)
-                    .stroke(Color.appBorder, style: StrokeStyle(lineWidth: 1, dash: [5]))
+            .font(.caption.weight(.semibold))
+            .foregroundColor(tint)
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xs)
+            .background(
+                Capsule()
+                    .fill(tint.opacity(0.12))
             )
         }
-        .buttonStyle(PlainButtonStyle())
-        .accessibilityLabel("add_printer".localized)
+        .buttonStyle(.plain)
     }
 }
 
-// MARK: - Add/Edit Printer View
 struct AddEditPrinterView: View {
     let printer: ConfiguredPrinter?
     let onSave: (ConfiguredPrinter) -> Void
-    
+
     @Environment(\.dismiss) private var dismiss
-    @State private var name: String = ""
-    @State private var ipAddress: String = ""
-    @State private var port: String = "9100"
+    @State private var name = ""
+    @State private var ipAddress = ""
+    @State private var port = "9100"
     @State private var printerType: ConfiguredPrinterType = .receipt
-    
-    var isEditing: Bool { printer != nil }
-    
+    @State private var showAdvanced = false
+
+    private var isEditing: Bool {
+        printer != nil
+    }
+
+    private var canSave: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !ipAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        Int(port) != nil
+    }
+
     var body: some View {
         NavigationView {
-            Form {
-                Section("Printer Information") {
-                    TextField("Printer Name", text: $name)
-                    TextField("IP Address", text: $ipAddress)
-                        .keyboardType(.decimalPad)
-                    TextField("Port", text: $port)
-                        .keyboardType(.numberPad)
-                    
-                    Picker("Printer Type", selection: $printerType) {
-                        ForEach(ConfiguredPrinterType.allCases, id: \.self) { type in
-                            Text(type.displayName).tag(type)
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("printer_add_network_printer_button".localized)
+                            .font(.sectionHeader)
+                            .foregroundColor(.appTextPrimary)
+
+                        Text("printer_add_network_printer_help".localized)
+                            .font(.bodyMedium)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                    .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.xl, surfaceColor: Color.appSurface.opacity(0.94))
+
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        TextField("printer_manual_setup_printer_name_label".localized, text: $name)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                        TextField("printer_manual_setup_ip_address_label".localized, text: $ipAddress)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+
+                        DisclosureGroup(isExpanded: $showAdvanced) {
+                            VStack(alignment: .leading, spacing: Spacing.md) {
+                                TextField("printer_manual_setup_port_label".localized, text: $port)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .keyboardType(.numberPad)
+
+                                Picker("printer_type_receipt_display_name".localized, selection: $printerType) {
+                                    ForEach(ConfiguredPrinterType.allCases, id: \.self) { type in
+                                        Text(type.displayName).tag(type)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                            }
+                            .padding(.top, Spacing.sm)
+                        } label: {
+                            Text("printer_more_options_title".localized)
+                                .font(.bodyMedium.weight(.semibold))
+                                .foregroundColor(.appTextPrimary)
                         }
                     }
+                    .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.xl, surfaceColor: Color.appSurface.opacity(0.92))
                 }
-                
-                Section("Quick Setup") {
-                    Button("Use Default Settings (192.168.1.100:9100)") {
-                        ipAddress = "192.168.1.100"
-                        port = "9100"
-                        if name.isEmpty {
-                            name = "Network Printer"
-                        }
-                    }
-                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.lg)
             }
-            .navigationTitle(isEditing ? "Edit Printer" : "Add Printer")
+            .background(Color.appBackground.ignoresSafeArea())
+            .navigationTitle(isEditing ? "edit".localized : "add_printer".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("cancel".localized) {
                         dismiss()
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("save".localized) {
                         savePrinter()
                     }
-                    .disabled(name.isEmpty || ipAddress.isEmpty || port.isEmpty)
+                    .disabled(!canSave)
                 }
             }
         }
         .onAppear {
-            if let printer = printer {
+            if let printer {
                 name = printer.name
                 ipAddress = printer.ipAddress
                 port = String(printer.port)
@@ -607,24 +826,27 @@ struct AddEditPrinterView: View {
             }
         }
     }
-    
+
     private func savePrinter() {
         guard let portInt = Int(port) else { return }
-        
+
+        let printerName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let newPrinter = ConfiguredPrinter(
             id: printer?.id ?? UUID().uuidString,
-            name: name,
-            ipAddress: ipAddress,
+            name: printerName,
+            ipAddress: ipAddress.trimmingCharacters(in: .whitespacesAndNewlines),
             port: portInt,
             printerType: printerType
         )
-        
+
         onSave(newPrinter)
         dismiss()
     }
 }
 
 #Preview {
-    UnifiedPrinterSetupView()
-        .environmentObject(PrinterManager.shared)
+    NavigationView {
+        UnifiedPrinterSetupView()
+            .environmentObject(PrinterManager.shared)
+    }
 }

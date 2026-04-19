@@ -18,10 +18,26 @@ export type PurchaseCategory =
   | 'other';
 
 export type ExpenseCategory =
-  | 'food'
-  | 'transport'
+  | 'taxes_and_dues'
+  | 'shipping'
   | 'utilities'
+  | 'travel'
+  | 'communication'
+  | 'advertising'
+  | 'entertainment'
+  | 'insurance'
+  | 'repairs'
+  | 'supplies'
+  | 'welfare'
+  | 'payroll'
+  | 'outsourcing'
+  | 'interest'
+  | 'rent'
+  | 'bad_debt'
+  | 'miscellaneous'
+  | 'transport'
   | 'maintenance'
+  | 'food'
   | 'other';
 
 // ─── Supplier ────────────────────────────────────────────

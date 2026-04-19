@@ -2,16 +2,16 @@
 
 ## Overview
 
-The owner onboarding system provides a streamlined, AI-assisted setup process for new restaurant owners. It merges Restaurant Settings and Homepage Management into a single cohesive flow that guides users through essential setup steps.
+The owner onboarding system now uses a founder-first control flow instead of one long setup form. The experience separates company identity, AI brand suggestions, shared menu foundations, and starter branch details so mobile users can move through setup in smaller steps.
 
 ## Features Implemented
 
 ### ✅ Core Onboarding Flow
-- **4-step wizard interface** with progress tracking
-- **AI-powered content generation** using Gemini AI
-- **Media upload capabilities** for logos, owner photos, and gallery images
-- **Multi-language support** (English, Japanese, Vietnamese)
-- **Comprehensive review step** before completion
+- **4-step founder control wizard** with progress tracking
+- **Company-first setup** before branch-specific data
+- **AI-generated brand suggestions** with 2-3 logo and palette directions
+- **Shared menu category seeding** for future branch inheritance
+- **Starter branch step** focused on branch name, address, contacts, and hours
 
 ### ✅ Database Schema
 - Added `onboarded` boolean flag to restaurants table
@@ -138,16 +138,18 @@ Set `NEXT_PUBLIC_FEATURE_ONBOARDING=false` to disable the feature.
 
 ## Usage Flow
 
-1. **New restaurant owner signs up**
-2. **Middleware detects `onboarded: false`**
-3. **User is redirected to `/dashboard/onboarding`**
-4. **4-step wizard guides through setup:**
-   - Basic information (name, contact, hours)
-   - AI content generation (hero, story, dishes)
-   - Media uploads (logo, photos, gallery)
-   - Review and completion
-5. **Onboarding completion updates database**
-6. **User gains access to full dashboard**
+1. **New founder reaches control onboarding**
+2. **Step 1: Company profile**
+   - founder enters company information
+   - founder writes a short summary of the unique food and service style
+3. **Step 2: AI brand suggestions**
+   - AI proposes multiple logos, brand colors, and shared food categories
+   - founder selects a direction and keeps the company-level categories they want
+4. **Step 3: Starter branch**
+   - founder enters branch name, address, contacts, and opening hours
+5. **Step 4: Review and finish**
+   - onboarding saves company branding, shared categories, and branch setup
+6. **Founder enters the control overview**
 
 ## Integration Points
 

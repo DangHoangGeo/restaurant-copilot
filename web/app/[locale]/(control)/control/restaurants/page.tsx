@@ -4,11 +4,8 @@ import { ControlRestaurantsClient } from '@/components/features/admin/control/co
 import { buildAuthorizationService } from '@/lib/server/authorization/service';
 import { resolveFounderControlContext } from '@/lib/server/control/access';
 import { getActiveBranchId } from '@/lib/server/organizations/active-branch';
-import {
-  listOrganizationBranches,
-  listOrganizationEmployees,
-} from '@/lib/server/organizations/queries';
-import { listOrganizationSharedMenu } from '@/lib/server/organizations/shared-menu';
+import { getFounderControlOverview } from '@/lib/server/control/overview';
+import { listOrganizationBranches } from '@/lib/server/organizations/queries';
 
 export async function generateMetadata({
   params,
@@ -32,45 +29,43 @@ export default async function ControlRestaurantsPage({
   }
 
   const authz = buildAuthorizationService(ctx);
-  const canManageMenu = authz?.can('restaurant_settings') ?? false;
   const canAddBranch = authz?.canManageMembers() ?? false;
-  const canViewEmployees = authz?.can('employees') ?? false;
-
-  const [allBranches, sharedMenuCategories] = await Promise.all([
+  const [allBranches, overview] = await Promise.all([
     listOrganizationBranches(ctx.organization.id),
-    canManageMenu ? listOrganizationSharedMenu(ctx.organization.id) : Promise.resolve([]),
+    getFounderControlOverview({
+      organizationId: ctx.organization.id,
+      accessibleRestaurantIds: ctx.accessibleRestaurantIds,
+      timezone: ctx.organization.timezone,
+    }),
   ]);
   const accessibleIds = new Set(ctx.accessibleRestaurantIds);
   const branches = allBranches.filter((branch) => accessibleIds.has(branch.id));
 
   const activeBranchId = await getActiveBranchId(ctx);
-
-  const employees = canViewEmployees
-    ? await listOrganizationEmployees(ctx.accessibleRestaurantIds)
-    : [];
-
-  const employeeCountByBranch = new Map<string, number>();
-  for (const emp of employees) {
-    employeeCountByBranch.set(emp.restaurant_id, (employeeCountByBranch.get(emp.restaurant_id) ?? 0) + 1);
-  }
+  const overviewBranchById = new Map(
+    overview.branches.map((branch) => [branch.restaurant_id, branch])
+  );
 
   const branchesWithMeta = branches.map((branch) => ({
     id: branch.id,
     name: branch.name,
     subdomain: branch.subdomain,
     branchCode: branch.branch_code ?? branch.subdomain,
-    employeeCount: employeeCountByBranch.get(branch.id) ?? 0,
+    employeeCount: overviewBranchById.get(branch.id)?.employee_count ?? 0,
     isActive: branch.id === activeBranchId,
+    onboarded: branch.onboarded ?? false,
+    address: branch.address ?? null,
+    phone: branch.phone ?? null,
+    email: branch.email ?? null,
   }));
 
   return (
     <ControlRestaurantsClient
       branches={branchesWithMeta}
-      canManageMenu={canManageMenu}
+      overview={overview}
       canAddBranch={canAddBranch}
-      organizationName={ctx.organization.name}
       companyPublicSubdomain={ctx.organization.public_subdomain ?? null}
-      sharedMenuCategories={sharedMenuCategories}
+      currency={ctx.organization.currency}
     />
   );
 }

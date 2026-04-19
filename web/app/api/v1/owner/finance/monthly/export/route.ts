@@ -14,9 +14,16 @@ import { resolveFinanceAccess } from '@/lib/server/finance/access';
 import { getMonthlyReport, parseYearMonth, buildExportCsv } from '@/lib/server/finance/service';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
+function sanitizeFilenamePart(value: string): string {
+  return value.replace(/[^\p{L}\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '') || 'branch';
+}
+
 export async function GET(req: NextRequest) {
   const access = await resolveFinanceAccess();
   if (!access) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  if (!access.canExport) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -48,7 +55,7 @@ export async function GET(req: NextRequest) {
     const csv = buildExportCsv(report, restaurantName);
 
     const mm = String(month).padStart(2, '0');
-    const filename = `finance_${year}_${mm}_${restaurantName.replace(/\s+/g, '_')}.csv`;
+    const filename = `finance_${year}_${mm}_${sanitizeFilenamePart(restaurantName)}.csv`;
 
     return new NextResponse(csv, {
       status: 200,

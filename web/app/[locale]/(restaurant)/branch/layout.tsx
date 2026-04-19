@@ -3,6 +3,7 @@ import { AdminLayoutClient } from './admin-layout-client';
 import { getTranslations } from 'next-intl/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { redirect } from 'next/navigation';
+import { resolveFounderControlContext } from '@/lib/server/control/access';
 
 export async function generateMetadata({
   params
@@ -23,9 +24,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const [user, resolvedParams] = await Promise.all([
+  const [user, resolvedParams, founderContext] = await Promise.all([
     getUserFromRequest(),
     params,
+    resolveFounderControlContext(),
   ]);
   const locale = resolvedParams.locale || 'en';
 
@@ -58,6 +60,11 @@ export default async function DashboardLayout({
       : null,
   };
 
+  const ownerControlHref =
+    founderContext && founderContext.member.role !== 'accountant_readonly'
+      ? `/${locale}/control/restaurants`
+      : null;
+
   if (!restaurantSettings && user.subdomain) {
     const MOCK_RESTAURANT_INFO_FALLBACK = {
       name: tCommon('fallbackRestaurantName'),
@@ -67,7 +74,11 @@ export default async function DashboardLayout({
     } as const;
     return (
       <ProtectedLayout initialUser={initialUser}>
-        <AdminLayoutClient locale={locale} restaurantSettings={MOCK_RESTAURANT_INFO_FALLBACK}>
+        <AdminLayoutClient
+          locale={locale}
+          restaurantSettings={MOCK_RESTAURANT_INFO_FALLBACK}
+          ownerControlHref={ownerControlHref}
+        >
           <div className="p-8 text-center">
             <h1 className="text-xl font-semibold text-destructive">{tCommon('configurationErrorTitle')}</h1>
             <p className="text-muted-foreground">{tCommon('configurationErrorDescription', { subdomain: user.subdomain })}</p>
@@ -86,7 +97,11 @@ export default async function DashboardLayout({
     } as const;
     return (
       <ProtectedLayout initialUser={initialUser}>
-        <AdminLayoutClient locale={locale} restaurantSettings={GENERIC_ADMIN_SETTINGS}>
+        <AdminLayoutClient
+          locale={locale}
+          restaurantSettings={GENERIC_ADMIN_SETTINGS}
+          ownerControlHref={ownerControlHref}
+        >
           <div className="p-8 text-center">
             <h1 className="text-xl font-semibold text-destructive">{tCommon('noRestaurantContextTitle')}</h1>
             <p className="text-muted-foreground">{tCommon('noRestaurantContextDescription')}</p>
@@ -98,7 +113,11 @@ export default async function DashboardLayout({
 
   return (
     <ProtectedLayout initialUser={initialUser}>
-      <AdminLayoutClient locale={locale} restaurantSettings={restaurantSettings!}>
+      <AdminLayoutClient
+        locale={locale}
+        restaurantSettings={restaurantSettings!}
+        ownerControlHref={ownerControlHref}
+      >
         {children}
       </AdminLayoutClient>
     </ProtectedLayout>

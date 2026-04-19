@@ -4,6 +4,14 @@ import SwiftUI
 // MARK: - Printer Settings Manager
 class PrinterSettingsManager: ObservableObject {
     static let shared = PrinterSettingsManager()
+
+    private enum Defaults {
+        static let restaurantName = "SOder Restaurant"
+        static let restaurantAddress = "123 Restaurant Street, City"
+        static let restaurantPhone = "+81-xxx-xxx-xxxx"
+        static let restaurantWebsite = "soder-restaurant.com"
+        static let footerMessage = "Thank you for your visit!"
+    }
     
     @Published var configuredPrinters: [ConfiguredPrinter] = []
     @Published var activePrinter: ConfiguredPrinter?
@@ -58,20 +66,20 @@ class PrinterSettingsManager: ObservableObject {
     private init() {
         // Initialize with default restaurant settings
         self.restaurantSettings = RestaurantSettings(
-            name: "SOder Restaurant",
-            address: "123 Restaurant Street, City",
-            phone: "+81-xxx-xxx-xxxx",
-            website: "soder-restaurant.com",
+            name: Defaults.restaurantName,
+            address: Defaults.restaurantAddress,
+            phone: Defaults.restaurantPhone,
+            website: Defaults.restaurantWebsite,
             dateTimeFormat: "yyyy-MM-dd HH:mm:ss"
         )
         
         // Initialize receipt header with restaurant settings
         self.receiptHeader = ReceiptHeaderSettings(
-            restaurantName: "SOder Restaurant",
-            address: "123 Restaurant Street, City",
-            phone: "+81-xxx-xxx-xxxx",
-            website: "soder-restaurant.com",
-            footerMessage: "Thank you for your visit!"
+            restaurantName: Defaults.restaurantName,
+            address: Defaults.restaurantAddress,
+            phone: Defaults.restaurantPhone,
+            website: Defaults.restaurantWebsite,
+            footerMessage: Defaults.footerMessage
         )
         
         loadSettings()
@@ -256,6 +264,7 @@ class PrinterSettingsManager: ObservableObject {
     // MARK: - Receipt Header Management
     func updateReceiptHeader(_ header: ReceiptHeaderSettings) {
         receiptHeader = header
+        syncRestaurantSettingsFromReceiptHeader()
         saveReceiptHeader()
     }
     
@@ -263,9 +272,124 @@ class PrinterSettingsManager: ObservableObject {
         receiptHeader = ReceiptHeaderSettings(
             restaurantName: restaurantSettings.name,
             address: restaurantSettings.address,
-            phone: restaurantSettings.phone
+            phone: restaurantSettings.phone,
+            taxCode: receiptHeader.taxCode,
+            website: restaurantSettings.website,
+            footerMessage: receiptHeader.footerMessage,
+            promotionalText: receiptHeader.promotionalText,
+            showTaxCode: receiptHeader.showTaxCode,
+            showWebsite: receiptHeader.showWebsite,
+            showPromotionalText: receiptHeader.showPromotionalText
         )
+        syncRestaurantSettingsFromReceiptHeader()
         saveReceiptHeader()
+    }
+
+    func syncFromCurrentRestaurant(_ restaurant: Restaurant? = SupabaseManager.shared.currentRestaurant) {
+        guard let restaurant else { return }
+
+        let resolvedName = resolvedRestaurantName(from: restaurant)
+        var didChangeRestaurantSettings = false
+        var didChangeReceiptHeader = false
+
+        if !resolvedName.isEmpty && shouldReplaceRestaurantName(restaurantSettings.name) {
+            restaurantSettings.name = resolvedName
+            didChangeRestaurantSettings = true
+        }
+
+        if !resolvedName.isEmpty && shouldReplaceRestaurantName(receiptHeader.restaurantName) {
+            receiptHeader.restaurantName = resolvedName
+            didChangeReceiptHeader = true
+        }
+
+        if shouldReplaceFooterMessage(receiptHeader.footerMessage) {
+            receiptHeader.footerMessage = Defaults.footerMessage
+            didChangeReceiptHeader = true
+        }
+
+        if shouldReplaceRestaurantName(restaurantSettings.website) {
+            restaurantSettings.website = ""
+            didChangeRestaurantSettings = true
+        }
+
+        if shouldReplaceRestaurantName(receiptHeader.website) {
+            receiptHeader.website = restaurantSettings.website
+            didChangeReceiptHeader = true
+        }
+
+        if didChangeRestaurantSettings {
+            saveRestaurantSettings()
+        }
+
+        if didChangeReceiptHeader {
+            syncRestaurantSettingsFromReceiptHeader()
+            saveReceiptHeader()
+        }
+    }
+
+    var primaryReceiptPrinter: ConfiguredPrinter? {
+        switch printerMode {
+        case .single:
+            return activePrinter ?? configuredPrinters.first
+        case .dual:
+            return checkoutPrinter ?? activePrinter ?? configuredPrinters.first
+        }
+    }
+
+    var usesSeparateKitchenPrinter: Bool {
+        printerMode == .dual
+    }
+
+    var setupSummaryText: String {
+        if let receiptPrinter = primaryReceiptPrinter {
+            if printerMode == .dual, let kitchenPrinter = kitchenPrinter {
+                return String(format: "printer_setup_summary_dual".localized, receiptPrinter.name, kitchenPrinter.name)
+            }
+
+            return String(format: "printer_setup_summary_single".localized, receiptPrinter.name)
+        }
+
+        return "printer_setup_summary_empty".localized
+    }
+
+    func setSeparateKitchenPrinterEnabled(_ enabled: Bool) {
+        if enabled {
+            setPrinterMode(.dual)
+
+            if checkoutPrinter == nil {
+                setCheckoutPrinter(activePrinter ?? configuredPrinters.first)
+            }
+
+            if kitchenPrinter == nil {
+                setKitchenPrinter(configuredPrinters.first(where: { $0.id != checkoutPrinter?.id }) ?? configuredPrinters.first)
+            }
+        } else {
+            setPrinterMode(.single)
+
+            if activePrinter == nil {
+                activePrinter = checkoutPrinter ?? kitchenPrinter ?? configuredPrinters.first
+                saveActivePrinter()
+            }
+        }
+
+        saveDualPrinters()
+    }
+
+    func assignPrimaryReceiptPrinter(_ printer: ConfiguredPrinter?) {
+        switch printerMode {
+        case .single:
+            if let printer {
+                setActivePrinter(printer)
+            } else {
+                clearActivePrinter()
+            }
+        case .dual:
+            setCheckoutPrinter(printer)
+
+            if kitchenPrinter?.id == printer?.id {
+                setKitchenPrinter(configuredPrinters.first(where: { $0.id != printer?.id }))
+            }
+        }
     }
     
     // MARK: - Persistence
@@ -617,6 +741,41 @@ class PrinterSettingsManager: ObservableObject {
         let ipRegex = "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
         let predicate = NSPredicate(format: "SELF MATCHES %@", ipRegex)
         return predicate.evaluate(with: ip)
+    }
+
+    private func resolvedRestaurantName(from restaurant: Restaurant) -> String {
+        let candidateNames = [
+            restaurant.name?.trimmingCharacters(in: .whitespacesAndNewlines),
+            restaurant.branchCode?.trimmingCharacters(in: .whitespacesAndNewlines),
+            restaurant.subdomain.trimmingCharacters(in: .whitespacesAndNewlines)
+        ]
+
+        return candidateNames.compactMap { value in
+            guard let value, !value.isEmpty else { return nil }
+            return value
+        }.first ?? ""
+    }
+
+    private func shouldReplaceRestaurantName(_ value: String) -> Bool {
+        let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return normalized.isEmpty ||
+            normalized == Defaults.restaurantName ||
+            normalized == Defaults.restaurantAddress ||
+            normalized == Defaults.restaurantPhone ||
+            normalized == Defaults.restaurantWebsite
+    }
+
+    private func shouldReplaceFooterMessage(_ value: String) -> Bool {
+        let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return normalized.isEmpty || normalized == Defaults.footerMessage
+    }
+
+    private func syncRestaurantSettingsFromReceiptHeader() {
+        restaurantSettings.name = receiptHeader.restaurantName
+        restaurantSettings.address = receiptHeader.address
+        restaurantSettings.phone = receiptHeader.phone
+        restaurantSettings.website = receiptHeader.website
+        saveRestaurantSettings()
     }
 }
 

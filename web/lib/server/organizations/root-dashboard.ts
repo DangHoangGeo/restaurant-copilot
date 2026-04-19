@@ -65,6 +65,12 @@ function buildSubdomainUrl(subdomain: string, fullPath: string): string {
   return `https://${subdomain}.${productionUrl}${fullPath}`;
 }
 
+export function getRootControlEntryPath(
+  onboardingCompletedAt?: string | null,
+): string {
+  return onboardingCompletedAt ? "/control/overview" : "/control/onboarding";
+}
+
 export function buildRootControlSectionUrl(
   locale: string,
   path: string,
@@ -87,9 +93,14 @@ export function buildRootControlSectionUrl(
 
 export function buildRootControlUrl(
   locale: string,
-  subdomain?: string | null
+  subdomain?: string | null,
+  onboardingCompletedAt?: string | null,
 ): string {
-  return buildRootControlSectionUrl(locale, '/control/overview', subdomain);
+  return buildRootControlSectionUrl(
+    locale,
+    getRootControlEntryPath(onboardingCompletedAt),
+    subdomain,
+  );
 }
 
 export function buildBranchDashboardUrl(

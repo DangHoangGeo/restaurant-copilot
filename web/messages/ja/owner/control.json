@@ -2,6 +2,11 @@
   "eyebrow": "Founder Control",
   "subtitle": "まず組織全体を見て、必要なときだけ各店舗へ入って現場操作を行います。",
   "singleBranch": "アクセス可能な店舗は1件です",
+  "allBranches": "アクセス可能な店舗は {count} 件です",
+  "branchScope": {
+    "label": "店舗別ツール",
+    "hint": "組織全体ページは会社スコープのまま維持され、店舗別ツールだけが選択中の店舗で開きます。"
+  },
   "nav": {
     "overview": "概要",
     "restaurants": "店舗",
@@ -133,5 +138,249 @@
     "homepageTitle": "ホームページとブランド",
     "homepageDescription": "公開向けの見え方と店舗ストーリーを管理します。",
     "openHomepage": "ホームページツールを開く"
+  },
+  "branchDetail": {
+    "backToRestaurants": "店舗一覧へ戻る",
+    "tabs": {
+      "overview": "概要",
+      "finance": "財務",
+      "team": "チーム",
+      "setup": "設定"
+    },
+    "actions": {
+      "publicSite": "公開サイト",
+      "openBranchManage": "店舗管理を開く"
+    },
+    "status": {
+      "ready": "準備完了",
+      "setupNeeded": "要セットアップ",
+      "closed": "締め済み",
+      "open": "未締め"
+    },
+    "common": {
+      "notSet": "未設定"
+    },
+    "stats": {
+      "todayRevenue": "本日の売上",
+      "orderCount": "{count}件の注文",
+      "openOrders": "進行中オーダー",
+      "openOrdersCount": "{count}件の進行中オーダー",
+      "inKitchen": "キッチン進行中",
+      "monthSpending": "今月の支出",
+      "monthSpendingHint": "発注と経費の記録",
+      "monthClose": "{month} の月次締め"
+    },
+    "info": {
+      "tableLabel": "店舗情報",
+      "tableValue": "内容",
+      "name": "店舗名",
+      "code": "コード",
+      "address": "住所",
+      "contact": "連絡先",
+      "workingHours": "勤務時間",
+      "workingHoursValue": "承認済み {approved} ・ 保留 {pending}",
+      "bestSeller": "売れ筋商品",
+      "bestSellerValue": "{item} ・ {quantity}点販売",
+      "noSalesYet": "まだ売上がありません"
+    },
+    "snapshot": {
+      "tableLabel": "月次スナップショット",
+      "tableValue": "内容",
+      "period": "対象期間",
+      "status": "状態",
+      "revenue": "売上",
+      "grossProfit": "粗利",
+      "openOrders": "進行中オーダー",
+      "monthSpending": "今月の支出"
+    },
+    "charts": {
+      "revenueTitle": "直近14日間の売上",
+      "revenueSubtitle": "この店舗の完了済み注文",
+      "revenueEmpty": "直近14日間の完了済み注文はありません",
+      "hoursTitle": "今月の勤務時間",
+      "hoursSubtitle": "従業員ごとの承認済み・保留中の勤怠",
+      "hoursEmpty": "今月は勤怠時間がまだ記録されていません",
+      "approved": "承認済み",
+      "pending": "保留中"
+    },
+    "bestSellers": {
+      "title": "直近30日の売れ筋",
+      "subtitle": "この店舗だけの販売上位商品",
+      "itemMeta": "{quantity}点販売 ・ {revenue}",
+      "empty": "この店舗ではまだ売上がありません。"
+    },
+    "hoursSnapshot": {
+      "title": "勤怠スナップショット",
+      "subtitle": "この店舗の勤務時間を確認する場所",
+      "approvedHours": "承認済み時間",
+      "pendingReview": "確認待ち",
+      "reviewLabel": "確認方法",
+      "reviewBody": "チームタブを開くと、この店舗の各従業員について週次計画、月次計画、承認済み時間、保留時間、給与見込みを確認できます。",
+      "openTeam": "勤怠を見る"
+    },
+    "finance": {
+      "title": "店舗財務",
+      "description": "ここで月次レポートを確認し、必要な場合は別タブで店舗の財務画面を開きます。",
+      "openBranchFinance": "店舗財務を開く",
+      "badges": {
+        "income": "収入詳細",
+        "spending": "支出詳細",
+        "manage": "経費を管理可能",
+        "readOnly": "閲覧のみ",
+        "export": "書き出し可能"
+      },
+      "snapshot": {
+        "revenue": "売上",
+        "costs": "総コスト",
+        "grossProfit": "粗利",
+        "approvedLabor": "承認済み労働時間"
+      }
+    },
+    "team": {
+      "employeeCount": "{count}人の従業員",
+      "addEmployee": "従業員を追加",
+      "inviteTitle": "新しい従業員を招待",
+      "fullName": "氏名",
+      "fullNamePlaceholder": "山田 太郎",
+      "email": "メールアドレス",
+      "emailPlaceholder": "staff@example.com",
+      "role": "役割",
+      "sendInvitation": "招待を送信",
+      "cancel": "キャンセル",
+      "inviteHelp": "従業員にはパスワード設定と店舗アクセス用のメールが届きます。",
+      "emptyTitle": "従業員がまだいません",
+      "emptyDescription": "上から最初のメンバーを追加してください。",
+      "rosterTitle": "チーム概要",
+      "rosterDescription": "オーナーはこの画面でシフト、承認済み時間、給与見込みを確認できます。"
+    },
+    "setup": {
+      "readyBanner": "この設定を保存すると、店舗が運用可能な状態になります。",
+      "edit": "編集",
+      "basicInfo": "基本情報",
+      "basicInfoHint": "店舗名や連絡先など、オーナー管理の基本情報をここで整えます。",
+      "branchName": "店舗名",
+      "branchNamePlaceholder": "例: Pho Saigon 新宿店",
+      "domain": "ドメイン（読み取り専用）",
+      "phone": "電話番号",
+      "phonePlaceholder": "+81-3-0000-0000",
+      "email": "メールアドレス",
+      "emailPlaceholder": "branch@example.com",
+      "address": "住所",
+      "addressPlaceholder": "東京都新宿区...",
+      "regional": "地域設定",
+      "regionalHint": "この店舗の通貨、言語、レポートの既定値をここで管理します。",
+      "timezone": "タイムゾーン",
+      "currency": "通貨",
+      "taxRate": "税率 (%)",
+      "defaultLanguage": "デフォルト言語",
+      "openingHours": "営業時間",
+      "openingHoursHint": "公開営業時間と店舗の基本時間をオーナー画面から素早く更新できます。",
+      "roleRates": "従業員の時給設定",
+      "roleRatesHint": "給与見込みに使う時給は、日々のチーム画面ではなくここで管理します。",
+      "day": "曜日",
+      "hours": "時間",
+      "closed": "休業",
+      "role": "役割",
+      "hourlyRate": "時給",
+      "rateNotSet": "未設定",
+      "saveBasicInfo": "基本情報を保存",
+      "saveRegional": "地域設定を保存",
+      "saveOpeningHours": "営業時間を保存",
+      "saveRates": "時給を保存",
+      "saveSettings": "設定を保存",
+      "saveAndMarkReady": "保存して準備完了にする"
+    },
+    "options": {
+      "timezones": {
+        "asiaTokyo": "Asia/Tokyo (JST)",
+        "asiaHoChiMinh": "Asia/Ho_Chi_Minh (ICT)",
+        "asiaSingapore": "Asia/Singapore (SGT)",
+        "utc": "UTC"
+      },
+      "currencies": {
+        "jpy": "JPY — 日本円",
+        "vnd": "VND — ベトナムドン",
+        "usd": "USD — 米ドル",
+        "sgd": "SGD — シンガポールドル"
+      },
+      "languages": {
+        "ja": "日本語",
+        "en": "英語",
+        "vi": "ベトナム語"
+      },
+      "roles": {
+        "manager": "マネージャー",
+        "chef": "シェフ",
+        "server": "ホール",
+        "cashier": "レジ"
+      }
+    },
+    "teamPanel": {
+      "weekdays": {
+        "mon": "月",
+        "tue": "火",
+        "wed": "水",
+        "thu": "木",
+        "fri": "金",
+        "sat": "土",
+        "sun": "日"
+      },
+      "roles": {
+        "manager": "マネージャー",
+        "chef": "シェフ",
+        "server": "ホール",
+        "cashier": "レジ"
+      },
+      "cards": {
+        "thisMonth": "今月",
+        "staffOnBranch": "この店舗のスタッフ {count}名",
+        "approvedHours": "承認済み時間",
+        "pendingHours": "{hours} が承認待ちです",
+        "payrollEstimate": "給与見込み",
+        "needRoleRates": "時給設定が必要です",
+        "payrollHint": "承認済み勤怠のみで計算",
+        "needsAttention": "要確認",
+        "missingRates": "{roles} の時給が未設定です",
+        "allRatesReady": "すべての役割で時給設定済みです"
+      },
+      "rates": {
+        "title": "役割ごとの時給",
+        "description": "役割ごとに1つの時給を設定すると、月末給与を自動で見積もれます。",
+        "appliesHint": "この役割の承認済み時間に適用されます",
+        "footerHint": "時間は予定シフトではなく承認済み勤怠から計算されます。",
+        "save": "時給を保存"
+      },
+      "schedule": {
+        "title": "シフトと給与ビュー",
+        "description": "週次ロスター、承認済み時間、給与見込みを1つの画面で確認できます。",
+        "staffCount": "{count}名のスタッフ",
+        "empty": "この店舗にはまだスタッフが追加されていません。",
+        "attendanceIssue": "勤怠エラー",
+        "waitingCount": "{count}件待機中",
+        "weeklyPlan": "週次計画",
+        "approved": "承認済み",
+        "salary": "給与",
+        "setRate": "時給を設定",
+        "weeklySchedule": "週間シフト",
+        "noWeeklyTemplate": "週間シフトテンプレートがまだありません。",
+        "monthPlan": "月次計画",
+        "pendingReview": "確認待ち",
+        "payrollStatus": "給与状態",
+        "ready": "準備完了",
+        "needsRate": "時給が必要"
+      },
+      "toasts": {
+        "invalidRate": "{role} の有効な時給を入力してください",
+        "saveRatesSuccess": "時給を更新しました",
+        "saveRatesError": "時給の保存に失敗しました"
+      }
+    },
+    "toasts": {
+      "saveSetupSuccess": "店舗設定を保存しました",
+      "saveSetupError": "設定の保存に失敗しました",
+      "employeeNameEmailRequired": "氏名とメールアドレスは必須です",
+      "employeeInviteSuccess": "招待を送信しました",
+      "employeeInviteError": "従業員の追加に失敗しました"
+    }
   }
 }

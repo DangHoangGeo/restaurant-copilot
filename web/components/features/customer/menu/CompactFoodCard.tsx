@@ -255,7 +255,7 @@ export function CompactFoodCard({
           {itemName}
         </div>
         <div className="flex items-center justify-between">
-          <div className="font-bold text-base md:text-xl text-white drop-shadow" style={{ color: brandColor }}>
+          <div className="font-bold text-base md:text-xl text-white drop-shadow-md">
             ¥{item.price}
           </div>
           {canAddItems && (
@@ -290,7 +290,7 @@ export function CompactFoodCard({
                 size="sm"
                 onClick={handleAddClick}
                 disabled={isAddingToCart}
-                className="h-8 w-8 md:h-11 md:w-11 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20 focus:ring-2 focus:ring-offset-2 relative overflow-hidden"
+                className="h-11 w-11 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20 focus:ring-2 focus:ring-offset-2 relative overflow-hidden"
                 style={{
                   backgroundColor: brandColor,
                   boxShadow: isAddingToCart

@@ -161,6 +161,10 @@ export function MenuSection({
 
       {/* Enhanced Horizontal Scrolling Items with better indicators */}
       <div className="relative">
+        {/* Right-edge fade gradient to signal more cards are scrollable */}
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
+        )}
         <div
           ref={scrollContainerRef}
           className="flex gap-4 overflow-x-auto py-4 px-4 scrollbar-hide scroll-smooth"

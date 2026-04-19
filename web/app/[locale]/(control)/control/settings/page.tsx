@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { ControlSettingsContent } from './control-settings-content';
 import { buildAuthorizationService } from '@/lib/server/authorization/service';
+import { getOrganizationBillingSummary } from '@/lib/server/billing/subscriptions';
 import { resolveFounderControlContext } from '@/lib/server/control/access';
 
 export async function generateMetadata({
@@ -27,14 +28,12 @@ export default async function ControlSettingsPage({
   const authz = buildAuthorizationService(ctx);
   const canEdit = authz?.canChangeOrgSettings() ?? false;
   const org = ctx.organization;
+  const billing = await getOrganizationBillingSummary(org.id);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-lg font-semibold">Settings</h1>
-        <p className="text-sm text-muted-foreground">
-          Organization-wide configuration and shared brand. Restaurant-specific settings live inside each restaurant.
-        </p>
       </div>
 
       <ControlSettingsContent
@@ -48,10 +47,11 @@ export default async function ControlSettingsPage({
           description_en: org.description_en ?? null,
           description_ja: org.description_ja ?? null,
           description_vi: org.description_vi ?? null,
-          website: org.website ?? null,
+          address: org.address ?? null,
           phone: org.phone ?? null,
           email: org.email ?? null,
         }}
+        billing={billing}
         canEdit={canEdit}
       />
     </div>

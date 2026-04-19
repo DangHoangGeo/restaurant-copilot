@@ -127,6 +127,7 @@ export interface OrgBranch {
   address?: string | null;
   phone?: string | null;
   email?: string | null;
+  onboarded?: boolean | null;
 }
 
 /**
@@ -158,7 +159,7 @@ export async function listOrganizationBranches(
   // newly-added org branches.
   const { data: restaurants } = await supabaseAdmin
     .from("restaurants")
-    .select("id, name, subdomain, branch_code, address, phone, email")
+    .select("id, name, subdomain, branch_code, address, phone, email, onboarded")
     .in("id", restaurantIds);
 
   const restaurantMap = new Map(
@@ -172,6 +173,7 @@ export async function listOrganizationBranches(
         address?: string | null;
         phone?: string | null;
         email?: string | null;
+        onboarded?: boolean | null;
       },
     ]),
   );
@@ -189,6 +191,7 @@ export async function listOrganizationBranches(
         address: r.address ?? null,
         phone: r.phone ?? null,
         email: r.email ?? null,
+        onboarded: r.onboarded ?? null,
       },
     ];
   });
@@ -385,6 +388,7 @@ export async function createOrganizationForNewRestaurant(
       public_subdomain: input.slug,
       approval_status: "pending",
       requested_plan: input.requested_plan ?? null,
+      requested_billing_cycle: input.requested_billing_cycle ?? "monthly",
       country: input.country ?? "JP",
       timezone: input.timezone ?? "Asia/Tokyo",
       currency: input.currency ?? "JPY",
@@ -533,12 +537,11 @@ export async function createRestaurantInOrg(
     default_language: input.default_language,
     logo_url: organization?.logo_url ?? null,
     brand_color: organization?.brand_color ?? input.brand_color ?? "#EA580C",
-    // Branches added to an existing org inherit verified/active status and
-    // skip the standard onboarding flow — the owner already configured them
-    // via the AddBranchModal.
+    // Branches added to an approved organization can start operating
+    // immediately after the founder finishes branch-specific setup.
     is_active: true,
     is_verified: true,
-    onboarded: true,
+    onboarded: false,
   };
   if (input.tax !== undefined) insert.tax = input.tax;
   if (input.address) insert.address = input.address;
@@ -590,16 +593,19 @@ export async function deactivateOrganizationMember(
 
 async function syncOrganizationBrandingToRestaurants(
   orgId: string,
+  previousBranding: {
+    logo_url?: string | null;
+    brand_color?: string | null;
+  },
   updates: { logo_url?: string | null; brand_color?: string | null },
 ): Promise<void> {
-  const brandingPatch: Record<string, unknown> = {};
+  const shouldSyncLogo =
+    "logo_url" in updates && updates.logo_url !== previousBranding.logo_url;
+  const shouldSyncBrandColor =
+    "brand_color" in updates &&
+    updates.brand_color !== previousBranding.brand_color;
 
-  if ("logo_url" in updates) brandingPatch.logo_url = updates.logo_url ?? null;
-  if ("brand_color" in updates) {
-    brandingPatch.brand_color = updates.brand_color ?? null;
-  }
-
-  if (Object.keys(brandingPatch).length === 0) {
+  if (!shouldSyncLogo && !shouldSyncBrandColor) {
     return;
   }
 
@@ -622,16 +628,62 @@ async function syncOrganizationBrandingToRestaurants(
   const restaurantIds = orgRestaurants.map(
     (row) => row.restaurant_id as string,
   );
-  const { error: syncError } = await supabaseAdmin
+  const { data: restaurants, error: restaurantsError } = await supabaseAdmin
     .from("restaurants")
-    .update({ ...brandingPatch, updated_at: new Date().toISOString() })
+    .select("id, logo_url, brand_color")
     .in("id", restaurantIds);
 
-  if (syncError) {
-    console.error(
-      "Failed to sync organization branding to restaurants:",
-      syncError,
-    );
+  if (restaurantsError || !restaurants?.length) {
+    if (restaurantsError) {
+      console.error(
+        "Failed to load organization restaurants for selective brand sync:",
+        restaurantsError,
+      );
+    }
+    return;
+  }
+
+  const syncOperations = restaurants.flatMap((restaurant) => {
+    const patch: Record<string, unknown> = {};
+
+    if (
+      shouldSyncLogo &&
+      (restaurant.logo_url == null ||
+        restaurant.logo_url === previousBranding.logo_url)
+    ) {
+      patch.logo_url = updates.logo_url ?? null;
+    }
+
+    if (
+      shouldSyncBrandColor &&
+      (restaurant.brand_color == null ||
+        restaurant.brand_color === previousBranding.brand_color)
+    ) {
+      patch.brand_color = updates.brand_color ?? null;
+    }
+
+    if (Object.keys(patch).length === 0) {
+      return [];
+    }
+
+    return supabaseAdmin
+      .from("restaurants")
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq("id", restaurant.id);
+  });
+
+  if (syncOperations.length === 0) {
+    return;
+  }
+
+  const results = await Promise.all(syncOperations);
+  for (const result of results) {
+    if (result.error) {
+      console.error(
+        "Failed to sync organization branding to restaurants:",
+        result.error,
+      );
+    }
   }
 }
 
@@ -650,6 +702,7 @@ export async function updateOrganizationSettings(
       | "description_en"
       | "description_ja"
       | "description_vi"
+      | "address"
       | "website"
       | "phone"
       | "email"
@@ -662,26 +715,116 @@ export async function updateOrganizationSettings(
     >
   >,
 ): Promise<Organization | null> {
-  const { data, error } = await supabaseAdmin
-    .from("owner_organizations")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", orgId)
-    .select("*")
-    .single();
+  const optionalOrgColumns = new Set([
+    "logo_url",
+    "brand_color",
+    "description_en",
+    "description_ja",
+    "description_vi",
+    "address",
+    "website",
+    "phone",
+    "email",
+  ]);
 
-  if (error || !data) {
-    console.error("Failed to update organization:", error);
-    return null;
+  const extractMissingColumn = (error: { code?: string; message?: string } | null) => {
+    if (!error || error.code !== "PGRST204" || !error.message) {
+      return null;
+    }
+
+    const match = error.message.match(/Could not find the '([^']+)' column/);
+    return match?.[1] ?? null;
+  };
+
+  let currentOrganization:
+    | {
+        logo_url?: string | null;
+        brand_color?: string | null;
+      }
+    | null = null;
+
+  const { data: currentOrganizationData, error: currentOrganizationError } =
+    await supabaseAdmin
+      .from("owner_organizations")
+      .select("logo_url, brand_color")
+      .eq("id", orgId)
+      .maybeSingle();
+
+  if (currentOrganizationError) {
+    const missingColumn = extractMissingColumn(currentOrganizationError);
+
+    if (!missingColumn || !optionalOrgColumns.has(missingColumn)) {
+      console.error(
+        "Failed to load current organization branding before update:",
+        currentOrganizationError,
+      );
+      return null;
+    }
+
+    console.warn(
+      `Skipping current organization branding preload because '${missingColumn}' is not available in this database schema yet.`,
+    );
+  } else {
+    currentOrganization = currentOrganizationData;
   }
 
-  if ("logo_url" in updates || "brand_color" in updates) {
-    await syncOrganizationBrandingToRestaurants(orgId, {
-      logo_url: updates.logo_url,
-      brand_color: updates.brand_color,
-    });
-  }
+  const patch: Record<string, unknown> = {
+    ...updates,
+    updated_at: new Date().toISOString(),
+  };
+  const ignoredColumns: string[] = [];
 
-  return data as Organization;
+  while (true) {
+    const { data, error } = await supabaseAdmin
+      .from("owner_organizations")
+      .update(patch)
+      .eq("id", orgId)
+      .select("*")
+      .single();
+
+    if (!error && data) {
+      if (ignoredColumns.length > 0) {
+        console.warn(
+          `Updated organization ${orgId} without unsupported columns: ${ignoredColumns.join(", ")}`,
+        );
+      }
+
+      if ("logo_url" in patch || "brand_color" in patch) {
+        await syncOrganizationBrandingToRestaurants(
+          orgId,
+          {
+            logo_url: currentOrganization?.logo_url ?? null,
+            brand_color: currentOrganization?.brand_color ?? null,
+          },
+          {
+            logo_url:
+              typeof patch.logo_url === "string" || patch.logo_url === null
+                ? (patch.logo_url as string | null)
+                : undefined,
+            brand_color:
+              typeof patch.brand_color === "string" || patch.brand_color === null
+                ? (patch.brand_color as string | null)
+                : undefined,
+          },
+        );
+      }
+
+      return data as Organization;
+    }
+
+    const missingColumn = extractMissingColumn(error);
+    if (
+      !missingColumn ||
+      !optionalOrgColumns.has(missingColumn) ||
+      !(missingColumn in patch)
+    ) {
+      console.error("Failed to update organization:", error);
+      return null;
+    }
+
+    ignoredColumns.push(missingColumn);
+    delete patch[missingColumn];
+  }
 }
 
 /**

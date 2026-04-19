@@ -4,557 +4,1144 @@ struct OrderDetailView: View {
     let orderId: String
     let onCheckout: () -> Void
     let onPrintResult: (String) -> Void
-    
-    @EnvironmentObject var orderManager: OrderManager
-    @EnvironmentObject var printerManager: PrinterManager
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @EnvironmentObject private var orderManager: OrderManager
+    @EnvironmentObject private var printerManager: PrinterManager
+    @EnvironmentObject private var supabaseManager: SupabaseManager
 
     @State private var isUpdatingStatus = false
-    @State private var selectedItems: Set<String> = []
-    @State private var showingItemActions = false
-    @State private var selectedItem: OrderItem? = nil
+    @State private var selectedItem: OrderItem?
+    @State private var itemPendingCancellation: OrderItem?
     @State private var showingCancelConfirmAlert = false
     @State private var showingAddItemSheet = false
+    @State private var showingCheckoutScreen = false
+    @State private var checkoutOrderSnapshot: Order?
     @State private var showingStatusUpdateSheet = false
-    @State private var errorMessage: String? = nil
+    @State private var showingCheckoutGuidanceAlert = false
+    @State private var errorMessage: String?
     @State private var showingErrorAlert = false
-    
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @EnvironmentObject private var supabaseManager: SupabaseManager
-    
-    // Get current order from OrderManager to ensure we have the latest state
+
     private var currentOrder: Order? {
-        return orderManager.orders.first(where: { $0.id == orderId }) ??
-               orderManager.allOrders.first(where: { $0.id == orderId })
+        orderManager.orders.first(where: { $0.id == orderId }) ??
+        orderManager.allOrders.first(where: { $0.id == orderId })
     }
-    
-    // Sort items by time added (ascending) and status priority
+
     private var sortedItems: [OrderItem] {
         guard let items = currentOrder?.order_items else { return [] }
-        
-        return items.sorted { item1, item2 in
-            // First sort by status priority
-            let status1Priority = statusPriority(item1.status.rawValue)
-            let status2Priority = statusPriority(item2.status.rawValue)
-            
-            if status1Priority != status2Priority {
-                return status1Priority < status2Priority
+
+        return items.sorted { lhs, rhs in
+            if lhs.status != rhs.status {
+                return lhs.status < rhs.status
             }
-            
-            // Then by creation time (ascending)
-            return item1.created_at < item2.created_at
+
+            return lhs.created_at < rhs.created_at
         }
     }
-    
-    private func statusPriority(_ status: String) -> Int {
-        switch status {
-        case "new": return 1
-        case "preparing": return 2
-        case "ready": return 3
-        case "served": return 4
-        default: return 5
-        }
+
+    private var contentWidth: CGFloat? {
+        horizontalSizeClass == .regular ? 720 : nil
     }
-    
+
     var body: some View {
-        Group {
+        ZStack {
+            AppScreenBackground()
+
             if let order = currentOrder {
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Order Header (includes actions now)
-                        orderHeader(for: order)
-                        
-                        // Order Items
-                        orderItemsSection(for: order)
-                    }
-                    .padding()
-                }
-                .navigationTitle(order.table?.name ?? String(format: "order_detail_table_fallback".localized, order.table_id))
-                .navigationBarTitleDisplayMode(horizontalSizeClass == .regular ? .inline : .large)
-                .sheet(item: $selectedItem) { item in
-                    OrderItemDetailView(
-                        item: item,
-                        orderManager: orderManager,
-                        printerManager: printerManager,
-                        onComplete: {
-                            selectedItem = nil
-                        },
-                        onPrintResult: onPrintResult
-                    )
-                }
-                .sheet(isPresented: $showingAddItemSheet) {
-                    NavigationView {
-                        AddItemToOrderView(order: order)
-                            .environmentObject(orderManager)
-                            .environmentObject(supabaseManager)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button("cancel".localized) {
-                                        showingAddItemSheet = false
-                                    }
-                                }
-                                ToolbarItem(placement: .navigationBarTrailing) {
-                                    Button("done".localized) {
-                                        showingAddItemSheet = false
-                                        Task {
-                                            await orderManager.fetchActiveOrders()
-                                        }
-                                    }
-                                }
-                            }
-                    }
-                }
-                .sheet(isPresented: $showingStatusUpdateSheet) {
-                    NavigationView {
-                        OrderStatusUpdateView(order: order)
-                            .environmentObject(orderManager)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button("cancel".localized) {
-                                        showingStatusUpdateSheet = false
-                                    }
-                                }
-                            }
-                    }
-                }
-                .alert("order_detail_cancel_alert_title".localized, isPresented: $showingCancelConfirmAlert) {
-                    Button("order_detail_cancel_button".localized, role: .destructive) {
-                        Task { await cancelOrder() }
-                    }
-                    Button("order_detail_keep_button".localized, role: .cancel) {}
-                } message: {
-                    Text("order_detail_cancel_alert_message".localized)
-                }
-                .alert("error".localized, isPresented: $showingErrorAlert) {
-                    Button("ok".localized) {}
-                } message: {
-                    Text(errorMessage ?? "order_detail_generic_error_message".localized)
-                }
-                .toolbar {
-                    if horizontalSizeClass != .regular && order.status == .completed {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("orders_print_receipt".localized) {
-                                Task {
-                                    await printReceipt(for: order)
-                                }
-                            }
-                        }
-                    }
-                }
+                orderContent(for: order)
             } else {
-                VStack {
-                    Text("orders_not_found".localized)
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                    
-                    Button("orders_refresh".localized) {
-                        Task {
-                            await orderManager.fetchActiveOrders()
-                        }
-                    }
-                    .buttonStyle(.bordered)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                missingOrderState
             }
         }
-    }
-    
-    private func orderHeader(for order: Order) -> some View {
-        VStack(spacing: Spacing.md) {
-            HStack {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    HStack {
-                        Text(order.table?.name ?? String(format: "order_detail_table_fallback".localized, order.table_id))
-                            .font(.cardTitle)
-                            .foregroundColor(.appTextPrimary)
-                            .fontWeight(.bold)
-                        Spacer()
-                        EnhancedStatusBadge(status: order.status)
-                    }
-                    HStack(spacing: Spacing.md) {
-                        Label("\(order.guest_count ?? 0)", systemImage: "person.2")
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextSecondary)
-                            .accessibilityLabel(String(format: "order_detail_guest_count_accessibility".localized, order.guest_count ?? 0))
-                        Label(formatTime(order.created_at), systemImage: "clock")
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextSecondary)
-                        if let sessionId = order.session_id, !sessionId.isEmpty {
-                            Label(String(format: "order_detail_id_label".localized, order.id.prefix(6).uppercased()), systemImage: "number")
-                                .font(.captionRegular)
-                                .foregroundColor(.appTextSecondary)
-                        }
-                    }
-                }
-            }
-            orderActionsSection(for: order)
-            if let total = order.total_amount {
-                HStack {
-                    Text("orders_total_amount".localized)
-                        .font(.bodyMedium)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.appTextPrimary)
-                    Spacer()
-                    Text(String(format: "price_format".localized, total))
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.appPrimary)
-                }
-                .padding(Spacing.md)
-                .background(Color.appSurface)
-                .cornerRadius(CornerRadius.md)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            if let order = currentOrder {
+                toolbarContent(for: order)
             }
         }
-        .padding(Spacing.md)
-        .background(Color.appSurface)
-        .cornerRadius(CornerRadius.lg)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
-    }
-
-    private func orderActionsSection(for order: Order) -> some View {
-        VStack(spacing: Spacing.sm) {
-            // Primary Actions Row
-            HStack(spacing: Spacing.md) {
-                if order.status == .completed {
-                    Button(action: {
-                        Task { await printReceipt(for: order) }
-                        // Haptic feedback
-                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                        impactFeedback.impactOccurred()
-                    }) {
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "printer.fill")
-                                .font(.title3)
-                            Text("orders_print_receipt".localized)
-                                .font(.buttonLarge)
-                                .fontWeight(.semibold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.appPrimary, Color.appPrimary.opacity(0.9)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .foregroundColor(.white)
-                        .cornerRadius(CornerRadius.md)
-                        .shadow(color: Color.appPrimary.opacity(0.3), radius: 4, y: 2)
-                    }
-                    .accessibilityLabel("orders_print_receipt_accessibility".localized)
-                } else {
-                    // Add Items Button
-                    Button(action: {
-                        showingAddItemSheet = true
-                        // Haptic feedback
-                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                        impactFeedback.impactOccurred()
-                    }) {
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "plus.circle.fill")
-                            Text("order_detail_add_items_button".localized)
-                                .font(.buttonMedium)
-                                .fontWeight(.semibold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(Color.appInfo)
-                        .foregroundColor(.white)
-                        .cornerRadius(CornerRadius.md)
-                    }
-                    .accessibilityLabel("order_detail_add_items_accessibility".localized)
-
-                    if order.status == .new {
-                        Button(action: {
-                            Task { await updateOrderStatus(.serving) }
-                            // Haptic feedback
-                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                            impactFeedback.impactOccurred()
-                        }) {
-                            HStack(spacing: Spacing.sm) {
-                                if isUpdatingStatus {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                        .scaleEffect(0.9)
-                                } else {
-                                    Image(systemName: "fork.knife")
+        .navigationDestination(isPresented: $showingCheckoutScreen) {
+            if let order = checkoutOrderSnapshot {
+                CheckoutView(order: order) {
+                    handleCheckoutCompletion()
+                }
+            }
+        }
+        .sheet(item: $selectedItem) { item in
+            OrderItemDetailView(
+                item: item,
+                orderManager: orderManager,
+                printerManager: printerManager,
+                onComplete: {
+                    selectedItem = nil
+                },
+                onPrintResult: onPrintResult
+            )
+        }
+        .sheet(isPresented: $showingAddItemSheet) {
+            if let order = currentOrder {
+                NavigationView {
+                    AddItemToOrderView(order: order)
+                        .environmentObject(orderManager)
+                        .environmentObject(supabaseManager)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("cancel".localized) {
+                                    showingAddItemSheet = false
                                 }
-                                Text(isUpdatingStatus ? "order_detail_updating".localized : "orders_mark_serving".localized)
-                                    .font(.buttonMedium)
-                                    .fontWeight(.semibold)
                             }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                            .background(isUpdatingStatus ? Color.appTextSecondary : Color.appSuccess)
-                            .foregroundColor(.white)
-                            .cornerRadius(CornerRadius.md)
-                        }
-                        .disabled(isUpdatingStatus)
-                        .opacity(isUpdatingStatus ? 0.7 : 1.0)
-                        .accessibilityLabel("orders_mark_serving_accessibility".localized)
-                    }
-
-                    Button(action: {
-                        onCheckout()
-                        // Haptic feedback
-                        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-                        impactFeedback.impactOccurred()
-                    }) {
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "creditcard.fill")
-                                .font(.title3)
-                            Text("orders_checkout".localized)
-                                .font(.buttonLarge)
-                                .fontWeight(.bold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.appPrimary, Color.appPrimary.opacity(0.9)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .foregroundColor(.white)
-                        .cornerRadius(CornerRadius.md)
-                        .shadow(color: Color.appPrimary.opacity(0.3), radius: 4, y: 2)
-                    }
-                    .accessibilityLabel("orders_checkout_accessibility".localized)
-                }
-            }
-
-            // Secondary Actions Row (only for active orders)
-            if order.status != .completed && order.status != .canceled {
-                HStack(spacing: Spacing.md) {
-                    // Update Status Button
-                    Button(action: {
-                        showingStatusUpdateSheet = true
-                        // Haptic feedback
-                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                        impactFeedback.impactOccurred()
-                    }) {
-                        HStack(spacing: Spacing.xs) {
-                            Image(systemName: "arrow.up.circle.fill")
-                            Text("order_detail_update_status_button".localized)
-                                .font(.buttonMedium)
-                                .fontWeight(.medium)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 40)
-                        .background(Color.appSurfaceSecondary)
-                        .foregroundColor(.appTextPrimary)
-                        .cornerRadius(CornerRadius.md)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.md)
-                                .stroke(Color.appBorderLight, lineWidth: 1)
-                        )
-                    }
-                    .accessibilityLabel("order_detail_update_status_accessibility".localized)
-
-                    // Cancel Order Button (only for new orders)
-                    if order.status == .new {
-                        Button(action: {
-                            showingCancelConfirmAlert = true
-                            // Haptic feedback for destructive action
-                            let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-                            impactFeedback.impactOccurred()
-                        }) {
-                            HStack(spacing: Spacing.xs) {
-                                Image(systemName: "xmark.circle.fill")
-                                Text("order_detail_cancel_order_button".localized)
-                                    .font(.buttonMedium)
-                                    .fontWeight(.medium)
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("done".localized) {
+                                    showingAddItemSheet = false
+                                    Task {
+                                        await orderManager.fetchActiveOrders()
+                                    }
+                                }
                             }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 40)
-                            .background(Color.appErrorLight)
-                            .foregroundColor(.appError)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appError.opacity(0.3), lineWidth: 1)
-                            )
                         }
-                        .accessibilityLabel("order_detail_cancel_order_accessibility".localized)
-                    }
                 }
             }
         }
-    }
-
-    private func orderItemsSection(for order: Order) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack {
-                Text(String(format: "order_items_section_title".localized, sortedItems.count))
-                    .font(.bodyMedium)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.appTextPrimary)
-                Spacer()
-                if sortedItems.contains(where: { $0.status.rawValue == "new" }) {
-                    HStack {
-                        Image(systemName: "circle.fill")
-                            .font(.captionRegular)
-                            .foregroundColor(.appError)
-                        Text("order_items_new_label".localized)
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextSecondary)
-                    }
+        .sheet(isPresented: $showingStatusUpdateSheet) {
+            if let order = currentOrder {
+                NavigationView {
+                    OrderStatusUpdateView(order: order)
+                        .environmentObject(orderManager)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("cancel".localized) {
+                                    showingStatusUpdateSheet = false
+                                }
+                            }
+                        }
                 }
             }
-            VStack(spacing: 0) {
-                ForEach(Array(sortedItems.enumerated()), id: \.element.id) { index, item in
-                    EnhancedOrderItemView(
-                        item: item,
-                        orderManager: orderManager,
-                        printerManager: printerManager,
-                        onPrintResult: onPrintResult,
-                        showDetailedActions: horizontalSizeClass == .regular
-                    )
-                    .contentShape(Rectangle())
-                    .onTapGesture {
+        }
+        .confirmationDialog(
+            "order_detail_cancel_item_title".localized,
+            isPresented: Binding(
+                get: { itemPendingCancellation != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        itemPendingCancellation = nil
+                    }
+                }
+            ),
+            titleVisibility: .visible,
+            presenting: itemPendingCancellation
+        ) { item in
+            Button("order_detail_remove_item".localized, role: .destructive) {
+                Task {
+                    await cancelOrderItem(item)
+                }
+            }
+
+            Button("order_detail_keep_item".localized, role: .cancel) {
+                itemPendingCancellation = nil
+            }
+        } message: { item in
+            Text(
+                "order_detail_cancel_item_message".localized(
+                    with: item.menu_item?.displayName ?? "orders_unknown_item".localized
+                )
+            )
+        }
+        .alert("order_detail_cancel_alert_title".localized, isPresented: $showingCancelConfirmAlert) {
+            Button("order_detail_cancel_button".localized, role: .destructive) {
+                Task {
+                    await cancelOrder()
+                }
+            }
+
+            Button("order_detail_keep_button".localized, role: .cancel) {}
+        } message: {
+            Text("order_detail_cancel_alert_message".localized)
+        }
+        .alert("error".localized, isPresented: $showingErrorAlert) {
+            Button("ok".localized) {}
+        } message: {
+            Text(errorMessage ?? "order_detail_generic_error_message".localized)
+        }
+        .alert("order_detail_checkout_blocked_title".localized, isPresented: $showingCheckoutGuidanceAlert) {
+            Button("order_detail_update_status_button".localized) {
+                showingStatusUpdateSheet = true
+            }
+
+            Button("cancel".localized, role: .cancel) {}
+        } message: {
+            Text("order_detail_checkout_blocked_message".localized)
+        }
+    }
+}
+
+private extension OrderDetailView {
+    @ViewBuilder
+    func orderContent(for order: Order) -> some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: Spacing.xl) {
+                OrderHeroSection(
+                    orderReference: orderReference(for: order),
+                    tableName: tableName(for: order),
+                    statusLabel: orderStatusLabel(for: order),
+                    statusTint: orderStatusTint(for: order),
+                    elapsedText: elapsedText(for: order),
+                    metadataText: metadataText(for: order),
+                    progressSegments: progressSegments(for: order)
+                )
+
+                OrderItemsCard(
+                    title: "items_section_title".localized,
+                    itemCount: sortedItems.count,
+                    items: sortedItems,
+                    addItemLabel: "order_detail_add_items_button".localized,
+                    onAddItem: order.status == .completed || order.status == .canceled ? nil : {
+                        showingAddItemSheet = true
+                    },
+                    onSelect: { item in
                         selectedItem = item
+                    },
+                    onCancel: { item in
+                        itemPendingCancellation = item
                     }
-                    if index < sortedItems.count - 1 {
-                        Divider()
-                            .padding(.leading, Spacing.md)
-                            .padding(.trailing, Spacing.md)
-                            .padding(.vertical, Spacing.xs)
+                )
+
+                OrderTotalsCard(
+                    subtotal: subtotalAmount(for: order),
+                    discount: discountAmount(for: order),
+                    tax: taxAmount(for: order),
+                    tip: tipAmount(for: order),
+                    total: totalAmount(for: order)
+                )
+
+                if order.status != .completed && order.status != .canceled {
+                    OrderManagementRow(
+                        onUpdateStatus: {
+                            showingStatusUpdateSheet = true
+                        },
+                        onCancelOrder: order.status == .new ? {
+                            showingCancelConfirmAlert = true
+                        } : nil
+                    )
+                }
+            }
+            .frame(maxWidth: contentWidth, alignment: .leading)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.lg)
+            .padding(.bottom, 120)
+        }
+        .safeAreaInset(edge: .bottom) {
+            OrderBottomBar(
+                style: bottomBarStyle(for: order),
+                amountText: currencyText(totalAmount(for: order)),
+                onTap: {
+                    handleBottomBarTap(for: order)
+                }
+            )
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.sm)
+            .background(
+                LinearGradient(
+                    colors: [Color.appBackground.opacity(0), Color.appBackground.opacity(0.92), Color.appBackground],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+        }
+    }
+
+    var missingOrderState: some View {
+        VStack(spacing: Spacing.md) {
+            Text("orders_not_found".localized)
+                .font(.cardTitle)
+                .foregroundColor(.appTextPrimary)
+
+            Button("orders_refresh".localized) {
+                Task {
+                    await orderManager.fetchActiveOrders()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.appPrimary)
+        }
+        .padding(Spacing.xl)
+    }
+
+    @ToolbarContentBuilder
+    func toolbarContent(for order: Order) -> some ToolbarContent {
+        ToolbarItem(placement: .principal) {
+            VStack(spacing: 2) {
+                Text(orderReference(for: order))
+                    .font(.monoCaption)
+                    .kerning(1.3)
+                    .foregroundColor(.appTextSecondary)
+
+                    Text("order_detail_title".localized)
+                    .font(.bodyMedium.weight(.semibold))
+                    .foregroundColor(.appTextPrimary)
+            }
+        }
+
+        if order.status == .completed {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarCapsuleButton(
+                    systemName: "printer.fill",
+                    title: "orders_print_receipt".localized
+                ) {
+                    Task {
+                        await printReceipt(for: order)
                     }
                 }
             }
         }
-        .padding(Spacing.md)
-        .background(Color.appSurface)
-        .cornerRadius(CornerRadius.lg)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
-    
+
+    func tableName(for order: Order) -> String {
+        order.table?.name ?? String(format: "order_detail_table_fallback".localized, order.table_id)
+    }
+
+    func orderReference(for order: Order) -> String {
+        if let orderNumber = order.order_number, orderNumber > 0 {
+            let formatted = String(orderNumber)
+            return String(formatted.suffix(6)).uppercased()
+        }
+
+        return String(order.id.suffix(6)).uppercased()
+    }
+
+    func metadataText(for order: Order) -> String {
+        let guestText = "order_detail_guest_count_short".localized(with: order.guest_count ?? 0)
+        let placedText = "order_detail_placed_time".localized(with: formatTime(order.created_at))
+        return "\(guestText)  •  \(placedText)"
+    }
+
+    func orderStatusLabel(for order: Order) -> String {
+        let counts = itemStatusCounts(for: order)
+
+        if order.status == .completed {
+            return order.status.displayName.uppercased()
+        }
+
+        if order.status == .canceled {
+            return order.status.displayName.uppercased()
+        }
+
+        if counts.ready > 0 && counts.new == 0 && counts.preparing == 0 {
+            return "order_item_status_ready".localized.uppercased()
+        }
+
+        if counts.preparing > 0 {
+            return "order_item_status_preparing".localized.uppercased()
+        }
+
+        if counts.new > 0 {
+            return "order_item_status_new".localized.uppercased()
+        }
+
+        if counts.served > 0 {
+            return "order_item_status_served".localized.uppercased()
+        }
+
+        return order.status.displayName.uppercased()
+    }
+
+    func orderStatusTint(for order: Order) -> Color {
+        let counts = itemStatusCounts(for: order)
+
+        if order.status == .completed {
+            return Color.appHighlightSoft
+        }
+
+        if order.status == .canceled {
+            return .appError
+        }
+
+        if counts.ready > 0 && counts.new == 0 && counts.preparing == 0 {
+            return .appSuccess
+        }
+
+        if counts.preparing > 0 {
+            return .appWarning
+        }
+
+        if counts.new > 0 {
+            return .appAccent
+        }
+
+        if counts.served > 0 {
+            return .appHighlightSoft
+        }
+
+        return order.status.statusColor
+    }
+
+    func progressSegments(for order: Order) -> [OrderProgressSegment] {
+        let counts = itemStatusCounts(for: order)
+
+        return [
+            OrderProgressSegment(count: counts.new, tint: Color.appWarning),
+            OrderProgressSegment(count: counts.preparing, tint: Color.appError),
+            OrderProgressSegment(count: counts.ready, tint: Color.appSuccess),
+            OrderProgressSegment(count: counts.served, tint: Color.appHighlightSoft)
+        ]
+    }
+
+    func itemStatusCounts(for order: Order) -> (new: Int, preparing: Int, ready: Int, served: Int) {
+        let items = order.order_items ?? []
+
+        return (
+            new: items.filter { $0.status == .new }.count,
+            preparing: items.filter { $0.status == .preparing }.count,
+            ready: items.filter { $0.status == .ready }.count,
+            served: items.filter { $0.status == .served }.count
+        )
+    }
+
+    func subtotalAmount(for order: Order) -> Double {
+        let activeItems = (order.order_items ?? []).filter { $0.status != .canceled }
+        let liveSubtotal = activeItems.reduce(0) { partial, item in
+            partial + (Double(item.quantity) * item.price_at_order)
+        }
+
+        if order.order_items != nil {
+            return liveSubtotal
+        }
+
+        let total = order.total_amount ?? 0
+        return max(0, total - taxAmount(for: order) - tipAmount(for: order) + discountAmount(for: order))
+    }
+
+    func discountAmount(for order: Order) -> Double {
+        max(0, order.discount_amount ?? 0)
+    }
+
+    func taxAmount(for order: Order) -> Double {
+        if order.status == .completed, let storedTax = order.tax_amount {
+            return storedTax
+        }
+
+        let taxRate = supabaseManager.currentRestaurant?.taxRate ?? 0.10
+        return subtotalAmount(for: order) * taxRate
+    }
+
+    func tipAmount(for order: Order) -> Double {
+        max(0, order.tip_amount ?? 0)
+    }
+
+    func totalAmount(for order: Order) -> Double {
+        if order.status == .completed, let total = order.total_amount {
+            return total
+        }
+
+        return subtotalAmount(for: order) - discountAmount(for: order) + taxAmount(for: order) + tipAmount(for: order)
+    }
+
+    func currencyText(_ amount: Double) -> String {
+        String(format: "price_format".localized, amount)
+    }
+
+    func canCheckout(for order: Order) -> Bool {
+        let items = order.order_items ?? []
+        guard !items.isEmpty else { return false }
+
+        return items.allSatisfy { $0.status == .served || $0.status == .canceled }
+    }
+
+    func bottomBarStyle(for order: Order) -> OrderBottomBar.Style {
+        switch order.status {
+        case .completed:
+            return .receipt
+        case .canceled:
+            return .hidden
+        default:
+            return canCheckout(for: order) ? .checkoutReady : .checkoutBlocked
+        }
+    }
+
+    func handleBottomBarTap(for order: Order) {
+        switch bottomBarStyle(for: order) {
+        case .checkoutReady:
+            if horizontalSizeClass == .regular {
+                onCheckout()
+            } else {
+                checkoutOrderSnapshot = order
+                showingCheckoutScreen = true
+            }
+        case .checkoutBlocked:
+            showingCheckoutGuidanceAlert = true
+        case .receipt:
+            Task {
+                await printReceipt(for: order)
+            }
+        case .hidden:
+            break
+        }
+    }
+
+    func elapsedText(for order: Order) -> String {
+        guard let createdDate = parseDate(order.created_at) else {
+            return "orders_unknown_time".localized
+        }
+
+        let elapsed = max(0, Int(Date().timeIntervalSince(createdDate)))
+        let hours = elapsed / 3600
+        let minutes = (elapsed % 3600) / 60
+
+        if hours > 0 {
+            return "\(hours)h \(minutes)m elapsed"
+        }
+
+        return "\(minutes)m elapsed"
+    }
+
+    func formatTime(_ dateString: String) -> String {
+        guard let date = parseDate(dateString) else {
+            return "orders_unknown_time".localized
+        }
+
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+
+    func parseDate(_ dateString: String) -> Date? {
+        let iso8601 = ISO8601DateFormatter()
+        iso8601.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        if let parsed = iso8601.date(from: dateString) {
+            return parsed
+        }
+
+        iso8601.formatOptions = [.withInternetDateTime]
+        if let parsed = iso8601.date(from: dateString) {
+            return parsed
+        }
+
+        let fallback = DateFormatter()
+        fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        return fallback.date(from: dateString)
+    }
+
     @MainActor
-    private func updateOrderStatus(_ newStatus: OrderStatus) async {
+    func updateOrderStatus(_ newStatus: OrderStatus) async {
         isUpdatingStatus = true
+
+        defer {
+            isUpdatingStatus = false
+        }
 
         do {
             try await orderManager.updateOrderStatus(orderId: orderId, newStatus: newStatus)
-            let localizedStatus = newStatus.displayName.localized
-            onPrintResult(String(format: "order_status_update_success_message".localized, localizedStatus))
-            // Success haptic
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.success)
+            onPrintResult("order_status_update_success_message".localized(with: newStatus.displayName))
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
         } catch {
             onPrintResult("order_status_update_failure_message".localized)
-            // Error haptic
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
+    }
 
-        isUpdatingStatus = false
+    func handleCheckoutCompletion() {
+        checkoutOrderSnapshot = nil
+        showingCheckoutScreen = false
+
+        DispatchQueue.main.async {
+            dismiss()
+        }
     }
 
     @MainActor
-    private func cancelOrder() async {
+    func cancelOrder() async {
         isUpdatingStatus = true
         errorMessage = nil
+
+        defer {
+            isUpdatingStatus = false
+        }
 
         do {
             try await orderManager.cancelOrder(orderId: orderId)
             onPrintResult("order_cancel_success_message".localized)
-            // Success haptic for cancellation
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.success)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
         } catch {
             errorMessage = "order_cancel_failure_message".localized
             showingErrorAlert = true
-            // Error haptic
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
-
-        isUpdatingStatus = false
     }
 
     @MainActor
-    private func printReceipt(for order: Order) async {
-        let subtotal = order.total_amount ?? 0
-        let taxRate = supabaseManager.currentRestaurant?.taxRate ?? 0.10
+    func cancelOrderItem(_ item: OrderItem) async {
+        itemPendingCancellation = nil
+
+        do {
+            try await orderManager.cancelOrderItem(orderItemId: item.id)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } catch {
+            errorMessage = "error_cancel_item".localized
+            showingErrorAlert = true
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+    }
+
+    @MainActor
+    func printReceipt(for order: Order) async {
+        let subtotal = subtotalAmount(for: order)
         let receiptData = CheckoutReceiptData(
             order: order,
             subtotal: subtotal,
-            discountAmount: 0, // Assuming discount_amount is on Order or calculated elsewhere
+            discountAmount: discountAmount(for: order),
             discountCode: nil,
-            taxAmount: subtotal * taxRate,
-            totalAmount: subtotal * (1 + taxRate),
+            taxAmount: taxAmount(for: order),
+            totalAmount: totalAmount(for: order),
             timestamp: Date()
         )
 
         do {
             try await printerManager.printCheckoutReceipt(receiptData)
             onPrintResult("receipt_print_success_message".localized)
-            // Success haptic
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.success)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
         } catch {
             onPrintResult("receipt_print_failure_message".localized)
-            // Error haptic
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
     }
-    
-    private func formatTime(_ dateString: String) -> String {
-        // Try ISO8601 formatter first (with fractional seconds)
-        let iso8601Formatter = ISO8601DateFormatter()
-        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
-        var date: Date?
-        
-        if let parsedDate = iso8601Formatter.date(from: dateString) {
-            date = parsedDate
-        } else {
-            // Fallback to standard ISO8601 without fractional seconds
-            iso8601Formatter.formatOptions = [.withInternetDateTime]
-            date = iso8601Formatter.date(from: dateString)
+}
+
+private struct OrderHeroSection: View {
+    let orderReference: String
+    let tableName: String
+    let statusLabel: String
+    let statusTint: Color
+    let elapsedText: String
+    let metadataText: String
+    let progressSegments: [OrderProgressSegment]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            AppSectionEyebrow(orderReference)
+
+            HStack(alignment: .top, spacing: Spacing.md) {
+                Text(tableName)
+                    .font(.heroTitle)
+                    .foregroundColor(.appHighlight)
+                    .lineLimit(2)
+
+                Spacer(minLength: Spacing.md)
+
+                VStack(alignment: .trailing, spacing: Spacing.sm) {
+                    OrderStatusCapsule(label: statusLabel, tint: statusTint)
+
+                    Text(elapsedText)
+                        .font(.monoLabel)
+                        .foregroundColor(.appHighlight)
+                }
+            }
+
+            Text(metadataText)
+                .font(.bodyMedium)
+                .foregroundColor(.appTextSecondary)
+
+            OrderProgressStrip(segments: progressSegments)
         }
-        
-        // If ISO8601 fails, try standard date formatter as fallback
-        if date == nil {
-            let fallbackFormatter = DateFormatter()
-            fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
-            date = fallbackFormatter.date(from: dateString)
+        .padding(Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.xl)
+                .fill(Color.appSurface.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.xl)
+                        .stroke(Color.appBorderLight, lineWidth: 1)
+                )
+        )
+        .shadow(
+            color: Elevation.level2.color,
+            radius: Elevation.level2.radius,
+            y: Elevation.level2.y
+        )
+    }
+}
+
+private struct OrderProgressSegment {
+    let count: Int
+    let tint: Color
+}
+
+private struct OrderProgressStrip: View {
+    let segments: [OrderProgressSegment]
+
+    var body: some View {
+        HStack(spacing: Spacing.sm) {
+            ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                Capsule()
+                    .fill(segment.count > 0 ? segment.tint : Color.appSurfaceSecondary)
+                    .frame(height: 6)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.appBorder.opacity(0.35), lineWidth: 0.5)
+                    )
+            }
         }
-        
-        guard let finalDate = date else {
-            print("Failed to parse date string: \(dateString)")
-            return "orders_unknown_time".localized
+    }
+}
+
+private struct OrderItemsCard: View {
+    let title: String
+    let itemCount: Int
+    let items: [OrderItem]
+    let addItemLabel: String
+    let onAddItem: (() -> Void)?
+    let onSelect: (OrderItem) -> Void
+    let onCancel: (OrderItem) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack {
+                HStack(spacing: Spacing.sm) {
+                    Text(title.uppercased())
+                        .font(.monoLabel)
+                        .kerning(1.6)
+                        .foregroundColor(.appTextSecondary)
+
+                    Text("· \(itemCount)")
+                        .font(.monoLabel)
+                        .foregroundColor(.appTextSecondary)
+                }
+
+                Spacer()
+
+                if let onAddItem {
+                    OrderPillButton(
+                        label: addItemLabel,
+                        tint: .appSurfaceElevated,
+                        foreground: .appTextPrimary,
+                        action: onAddItem
+                    )
+                }
+            }
+
+            VStack(spacing: 0) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    OrderItemRow(
+                        item: item,
+                        onSelect: {
+                            onSelect(item)
+                        },
+                        onCancel: {
+                            onCancel(item)
+                        }
+                    )
+
+                    if index < items.count - 1 {
+                        Divider()
+                            .overlay(Color.appBorder.opacity(0.7))
+                            .padding(.horizontal, Spacing.md)
+                    }
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.lg)
+                    .fill(Color.appSurface.opacity(0.9))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.lg)
+                            .stroke(Color.appBorderLight, lineWidth: 1)
+                    )
+            )
         }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: finalDate)
+    }
+}
+
+private struct OrderItemRow: View {
+    let item: OrderItem
+    let onSelect: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                Text("\(item.quantity)x")
+                    .font(.sectionHeader)
+                    .foregroundColor(.appPrimary)
+                    .frame(minWidth: 28, alignment: .leading)
+
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
+                        Text(item.menu_item?.displayName ?? item.menu_item_id)
+                            .font(.bodyLarge.weight(.medium))
+                            .foregroundColor(.appTextPrimary)
+                            .multilineTextAlignment(.leading)
+
+                        if item.status != .new {
+                            Text(item.status.displayName.uppercased())
+                                .font(.buttonSmall)
+                                .foregroundColor(item.status.statusColor)
+                        }
+                    }
+
+                    if let notes = item.notes, !notes.isEmpty {
+                        Text("\"\(notes)\"")
+                            .font(.bodyMedium.italic())
+                            .foregroundColor(.appPrimary.opacity(0.82))
+                            .multilineTextAlignment(.leading)
+                    }
+
+                    Text(String(format: "price_format".localized, Double(item.quantity) * item.price_at_order))
+                        .font(.monoLabel)
+                        .foregroundColor(.appTextSecondary)
+                }
+
+                Spacer(minLength: Spacing.sm)
+
+                if item.status == .served {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.appSuccess)
+                        .frame(width: 34, height: 34)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                .fill(Color.appSuccessLight)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                        .stroke(Color.appSuccess.opacity(0.28), lineWidth: 1)
+                                )
+                        )
+                        .accessibilityLabel("order_item_status_served".localized)
+                } else {
+                    Button(action: onCancel) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.appTextSecondary)
+                            .frame(width: 34, height: 34)
+                            .background(
+                                RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                    .fill(Color.appSurfaceSecondary)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                            .stroke(Color.appBorderLight, lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("order_detail_remove_item".localized)
+                }
+            }
+            .padding(Spacing.md)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct OrderTotalsCard: View {
+    let subtotal: Double
+    let discount: Double
+    let tax: Double
+    let tip: Double
+    let total: Double
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(spacing: Spacing.sm) {
+                Text("order_detail_totals_title".localized.uppercased())
+                    .font(.monoLabel)
+                    .kerning(1.6)
+                    .foregroundColor(.appTextSecondary)
+
+                Spacer()
+            }
+
+            VStack(spacing: Spacing.md) {
+                TotalsRow(label: "subtotal".localized, value: subtotal)
+
+                if discount > 0 {
+                    TotalsRow(label: "checkout_discount_section_title".localized, value: -discount)
+                }
+
+                TotalsRow(label: "tax".localized, value: tax)
+
+                if tip > 0 {
+                    TotalsRow(label: "order_detail_tip_label".localized, value: tip)
+                }
+
+                Divider()
+                    .overlay(Color.appBorder.opacity(0.7))
+
+                TotalsRow(label: "checkout_total_label".localized.replacingOccurrences(of: ":", with: ""), value: total, emphasis: true)
+            }
+            .padding(Spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.lg)
+                    .fill(Color.appSurface.opacity(0.92))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.lg)
+                            .stroke(Color.appBorderLight, lineWidth: 1)
+                    )
+            )
+        }
+    }
+}
+
+private struct TotalsRow: View {
+    let label: String
+    let value: Double
+    var emphasis = false
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(emphasis ? .bodyLarge.weight(.semibold) : .bodyMedium)
+                .foregroundColor(emphasis ? .appTextPrimary : .appTextSecondary)
+
+            Spacer()
+
+            Text(String(format: "price_format".localized, value))
+                .font(emphasis ? .cardTitle : .bodyLarge.weight(.medium))
+                .foregroundColor(emphasis ? .appTextPrimary : .appHighlight)
+        }
+    }
+}
+
+private struct OrderManagementRow: View {
+    let onUpdateStatus: () -> Void
+    let onCancelOrder: (() -> Void)?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("order_detail_manage_title".localized.uppercased())
+                .font(.monoLabel)
+                .kerning(1.6)
+                .foregroundColor(.appTextSecondary)
+
+            HStack(spacing: Spacing.md) {
+                OrderPillButton(
+                    label: "order_detail_update_status_button".localized,
+                    tint: .appHighlight,
+                    foreground: .appTextPrimary,
+                    action: onUpdateStatus
+                )
+            }
+
+            if let onCancelOrder {
+                Button(action: onCancelOrder) {
+                    Text("order_detail_cancel_order_button".localized)
+                        .font(.buttonMedium)
+                        .foregroundColor(.appError)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+private struct OrderPillButton: View {
+    let label: String
+    let tint: Color
+    let foreground: Color
+    let action: () -> Void
+    var isFilled = false
+    var isDisabled = false
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .font(.buttonMedium)
+                .foregroundColor(foreground)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background(
+                    Capsule()
+                        .fill(tint.opacity(isFilled ? 1 : 0.18))
+                        .overlay(
+                            Capsule()
+                                .stroke(tint.opacity(0.28), lineWidth: 1)
+                        )
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.5 : 1)
+    }
+}
+
+private struct OrderBottomBar: View {
+    enum Style {
+        case checkoutReady
+        case checkoutBlocked
+        case receipt
+        case hidden
+    }
+
+    let style: Style
+    let amountText: String
+    let onTap: () -> Void
+
+    var body: some View {
+        switch style {
+        case .hidden:
+            EmptyView()
+
+        case .checkoutReady:
+            Button(action: onTap) {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "creditcard")
+                        .font(.system(size: 15, weight: .semibold))
+
+                    Text("checkout".localized)
+                        .font(.bodyLarge.weight(.semibold))
+
+                    Text("· \(amountText)")
+                        .font(.bodyLarge.weight(.semibold))
+                }
+                .foregroundColor(.appOnHighlight)
+                .frame(maxWidth: .infinity)
+                .frame(height: 62)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.lg)
+                        .fill(Color.appHighlight)
+                )
+            }
+            .buttonStyle(.plain)
+
+        case .checkoutBlocked:
+            Button(action: onTap) {
+                VStack(spacing: 4) {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "clock.badge.exclamationmark")
+                            .font(.system(size: 15, weight: .semibold))
+
+                        Text("checkout".localized)
+                            .font(.bodyLarge.weight(.semibold))
+
+                        Text("· \(amountText)")
+                            .font(.bodyLarge.weight(.semibold))
+                    }
+
+                    Text("order_detail_checkout_blocked_hint".localized)
+                        .font(.buttonSmall)
+                }
+                .foregroundColor(.appTextSecondary)
+                .frame(maxWidth: .infinity)
+                .frame(height: 62)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.lg)
+                        .fill(Color.appSurface.opacity(0.94))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                                .stroke(Color.appBorderLight, lineWidth: 1)
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+
+        case .receipt:
+            Button(action: onTap) {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "printer.fill")
+                        .font(.system(size: 15, weight: .semibold))
+
+                    Text("orders_print_receipt".localized)
+                        .font(.bodyLarge.weight(.semibold))
+
+                    Text("· \(amountText)")
+                        .font(.bodyLarge.weight(.semibold))
+                }
+                .foregroundColor(.appBackground)
+                .frame(maxWidth: .infinity)
+                .frame(height: 62)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.lg)
+                        .fill(Color.appHighlight)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+private struct ToolbarCapsuleButton: View {
+    let systemName: String
+    let title: String?
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: systemName)
+                    .font(.system(size: 14, weight: .semibold))
+
+                if let title, !title.isEmpty {
+                    Text(title.uppercased())
+                        .font(.buttonSmall)
+                        .kerning(1)
+                }
+            }
+            .foregroundColor(.appTextPrimary)
+            .padding(.horizontal, title == nil ? 12 : 14)
+            .frame(height: 38)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .fill(Color.appSurface.opacity(0.96))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.md)
+                            .stroke(Color.appBorderLight, lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct OrderStatusCapsule: View {
+    let label: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: Spacing.sm) {
+            Circle()
+                .fill(tint)
+                .frame(width: 8, height: 8)
+
+            Text(label)
+                .font(.buttonSmall)
+                .kerning(1.2)
+                .foregroundColor(tint)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            Capsule()
+                .fill(tint.opacity(0.14))
+                .overlay(
+                    Capsule()
+                        .stroke(tint.opacity(0.22), lineWidth: 1)
+                )
+        )
     }
 }
 
 #if DEBUG
 #Preview {
-    // Mock Environment Objects
     let orderManager = OrderManager.shared
     let printerManager = PrinterManager.shared
     let localizationManager = LocalizationManager.shared
 
-    // Populate with mock data for preview
-    let mockCategory = Category(id: "1", name_en: "Drinks", name_ja: "飲み物", name_vi: "Đồ uống", position: 1)
-    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Coffee", name_ja: "コーヒー", name_vi: "Cà phê", code: "COF", description_en: "Hot coffee", description_ja: "ホットコーヒー", description_vi: "Cà phê nóng", price: 5.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
-    let mockOrderItem = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 2, notes: "Extra hot", menu_item_size_id: nil, topping_ids: [], price_at_order: 5.0, status: .new, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
-    let mockTable = Table(id: "1", restaurant_id: "1", name: "Table 1", status: .occupied, capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil, created_at: "", updated_at: "")
-    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "1", guest_count: 2, status: .new, total_amount: 10.0, order_number: 1, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [mockOrderItem], payment_method: nil, discount_amount: nil, tax_amount: nil, tip_amount: nil)
+    let mockCategory = Category(id: "1", name_en: "Mains", name_ja: "メイン", name_vi: "Món chính", position: 1)
+    let mockMenuItem = MenuItem(id: "1", restaurant_id: "1", category_id: "1", name_en: "Bavette Steak", name_ja: "バヴェットステーキ", name_vi: "Bavette Steak", code: "BVT", description_en: "Medium rare", description_ja: "ミディアムレア", description_vi: "Medium rare", price: 40.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 1, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+    let mockSecondMenuItem = MenuItem(id: "2", restaurant_id: "1", category_id: "1", name_en: "Roasted Beets", name_ja: "ビーツロースト", name_vi: "Roasted Beets", code: "RBT", description_en: "", description_ja: "", description_vi: "", price: 18.0, tags: [], image_url: nil, stock_level: nil, available: true, position: 2, created_at: "", updated_at: "", category: mockCategory, availableSizes: [], availableToppings: [])
+
+    let itemOne = OrderItem(id: "1", restaurant_id: "1", order_id: "1", menu_item_id: "1", quantity: 1, notes: "medium rare", menu_item_size_id: nil, topping_ids: [], price_at_order: 40.0, status: .preparing, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", menu_item: mockMenuItem)
+    let itemTwo = OrderItem(id: "2", restaurant_id: "1", order_id: "1", menu_item_id: "2", quantity: 1, notes: nil, menu_item_size_id: nil, topping_ids: [], price_at_order: 18.0, status: .ready, created_at: "2023-01-01T12:05:00Z", updated_at: "2023-01-01T12:05:00Z", menu_item: mockSecondMenuItem)
+    let mockTable = Table(id: "1", restaurant_id: "1", name: "Table 5", status: .occupied, capacity: 4, is_outdoor: false, is_accessible: true, notes: nil, qr_code: nil, created_at: "", updated_at: "")
+    let mockOrder = Order(id: "1", restaurant_id: "1", table_id: "1", session_id: "A-0429", guest_count: 2, status: .new, total_amount: 101.36, order_number: 429, created_at: "2023-01-01T12:00:00Z", updated_at: "2023-01-01T12:00:00Z", table: mockTable, order_items: [itemOne, itemTwo], payment_method: nil, discount_amount: nil, tax_amount: 6.96, tip_amount: 14.40)
 
     orderManager.orders = [mockOrder]
 
-    return OrderDetailView(orderId: "1", onCheckout: {}, onPrintResult: { _ in })
-        .environmentObject(orderManager)
-        .environmentObject(printerManager)
-        .environmentObject(localizationManager)
-        .environmentObject(SupabaseManager.shared)
+    return NavigationStack {
+        OrderDetailView(orderId: "1", onCheckout: {}, onPrintResult: { _ in })
+            .environmentObject(orderManager)
+            .environmentObject(printerManager)
+            .environmentObject(localizationManager)
+            .environmentObject(SupabaseManager.shared)
+    }
 }
 #endif

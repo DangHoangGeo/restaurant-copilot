@@ -62,10 +62,10 @@
     "recommended": "Recommended"
   },
   "item_detail": {
-    "choose_size": "Choose Size",
-    "add_toppings": "Add Toppings",
-    "special_instructions": "Special Instructions (Optional)",
-    "special_instructions_placeholder": "Any special requests or dietary requirements...",
+    "choose_size": "SIZE",
+    "add_toppings": "ADD-ONS",
+    "special_instructions": "SPECIAL REQUEST",
+    "special_instructions_placeholder": "Allergies, preferences, or how you'd like it prepared...",
     "price_details": "Price Details",
     "base_price": "Base price",
     "quantity": "Quantity",

@@ -56,5 +56,45 @@
   "addBranchSave": "ブランチを作成",
   "addBranchSaving": "作成中...",
   "addBranchCancel": "キャンセル",
-  "addBranchError": "ブランチの作成に失敗しました。もう一度お試しください。"
+  "addBranchError": "ブランチの作成に失敗しました。もう一度お試しください。",
+  "workspace": {
+    "ownerWorkspace": "{subdomain} オーナーワークスペース",
+    "activeBranch": "現在の店舗",
+    "addressNotSet": "住所未設定",
+    "contactNotSet": "連絡先未設定",
+    "openOrdersCount": "{count}件の進行中オーダー",
+    "staffOnBranch": "この店舗のスタッフ",
+    "ready": "準備完了",
+    "setupNeeded": "要セットアップ",
+    "monthClosed": "月次締め完了",
+    "emptyTitle": "店舗がまだありません",
+    "alerts": {
+      "setupNeeded": "{count}店舗でオーナー設定が未完了です",
+      "monthCloseNeeded": "{count}店舗で月次締めが未完了です",
+      "openOrders": "{count}店舗で進行中オーダーがあります"
+    },
+    "stats": {
+      "todayRevenue": "本日の売上",
+      "todayRevenueHint": "{count}件の進行中オーダー",
+      "totalExpenses": "総支出",
+      "totalExpensesHint": "今月の発注と経費の合計",
+      "branchesReady": "準備完了店舗",
+      "branchesReadyPending": "{count}店舗はまだセットアップが必要です",
+      "branchesReadyAll": "すべての店舗が準備完了です",
+      "monthClose": "月次締め（{month}）"
+    },
+    "table": {
+      "branch": "店舗",
+      "contact": "連絡先",
+      "today": "今日",
+      "expenses": "支出",
+      "status": "状態",
+      "actions": "操作"
+    },
+    "expensesThisMonth": "今月",
+    "actions": {
+      "ownerView": "オーナー表示",
+      "branchManage": "店舗管理"
+    }
+  }
 }

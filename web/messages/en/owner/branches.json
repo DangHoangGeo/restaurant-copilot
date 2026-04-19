@@ -56,5 +56,45 @@
   "addBranchSave": "Create Branch",
   "addBranchSaving": "Creating...",
   "addBranchCancel": "Cancel",
-  "addBranchError": "Failed to create branch. Please try again."
+  "addBranchError": "Failed to create branch. Please try again.",
+  "workspace": {
+    "ownerWorkspace": "{subdomain} owner workspace",
+    "activeBranch": "Active branch",
+    "addressNotSet": "Address not set",
+    "contactNotSet": "Contact not set",
+    "openOrdersCount": "{count, plural, =0 {0 open orders} one {# open order} other {# open orders}}",
+    "staffOnBranch": "staff on branch",
+    "ready": "Ready",
+    "setupNeeded": "Setup needed",
+    "monthClosed": "Month closed",
+    "emptyTitle": "No branches yet",
+    "alerts": {
+      "setupNeeded": "{count, plural, one {# branch still needs owner setup} other {# branches still need owner setup}}",
+      "monthCloseNeeded": "{count, plural, one {# branch still needs month close} other {# branches still need month close}}",
+      "openOrders": "{count, plural, one {# branch currently has open orders} other {# branches currently have open orders}}"
+    },
+    "stats": {
+      "todayRevenue": "Today revenue",
+      "todayRevenueHint": "{count, plural, =0 {0 open orders} one {# open order} other {# open orders}}",
+      "totalExpenses": "Total expenses",
+      "totalExpensesHint": "Purchase orders and expense records this month",
+      "branchesReady": "Branches ready",
+      "branchesReadyPending": "{count, plural, one {# still needs setup} other {# still need setup}}",
+      "branchesReadyAll": "All branches ready",
+      "monthClose": "Month close ({month})"
+    },
+    "table": {
+      "branch": "Branch",
+      "contact": "Contact",
+      "today": "Today",
+      "expenses": "Expenses",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "expensesThisMonth": "this month",
+    "actions": {
+      "ownerView": "Owner view",
+      "branchManage": "Branch manage"
+    }
+  }
 }

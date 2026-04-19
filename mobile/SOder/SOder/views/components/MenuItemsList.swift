@@ -174,21 +174,6 @@ struct MenuItemRowCompactUnified: View {
         return (menuItem.availableSizes?.isEmpty == false) || (menuItem.availableToppings?.isEmpty == false)
     }
     
-    // Show secondary language name if different from primary
-    private var secondaryName: String? {
-        let currentLang = LocalizationManager.shared.currentLanguage
-        switch currentLang {
-        case "en":
-            return menuItem.name_ja ?? menuItem.name_vi
-        case "ja":
-            return menuItem.name_en ?? menuItem.name_vi
-        case "vi":
-            return menuItem.name_en ?? menuItem.name_ja
-        default:
-            return menuItem.name_ja ?? menuItem.name_vi
-        }
-    }
-    
     var body: some View {
         HStack(spacing: Spacing.md) {
             // Leading: Code badge (if available)
@@ -212,7 +197,7 @@ struct MenuItemRowCompactUnified: View {
                     .lineLimit(1)
                 
                 // Secondary name (if different)
-                if let secondary = secondaryName, secondary != menuItem.displayName {
+                if let secondary = menuItem.staffSecondaryName {
                     Text(secondary)
                         .font(.captionRegular)
                         .foregroundColor(.appTextSecondary)
@@ -258,6 +243,7 @@ struct MenuItemRowCompactUnified: View {
                                 .background(Color.appPrimary)
                                 .clipShape(Circle())
                         }
+                        .buttonStyle(.plain)
                         .disabled(isAddingItem)
                         .opacity(isAddingItem ? 0.6 : 1.0)
                         .accessibilityLabel(hasCustomizationOptions ? 
@@ -275,6 +261,7 @@ struct MenuItemRowCompactUnified: View {
                                 .background(Color.appSurfaceSecondary)
                                 .clipShape(Circle())
                         }
+                        .buttonStyle(.plain)
                         .disabled(isAddingItem)
                         .opacity(isAddingItem ? 0.6 : 1.0)
                         .accessibilityLabel("pos_more_options".localized)

@@ -988,6 +988,61 @@ class OrderManager: ObservableObject {
             throw error
         }
     }
+
+    @MainActor
+    func completeCheckout(
+        orderId: String,
+        paymentMethod: String,
+        discountAmount: Double,
+        taxAmount: Double,
+        tipAmount: Double,
+        totalAmount: Double
+    ) async throws {
+        struct CheckoutUpdatePayload: Codable {
+            let status: String
+            let total_amount: Double
+            let updated_at: String
+        }
+
+        let updatedAt = ISO8601DateFormatter().string(from: Date())
+        let payload = CheckoutUpdatePayload(
+            status: OrderStatus.completed.rawValue,
+            total_amount: totalAmount,
+            updated_at: updatedAt
+        )
+
+        do {
+            let _ = try await supabaseManager.client
+                .from("orders")
+                .update(payload)
+                .eq("id", value: orderId)
+                .execute()
+
+            if let index = orders.firstIndex(where: { $0.id == orderId }) {
+                orders[index].status = .completed
+                orders[index].payment_method = paymentMethod
+                orders[index].discount_amount = discountAmount
+                orders[index].tax_amount = taxAmount
+                orders[index].tip_amount = tipAmount
+                orders[index].total_amount = totalAmount
+                orders[index].updated_at = updatedAt
+                orders.remove(at: index)
+            }
+
+            if let index = allOrders.firstIndex(where: { $0.id == orderId }) {
+                allOrders[index].status = .completed
+                allOrders[index].payment_method = paymentMethod
+                allOrders[index].discount_amount = discountAmount
+                allOrders[index].tax_amount = taxAmount
+                allOrders[index].tip_amount = tipAmount
+                allOrders[index].total_amount = totalAmount
+                allOrders[index].updated_at = updatedAt
+            }
+        } catch {
+            print("Error completing checkout: \(error)")
+            throw error
+        }
+    }
     
     // MARK: - Update Order Item Notes
     @MainActor
@@ -1027,7 +1082,7 @@ class OrderManager: ObservableObject {
     func cancelOrderItem(orderItemId: String) async throws {
         do {
             // Set status to canceled
-            let _: OrderItem = try await supabaseManager.client
+            let canceledItem: OrderItem = try await supabaseManager.client
                 .from("order_items")
                 .update([
                     "status": OrderItemStatus.canceled.rawValue,
@@ -1049,6 +1104,22 @@ class OrderManager: ObservableObject {
                     break
                 }
             }
+
+            for (orderIndex, order) in allOrders.enumerated() {
+                if let orderItems = order.order_items,
+                   let itemIndex = orderItems.firstIndex(where: { $0.id == orderItemId }) {
+                    var item = orderItems[itemIndex]
+                    item.status = .canceled
+                    item.updated_at = ISO8601DateFormatter().string(from: Date())
+                    allOrders[orderIndex].order_items?[itemIndex] = item
+                    break
+                }
+            }
+
+            if let orderId = orderId(forItemId: orderItemId, fallback: canceledItem.order_id) {
+                try await syncOrderFinancialsFromItems(orderId: orderId)
+                try await syncOrderStatusFromItems(orderId: orderId)
+            }
             
             print("canceled order item: \(orderItemId)")
             
@@ -1062,10 +1133,11 @@ class OrderManager: ObservableObject {
     @MainActor
     func updateOrderItemStatus(orderItemId: String, newStatus: OrderItemStatus) async throws {
         do {
-            let _: OrderItem = try await supabaseManager.client
+            let updatedItem: OrderItem = try await supabaseManager.client
                 .from("order_items")
                 .update([
-                    "status": newStatus.rawValue
+                    "status": newStatus.rawValue,
+                    "updated_at": ISO8601DateFormatter().string(from: Date())
                 ])
                 .eq("id", value: orderItemId)
                 .single()
@@ -1082,12 +1154,170 @@ class OrderManager: ObservableObject {
                     break
                 }
             }
+
+            if let orderId = orderId(forItemId: orderItemId, fallback: updatedItem.order_id) {
+                try await syncOrderStatusFromItems(orderId: orderId)
+            }
             
             print("Updated order item status to \(newStatus.rawValue)")
             
         } catch {
             print("Error updating order item status: \(error)")
             throw OrderManagerError.orderItemUpdateFailed("error_update_item_status".localized)
+        }
+    }
+
+    func operationalStatus(for table: Table) -> TableOperationalStatus {
+        switch table.status {
+        case .reserved:
+            return .reserved
+        case .maintenance:
+            return .maintenance
+        case .available, .occupied:
+            break
+        }
+
+        let activeOrders = mergedOrders().filter { order in
+            order.table_id == table.id && order.status != .completed && order.status != .canceled
+        }
+
+        guard !activeOrders.isEmpty else {
+            return TableOperationalStatus(baseStatus: table.status)
+        }
+
+        let hasServingOrder = activeOrders.contains { order in
+            if order.status == .serving {
+                return true
+            }
+
+            return (order.order_items ?? []).contains { item in
+                item.status == .preparing || item.status == .ready || item.status == .served
+            }
+        }
+
+        return hasServingOrder ? .serving : .occupied
+    }
+
+    private func mergedOrders() -> [Order] {
+        var deduped: [String: Order] = [:]
+
+        for order in allOrders {
+            deduped[order.id] = order
+        }
+
+        for order in orders {
+            deduped[order.id] = order
+        }
+
+        return Array(deduped.values)
+    }
+
+    private func orderId(forItemId orderItemId: String, fallback: String) -> String? {
+        for order in mergedOrders() {
+            if order.order_items?.contains(where: { $0.id == orderItemId }) == true {
+                return order.id
+            }
+        }
+
+        return fallback.isEmpty ? nil : fallback
+    }
+
+    @MainActor
+    private func syncOrderFinancialsFromItems(orderId: String) async throws {
+        guard let order = mergedOrders().first(where: { $0.id == orderId }) else {
+            return
+        }
+
+        let subtotal = order.activeItems.reduce(0.0) { partial, item in
+            partial + (item.price_at_order * Double(item.quantity))
+        }
+        let updatedAt = ISO8601DateFormatter().string(from: Date())
+        struct OrderFinancialUpdatePayload: Codable {
+            let total_amount: Double
+            let updated_at: String
+        }
+
+        let _ = try await supabaseManager.client
+            .from("orders")
+            .update(OrderFinancialUpdatePayload(total_amount: subtotal, updated_at: updatedAt))
+            .eq("id", value: orderId)
+            .execute()
+
+        applyOrderFinancialsLocally(orderId: orderId, subtotal: subtotal, updatedAt: updatedAt)
+    }
+
+    @MainActor
+    private func syncOrderStatusFromItems(orderId: String) async throws {
+        guard let order = mergedOrders().first(where: { $0.id == orderId }) else {
+            return
+        }
+
+        let derivedStatus = derivedStatus(for: order)
+        guard derivedStatus != order.status else {
+            return
+        }
+
+        let updatedAt = ISO8601DateFormatter().string(from: Date())
+
+        let _ = try await supabaseManager.client
+            .from("orders")
+            .update([
+                "status": derivedStatus.rawValue,
+                "updated_at": updatedAt
+            ])
+            .eq("id", value: orderId)
+            .execute()
+
+        applyOrderStatusLocally(orderId: orderId, newStatus: derivedStatus, updatedAt: updatedAt)
+    }
+
+    private func derivedStatus(for order: Order) -> OrderStatus {
+        if order.status == .completed {
+            return .completed
+        }
+
+        if order.status == .canceled {
+            let hasActiveItems = (order.order_items ?? []).contains { $0.status != .canceled }
+            if !hasActiveItems {
+                return .canceled
+            }
+        }
+
+        let items = order.order_items ?? []
+        let activeItems = items.filter { $0.status != .canceled }
+
+        if activeItems.isEmpty {
+            return .canceled
+        }
+
+        let hasStartedService = activeItems.contains { item in
+            item.status == .preparing || item.status == .ready || item.status == .served
+        }
+
+        return hasStartedService ? .serving : .new
+    }
+
+    private func applyOrderStatusLocally(orderId: String, newStatus: OrderStatus, updatedAt: String) {
+        if let index = orders.firstIndex(where: { $0.id == orderId }) {
+            orders[index].status = newStatus
+            orders[index].updated_at = updatedAt
+        }
+
+        if let index = allOrders.firstIndex(where: { $0.id == orderId }) {
+            allOrders[index].status = newStatus
+            allOrders[index].updated_at = updatedAt
+        }
+    }
+
+    private func applyOrderFinancialsLocally(orderId: String, subtotal: Double, updatedAt: String) {
+        if let index = orders.firstIndex(where: { $0.id == orderId }) {
+            orders[index].total_amount = subtotal
+            orders[index].updated_at = updatedAt
+        }
+
+        if let index = allOrders.firstIndex(where: { $0.id == orderId }) {
+            allOrders[index].total_amount = subtotal
+            allOrders[index].updated_at = updatedAt
         }
     }
     

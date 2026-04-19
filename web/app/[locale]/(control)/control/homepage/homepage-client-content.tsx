@@ -267,7 +267,7 @@ export function HomepageClientContent({ locale }: HomepageClientContentProps) {
 
         {/* Preview Tab */}
         <TabsContent value="preview" className="space-y-6">
-          <HomepagePreview locale={locale} />
+          <HomepagePreview />
         </TabsContent>
       </Tabs>
     </>

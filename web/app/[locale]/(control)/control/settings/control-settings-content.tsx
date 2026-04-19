@@ -1,11 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { useRef, useState, type ChangeEvent } from 'react';
 import {
-  Globe,
   ImagePlus,
   Loader2,
   Mail,
+  MapPin,
   Phone,
   Save,
   Trash2,
@@ -23,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import type { SubscriptionReceipt, TenantSubscription } from '@/shared/types/platform';
 
 const TIMEZONES = [
   { value: 'Asia/Tokyo', label: 'Asia/Tokyo (JST, UTC+9)' },
@@ -55,18 +57,27 @@ interface OrgSettingsInitial {
   description_en: string | null;
   description_ja: string | null;
   description_vi: string | null;
-  website: string | null;
+  address: string | null;
   phone: string | null;
   email: string | null;
 }
 
 interface ControlSettingsContentProps {
   initial: OrgSettingsInitial;
+  billing: {
+    organizationId: string;
+    restaurantId: string;
+    restaurantName: string;
+    subscription: TenantSubscription | null;
+    planName: string | null;
+    receipts: SubscriptionReceipt[];
+  } | null;
   canEdit: boolean;
 }
 
 export function ControlSettingsContent({
   initial,
+  billing,
   canEdit,
 }: ControlSettingsContentProps) {
   const [form, setForm] = useState({
@@ -79,7 +90,7 @@ export function ControlSettingsContent({
     description_en: initial.description_en ?? '',
     description_ja: initial.description_ja ?? '',
     description_vi: initial.description_vi ?? '',
-    website: initial.website ?? '',
+    address: initial.address ?? '',
     phone: initial.phone ?? '',
     email: initial.email ?? '',
   });
@@ -140,7 +151,7 @@ export function ControlSettingsContent({
         description_en: form.description_en || null,
         description_ja: form.description_ja || null,
         description_vi: form.description_vi || null,
-        website: form.website || null,
+        address: form.address || null,
         phone: form.phone || null,
         email: form.email || null,
       };
@@ -172,12 +183,8 @@ export function ControlSettingsContent({
             Shared identity
           </p>
           <h2 className="mt-2 text-xl font-semibold tracking-tight">
-            Keep the company setup simple for every branch
+            Company defaults
           </h2>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Set the brand once here, then let branches inherit the default look,
-            contact details, and business rules unless a branch truly needs an override.
-          </p>
         </div>
 
         <div className="space-y-6 px-5 py-5 sm:px-6">
@@ -345,20 +352,19 @@ export function ControlSettingsContent({
           <Separator />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Website</Label>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label className="text-xs font-medium">Company address</Label>
               <div className="relative">
-                <Globe className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <MapPin className="absolute left-3 top-3.5 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
-                  value={form.website}
-                  onChange={(event) => set('website', event.target.value)}
+                  value={form.address}
+                  onChange={(event) => set('address', event.target.value)}
                   disabled={disabled}
                   className="h-10 rounded-xl pl-9"
-                  placeholder="https://yourrestaurant.com"
+                  placeholder="2-1 Dogenzaka, Shibuya-ku, Tokyo"
                 />
               </div>
             </div>
-
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Contact phone</Label>
               <div className="relative">
@@ -394,9 +400,6 @@ export function ControlSettingsContent({
       <section className="rounded-3xl border bg-card p-5 sm:p-6">
         <div className="space-y-1">
           <h3 className="text-base font-semibold">Public introduction</h3>
-          <p className="text-sm text-muted-foreground">
-            Keep the public story short and usable. Branches can inherit this language as their default baseline.
-          </p>
         </div>
 
         <div className="mt-5 space-y-3">
@@ -440,6 +443,83 @@ export function ControlSettingsContent({
             />
           </div>
         </div>
+      </section>
+
+      <section className="rounded-3xl border bg-card p-5 sm:p-6">
+        <div className="space-y-1">
+          <h3 className="text-base font-semibold">Subscription and receipts</h3>
+        </div>
+
+        {billing?.subscription ? (
+          <div className="mt-5 space-y-5">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-2xl border bg-muted/20 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Plan
+                </p>
+                <p className="mt-2 text-sm font-medium">
+                  {billing.planName ?? billing.subscription.plan_id}
+                </p>
+              </div>
+              <div className="rounded-2xl border bg-muted/20 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Status
+                </p>
+                <p className="mt-2 text-sm font-medium capitalize">
+                  {billing.subscription.status}
+                </p>
+              </div>
+              <div className="rounded-2xl border bg-muted/20 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Renewal
+                </p>
+                <p className="mt-2 text-sm font-medium">
+                  {new Date(billing.subscription.current_period_end).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {billing.receipts.length > 0 ? (
+                billing.receipts.map((receipt) => (
+                  <div
+                    key={receipt.id}
+                    className="flex flex-col gap-3 rounded-2xl border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{receipt.receipt_number}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(receipt.period_start).toLocaleDateString()} -{' '}
+                        {new Date(receipt.period_end).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-sm font-medium">
+                          {receipt.currency} {Number(receipt.total).toFixed(2)}
+                        </p>
+                        <p className="text-xs capitalize text-muted-foreground">
+                          {receipt.status}
+                        </p>
+                      </div>
+                      <Button asChild variant="outline" className="rounded-xl">
+                        <Link href={`receipts/${receipt.id}`}>Open</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-2xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+                  No receipts yet.
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+            Billing becomes available after the organization is approved and a subscription is activated.
+          </div>
+        )}
       </section>
 
       {canEdit ? (

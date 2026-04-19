@@ -1,44 +1,33 @@
 {
   "pageTitle": "Monthly Finance",
   "pageDescription": "Monthly revenue, labor, and cost summary for accountant handoff",
-
   "statusLive": "Live (not yet closed)",
   "statusClosed": "Closed",
   "statusDraft": "Draft",
-
   "prevMonth": "Previous month",
   "nextMonth": "Next month",
   "noData": "No data available for this period.",
-
   "revenue": "Revenue",
   "grossSales": "Gross Sales",
   "discounts": "Discounts",
   "netRevenue": "Net Revenue",
   "orderCount": "{count, plural, =0 {0 orders} one {1 order} other {# orders}}",
-
-  "grossProfit": "Gross Profit Est.",
-  "grossProfitHint": "Revenue − costs",
-
+  "grossProfit": "Gross Profit",
+  "grossProfitHint": "Revenue less discounts and costs",
   "totalCosts": "Total Costs",
   "laborHours": "Approved Labor",
   "laborEntries": "{count, plural, =0 {0 entries} one {1 entry} other {# entries}}",
-
   "purchaseOrders": "Purchase Orders",
   "otherExpenses": "Other Expenses",
   "combinedCosts": "Total Costs",
-
   "orders": "Orders",
   "expenses": "Expenses",
-
   "liveNotice": "Totals are computed live and may change until the month is closed.",
-
   "notes": "Accountant notes",
   "notesPlaceholder": "Optional notes for the accountant or tax preparer…",
-
   "exportCsv": "Export CSV",
   "exporting": "Exporting…",
   "exportError": "Export failed. Please try again.",
-
   "closeMonth": "Close Month",
   "closeConfirmTitle": "Close this month?",
   "closeConfirmBody": "Closing {period} will freeze all totals. This action cannot be undone.",
@@ -46,6 +35,159 @@
   "closing": "Closing…",
   "cancel": "Cancel",
   "closeError": "Failed to close month. Please try again.",
-
-  "recentSnapshots": "Recent months"
+  "recentSnapshots": "Recent months",
+  "ledger": {
+    "tabs": {
+      "summary": "Summary",
+      "income": "Income",
+      "spending": "Spending"
+    },
+    "summary": {
+      "expenseByCategory": "Quick expenses by category",
+      "purchaseByCategory": "Purchase orders by category",
+      "noExpenseCategories": "No quick expenses recorded for this month.",
+      "noPurchaseCategories": "No purchase orders recorded for this month."
+    },
+    "income": {
+      "title": "Income snapshot",
+      "discountHint": "Discounts applied this month",
+      "grossSales": "Gross sales",
+      "discounts": "Discounts",
+      "netSales": "Net sales",
+      "completedOrders": "Completed orders",
+      "recentSales": "Recent sales",
+      "table": "Table",
+      "items": "Items",
+      "amount": "Amount",
+      "empty": "No completed sales in this month.",
+      "walkIn": "Walk-in"
+    },
+    "spending": {
+      "title": "Spending snapshot",
+      "purchaseOrders": "Purchase orders",
+      "quickExpenses": "Quick expenses",
+      "totalSpending": "Total spending",
+      "totalCostsHint": "Purchase orders and quick expenses",
+      "categoryBreakdown": "Quick expense categories",
+      "noSpendCategories": "No quick expense categories recorded for this month."
+    }
+  },
+  "spending": {
+    "addExpenseTitle": "Add branch expense",
+    "addExpenseHint": "Record a quick branch expense here. The system saves who added it automatically.",
+    "dialogHint": "Record a quick expense for {branch}. The creator is stored automatically for audit.",
+    "auditHint": "The branch, creator, and timestamp are saved automatically.",
+    "expenseSaved": "Expense saved for {branch}.",
+    "manageLocked": "You can review branch spending here, but your role cannot add or remove expenses.",
+    "expenseLedger": "Expense ledger",
+    "purchaseLedger": "Purchase ledger",
+    "recordedBy": "Recorded by",
+    "actions": "Actions",
+    "emptyExpenses": "No quick expenses recorded for this month.",
+    "emptyPurchases": "No purchase orders recorded for this month.",
+    "unknownCreator": "Unknown"
+  },
+  "company": {
+    "sectionLabel": "Company finance",
+    "pageTitle": "Company finance",
+    "pageDescription": "Review the business at company level first, then filter to one branch when you need a tighter financial read.",
+    "controls": {
+      "month": "Month",
+      "quarter": "Quarter",
+      "previousPeriod": "Previous period",
+      "nextPeriod": "Next period",
+      "branchFilter": "Branch filter",
+      "allBranches": "All branches"
+    },
+    "stats": {
+      "netSalesExTax": "Net sales (ex tax)",
+      "netSalesExTaxHint": "After discounts, before spend",
+      "salesTax": "Estimated sales tax",
+      "salesTaxHint": "Estimated from branch tax settings",
+      "totalSpend": "Total spend",
+      "totalSpendHint": "Purchasing, branch expenses, and shared company expenses",
+      "branchSpend": "Branch spend",
+      "branchSpendHint": "Selected branch operating spend only",
+      "grossProfit": "Operating profit",
+      "grossProfitHint": "Net sales ex tax less spend in scope",
+      "branchProfit": "Branch operating profit",
+      "branchProfitHint": "Shared company expenses are not allocated here",
+      "branchesInScope": "Branches in scope",
+      "branchesInScopeHint": "Branches included in this view"
+    },
+    "tabs": {
+      "summary": "Summary",
+      "branches": "Branches",
+      "tax": "Tax",
+      "sharedExpenses": "Shared expenses"
+    },
+    "selectedBranchCompanyExpenseNotice": "{amount} of shared company expenses were recorded in this period. They are shown for context and are not deducted from this branch operating profit.",
+    "summary": {
+      "trendTitle": "Period trend",
+      "trendDescription": "Net sales, spend, and operating profit across the selected quarter.",
+      "branchCompareTitle": "Branch comparison",
+      "branchCompareDescription": "Compare the branches in this scope without leaving the company finance view.",
+      "chartEmpty": "No finance data available for this scope yet.",
+      "salesSeries": "Net sales (ex tax)",
+      "spendingSeries": "Spend",
+      "profitSeries": "Operating profit",
+      "snapshotTitle": "Period snapshot",
+      "snapshotDescription": "Use this as the owner-facing read before drilling into a branch.",
+      "netSalesInclusive": "Net sales (tax inclusive)",
+      "salesTax": "Estimated sales tax",
+      "netSalesExTax": "Net sales (ex tax)",
+      "branchExpenses": "Branch expenses",
+      "companyExpenses": "Shared company expenses",
+      "totalSpend": "Total spend",
+      "branchOperatingSpend": "Branch operating spend",
+      "grossProfit": "Operating profit",
+      "branchOperatingProfit": "Branch operating profit",
+      "periodTableTitle": "Period breakdown",
+      "periodTableDescription": "Use month and quarter views to track movement instead of reading one crowded summary.",
+      "periodColumn": "Period"
+    },
+    "branches": {
+      "title": "Branch finance table",
+      "description": "Filter here or open the owner branch detail when a single location needs action.",
+      "branch": "Branch",
+      "close": "Close",
+      "action": "Action",
+      "open": "Open branch"
+    },
+    "tax": {
+      "title": "Sales tax view",
+      "description": "Estimated from each branch tax setting and the order totals collected from customers.",
+      "empty": "No tax data available for this scope.",
+      "taxSeries": "Estimated sales tax",
+      "salesSeries": "Net sales (ex tax)",
+      "tableTitle": "Tax breakdown",
+      "tableDescription": "This helps owners and accountants review taxable sales without leaving the company workspace.",
+      "scope": "Scope",
+      "taxRate": "Tax rate"
+    },
+    "sharedExpenses": {
+      "title": "Shared company expenses",
+      "description": "Use this for head-office, shared tools, accounting, rent, or any cost that should stay at company level.",
+      "add": "Add shared expense",
+      "dialogTitle": "Add shared company expense",
+      "dialogDescription": "Record a company-level expense here. The system stores who recorded it for audit.",
+      "descriptionPlaceholder": "What was this company expense for?",
+      "vendor": "Vendor",
+      "vendorPlaceholder": "Optional vendor or payee",
+      "auditHint": "The creator and timestamp are saved automatically.",
+      "saved": "Shared company expense saved.",
+      "total": "Shared expenses in period",
+      "totalHint": "Company-level expenses only",
+      "entryCount": "Entries",
+      "entryCountHint": "Recorded shared expense rows",
+      "empty": "No shared company expenses recorded for this period.",
+      "ledgerTitle": "Shared expense ledger",
+      "ledgerDescription": "Review company-level overhead without mixing it into branch operations.",
+      "date": "Date",
+      "category": "Category",
+      "descriptionColumn": "Description",
+      "recordedBy": "Recorded by",
+      "amount": "Amount"
+    }
+  }
 }

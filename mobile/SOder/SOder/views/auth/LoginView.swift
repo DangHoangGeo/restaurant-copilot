@@ -3,317 +3,64 @@ import SwiftUI
 struct LoginView: View {
     @StateObject private var supabaseManager = SupabaseManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
-    
-    @State private var subdomain = ""
+
+    @State private var branchCode = ""
     @State private var email = ""
     @State private var password = ""
+    @State private var showPassword = false
     @State private var isLoading = false
     @State private var errorMessage = ""
     @State private var showError = false
     @State private var showLanguageSelector = false
-    @State private var appearAnimation = false
-    
+    @State private var animateIn = false
+
+    @FocusState private var focusedField: LoginField?
+
+    private enum LoginField: Hashable {
+        case branchCode, email, password
+    }
+
     var body: some View {
         if #available(iOS 16.0, *) {
-            NavigationStack {
-                contentView
-            }
+            NavigationStack { contentView }
         } else {
-            NavigationView {
-                contentView
-            }
-            .navigationViewStyle(StackNavigationViewStyle())
+            NavigationView { contentView }
+                .navigationViewStyle(StackNavigationViewStyle())
         }
     }
 
     private var contentView: some View {
         ZStack {
-            // Enhanced gradient background matching web design
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.93, green: 0.95, blue: 1.0).opacity(0.5),  // from-blue-50/50
-                    Color.appBackground,
-                    Color(red: 0.98, green: 0.95, blue: 1.0).opacity(0.5)   // to-purple-50/50
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            AppScreenBackground()
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Language Selector - Enhanced styling
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            showLanguageSelector = true
-                        }) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "globe")
-                                    .font(.subheadline)
-                                Text(localizationManager.supportedLanguageNames[localizationManager.currentLanguage] ?? "English")
-                                    .font(.subheadline)
-                            }
-                            .foregroundColor(.appPrimary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.appSurface.opacity(0.9))
-                            .cornerRadius(20)
-                            .shadow(color: Elevation.level1.color, radius: Elevation.level1.radius, y: Elevation.level1.y)
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 10)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: Spacing.lg) {
+                    topBar
 
-                    Spacer().frame(height: 20)
+                    AuthHeroCluster(
+                        variant: .signIn,
+                        subtitle: "sign_in".localized
+                    )
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.top, Spacing.sm)
+                    .scaleEffect(animateIn ? 1 : 0.96)
+                    .opacity(animateIn ? 1 : 0)
 
-                    // Header - Enhanced with gradient and better spacing
-                    VStack(spacing: 12) {
-                        // Icon with gradient background
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.appPrimary.opacity(0.15),
-                                            Color.appPrimary.opacity(0.05)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 100, height: 100)
-
-                            Image(systemName: "fork.knife.circle.fill")
-                                .font(.system(size: 50))
-                                .foregroundColor(.appPrimary)
-                        }
-
-                        Text("app_name".localized)
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.appTextPrimary, Color.appTextPrimary.opacity(0.7)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-
-                        Text("app_subtitle".localized)
-                            .font(.bodyRegular)
-                            .foregroundColor(.appTextSecondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.top, 20)
-                    
-                    Spacer(minLength: 0)
-                    
-                    // Error Banner - Enhanced matching web design
                     if showError && !errorMessage.isEmpty {
-                        HStack(spacing: 12) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.body)
-                                .foregroundColor(.appError)
-
-                            Text(errorMessage)
-                                .font(.bodyMedium)
-                                .foregroundColor(.appError)
-                                .fixedSize(horizontal: false, vertical: true)
-
-                            Spacer()
-
-                            Button(action: {
-                                withAnimation {
-                                    showError = false
-                                    errorMessage = ""
-                                }
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.body)
-                                    .foregroundColor(.appError.opacity(0.6))
-                            }
-                        }
-                        .padding(Spacing.md)
-                        .background(Color.appErrorLight)
-                        .cornerRadius(CornerRadius.md)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.md)
-                                .stroke(Color.appError.opacity(0.3), lineWidth: 1)
-                        )
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        errorBanner
+                            .transition(.move(edge: .top).combined(with: .opacity))
                     }
 
-                    // Login Form - Enhanced with elevation and better styling
-                    VStack(spacing: 20) {
-                        // Subdomain field with icon
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("restaurant_subdomain".localized)
-                                .font(.sectionHeader)
-                                .foregroundColor(.appTextPrimary)
+                    formCard
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 24)
 
-                            HStack(spacing: 12) {
-                                Image(systemName: "building.2.fill")
-                                    .font(.body)
-                                    .foregroundColor(.appTextSecondary)
-                                    .frame(width: 20)
-
-                                TextField("restaurant_subdomain_placeholder".localized, text: $subdomain)
-                                    .font(.bodyRegular)
-                                    .autocapitalization(.none)
-                                    .disableAutocorrection(true)
-                            }
-                            .padding(Spacing.md)
-                            .background(Color.appSurface)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appBorder, lineWidth: 1)
-                            )
-                            .shadow(color: Elevation.level1.color, radius: 2, y: 1)
-                        }
-
-                        // Email field with icon
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("email".localized)
-                                .font(.sectionHeader)
-                                .foregroundColor(.appTextPrimary)
-
-                            HStack(spacing: 12) {
-                                Image(systemName: "envelope.fill")
-                                    .font(.body)
-                                    .foregroundColor(.appTextSecondary)
-                                    .frame(width: 20)
-
-                                TextField("email_placeholder".localized, text: $email)
-                                    .font(.bodyRegular)
-                                    .keyboardType(.emailAddress)
-                                    .autocapitalization(.none)
-                                    .disableAutocorrection(true)
-                            }
-                            .padding(Spacing.md)
-                            .background(Color.appSurface)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appBorder, lineWidth: 1)
-                            )
-                            .shadow(color: Elevation.level1.color, radius: 2, y: 1)
-                        }
-
-                        // Password field with icon
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("password".localized)
-                                .font(.sectionHeader)
-                                .foregroundColor(.appTextPrimary)
-
-                            HStack(spacing: 12) {
-                                Image(systemName: "lock.fill")
-                                    .font(.body)
-                                    .foregroundColor(.appTextSecondary)
-                                    .frame(width: 20)
-
-                                SecureField("password_placeholder".localized, text: $password)
-                                    .font(.bodyRegular)
-                            }
-                            .padding(Spacing.md)
-                            .background(Color.appSurface)
-                            .cornerRadius(CornerRadius.md)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.md)
-                                    .stroke(Color.appBorder, lineWidth: 1)
-                            )
-                            .shadow(color: Elevation.level1.color, radius: 2, y: 1)
-                        }
-
-                        // Enhanced gradient button matching web design
-                        Button(action: {
-                            Task {
-                                await signIn()
-                            }
-                        }) {
-                            HStack(spacing: 8) {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                        .scaleEffect(0.9)
-                                }
-                                Text(isLoading ? "signing_in".localized : "sign_in".localized)
-                                    .font(.buttonLarge)
-                                    .fontWeight(.semibold)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(
-                                Group {
-                                    if isFormValid {
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color(red: 0.26, green: 0.47, blue: 0.85),  // blue-600
-                                                Color(red: 0.22, green: 0.42, blue: 0.78)   // blue-700
-                                            ]),
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    } else {
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.appDisabled, Color.appDisabled]),
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    }
-                                }
-                            )
-                            .foregroundColor(.white)
-                            .cornerRadius(CornerRadius.md)
-                            .shadow(
-                                color: isFormValid ? Color.appPrimary.opacity(0.3) : Color.clear,
-                                radius: 8,
-                                y: 4
-                            )
-                        }
-                        .disabled(!isFormValid || isLoading)
-                        .scaleEffect(isLoading ? 0.98 : 1.0)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isLoading)
-                        .padding(.top, 8)
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 28)
-                    .background(
-                        ZStack {
-                            // Base surface
-                            Color.appSurface
-
-                            // Subtle gradient overlay matching web design
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color(red: 0.93, green: 0.95, blue: 1.0).opacity(0.3),
-                                    Color.clear,
-                                    Color(red: 0.98, green: 0.95, blue: 1.0).opacity(0.3)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        }
-                    )
-                    .cornerRadius(20)
-                    .shadow(color: Elevation.level3.color, radius: Elevation.level3.radius, y: Elevation.level3.y)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.appBorderLight, lineWidth: 1)
-                    )
-                    
-                    Spacer(minLength: 0)
-
-                    // Footer text with better styling
-                    Text("login_subtitle".localized)
-                        .font(.captionRegular)
-                        .foregroundColor(.appTextSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                        .padding(.bottom, 20)
+                    legalFooter
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 20)
                 }
-                .frame(maxHeight: .infinity)
-                .padding(.horizontal, 20)
+                .padding(.bottom, Spacing.xxl)
+                .animation(.spring(response: 0.4, dampingFraction: 0.75), value: showError)
             }
             .scrollDismissesKeyboard(.interactively)
         }
@@ -323,35 +70,244 @@ struct LoginView: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.6)) {
-                // Trigger any appearance animations
+            loadSavedCredentials()
+            withAnimation(.spring(response: 0.72, dampingFraction: 0.84)) {
+                animateIn = true
             }
-            // Load previously used credentials for convenience
-            subdomain = UserDefaults.standard.string(forKey: "lastSubdomain") ?? ""
-            email = UserDefaults.standard.string(forKey: "lastEmail") ?? ""
-            loadCredentials()
         }
     }
-    
-    private func loadCredentials() {
-        let defaults = UserDefaults.standard
-        if let savedSubdomain = defaults.string(forKey: "lastUsedSubdomain") {
-            self.subdomain = savedSubdomain
+
+    private var topBar: some View {
+        HStack {
+            Spacer()
+
+            AuthLanguageButton(
+                title: localizationManager.supportedLanguageNames[localizationManager.currentLanguage] ?? "English",
+                action: { showLanguageSelector = true }
+            )
+            .accessibilityLabel("language_selector".localized)
         }
-        if let savedEmail = defaults.string(forKey: "lastUsedEmail") {
-            self.email = savedEmail
-            
+        .padding(.horizontal, Spacing.lg)
+        .padding(.top, Spacing.sm)
+    }
+
+    private var errorBanner: some View {
+        HStack(spacing: Spacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.body)
+                .foregroundColor(.appError)
+
+            Text(errorMessage)
+                .font(.bodyMedium)
+                .foregroundColor(.appError)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer()
+
+            Button(action: {
+                withAnimation {
+                    showError = false
+                    errorMessage = ""
+                }
+            }) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.body)
+                    .foregroundColor(.appError.opacity(0.6))
+            }
+            .accessibilityLabel("close".localized)
+        }
+        .padding(Spacing.md)
+        .background(Color.appErrorLight)
+        .cornerRadius(CornerRadius.lg)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                .stroke(Color.appError.opacity(0.3), lineWidth: 1)
+        )
+        .padding(.horizontal, Spacing.md)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var formCard: some View {
+        VStack(spacing: Spacing.md) {
+            formField(
+                label: "branch_code".localized,
+                icon: "building.2.fill",
+                isFocused: focusedField == .branchCode
+            ) {
+                TextField("branch_code_placeholder".localized, text: $branchCode)
+                    .font(.bodyRegular)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .focused($focusedField, equals: .branchCode)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .email }
+                    .accessibilityLabel("branch_code".localized)
+            }
+
+            formField(
+                label: "email".localized,
+                icon: "envelope.fill",
+                isFocused: focusedField == .email
+            ) {
+                TextField("email_placeholder".localized, text: $email)
+                    .font(.bodyRegular)
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .focused($focusedField, equals: .email)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .password }
+                    .accessibilityLabel("email".localized)
+            }
+
+            formField(
+                label: "password".localized,
+                icon: "lock.fill",
+                isFocused: focusedField == .password,
+                trailingIcon: {
+                    Button(action: { showPassword.toggle() }) {
+                        Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.appTextSecondary)
+                            .frame(width: 28, height: 28)
+                    }
+                    .accessibilityLabel(showPassword ? "login_hide_password".localized : "login_show_password".localized)
+                }
+            ) {
+                Group {
+                    if showPassword {
+                        TextField("password_placeholder".localized, text: $password)
+                            .submitLabel(.go)
+                            .onSubmit { Task { await signIn() } }
+                    } else {
+                        SecureField("password_placeholder".localized, text: $password)
+                            .submitLabel(.go)
+                            .onSubmit { Task { await signIn() } }
+                    }
+                }
+                .font(.bodyRegular)
+                .focused($focusedField, equals: .password)
+                .accessibilityLabel("password".localized)
+            }
+
+            signInButton
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.lg)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.xl)
+        .shadow(color: Elevation.level2.color, radius: Elevation.level2.radius, y: Elevation.level2.y)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.xl)
+                .stroke(Color.appBorderLight, lineWidth: 1)
+        )
+        .padding(.horizontal, Spacing.md)
+    }
+
+    private var legalFooter: some View {
+        HStack(spacing: Spacing.xs) {
+            Link("terms_of_service".localized, destination: legalURL(path: "terms"))
+                .foregroundColor(.appTextSecondary)
+
+            Text("·")
+                .foregroundColor(.appTextTertiary)
+
+            Link("privacy_policy".localized, destination: legalURL(path: "privacy"))
+                .foregroundColor(.appTextSecondary)
+        }
+        .font(.captionRegular)
+        .padding(.bottom, Spacing.md)
+    }
+
+    @ViewBuilder
+    private func formField<Content: View>(
+        label: String,
+        icon: String,
+        isFocused: Bool,
+        @ViewBuilder trailingIcon: () -> some View = { EmptyView() },
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(isFocused ? .appHighlight : .appTextSecondary)
+                    .frame(width: 20)
+                    .animation(.easeInOut(duration: 0.15), value: isFocused)
+
+                content()
+                    .foregroundColor(.appTextPrimary)
+
+                trailingIcon()
+            }
+            .padding(Spacing.md)
+            .background(Color.appSurfaceSecondary)
+            .cornerRadius(CornerRadius.md)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .stroke(
+                        isFocused ? Color.appHighlightSoft : Color.appBorder,
+                        lineWidth: isFocused ? 2 : 1
+                    )
+                    .animation(.easeInOut(duration: 0.18), value: isFocused)
+            )
+            .shadow(
+                color: isFocused ? Color.appHighlight.opacity(0.12) : Elevation.level1.color,
+                radius: isFocused ? 6 : 2,
+                y: 1
+            )
+            .animation(.easeInOut(duration: 0.18), value: isFocused)
         }
     }
-    
+
+    private var signInButton: some View {
+        Button(action: { Task { await signIn() } }) {
+            HStack(spacing: Spacing.sm) {
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .appOnHighlight))
+                        .scaleEffect(0.9)
+                } else {
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 18))
+                }
+
+                Text(isLoading ? "signing_in".localized : "sign_in".localized)
+                    .font(.buttonLarge)
+            }
+        }
+        .buttonStyle(PrimaryButtonStyle(isEnabled: isFormValid && !isLoading))
+        .disabled(!isFormValid || isLoading)
+        .scaleEffect(isLoading ? 0.98 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isLoading)
+        .padding(.top, Spacing.xs)
+        .accessibilityLabel("sign_in".localized)
+    }
+
     private var isFormValid: Bool {
-        !subdomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !branchCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !password.isEmpty
     }
-    
+
+    private func legalURL(path: String) -> URL {
+        let locale = localizationManager.currentLanguage
+        return URL(string: "https://coorder.ai/\(locale)/\(path)")!
+    }
+
+    private func loadSavedCredentials() {
+        branchCode = UserDefaults.standard.string(forKey: "lastUsedBranchCode") ?? ""
+        email = UserDefaults.standard.string(forKey: "lastUsedEmail") ?? ""
+    }
+
     @MainActor
     private func signIn() async {
+        guard isFormValid else { return }
+        focusedField = nil
         isLoading = true
         withAnimation {
             showError = false
@@ -359,20 +315,21 @@ struct LoginView: View {
         }
 
         do {
-            let trimmedSubdomain = subdomain.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedBranchCode = branchCode.trimmingCharacters(in: .whitespacesAndNewlines)
             let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
 
             try await supabaseManager.signIn(
-                subdomain: trimmedSubdomain,
+                branchCode: trimmedBranchCode,
                 email: trimmedEmail,
                 password: password
             )
+
             if supabaseManager.isAuthenticated {
-                UserDefaults.standard.set(subdomain, forKey: "lastSubdomain")
-                UserDefaults.standard.set(email, forKey: "lastEmail")
+                UserDefaults.standard.set(trimmedBranchCode, forKey: "lastUsedBranchCode")
+                UserDefaults.standard.set(trimmedEmail, forKey: "lastUsedEmail")
             }
         } catch {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
                 if let authError = error as? AuthError {
                     errorMessage = authError.errorDescription ?? "Unknown error"
                 } else {
@@ -384,4 +341,9 @@ struct LoginView: View {
 
         isLoading = false
     }
+}
+
+#Preview {
+    LoginView()
+        .environmentObject(LocalizationManager.shared)
 }

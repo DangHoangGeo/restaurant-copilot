@@ -70,6 +70,7 @@ export default async function FinancePage({
       currency={currency}
       locale={locale}
       restaurantName={restaurantName}
+      canExport={access.canExport}
       canClose={canClose}
     />
   );

@@ -62,7 +62,6 @@ export function OwnerStoryEditor({ }: OwnerStoryEditorProps) {
   // Load owner story data from RestaurantContext
   useEffect(() => {
     if (restaurantSettings && !contextLoading) {
-      console.log("Loading restaurant settings:", restaurantSettings); // Dev log
       reset({
         owner_story_en: restaurantSettings.owner_story_en || "",
         owner_story_ja: restaurantSettings.owner_story_ja || "",

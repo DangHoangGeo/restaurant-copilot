@@ -9,6 +9,7 @@ The customer menu ordering flow is already working well and should be preserved 
 - `00_owner_business_operations_plan.md`
 - `01_organization_branch_menu_foundation.md`
 - `02_ai_agent_execution_plan.md`
+- `04_expo_mobile_execution_plan.md`
 
 ## Working Artifacts
 

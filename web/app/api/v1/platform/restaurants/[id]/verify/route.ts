@@ -44,7 +44,9 @@ export async function PATCH(
       const approval = await approveOrganizationLifecycle(
         orgLink.organization_id,
         admin.id,
-        validated.notes ?? null
+        {
+          notes: validated.notes ?? null,
+        }
       );
 
       if (!approval.success) {

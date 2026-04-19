@@ -2,6 +2,11 @@
   "eyebrow": "Founder Control",
   "subtitle": "Run the organization from the top: read the whole business first, then drop into a branch only when local action is needed.",
   "singleBranch": "1 accessible branch",
+  "allBranches": "{count} accessible branches",
+  "branchScope": {
+    "label": "Active branch tools",
+    "hint": "Branch-specific tools will open for the selected branch while organization-wide pages stay at company scope."
+  },
   "nav": {
     "overview": "Overview",
     "restaurants": "Restaurants",
@@ -133,5 +138,249 @@
     "homepageTitle": "Homepage and brand",
     "homepageDescription": "Control the public-facing story and branch presentation from a founder-owned surface.",
     "openHomepage": "Open homepage tools"
+  },
+  "branchDetail": {
+    "backToRestaurants": "Back to restaurants",
+    "tabs": {
+      "overview": "Overview",
+      "finance": "Finance",
+      "team": "Team",
+      "setup": "Setup"
+    },
+    "actions": {
+      "publicSite": "Public site",
+      "openBranchManage": "Open branch manage"
+    },
+    "status": {
+      "ready": "Ready",
+      "setupNeeded": "Setup needed",
+      "closed": "Closed",
+      "open": "Open"
+    },
+    "common": {
+      "notSet": "Not set"
+    },
+    "stats": {
+      "todayRevenue": "Today revenue",
+      "orderCount": "{count, plural, =0 {0 orders} one {# order} other {# orders}}",
+      "openOrders": "Open orders",
+      "openOrdersCount": "{count, plural, =0 {0 open orders} one {# open order} other {# open orders}}",
+      "inKitchen": "in kitchen",
+      "monthSpending": "Expenses this month",
+      "monthSpendingHint": "Purchase orders and expense records",
+      "monthClose": "{month} close"
+    },
+    "info": {
+      "tableLabel": "Branch info",
+      "tableValue": "Value",
+      "name": "Name",
+      "code": "Code",
+      "address": "Address",
+      "contact": "Contact",
+      "workingHours": "Working hours",
+      "workingHoursValue": "{approved} approved · {pending} pending",
+      "bestSeller": "Best seller",
+      "bestSellerValue": "{item} · {quantity} sold",
+      "noSalesYet": "No branch sales yet"
+    },
+    "snapshot": {
+      "tableLabel": "Month snapshot",
+      "tableValue": "Value",
+      "period": "Period",
+      "status": "Status",
+      "revenue": "Revenue",
+      "grossProfit": "Gross profit",
+      "openOrders": "Open orders",
+      "monthSpending": "Expenses this month"
+    },
+    "charts": {
+      "revenueTitle": "Revenue last 14 days",
+      "revenueSubtitle": "Completed orders for this branch",
+      "revenueEmpty": "No completed orders in the last 14 days",
+      "hoursTitle": "Working hours this month",
+      "hoursSubtitle": "Approved and pending attendance by employee",
+      "hoursEmpty": "No attendance hours recorded this month",
+      "approved": "Approved",
+      "pending": "Pending"
+    },
+    "bestSellers": {
+      "title": "Best sellers last 30 days",
+      "subtitle": "Most sold items for this branch only",
+      "itemMeta": "{quantity} sold · {revenue}",
+      "empty": "No completed sales yet for this branch."
+    },
+    "hoursSnapshot": {
+      "title": "Hours snapshot",
+      "subtitle": "Where to review working hours for this branch",
+      "approvedHours": "Approved hours",
+      "pendingReview": "Pending review",
+      "reviewLabel": "How to review",
+      "reviewBody": "Open the team tab to see each employee’s weekly plan, month plan, approved hours, pending hours, and salary estimate for this branch.",
+      "openTeam": "Open team hours"
+    },
+    "finance": {
+      "title": "Branch finance",
+      "description": "Read the monthly report here, then open the branch finance workspace if you need the branch view in a separate tab.",
+      "openBranchFinance": "Open branch finance",
+      "badges": {
+        "income": "Income detail",
+        "spending": "Spending detail",
+        "manage": "Can manage expenses",
+        "readOnly": "Read-only",
+        "export": "Can export"
+      },
+      "snapshot": {
+        "revenue": "Revenue",
+        "costs": "Total costs",
+        "grossProfit": "Gross profit",
+        "approvedLabor": "Approved labor"
+      }
+    },
+    "team": {
+      "employeeCount": "{count, plural, =0 {0 employees} one {# employee} other {# employees}}",
+      "addEmployee": "Add employee",
+      "inviteTitle": "Invite new employee",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "Nguyen Van A",
+      "email": "Email",
+      "emailPlaceholder": "staff@example.com",
+      "role": "Role",
+      "sendInvitation": "Send invitation",
+      "cancel": "Cancel",
+      "inviteHelp": "The employee will receive an email to set their password and access the branch.",
+      "emptyTitle": "No employees yet",
+      "emptyDescription": "Add your first team member above.",
+      "rosterTitle": "Roster overview",
+      "rosterDescription": "Founders can review schedules, approved hours, and salary estimates without leaving control."
+    },
+    "setup": {
+      "readyBanner": "Saving this setup will mark the branch ready for operations.",
+      "edit": "Edit",
+      "basicInfo": "Basic information",
+      "basicInfoHint": "Keep the branch identity and contact details up to date for owner-controlled setup.",
+      "branchName": "Branch name",
+      "branchNamePlaceholder": "e.g. Pho Saigon Shinjuku",
+      "domain": "Domain (read-only)",
+      "phone": "Phone",
+      "phonePlaceholder": "+81-3-0000-0000",
+      "email": "Email",
+      "emailPlaceholder": "branch@example.com",
+      "address": "Address",
+      "addressPlaceholder": "Tokyo, Shinjuku-ku...",
+      "regional": "Regional",
+      "regionalHint": "These defaults shape local finance, language, and reporting for this branch.",
+      "timezone": "Timezone",
+      "currency": "Currency",
+      "taxRate": "Tax rate (%)",
+      "defaultLanguage": "Default language",
+      "openingHours": "Opening hours",
+      "openingHoursHint": "Keep the public hours and branch defaults accurate without leaving owner control.",
+      "roleRates": "Employee working rates",
+      "roleRatesHint": "Set branch pay rates here so payroll estimates stay out of the daily team workspace.",
+      "day": "Day",
+      "hours": "Hours",
+      "closed": "Closed",
+      "role": "Role",
+      "hourlyRate": "Hourly rate",
+      "rateNotSet": "Not set",
+      "saveBasicInfo": "Save basic info",
+      "saveRegional": "Save regional settings",
+      "saveOpeningHours": "Save opening hours",
+      "saveRates": "Save rates",
+      "saveSettings": "Save settings",
+      "saveAndMarkReady": "Save and mark ready"
+    },
+    "options": {
+      "timezones": {
+        "asiaTokyo": "Asia/Tokyo (JST)",
+        "asiaHoChiMinh": "Asia/Ho_Chi_Minh (ICT)",
+        "asiaSingapore": "Asia/Singapore (SGT)",
+        "utc": "UTC"
+      },
+      "currencies": {
+        "jpy": "JPY — Japanese Yen",
+        "vnd": "VND — Vietnamese Dong",
+        "usd": "USD — US Dollar",
+        "sgd": "SGD — Singapore Dollar"
+      },
+      "languages": {
+        "ja": "Japanese (日本語)",
+        "en": "English",
+        "vi": "Vietnamese (Tiếng Việt)"
+      },
+      "roles": {
+        "manager": "Manager",
+        "chef": "Chef",
+        "server": "Server",
+        "cashier": "Cashier"
+      }
+    },
+    "teamPanel": {
+      "weekdays": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "roles": {
+        "manager": "Manager",
+        "chef": "Chef",
+        "server": "Server",
+        "cashier": "Cashier"
+      },
+      "cards": {
+        "thisMonth": "This month",
+        "staffOnBranch": "{count, plural, =0 {0 staff on this branch} one {# staff on this branch} other {# staff on this branch}}",
+        "approvedHours": "Approved hours",
+        "pendingHours": "{hours} still waiting for approval",
+        "payrollEstimate": "Payroll estimate",
+        "needRoleRates": "Need role rates",
+        "payrollHint": "Based on approved attendance only",
+        "needsAttention": "Needs attention",
+        "missingRates": "Missing rates for {roles}",
+        "allRatesReady": "All active roles have pay rates set"
+      },
+      "rates": {
+        "title": "Role hourly rates",
+        "description": "Set one rate per staff level so payroll can estimate month-end salary automatically.",
+        "appliesHint": "Applies to approved hours for this role",
+        "footerHint": "Hours come from approved attendance summaries, not planned shifts.",
+        "save": "Save rates"
+      },
+      "schedule": {
+        "title": "Schedules and salary view",
+        "description": "Weekly roster, approved hours, and payroll estimate in one view.",
+        "staffCount": "{count, plural, =0 {0 staff} one {# staff} other {# staff}}",
+        "empty": "No staff added to this branch yet.",
+        "attendanceIssue": "Attendance issue",
+        "waitingCount": "{count, plural, one {# waiting} other {# waiting}}",
+        "weeklyPlan": "Weekly plan",
+        "approved": "Approved",
+        "salary": "Salary",
+        "setRate": "Set rate",
+        "weeklySchedule": "Weekly schedule",
+        "noWeeklyTemplate": "No weekly shift template yet.",
+        "monthPlan": "Month plan",
+        "pendingReview": "Pending review",
+        "payrollStatus": "Payroll status",
+        "ready": "Ready",
+        "needsRate": "Needs rate"
+      },
+      "toasts": {
+        "invalidRate": "Enter a valid hourly rate for {role}",
+        "saveRatesSuccess": "Hourly rates updated",
+        "saveRatesError": "Failed to save hourly rates"
+      }
+    },
+    "toasts": {
+      "saveSetupSuccess": "Branch settings saved",
+      "saveSetupError": "Failed to save settings",
+      "employeeNameEmailRequired": "Name and email are required",
+      "employeeInviteSuccess": "Invitation sent",
+      "employeeInviteError": "Failed to add employee"
+    }
   }
 }

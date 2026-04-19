@@ -49,9 +49,9 @@ export function ItemDetailModal({
   item,
   locale,
   brandColor,
-  companyName,
-  branchName,
-  logoUrl,
+  companyName: _companyName,
+  branchName: _branchName,
+  logoUrl: _logoUrl,
   onAddToCart,
   canAddItems = true,
   initialQuantity = 1,
@@ -238,13 +238,10 @@ export function ItemDetailModal({
               mass: 0.9,
             }}
             className="fixed bottom-0 left-0 right-0 z-[9999] flex flex-col bg-white dark:bg-slate-900 rounded-t-[16px] focus:outline-none sm:left-1/2 sm:max-w-lg sm:w-full sm:-translate-x-1/2 sm:bottom-5 sm:rounded-2xl overflow-hidden"
-            style={{ maxHeight: "92dvh" }}
+            style={{ minHeight: "67dvh", maxHeight: "92dvh" }}
           >
             {/* ── Image ── */}
-            <div
-              className="relative w-full flex-shrink-0"
-              style={{ height: 310 }}
-            >
+            <div className="relative w-full flex-shrink-0 h-[220px] sm:h-[300px]">
               {displayItem.image_url ? (
                 <Image
                   src={displayItem.image_url}
@@ -259,9 +256,6 @@ export function ItemDetailModal({
                   <span className="text-8xl opacity-40">🍽️</span>
                 </div>
               )}
-              {/* Bottom fade-into-sheet */}
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-slate-900 to-transparent" />
-
               {/* Rating pill */}
               {displayItem.averageRating && displayItem.averageRating > 0 && (
                 <div className="absolute top-3 left-3 flex items-center gap-1 bg-black/65 text-white px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
@@ -285,41 +279,16 @@ export function ItemDetailModal({
               {/* Close button */}
               <button
                 onClick={onClose}
-                className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/45 flex items-center justify-center text-white hover:bg-black/65 transition-colors"
+                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/45 flex items-center justify-center text-white hover:bg-black/65 transition-colors"
                 aria-label={tCommon("close_modal")}
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* ── Scrollable body ── */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
-              <div className="px-5 pt-1 pb-3 space-y-5">
-                {companyName ? (
-                  <div className="flex items-center gap-3 rounded-2xl bg-slate-100/90 p-3 dark:bg-slate-800/90">
-                    {logoUrl ? (
-                      <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-white/60">
-                        <Image
-                          src={logoUrl}
-                          alt={companyName}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : null}
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                        {companyName}
-                      </p>
-                      {branchName && branchName !== companyName ? (
-                        <p className="truncate text-xs text-slate-500 dark:text-slate-300">
-                          {branchName}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : null}
-
+              <div className="px-5 pt-3 pb-4 space-y-5">
                 {/* Name + base price */}
                 <div className="flex items-start justify-between gap-3">
                   <h1
@@ -338,14 +307,14 @@ export function ItemDetailModal({
 
                 {/* Description */}
                 {itemDescription.trim() && (
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed -mt-1">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed -mt-2">
                     {isDescLong && !descExpanded
                       ? `${itemDescription.slice(0, DESC_LIMIT).trimEnd()}…`
                       : itemDescription}
                     {isDescLong && (
                       <button
                         onClick={() => setDescExpanded((p) => !p)}
-                        className="ml-1.5 text-xs font-semibold underline-offset-2 hover:underline transition-colors"
+                        className="ml-1.5 text-xs font-medium underline-offset-2 hover:underline transition-colors"
                         style={{ color: brandColor }}
                       >
                         {descExpanded ? t("show_less") : t("show_more")}
@@ -356,11 +325,11 @@ export function ItemDetailModal({
 
                 {/* ── Size selector ── */}
                 {availableSizes.length > 0 && (
-                  <div className="space-y-2.5">
-                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                       {t("choose_size")}
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {availableSizes
                         .sort((a, b) => a.position - b.position)
                         .map((size) => {
@@ -378,19 +347,18 @@ export function ItemDetailModal({
                               key={size.id}
                               onClick={() => selectSize(size)}
                               aria-pressed={active}
-                              className="flex-1 min-w-0 py-2.5 px-3 rounded-xl border-2 transition-all text-center"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-medium transition-all"
                               style={{
-                                borderColor: active ? brandColor : undefined,
-                                backgroundColor: active
-                                  ? brandColor
-                                  : undefined,
-                                color: active ? "white" : undefined,
+                                borderColor: active ? brandColor : "#e2e8f0",
+                                backgroundColor: active ? `${brandColor}15` : "transparent",
+                                color: active ? brandColor : "#64748b",
                               }}
                             >
-                              <span className="block text-sm font-semibold leading-tight">
-                                {sizeName}
-                              </span>
-                              <span className="block text-xs opacity-75 mt-0.5">
+                              {sizeName}
+                              <span
+                                className="opacity-70"
+                                style={{ color: active ? brandColor : "#94a3b8" }}
+                              >
                                 ¥{size.price}
                               </span>
                             </button>
@@ -402,11 +370,11 @@ export function ItemDetailModal({
 
                 {/* ── Topping selector ── */}
                 {availableToppings.length > 0 && (
-                  <div className="space-y-2.5">
-                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                       {t("add_toppings")}
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       {availableToppings
                         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
                         .map((topping) => {
@@ -426,36 +394,31 @@ export function ItemDetailModal({
                               key={topping.id}
                               onClick={() => toggleTopping(topping)}
                               aria-pressed={active}
-                              className="flex items-center gap-2.5 h-12 px-3 rounded-xl border-2 text-left transition-all"
+                              className="flex items-center gap-2 h-10 px-3 rounded-lg border text-left transition-all"
                               style={{
-                                borderColor: active ? brandColor : undefined,
-                                backgroundColor: active
-                                  ? `${brandColor}12`
-                                  : undefined,
+                                borderColor: active ? brandColor : "#e2e8f0",
+                                backgroundColor: active ? `${brandColor}12` : "transparent",
                               }}
                             >
-                              {/* Checkbox indicator */}
                               <span
-                                className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
+                                className="w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all"
                                 style={{
-                                  borderColor: active ? brandColor : undefined,
-                                  backgroundColor: active
-                                    ? brandColor
-                                    : undefined,
+                                  borderColor: active ? brandColor : "#cbd5e1",
+                                  backgroundColor: active ? brandColor : "transparent",
                                 }}
                               >
                                 {active && (
                                   <Check
-                                    className="h-2.5 w-2.5 text-white"
-                                    strokeWidth={3}
+                                    className="h-2 w-2 text-white"
+                                    strokeWidth={3.5}
                                   />
                                 )}
                               </span>
-                              <span className="flex-1 min-w-0">
-                                <span className="block text-xs font-medium text-slate-800 dark:text-slate-200 truncate leading-tight">
+                              <span className="flex-1 min-w-0 flex items-baseline justify-between gap-1">
+                                <span className="text-xs text-slate-700 dark:text-slate-200 truncate">
                                   {name}
                                 </span>
-                                <span className="block text-[10px] text-slate-400 mt-0.5">
+                                <span className="text-[10px] text-slate-400 flex-shrink-0">
                                   +¥{topping.price}
                                 </span>
                               </span>
@@ -466,32 +429,22 @@ export function ItemDetailModal({
                   </div>
                 )}
 
-                {/* ── Notes (hidden when restaurant disables it) ── */}
+                {/* ── Special Request ── */}
                 {showOrderNotes && (
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                       {t("special_instructions")}
                     </p>
                     <Textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder={t("special_instructions_placeholder")}
-                      className="min-h-[72px] resize-none rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus-visible:ring-1"
-                      style={
-                        {
-                          fontSize: "16px",
-                          "--tw-ring-color": brandColor,
-                        } as React.CSSProperties
-                      }
+                      className="min-h-[60px] resize-none rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus-visible:ring-1 placeholder:text-slate-400"
+                      style={{ "--tw-ring-color": brandColor } as React.CSSProperties}
                       maxLength={200}
                     />
-                    <p className="text-[11px] text-slate-400 text-right">
-                      {notes.length}/200
-                    </p>
                   </div>
                 )}
-
-                <div className="h-0.5" />
               </div>
             </div>
 

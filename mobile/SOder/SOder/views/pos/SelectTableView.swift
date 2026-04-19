@@ -11,18 +11,8 @@ extension TableStatus {
         return self == .available
     }
 
-    // Convert the string color from the canonical model to a SwiftUI.Color
     var swiftUIColor: Color {
-        switch self.color {
-        case "green": return .appSuccess
-        case "orange": return .appWarning
-        case "purple": return .purple
-        case "gray": return .appTextSecondary
-        case "red": return .appError
-        case "blue": return .appPrimary
-        case "teal": return .teal
-        default: return .appAccent
-        }
+        return statusColor
     }
 }
 
@@ -56,6 +46,9 @@ struct SelectTableView: View {
     private var columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     #endif
 
+    private func operationalStatus(for table: Table) -> TableOperationalStatus {
+        orderManager.operationalStatus(for: table)
+    }
 
     var body: some View {
         NavigationStack {
@@ -113,8 +106,8 @@ struct SelectTableView: View {
 
     @ViewBuilder
     private func tableCell(for table: Table) -> some View { // table is now Models.Table
-        // let status = TableStatus(rawValue: table.status) // No longer needed, table.status is TableStatus enum
-        let status = table.status // Directly use the enum from the model
+        let status = operationalStatus(for: table)
+        let isSelectable = status == .available || status == .occupied || status == .serving
 
         VStack(alignment: .center, spacing: 8) {
             Text(table.name)
@@ -125,12 +118,12 @@ struct SelectTableView: View {
                 .minimumScaleFactor(0.8)
 
             HStack {
-                Image(systemName: status.isSelectableForNewOrder ? "checkmark.circle.fill" : "info.circle.fill")
-                    .foregroundColor(status.swiftUIColor)
+                Image(systemName: status == .available ? "checkmark.circle.fill" : "info.circle.fill")
+                    .foregroundColor(status.statusColor)
                 Text(status.displayName)
                     .font(.bodyMedium)
                     .fontWeight(.medium)
-                    .foregroundColor(status.swiftUIColor)
+                    .foregroundColor(status.statusColor)
             }
 
             Text("Capacity: \(table.capacity)")
@@ -145,13 +138,13 @@ struct SelectTableView: View {
         .shadow(color: .black.opacity(0.1), radius: 3, x: 1, y: 2)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(status.swiftUIColor.opacity(0.7), lineWidth: status.isSelectableForNewOrder ? 2 : 0.5)
+                .stroke(status.statusColor.opacity(0.7), lineWidth: status == .available ? 2 : 0.5)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(table.name), Status: \(status.displayName), Capacity: \(table.capacity)")
-        .accessibilityHint(status.isSelectableForNewOrder ? "Tap to start a new order for this table." : status == .occupied ? "Tap to add items to the existing order for this table." : "This table is currently \(status.displayName).")
+        .accessibilityHint(status == .available ? "Tap to start a new order for this table." : (status == .occupied || status == .serving) ? "Tap to add items to the existing order for this table." : "This table is currently \(status.displayName).")
         .onTapGesture {
-            if status.isSelectableForNewOrder {
+            if status == .available {
                 print("Selected available table: \(table.name)")
                 // Create a new draft order session locally (not in database yet)
                 let localOrderId = UUID().uuidString
@@ -160,7 +153,7 @@ struct SelectTableView: View {
                 }
                 newOrderId = localOrderId
                 selectedTable = table
-            } else if status == .occupied {
+            } else if status == .occupied || status == .serving {
                 print("Selected occupied table: \(table.name)")
                 // Find the active order for this table and allow adding items
                 Task {
@@ -174,8 +167,8 @@ struct SelectTableView: View {
                 // For reserved tables or other statuses, no action
             }
         }
-        .disabled(!status.isSelectableForNewOrder && status != .occupied) // Allow interaction with available and occupied tables
-        .opacity((status.isSelectableForNewOrder || status == .occupied) ? 1.0 : 0.7) // Dim only reserved/unavailable tables
+        .disabled(!isSelectable)
+        .opacity(isSelectable ? 1.0 : 0.7)
     }
 
     @MainActor
