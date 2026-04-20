@@ -6,6 +6,9 @@ import {
   ThemeProviderLanding,
   LandingPageHeader,
   HeroSection,
+  FeaturesSection,
+  PricingSection,
+  FooterSection,
 } from "@/components/home";
 import { getSubdomainFromHost } from "@/lib/utils";
 import { NewHomePage } from "@/components/features/customer/homepage";
@@ -47,6 +50,9 @@ export default async function Page({ params }: PageProps) {
       >
         <LandingPageHeader locale={locale} />
         <HeroSection />
+        <FeaturesSection />
+        <PricingSection />
+        <FooterSection />
       </div>
     </ThemeProviderLanding>
   );
