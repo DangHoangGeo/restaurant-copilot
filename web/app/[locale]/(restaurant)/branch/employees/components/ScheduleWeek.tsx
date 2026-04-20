@@ -242,11 +242,23 @@ export default function ScheduleWeek() {
           {errorEmployees && <Alert variant="destructive" className="mt-2"><AlertTriangle className="h-4 w-4"/><AlertDescription>{errorEmployees}</AlertDescription></Alert>}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setCurrentMonday(addDays(currentMonday, -7))} disabled={isSaving || isLoadingSchedules}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentMonday(addDays(currentMonday, -7))}
+            disabled={isSaving || isLoadingSchedules}
+            aria-label={t('prevWeekBtn')}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium text-center min-w-[200px]">{weekRangeStr}</span>
-          <Button variant="outline" size="icon" onClick={() => setCurrentMonday(addDays(currentMonday, 7))} disabled={isSaving || isLoadingSchedules}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentMonday(addDays(currentMonday, 7))}
+            disabled={isSaving || isLoadingSchedules}
+            aria-label={t('nextWeekBtn')}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
