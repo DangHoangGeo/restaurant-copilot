@@ -1,42 +1,64 @@
 "use client";
-import React from 'react';
-import { useTranslations } from 'next-intl';
-import { Menu as MenuIcon, QrCode, CalendarDays, BarChart2, Users, Phone } from 'lucide-react';
-import { Card } from './Card';
-import { Icon } from './Icon';
+import React from "react";
+import { useTranslations } from "next-intl";
+import {
+  Menu as MenuIcon,
+  QrCode,
+  CalendarDays,
+  BarChart2,
+  Users,
+  Phone,
+} from "lucide-react";
+
+const FEATURES = [
+  { icon: MenuIcon,      key: "menu_management",     accent: "#36B080" },
+  { icon: QrCode,        key: "qr_ordering",          accent: "#AB6E3C" },
+  { icon: CalendarDays,  key: "booking_preordering",  accent: "#36B080" },
+  { icon: BarChart2,     key: "smart_analytics",      accent: "#AB6E3C" },
+  { icon: Users,         key: "staff_management",     accent: "#36B080" },
+  { icon: Phone,         key: "mobile_first",         accent: "#AB6E3C" },
+];
 
 export const FeaturesSection = () => {
-  const t = useTranslations('landing');
-  const features = [
-    { icon: MenuIcon, title: "features.menu_management.title", description: "features.menu_management.description", benefit: "features.menu_management.benefit" },
-    { icon: QrCode, title: "features.qr_ordering.title", description: "features.qr_ordering.description", benefit: "features.qr_ordering.benefit" },
-    { icon: CalendarDays, title: "features.booking_preordering.title", description: "features.booking_preordering.description", benefit: "features.booking_preordering.benefit" },
-    { icon: BarChart2, title: "features.smart_analytics.title", description: "features.smart_analytics.description", benefit: "features.smart_analytics.benefit" },
-    { icon: Users, title: "features.staff_management.title", description: "features.staff_management.description", benefit: "features.staff_management.benefit" },
-    { icon: Phone, title: "features.mobile_first.title", description: "features.mobile_first.description", benefit: "features.mobile_first.benefit" },
-  ];
-  
+  const t = useTranslations("landing");
+
   return (
-    <section className="py-16 sm:py-20 lg:py-28">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">
-            {t('features.title')}
+    <section className="py-20 px-5" style={{ background: "linear-gradient(160deg, #F5EAD8 0%, #FAF3EA 100%)" }}>
+      <div className="max-w-5xl mx-auto">
+        {/* Section header */}
+        <div className="text-center mb-14">
+          <h2
+            className="text-3xl sm:text-4xl font-medium tracking-tight text-[#2E2117]"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+          >
+            {t("features.title")}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            {t('features.subtitle')}
+          <p className="mt-4 text-base text-[#8B6E5A] max-w-xl mx-auto leading-relaxed">
+            {t("features.subtitle")}
           </p>
         </div>
-        <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map(feature => (
-            <Card key={t(feature.title)} className="hover:shadow-xl transition-shadow duration-300">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-[--brand-color-landing]/10 mb-6">
-                <Icon name={feature.icon} size={28} className="text-[--brand-color-landing]" />
+
+        {/* Feature grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {FEATURES.map(({ icon: Icon, key, accent }) => (
+            <div
+              key={key}
+              className="rounded-2xl p-6 border border-[#AB6E3C]/10 bg-[#FEFAF6]"
+              style={{ boxShadow: "0 2px 12px rgba(171,110,60,0.06)" }}
+            >
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                style={{ background: `${accent}14` }}
+              >
+                <Icon size={20} style={{ color: accent }} />
               </div>
-              <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{t(feature.title)}</h3>
-              <p className="mt-2 text-slate-600 dark:text-slate-300">{t(feature.description)}</p>
-              <p className="mt-3 text-sm font-medium text-[--brand-color-landing]">{t(feature.benefit)}</p>
-            </Card>
+              <h3 className="text-base font-semibold text-[#2E2117] mb-1.5">
+                {t(`features.${key}.title`)}
+              </h3>
+              <p className="text-sm text-[#8B6E5A] leading-relaxed">
+                {t(`features.${key}.description`)}
+              </p>
+            </div>
           ))}
         </div>
       </div>

@@ -1,258 +1,187 @@
 "use client";
-import React, { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { motion } from 'framer-motion';
-import { Check, Star, ArrowRight, Zap, Users, TrendingUp, Shield } from 'lucide-react';
-import { Button } from './Button';
-import { Card } from './Card';
-import { PRICING_PLANS, PRICING_CONFIG } from '@/config/pricing';
+import React, { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { Check } from "lucide-react";
+import { PRICING_PLANS, PRICING_CONFIG } from "@/config/pricing";
 
-interface PricingSectionProps {
-  className?: string;
-}
+export const PricingSection = () => {
+  const t = useTranslations("landing");
+  const locale = useLocale();
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
 
-export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }) => {
-  const t = useTranslations('landing');
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: PRICING_CONFIG.currency,
       minimumFractionDigits: 0,
     }).format(price);
-  };
-
-  const getFeatureIcon = (featureKey: string) => {
-    const iconMap: Record<string, React.ReactNode> = {
-      basic_order_management: <Users className="w-4 h-4" />,
-      ai_analytics_basic: <TrendingUp className="w-4 h-4" />,
-      basic_customer_support: <Shield className="w-4 h-4" />,
-      advanced_order_management: <Users className="w-4 h-4" />,
-      enhanced_ai_analytics: <TrendingUp className="w-4 h-4" />,
-      priority_customer_support: <Shield className="w-4 h-4" />,
-      external_platform_integrations: <Zap className="w-4 h-4" />,
-      full_feature_access: <Star className="w-4 h-4" />,
-      comprehensive_ai_optimization: <TrendingUp className="w-4 h-4" />,
-      dedicated_ai_support: <Shield className="w-4 h-4" />,
-      multi_location_management: <Users className="w-4 h-4" />
-    };
-    return iconMap[featureKey] || <Check className="w-4 h-4" />;
-  };
 
   const handlePlanSelection = (planId: string) => {
-    // Store selected plan in localStorage for signup flow
-    localStorage.setItem('selectedPlan', planId);
-    localStorage.setItem('selectedBillingCycle', billingCycle);
-    
-    // Navigate to signup with plan parameter
-    window.location.href = `/signup?plan=${planId}&billing=${billingCycle}`;
+    localStorage.setItem("selectedPlan", planId);
+    localStorage.setItem("selectedBillingCycle", billingCycle);
+    window.location.href = `/${locale}/signup?plan=${planId}&billing=${billingCycle}`;
   };
 
   return (
-    <section className={`py-16 sm:py-20 lg:py-28 bg-slate-50 dark:bg-slate-800/50 ${className}`}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <motion.h2 
-            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+    <section className="py-20 px-5" style={{ background: "linear-gradient(160deg, #EFE0CA 0%, #F5EAD8 100%)" }}>
+      <div className="max-w-5xl mx-auto">
+        {/* Section header */}
+        <div className="text-center mb-12">
+          <h2
+            className="text-3xl sm:text-4xl font-medium tracking-tight text-[#2E2117]"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
           >
-            {t('pricing.title')}
-          </motion.h2>
-          <motion.p 
-            className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            viewport={{ once: true }}
-          >
-            {t('pricing.subtitle')}
-          </motion.p>
+            {t("pricing.title")}
+          </h2>
+          <p className="mt-4 text-base text-[#8B6E5A] max-w-xl mx-auto leading-relaxed">
+            {t("pricing.subtitle")}
+          </p>
 
-          {/* Billing Toggle */}
-          <motion.div 
-            className="inline-flex bg-white dark:bg-slate-700 rounded-full p-1 shadow-sm border border-slate-200 dark:border-slate-600"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
+          {/* Billing toggle */}
+          <div
+            className="inline-flex mt-8 rounded-full p-1"
+            style={{ background: "rgba(171,110,60,0.08)", border: "1px solid rgba(171,110,60,0.15)" }}
           >
             <button
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-6 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
-                billingCycle === 'monthly'
-                  ? 'bg-cyan-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-              }`}
+              onClick={() => setBillingCycle("monthly")}
+              className="px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200"
+              style={
+                billingCycle === "monthly"
+                  ? { background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)", color: "#fff", boxShadow: "0 2px 8px rgba(171,110,60,0.28)" }
+                  : { color: "#8B6E5A" }
+              }
             >
-              {t('pricing.billing.monthly')}
+              {t("pricing.billing.monthly")}
             </button>
             <button
-              onClick={() => setBillingCycle('yearly')}
-              className={`px-6 py-2 text-sm font-medium rounded-full transition-all duration-200 relative ${
-                billingCycle === 'yearly'
-                  ? 'bg-cyan-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-              }`}
+              onClick={() => setBillingCycle("yearly")}
+              className="relative px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200"
+              style={
+                billingCycle === "yearly"
+                  ? { background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)", color: "#fff", boxShadow: "0 2px 8px rgba(171,110,60,0.28)" }
+                  : { color: "#8B6E5A" }
+              }
             >
-              {t('pricing.billing.yearly')}
-              <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {t('pricing.billing.save_20')}
-              </span>
+              {t("pricing.billing.yearly")}
+              {billingCycle !== "yearly" && (
+                <span
+                  className="absolute -top-2 -right-2 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                  style={{ background: "#36B080" }}
+                >
+                  {t("pricing.billing.save_20")}
+                </span>
+              )}
             </button>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {PRICING_PLANS.map((plan, index) => {
-            const price = billingCycle === 'yearly' ? plan.price.yearly : plan.price.monthly;
-            const monthlyPrice = billingCycle === 'yearly' ? plan.price.yearly / 12 : plan.price.monthly;
+        {/* Plan cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {PRICING_PLANS.map((plan) => {
+            const monthlyEquiv =
+              billingCycle === "yearly" ? plan.price.yearly / 12 : plan.price.monthly;
+            const annualTotal = plan.price.yearly;
 
             return (
-              <motion.div
+              <div
                 key={plan.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className={`relative ${plan.highlighted ? 'lg:scale-105' : ''}`}
+                className="relative rounded-2xl p-6 flex flex-col"
+                style={
+                  plan.highlighted
+                    ? {
+                        background: "#FEFAF6",
+                        border: "2px solid rgba(171,110,60,0.35)",
+                        boxShadow: "0 4px 24px rgba(171,110,60,0.14)",
+                      }
+                    : {
+                        background: "#FEFAF6",
+                        border: "1px solid rgba(171,110,60,0.10)",
+                        boxShadow: "0 2px 12px rgba(171,110,60,0.06)",
+                      }
+                }
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <span className="bg-[--brand-color-landing] text-gray-900 dark:text-gray-100 px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-current" />
-                      {t('pricing.popular')}
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span
+                      className="text-white text-[11px] font-semibold tracking-widest uppercase px-3 py-1 rounded-full"
+                      style={{ background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)" }}
+                    >
+                      {t("pricing.popular")}
                     </span>
                   </div>
                 )}
 
-                <Card 
-                  className={`h-full p-8 relative overflow-hidden ${
-                    plan.highlighted 
-                      ? 'border-2 border-[--brand-color-landing] shadow-2xl' 
-                      : 'border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl'
-                  } transition-all duration-300`}
-                >
-                  {/* Background Pattern */}
-                  <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
-                    <div className="w-full h-full bg-[--brand-color-landing] rounded-full transform translate-x-16 -translate-y-16"></div>
-                  </div>
+                <div className="mb-5">
+                  <h3
+                    className="text-lg font-semibold text-[#2E2117] mb-1"
+                    style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+                  >
+                    {t(`pricing.plans.${plan.id}.title`)}
+                  </h3>
+                  <p className="text-sm text-[#8B6E5A] leading-relaxed">
+                    {t(`pricing.plans.${plan.id}.description`)}
+                  </p>
+                </div>
 
-                  <div className="relative z-10">
-                    {/* Plan Header */}
-                    <div className="text-center mb-8">
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                        {t(`pricing.plans.${plan.id}.title`)}
-                      </h3>
-                      <p className="text-slate-600 dark:text-slate-300 text-sm mb-6">
-                        {t(`pricing.plans.${plan.id}.description`)}
-                      </p>
-                      
-                      {/* Pricing */}
-                      <div className="mb-6">
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className="text-4xl font-extrabold text-slate-900 dark:text-white">
-                            {formatPrice(monthlyPrice)}
-                          </span>
-                          <span className="text-slate-600 dark:text-slate-300 text-sm">
-                            /{t('pricing.billing.per_month')}
-                          </span>
-                        </div>
-                        {billingCycle === 'yearly' && (
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                            {t('pricing.billing.billed_yearly')} ({formatPrice(price)})
-                          </p>
-                        )}
-                        {plan.maxCustomersPerDay && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                            {t('pricing.up_to_customers', { count: plan.maxCustomersPerDay })}
-                          </p>
-                        )}
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-semibold text-[#2E2117]">
+                      {formatPrice(monthlyEquiv)}
+                    </span>
+                    <span className="text-sm text-[#8B6E5A]">/{t("pricing.billing.per_month")}</span>
+                  </div>
+                  {billingCycle === "yearly" && (
+                    <p className="text-xs text-[#8B6E5A] mt-1">
+                      {t("pricing.billing.billed_yearly")} ({formatPrice(annualTotal)})
+                    </p>
+                  )}
+                </div>
+
+                <ul className="space-y-3 mb-8 flex-1">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5">
+                      <div
+                        className="w-4 h-4 rounded-full flex items-center justify-center mt-0.5 shrink-0"
+                        style={{ background: "rgba(54,176,128,0.14)" }}
+                      >
+                        <Check size={10} style={{ color: "#36B080" }} strokeWidth={3} />
                       </div>
-                    </div>
+                      <span className="text-sm text-[#5A3E2B] leading-snug">
+                        {t(`pricing.features.${feature}`)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
 
-                    {/* Features */}
-                    <div className="space-y-4 mb-8">
-                      {plan.features.map((feature, featureIndex) => (
-                        <motion.div
-                          key={feature}
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: (index * 0.1) + (featureIndex * 0.05) }}
-                          viewport={{ once: true }}
-                          className="flex items-start gap-3"
-                        >
-                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5">
-                            <div className="text-green-600 dark:text-green-400">
-                              {getFeatureIcon(feature)}
-                            </div>
-                          </div>
-                          <span className="text-slate-700 dark:text-slate-300 text-sm">
-                            {t(`pricing.features.${feature}`)}
-                          </span>
-                        </motion.div>
-                      ))}
-                    </div>
+                <button
+                  onClick={() => handlePlanSelection(plan.id)}
+                  className="w-full h-11 rounded-full text-sm font-semibold tracking-widest uppercase transition-all duration-200"
+                  style={
+                    plan.highlighted
+                      ? {
+                          background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)",
+                          color: "#fff",
+                          boxShadow: "0 4px 16px rgba(171,110,60,0.28)",
+                        }
+                      : {
+                          background: "transparent",
+                          color: "#AB6E3C",
+                          border: "1.5px solid rgba(171,110,60,0.35)",
+                        }
+                  }
+                >
+                  {t(`pricing.cta.${plan.buttonText || "choose_plan"}`)}
+                </button>
 
-                    {/* CTA Button */}
-                    <Button
-                      onClick={() => handlePlanSelection(plan.id)}
-                      variant={plan.highlighted ? "primary" : "outline"}
-                      size="lg"
-                      className="w-full"
-                      iconRight={plan.id === 'enterprise' ? undefined : ArrowRight}
-                    >
-                      {t(`pricing.cta.${plan.buttonText || 'choose_plan'}`)}
-                    </Button>
-
-                    {/* Trial Info */}
-                    {plan.id !== 'enterprise' && (
-                      <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-3">
-                        {t('pricing.trial_info', { days: PRICING_CONFIG.trialDays })}
-                      </p>
-                    )}
-                  </div>
-                </Card>
-              </motion.div>
+                {plan.id !== "enterprise" && (
+                  <p className="text-center text-[11px] text-[#8B6E5A] mt-3">
+                    {t("pricing.trial_info", { days: PRICING_CONFIG.trialDays })}
+                  </p>
+                )}
+              </div>
             );
           })}
         </div>
-
-        {/* Bottom CTA */}
-        <motion.div 
-          className="text-center mt-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          viewport={{ once: true }}
-        >
-          <p className="text-slate-600 dark:text-slate-300 mb-6">
-            {t('pricing.bottom_cta.title')}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              href="/signup"
-              variant="outline"
-              iconLeft={Star}
-            >
-              {t('pricing.bottom_cta.start_free')}
-            </Button>
-            <span className="text-slate-400 dark:text-slate-500">
-              {t('pricing.bottom_cta.or')}
-            </span>
-            <Button 
-              href="/contact"
-              variant="ghost"
-            >
-              {t('pricing.bottom_cta.contact_sales')}
-            </Button>
-          </div>
-        </motion.div>
       </div>
     </section>
   );
