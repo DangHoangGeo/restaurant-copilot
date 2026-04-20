@@ -10,20 +10,16 @@
     "navigation": {
       "acceptance": "1. Chấp nhận các điều khoản",
       "description": "2. Mô tả dịch vụ",
-      "eligibility": "3. Điều kiện",
-      "account": "4. Đăng ký tài khoản",
-      "payment": "5. Điều khoản thanh toán",
-      "use": "6. Sử dụng được chấp nhận",
-      "content": "7. Nội dung và dữ liệu",
-      "intellectual_property": "8. Tài sản trí tuệ",
-      "privacy": "9. Bảo mật",
-      "termination": "10. Chấm dứt",
-      "disclaimers": "11. Tuyên bố miễn trừ trách nhiệm",
-      "limitation": "12. Giới hạn trách nhiệm",
-      "indemnification": "13. Bồi thường",
-      "governing": "14. Luật điều chỉnh",
-      "changes": "15. Thay đổi điều khoản",
-      "contact": "16. Thông tin liên hệ"
+      "registration": "3. Đăng ký tài khoản",
+      "subscriptions": "4. Đăng ký và Thanh toán",
+      "usage": "5. Sử dụng được chấp nhận",
+      "intellectual": "6. Tài sản trí tuệ",
+      "privacy": "7. Bảo mật và Dữ liệu",
+      "termination": "8. Chấm dứt",
+      "liability": "9. Tuyên bố miễn trừ trách nhiệm",
+      "governing": "10. Luật điều chỉnh",
+      "changes": "11. Thay đổi điều khoản",
+      "contact": "12. Thông tin liên hệ"
     },
     "sections": {
       "acceptance": {
@@ -85,7 +81,7 @@
       },
       "governing": {
         "title": "10. Luật điều chỉnh",
-        "content": "Các Điều khoản này sẽ được diễn giải và điều chỉnh bởi luật của [Your Jurisdiction], không phụ thuộc vào các quy định xung đột pháp luật của nó. Việc chúng tôi không thực thi bất kỳ quyền hoặc điều khoản nào của các Điều khoản này sẽ không được coi là từ bỏ các quyền đó."
+        "content": "Các Điều khoản này sẽ được diễn giải và điều chỉnh bởi luật của Nhật Bản, không phụ thuộc vào các quy định xung đột pháp luật của nó. Việc chúng tôi không thực thi bất kỳ quyền hoặc điều khoản nào của các Điều khoản này sẽ không được coi là từ bỏ các quyền đó."
       },
       "changes": {
         "title": "11. Thay đổi điều khoản",
@@ -106,10 +102,10 @@
       "description": "Tìm hiểu cách CoOrder thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn trong dịch vụ quản lý nhà hàng của chúng tôi."
     },
     "title": "Chính sách bảo mật",
-    "last_updated": "Cập nhật lần cuối ngày: {date}",
-    "print_button": "In trang này",
+    "lastUpdated": "Cập nhật lần cuối: {date}",
+    "printButton": "In trang này",
     "navigation": {
-      "overview": "1. Tổng quan về",
+      "overview": "1. Tổng quan",
       "collection": "2. Thông tin chúng tôi thu thập",
       "usage": "3. Cách chúng tôi sử dụng thông tin",
       "sharing": "4. Chia sẻ thông tin",
@@ -125,7 +121,7 @@
     "sections": {
       "overview": {
         "title": "1. Tổng quan",
-        "content": "CoOrder (\" chúng tôi\", \" của chúng tôi\", \" hoặc \" chúng ta\") cam kết bảo vệ quyền riêng tư của bạn. Chính sách Bảo mật này giải thích cách chúng tôi thu thập, sử dụng, tiết lộ và bảo vệ thông tin của bạn khi bạn sử dụng dịch vụ quản lý nhà hàng CoOrder của chúng tôi (\"Dịch vụ \")."
+        "content": "CoOrder (\"chúng tôi\") cam kết bảo vệ quyền riêng tư của bạn. Chính sách Bảo mật này giải thích cách chúng tôi thu thập, sử dụng, tiết lộ và bảo vệ thông tin của bạn khi bạn sử dụng dịch vụ quản lý nhà hàng CoOrder của chúng tôi (\"Dịch vụ\")."
       },
       "collection": {
         "title": "2. Thông tin chúng tôi thu thập",
@@ -168,17 +164,18 @@
         }
       },
       "security": {
+        "title": "5. Bảo mật Dữ liệu",
         "content": "Chúng tôi triển khai các biện pháp bảo mật phù hợp để bảo vệ thông tin cá nhân của bạn khỏi truy cập trái phép, thay đổi, tiết lộ hoặc phá hủy. Các biện pháp này bao gồm:",
         "measures": {
           "0": "Mã hóa dữ liệu khi truyền và khi lưu trữ",
           "1": "Kiểm soát truy cập thường xuyên và giám sát hệ thống",
-          "2": "Đào tạo nhân viên về các thực hành pháp bảo mật",
+          "2": "Đào tạo nhân viên về các thực hành bảo mật",
           "3": "Đánh giá bảo mật định kỳ"
         }
       },
       "retention": {
         "title": "6. Lưu trữ dữ liệu",
-        "content": "Chúng tôi chỉ lưu giữ thông tin cá nhân của bạn chỉ khi cần thiết để cung cấp Dịch vụ và tuân thủ các nghĩa vụ pháp lý. Khi thông tin không còn cần thiết, chúng tôi sẽ xóa hoặc ẩn danh nó một cách an toàn."
+        "content": "Chúng tôi chỉ lưu giữ thông tin cá nhân của bạn khi cần thiết để cung cấp Dịch vụ và tuân thủ các nghĩa vụ pháp lý. Khi thông tin không còn cần thiết, chúng tôi sẽ xóa hoặc ẩn danh nó một cách an toàn."
       },
       "rights": {
         "title": "7. Quyền của bạn",
@@ -189,31 +186,34 @@
           "2": "**Xóa**: Yêu cầu chúng tôi xóa thông tin cá nhân của bạn",
           "3": "**Hạn chế**: Yêu cầu chúng tôi hạn chế xử lý thông tin của bạn",
           "4": "**Di chuyển**: Yêu cầu chuyển dữ liệu của bạn sang một tổ chức khác",
-          "5": "**Phản đối**: Phản đối việc chúng tôi xử lý thông tin cá nhân của bạn"
+          "5": "**Phản đối**: Phản đối việc chúng tôi xử lý thông tin cá nhân của bạn",
+          "6": "**Khiếu nại**: Nộp khiếu nại lên cơ quan giám sát bảo vệ dữ liệu có thẩm quyền"
         },
-        "exercise": "Để thực hiện các quyền này, vui lòng liên hệ với chúng tôi bằng cách sử dụng thông tin liên hệ với chúng tôi được cung cấp dưới đây."
+        "exercise": "Để thực hiện các quyền này, vui lòng liên hệ với chúng tôi bằng cách sử dụng thông tin liên hệ được cung cấp dưới đây."
       },
       "cookies": {
+        "title": "8. Cookies và Công nghệ Theo dõi",
         "content": "Chúng tôi sử dụng cookies và các công nghệ theo dõi tương tự để thu thập và sử dụng thông tin cá nhân về bạn. Cookies là các tệp nhỏ được lưu trữ trên thiết bị của bạn. Bạn có thể kiểm soát cookies thông qua cài đặt trình duyệt của mình."
       },
       "international": {
-        "title": "9. Chuyển giao quốc tế",
-        "content": "Thông tin của bạn có thể được chuyển đến và duy trì trên các máy tính nằm ngoài tiểu bang, tỉnh, quốc gia hoặc khu vực pháp lý khác nơi luật bảo vệ dữ liệu có thể khác với luật tại khu vực của bạn.",
-        "children": {
-          "title": "10. Bảo mật trẻ em",
-          "content": "Dịch vụ của chúng tôi không dành cho trẻ em dưới 16. Chúng tôi không cố ý thu thập thông tin cá nhân từ trẻ em dưới 16 tuổi."
-        },
-        "changes": {
-          "title": "Chúng tôi có thể cập nhật Chính sách Bảo mật của chúng tôi theo thời gian. Chúng tôi sẽ thông báo cho bạn về bất kỳ thay đổi nào bằng cách đăng Chính sách Bảo mật mới trên trang này và cập nhật ngày \" cập nhật cuối cùng\"."
-        },
-        "contact": {
-          "title": "12. Yêu liên hệ với chúng tôi",
-          "content": "Nếu bạn có bất kỳ câu hỏi nào về Chính sách Bảo mật này, vui lòng liên hệ với chúng tôi tại:",
-          "email": "Email: privacy@coorder.com",
-          "address": "Địa chỉ: Tokyo, Nhật Bản",
-          "phone": "Số điện thoại: 080-9344-7200",
-          "dpo": "Nhân viên bảo vệ dữ liệu: dpo@coorder.com"
-        }
+        "title": "9. Chuyển giao Quốc tế",
+        "content": "Thông tin của bạn có thể được chuyển đến và xử lý ở các quốc gia khác nơi luật bảo vệ dữ liệu có thể khác với luật tại khu vực của bạn. Các lần chuyển giao này được thực hiện theo luật bảo vệ dữ liệu hiện hành và chúng tôi áp dụng các biện pháp bảo vệ phù hợp để bảo vệ thông tin của bạn."
+      },
+      "children": {
+        "title": "10. Bảo mật Trẻ em",
+        "content": "Dịch vụ của chúng tôi không dành cho trẻ em dưới 16 tuổi. Chúng tôi không cố ý thu thập thông tin cá nhân từ trẻ em dưới 16 tuổi."
+      },
+      "changes": {
+        "title": "11. Thay đổi Chính sách này",
+        "content": "Chúng tôi có thể cập nhật Chính sách Bảo mật của chúng tôi theo thời gian. Chúng tôi sẽ thông báo cho bạn về bất kỳ thay đổi nào bằng cách đăng Chính sách Bảo mật mới trên trang này và cập nhật ngày \"cập nhật cuối cùng\"."
+      },
+      "contact": {
+        "title": "12. Liên hệ với Chúng tôi",
+        "content": "Nếu bạn có bất kỳ câu hỏi nào về Chính sách Bảo mật này, vui lòng liên hệ với chúng tôi tại:",
+        "email": "Email: privacy@coorder.com",
+        "address": "Địa chỉ: Tokyo, Nhật Bản",
+        "phone": "Số điện thoại: 080-9344-7200",
+        "dpo": "Nhân viên bảo vệ dữ liệu: dpo@coorder.com"
       }
     }
   }

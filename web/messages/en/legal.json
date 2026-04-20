@@ -10,20 +10,16 @@
     "navigation": {
       "acceptance": "1. Acceptance of Terms",
       "description": "2. Description of Service",
-      "eligibility": "3. Eligibility",
-      "account": "4. Account Registration",
-      "payment": "5. Payment Terms",
-      "use": "6. Acceptable Use",
-      "content": "7. Content and Data",
-      "intellectual": "8. Intellectual Property",
-      "privacy": "9. Privacy",
-      "termination": "10. Termination",
-      "disclaimers": "11. Disclaimers",
-      "limitation": "12. Limitation of Liability",
-      "indemnification": "13. Indemnification",
-      "governing": "14. Governing Law",
-      "changes": "15. Changes to Terms",
-      "contact": "16. Contact Information"
+      "registration": "3. Account Registration",
+      "subscriptions": "4. Subscriptions and Payment",
+      "usage": "5. Acceptable Use",
+      "intellectual": "6. Intellectual Property",
+      "privacy": "7. Privacy and Data",
+      "termination": "8. Termination",
+      "liability": "9. Disclaimer of Warranties",
+      "governing": "10. Governing Law",
+      "changes": "11. Changes to Terms",
+      "contact": "12. Contact Information"
     },
     "sections": {
         "acceptance": {
@@ -85,7 +81,7 @@
         },
         "governing": {
           "title": "10. Governing Law",
-          "content": "These Terms shall be interpreted and governed by the laws of [Your Jurisdiction], without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights."
+          "content": "These Terms shall be interpreted and governed by the laws of Japan, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights."
         },
         "changes": {
           "title": "11. Changes to Terms",
@@ -190,7 +186,8 @@
           "2": "**Erasure**: Request that we delete your personal information",
           "3": "**Restriction**: Request that we restrict processing of your information",
           "4": "**Portability**: Request transfer of your data to another organization",
-          "5": "**Objection**: Object to our processing of your personal information"
+          "5": "**Objection**: Object to our processing of your personal information",
+          "6": "**Supervisory Authority**: Lodge a complaint with a data protection supervisory authority"
         },
         "exercise": "To exercise these rights, please contact us using the contact information provided below."
       },
@@ -200,11 +197,11 @@
       },
       "international": {
         "title": "9. International Transfers",
-        "content": "Your information may be transferred to and maintained on computers located outside of your state, province, country, or other governmental jurisdiction where data protection laws may differ from those in your jurisdiction."
+        "content": "Your information may be transferred to and processed in countries other than your own, where data protection laws may differ. These transfers are conducted in accordance with applicable data protection laws, and we implement appropriate safeguards to protect your information."
       },
       "children": {
         "title": "10. Children's Privacy",
-        "content": "Our Service is not intended for children under 13. We do not knowingly collect personally identifiable information from children under 13."
+        "content": "Our Service is not intended for children under 16. We do not knowingly collect personally identifiable information from children under 16."
       },
       "changes": {
         "title": "11. Changes to this Policy",
