@@ -8,6 +8,7 @@ import { handleApiError } from '@/lib/server/apiError';
 import { categoryCreateSchema } from '@/shared/schemas/owner';
 import { categoriesGetQuerySchema, createPaginationMeta } from '@/lib/utils/validation';
 import { randomUUID } from 'crypto';
+import { resolveScopedBranchRouteAccess } from '@/lib/server/organizations/branch-route';
 
 interface CategoryWithItems {
   id: string;
@@ -19,6 +20,7 @@ interface CategoryWithItems {
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const requestId = randomUUID();
   let user: AuthUser | null = null;
+  let restaurantId: string | null = null;
 
   try {
     // 1. Rate Limiting & CSRF Protection
@@ -47,7 +49,25 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
     // 4. Parse query parameters
     const url = new URL(req.url);
+    const requestedBranchId = url.searchParams.get('branchId') ?? user.restaurantId;
+    const branchAccess = requestedBranchId
+      ? await resolveScopedBranchRouteAccess(requestedBranchId)
+      : null;
+
+    if (!branchAccess) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Branch access denied',
+          requestId,
+        },
+      }, { status: 403 });
+    }
+
+    restaurantId = branchAccess.branchId;
     const queryParams = Object.fromEntries(url.searchParams);
+    delete queryParams.branchId;
 
     // Check if this is a legacy request (no query params) for backward compatibility
     const isLegacyRequest = Object.keys(queryParams).length === 0;
@@ -80,7 +100,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
 
     const { page, pageSize, include } = validatedParams;
-    const restaurantId = user.restaurantId;
     const offset = (page - 1) * pageSize;
 
     // Build select query based on include parameters
@@ -183,7 +202,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return await handleApiError(
       error,
       'categories-select',
-      user?.restaurantId || undefined,
+      restaurantId ?? user?.restaurantId ?? undefined,
       user?.userId,
       requestId
     );
@@ -194,6 +213,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const requestId = randomUUID();
   let user: AuthUser | null = null;
+  let restaurantId: string | null = null;
 
   try {
     // 1. Rate Limiting & CSRF Protection
@@ -221,6 +241,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return authError;
     }
 
+    const url = new URL(req.url);
+    const requestedBranchId = url.searchParams.get('branchId') ?? user.restaurantId;
+    const branchAccess = requestedBranchId
+      ? await resolveScopedBranchRouteAccess(requestedBranchId)
+      : null;
+
+    if (!branchAccess) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Branch access denied',
+          requestId,
+        },
+      }, { status: 403 });
+    }
+
+    restaurantId = branchAccess.branchId;
+
     // 4. Validate request data
     const requestData = await req.json();
     const validationResult = categoryCreateSchema.safeParse(requestData);
@@ -242,7 +281,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const { name_en, name_ja, name_vi, position } = validationResult.data;
 
     const categoryData: Record<string, unknown> = {
-      restaurant_id: user.restaurantId,
+      restaurant_id: restaurantId,
       name_en,
     };
 
@@ -269,7 +308,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return await handleApiError(
       error,
       'categories-insert',
-      user?.restaurantId || undefined,
+      restaurantId ?? user?.restaurantId ?? undefined,
       user?.userId,
       requestId
     );

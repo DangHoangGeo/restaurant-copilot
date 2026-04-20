@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { useRestaurantSettings } from '@/contexts/RestaurantContext';
 import { cn } from '@/lib/utils';
+import { buildBranchPath } from '@/lib/branch-paths';
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,7 @@ export function AdminBottomNav() {
   const params = useParams();
   const t = useTranslations('owner.dashboard');
   const locale = (params.locale as string) || 'en';
+  const branchId = typeof params.branchId === 'string' ? params.branchId : null;
   const { needsOnboarding } = useRestaurantSettings();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
@@ -80,7 +82,9 @@ export function AdminBottomNav() {
       >
         <ul className="flex justify-around">
           {navItems.map(({ icon: Icon, labelKey, href, exact }) => {
-            const fullHref = `/${locale}${href}`;
+            const fullHref = href.startsWith('/branch')
+              ? buildBranchPath(locale, branchId, href.replace(/^\/branch\/?/, ''))
+              : `/${locale}${href}`;
             const isActive = exact ? pathname === fullHref : pathname.startsWith(fullHref);
 
             return (
@@ -126,7 +130,11 @@ export function AdminBottomNav() {
             {moreItems.map(({ icon: Icon, labelKey, href }) => (
               <Link
                 key={href}
-                href={`/${locale}${href}`}
+                href={
+                  href.startsWith('/branch')
+                    ? buildBranchPath(locale, branchId, href.replace(/^\/branch\/?/, ''))
+                    : `/${locale}${href}`
+                }
                 onClick={() => setIsMoreOpen(false)}
                 className="flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >

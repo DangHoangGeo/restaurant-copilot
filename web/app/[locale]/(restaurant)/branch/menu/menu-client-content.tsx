@@ -1,1355 +1,1521 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle } from 'lucide-react';
-import { MenuSkeleton } from '@/components/ui/skeletons';
-import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
-import { useRestaurantSettings } from "@/contexts/RestaurantContext";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ImageOff,
+  Layers3,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Sparkles,
+  Store,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
+import { cn, formatCurrency, getLocalizedText } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MenuSkeleton } from "@/components/ui/skeletons";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { createClient } from '@/lib/supabase/client';
-import { toast } from 'sonner';
-import { getLocalizedText } from '@/lib/utils';
-import { fetchCategoriesWithIncludes, extractErrorMessage } from '@/lib/utils/api';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { ItemModal } from '@/components/features/admin/menu/ItemModal';
-import { Category } from '@/shared/types/menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ItemModal,
+  type StreamlinedMenuItemFormData,
+} from "@/components/features/admin/menu/ItemModal";
+import { MenuItemCreationWizard } from "@/components/features/admin/menu/MenuItemCreationWizard";
+import type { MenuItemCategory, MenuItem } from "@/shared/types/menu";
 
-// New mobile-friendly components
-import { MenuStatsBar } from '@/components/features/admin/menu/MenuStatsBar';
-import { MenuSearchFilter, FilterState, ViewMode } from '@/components/features/admin/menu/MenuSearchFilter';
-import { MenuItemCard } from '@/components/features/admin/menu/MenuItemCard';
+type PrimaryLanguage = "en" | "ja" | "vi";
+type SourceFilter = "all" | "organization" | "branch";
 
-// import { Switch } from "@/components/ui/switch"; // For availability toggle if preferred
-
-/*
-interface LocalizedText {
-  [key: string]: string | undefined;
-  name_en?: string;
-  name_ja?: string;
-  name_vi?: string;
-}*/
-
-// Remove props interface - component will be self-contained
-// interface MenuClientContentProps removed
-
-// Zod Schemas for validation
-const toppingSchema = z.object({
-  id: z.string().optional(),
-  name_en: z.string().min(1, "English name is required"),
-  name_ja: z.string().optional(),
-  name_vi: z.string().optional(),
-  price: z.coerce.number().min(0, "Price must be non-negative"),
-  position: z.coerce.number().int().min(0),
-});
-
-const menuItemSizeSchema = z.object({
-  id: z.string().optional(),
-  size_key: z.string().min(1, "Size key is required (e.g., S, M, L)"),
-  name_en: z.string().min(1, "English name is required"),
-  name_ja: z.string().optional(),
-  name_vi: z.string().optional(),
-  price: z.coerce.number().min(0, "Price must be non-negative"),
-  position: z.coerce.number().int().min(0),
-});
-
-const getCategorySchema = (t: ReturnType<typeof useTranslations<'AdminMenu.validation'>>) => z.object({
-  id: z.string().optional(),
-  name_en: z.string().min(1, t('name_en_required')).max(50, t('name_en_max_length', { maxLength: 50 })),
-  name_ja: z.string().max(50, t('name_ja_max_length', { maxLength: 50 })).optional().nullable(),
-  name_vi: z.string().max(50, t('name_vi_max_length', { maxLength: 50 })).optional().nullable(),
-  position: z.number({ required_error: t('position_required') }), // D&D handles this, but good for data integrity
-  menu_items: z.array(z.any()).optional(), // Not directly edited in this form
-});
-
-const getMenuItemSchema = (t: ReturnType<typeof useTranslations<'AdminMenu.validation'>>) => z.object({
-  id: z.string().optional(),
-  category_id: z.string({ required_error: t('category_id_required') }),
-  name_en: z.string().min(1, t('name_en_required')).max(100, t('name_en_max_length', { maxLength: 100 })),
-  name_ja: z.string().max(100, t('name_ja_max_length', { maxLength: 100 })).optional().nullable(),
-  name_vi: z.string().max(100, t('name_vi_max_length', { maxLength: 100 })).optional().nullable(),
-  description_en: z.string().max(500, t('description_en_max_length', { maxLength: 500 })).optional().nullable(),
-  description_ja: z.string().max(500, t('description_ja_max_length', { maxLength: 500 })).optional().nullable(),
-  description_vi: z.string().max(500, t('description_vi_max_length', { maxLength: 500 })).optional().nullable(),
-  price: z.number({ required_error: t('price_required') }).min(0, t('price_min', { min: 0 })),
-  image_url: z.string().url(t('image_url_invalid')).optional().nullable(),
-  available: z.boolean().optional(),
-  weekday_visibility: z.array(z.number()).optional().nullable(),
-  stock_level: z.number().min(0, t('stock_level_min', {min: 0})).optional().nullable(),
-  position: z.number({ required_error: t('position_required') }),
-  tags: z.array(z.string()).optional(),
-  // For image file handling, not part of DB schema directly for menu_item
-  imageFile: z.instanceof(File)
-    .refine(file => file.size <= 0.5 * 1024 * 1024, t('imageFile.maxSize', { maxSize: 0.5 }))
-    .optional().nullable(),
-  // Add toppings and sizes to the schema
-  toppings: z.array(toppingSchema).optional(),
-  sizes: z.array(menuItemSizeSchema).optional(),
-});
-
-type CategoryFormData = z.infer<ReturnType<typeof getCategorySchema>>;
-type MenuItemFormData = z.infer<ReturnType<typeof getMenuItemSchema>>;
-
-// CategoryModal component
-interface CategoryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  categoryForm: ReturnType<typeof useForm<CategoryFormData>>;
-  onSubmit: (data: CategoryFormData) => Promise<void>;
-  isLoading: boolean;
-  t: (key: string) => string;
-  onTranslate?: (text: string, field: string, context: 'item' | 'topping' | 'category') => Promise<{ en: string; ja: string; vi: string }>;
-  ownerLanguage?: 'en' | 'ja' | 'vi';
+interface WorkspaceSize {
+  id?: string;
+  size_key: string;
+  name_en: string;
+  name_ja?: string | null;
+  name_vi?: string | null;
+  price: number;
+  position: number;
 }
 
-function CategoryModal({ isOpen, onClose, categoryForm, onSubmit, isLoading, t, onTranslate, ownerLanguage = 'en' }: CategoryModalProps) {
-  const [isTranslating, setIsTranslating] = useState(false);
+interface WorkspaceTopping {
+  id?: string;
+  name_en: string;
+  name_ja?: string | null;
+  name_vi?: string | null;
+  price: number;
+  position: number;
+}
 
-  // Helper function to handle translation
-  const translateText = async (text: string, field: string) => {
-    if (!onTranslate || !text.trim()) return;
-    
-    setIsTranslating(true);
-    try {
-      const translations = await onTranslate(text, field, 'category');
-      
-      // Auto-fill all language fields with translations
-      categoryForm.setValue('name_en', translations.en);
-      categoryForm.setValue('name_ja', translations.ja);
-      categoryForm.setValue('name_vi', translations.vi);
-    } catch (error) {
-      console.error('Translation failed:', error);
-    } finally {
-      setIsTranslating(false);
-    }
+interface WorkspaceItem {
+  id: string;
+  category_id: string;
+  organization_menu_item_id: string | null;
+  source: "organization" | "branch";
+  name_en: string;
+  name_ja?: string | null;
+  name_vi?: string | null;
+  description_en?: string | null;
+  description_ja?: string | null;
+  description_vi?: string | null;
+  price: number;
+  image_url?: string | null;
+  available: boolean;
+  weekday_visibility: number[];
+  stock_level?: number | null;
+  position: number;
+  sizes: WorkspaceSize[];
+  toppings: WorkspaceTopping[];
+}
+
+interface WorkspaceCategory {
+  id: string;
+  organization_menu_category_id: string | null;
+  source: "organization" | "branch";
+  name_en: string;
+  name_ja?: string | null;
+  name_vi?: string | null;
+  position: number;
+  menu_items: WorkspaceItem[];
+}
+
+interface WorkspaceSummary {
+  totalCategories: number;
+  totalItems: number;
+  inheritedCategories: number;
+  inheritedItems: number;
+  localCategories: number;
+  localItems: number;
+}
+
+interface WorkspaceResponse {
+  branch: {
+    id: string;
+    name: string;
+    subdomain: string;
   };
+  organization: {
+    id: string;
+    name: string;
+  } | null;
+  categories: WorkspaceCategory[];
+  summary: WorkspaceSummary;
+}
 
-  return (
-    <Dialog open={isOpen} onOpenChange={(isOpen) => { 
-      if (!isOpen) {
-        categoryForm.reset(); 
-        onClose();
-      }
-    }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{categoryForm.getValues("id") ? t('edit_category') : t('add_category')}</DialogTitle>
-        </DialogHeader>
-        <Form {...categoryForm}>
-          <form onSubmit={categoryForm.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Primary language field based on owner's language */}
-            {ownerLanguage === 'en' && (
-              <FormField
-                control={categoryForm.control}
-                name="name_en"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t('category.name_en')}*
-                      {onTranslate && field.value && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="ml-2 h-6 px-2 text-xs"
-                          onClick={() => translateText(field.value || '', 'name')}
-                          disabled={isTranslating || !field.value}
-                        >
-                          {isTranslating ? '...' : '🌐'}
-                        </Button>
-                      )}
-                    </FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-            
-            {ownerLanguage === 'ja' && (
-              <FormField
-                control={categoryForm.control}
-                name="name_ja"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t('category.name_ja')}*
-                      {onTranslate && field.value && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="ml-2 h-6 px-2 text-xs"
-                          onClick={() => translateText(field.value || '', 'name')}
-                          disabled={isTranslating || !field.value}
-                        >
-                          {isTranslating ? '...' : '🌐'}
-                        </Button>
-                      )}
-                    </FormLabel>
-                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-            
-            {ownerLanguage === 'vi' && (
-              <FormField
-                control={categoryForm.control}
-                name="name_vi"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t('category.name_vi')}*
-                      {onTranslate && field.value && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="ml-2 h-6 px-2 text-xs"
-                          onClick={() => translateText(field.value || '', 'name')}
-                          disabled={isTranslating || !field.value}
-                        >
-                          {isTranslating ? '...' : '🌐'}
-                        </Button>
-                      )}
-                    </FormLabel>
-                    <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+interface MenuClientContentProps {
+  branchId: string;
+}
 
-            {/* Auto-generated translation fields (non-primary languages) */}
-            {onTranslate && (
-              <div className="space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {t('category.auto_translations_label')}
-                </p>
-                
-                {ownerLanguage !== 'en' && (
-                  <FormField
-                    control={categoryForm.control}
-                    name="name_en"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs text-gray-500">{t('category.name_en')}</FormLabel>
-                        <FormControl>
-                          <Input {...field} className="h-8 text-sm" placeholder={t('category.auto_translate_name_en_placeholder')} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                )}
-                
-                {ownerLanguage !== 'ja' && (
-                  <FormField
-                    control={categoryForm.control}
-                    name="name_ja"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs text-gray-500">{t('category.name_ja')}</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value ?? ''} className="h-8 text-sm" placeholder={t('category.auto_translate_name_ja_placeholder')} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                )}
-                
-                {ownerLanguage !== 'vi' && (
-                  <FormField
-                    control={categoryForm.control}
-                    name="name_vi"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs text-gray-500">{t('category.name_vi')}</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value ?? ''} className="h-8 text-sm" placeholder={t('category.auto_translate_name_vi_placeholder')} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                )}
-              </div>
-            )}
-            
-            <p className="text-xs text-slate-500 dark:text-slate-400">{t('form_hint')}</p>
-            <DialogFooter className="mt-6">
-              <Button type="button" variant="secondary" onClick={() => { 
-                categoryForm.reset(); 
-                onClose(); 
-              }}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" variant="default" disabled={isLoading}>
-                {isLoading ? t('buttons.saving') : t('save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+function buildCopy(locale: string) {
+  if (locale === "ja") {
+    return {
+      title: "支店メニュー",
+      categories: "カテゴリ",
+      allCategories: "すべてのカテゴリ",
+      inherited: "会社継承",
+      local: "支店ローカル",
+      totalItems: "全メニュー",
+      missingImages: "画像未設定",
+      searchPlaceholder: "料理名、カテゴリ名で検索",
+      newItem: "新しいメニューを作成",
+      newCategory: "カテゴリを追加",
+      refresh: "更新",
+      missingOnly: "画像未設定のみ",
+      all: "すべて",
+      companyOnly: "会社継承",
+      branchOnly: "支店ローカル",
+      companyManaged: "会社管理",
+      branchManaged: "支店管理",
+      managedHint: "会社側で編集",
+      empty: "まだ表示できるメニューがありません。",
+      createCategoryTitle: "新しいカテゴリを追加",
+      editCategoryTitle: "カテゴリを編集",
+      categoryRequired: "カテゴリ名を入力してください。",
+      categoryName: "カテゴリ名",
+      categoryPlaceholder: "前菜、メイン、ドリンク",
+      primaryLanguage: "入力言語",
+      categorySaved: "カテゴリを追加しました。",
+      categoryUpdated: "カテゴリを更新しました。",
+      deleteItemConfirm: "この支店メニューを削除しますか？",
+      deleteCategoryConfirm: "この空のカテゴリを削除しますか？",
+      unavailable: "非表示",
+      available: "表示中",
+      missingImage: "画像未設定",
+      remove: "削除",
+      edit: "編集",
+      hide: "非表示",
+      show: "表示",
+      save: "保存",
+      itemCount: "件",
+    };
+  }
+
+  if (locale === "vi") {
+    return {
+      title: "Thực đơn chi nhánh",
+      categories: "Danh mục",
+      allCategories: "Tất cả danh mục",
+      inherited: "Kế thừa công ty",
+      local: "Món riêng chi nhánh",
+      totalItems: "Tổng món",
+      missingImages: "Thiếu hình ảnh",
+      searchPlaceholder: "Tìm theo tên món hoặc danh mục",
+      newItem: "Tạo món mới",
+      newCategory: "Thêm danh mục",
+      refresh: "Tải lại",
+      missingOnly: "Chỉ món thiếu ảnh",
+      all: "Tất cả",
+      companyOnly: "Kế thừa công ty",
+      branchOnly: "Chỉ chi nhánh",
+      companyManaged: "Quản lý bởi công ty",
+      branchManaged: "Quản lý bởi chi nhánh",
+      managedHint: "Chỉnh sửa ở cấp công ty",
+      empty: "Chưa có món nào phù hợp với bộ lọc hiện tại.",
+      createCategoryTitle: "Thêm danh mục mới",
+      editCategoryTitle: "Sửa danh mục",
+      categoryRequired: "Vui lòng nhập tên danh mục.",
+      categoryName: "Tên danh mục",
+      categoryPlaceholder: "Khai vị, món chính, đồ uống",
+      primaryLanguage: "Ngôn ngữ nhập",
+      categorySaved: "Đã thêm danh mục mới.",
+      categoryUpdated: "Đã cập nhật danh mục.",
+      deleteItemConfirm: "Xóa món cục bộ này khỏi chi nhánh?",
+      deleteCategoryConfirm: "Xóa danh mục trống này?",
+      unavailable: "Đang ẩn",
+      available: "Đang hiển thị",
+      missingImage: "Thiếu ảnh",
+      remove: "Xóa",
+      edit: "Sửa",
+      hide: "Ẩn",
+      show: "Hiện",
+      save: "Lưu",
+      itemCount: "món",
+    };
+  }
+
+  return {
+    title: "Branch menu",
+    categories: "Categories",
+    allCategories: "All categories",
+    inherited: "Inherited",
+    local: "Local",
+    totalItems: "Total items",
+    missingImages: "Missing images",
+    searchPlaceholder: "Search items or categories",
+    newItem: "Create new item",
+    newCategory: "Add category",
+    refresh: "Refresh",
+    missingOnly: "Missing images only",
+    all: "All",
+    companyOnly: "Company inherited",
+    branchOnly: "Branch local",
+    companyManaged: "Managed by company",
+    branchManaged: "Managed by branch",
+    managedHint: "Edit at company level",
+    empty: "No menu items match the current filters yet.",
+    createCategoryTitle: "Add a new category",
+    editCategoryTitle: "Edit category",
+    categoryRequired: "Enter a category name.",
+    categoryName: "Category name",
+    categoryPlaceholder: "Starters, mains, drinks",
+    primaryLanguage: "Input language",
+    categorySaved: "Category added.",
+    categoryUpdated: "Category updated.",
+    deleteItemConfirm: "Delete this local branch item?",
+    deleteCategoryConfirm: "Delete this empty local category?",
+    unavailable: "Hidden",
+    available: "Live",
+    missingImage: "No image",
+    remove: "Remove",
+    edit: "Edit",
+    hide: "Hide",
+    show: "Show",
+    save: "Save",
+    itemCount: "items",
+  };
+}
+
+function sourceBadgeClass(source: "organization" | "branch") {
+  return source === "organization"
+    ? "bg-slate-900 text-white hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-100"
+    : "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/15";
+}
+
+function normalizeLocale(locale: string) {
+  if (locale.startsWith("ja")) return "ja";
+  if (locale.startsWith("vi")) return "vi";
+  return "en";
+}
+
+function localizeEntry(
+  entry: { name_en: string; name_ja?: string | null; name_vi?: string | null },
+  locale: string,
+) {
+  return getLocalizedText(
+    {
+      name_en: entry.name_en,
+      name_ja: entry.name_ja ?? undefined,
+      name_vi: entry.name_vi ?? undefined,
+    },
+    locale,
   );
 }
 
+function localizeDescription(
+  entry: {
+    description_en?: string | null;
+    description_ja?: string | null;
+    description_vi?: string | null;
+  },
+  locale: string,
+) {
+  return getLocalizedText(
+    {
+      name_en: entry.description_en ?? undefined,
+      name_ja: entry.description_ja ?? undefined,
+      name_vi: entry.description_vi ?? undefined,
+    },
+    locale,
+  );
+}
 
-export function MenuClientContent() {
-  const t = useTranslations('owner.menu');
-  const tCommon = useTranslations('common');
-  const tValidation = useTranslations('owner.menu.validation');
+function localeCode(locale: string) {
+  if (locale === "vi") return "vi-VN";
+  if (locale === "ja") return "ja-JP";
+  return "en-US";
+}
+
+export function MenuClientContent({ branchId }: MenuClientContentProps) {
   const params = useParams();
-  const locale = (params.locale as string) || 'en';
-
-  const categorySchema = getCategorySchema(tValidation);
-  const menuItemSchema = getMenuItemSchema(tValidation);
-
-  const [menuData, setMenuData] = useState<Category[]>([]);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // New mobile-friendly state
-  const [filters, setFilters] = useState<FilterState>({
-    searchTerm: '',
-    categoryId: null,
-    availability: 'all',
-    stockStatus: 'all'
-  });
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
-  
-  // Delete protection state
-  const [deleteProtectionDialog, setDeleteProtectionDialog] = useState<{
-    isOpen: boolean;
-    type: 'category' | 'item';
-    id: string;
-    name: string;
-    hasOrders: boolean;
-  } | null>(null);
-  const [checkingOrders, setCheckingOrders] = useState(false);
-
-  const { restaurantSettings: restaurant } = useRestaurantSettings();
+  const locale = normalizeLocale((params.locale as string) || "en");
+  const copy = useMemo(() => buildCopy(locale), [locale]);
+  const ownerLanguage = locale as PrimaryLanguage;
   const supabase = createClient();
 
-  // Get owner's preferred language from locale
-  const ownerLanguage = (locale === 'ja' ? 'ja' : locale === 'vi' ? 'vi' : 'en') as 'en' | 'ja' | 'vi';
+  const [workspace, setWorkspace] = useState<WorkspaceResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
+  const [showMissingImagesOnly, setShowMissingImagesOnly] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
+  const [editingCategory, setEditingCategory] =
+    useState<WorkspaceCategory | null>(null);
+  const [categoryForm, setCategoryForm] = useState({
+    primaryLanguage: ownerLanguage,
+    primaryName: "",
+    name_en: "",
+    name_ja: "",
+    name_vi: "",
+  });
+  const [editingItem, setEditingItem] = useState<WorkspaceItem | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  // Helper function to check if item/category has existing orders
-  const checkForExistingOrders = async (type: 'category' | 'item', id: string): Promise<boolean> => {
-    try {
-      const endpoint = type === 'category' 
-        ? `/api/v1/owner/categories/${id}/orders-check`
-        : `/api/v1/owner/menu/menu-items/${id}/orders-check`;
-      
-      const response = await fetch(endpoint, {
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
+  const categoryOptions = useMemo<MenuItemCategory[]>(
+    () =>
+      (workspace?.categories ?? []).map((category) => ({
+        id: category.id,
+        name: localizeEntry(category, locale),
+        name_en: category.name_en,
+        name_ja: category.name_ja ?? undefined,
+        name_vi: category.name_vi ?? undefined,
+        position: category.position,
+      })),
+    [workspace?.categories, locale],
+  );
 
-      if (!response.ok) {
-        // If endpoint doesn't exist, assume no orders (backward compatibility)
-        return false;
+  const loadWorkspace = useCallback(
+    async (mode: "initial" | "refresh" = "initial") => {
+      if (mode === "initial") {
+        setIsLoading(true);
+      } else {
+        setIsRefreshing(true);
       }
 
-      const { hasOrders } = await response.json();
-      return hasOrders;
-    } catch (error) {
-      console.error('Error checking for existing orders:', error);
-      // If we can't check, assume no orders to allow deletion
-      return false;
-    }
-  };
-
-  // Load data on component mount
-  useEffect(() => {
-    const loadMenuData = async () => {
       try {
-        setIsInitialLoading(true);
-        setError(null);
-        
-        // Use the new API with explicit includes for better performance and flexibility
-        // This approach allows for future pagination and selective data loading
-        const categories = await fetchCategoriesWithIncludes();
-        setMenuData(categories);
-      } catch (error) {
-        console.error('Error loading menu data:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load menu data');
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
+        const response = await fetch(
+          `/api/v1/owner/branch-menu/workspace?branchId=${encodeURIComponent(branchId)}`,
+          {
+            credentials: "include",
+          },
+        );
 
-    loadMenuData();
-  }, []);
-
-  // Reload data after mutations
-  const reloadData = async () => {
-    try {
-      const categories = await fetchCategoriesWithIncludes();
-      setMenuData(categories);
-    } catch (error) {
-      console.error('Error reloading data:', error);
-    }
-  };
-
-  // Filter and process menu data
-  const filteredMenuData = useMemo(() => {
-    let filtered = [...menuData];
-
-    // Filter by category if specified
-    if (filters.categoryId) {
-      filtered = filtered.filter(cat => cat.id === filters.categoryId);
-    }
-
-    // Apply filters to menu items within categories
-    return filtered.map(category => ({
-      ...category,
-      menu_items: category.menu_items.filter(item => {
-        // Search term filter
-        if (filters.searchTerm) {
-          const searchLower = filters.searchTerm.toLowerCase();
-          const itemName = getLocalizedText({
-            name_en: item.name_en,
-            name_ja: item.name_ja,
-            name_vi: item.name_vi
-          }, locale).toLowerCase();
-          
-          if (!itemName.includes(searchLower)) {
-            return false;
-          }
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error ?? "Failed to load menu workspace");
         }
 
-        // Availability filter
-        if (filters.availability === 'available' && !item.available) return false;
-        if (filters.availability === 'unavailable' && item.available) return false;
-
-        // Stock status filter
-        if (filters.stockStatus === 'low_stock' && (item.stock_level === undefined || item.stock_level >= 10)) return false;
-        if (filters.stockStatus === 'in_stock' && (item.stock_level !== undefined && item.stock_level < 10)) return false;
-
-        return true;
-      })
-    })).filter(category => 
-      // Only show categories that have items after filtering (unless showing all categories for structure)
-      !filters.searchTerm || category.menu_items.length > 0
-    );
-  }, [menuData, filters, locale]);
-
-  // Callback for handling filter changes
-  const handleFiltersChange = useCallback((newFilters: FilterState) => {
-    setFilters(newFilters);
-  }, []);
-
-  // Callback for handling view mode changes
-  const handleViewModeChange = useCallback((newViewMode: ViewMode) => {
-    setViewMode(newViewMode);
-  }, []);
-
-  // Translation function
-  const handleTranslate = async (text: string, field: string, context: 'item' | 'topping' | 'category') => {
-    try {
-      const response = await fetch('/api/v1/ai/translate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text, field, context }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Translation failed');
+        const data = (await response.json()) as WorkspaceResponse;
+        setWorkspace(data);
+        setError(null);
+      } catch (fetchError) {
+        setError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Failed to load menu workspace",
+        );
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
       }
-
-      const translations = await response.json();
-      return translations;
-    } catch (error) {
-      console.error('Translation error:', error);
-      throw error;
-    }
-  };
-  // Generate Description function
-  const handleGenerateDescription = async (text: string, initialData: string) => {
-    try {
-      const response = await fetch('/api/v1/ai/generate-description', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ itemName: text, initialData: initialData, language: ownerLanguage }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Description generation failed');
-      }
-
-      const descriptions = await response.json();
-      return descriptions;
-    } catch (error) {
-      console.error('Description generation error:', error);
-      throw error;
-    }
-  };
-
-  // Combined AI generation function for names, descriptions, and tags
-  const handleGenerateAI = async (itemName: string, existingDescription: string) => {
-    try {
-      const response = await fetch('/api/v1/ai/generate-menu-item', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          itemName, 
-          existingDescription,
-          language: ownerLanguage || 'en',
-          restaurantName: restaurant?.name,
-          restaurantDescription: ownerLanguage === 'en' ? restaurant?.description_en || '' : ownerLanguage === 'ja' ? restaurant?.description_ja || '' : restaurant?.description_vi || '',
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('AI generation failed');
-      }
-
-      const result = await response.json();
-      return {
-        name_en: ownerLanguage === "en" ? itemName || result.name_en : result.name_en || '',
-        name_ja: ownerLanguage === "ja" ? itemName || result.name_ja : result.name_ja || '',
-        name_vi: ownerLanguage === "vi" ? itemName || result.name_vi : result.name_vi || '',
-        description_en: result.description_en || '',
-        description_ja: result.description_ja || '',
-        description_vi: result.description_vi || '',
-        tags: result.tags || []
-      };
-    } catch (error) {
-      console.error('AI generation error:', error);
-      // Fallback to individual generation if combined endpoint fails
-      try {
-        const [translations, descriptions] = await Promise.all([
-          handleTranslate(itemName, 'name', 'item'),
-          handleGenerateDescription(itemName, '')
-        ]);
-        
-        return {
-          name_en: translations.en || itemName,
-          name_ja: translations.ja || '',
-          name_vi: translations.vi || '',
-          description_en: descriptions.en || '',
-          description_ja: descriptions.ja || '',
-          description_vi: descriptions.vi || '',
-          tags: [] // Basic tags fallback
-        };
-      } catch (fallbackError) {
-        console.error('Fallback AI generation error:', fallbackError);
-        throw error;
-      }
-    }
-  };
-
-  const categoryForm = useForm<CategoryFormData>({
-    resolver: zodResolver(categorySchema),
-    defaultValues: { name_en: '', name_ja: '', name_vi: '', position: 0 },
-  });
-
-  const itemForm = useForm<MenuItemFormData>({
-    resolver: zodResolver(menuItemSchema),
-    defaultValues: {
-      name_en: '', price: 0, available: true,
-      weekday_visibility: [1, 2, 3, 4, 5, 6, 7], position: 0, stock_level: null,
-      category_id: '', // Initialize category_id
-      imageFile: undefined,
-      toppings: [], // Initialize toppings array
-      sizes: [], // Initialize sizes array
     },
-  });
+    [branchId],
+  );
 
   useEffect(() => {
-    // Remove this effect since we're now loading data on mount
-  }, []);
+    loadWorkspace("initial");
+  }, [loadWorkspace]);
 
-  const handleOpenCategoryModal = (categoryData: CategoryFormData | null = null) => {
-    if (categoryData) {
-      categoryForm.reset(categoryData);
-    } else {
-      categoryForm.reset({ name_en: '', name_ja: '', name_vi: '', position: menuData.length });
+  useEffect(() => {
+    if (
+      selectedCategoryId !== "all" &&
+      !(workspace?.categories ?? []).some(
+        (category) => category.id === selectedCategoryId,
+      )
+    ) {
+      setSelectedCategoryId("all");
     }
-    setIsCategoryModalOpen(true);
-  };
+  }, [workspace?.categories, selectedCategoryId]);
 
-  const handleOpenItemModal = (category?: Category, itemData: Partial<MenuItemFormData> | null = null) => {
-    const targetCategory = category ?? menuData[0];
-    if (!targetCategory) {
-      toast.error(tValidation('category_id_required'));
-      return;
-    }
+  const visibleCategories = useMemo(() => {
+    const categories = workspace?.categories ?? [];
 
-    if (itemData) {
-      itemForm.reset({
-        ...itemData,
-        stock_level: itemData.stock_level ?? 10, // Default to 10 if not set
-        category_id: targetCategory.id, // ensure category_id is set from the context
-        weekday_visibility: itemData.weekday_visibility || [],
-        imageFile: undefined, // Explicitly reset file
-      });
-    } else {
-      itemForm.reset({
-        name_en: '', name_ja: '', name_vi: '',
-        description_en: '', description_ja: '', description_vi: '',
-        price: 0, image_url: '', available: true,
-        weekday_visibility: [1, 2, 3, 4, 5, 6, 7],
-        stock_level: 10, // Use null for optional numbers not set
-        tags: [], // Initialize tags array
-        position: targetCategory.menu_items.length,
-        category_id: targetCategory.id, // Set category_id for new item
-        imageFile: undefined,
-        toppings: [], // Initialize toppings array
-        sizes: [], // Initialize sizes array
-      });
-    }
-    setIsItemModalOpen(true);
-  };
+    return categories
+      .filter(
+        (category) =>
+          selectedCategoryId === "all" || category.id === selectedCategoryId,
+      )
+      .map((category) => {
+        const categoryMatches =
+          searchTerm.trim().length === 0 ||
+          localizeEntry(category, locale)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase());
 
-  const onCategorySubmit = async (data: CategoryFormData) => {
-    setIsLoading(true);
-    try {
-      const method = data.id ? 'PUT' : 'POST';
-      const url = data.id ? `/api/v1/owner/categories/${data.id}` : '/api/v1/owner/categories';
-      
-      // Ensure position is a number if not already
-      const payload = { ...data };
-      if (typeof payload.position !== 'number') {
-         payload.position = menuData.findIndex(cat => cat.id === data.id);
-         if (payload.position === -1 || !data.id) payload.position = menuData.length;
-      }
+        const items = category.menu_items.filter((item) => {
+          const sourceMatches =
+            sourceFilter === "all" ||
+            (sourceFilter === "organization" &&
+              item.source === "organization") ||
+            (sourceFilter === "branch" && item.source === "branch");
+          const imageMatches = !showMissingImagesOnly || !item.image_url;
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+          const itemMatches =
+            searchTerm.trim().length === 0 ||
+            localizeEntry(item, locale)
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase());
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        // Handle both new API error format and legacy format
-        const errorMessage = extractErrorMessage(errorData, 'Failed to save category');
-        throw new Error(errorMessage);
-      }
-
-      toast.success(data.id ? t('category.update_success') : t('category.create_success'));
-      setIsCategoryModalOpen(false);
-      await reloadData();
-    } catch (error) {
-      console.error('Error saving category:', error);
-      toast.error(error instanceof Error ? error.message : t('category.save_error'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId: string) => {
-    const category = menuData.find(cat => cat.id === categoryId);
-    if (!category) return;
-
-    setCheckingOrders(true);
-    try {
-      const hasOrders = await checkForExistingOrders('category', categoryId);
-      
-      if (hasOrders) {
-        setDeleteProtectionDialog({
-          isOpen: true,
-          type: 'category',
-          id: categoryId,
-          name: getLocalizedText({
-            name_en: category.name_en,
-            name_ja: category.name_ja,
-            name_vi: category.name_vi
-          }, locale),
-          hasOrders: true
+          return (
+            sourceMatches && imageMatches && (categoryMatches || itemMatches)
+          );
         });
-        return;
-      }
 
-      // No orders found, proceed with deletion
-      await performCategoryDeletion(categoryId);
-    } catch (error) {
-      console.error('Error checking orders for category:', error);
-      toast.error(t('category.delete_error'));
-    } finally {
-      setCheckingOrders(false);
+        if (
+          sourceFilter === "organization" &&
+          category.source === "branch" &&
+          items.length === 0
+        ) {
+          return null;
+        }
+
+        if (
+          sourceFilter === "branch" &&
+          category.source === "organization" &&
+          items.length === 0
+        ) {
+          return null;
+        }
+
+        if (!categoryMatches && items.length === 0) {
+          return null;
+        }
+
+        return {
+          ...category,
+          menu_items: items,
+        };
+      })
+      .filter((category): category is WorkspaceCategory => Boolean(category));
+  }, [
+    workspace?.categories,
+    selectedCategoryId,
+    sourceFilter,
+    searchTerm,
+    locale,
+    showMissingImagesOnly,
+  ]);
+
+  const missingImageCount = useMemo(
+    () =>
+      (workspace?.categories ?? []).reduce(
+        (count, category) =>
+          count + category.menu_items.filter((item) => !item.image_url).length,
+        0,
+      ),
+    [workspace?.categories],
+  );
+
+  const handleTranslate = async (
+    text: string,
+    context: "item" | "topping" | "category",
+  ) => {
+    const response = await fetch("/api/v1/ai/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, field: "name", context }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Translation failed");
     }
+
+    return (await response.json()) as { en: string; ja: string; vi: string };
   };
 
-  const performCategoryDeletion = async (categoryId: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/v1/owner/categories/${categoryId}`, {
-        method: 'DELETE',
-      });
+  const handleGenerateDescription = async (
+    text: string,
+    initialData: string,
+  ) => {
+    const response = await fetch("/api/v1/ai/generate-description", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itemName: text,
+        existingDescription: initialData,
+        language: ownerLanguage,
+        restaurantName: workspace?.branch.name,
+        restaurantDescription: workspace?.organization?.name ?? "",
+      }),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        // Handle both new API error format and legacy format
-        const errorMessage = extractErrorMessage(errorData, t('category.delete_error_fallback'));
-        throw new Error(errorMessage);
-      }
-      toast.success(t('category.delete_success'));
-      await reloadData();
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      toast.error(error instanceof Error ? error.message : t('category.delete_error'));
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error("Description generation failed");
     }
+
+    return (await response.json()) as { en: string; ja: string; vi: string };
   };
 
-  const onItemSubmit = async (data: MenuItemFormData) => {
-    if (!data.category_id) { 
-      toast.error(tValidation('category_id_required')); 
+  const handleGenerateAI = async (
+    itemName: string,
+    existingDescription: string,
+  ) => {
+    const response = await fetch("/api/v1/ai/generate-menu-item", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itemName,
+        existingDescription,
+        language: ownerLanguage,
+        restaurantName: workspace?.branch.name,
+        restaurantDescription: workspace?.organization?.name ?? "",
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("AI generation failed");
+    }
+
+    const result = await response.json();
+    return {
+      name_en:
+        ownerLanguage === "en"
+          ? itemName || result.name_en
+          : result.name_en || "",
+      name_ja:
+        ownerLanguage === "ja"
+          ? itemName || result.name_ja
+          : result.name_ja || "",
+      name_vi:
+        ownerLanguage === "vi"
+          ? itemName || result.name_vi
+          : result.name_vi || "",
+      description_en: result.description_en || "",
+      description_ja: result.description_ja || "",
+      description_vi: result.description_vi || "",
+      tags: result.tags || [],
+    };
+  };
+
+  const resetCategoryForm = () => {
+    setEditingCategory(null);
+    setCategoryForm({
+      primaryLanguage: ownerLanguage,
+      primaryName: "",
+      name_en: "",
+      name_ja: "",
+      name_vi: "",
+    });
+  };
+
+  const openCreateCategoryDialog = () => {
+    resetCategoryForm();
+    setIsCategoryDialogOpen(true);
+  };
+
+  const openEditCategoryDialog = (category: WorkspaceCategory) => {
+    if (category.source === "organization") {
       return;
     }
-    setIsLoading(true);
+
+    setEditingCategory(category);
+    setCategoryForm({
+      primaryLanguage: ownerLanguage,
+      primaryName:
+        (ownerLanguage === "vi"
+          ? category.name_vi
+          : ownerLanguage === "ja"
+            ? category.name_ja
+            : category.name_en) ?? category.name_en,
+      name_en: category.name_en,
+      name_ja: category.name_ja ?? "",
+      name_vi: category.name_vi ?? "",
+    });
+    setIsCategoryDialogOpen(true);
+  };
+
+  const handleSaveCategory = async () => {
+    const primaryName = categoryForm.primaryName.trim();
+    if (!primaryName && !categoryForm.name_en.trim()) {
+      toast.error(copy.categoryRequired);
+      return;
+    }
+
+    setIsSubmittingCategory(true);
     try {
-      let imageUrl = data.image_url; 
+      let translated = {
+        name_en: categoryForm.name_en.trim(),
+        name_ja: categoryForm.name_ja.trim(),
+        name_vi: categoryForm.name_vi.trim(),
+      };
 
-      const fileToUpload = data.imageFile; 
+      if (!translated.name_en || !translated.name_ja || !translated.name_vi) {
+        const result = await handleTranslate(
+          primaryName || translated.name_en,
+          "category",
+        );
+        translated = {
+          name_en: translated.name_en || result.en,
+          name_ja: translated.name_ja || result.ja,
+          name_vi: translated.name_vi || result.vi,
+        };
+      }
 
-      if (fileToUpload) {
-        const sessionResponse = await fetch('/api/v1/auth/session');
+      if (categoryForm.primaryLanguage === "en")
+        translated.name_en = primaryName || translated.name_en;
+      if (categoryForm.primaryLanguage === "ja")
+        translated.name_ja = primaryName || translated.name_ja;
+      if (categoryForm.primaryLanguage === "vi")
+        translated.name_vi = primaryName || translated.name_vi;
+
+      const response = await fetch(
+        editingCategory
+          ? `/api/v1/owner/categories/${editingCategory.id}?branchId=${encodeURIComponent(branchId)}`
+          : `/api/v1/owner/categories?branchId=${encodeURIComponent(branchId)}`,
+        {
+          method: editingCategory ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...translated,
+            position:
+              editingCategory?.position ?? workspace?.categories.length ?? 0,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(
+          data.error?.message ?? data.message ?? "Failed to save category",
+        );
+      }
+
+      toast.success(
+        editingCategory ? copy.categoryUpdated : copy.categorySaved,
+      );
+      setIsCategoryDialogOpen(false);
+      resetCategoryForm();
+      await loadWorkspace("refresh");
+    } catch (submitError) {
+      toast.error(
+        submitError instanceof Error
+          ? submitError.message
+          : "Failed to save category",
+      );
+    } finally {
+      setIsSubmittingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (category: WorkspaceCategory) => {
+    if (category.source === "organization" || category.menu_items.length > 0) {
+      return;
+    }
+
+    if (!window.confirm(copy.deleteCategoryConfirm)) {
+      return;
+    }
+
+    const response = await fetch(
+      `/api/v1/owner/categories/${category.id}?branchId=${encodeURIComponent(branchId)}`,
+      { method: "DELETE" },
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      toast.error(
+        data.error?.message ?? data.message ?? "Failed to delete category",
+      );
+      return;
+    }
+
+    await loadWorkspace("refresh");
+  };
+
+  const handleDeleteItem = async (item: WorkspaceItem) => {
+    if (item.source === "organization") return;
+
+    if (!window.confirm(copy.deleteItemConfirm)) {
+      return;
+    }
+
+    const response = await fetch(
+      `/api/v1/owner/menu/menu-items/${item.id}?branchId=${encodeURIComponent(branchId)}`,
+      {
+        method: "DELETE",
+      },
+    );
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      toast.error(data.message ?? data.error ?? "Failed to delete item");
+      return;
+    }
+
+    await loadWorkspace("refresh");
+  };
+
+  const handleToggleAvailability = async (item: WorkspaceItem) => {
+    if (item.source === "organization") return;
+
+    const response = await fetch(
+      `/api/v1/owner/menu/menu-items/${item.id}?branchId=${encodeURIComponent(branchId)}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ available: !item.available }),
+      },
+    );
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      toast.error(
+        data.message ?? data.error ?? "Failed to update item availability",
+      );
+      return;
+    }
+
+    await loadWorkspace("refresh");
+  };
+
+  const handleEditItem = (item: WorkspaceItem) => {
+    if (item.source === "organization") return;
+    setEditingItem(item);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async (data: StreamlinedMenuItemFormData) => {
+    if (!editingItem) return;
+
+    setIsSavingEdit(true);
+    try {
+      let imageUrl = data.image_url ?? "";
+
+      if (data.imageFile) {
+        const sessionResponse = await fetch("/api/v1/auth/session");
         const sessionData = await sessionResponse.json();
         if (!sessionData.authenticated || !sessionData.user?.restaurantId) {
-          throw new Error('User not authenticated or missing restaurant ID');
+          throw new Error("User not authenticated or missing restaurant ID");
         }
-        const fileName = `${Date.now()}-${fileToUpload.name}`;
+
+        const fileName = `${Date.now()}-${data.imageFile.name}`;
         const filePath = `restaurants/${sessionData.user.restaurantId}/menu_items/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('restaurant-uploads')
-          .upload(filePath, fileToUpload, { cacheControl: '3600', upsert: false }); // Consider upsert true if replacing
-        if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
-
-        const { data: publicUrlData } = supabase.storage.from('restaurant-uploads').getPublicUrl(filePath);
-        imageUrl = publicUrlData.publicUrl;
-      }
-      
-      const method = data.id ? 'PUT' : 'POST';
-      const url = data.id ? `/api/v1/owner/menu/menu-items/${data.id}` : '/api/v1/owner/menu/menu-items';
-
-      // Exclude imageFile from DB payload
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { imageFile, ...itemPayloadDb } = data;
-      const finalPayload = {
-        ...itemPayloadDb,
-        image_url: imageUrl && imageUrl.trim() !== '' ? imageUrl : null,
-      };
-
-      // Ensure position is a number if not already or if it's a new item
-      if (typeof finalPayload.position !== 'number' || !data.id) {
-        const category = menuData.find(cat => cat.id === finalPayload.category_id);
-        const currentPosition = category ? category.menu_items.findIndex(item => item.id === data.id) : -1;
-
-        if (!data.id) { // New item
-            finalPayload.position = category ? category.menu_items.length : 0;
-        } else if (currentPosition !== -1) { // Existing item, position not changed by DND yet
-            finalPayload.position = currentPosition;
-        } else { // Fallback for existing item if somehow position is not found
-            finalPayload.position = category ? category.menu_items.length : 0;
-        }
-      }
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(finalPayload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save menu item');
-      }
-
-      toast.success(data.id ? t('item.update_success') : t('item.create_success'));
-      setIsItemModalOpen(false);
-      itemForm.reset(); 
-      await reloadData();
-    } catch (error) {
-      console.error('Error saving menu item:', error);
-      toast.error(error instanceof Error ? error.message : t('item.save_error'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleToggleAvailability = async (itemId: string, currentAvailability: boolean) => {
-    try {
-      const response = await fetch(`/api/v1/owner/menu/menu-items/${itemId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ available: !currentAvailability }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update availability');
-      }
-
-      toast.success(t(!currentAvailability ? 'item.made_available' : 'item.made_unavailable'));
-      await reloadData();
-    } catch (error) {
-      console.error('Error updating availability:', error);
-      toast.error(t('item.availability_update_error'));
-    }
-  };
-
-  const handleDeleteItem = async (itemId: string) => {
-    // Find the item to get its name for the dialog
-    let itemName = 'Unknown Item';
-    for (const category of menuData) {
-      const item = category.menu_items.find(item => item.id === itemId);
-      if (item) {
-        itemName = getLocalizedText({
-          name_en: item.name_en,
-          name_ja: item.name_ja,
-          name_vi: item.name_vi
-        }, locale);
-        break;
-      }
-    }
-
-    setCheckingOrders(true);
-    try {
-      const hasOrders = await checkForExistingOrders('item', itemId);
-      
-      if (hasOrders) {
-        setDeleteProtectionDialog({
-          isOpen: true,
-          type: 'item',
-          id: itemId,
-          name: itemName,
-          hasOrders: true
-        });
-        return;
-      }
-
-      // No orders found, proceed with deletion
-      await performItemDeletion(itemId);
-    } catch (error) {
-      console.error('Error checking orders for item:', error);
-      toast.error(t('item.delete_error'));
-    } finally {
-      setCheckingOrders(false);
-    }
-  };
-
-  const performItemDeletion = async (itemId: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/v1/owner/menu/menu-items/${itemId}`, { method: 'DELETE' });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete menu item');
-      }
-      toast.success(t('item.delete_success'));
-      await reloadData();
-    } catch (error) {
-      console.error('Error deleting menu item:', error);
-      toast.error(t('item.delete_error'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Delete protection dialog handlers
-  const handleMakeUnavailable = async () => {
-    if (!deleteProtectionDialog) return;
-    
-    if (deleteProtectionDialog.type === 'item') {
-      try {
-        const response = await fetch(`/api/v1/owner/menu/menu-items/${deleteProtectionDialog.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ available: false }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update availability');
-        }
-
-        toast.success(t('item.made_unavailable'));
-        await reloadData();
-      } catch (error) {
-        console.error('Error making item unavailable:', error);
-        toast.error(t('item.availability_update_error'));
-      }
-    } else if (deleteProtectionDialog.type === 'category') {
-      // Make all items in category unavailable
-      try {
-        const category = menuData.find(cat => cat.id === deleteProtectionDialog.id);
-        if (category) {
-          const updatePromises = category.menu_items.map(item =>
-            fetch(`/api/v1/owner/menu/menu-items/${item.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ available: false }),
-            })
-          );
-          
-          await Promise.all(updatePromises);
-          toast.success(t('category.items_made_unavailable'));
-          await reloadData();
-        }
-      } catch (error) {
-        console.error('Error making category items unavailable:', error);
-        toast.error(t('category.availability_update_error'));
-      }
-    }
-    
-    setDeleteProtectionDialog(null);
-  };
-
-  const handleForceDelete = async () => {
-    if (!deleteProtectionDialog) return;
-    
-    if (deleteProtectionDialog.type === 'item') {
-      await performItemDeletion(deleteProtectionDialog.id);
-    } else if (deleteProtectionDialog.type === 'category') {
-      await performCategoryDeletion(deleteProtectionDialog.id);
-    }
-    
-    setDeleteProtectionDialog(null);
-  };
-
-  const onDragEnd = async (result: DropResult) => {
-    const { source, destination, type } = result;
-
-    if (!destination) return;
-
-    if (type === 'CATEGORY') {
-      const reorderedCategories = Array.from(menuData);
-      const [movedCategory] = reorderedCategories.splice(source.index, 1);
-      reorderedCategories.splice(destination.index, 0, movedCategory);
-
-      setMenuData(reorderedCategories.map((cat, index) => ({ ...cat, position: index })));
-
-      // API calls to update category positions
-      setIsLoading(true);
-      try {
-        for (let i = 0; i < reorderedCategories.length; i++) {
-          const category = reorderedCategories[i];
-          if (category.position !== i) { // Only update if position actually changed
-            await fetch(`/api/v1/owner/categories/${category.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ position: i }),
-            });
-          }
-        }
-        toast.success(t('category.reorder_success'));
-        await reloadData(); // Refresh to confirm, though local state is updated
-      } catch (error) {
-        console.error('Error reordering categories:', error);
-        toast.error(t('category.reorder_error')); // Add this translation key
-        // Potentially revert state or rely on reloadData()
-        setMenuData([]); // Revert to empty on error
-      } finally {
-        setIsLoading(false);
-      }
-    } else if (type === 'MENU_ITEM') {
-      const sourceCategoryIndex = menuData.findIndex(cat => cat.id === source.droppableId);
-      const destCategoryIndex = menuData.findIndex(cat => cat.id === destination.droppableId);
-      if (sourceCategoryIndex === -1 || destCategoryIndex === -1) return;
-
-      const newMenuData = Array.from(menuData);
-      const sourceCategory = { ...newMenuData[sourceCategoryIndex] };
-      const destCategory = sourceCategoryIndex === destCategoryIndex ? sourceCategory : { ...newMenuData[destCategoryIndex] };
-
-      const sourceItems = Array.from(sourceCategory.menu_items);
-      const [movedItem] = sourceItems.splice(source.index, 1);
-
-      sourceCategory.menu_items = sourceItems.map((item, index) => ({ ...item, position: index }));
-      newMenuData[sourceCategoryIndex] = sourceCategory;
-
-
-      const destItems = sourceCategoryIndex === destCategoryIndex ? sourceItems : Array.from(destCategory.menu_items); // Changed to const
-      destItems.splice(destination.index, 0, { ...movedItem, id: destCategory.id }); // Ensure category_id is updated
-
-      destCategory.menu_items = destItems.map((item, index) => ({ ...item, position: index }));
-      newMenuData[destCategoryIndex] = destCategory;
-
-      setMenuData(newMenuData);
-
-      // API calls to update item positions and potentially category_id
-      setIsLoading(true);
-      try {
-        const itemToUpdate = destCategory.menu_items[destination.index];
-         await fetch(`/api/v1/owner/menu/menu-items/${itemToUpdate.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              position: destination.index,
-              category_id: destCategory.id // Update category_id if moved to a different category
-            }),
+          .from("restaurant-uploads")
+          .upload(filePath, data.imageFile, {
+            cacheControl: "3600",
+            upsert: false,
           });
 
-        // If items were moved within the same category, or from another, their old positions need re-eval too
-        // This simplified version only updates the moved item. A full solution might re-update all items in affected categories.
-        // For now, we rely on router.refresh() to get fully consistent positions from backend if needed.
+        if (uploadError) {
+          throw new Error(uploadError.message);
+        }
 
-        toast.success(t('item.reorder_success'));
-        await reloadData();
-      } catch (error) {
-        console.error('Error reordering menu item:', error);
-        toast.error(t('item.reorder_error')); // Add this translation key
-        setMenuData([]); // Revert on error
-      } finally {
-        setIsLoading(false);
+        const { data: publicUrlData } = supabase.storage
+          .from("restaurant-uploads")
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrlData.publicUrl;
       }
+
+      const payload = {
+        ...data,
+        image_url: imageUrl && imageUrl.trim().length > 0 ? imageUrl : null,
+      };
+
+      const response = await fetch(
+        `/api/v1/owner/menu/menu-items/${editingItem.id}?branchId=${encodeURIComponent(branchId)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.message ?? "Failed to save menu item");
+      }
+
+      toast.success("Menu item updated.");
+      setEditingItem(null);
+      setIsEditModalOpen(false);
+      await loadWorkspace("refresh");
+    } catch (saveError) {
+      toast.error(
+        saveError instanceof Error ? saveError.message : "Failed to save item",
+      );
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
-  if (error) {
-    return (
-      <>
-        <div className="p-4 text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md">
-          {error}
-        </div>
-      </>
-    );
-  }
-  
-  // Show loading skeleton during initial load
-  if (isInitialLoading) {
+  if (isLoading) {
     return <MenuSkeleton />;
   }
 
-  // Show error state
-  if (error) {
+  if (error || !workspace) {
     return (
-      <>
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-            {t("title")}
-          </h1>
-        </header>
-        <Alert variant="destructive" className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{tCommon("errors.fetchErrorTitle")}</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      </>
-    );
-  }
-
-  // TODO: Add a proper loading state UI, perhaps a spinner overlay or skeleton loaders.
-  if (isLoading && menuData.length === 0) {
-      return (
-        <>
-          <div className="flex items-center justify-center h-64">
-            {/* TODO: Replace with a proper spinner component from shadcn/ui if available, or a custom one */}
-            <MenuIcon className="h-12 w-12 text-slate-400 animate-spin" />
-          </div>
-        </>
-      );
-  }
-
-  if (!error && menuData.length === 0) {
-    return (
-      <>
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-            {t("title")}
-          </h1>
-        </header>
-        <div className="text-center py-12">
-          <MenuIcon className="mx-auto h-12 w-12 text-slate-400" />
-          <h3 className="mt-2 text-xl font-semibold text-slate-800 dark:text-slate-100">{t('empty_state.no_categories_title')}</h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('empty_state.no_categories_description')}</p>
-          <div className="mt-6">
-            <Button onClick={() => handleOpenCategoryModal()}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              {t('add_category')}
-            </Button>
-          </div>
-        </div>
-        
-        {/* Category Modal - Always render for empty state */}
-        <CategoryModal
-          isOpen={isCategoryModalOpen}
-          onClose={() => setIsCategoryModalOpen(false)}
-          categoryForm={categoryForm}
-          onSubmit={onCategorySubmit}
-          isLoading={isLoading}
-          t={t}
-          onTranslate={handleTranslate}
-          ownerLanguage={ownerLanguage}
-        />
-      </>
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Menu workspace unavailable</AlertTitle>
+        <AlertDescription>
+          {error ?? "Failed to load the branch menu workspace."}
+        </AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <>
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-          {t("title")}
-        </h1>
-      </header>
+    <div className="space-y-5">
+      <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(15,23,42,0.04),_transparent_46%),linear-gradient(160deg,rgba(255,255,255,0.98),rgba(248,250,252,0.9))] p-5 shadow-[0_20px_60px_-28px_rgba(15,23,42,0.28)] dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.12),_transparent_44%),linear-gradient(160deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="rounded-full bg-slate-900 text-white hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-100">
+                <Store className="mr-1.5 h-3.5 w-3.5" />
+                {workspace.branch.name}
+              </Badge>
+            </div>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
+              {copy.title}
+            </h1>
+          </div>
 
-      {/* Mobile-Friendly Stats Bar */}
-      <MenuStatsBar categories={menuData} isLoading={isInitialLoading} locale={locale} />
-
-      {/* Search and Filter Bar */}
-      <MenuSearchFilter
-        categories={menuData}
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        viewMode={viewMode}
-        onViewModeChange={handleViewModeChange}
-        showViewModeToggle={false}
-        onRefresh={reloadData}
-        isLoading={isLoading}
-        locale={locale}
-      />
-
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div>
-          <div className="flex flex-col sm:flex-row gap-2 justify-end mb-4">
-            <Button onClick={() => handleOpenItemModal()} disabled={menuData.length === 0}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              {t('add_item')}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
+              onClick={() => loadWorkspace("refresh")}
+              disabled={isRefreshing}
+            >
+              <RefreshCw
+                className={cn("mr-2 h-4 w-4", isRefreshing && "animate-spin")}
+              />
+              {copy.refresh}
             </Button>
-            <Button onClick={() => handleOpenCategoryModal()} variant="outline">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              {t('add_category')}
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
+              onClick={openCreateCategoryDialog}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {copy.newCategory}
+            </Button>
+            <Button
+              type="button"
+              className="rounded-xl bg-slate-950 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
+              onClick={() => setIsWizardOpen(true)}
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              {copy.newItem}
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: copy.totalItems, value: workspace.summary.totalItems },
+          { label: copy.inherited, value: workspace.summary.inheritedItems },
+          { label: copy.local, value: workspace.summary.localItems },
+          { label: copy.missingImages, value: missingImageCount },
+        ].map((stat) => (
+          <article
+            key={stat.label}
+            className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/90"
+          >
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+              {stat.label}
+            </p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
+              {stat.value}
+            </p>
+          </article>
+        ))}
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/90 sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                {copy.categories}
+              </p>
+              <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-slate-50">
+                {workspace.categories.length}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              onClick={openCreateCategoryDialog}
+            >
+              <Plus className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="rounded-md border bg-background p-2">
-            {filteredMenuData.flatMap((category) => category.menu_items.map((item) => ({ item, category }))).length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {t('table_headers.image')}
-                      </th>
-                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {t('table_headers.item_details')}
-                      </th>
-                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {t('category.name')}
-                      </th>
-                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {t('table_headers.actions')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredMenuData
-                      .flatMap((category) => category.menu_items.map((item) => ({ item, category })))
-                      .map(({ item, category }) => (
-                        <MenuItemCard
-                          key={item.id}
-                          item={item}
-                          locale={locale}
-                          viewMode={viewMode}
-                          isLoading={isLoading}
-                          onEdit={() => handleOpenItemModal(category, item as MenuItemFormData)}
-                          onDelete={() => handleDeleteItem(item.id)}
-                          onToggleAvailability={() => handleToggleAvailability(item.id, item.available)}
-                          t={t}
-                        />
-                      ))}
-                  </tbody>
-                </table>
+          <div className="mt-4 space-y-2">
+            <button
+              type="button"
+              onClick={() => setSelectedCategoryId("all")}
+              className={cn(
+                "flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition-colors",
+                selectedCategoryId === "all"
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950"
+                  : "bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:bg-slate-900",
+              )}
+            >
+              <span className="font-medium">{copy.allCategories}</span>
+              <span className="text-sm tabular-nums">
+                {workspace.summary.totalItems}
+              </span>
+            </button>
+
+            {workspace.categories.map((category) => (
+              <div
+                key={category.id}
+                className={cn(
+                  "rounded-2xl border px-3 py-3 transition-colors",
+                  selectedCategoryId === category.id
+                    ? "border-slate-900 bg-slate-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                    : "border-slate-200 bg-white text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200",
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategoryId(category.id)}
+                  className="w-full text-left"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">
+                        {localizeEntry(category, locale)}
+                      </p>
+                      <p
+                        className={cn(
+                          "mt-1 text-xs",
+                          selectedCategoryId === category.id
+                            ? "text-slate-200 dark:text-slate-700"
+                            : "text-slate-500 dark:text-slate-400",
+                        )}
+                      >
+                        {category.menu_items.length} {copy.itemCount}
+                      </p>
+                    </div>
+                    <Badge
+                      className={cn(
+                        "rounded-full",
+                        sourceBadgeClass(category.source),
+                      )}
+                    >
+                      {category.source === "organization"
+                        ? copy.companyManaged
+                        : copy.branchManaged}
+                    </Badge>
+                  </div>
+                </button>
+                {category.source === "branch" ? (
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-9 rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      onClick={() => openEditCategoryDialog(category)}
+                    >
+                      <Pencil className="mr-2 h-3.5 w-3.5" />
+                      {copy.edit}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
+                      disabled={category.menu_items.length > 0}
+                      onClick={() => handleDeleteCategory(category)}
+                    >
+                      <Trash2 className="mr-2 h-3.5 w-3.5" />
+                      {copy.remove}
+                    </Button>
+                  </div>
+                ) : null}
               </div>
+            ))}
+          </div>
+        </aside>
+
+        <div className="space-y-4">
+          <section className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/90 sm:p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <Input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder={copy.searchPlaceholder}
+                className="h-11 rounded-2xl border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 lg:max-w-md"
+              />
+
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    ["all", copy.all],
+                    ["organization", copy.companyOnly],
+                    ["branch", copy.branchOnly],
+                  ] as const
+                ).map(([value, label]) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    variant={sourceFilter === value ? "default" : "outline"}
+                    className={cn(
+                      "rounded-xl border-slate-200 dark:border-slate-700",
+                      sourceFilter === value
+                        ? "bg-slate-900 text-white hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-100"
+                        : "bg-white dark:bg-slate-900/80 dark:text-slate-100",
+                    )}
+                    onClick={() => setSourceFilter(value)}
+                  >
+                    {label}
+                  </Button>
+                ))}
+                <Button
+                  type="button"
+                  variant={showMissingImagesOnly ? "default" : "outline"}
+                  className={cn(
+                    "rounded-xl border-slate-200 dark:border-slate-700",
+                    showMissingImagesOnly
+                      ? "bg-amber-500 text-slate-950 hover:bg-amber-400 dark:bg-amber-400 dark:hover:bg-amber-300"
+                      : "bg-white dark:bg-slate-900/80 dark:text-slate-100",
+                  )}
+                  onClick={() =>
+                    setShowMissingImagesOnly((current) => !current)
+                  }
+                >
+                  <ImageOff className="mr-2 h-4 w-4" />
+                  {copy.missingOnly}
+                </Button>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            {visibleCategories.length > 0 ? (
+              visibleCategories.map((category) => (
+                <article
+                  key={category.id}
+                  className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/90"
+                >
+                  <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-lg font-semibold text-slate-950 dark:text-slate-50">
+                          {localizeEntry(category, locale)}
+                        </h3>
+                        <Badge
+                          className={cn(
+                            "rounded-full",
+                            sourceBadgeClass(category.source),
+                          )}
+                        >
+                          {category.source === "organization"
+                            ? copy.companyManaged
+                            : copy.branchManaged}
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        >
+                          {category.menu_items.length} {copy.itemCount}
+                        </Badge>
+                        {category.menu_items.some((item) => !item.image_url) ? (
+                          <Badge className="rounded-full bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/15 dark:text-amber-200 dark:hover:bg-amber-500/15">
+                            <ImageOff className="mr-1.5 h-3.5 w-3.5" />
+                            {
+                              category.menu_items.filter(
+                                (item) => !item.image_url,
+                              ).length
+                            }
+                          </Badge>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 p-4 sm:p-5">
+                    {category.menu_items.length > 0 ? (
+                      category.menu_items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70"
+                        >
+                          {(() => {
+                            const localizedDescription = localizeDescription(
+                              item,
+                              locale,
+                            );
+
+                            return (
+                              <div className="grid gap-4 md:grid-cols-[88px_minmax(0,1fr)] xl:grid-cols-[88px_minmax(0,1fr)_auto]">
+                                <div
+                                  className={cn(
+                                    "flex h-[88px] w-[88px] items-center justify-center overflow-hidden rounded-[22px] border border-slate-200 bg-slate-100 bg-cover bg-center dark:border-slate-800 dark:bg-slate-900",
+                                    !item.image_url &&
+                                      "text-slate-400 dark:text-slate-500",
+                                  )}
+                                  style={
+                                    item.image_url
+                                      ? {
+                                          backgroundImage: `url(${item.image_url})`,
+                                        }
+                                      : undefined
+                                  }
+                                >
+                                  {!item.image_url ? (
+                                    <ImageOff className="h-5 w-5" />
+                                  ) : null}
+                                </div>
+
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <p className="text-base font-semibold text-slate-950 dark:text-slate-50">
+                                      {localizeEntry(item, locale)}
+                                    </p>
+                                    <Badge
+                                      className={cn(
+                                        "rounded-full",
+                                        sourceBadgeClass(item.source),
+                                      )}
+                                    >
+                                      {item.source === "organization"
+                                        ? copy.companyManaged
+                                        : copy.branchManaged}
+                                    </Badge>
+                                    <Badge
+                                      variant="secondary"
+                                      className={cn(
+                                        "rounded-full",
+                                        item.available
+                                          ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/15"
+                                          : "bg-slate-200 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-800",
+                                      )}
+                                    >
+                                      {item.available
+                                        ? copy.available
+                                        : copy.unavailable}
+                                    </Badge>
+                                    {!item.image_url ? (
+                                      <Badge className="rounded-full bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/15 dark:text-amber-200 dark:hover:bg-amber-500/15">
+                                        {copy.missingImage}
+                                      </Badge>
+                                    ) : null}
+                                  </div>
+                                  {localizedDescription ? (
+                                    <p className="mt-2 hidden text-sm leading-6 text-slate-600 dark:text-slate-300 md:block">
+                                      {localizedDescription}
+                                    </p>
+                                  ) : null}
+                                  <div className="mt-3 flex flex-wrap gap-2">
+                                    {item.sizes.map((size) => (
+                                      <Badge
+                                        key={
+                                          size.id ??
+                                          `${item.id}-${size.size_key}`
+                                        }
+                                        variant="secondary"
+                                        className="rounded-full border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                                      >
+                                        {localizeEntry(size, locale)}{" "}
+                                        {formatCurrency(
+                                          size.price,
+                                          "JPY",
+                                          localeCode(locale),
+                                        )}
+                                      </Badge>
+                                    ))}
+                                    {item.toppings.map((topping) => (
+                                      <Badge
+                                        key={
+                                          topping.id ??
+                                          `${item.id}-${topping.name_en}`
+                                        }
+                                        variant="secondary"
+                                        className="rounded-full border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                                      >
+                                        {localizeEntry(topping, locale)} +
+                                        {formatCurrency(
+                                          topping.price,
+                                          "JPY",
+                                          localeCode(locale),
+                                        )}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="flex shrink-0 flex-col items-start gap-3 xl:items-end">
+                                  <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+                                    {formatCurrency(
+                                      item.price,
+                                      "JPY",
+                                      localeCode(locale),
+                                    )}
+                                  </p>
+
+                                  {item.source === "branch" ? (
+                                    <div className="flex flex-wrap gap-2">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                                        onClick={() => handleEditItem(item)}
+                                      >
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        {copy.edit}
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                                        onClick={() =>
+                                          handleToggleAvailability(item)
+                                        }
+                                      >
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                                        {item.available ? copy.hide : copy.show}
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        className="rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
+                                        onClick={() => handleDeleteItem(item)}
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        {copy.remove}
+                                      </Button>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-[24px] border border-dashed border-slate-200 px-5 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                        {copy.empty}
+                      </div>
+                    )}
+                  </div>
+                </article>
+              ))
             ) : (
-              <div className="text-center py-8">
-                <MenuIcon className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
-                <h3 className="mt-2 text-md font-semibold text-slate-600 dark:text-slate-300">{t('empty_state.no_items_title')}</h3>
-                <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">{t('empty_state.no_items_description')}</p>
-                <div className="mt-4">
-                  <Button size="sm" variant="outline" onClick={() => handleOpenItemModal()}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    {t('add_item')}
+              <div className="rounded-[30px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
+                <Layers3 className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
+                <p className="mt-4 text-base font-medium text-slate-700 dark:text-slate-200">
+                  {copy.empty}
+                </p>
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    onClick={openCreateCategoryDialog}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    {copy.newCategory}
+                  </Button>
+                  <Button
+                    type="button"
+                    className="rounded-xl bg-slate-950 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
+                    onClick={() => setIsWizardOpen(true)}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {copy.newItem}
                   </Button>
                 </div>
               </div>
             )}
+          </section>
+        </div>
+      </section>
+
+      <Dialog
+        open={isCategoryDialogOpen}
+        onOpenChange={(open) => {
+          setIsCategoryDialogOpen(open);
+          if (!open) {
+            resetCategoryForm();
+          }
+        }}
+      >
+        <DialogContent className="rounded-[30px] border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingCategory
+                ? copy.editCategoryTitle
+                : copy.createCategoryTitle}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-[0.9fr_1.1fr]">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                  {copy.primaryLanguage}
+                </p>
+                <Select
+                  value={categoryForm.primaryLanguage}
+                  onValueChange={(value) =>
+                    setCategoryForm((current) => ({
+                      ...current,
+                      primaryLanguage: value as PrimaryLanguage,
+                    }))
+                  }
+                >
+                  <SelectTrigger className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="ja">日本語</SelectItem>
+                    <SelectItem value="vi">Tiếng Việt</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                  {copy.categoryName}
+                </p>
+                <Input
+                  value={categoryForm.primaryName}
+                  onChange={(event) =>
+                    setCategoryForm((current) => ({
+                      ...current,
+                      primaryName: event.target.value,
+                    }))
+                  }
+                  className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  placeholder={copy.categoryPlaceholder}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Input
+                value={categoryForm.name_en}
+                onChange={(event) =>
+                  setCategoryForm((current) => ({
+                    ...current,
+                    name_en: event.target.value,
+                  }))
+                }
+                className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                placeholder="English"
+              />
+              <Input
+                value={categoryForm.name_ja}
+                onChange={(event) =>
+                  setCategoryForm((current) => ({
+                    ...current,
+                    name_ja: event.target.value,
+                  }))
+                }
+                className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                placeholder="日本語"
+              />
+              <Input
+                value={categoryForm.name_vi}
+                onChange={(event) =>
+                  setCategoryForm((current) => ({
+                    ...current,
+                    name_vi: event.target.value,
+                  }))
+                }
+                className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                placeholder="Tiếng Việt"
+              />
+            </div>
           </div>
 
-          {menuData.length > 0 && (
-            <div className="mt-4 rounded-md border bg-background p-3">
-              <p className="mb-2 text-sm font-medium text-muted-foreground">{t('category.name')}</p>
-              <div className="flex flex-wrap gap-2">
-                {menuData.map((category) => (
-                  <div key={category.id} className="flex items-center gap-1 rounded-md border px-2 py-1">
-                    <span className="text-sm">
-                      {getLocalizedText(
-                        { name_en: category.name_en, name_ja: category.name_ja, name_vi: category.name_vi },
-                        locale,
-                      )}
-                    </span>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7"
-                      onClick={() => handleOpenCategoryModal(category as CategoryFormData)}
-                    >
-                      <SquarePen className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-red-500 hover:text-red-600"
-                      disabled={isLoading || checkingOrders}
-                      onClick={() => handleDeleteCategory(category.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      {/* Category Modal */}
-      <CategoryModal
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        categoryForm={categoryForm}
-        onSubmit={onCategorySubmit}
-        isLoading={isLoading}
-        t={t}
-        onTranslate={handleTranslate}
-        ownerLanguage={ownerLanguage}
-      />
+          <DialogFooter className="sm:justify-end">
+            <Button
+              type="button"
+              className="rounded-xl bg-slate-950 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
+              onClick={handleSaveCategory}
+              disabled={isSubmittingCategory}
+            >
+              {isSubmittingCategory
+                ? `${copy.save}...`
+                : editingCategory
+                  ? copy.save
+                  : copy.newCategory}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Item Modal */}
-      <ItemModal
-        isOpen={isItemModalOpen}
-        onClose={() => setIsItemModalOpen(false)}
-        initialData={{
-          id: itemForm.getValues().id || '',
-          name_en: itemForm.getValues().name_en || '',
-          name_ja: itemForm.getValues().name_ja || '',
-          name_vi: itemForm.getValues().name_vi || '',
-          description_en: itemForm.getValues().description_en || '',
-          description_ja: itemForm.getValues().description_ja || '',
-          description_vi: itemForm.getValues().description_vi || '',
-          price: itemForm.getValues().price || 0,
-          tags: itemForm.getValues().tags || [],
-          position: itemForm.getValues().position || 0,
-          image_url: itemForm.getValues().image_url || '',
-          available: itemForm.getValues().available ?? true,
-          category_id: itemForm.getValues().category_id || '',
-          weekday_visibility: itemForm.getValues().weekday_visibility || [],
-          stock_level: itemForm.getValues().stock_level ?? 20,
-          toppings: itemForm.getValues().toppings || [],
-          menu_item_sizes: itemForm.getValues().sizes || [],
-        }}
-        categories={menuData.map(cat => ({
-          id: cat.id,
-          name: getLocalizedText({ 
-            name_en: cat.name_en, 
-            name_ja: cat.name_ja, 
-            name_vi: cat.name_vi 
-          }, locale),
-          name_en: cat.name_en,
-          name_ja: cat.name_ja,
-          name_vi: cat.name_vi,
-          position: cat.position,
-          restaurant_id: cat.restaurant_id,
+      <MenuItemCreationWizard
+        open={isWizardOpen}
+        onOpenChange={setIsWizardOpen}
+        branchId={branchId}
+        categories={workspace.categories.map((category) => ({
+          id: category.id,
+          name_en: category.name_en,
+          name_ja: category.name_ja,
+          name_vi: category.name_vi,
+          source: category.source,
+          itemCount: category.menu_items.length,
         }))}
         ownerLanguage={ownerLanguage}
-        onTranslate={handleTranslate}
+        locale={locale}
+        organizationName={workspace.organization?.name ?? null}
+        branchName={workspace.branch.name}
+        onCreated={() => loadWorkspace("refresh")}
+      />
+
+      <ItemModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingItem(null);
+        }}
+        initialData={
+          editingItem
+            ? ({
+                id: editingItem.id,
+                name_en: editingItem.name_en,
+                name_ja: editingItem.name_ja ?? undefined,
+                name_vi: editingItem.name_vi ?? undefined,
+                description_en: editingItem.description_en ?? undefined,
+                description_ja: editingItem.description_ja ?? undefined,
+                description_vi: editingItem.description_vi ?? undefined,
+                price: editingItem.price,
+                image_url: editingItem.image_url ?? undefined,
+                available: editingItem.available,
+                weekday_visibility: editingItem.weekday_visibility,
+                position: editingItem.position,
+                category_id: editingItem.category_id,
+                stock_level: editingItem.stock_level ?? undefined,
+                toppings: editingItem.toppings.map((topping) => ({
+                  id: topping.id,
+                  name_en: topping.name_en,
+                  name_ja: topping.name_ja ?? undefined,
+                  name_vi: topping.name_vi ?? undefined,
+                  price: topping.price,
+                  position: topping.position ?? 0,
+                })),
+                menu_item_sizes: editingItem.sizes.map((size) => ({
+                  id: size.id,
+                  size_key: size.size_key,
+                  name_en: size.name_en,
+                  name_ja: size.name_ja ?? undefined,
+                  name_vi: size.name_vi ?? undefined,
+                  price: size.price,
+                  position: size.position,
+                })),
+              } satisfies MenuItem & {
+                stock_level?: number;
+                toppings?: Array<{
+                  id?: string;
+                  name_en: string;
+                  name_ja?: string;
+                  name_vi?: string;
+                  price: number;
+                  position: number;
+                }>;
+                menu_item_sizes?: Array<{
+                  id?: string;
+                  size_key: string;
+                  name_en: string;
+                  name_ja?: string;
+                  name_vi?: string;
+                  price: number;
+                  position: number;
+                }>;
+              })
+            : undefined
+        }
+        categories={categoryOptions}
+        onSave={handleSaveEdit}
+        texts={{
+          saveButton: isSavingEdit ? "Saving..." : "Save",
+          cancelButton: "Cancel",
+          title: "Edit branch item",
+          successMessage: "Menu item updated.",
+          errorMessage: "Failed to update item.",
+        }}
+        ownerLanguage={ownerLanguage}
+        onTranslate={(text, _field, context) => handleTranslate(text, context)}
         onGenerateDescription={handleGenerateDescription}
         onGenerateAI={handleGenerateAI}
-        onSave={async (data, menuItemId) => {
-          // Transform ItemModal data to match onItemSubmit expected format
-          const transformedData: MenuItemFormData = {
-            ...data,
-            id: menuItemId,
-            weekday_visibility: data.weekday_visibility,
-            position: itemForm.getValues().position || 0,
-            category_id: data.category_id,
-            toppings: data.toppings,
-            sizes: data.sizes,
-          };
-          await onItemSubmit(transformedData);
-        }}
-        texts={{
-          saveButton: isLoading ? t('buttons.saving') : t('save'),
-          cancelButton: t('cancel'),
-          title: itemForm.getValues("id") ? t('edit_item') : t('add_item'),
-          successMessage: itemForm.getValues("id") ? t('item.update_success') : t('item.create_success'),
-          errorMessage: t('item.save_error'),
-        }}
       />
-    </DragDropContext>
-
-      {/* Delete Protection Dialog */}
-      {deleteProtectionDialog && (
-        <Dialog open={deleteProtectionDialog.isOpen} onOpenChange={(open) => !open && setDeleteProtectionDialog(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
-                {t(`delete_protection.${deleteProtectionDialog.type}_has_orders_title`)}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t(`delete_protection.${deleteProtectionDialog.type}_has_orders_description`)}
-              </p>
-              <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  {deleteProtectionDialog.type === 'category' ? t('category.name') : t('item.name')}: {deleteProtectionDialog.name}
-                </p>
-              </div>
-            </div>
-            <DialogFooter className="flex flex-col sm:flex-row gap-2">
-              <Button 
-                variant="secondary" 
-                onClick={() => setDeleteProtectionDialog(null)}
-                className="w-full sm:w-auto"
-              >
-                {t('delete_protection.cancel')}
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={handleMakeUnavailable}
-                className="w-full sm:w-auto"
-              >
-                {t('delete_protection.make_unavailable')}
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleForceDelete}
-                className="w-full sm:w-auto"
-              >
-                {t('delete_protection.force_delete')}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </>
+    </div>
   );
 }

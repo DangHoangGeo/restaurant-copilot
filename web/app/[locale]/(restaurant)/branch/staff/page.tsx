@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { resolveOrgContext } from "@/lib/server/organizations/service";
 import { buildAuthorizationService } from "@/lib/server/authorization/service";
 import StaffClient from "./staff-client";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 export async function generateMetadata({
   params,
@@ -17,9 +18,9 @@ export async function generateMetadata({
 export default async function StaffPage({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string; branchId?: string }>;
 }) {
-  const { locale } = await params;
+  const { locale, branchId } = await params;
 
   const ctx = await resolveOrgContext();
   if (!ctx) {
@@ -28,7 +29,7 @@ export default async function StaffPage({
 
   const authz = buildAuthorizationService(ctx);
   if (!authz?.can("employees")) {
-    redirect(`/${locale}/branch`);
+    redirect(buildBranchPath(locale, branchId));
   }
 
   return (

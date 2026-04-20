@@ -12,6 +12,7 @@ import {
 import { resolvePurchasingAccess } from "@/lib/server/purchasing/access";
 import { PurchasingDashboard } from "@/components/features/admin/purchasing/PurchasingDashboard";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 export async function generateMetadata({
   params,
@@ -26,13 +27,13 @@ export async function generateMetadata({
 export default async function PurchasingPage({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string; branchId?: string }>;
 }) {
-  const { locale } = await params;
+  const { locale, branchId } = await params;
 
   const access = await resolvePurchasingAccess();
   if (!access) {
-    redirect(`/${locale}/branch`);
+    redirect(buildBranchPath(locale, branchId));
   }
 
   const restaurantId = access.restaurantId;
@@ -59,7 +60,12 @@ export default async function PurchasingPage({
     getPurchaseOrders(restaurantId, { limit: 50, offset: 0 }).catch(() => []),
     getExpenses(restaurantId, { limit: 50, offset: 0 }).catch(() => []),
     getSuppliers(restaurantId).catch(() => []),
-    getPurchaseSummaryForPeriod(restaurantId, monthStart, monthEnd, currency).catch(() => ({
+    getPurchaseSummaryForPeriod(
+      restaurantId,
+      monthStart,
+      monthEnd,
+      currency,
+    ).catch(() => ({
       total_orders_amount: 0,
       order_count: 0,
       total_expenses_amount: 0,

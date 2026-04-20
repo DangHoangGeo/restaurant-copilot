@@ -5,9 +5,14 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { resolveFounderControlContext } from "@/lib/server/control/access";
 import { resolveFinanceAccess } from "@/lib/server/finance/access";
-import { getMonthlyReport, listMonthlySnapshots, parseYearMonth } from "@/lib/server/finance/service";
+import {
+  getMonthlyReport,
+  listMonthlySnapshots,
+  parseYearMonth,
+} from "@/lib/server/finance/service";
 import { FinanceDashboard } from "@/components/features/admin/finance/FinanceDashboard";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 export async function generateMetadata({
   params,
@@ -23,10 +28,10 @@ export default async function FinancePage({
   params,
   searchParams,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string; branchId?: string }>;
   searchParams: Promise<{ year?: string; month?: string }>;
 }) {
-  const { locale } = await params;
+  const { locale, branchId } = await params;
   const sp = await searchParams;
   const founderContext = await resolveFounderControlContext();
 
@@ -36,7 +41,7 @@ export default async function FinancePage({
 
   const access = await resolveFinanceAccess();
   if (!access) {
-    redirect(`/${locale}/branch`);
+    redirect(buildBranchPath(locale, branchId));
   }
 
   const { restaurantId, currency, canClose } = access;
@@ -46,7 +51,7 @@ export default async function FinancePage({
   try {
     ({ year, month } = parseYearMonth(sp.year ?? null, sp.month ?? null));
   } catch {
-    redirect(`/${locale}/branch/finance`);
+    redirect(buildBranchPath(locale, branchId, "finance"));
   }
 
   const [report, history, restaurantRow] = await Promise.all([
@@ -59,7 +64,8 @@ export default async function FinancePage({
       .maybeSingle(),
   ]);
 
-  const restaurantName = (restaurantRow.data?.name as string | null) ?? "Branch";
+  const restaurantName =
+    (restaurantRow.data?.name as string | null) ?? "Branch";
 
   return (
     <FinanceDashboard

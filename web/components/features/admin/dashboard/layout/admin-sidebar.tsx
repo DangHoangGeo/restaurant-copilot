@@ -22,6 +22,7 @@ import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
 import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 import { cn } from "@/lib/utils";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 interface AdminSidebarProps {
   restaurantSettings: {
@@ -63,6 +64,8 @@ export function AdminSidebar({
   const params = useParams();
   const t = useTranslations("owner.dashboard");
   const locale = (params.locale as string) || "en";
+  const branchId =
+    typeof params.branchId === "string" ? params.branchId : null;
   const { needsOnboarding } = useRestaurantSettings();
 
   const navSections: NavSection[] = needsOnboarding && FEATURE_FLAGS.onboarding
@@ -162,7 +165,9 @@ export function AdminSidebar({
     exact = false,
     isUtility = false,
   }: NavItemProps) => {
-    const fullHref = `/${locale}${href}`;
+    const fullHref = href.startsWith("/branch")
+      ? buildBranchPath(locale, branchId, href.replace(/^\/branch\/?/, ""))
+      : `/${locale}${href}`;
     const isActive = exact
       ? pathname === fullHref
       : pathname.startsWith(fullHref);
@@ -206,7 +211,7 @@ export function AdminSidebar({
       >
         <div className="flex items-center justify-between h-16 px-4 border-b flex-shrink-0">
           <Link
-            href={`/${locale}/branch`}
+            href={buildBranchPath(locale, branchId)}
             className="flex items-center"
             onClick={() => setIsOpen(false)}
           >

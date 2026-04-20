@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { invalidateMenuCache } from '@/lib/server/request-context';
 import { logger } from '@/lib/logger';
 import { checkAuthorization } from '@/lib/server/rolePermissions';
+import { resolveScopedBranchRouteAccess } from '@/lib/server/organizations/branch-route';
 
 // Schema for toppings
 const toppingSchema = z.object({
@@ -45,7 +46,7 @@ const menuItemSchema = z.object({
   sizes: z.array(menuItemSizeSchema).optional(),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   const user: AuthUser | null = await getUserFromRequest();
 
   if (!user || !user.restaurantId) {
@@ -56,9 +57,20 @@ export async function GET() {
   const authError = checkAuthorization(user, 'menu_items', 'SELECT');
   if (authError) return authError;
 
+  const requestedBranchId = new URL(req.url).searchParams.get('branchId') ?? user.restaurantId;
+  const branchAccess = requestedBranchId
+    ? await resolveScopedBranchRouteAccess(requestedBranchId)
+    : null;
+
+  if (!branchAccess) {
+    return NextResponse.json({ error: 'Branch access denied' }, { status: 403 });
+  }
+
+  const restaurantId = branchAccess.branchId;
+
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(user.restaurantId)) {
+  if (!uuidRegex.test(restaurantId)) {
     return NextResponse.json({ message: 'Invalid restaurantId format' }, { status: 400 });
   }
 
@@ -99,14 +111,14 @@ export async function GET() {
           position
         )
       `)
-      .eq('restaurant_id', user.restaurantId)
+      .eq('restaurant_id', restaurantId)
       .order('position', { ascending: true });
       
     if (error) {
       await logger.error('menu-items-api-get', 'Error fetching menu items', {
         error: error.message,
-        restaurantId: user.restaurantId
-      }, user.restaurantId, user.userId);
+        restaurantId
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error fetching menu items', details: error.message }, { status: 500 });
     }
 
@@ -115,8 +127,8 @@ export async function GET() {
   } catch (error) {
     await logger.error('menu-items-api-get', 'API Error in GET menu items', {
       error: error instanceof Error ? error.message : 'Unknown error',
-      restaurantId: user?.restaurantId
-    }, user?.restaurantId, user?.userId);
+      restaurantId
+    }, restaurantId, user?.userId);
     return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknown error!" }, { status: 500 });
   }
 }
@@ -132,6 +144,17 @@ export async function POST(req: Request) {
   const authError = checkAuthorization(user, 'menu_items', 'INSERT');
   if (authError) return authError;
 
+  const requestedBranchId = new URL(req.url).searchParams.get('branchId') ?? user.restaurantId;
+  const branchAccess = requestedBranchId
+    ? await resolveScopedBranchRouteAccess(requestedBranchId)
+    : null;
+
+  if (!branchAccess) {
+    return NextResponse.json({ error: 'Branch access denied' }, { status: 403 });
+  }
+
+  const restaurantId = branchAccess.branchId;
+
   try {
     const body = await req.json();
     const validatedData = menuItemSchema.safeParse(body);
@@ -139,8 +162,8 @@ export async function POST(req: Request) {
     if (!validatedData.success) {
       await logger.error('menu-items-api-post', 'Validation error in POST menu item', {
         error: validatedData.error.message,
-        restaurantId: user.restaurantId
-      }, user.restaurantId, user.userId);
+        restaurantId
+      }, restaurantId, user.userId);
       return NextResponse.json({ errors: validatedData.error.flatten().fieldErrors }, { status: 400 });
     }
 
@@ -170,13 +193,13 @@ export async function POST(req: Request) {
       .eq('id', category_id)
       .single();
 
-    if (categoryError || !category || category.restaurant_id !== user.restaurantId) {
+    if (categoryError || !category || category.restaurant_id !== restaurantId) {
       return NextResponse.json({ error: 'Invalid category or category does not belong to your restaurant' }, { status: 400 });
     }
 	// Prepare the menu item data
 
     const menuItemData: Record<string, unknown> = {
-      restaurant_id: user.restaurantId,
+      restaurant_id: restaurantId,
       category_id,
       name_en,
       price,
@@ -221,8 +244,8 @@ export async function POST(req: Request) {
     if (error) {
       await logger.error('menu-items-api-post', 'Error creating menu item', {
         error: error.message,
-        restaurantId: user.restaurantId
-      }, user.restaurantId, user.userId);
+        restaurantId
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error creating menu item', details: error.message }, { status: 500 });
     }
 
@@ -231,7 +254,7 @@ export async function POST(req: Request) {
     // Insert toppings if provided
     if (toppings && toppings.length > 0) {
       const toppingsData = toppings.map((topping, index) => ({
-        restaurant_id: user.restaurantId,
+        restaurant_id: restaurantId,
         menu_item_id: menuItemId,
         name_en: topping.name_en,
         name_ja: topping.name_ja || topping.name_en,
@@ -247,9 +270,9 @@ export async function POST(req: Request) {
       if (toppingsError) {
         await logger.error('menu-items-api-post', 'Error creating toppings', {
           error: toppingsError.message,
-          restaurantId: user.restaurantId,
+          restaurantId,
           menuItemId: menuItemId
-        }, user.restaurantId, user.userId);
+        }, restaurantId, user.userId);
         // Clean up the menu item if toppings fail
         await supabaseAdmin.from('menu_items').delete().eq('id', menuItemId);
         return NextResponse.json({ message: 'Error creating toppings', details: toppingsError.message }, { status: 500 });
@@ -259,7 +282,7 @@ export async function POST(req: Request) {
     // Insert sizes if provided
     if (sizes && sizes.length > 0) {
       const sizesData = sizes.map((size, index) => ({
-        restaurant_id: user.restaurantId,
+        restaurant_id: restaurantId,
         menu_item_id: menuItemId,
         size_key: size.size_key,
         name_en: size.name_en,
@@ -276,9 +299,9 @@ export async function POST(req: Request) {
       if (sizesError) {
         await logger.error('menu-items-api-post', 'Error creating sizes', {
           error: sizesError.message,
-          restaurantId: user.restaurantId,
+          restaurantId,
           menuItemId: menuItemId
-        }, user.restaurantId, user.userId);
+        }, restaurantId, user.userId);
         // Clean up the menu item and toppings if sizes fail
         await supabaseAdmin.from('menu_items').delete().eq('id', menuItemId);
         return NextResponse.json({ message: 'Error creating sizes', details: sizesError.message }, { status: 500 });
@@ -299,22 +322,22 @@ export async function POST(req: Request) {
     if (fetchError) {
       await logger.error('menu-items-api-post', 'Error fetching complete menu item', {
         error: fetchError.message,
-        restaurantId: user.restaurantId,
+        restaurantId,
         menuItemId: menuItemId
-      }, user.restaurantId, user.userId);
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Menu item created but error fetching complete data', details: fetchError.message }, { status: 500 });
     }
 
     // Invalidate menu cache since we created a new menu item
-    invalidateMenuCache(user.restaurantId);
+    invalidateMenuCache(restaurantId);
 
     return NextResponse.json({ message: 'Menu item created successfully', menuItem: completeMenuItem }, { status: 201 });
 
   } catch (error) {
     await logger.error('menu-items-api-post', 'API Error in POST menu items', {
       error: error instanceof Error ? error.message : 'Unknown error',
-      restaurantId: user?.restaurantId
-    }, user?.restaurantId, user?.userId);
+      restaurantId
+    }, restaurantId, user?.userId);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: 'Validation error', errors: error.flatten().fieldErrors }, { status: 400 });
     }

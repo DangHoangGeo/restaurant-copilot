@@ -7,6 +7,7 @@ import { computeDiscounts } from "@/lib/server/finance/queries";
 import { resolvePromotionsAccess } from "@/lib/server/promotions/access";
 import { getPromotionList } from "@/lib/server/promotions/service";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 export async function generateMetadata({
   params,
@@ -45,7 +46,9 @@ export default async function ControlPromotionsPage({
 
   const [promotions, discounts, restaurantRow] = await Promise.all([
     getPromotionList(restaurantId, true).catch(() => []),
-    computeDiscounts(restaurantId, fromDate, toDate).catch(() => ({ discount_total: 0 })),
+    computeDiscounts(restaurantId, fromDate, toDate).catch(() => ({
+      discount_total: 0,
+    })),
     supabaseAdmin
       .from("restaurants")
       .select("currency")
@@ -63,7 +66,7 @@ export default async function ControlPromotionsPage({
       locale={locale}
       canWrite={canWrite}
       financeHref="/control/finance"
-      purchasingHref="/branch/purchasing"
+      purchasingHref={buildBranchPath(locale, restaurantId, "purchasing")}
       promotionsHref="/control/promotions"
     />
   );

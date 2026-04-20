@@ -452,7 +452,7 @@ export function ControlSharedMenuPanel({
               </Badge>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Create reusable categories and dishes here, then copy them to each branch menu when needed.
+              Create reusable categories and dishes here. Every branch now inherits this company menu foundation automatically.
             </p>
           </div>
         </div>
@@ -534,7 +534,7 @@ export function ControlSharedMenuPanel({
             <div>
               <h3 className="text-sm font-semibold">Owner-friendly AI flow</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Enter the dish name once, let AI draft the three languages, then copy to branches.
+                Enter the dish name once, let AI draft the three languages, and keep every branch aligned automatically.
               </p>
             </div>
             <Badge className="rounded-full bg-amber-100 text-amber-800 hover:bg-amber-100">
@@ -564,7 +564,7 @@ export function ControlSharedMenuPanel({
                 3. Reuse everywhere
               </p>
               <p className="mt-2 text-sm text-slate-700">
-                Shared items stay as templates until each branch copies what it needs.
+                Shared items stay company-managed and are inherited by every branch menu.
               </p>
             </div>
           </div>

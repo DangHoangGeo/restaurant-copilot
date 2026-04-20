@@ -359,7 +359,7 @@ export function ControlRestaurantsClient({
                         />
                         <BranchScopedLinkButton
                           restaurantId={branch.id}
-                          href={`/${locale}/branch`}
+                          href={`/${locale}/branch/${branch.id}`}
                           label={t('workspace.actions.branchManage')}
                           size="sm"
                           className="w-full rounded-xl sm:w-auto"

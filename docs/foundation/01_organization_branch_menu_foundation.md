@@ -35,7 +35,7 @@ Each branch is an operating restaurant.
 
 A branch owns:
 
-- its menu
+- its resolved menu, including inherited organization-shared content and branch-local content
 - its prices
 - item availability
 - tables and QR codes
@@ -129,6 +129,14 @@ This is the most important product update from your latest direction.
 
 Each branch can have a different menu.
 
+At the same time, every branch should automatically inherit organization-shared categories and shared menu items.
+
+That inherited content does not eliminate branch ownership. It means the branch menu becomes an explicit resolved menu made from:
+
+- organization-shared categories and items
+- branch-local categories and items that remain branch-owned
+- branch-level operational controls such as availability, visibility, and pricing where supported
+
 That difference may include:
 
 - categories
@@ -142,39 +150,52 @@ That difference may include:
 
 ### Implementation Rule
 
-Keep menus branch-scoped first.
+Keep customer ordering branch-scoped first, but make shared organization content inherit into branch menus automatically.
 
 That means the simplest and safest next step is:
 
-- one branch has one active menu set
+- one branch has one active resolved menu set
 - customer ordering reads the branch menu only
-- menu changes affect only that branch
-- owners can copy a menu from another branch when opening a new shop
+- organization-shared categories and items flow into each branch menu automatically
+- branch-local categories and items stay owned by the branch
+- branch overrides stay explicit at the branch layer
+
+### Explicit Source Tracking Rule
+
+Inheritance must be explicit and traceable.
+
+- inherited branch menu records must keep a durable link to the organization-shared source category or item
+- branch-local records must remain clearly marked as branch-owned and not silently converted into shared records
+- sync, detach, archive, and removal actions on inherited content must stay auditable
+- customer ordering should always read the resolved branch menu, not guess at ownership during checkout
 
 ### Why this is the right first move
 
-It protects the current customer ordering flow and avoids premature complexity.
+It protects the current customer ordering flow while giving founders a cleaner multi-branch menu operating model.
 
-If we introduce a global catalog too early, the system becomes harder for owners to understand and harder for AI agents to maintain safely.
+The branch still remains the operational unit, but founders no longer need to recreate the same categories and shared items branch by branch.
+
+Explicit source tracking also prevents hidden coupling because the system can always tell whether a menu record came from the organization layer or was created locally by one branch.
 
 ### Recommended Rollout
 
-#### Phase 1: Branch menu independence
+#### Phase 1: Organization-shared inheritance foundation
 
-- keep menu data branch-scoped
-- add owner tools to duplicate menu data from one branch to another
-- add branch menu comparison for prices and availability
-- add import/export for branch menu maintenance
+- add organization-shared menu categories and shared items
+- automatically inherit those shared records into each branch menu
+- keep explicit source tracking between organization records and branch-resolved records
+- preserve branch-local categories and items as branch-owned records
+- add branch review tools for inherited versus local menu content
 
-#### Phase 2: Shared menu templates
+#### Phase 2: Branch controls and selective overrides
 
-After branch operations are stable, optionally add:
+After the inheritance foundation is stable, optionally add:
 
-- organization-level menu templates
-- branch overrides for price and availability
-- selective sync from template to branch
+- richer branch overrides for price, availability, and visibility
+- selective detach or branch-only replacement workflows where needed
+- comparison and rollout tools for shared menu updates across branches
 
-This should be optional, not required for launch.
+This should stay operationally simple and should not make daily branch menu work harder.
 
 ## Customer Ordering Data Flow
 
@@ -182,7 +203,7 @@ This should be optional, not required for launch.
 flowchart TD
     A["Customer scans branch QR"] --> B["Table and branch identified"]
     B --> C["Customer session created for branch"]
-    C --> D["Branch menu loaded"]
+    C --> D["Resolved branch menu loaded from inherited and local sources"]
     D --> E["Customer places order"]
     E --> F["Order stored with branch id"]
     F --> G["Branch operations route and mobile app receive realtime updates"]
@@ -218,6 +239,8 @@ flowchart TD
 - `organization_restaurants`
 - `organization_member_shop_scopes`
 - `organization_member_permissions`
+- `organization_menu_categories`
+- `organization_menu_items`
 
 ### Keep branch-owned domains explicit
 
@@ -229,6 +252,13 @@ flowchart TD
 - `purchase_orders`
 - `expenses`
 - `branch_promotions`
+
+### Keep menu inheritance ownership explicit
+
+- organization-shared menu records should have stable organization-level identifiers
+- branch menu records should carry explicit source metadata or mapping records when they inherit organization-shared content
+- branch-local menu records should remain branch-owned even when they sit beside inherited content in the same branch menu
+- reporting, audit logs, and future sync workflows should rely on explicit ownership data instead of inferred matching by name
 
 ### Add monthly finance snapshots
 
@@ -288,8 +318,8 @@ The system should be easy for AI agents to extend without creating hidden coupli
 ## Recommended Next Implementation Order
 
 1. Build organization and shared-founder access above the current restaurant layer.
-2. Keep the current customer ordering flow intact and formalize branch-scoped menu ownership.
-3. Add branch menu copy and branch menu comparison tools.
+2. Keep the current customer ordering flow intact and formalize branch-resolved menu ownership with organization-shared inheritance and explicit source tracking.
+3. Add branch review, comparison, and override tools for inherited versus branch-local menu content.
 4. Complete secure attendance, approvals, and payroll-grade daily hour summaries.
 5. Add purchases, expenses, and monthly finance closure snapshots.
 6. Add promotions and discount codes with branch scope and audit logs.

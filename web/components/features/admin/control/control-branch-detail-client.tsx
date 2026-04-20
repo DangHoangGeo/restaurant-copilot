@@ -452,7 +452,7 @@ export function ControlBranchDetailClient({
             </Button>
             <BranchScopedLinkButton
               restaurantId={initialBranch.id}
-              href={`/${appLocale}/branch`}
+              href={`/${appLocale}/branch/${initialBranch.id}`}
               label={t('actions.openBranchManage')}
               variant="default"
               size="sm"
@@ -864,7 +864,7 @@ export function ControlBranchDetailClient({
             </div>
             <BranchScopedLinkButton
               restaurantId={initialBranch.id}
-              href={`/${appLocale}/branch/finance`}
+              href={`/${appLocale}/branch/${initialBranch.id}/finance`}
               label={t('finance.openBranchFinance')}
               size="sm"
               className="rounded-xl"

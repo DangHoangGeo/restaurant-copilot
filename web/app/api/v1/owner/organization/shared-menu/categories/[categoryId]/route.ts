@@ -4,6 +4,7 @@ import {
   forbidden,
   requireOrgContext,
 } from '@/lib/server/authorization/service';
+import { syncOrganizationSharedMenuToBranches } from '@/lib/server/organizations/menu-inheritance';
 import { deleteOrganizationSharedCategory } from '@/lib/server/organizations/shared-menu';
 import { resolveOrgContext } from '@/lib/server/organizations/service';
 
@@ -27,6 +28,10 @@ export async function DELETE(
   if (!success) {
     return NextResponse.json({ error: 'Failed to delete shared category' }, { status: 500 });
   }
+
+  await syncOrganizationSharedMenuToBranches({
+    organizationId: ctx!.organization.id,
+  });
 
   return NextResponse.json({ success: true });
 }

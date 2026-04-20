@@ -12,8 +12,11 @@ import {
 import {
   createOrganizationSharedCategory,
   createOrganizationSharedMenuItem,
+  deleteOrganizationSharedCategory,
+  deleteOrganizationSharedMenuItem,
   listOrganizationSharedMenu,
 } from '@/lib/server/organizations/shared-menu';
+import { syncOrganizationSharedMenuToBranches } from '@/lib/server/organizations/menu-inheritance';
 import { resolveOrgContext } from '@/lib/server/organizations/service';
 
 export async function GET() {
@@ -66,6 +69,19 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Failed to create shared category' }, { status: 500 });
       }
 
+      try {
+        await syncOrganizationSharedMenuToBranches({
+          organizationId: ctx!.organization.id,
+        });
+      } catch (error) {
+        console.error('Failed to sync shared category to branches:', error);
+        await deleteOrganizationSharedCategory(ctx!.organization.id, category.id);
+        return NextResponse.json(
+          { error: 'Failed to inherit the shared category into branch menus. The shared category was rolled back.' },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json({ success: true, category }, { status: 201 });
     }
 
@@ -88,6 +104,19 @@ export async function POST(req: NextRequest) {
 
       if (!item) {
         return NextResponse.json({ error: 'Failed to create shared item' }, { status: 500 });
+      }
+
+      try {
+        await syncOrganizationSharedMenuToBranches({
+          organizationId: ctx!.organization.id,
+        });
+      } catch (error) {
+        console.error('Failed to sync shared item to branches:', error);
+        await deleteOrganizationSharedMenuItem(ctx!.organization.id, item.id);
+        return NextResponse.json(
+          { error: 'Failed to inherit the shared item into branch menus. The shared item was rolled back.' },
+          { status: 500 }
+        );
       }
 
       return NextResponse.json({ success: true, item }, { status: 201 });

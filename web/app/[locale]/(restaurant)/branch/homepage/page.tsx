@@ -1,17 +1,18 @@
 import { redirect } from "next/navigation";
 import { resolveFounderControlContext } from "@/lib/server/control/access";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 export default async function DashboardHomepagePage({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string; branchId?: string }>;
 }) {
-  const { locale } = await params;
+  const { locale, branchId } = await params;
   const founderContext = await resolveFounderControlContext();
 
   if (founderContext) {
     redirect(`/${locale}/control/homepage`);
   }
 
-  redirect(`/${locale}/branch`);
+  redirect(buildBranchPath(locale, branchId));
 }

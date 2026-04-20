@@ -15,6 +15,8 @@ import {
   updateOrganizationSettings,
   updateOrganizationMember,
 } from './queries';
+import { syncOrganizationSharedMenuToBranches } from './menu-inheritance';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import type {
   Organization,
   OrganizationMember,
@@ -147,6 +149,23 @@ export async function addBranchToOrganization(
     // createRestaurantInOrg returns null for conflicts too; route handler does the pre-check
     return { success: false, error: 'Failed to create branch' };
   }
+
+  try {
+    await syncOrganizationSharedMenuToBranches({
+      organizationId: orgId,
+      restaurantIds: [restaurant.id],
+    });
+  } catch (error) {
+    console.error('Failed to sync shared menu to new branch:', error);
+    await supabaseAdmin
+      .from('organization_restaurants')
+      .delete()
+      .eq('organization_id', orgId)
+      .eq('restaurant_id', restaurant.id);
+    await supabaseAdmin.from('restaurants').delete().eq('id', restaurant.id);
+    return { success: false, error: 'Failed to initialize inherited menu for the new branch' };
+  }
+
   return { success: true, restaurant };
 }
 

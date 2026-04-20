@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { FileText, ShoppingCart, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 interface MoneySectionNavProps {
   locale: string;
@@ -20,7 +21,9 @@ export function MoneySectionNav({
   promotionsHref = "/branch/promotions",
 }: MoneySectionNavProps) {
   const pathname = usePathname();
+  const params = useParams();
   const t = useTranslations("owner.dashboard");
+  const branchId = typeof params.branchId === "string" ? params.branchId : null;
   const items = [
     {
       href: financeHref,
@@ -39,6 +42,30 @@ export function MoneySectionNav({
     },
   ] as const;
 
+  const resolveHref = (href: string) => {
+    if (
+      href.startsWith(`/${locale}/`) ||
+      href.startsWith("http://") ||
+      href.startsWith("https://")
+    ) {
+      return href;
+    }
+
+    if (href.startsWith("/branch")) {
+      return buildBranchPath(
+        locale,
+        branchId,
+        href.replace(/^\/branch\/?/, ""),
+      );
+    }
+
+    if (href.startsWith("/")) {
+      return `/${locale}${href}`;
+    }
+
+    return href;
+  };
+
   return (
     <div className="space-y-2">
       <div className="px-1">
@@ -51,7 +78,7 @@ export function MoneySectionNav({
       </div>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         {items.map(({ href, labelKey, icon: Icon }) => {
-          const fullHref = `/${locale}${href}`;
+          const fullHref = resolveHref(href);
           const isActive = pathname.startsWith(fullHref);
 
           return (
@@ -62,7 +89,7 @@ export function MoneySectionNav({
                 "flex min-h-12 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "border-primary bg-primary/10 text-foreground"
-                  : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+                  : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
               aria-current={isActive ? "page" : undefined}
             >

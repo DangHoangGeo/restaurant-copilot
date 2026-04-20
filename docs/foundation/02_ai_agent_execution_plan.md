@@ -11,7 +11,7 @@ The goal is not to ship many disconnected features. The goal is to build a stron
 1. Do not break the current customer menu ordering flow.
 2. Treat each existing `restaurant` as a branch-level operating unit.
 3. Add multi-branch support above the current restaurant layer through an organization model.
-4. Keep branch menus independent first.
+4. Keep branch menus explicitly branch-resolved first, even when they inherit organization-shared categories and items through explicit source tracking.
 5. Founder and co-founder experience must live on the organization-subdomain control route.
 6. Branch manager experience must live on the organization-subdomain operations route with explicit branch context.
 7. Keep permissions explicit and auditable.
@@ -46,7 +46,7 @@ The agent must begin by restating these foundation constraints in its own words:
 - customer ordering must remain stable
 - the current `restaurant` maps to a branch-level operating unit
 - multi-branch support is added through an organization layer above branches
-- branch menus are independent first
+- branch menus remain explicit branch menus, including inherited organization-shared content and branch-local content
 - owner UX must stay mobile-first and operationally simple
 - permissions, finance, and attendance logic must remain explicit and auditable
 
@@ -420,7 +420,7 @@ Finish migrating branch features onto the new operations route and shared founda
 
 ### Scope
 
-- branch menu workflows
+- branch menu workflows, including organization-shared inheritance with explicit source tracking and branch-local ownership
 - branch people workflows
 - branch attendance workflows
 - branch expenses and purchasing workflows
@@ -430,6 +430,7 @@ Finish migrating branch features onto the new operations route and shared founda
 ### Completion Definition
 
 - branch features are implemented on shared modules and shared data contracts
+- branch menu flows clearly preserve organization-shared inherited content versus branch-local content
 - branch managers can use menu, employees, attendance, expenses, bookings, and local reports from one coherent route
 - branch-local reports and analytics are preserved and understandable
 - legacy branch-specific duplication is reduced or removed

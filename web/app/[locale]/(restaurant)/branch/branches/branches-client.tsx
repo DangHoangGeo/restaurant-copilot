@@ -3,11 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import { Layers, CheckCircle2, ArrowRight, Copy, GitCompare, Plus } from "lucide-react";
+import {
+  Layers,
+  CheckCircle2,
+  ArrowRight,
+  Copy,
+  GitCompare,
+  Plus,
+} from "lucide-react";
 import { MenuCopyModal } from "@/components/features/admin/branches/MenuCopyModal";
 import { MenuComparePanel } from "@/components/features/admin/branches/MenuComparePanel";
 import { AddBranchModal } from "@/components/features/admin/branches/AddBranchModal";
 import { cn } from "@/lib/utils";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 interface Branch {
   id: string;
@@ -35,7 +43,8 @@ export function BranchesClient({
   const router = useRouter();
   const [panel, setPanel] = useState<ActivePanel>("none");
   const [switching, setSwitching] = useState(false);
-  const [currentActiveBranchId, setCurrentActiveBranchId] = useState(activeBranchId);
+  const [currentActiveBranchId, setCurrentActiveBranchId] =
+    useState(activeBranchId);
   const [branchList, setBranchList] = useState<Branch[]>(branches);
   const [showAddBranch, setShowAddBranch] = useState(false);
 
@@ -59,7 +68,11 @@ export function BranchesClient({
     }
   };
 
-  const handleBranchAdded = (branch: { id: string; name: string; subdomain: string }) => {
+  const handleBranchAdded = (branch: {
+    id: string;
+    name: string;
+    subdomain: string;
+  }) => {
     setBranchList((prev) => [...prev, branch]);
     setShowAddBranch(false);
     router.refresh();
@@ -68,7 +81,6 @@ export function BranchesClient({
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto space-y-6">
-
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -77,7 +89,9 @@ export function BranchesClient({
             </div>
             <div>
               <h1 className="text-lg font-semibold">{t("pageTitle")}</h1>
-              <p className="text-xs text-muted-foreground">{t("pageDescription")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("pageDescription")}
+              </p>
             </div>
           </div>
 
@@ -107,19 +121,23 @@ export function BranchesClient({
                   key={branch.id}
                   className={cn(
                     "flex items-center gap-3 rounded-xl border bg-card p-4",
-                    isActive && "border-primary/40 bg-primary/5"
+                    isActive && "border-primary/40 bg-primary/5",
                   )}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm truncate">{branch.name}</span>
+                      <span className="font-medium text-sm truncate">
+                        {branch.name}
+                      </span>
                       {isActive && (
                         <span className="shrink-0 text-xs font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                           {t("currentBranch")}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{branch.subdomain}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {branch.subdomain}
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
@@ -145,7 +163,7 @@ export function BranchesClient({
                           const ok = await switchBranch(branch.id);
                           if (!ok) return;
                         }
-                        router.push(`/${locale}/branch/menu`);
+                        router.push(buildBranchPath(locale, branch.id, "menu"));
                       }}
                       disabled={switching}
                       className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted"
@@ -166,7 +184,9 @@ export function BranchesClient({
               onClick={() => setPanel(panel === "copy" ? "none" : "copy")}
               className={cn(
                 "flex items-center gap-2 rounded-xl border p-4 text-sm font-medium transition-colors hover:bg-muted",
-                panel === "copy" ? "border-primary/40 bg-primary/5 text-primary" : "bg-card text-foreground"
+                panel === "copy"
+                  ? "border-primary/40 bg-primary/5 text-primary"
+                  : "bg-card text-foreground",
               )}
             >
               <Copy className="h-4 w-4 shrink-0" />
@@ -176,7 +196,9 @@ export function BranchesClient({
               onClick={() => setPanel(panel === "compare" ? "none" : "compare")}
               className={cn(
                 "flex items-center gap-2 rounded-xl border p-4 text-sm font-medium transition-colors hover:bg-muted",
-                panel === "compare" ? "border-primary/40 bg-primary/5 text-primary" : "bg-card text-foreground"
+                panel === "compare"
+                  ? "border-primary/40 bg-primary/5 text-primary"
+                  : "bg-card text-foreground",
               )}
             >
               <GitCompare className="h-4 w-4 shrink-0" />
@@ -195,9 +217,7 @@ export function BranchesClient({
 
         {/* Compare panel */}
         {panel === "compare" && branchList.length >= 2 && (
-          <MenuComparePanel
-            branches={branchList}
-          />
+          <MenuComparePanel branches={branchList} />
         )}
       </div>
 

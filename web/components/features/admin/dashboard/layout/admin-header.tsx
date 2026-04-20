@@ -15,6 +15,7 @@ import { LanguageSwitcher } from '@/components/common/language-switcher';
 import { usePathname, useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { buildBranchPath, normalizeBranchPathname } from '@/lib/branch-paths';
 
 // This mapping should ideally live in a config file
 const viewNameMap: Record<string, string> = {
@@ -59,6 +60,7 @@ export function AdminHeader({
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string || 'en';
+  const branchId = typeof params.branchId === 'string' ? params.branchId : null;
 
   const handleLogout = async () => {
     try {
@@ -86,8 +88,7 @@ export function AdminHeader({
   };
 
   // Determine current page title based on pathname
-  // Remove locale from pathname for matching
-  const basePath = pathname.replace(`/${locale}`, '');
+  const basePath = normalizeBranchPathname(pathname, locale, branchId);
   let currentPageTitleKey = viewNameMap[basePath];
 
   // Handle dynamic routes
@@ -173,7 +174,7 @@ export function AdminHeader({
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>{t('user_menu.my_account_label')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <Link href={`/${locale}/branch/profile`} passHref legacyBehavior>
+              <Link href={buildBranchPath(locale, branchId, 'profile')} passHref legacyBehavior>
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <a><User className="mr-2 h-4 w-4" /> {t('user_menu.profile_link')}</a>
                 </DropdownMenuItem>

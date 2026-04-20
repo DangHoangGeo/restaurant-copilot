@@ -10,6 +10,7 @@ import { computeDiscounts } from "@/lib/server/finance/queries";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { PromotionsDashboard } from "@/components/features/admin/promotions/PromotionsDashboard";
 import { getJapanLocalDate } from "@/lib/server/attendance/service";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 export async function generateMetadata({
   params,
@@ -24,9 +25,9 @@ export async function generateMetadata({
 export default async function PromotionsPage({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string; branchId?: string }>;
 }) {
-  const { locale } = await params;
+  const { locale, branchId } = await params;
   const founderContext = await resolveFounderControlContext();
 
   if (founderContext) {
@@ -35,7 +36,7 @@ export default async function PromotionsPage({
 
   const access = await resolvePromotionsAccess();
   if (!access) {
-    redirect(`/${locale}/branch`);
+    redirect(buildBranchPath(locale, branchId));
   }
 
   const { restaurantId, canWrite } = access;
@@ -48,11 +49,13 @@ export default async function PromotionsPage({
   const mm = String(month).padStart(2, "0");
   const lastDay = new Date(year, month, 0).getDate();
   const fromDate = `${year}-${mm}-01`;
-  const toDate   = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`;
+  const toDate = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`;
 
   const [promotions, discounts, restaurantRow] = await Promise.all([
     getPromotionList(restaurantId, true).catch(() => []),
-    computeDiscounts(restaurantId, fromDate, toDate).catch(() => ({ discount_total: 0 })),
+    computeDiscounts(restaurantId, fromDate, toDate).catch(() => ({
+      discount_total: 0,
+    })),
     supabaseAdmin
       .from("restaurants")
       .select("currency")

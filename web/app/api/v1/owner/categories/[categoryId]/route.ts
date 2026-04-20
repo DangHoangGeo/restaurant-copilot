@@ -4,6 +4,7 @@ import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
 import { checkAuthorization } from '@/lib/server/rolePermissions';
+import { resolveScopedBranchRouteAccess } from '@/lib/server/organizations/branch-route';
 
 // Schema for validating the request body when updating a category
 const categoryUpdateSchema = z.object({
@@ -25,6 +26,16 @@ export async function PUT(req: Request,{ params }: { params: Promise<{ categoryI
   if (authError) return authError;
 
   const { categoryId } = await params;
+  const requestedBranchId = new URL(req.url).searchParams.get('branchId') ?? user.restaurantId;
+  const branchAccess = requestedBranchId
+    ? await resolveScopedBranchRouteAccess(requestedBranchId)
+    : null;
+
+  if (!branchAccess) {
+    return NextResponse.json({ error: 'Branch access denied' }, { status: 403 });
+  }
+
+  const restaurantId = branchAccess.branchId;
 
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -47,7 +58,7 @@ export async function PUT(req: Request,{ params }: { params: Promise<{ categoryI
       .eq('id', categoryId)
       .single();
 
-    if (fetchError || !existingCategory || existingCategory.restaurant_id !== user.restaurantId) {
+    if (fetchError || !existingCategory || existingCategory.restaurant_id !== restaurantId) {
       return NextResponse.json({ error: 'Category not found or does not belong to your restaurant' }, { status: 404 });
     }
 
@@ -55,7 +66,7 @@ export async function PUT(req: Request,{ params }: { params: Promise<{ categoryI
       .from('categories')
       .update(validatedData.data)
       .eq('id', categoryId)
-      .eq('restaurant_id', user.restaurantId)
+      .eq('restaurant_id', restaurantId)
       .select()
       .single();
 
@@ -63,8 +74,8 @@ export async function PUT(req: Request,{ params }: { params: Promise<{ categoryI
       await logger.error('categories-api-put', 'Error updating category', {
         error: error.message,
         categoryId,
-        restaurantId: user.restaurantId
-      }, user.restaurantId, user.userId);
+        restaurantId
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error updating category', details: error.message }, { status: 500 });
     }
 
@@ -74,8 +85,8 @@ export async function PUT(req: Request,{ params }: { params: Promise<{ categoryI
     await logger.error('categories-api-put', 'API Error in PUT category', {
       error: error instanceof Error ? error.message : 'Unknown error',
       categoryId,
-      restaurantId: user?.restaurantId
-    }, user?.restaurantId, user?.userId);
+      restaurantId
+    }, restaurantId, user?.userId);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: 'Validation error', errors: error.flatten().fieldErrors }, { status: 400 });
     }
@@ -95,6 +106,16 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
   if (authError) return authError;
 
   const { categoryId } = await params;
+  const requestedBranchId = new URL(req.url).searchParams.get('branchId') ?? user.restaurantId;
+  const branchAccess = requestedBranchId
+    ? await resolveScopedBranchRouteAccess(requestedBranchId)
+    : null;
+
+  if (!branchAccess) {
+    return NextResponse.json({ error: 'Branch access denied' }, { status: 403 });
+  }
+
+  const restaurantId = branchAccess.branchId;
 
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -110,7 +131,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
       .eq('id', categoryId)
       .single();
 
-    if (fetchError || !existingCategory || existingCategory.restaurant_id !== user.restaurantId) {
+    if (fetchError || !existingCategory || existingCategory.restaurant_id !== restaurantId) {
       return NextResponse.json({ error: 'Category not found or does not belong to your restaurant' }, { status: 404 });
     }
 
@@ -125,8 +146,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
       await logger.error('categories-api-delete', 'Error checking for menu items', {
         error: menuItemsError.message,
         categoryId,
-        restaurantId: user.restaurantId
-      }, user.restaurantId, user.userId);
+        restaurantId
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error checking category contents', details: menuItemsError.message }, { status: 500 });
     }
 
@@ -138,14 +159,14 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
       .from('categories')
       .delete()
       .eq('id', categoryId)
-      .eq('restaurant_id', user.restaurantId);
+      .eq('restaurant_id', restaurantId);
 
     if (error) {
       await logger.error('categories-api-delete', 'Error deleting category', {
         error: error.message,
         categoryId,
-        restaurantId: user.restaurantId
-      }, user.restaurantId, user.userId);
+        restaurantId
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error deleting category', details: error.message }, { status: 500 });
     }
 
@@ -155,8 +176,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
     await logger.error('categories-api-delete', 'API Error in DELETE category', {
       error: error instanceof Error ? error.message : 'Unknown error',
       categoryId,
-      restaurantId: user?.restaurantId
-    }, user?.restaurantId, user?.userId);
+      restaurantId
+    }, restaurantId, user?.userId);
     return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknown error!" }, { status: 500 });
   }
 }

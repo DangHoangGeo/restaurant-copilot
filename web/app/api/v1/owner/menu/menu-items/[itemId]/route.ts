@@ -4,6 +4,7 @@ import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { invalidateMenuCache } from '@/lib/server/request-context';
 import { logger } from '@/lib/logger';
+import { resolveScopedBranchRouteAccess } from '@/lib/server/organizations/branch-route';
 
 // Schema for toppings
 const toppingSchema = z.object({
@@ -52,6 +53,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
   }
 
   const { itemId } = await params;
+  const requestedBranchId = new URL(req.url).searchParams.get('branchId') ?? user.restaurantId;
+  const branchAccess = requestedBranchId
+    ? await resolveScopedBranchRouteAccess(requestedBranchId)
+    : null;
+
+  if (!branchAccess) {
+    return NextResponse.json({ error: 'Branch access denied' }, { status: 403 });
+  }
+
+  const restaurantId = branchAccess.branchId;
 
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -67,7 +78,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
     await logger.error('menu-items-update', 'Validation error', {
       error: validatedData.error.flatten().fieldErrors,
       itemId
-    }, user.restaurantId, user.userId);
+    }, restaurantId, user.userId);
     return NextResponse.json({ errors: validatedData.error.flatten().fieldErrors }, { status: 400 });
   }
 
@@ -81,7 +92,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
         .eq('id', menuItemUpdateData.category_id)
         .single();
 
-      if (categoryError || !category || category.restaurant_id !== user.restaurantId) {
+      if (categoryError || !category || category.restaurant_id !== restaurantId) {
         return NextResponse.json({ error: 'Invalid category or category does not belong to your restaurant' }, { status: 400 });
       }
     }
@@ -93,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
       .eq('id', itemId)
       .single();
 
-    if (fetchError || !existingItem || existingItem.restaurant_id !== user.restaurantId) {
+    if (fetchError || !existingItem || existingItem.restaurant_id !== restaurantId) {
       return NextResponse.json({ error: 'Menu item not found or does not belong to your restaurant' }, { status: 404 });
     }
 
@@ -103,7 +114,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
         .from('menu_items')
         .update(menuItemUpdateData)
         .eq('id', itemId)
-        .eq('restaurant_id', user.restaurantId);
+        .eq('restaurant_id', restaurantId);
 
       if (error) {
         console.error('Error updating menu item:', error);
@@ -118,7 +129,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
         .from('toppings')
         .delete()
         .eq('menu_item_id', itemId)
-        .eq('restaurant_id', user.restaurantId);
+        .eq('restaurant_id', restaurantId);
 
       if (deleteError) {
         console.error('Error deleting existing toppings:', deleteError);
@@ -128,7 +139,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
       // Insert new toppings if any
       if (toppings.length > 0) {
         const toppingsData = toppings.map((topping, index) => ({
-          restaurant_id: user.restaurantId,
+          restaurant_id: restaurantId,
           menu_item_id: itemId,
           name_en: topping.name_en,
           name_ja: topping.name_ja || topping.name_en,
@@ -155,7 +166,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
         .from('menu_item_sizes')
         .delete()
         .eq('menu_item_id', itemId)
-        .eq('restaurant_id', user.restaurantId);
+        .eq('restaurant_id', restaurantId);
 
       if (deleteError) {
         console.error('Error deleting existing sizes:', deleteError);
@@ -165,7 +176,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
       // Insert new sizes if any
       if (sizes.length > 0) {
         const sizesData = sizes.map((size, index) => ({
-          restaurant_id: user.restaurantId,
+          restaurant_id: restaurantId,
           menu_item_id: itemId,
           size_key: size.size_key,
           name_en: size.name_en,
@@ -201,12 +212,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
       await logger.error('menu-items-update', 'Error fetching complete menu item', {
         error: completeError.message,
         itemId
-      }, user.restaurantId, user.userId);
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Menu item updated but error fetching complete data', details: completeError.message }, { status: 500 });
     }
 
     // Invalidate menu cache since we updated a menu item
-    invalidateMenuCache(user.restaurantId);
+    invalidateMenuCache(restaurantId);
 
     return NextResponse.json({ message: 'Menu item updated successfully', menuItem: completeMenuItem }, { status: 200 });
 
@@ -214,7 +225,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ item
     await logger.error('menu-items-update', 'API Error in PUT menu item', {
       error: error instanceof Error ? error.message : 'Unknown error',
       itemId
-    }, user?.restaurantId, user?.userId);
+    }, restaurantId, user?.userId);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: 'Validation error', errors: error.flatten().fieldErrors }, { status: 400 });
     }
@@ -230,6 +241,16 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ item
   }
 
   const { itemId } = await params;
+  const requestedBranchId = new URL(_req.url).searchParams.get('branchId') ?? user.restaurantId;
+  const branchAccess = requestedBranchId
+    ? await resolveScopedBranchRouteAccess(requestedBranchId)
+    : null;
+
+  if (!branchAccess) {
+    return NextResponse.json({ error: 'Branch access denied' }, { status: 403 });
+  }
+
+  const restaurantId = branchAccess.branchId;
 
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -245,7 +266,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ item
       .eq('id', itemId)
       .single();
 
-    if (fetchError || !existingItem || existingItem.restaurant_id !== user.restaurantId) {
+    if (fetchError || !existingItem || existingItem.restaurant_id !== restaurantId) {
       return NextResponse.json({ error: 'Menu item not found or does not belong to your restaurant' }, { status: 404 });
     }
 
@@ -253,18 +274,18 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ item
       .from('menu_items')
       .delete()
       .eq('id', itemId)
-      .eq('restaurant_id', user.restaurantId);
+      .eq('restaurant_id', restaurantId);
 
     if (error) {
       await logger.error('menu-items-delete', 'Error deleting menu item', {
         error: error.message,
         itemId
-      }, user.restaurantId, user.userId);
+      }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error deleting menu item', details: error.message }, { status: 500 });
     }
 
     // Invalidate menu cache since we deleted a menu item
-    invalidateMenuCache(user.restaurantId);
+    invalidateMenuCache(restaurantId);
 
     return NextResponse.json({ message: 'Menu item deleted successfully' }, { status: 200 });
 
@@ -272,7 +293,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ item
     await logger.error('menu-items-delete', 'API Error in DELETE menu item', {
       error: error instanceof Error ? error.message : 'Unknown error',
       itemId
-    }, user?.restaurantId, user?.userId);
+    }, restaurantId, user?.userId);
     return NextResponse.json({ message: 'Internal server error', details: error instanceof Error ? error.message : "Unknown error!" }, { status: 500 });
   }
 }

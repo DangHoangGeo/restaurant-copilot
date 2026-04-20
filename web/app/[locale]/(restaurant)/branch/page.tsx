@@ -1,5 +1,7 @@
-import { DashboardClientContent } from './dashboard-client-content';
 import { setRequestLocale } from 'next-intl/server';
+import { redirect } from 'next/navigation';
+import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
+import { buildBranchPath } from '@/lib/branch-paths';
 
 export default async function DashboardPage({
   params
@@ -8,10 +10,11 @@ export default async function DashboardPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  
-  return (
-    <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <DashboardClientContent />
-    </div>
-  );
+  const user = await getUserFromRequest();
+
+  if (!user?.restaurantId) {
+    redirect(`/${locale}/login`);
+  }
+
+  redirect(buildBranchPath(locale, user.restaurantId));
 }

@@ -5,13 +5,14 @@ import { resolveFounderControlContext } from "@/lib/server/control/access";
 import { Button } from "@/components/ui/button";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { buildRootControlSectionUrl } from "@/lib/server/organizations/root-dashboard";
+import { buildBranchPath } from "@/lib/branch-paths";
 
 export default async function OnboardingPage({
-  params
+  params,
 }: {
-  params: Promise<{ locale: string }>
+  params: Promise<{ locale: string; branchId?: string }>;
 }) {
-  const { locale } = await params;
+  const { locale, branchId } = await params;
   const [founderContext, user] = await Promise.all([
     resolveFounderControlContext(),
     getUserFromRequest(),
@@ -50,16 +51,15 @@ export default async function OnboardingPage({
         </div>
         <h1 className="mt-4 text-2xl font-semibold">Waiting for owner setup</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          The company owner needs to finish the first setup before branch tools open.
+          The company owner needs to finish the first setup before branch tools
+          open.
         </p>
         <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
           <Clock className="h-4 w-4" />
           Check back soon
         </div>
         <Button asChild className="mt-5 w-full rounded-2xl">
-          <Link href={`/${locale}/branch`}>
-            Back to branch
-          </Link>
+          <Link href={buildBranchPath(locale, branchId)}>Back to branch</Link>
         </Button>
       </div>
     </div>
