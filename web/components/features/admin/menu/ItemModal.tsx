@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Form } from "@/components/ui/form";
-import { Info, Package, Settings } from "lucide-react";
+import { Check, Languages, PenSquare } from "lucide-react";
 import { BasicInfoTab } from './tabs/BasicInfoTab';
 import { VariantsOptionsTab } from './tabs/VariantsOptionsTab';
 import { AdvancedSettingsTab } from './tabs/AdvancedSettingsTab';
@@ -118,9 +118,9 @@ export function ItemModal({
   onGenerateDescription,
   onGenerateAI
 }: ItemModalProps) {
-  const [activeTab, setActiveTab] = useState("basic");
+  const [activeTab, setActiveTab] = useState("step1");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const t = useTranslations('owner.menu.itemModal.tabs');
+  useTranslations('owner.menu.itemModal.tabs');
   // Set sensible defaults for hidden fields
   const form = useForm<StreamlinedMenuItemFormData>({
     resolver: zodResolver(streamlinedMenuItemSchema),
@@ -194,7 +194,7 @@ export function ItemModal({
   // Track completion status for each tab
   const watchedValues = form.watch();
   const basicInfoComplete = !!(watchedValues.name_en && watchedValues.price > 0);
-  const variantsComplete = (watchedValues.toppings?.length || 0) > 0 || (watchedValues.sizes?.length || 0) > 0;
+  const step2Complete = !!(watchedValues.category_id && (watchedValues.tags?.length ?? 0) >= 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -207,43 +207,41 @@ export function ItemModal({
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full min-h-[500px]">
           <TabsList className="grid w-full grid-cols-3 mx-auto sm:mx-4 mt-0">
-            <TabsTrigger value="basic" className="relative text-xs sm:text-sm flex items-center">
-              <Info className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t("basic")}</span>
+            <TabsTrigger value="step1" className="relative text-xs sm:text-sm flex items-center">
+              <PenSquare className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Step 1: Base content</span>
               {basicInfoComplete && (
                 <Badge variant="secondary" className="ml-1 sm:ml-2 h-4 w-4 p-0 text-xs">
                   ✓
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="variants" className="text-xs sm:text-sm flex items-center">
-              <Package className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t("variants")}</span>
-              {variantsComplete && (
+            <TabsTrigger value="step2" className="text-xs sm:text-sm flex items-center">
+              <Languages className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Step 2: AI help</span>
+              {step2Complete && (
                 <Badge variant="secondary" className="ml-1 sm:ml-2 h-4 w-4 p-0 text-xs">
                   ✓
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="advanced" className="text-xs sm:text-sm flex items-center">
-              <Settings className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t("advanced")}</span>
+            <TabsTrigger value="step3" className="text-xs sm:text-sm flex items-center">
+              <Check className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Step 3: Verify & save</span>
             </TabsTrigger>
           </TabsList>
 
           <Form {...form}>
             <div className="flex-1 overflow-y-auto px-4 sm:px-6 max-h-[calc(90vh-200px)] sm:max-h-[calc(95vh-200px)]">
-              <TabsContent value="basic" className="mt-6 space-y-0">
+              <TabsContent value="step1" className="mt-6 space-y-4">
                 <BasicInfoTab
                   form={form}
                   ownerLanguage={ownerLanguage}
+                  showAiTools={false}
                   onTranslate={onTranslate}
                   onGenerateDescription={onGenerateDescription}
                   onGenerateAI={onGenerateAI}
                 />
-              </TabsContent>
-
-              <TabsContent value="variants" className="mt-6 space-y-0">
                 <VariantsOptionsTab
                   form={form}
                   ownerLanguage={ownerLanguage}
@@ -251,7 +249,18 @@ export function ItemModal({
                 />
               </TabsContent>
 
-              <TabsContent value="advanced" className="mt-6 space-y-0">
+              <TabsContent value="step2" className="mt-6 space-y-0">
+                <BasicInfoTab
+                  form={form}
+                  ownerLanguage={ownerLanguage}
+                  showAiTools
+                  onTranslate={onTranslate}
+                  onGenerateDescription={onGenerateDescription}
+                  onGenerateAI={onGenerateAI}
+                />
+              </TabsContent>
+
+              <TabsContent value="step3" className="mt-6 space-y-0">
                 <AdvancedSettingsTab
                   form={form}
                   categories={categories}
@@ -264,11 +273,11 @@ export function ItemModal({
           {/* Fixed footer with navigation and save buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-6 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 gap-3 sm:gap-0">
             <div className="flex gap-2 order-1 sm:order-1">
-              {activeTab !== "basic" && (
+              {activeTab !== "step1" && (
                 <button
                   type="button"
                   onClick={() => {
-                    const tabs = ["basic", "variants", "advanced"];
+                    const tabs = ["step1", "step2", "step3"];
                     const currentIndex = tabs.indexOf(activeTab);
                     if (currentIndex > 0) {
                       setActiveTab(tabs[currentIndex - 1]);
@@ -276,14 +285,14 @@ export function ItemModal({
                   }}
                   className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  ← Previous
+                  ← Previous step
                 </button>
               )}
-              {activeTab !== "advanced" && (
+              {activeTab !== "step3" && (
                 <button
                   type="button"
                   onClick={() => {
-                    const tabs = ["basic", "variants", "advanced"];
+                    const tabs = ["step1", "step2", "step3"];
                     const currentIndex = tabs.indexOf(activeTab);
                     if (currentIndex < tabs.length - 1) {
                       setActiveTab(tabs[currentIndex + 1]);
@@ -291,7 +300,7 @@ export function ItemModal({
                   }}
                   className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Next →
+                  Next step →
                 </button>
               )}
             </div>

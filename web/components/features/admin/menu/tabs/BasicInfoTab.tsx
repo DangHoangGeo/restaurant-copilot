@@ -17,6 +17,7 @@ import type { StreamlinedMenuItemFormData } from '../ItemModal';
 interface BasicInfoTabProps {
   form: UseFormReturn<StreamlinedMenuItemFormData>;
   ownerLanguage: 'en' | 'ja' | 'vi';
+  showAiTools?: boolean;
   onTranslate?: (text: string, field: string, context: 'item' | 'topping') => Promise<{ en: string; ja: string; vi: string }>;
   onGenerateDescription?: (text: string, initialData: string) => Promise<{ en: string; ja: string; vi: string }>;
   onGenerateAI?: (itemName: string, existingDescription: string) => Promise<{ 
@@ -33,6 +34,7 @@ interface BasicInfoTabProps {
 export function BasicInfoTab({
   form,
   ownerLanguage,
+  showAiTools = true,
   onTranslate,
   onGenerateDescription,
   onGenerateAI
@@ -239,7 +241,7 @@ export function BasicInfoTab({
           />
 
           {/* Fallback: Individual Translation Button (only if combined AI not available) */}
-          {onTranslate && !onGenerateAI && (
+          {showAiTools && onTranslate && !onGenerateAI && (
             <Button
               type="button"
               variant="outline"
@@ -281,7 +283,7 @@ export function BasicInfoTab({
           />
 
           {/* Fallback: Individual Description Generator (only if combined AI not available) */}
-          {onGenerateDescription && !onGenerateAI && (
+          {showAiTools && onGenerateDescription && !onGenerateAI && (
             <Button
               type="button"
               variant="default"
@@ -296,7 +298,7 @@ export function BasicInfoTab({
           )}
 
           {/* Combined AI Generation Button */}
-          {onGenerateAI && (
+          {showAiTools && onGenerateAI && (
             <Button
               type="button"
               variant="outline"

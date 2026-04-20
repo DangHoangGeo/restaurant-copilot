@@ -220,8 +220,8 @@ Provide a helpful, professional response that assists with their restaurant-rela
     };
 
     const prompt = `
-You are a professional menu writer for restaurants.
-Write an appetizing menu description in 3 languages: English, Japanese, and Vietnamese.
+You are a professional menu writer for restaurant operators.
+Write practical menu descriptions in 3 languages: English, Japanese, and Vietnamese.
 User's original language: ${languagePrompts[language]}
 Dish name:  "${itemName}"
 Description context from user:
@@ -235,11 +235,12 @@ Please provide descriptions in this exact JSON format (no additional text):
 }
 
 Guidelines:
-- Keep it concise (2-3 sentences)
-- Make it sound appetizing and descriptive
-- Include key ingredients or cooking methods if obvious from the name
-- Use appropriate culinary language
-- Don't add prices or availability information
+- Keep each description concise (1-2 short sentences, max 28 words per language).
+- Prioritize useful ingredient information: main protein/base, key sauce/seasoning, and cooking method.
+- If the dish context does not clearly provide ingredients, do NOT invent specifics. Use neutral wording.
+- Avoid generic marketing phrases like "delicious", "tasty", "perfect", "must-try", "mouth-watering".
+- Do not include prices, promotions, availability, or nutrition claims.
+- Keep wording operationally clear for menu management and customer understanding.
 
 Dish name: "${itemName}"
 `;
@@ -335,9 +336,8 @@ Restaurant: "${restaurantName}"
     };
 
     const prompt = `
-You are a professional menu writer for restaurants.
-You are a professional restaurant marketing writer.
-Use the dish's name and context to write appetizing name and description in 3 languages: English, Japanese, and Vietnamese.
+You are a professional menu writer for restaurant operations.
+Use the dish name and context to generate practical name + description in English, Japanese, and Vietnamese.
 
 User's original language: ${languagePrompts[language]}
 Dish name: "${itemName}"
@@ -346,24 +346,24 @@ ${contextInfo}
 
 ## Guidelines:
 ### For Name:
-- For Japanese dishes, use proper Japanese names with accurate translations
-- Keep culinary terms authentic and appetizing
-- Use proper capitalization for menu items
-- Ensure translations sound natural for restaurant menus
-- If the source is already in one language, improve/refine it if needed
-- Don't add furigana or romanization for Japanese names
+- Keep names short, clear, and menu-ready.
+- For Japanese dishes, use proper Japanese names with accurate translation intent.
+- Use proper capitalization where language-appropriate.
+- If source is already good in one language, refine rather than rewrite style aggressively.
+- Don't add furigana or romanization for Japanese names.
 
 ### For Description:
-- Keep it concise (2-3 sentences)
-- Make it sound appetizing and descriptive
-- Include key ingredients or cooking methods if obvious from the name
-- Use appropriate culinary language
-- Don't add prices or availability information
+- Keep concise (1-2 short sentences, max 28 words each language).
+- Focus on useful information: main ingredients, primary seasoning/sauce, and cooking style.
+- Prefer concrete nouns (e.g., chicken thigh, soy sauce, garlic, rice noodles) over generic adjectives.
+- If context is uncertain, do not invent ingredients. Stay factual and neutral.
+- Avoid generic marketing phrases: "delicious", "amazing", "must-try", "mouth-watering", "perfect".
+- Don't include prices, availability, or promotional language.
 
 ### For Tags:
-- Provide 3-4 relevant tags that describe the dish
-- Use keywords that customers might search for
-- Ensure tags are relevant to the dish and restaurant theme
+- Provide 3-5 specific tags focused on ingredient/cooking/category signals.
+- Prefer tags like ingredient, method, cuisine, dietary signal (if explicit), spice level (if explicit).
+- Do not output vague tags like "tasty", "good", "special".
 
 Please provide output in this exact JSON format (no additional text):
 {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2, SquarePen, MenuIcon, AlertTriangle } from 'lucide-react';
 import { MenuSkeleton } from '@/components/ui/skeletons';
@@ -593,12 +593,18 @@ export function MenuClientContent() {
     setIsCategoryModalOpen(true);
   };
 
-  const handleOpenItemModal = (category: Category, itemData: Partial<MenuItemFormData> | null = null) => {
+  const handleOpenItemModal = (category?: Category, itemData: Partial<MenuItemFormData> | null = null) => {
+    const targetCategory = category ?? menuData[0];
+    if (!targetCategory) {
+      toast.error(tValidation('category_id_required'));
+      return;
+    }
+
     if (itemData) {
       itemForm.reset({
         ...itemData,
         stock_level: itemData.stock_level ?? 10, // Default to 10 if not set
-        category_id: category.id, // ensure category_id is set from the context
+        category_id: targetCategory.id, // ensure category_id is set from the context
         weekday_visibility: itemData.weekday_visibility || [],
         imageFile: undefined, // Explicitly reset file
       });
@@ -610,8 +616,8 @@ export function MenuClientContent() {
         weekday_visibility: [1, 2, 3, 4, 5, 6, 7],
         stock_level: 10, // Use null for optional numbers not set
         tags: [], // Initialize tags array
-        position: category.menu_items.length,
-        category_id: category.id, // Set category_id for new item
+        position: targetCategory.menu_items.length,
+        category_id: targetCategory.id, // Set category_id for new item
         imageFile: undefined,
         toppings: [], // Initialize toppings array
         sizes: [], // Initialize sizes array
@@ -1123,123 +1129,106 @@ export function MenuClientContent() {
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div>
-          <div className="flex justify-end mb-4">
-            <Button onClick={() => handleOpenCategoryModal()}>
+          <div className="flex flex-col sm:flex-row gap-2 justify-end mb-4">
+            <Button onClick={() => handleOpenItemModal()} disabled={menuData.length === 0}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('add_item')}
+            </Button>
+            <Button onClick={() => handleOpenCategoryModal()} variant="outline">
               <PlusCircle className="mr-2 h-4 w-4" />
               {t('add_category')}
             </Button>
           </div>
 
-        <Droppable droppableId="all-categories" type="CATEGORY">
-          {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="space-y-6"
-            >
-              {filteredMenuData.map((category, index) => (
-                <Draggable key={category.id} draggableId={category.id} index={index}>
-                  {(providedDraggable) => (
-                    <section
-                      ref={providedDraggable.innerRef}
-                      {...providedDraggable.draggableProps}
-                      className="mb-4 rounded-md border bg-background"
+          <div className="rounded-md border bg-background p-2">
+            {filteredMenuData.flatMap((category) => category.menu_items.map((item) => ({ item, category }))).length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {t('table_headers.image')}
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {t('table_headers.item_details')}
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {t('category.name')}
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {t('table_headers.actions')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMenuData
+                      .flatMap((category) => category.menu_items.map((item) => ({ item, category })))
+                      .map(({ item, category }) => (
+                        <MenuItemCard
+                          key={item.id}
+                          item={item}
+                          locale={locale}
+                          viewMode={viewMode}
+                          isLoading={isLoading}
+                          onEdit={() => handleOpenItemModal(category, item as MenuItemFormData)}
+                          onDelete={() => handleDeleteItem(item.id)}
+                          onToggleAvailability={() => handleToggleAvailability(item.id, item.available)}
+                          t={t}
+                        />
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <MenuIcon className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
+                <h3 className="mt-2 text-md font-semibold text-slate-600 dark:text-slate-300">{t('empty_state.no_items_title')}</h3>
+                <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">{t('empty_state.no_items_description')}</p>
+                <div className="mt-4">
+                  <Button size="sm" variant="outline" onClick={() => handleOpenItemModal()}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    {t('add_item')}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {menuData.length > 0 && (
+            <div className="mt-4 rounded-md border bg-background p-3">
+              <p className="mb-2 text-sm font-medium text-muted-foreground">{t('category.name')}</p>
+              <div className="flex flex-wrap gap-2">
+                {menuData.map((category) => (
+                  <div key={category.id} className="flex items-center gap-1 rounded-md border px-2 py-1">
+                    <span className="text-sm">
+                      {getLocalizedText(
+                        { name_en: category.name_en, name_ja: category.name_ja, name_vi: category.name_vi },
+                        locale,
+                      )}
+                    </span>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      onClick={() => handleOpenCategoryModal(category as CategoryFormData)}
                     >
-                      <div
-                        {...providedDraggable.dragHandleProps}
-                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-700 gap-2 p-4 cursor-grab"
-                      >
-                        <div className="flex items-center">
-                          <MenuIcon className="h-5 w-5 mr-2 text-slate-400" />
-                          <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200">
-                            {getLocalizedText({ name_en: category.name_en, name_ja: category.name_ja, name_vi: category.name_vi }, locale)}
-                          </h3>
-                        </div>
-                        <div className="flex space-x-1 sm:space-x-2 self-start sm:self-center">
-                          <Button size="sm" variant="secondary" onClick={() => handleOpenItemModal(category, null)}>
-                            <PlusCircle className="mr-2 h-4 w-4" /> {t('add_item')}
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => handleOpenCategoryModal(category as CategoryFormData)}>
-                            <SquarePen className="mr-2 h-4 w-4" /> {t('edit')}
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => handleDeleteCategory(category.id)} className="text-red-500 hover:text-red-600" disabled={isLoading || checkingOrders}>
-                            <Trash2 className="mr-2 h-4 w-4" /> {checkingOrders ? t('delete_protection.checking_orders') : t('delete')}
-                          </Button>
-                        </div>
-                      </div>
-                      <Droppable droppableId={category.id} type="MENU_ITEM">
-                        {(providedDroppableItems) => (
-                          <div
-                            ref={providedDroppableItems.innerRef}
-                            {...providedDroppableItems.droppableProps}
-                            className="px-2 pb-2"
-                          >
-                            {category.menu_items.length > 0 ? (
-                              <div className="overflow-x-auto">
-                                <table className="w-full">
-                                  <thead>
-                                    <tr className="border-b">
-                                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {t('table_headers.image')}
-                                      </th>
-                                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {t('table_headers.item_details')}
-                                      </th>
-                                      <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {t('table_headers.actions')}
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {category.menu_items.map((item, itemIndex) => (
-                                      <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
-                                        {(providedDraggableItem) => (
-                                          <MenuItemCard
-                                            item={item}
-                                            locale={locale}
-                                            viewMode={viewMode}
-                                            isLoading={isLoading}
-                                            onEdit={() => handleOpenItemModal(category, item as MenuItemFormData)}
-                                            onDelete={() => handleDeleteItem(item.id)}
-                                            onToggleAvailability={() => handleToggleAvailability(item.id, item.available)}
-                                            t={t}
-                                            dragRef={providedDraggableItem.innerRef}
-                                            dragHandleProps={providedDraggableItem.dragHandleProps}
-                                            draggableProps={providedDraggableItem.draggableProps}
-                                          />
-                                        )}
-                                      </Draggable>
-                                    ))}
-                                  </tbody>
-                                </table>
-                                {providedDroppableItems.placeholder}
-                              </div>
-                            ) : (
-                              <div className="text-center py-8">
-                                <MenuIcon className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
-                                <h3 className="mt-2 text-md font-semibold text-slate-600 dark:text-slate-300">{t('empty_state.no_items_title')}</h3>
-                                <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">{t('empty_state.no_items_description')}</p>
-                                <div className="mt-4">
-                                  <Button size="sm" variant="outline" onClick={() => handleOpenItemModal(category, null)}>
-                                    <PlusCircle className="mr-2 h-4 w-4" />
-                                    {t('add_item')}
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </Droppable>
-                    </section>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
+                      <SquarePen className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 text-red-500 hover:text-red-600"
+                      disabled={isLoading || checkingOrders}
+                      onClick={() => handleDeleteCategory(category.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-        </Droppable>
-      </div>
-
+        </div>
       {/* Category Modal */}
       <CategoryModal
         isOpen={isCategoryModalOpen}
