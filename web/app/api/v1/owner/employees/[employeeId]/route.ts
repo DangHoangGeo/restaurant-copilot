@@ -225,9 +225,12 @@ export async function PATCH(
   }
 }
 
+// DELETE — soft-deactivates the employee record and bans the auth user so they
+// can no longer log in.  Hard-delete is intentionally avoided: attendance and
+// schedule history must survive for payroll audit purposes.
 export async function DELETE(
-  req: Request, // Should be NextRequest for consistency if headers/cookies are needed for getUserFromRequest
-  { params }: { params: Promise<{ employeeId: string }> }, // Changed from Promise
+  _req: Request,
+  { params }: { params: Promise<{ employeeId: string }> },
 ) {
   const callingUser: AuthUser | null = await getUserFromRequest();
   const { employeeId } = await params;
@@ -239,58 +242,105 @@ export async function DELETE(
     );
   }
 
-  // Authorization: Ensure calling user is owner or manager
   if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(callingUser.role as 'owner' | 'manager')) {
-    await logger.warn('employee-id-api-delete-auth', `User ${callingUser.userId} with role ${callingUser.role} tried to delete employee ${employeeId} without permission.`,
-      {}, callingUser.restaurantId, callingUser.userId);
+    await logger.warn(
+      'employee-id-api-delete-auth',
+      `User ${callingUser.userId} with role ${callingUser.role} tried to deactivate employee ${employeeId} without permission.`,
+      {}, callingUser.restaurantId, callingUser.userId,
+    );
     return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
   }
 
   if (!employeeId) {
-    return NextResponse.json(
-      { error: "Employee ID is required." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Employee ID is required." }, { status: 400 });
   }
 
   try {
-    const { error: deleteError, count } = await supabaseAdmin
+    // Fetch the employee to confirm ownership and get the auth user id.
+    const { data: existing, error: fetchErr } = await supabaseAdmin
       .from("employees")
-      .delete({ count: "exact" })
+      .select("id, user_id, is_active")
       .eq("id", employeeId)
-      .eq("restaurant_id", callingUser.restaurantId); // Corrected to callingUser
+      .eq("restaurant_id", callingUser.restaurantId)
+      .maybeSingle();
 
-    if (deleteError) {
-      await logger.error('employee-id-api-delete', `Error deleting employee ${employeeId} for restaurant ${callingUser.restaurantId}`, {
-        error: deleteError.message, employeeId, restaurantId: callingUser.restaurantId
+    if (fetchErr) {
+      await logger.error('employee-id-api-delete-fetch', `DB error fetching employee ${employeeId}`, {
+        error: fetchErr.message, employeeId, restaurantId: callingUser.restaurantId,
       }, callingUser.restaurantId, callingUser.userId);
-      return NextResponse.json(
-        { error: `Failed to delete employee: ${deleteError.message}` },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Database error." }, { status: 500 });
     }
 
-    if (count === 0) {
+    if (!existing) {
       return NextResponse.json(
-        {
-          error:
-            "Employee not found under your restaurant or you are not authorized to delete.",
-        },
+        { error: "Employee not found under your restaurant." },
         { status: 404 },
       );
     }
 
-    return NextResponse.json(
-      { message: "Employee deleted successfully." },
-      { status: 200 },
+    if (!existing.is_active) {
+      return NextResponse.json({ message: "Employee is already deactivated." }, { status: 200 });
+    }
+
+    // Soft-deactivate the employees row.
+    const now = new Date().toISOString();
+    const { error: updateErr } = await supabaseAdmin
+      .from("employees")
+      .update({
+        is_active: false,
+        deactivated_at: now,
+        deactivated_by: callingUser.userId,
+        updated_at: now,
+      })
+      .eq("id", employeeId)
+      .eq("restaurant_id", callingUser.restaurantId);
+
+    if (updateErr) {
+      await logger.error('employee-id-api-delete-update', `Failed to deactivate employee ${employeeId}`, {
+        error: updateErr.message, employeeId, restaurantId: callingUser.restaurantId,
+      }, callingUser.restaurantId, callingUser.userId);
+      return NextResponse.json({ error: "Failed to deactivate employee." }, { status: 500 });
+    }
+
+    // Ban the Supabase auth user for 100 years — prevents login without deleting
+    // attendance history or the users row.
+    const { error: banErr } = await supabaseAdmin.auth.admin.updateUserById(
+      existing.user_id,
+      { ban_duration: '876000h' },
     );
+
+    if (banErr) {
+      // Non-fatal: the employee row is already deactivated.  Log but still
+      // return success so the UI doesn't retry and orphan the DB state.
+      await logger.warn(
+        'employee-id-api-delete-ban',
+        `Auth ban failed for user ${existing.user_id} (employee ${employeeId}); employee row was deactivated.`,
+        { error: banErr.message, userId: existing.user_id, employeeId },
+        callingUser.restaurantId,
+        callingUser.userId,
+      );
+    }
+
+    await logger.info(
+      'employee-deactivated',
+      `Employee ${employeeId} deactivated by ${callingUser.userId}`,
+      { employeeId, deactivatedBy: callingUser.userId },
+      callingUser.restaurantId,
+      callingUser.userId,
+    );
+
+    return NextResponse.json({ message: "Employee deactivated successfully." }, { status: 200 });
   } catch (error) {
-    console.error("Unexpected error in delete employee API:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    await logger.error('employee-id-api-delete-catch', `Unexpected error deactivating employee ${employeeId}`, {
+      error: errorMessage, employeeId, restaurantId: callingUser.restaurantId,
+    }, callingUser.restaurantId, callingUser.userId);
     return NextResponse.json(
       { error: "An unexpected error occurred.", details: errorMessage },
       { status: 500 },
     );
   }
 }
+
+// POST /api/v1/owner/employees/[employeeId]/reactivate would be a separate
+// route; expose reactivation via PATCH on is_active if needed in a future pass.

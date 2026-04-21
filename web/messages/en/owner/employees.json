@@ -19,7 +19,8 @@
       "addEmployee": "Add New Employee",
       "edit": "Edit",
       "qrCode": "QR Code",
-      "manageSchedule": "Manage Schedule"
+      "manageSchedule": "Manage Schedule",
+      "deactivate": "Deactivate"
     },
     "table": {
       "name": "Name",
@@ -30,7 +31,10 @@
     },
     "notifications": {
       "fetchError": "Failed to fetch employees: {error}",
-      "errorTitle": "Error"
+      "errorTitle": "Error",
+      "confirmDeactivate": "Deactivate {name}? They will lose all access immediately.",
+      "deactivateSuccess": "{name} has been deactivated.",
+      "deactivateError": "Failed to deactivate employee."
     }
   },
   "form": {

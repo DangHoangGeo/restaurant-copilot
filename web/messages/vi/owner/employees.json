@@ -19,7 +19,8 @@
       "addEmployee": "Thêm nhân viên mới",
       "edit": "Chỉnh sửa",
       "qrCode": "Mã QR",
-      "manageSchedule": "Quản lý lịch"
+      "manageSchedule": "Quản lý lịch",
+      "deactivate": "Vô hiệu hóa"
     },
     "table": {
       "name": "Tên",
@@ -30,7 +31,10 @@
     },
     "notifications": {
       "fetchError": "Không thể lấy danh sách nhân viên: {error}",
-      "errorTitle": "Lỗi"
+      "errorTitle": "Lỗi",
+      "confirmDeactivate": "Vô hiệu hóa {name}? Họ sẽ mất quyền truy cập ngay lập tức.",
+      "deactivateSuccess": "Đã vô hiệu hóa {name}.",
+      "deactivateError": "Không thể vô hiệu hóa nhân viên."
     }
   },
   "form": {

@@ -1,148 +1,134 @@
 # Restaurant Copilot
 
-Restaurant Copilot exists to help a founder fully operate one or more restaurants from a phone.
+Restaurant Copilot exists to help a founder operate one or more restaurants from a phone.
 
-That means the product must stay simple under pressure, powerful in real operations, and trustworthy enough for daily use by founders, managers, and staff. We are not building a complex admin panel. We are building a calm, mobile-first operating system for running restaurants.
+This repository is not a generic admin panel. It is a mobile-first operating system for:
 
-## Mission
+- owner subscription and approval
+- organization and branch setup
+- manager and staff operations
+- branch-resolved menu management
+- finance, reporting, and audit-sensitive workflows
+- AI-assisted setup and operator support
 
-- Help founders run the business from their phone with less stress.
-- Keep daily operations clear: what needs attention now, today, this week, and this month.
-- Preserve the current customer ordering flow as a stable product surface.
-- Expand the system around multi-branch operations, founder control, staff execution, and clean monthly numbers.
+## Product Foundation
 
-## Product North Star
+Before this product is production-ready for owner operations, all of the following must be true:
 
-The best version of this product lets a founder:
+1. An owner can sign up, select a plan, and create the initial company and first branch.
+2. Platform approval can verify the organization and bootstrap the branch subscription or trial.
+3. The approved owner lands in the founder `control` route and completes onboarding there.
+4. The owner can add branches, invite owner-level members, and add branch employees safely.
+5. Each branch can operate independently for menu, staff, finance inputs, and daily execution.
+6. Monthly finance and reporting remain explicit, auditable, and branch-scoped first.
+7. AI support helps owners set up and operate faster, but does not silently change sensitive data.
 
-- switch between branches in seconds
-- see what needs attention first
-- monitor sales, staffing, attendance, and purchases
-- approve important exceptions without digging through settings
-- trust the numbers enough to use them for payroll and accountant review
+## Route Model
 
-If a feature does not help a founder, manager, or staff member operate faster and with more confidence from a phone, it should be questioned.
+The current product contract is:
 
-## Non-Negotiable Foundation Rules
+- Root domain:
+  - marketing
+  - signup and login
+  - pending approval
+  - platform admin
+- Founder control route: `/{locale}/control/*`
+  - organization-level ownership
+  - branch setup and switching
+  - cross-branch people, money, and reporting
+- Branch operations route: `/{locale}/branch/*` and `/{locale}/branch/{branchId}/*`
+  - branch-scoped execution
+  - menu, orders, tables, employees, purchasing, local finance
+- Customer route:
+  - branch-scoped QR ordering and public restaurant experience
 
-These come from the active foundation documents in [`docs/foundation/README.md`](docs/foundation/README.md), [`docs/foundation/00_owner_business_operations_plan.md`](docs/foundation/00_owner_business_operations_plan.md), [`docs/foundation/01_organization_branch_menu_foundation.md`](docs/foundation/01_organization_branch_menu_foundation.md), and [`docs/foundation/02_ai_agent_execution_plan.md`](docs/foundation/02_ai_agent_execution_plan.md).
+## Data Model
 
-1. Do not break the current customer menu ordering flow.
-2. Treat the current `restaurant` as the branch-level operating unit.
-3. Add multi-branch support through an organization layer above branches.
-4. Keep branch menus independent first.
-5. Keep the owner and manager experience mobile-first and operationally simple.
-6. Keep permissions, finance, and attendance explicit and auditable.
-7. Separate language preference from country-specific business rules.
+The current architectural direction is:
 
-## Product Principles
+- `owner_organizations` is the company control layer
+- `restaurants` remains the branch-level operating unit
+- organization members are owner-level and finance-level actors
+- employees are labor and attendance actors
+- branch menus are resolved at the branch level, even when they inherit organization-shared items
 
-- Mobile-first before desktop polish.
-- Fewer screens, fewer taps, less setup.
-- Operational language over technical language.
-- Guided defaults over configuration overload.
-- Modern, beautiful, professional UI without decorative clutter.
-- Simple for busy founders, managers, and staff.
-- Powerful through good workflow design, not through dense menus.
-- Branch scope must always be obvious in data, UI, and permissions.
+Preferred domain boundaries:
 
-## UX Standard
+- organization
+- branch
+- menu
+- orders
+- people
+- attendance
+- money
+- settings
 
-Every important workflow should feel usable on a phone while standing in a restaurant.
+## What Is Stable Now
 
-- Show urgent actions first.
-- Avoid deep navigation trees.
-- Prefer one clear primary action per screen.
-- Keep labels short and concrete.
-- Reduce modal-heavy and settings-heavy flows.
-- Use progressive disclosure for advanced controls.
-- Design for low attention, interruptions, and one-handed use.
+The repo already contains meaningful production foundation work:
 
-Founders should not need training to understand the main owner experience. Managers should be able to act quickly. Staff should not have to decode system language.
+- organization layer above branches
+- founder `control` route shell and branch drill-down views
+- active-branch context via server-validated cookie
+- branch-scoped dynamic route entry
+- platform approval flow with subscription bootstrap
+- organization invites and pending-invite acceptance flow
+- shared-menu inheritance foundation
+- branch monthly finance close and org roll-up foundation
+- attendance event and approval foundation
+- purchasing and expense foundations
+- AI-assisted organization onboarding generation
 
-## Engineering Standard
+## What Is Transitional
 
-This codebase should be easy to extend safely by strong human engineers and AI agents.
+The codebase still contains mixed old and new surfaces. Future work must treat these as transitional:
 
-- Keep domains explicit: organization, branch, menu, orders, people, attendance, money, settings.
-- Do not hide cross-domain logic in UI components or route handlers.
-- Centralize authorization and branch-scope resolution.
-- Keep finance calculations in dedicated domain logic.
-- Keep background jobs separate from request handling.
-- Add migrations for schema changes; do not rely on undocumented manual drift.
-- Prefer small, composable modules over oversized shared utilities.
-- Keep feature boundaries clean so changes in one area do not quietly break another.
-- Write code that is readable first, clever second.
+- legacy branch dashboard routes and aliases
+- legacy branch-scoped APIs under `/api/v1/restaurant/*`
+- legacy owner APIs under `/api/v1/owner/*` that still depend on `users.restaurant_id`
+- UI flows that call legacy settings endpoints from founder control screens
 
-## AI Agent Working Contract
+If you touch one of these surfaces, either:
 
-Before changing code, every AI agent must:
+1. migrate it to the org-aware contract, or
+2. harden it so it cannot bypass the current permission model
 
-1. Read the four active foundation documents.
-2. Restate the core constraints in its own words.
-3. Read the relevant local architecture in the repository areas it will touch.
-4. Define the task boundary, expected changes, and what must remain stable.
-5. State where the code belongs before creating files.
-6. Only then begin implementation.
+## AI Support Position
 
-Every implementation should protect:
+AI support is part of the product foundation, but it must be honest and scoped:
 
-- customer ordering stability
-- branch-scoped operations
-- shared founder support
-- mobile usability
-- clean domain boundaries
+- Production foundation today:
+  - owner onboarding generation
+  - menu and branding assistance
+  - operator-facing content generation
+- Not a production claim:
+  - placeholder customer chat UI with canned responses
 
-## Architecture Workflow
+The owner AI foundation should reduce setup time, improve clarity, and stay inside explicit guardrails.
 
-Agents should work architecture-first, not patch-first.
+## Mandatory Reading For Work In This Repo
 
-- Read the relevant existing modules before introducing new files.
-- Reuse current patterns before inventing new abstractions.
-- Explain where new code fits and which layers consume it.
-- Stop and ask if a requested change conflicts with the active foundation.
-- Update the relevant architecture or foundation docs when structural assumptions change.
+Before implementing or reviewing code, read:
 
-## File Placement and Naming
+1. [`docs/foundation/README.md`](docs/foundation/README.md)
+2. [`docs/foundation/00_owner_business_operations_plan.md`](docs/foundation/00_owner_business_operations_plan.md)
+3. [`docs/foundation/01_organization_branch_menu_foundation.md`](docs/foundation/01_organization_branch_menu_foundation.md)
+4. [`docs/foundation/02_ai_agent_execution_plan.md`](docs/foundation/02_ai_agent_execution_plan.md)
 
-- Keep frontend, backend-style route handling, database, and shared types separated cleanly.
-- Place web UI in `web/components/`, route logic in `web/app/`, domain/services in `web/lib/`, shared contracts in `web/shared/`, translations in `web/messages/`.
-- Place iOS views in `mobile/SOder/SOder/views/`, services in `mobile/SOder/SOder/services/`, models in `mobile/SOder/SOder/models/`, and localization in `mobile/SOder/SOder/localization/`.
-- Use `PascalCase` for React and SwiftUI components/types, `camelCase` for functions and variables, and `kebab-case` for web file names unless the local framework pattern requires otherwise.
-- Keep TypeScript fully typed. Avoid implicit `any`.
+Also read these when relevant:
 
-## Quality Baseline
+- [`docs/foundation/03_founder_control_route_map.md`](docs/foundation/03_founder_control_route_map.md) for route ownership and redirects
+- [`docs/foundation/05_control_branch_production_readiness.md`](docs/foundation/05_control_branch_production_readiness.md) for current risks and execution order
+- [`docs/foundation/04_expo_mobile_execution_plan.md`](docs/foundation/04_expo_mobile_execution_plan.md) only for mobile app work
 
-- Add or update tests for new or changed critical logic.
-- Use the repo tooling that already exists: Jest and Testing Library for web, XCTest and UI tests for iOS, ESLint and Prettier for web formatting and linting.
-- Keep error handling explicit, validate inputs, and never hardcode secrets.
-- Note meaningful technical debt directly in code comments or docs when it cannot be resolved in the current task.
+## Working Rules
 
-## Repository Structure
-
-```text
-├── web/                    # Next.js admin dashboard and customer site
-│   ├── app/                # App Router pages and API routes
-│   ├── components/         # Reusable UI components
-│   ├── lib/                # Services, domain helpers, utilities
-│   ├── messages/           # next-intl translations
-│   └── shared/             # Shared types and schemas
-├── mobile/SOder/           # SwiftUI iOS app
-│   ├── SOder/              # App source
-│   ├── SOderTests/         # Unit tests
-│   └── SOderUITests/       # UI tests
-├── infra/                  # Migrations and production scripts
-└── docs/                   # Foundation docs and supporting plans
-```
-
-## Core Architecture
-
-- Web: Next.js 15, TypeScript, Tailwind CSS
-- Mobile: SwiftUI iOS app for staff operations
-- Database: Supabase PostgreSQL with Row-Level Security
-- Auth: Supabase Auth with scoped JWTs
-- Realtime: Supabase Realtime for order and operational updates
-- i18n: Japanese, English, Vietnamese
+- Do not break customer ordering.
+- Keep branch scope explicit in schema, services, APIs, and UI.
+- Do not model founders as employees.
+- Prefer org-aware authorization and route ownership over legacy shortcuts.
+- Keep finance, attendance, permissions, and billing audit-friendly.
+- Keep mobile usability ahead of dashboard sprawl.
 
 ## Development Commands
 
@@ -153,9 +139,8 @@ cd web
 npm install
 npm run dev
 npm run build
-npm run start
 npm run lint
-npm run format
+npm run test
 ```
 
 ### iOS
@@ -164,25 +149,28 @@ npm run format
 cd mobile/SOder
 xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug build
 xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug test
-xcodebuild -project SOder.xcodeproj -scheme SOder clean
-xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0' build
 ```
 
 ### Database
 
 ```bash
-# Migrations live in infra/migrations/
-# Run production scripts from infra/production/
+# Production migrations live in infra/production/migrations/
+# Supporting scripts live in infra/production/ and infra/scripts/
 ```
 
-## Delivery Expectations
+## Repository Layout
 
-Good changes in this repository are:
+```text
+web/                    Next.js app for founder control, branch ops, and customer surfaces
+mobile/SOder/           Current SwiftUI staff app
+infra/                  SQL migrations, production scripts, edge jobs, test data
+docs/                   Foundation docs, plans, and archived legacy docs
+```
 
-- clearly tied to the mission
-- scoped to the right domain
-- easy to review
-- verified at the appropriate level
-- documented when behavior or architecture changes
+## Delivery Standard
 
-The standard is not just shipping features. The standard is building a product founders can actually rely on while keeping the system clean enough to grow well.
+Good changes in this repository do three things at once:
+
+- solve the operator problem
+- preserve the architecture contract
+- leave the next engineer or AI agent with less ambiguity than before

@@ -108,11 +108,11 @@ export function ControlPeopleClient({
           {canManage && (
             <Button
               size="sm"
-              onClick={() => setShowInvitePanel(true)}
+              onClick={() => setShowInvitePanel((prev) => !prev)}
               className="gap-1.5 rounded-lg"
             >
               <Plus className="h-4 w-4" />
-              Invite
+              {showInvitePanel ? 'Close' : 'Manage access'}
             </Button>
           )}
         </div>

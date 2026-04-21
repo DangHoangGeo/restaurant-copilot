@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { z } from "zod";
-import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest'; // Ensure this path is correct
+import {
+  getUserFromRequest,
+  AuthUser,
+} from "@/lib/server/getUserFromRequest";
+import { normalizeOpeningHours } from "@/lib/utils/opening-hours";
+import { resolveRestaurantSettingsAccess } from "@/lib/server/restaurant-settings-access";
 
 const settingsSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -54,6 +59,14 @@ export async function GET() {
 
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: "Unauthorized: Missing user or restaurant ID" }, { status: 401 });
+  }
+
+  const canAccessSettings = await resolveRestaurantSettingsAccess(user);
+  if (!canAccessSettings) {
+    return NextResponse.json(
+      { error: "Forbidden: Insufficient permissions" },
+      { status: 403 },
+    );
   }
 
   // Optional: Cross-check subdomain if still passed, but primary identifier should be user.restaurantId
@@ -130,7 +143,7 @@ export async function GET() {
     let parsedSocialLinks = null;
 
     try {
-      if (restaurant.opening_hours && typeof restaurant.opening_hours === 'string') {
+      if (restaurant.opening_hours && typeof restaurant.opening_hours === "string") {
         parsedOpeningHours = JSON.parse(restaurant.opening_hours);
       } else {
         parsedOpeningHours = restaurant.opening_hours;
@@ -141,7 +154,7 @@ export async function GET() {
     }
 
     try {
-      if (restaurant.social_links && typeof restaurant.social_links === 'string') {
+      if (restaurant.social_links && typeof restaurant.social_links === "string") {
         parsedSocialLinks = JSON.parse(restaurant.social_links);
       } else {
         parsedSocialLinks = restaurant.social_links;
@@ -150,7 +163,6 @@ export async function GET() {
       console.warn('Failed to parse social_links JSON:', error);
       parsedSocialLinks = restaurant.social_links;
     }
-    console.log("Restaurant settings fetched successfully - onboarded status:", restaurant.onboarded, "type:", typeof restaurant.onboarded);
     const responseData = {
       id: restaurant.id,
       name: restaurant.name,
@@ -191,8 +203,6 @@ export async function GET() {
       wifi_password: restaurant.wifi_password,
     };
 
-    console.log('Restaurant settings response - onboarded:', restaurant.onboarded, 'type:', typeof restaurant.onboarded);
-
     return NextResponse.json(responseData);
   } catch (error) {
     console.error("Unexpected error in restaurant settings API:", error);
@@ -210,16 +220,13 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized: Missing user or restaurant ID" }, { status: 401 });
   }
 
-  // TODO: Add role-based authorization check here (e.g., user must be 'owner' or 'manager')
-  // const { data: userRoleData, error: roleError } = await supabase
-  //   .from('employees') // or your user roles table
-  //   .select('role')
-  //   .eq('user_id', user.userId)
-  //   .eq('restaurant_id', user.restaurantId)
-  //   .single();
-  // if (roleError || !userRoleData || !['owner', 'manager'].includes(userRoleData.role)) {
-  //   return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
-  // }
+  const canAccessSettings = await resolveRestaurantSettingsAccess(user);
+  if (!canAccessSettings) {
+    return NextResponse.json(
+      { error: "Forbidden: Insufficient permissions" },
+      { status: 403 },
+    );
+  }
 
   // The subdomain from query param is no longer used to identify the restaurant for update.
   // We rely solely on user.restaurantId from the authenticated session.
@@ -245,7 +252,9 @@ export async function PATCH(req: NextRequest) {
     
     // Convert opening_hours object to JSON string for database storage
     if (validation.data.opening_hours) {
-      dataForDB.opening_hours = JSON.stringify(validation.data.opening_hours);
+      dataForDB.opening_hours = JSON.stringify(
+        normalizeOpeningHours(validation.data.opening_hours),
+      );
     }
     
     // Convert social_links object to JSON string for database storage  
@@ -281,4 +290,8 @@ export async function PATCH(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function PUT(req: NextRequest) {
+  return PATCH(req);
 }

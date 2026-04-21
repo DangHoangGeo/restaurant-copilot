@@ -24,18 +24,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const gemini = createGeminiHelper();
-    const description = await gemini.generateMenuDescription(itemName, initialData, language);
+    let gemini;
+    try {
+      gemini = createGeminiHelper();
+    } catch {
+      return NextResponse.json({ en: '', ja: '', vi: '' });
+    }
 
+    const description = await gemini.generateMenuDescription(itemName, initialData, language);
     return NextResponse.json(description);
   } catch (error) {
     console.error('Description generation error:', error);
-    
     return NextResponse.json(
-      { 
-        error: 'Failed to generate description',
-        fallback: `Could not generate description at this time.`
-      },
+      { error: 'Failed to generate description' },
       { status: 500 }
     );
   }

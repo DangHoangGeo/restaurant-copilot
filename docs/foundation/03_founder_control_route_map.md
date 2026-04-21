@@ -1,118 +1,82 @@
 # Founder Control Route Map
 
-**Status**: Working artifact  
-**Date**: April 17, 2026  
-**Purpose**: classify the current legacy dashboard so Phase 1 and Phase 2 work can move intentionally instead of screen-by-screen guesswork.
+## Purpose
 
-## Foundation Confirmations
+This file maps the current runtime route ownership so future work does not confuse:
 
-- The customer ordering flow stays stable and branch-scoped.
-- The existing `restaurant` stays the branch-level operating unit.
-- Multi-branch support is added above branches through the organization layer.
-- Founder control moves toward the organization-subdomain `control` route.
-- Branch execution stays focused in the organization-subdomain branch route with explicit branch context.
+- founder control
+- branch operations
+- legacy aliases
+- compatibility redirects
 
-## Current Legacy Dashboard Classification
+## Canonical Entry Flow
 
-### Move to founder `control` route
+1. Owner signs up on the root domain.
+2. Signup creates the organization, first branch, founder membership, and requested plan metadata.
+3. Platform approval verifies the organization and boots trial or subscription state.
+4. Approved founder enters `/{locale}/control/onboarding`.
+5. After onboarding, founder default entry becomes `/{locale}/control/overview`.
+6. Founder drills into a branch from `control/restaurants`.
+7. Branch execution lives under `/{locale}/branch/{branchId}/*`.
 
-- `dashboard/overview`
-  - founder cross-branch review
-- `dashboard/branches`
-  - branch list, branch switching, menu copy, branch setup
-- `dashboard/organization`
-  - organization members, invites, access scope
-- `dashboard/finance`
-  - founder-facing money review and month-close workflow
-- `dashboard/promotions`
-  - founder-controlled promotion policy and rollout
-- `dashboard/settings`
-  - restaurant identity, tax defaults, payment defaults
-- `dashboard/homepage`
-  - branch branding and public-facing identity ownership
-- `dashboard/onboarding`
-  - founder-owned setup path
+## Founder-Owned Pages
 
-### Keep in branch `operations` route
+These pages belong to founder control:
 
-- `dashboard`
-  - local branch dashboard
-- `dashboard/orders`
-  - branch daily order execution
-- `dashboard/menu`
-  - branch menu ownership
-- `dashboard/tables`
-  - branch QR and table setup
-- `dashboard/employees`
-  - branch people operations
-- `dashboard/bookings`
-  - branch booking operations
-- `dashboard/reports`
-  - branch-local reports and analytics
-- `dashboard/purchasing`
-  - branch purchases and expenses
+- `control/overview`
+- `control/restaurants`
+- `control/restaurants/[branchId]`
+- `control/people`
+- `control/finance`
+- `control/settings`
+- `control/homepage`
+- `control/onboarding`
+- `control/profile`
 
-### Remove, defer, or merge during refactor
+## Branch-Owned Pages
 
-- `dashboard/profile`
-  - should become account-level, not owner-route architecture
-- `dashboard/staff`
-  - overlaps with `employees` and should be merged or clarified before long-term ownership is decided
+These pages belong to branch execution:
 
-## Phase 1 Implementation Notes
+- `branch`
+- `branch/[branchId]`
+- `branch/[branchId]/orders`
+- `branch/[branchId]/menu`
+- `branch/[branchId]/tables`
+- `branch/[branchId]/employees`
+- `branch/[branchId]/bookings`
+- `branch/[branchId]/reports`
+- `branch/[branchId]/purchasing`
+- `branch/[branchId]/finance`
+- `branch/[branchId]/promotions`
+- `branch/[branchId]/staff`
+- `branch/[branchId]/profile`
+- `branch/[branchId]/onboarding`
 
-- Add a company-subdomain `control` shell first.
-- Reuse existing organization and overview services instead of rebuilding them.
-- Keep legacy founder screens reachable while the new route shell comes online.
-- Move page ownership in slices instead of relocating every screen at once.
+## Compatibility Behavior
 
-## Founder Product Shape
+The repo currently supports compatibility redirects and aliases:
 
-- `control/overview` should behave like an owner cockpit:
-  - organization-wide today KPIs
-  - current month finance-close coverage
-  - staffing visibility across branches
-  - branch drill-down links into team and money workflows
-- `control/people` should combine:
-  - organization member and permission management
-  - cross-branch employee visibility
-  - explicit branch drill-down into branch employee operations
-- `control/finance` should start with:
-  - combined monthly finance across branches
-  - visibility into which branches are still missing a closed month
-  - branch-by-branch drill-down into the selected branch finance workspace
+- `branch/settings`
+  - founder users are redirected to `control/settings`
+- `branch/homepage`
+  - founder users are redirected to `control/homepage`
+- `branch/branches`
+  - founder users are redirected to `control/restaurants`
+- `branch/organization`
+  - founder users are redirected to `control/people`
 
-Permission notes:
-- `control/overview` is available to all founder-level control roles.
-- `control/restaurants` and menu copy/compare actions are shown only for users with `restaurant_settings`.
-- `control/people` is shown when the role has `employees`.
-- `control/finance` is shown when the role has `reports` or `finance_exports`.
-- `control/settings` is shown only for roles with `organization_settings`.
+This is compatibility behavior, not the target long-term ownership model.
 
-Compatibility note:
+## Branch Context Model
 
-- `control/money` currently exists as an alias and redirects to `control/finance`.
+The current branch routing contract is:
 
-This keeps founder control organization-first while preserving branch-scoped execution for local staff and finance actions.
+- `branch/{branchId}` is the explicit branch route
+- a validated active-branch cookie allows org members to switch effective branch context
+- branch-scoped routes should use server-side branch validation, not client-only assumptions
 
-## Immediate Safe Sequence
+## Legacy Warning
 
-1. Introduce the `control` route shell and founder navigation.
-2. Land founder overview on the new route using shared organization context.
-3. Add bridge screens for Restaurants, People, Finance, and Settings.
-4. Move individual founder screens from legacy `dashboard` to `control` only after each page is stable.
+Some founder setup flows still call legacy branch settings APIs even though the page lives in `control`.
 
-## Current owner entry workflow
-
-- Founder starts from the public homepage pricing/subscription path.
-- Signup creates the company, requested subdomain, founder membership, and first branch in a pending approval state.
-- Platform admin approval is required before the founder can access the company-subdomain `control` route.
-- The first approved destination is `control/onboarding`, not `control/overview`.
-- `control/homepage` should stay blocked until onboarding is completed.
-- Owner onboarding should ask for only the minimum business facts first:
-  - company and branch name
-  - contact info
-  - address
-  - opening hours
-  - a short introduction in the owner's preferred language
-- AI should then propose the multilingual copy, branding color, and starter logo for review instead of making the owner design these manually.
+That means route ownership is ahead of full API migration. Treat those API dependencies as hardening targets, not as the desired final contract.

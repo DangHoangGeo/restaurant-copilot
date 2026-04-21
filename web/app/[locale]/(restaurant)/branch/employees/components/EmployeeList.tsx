@@ -2,14 +2,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import EmployeeForm, { EmployeeFormEmployee } from './EmployeeForm'; // For a modal/drawer
+import EmployeeForm, { EmployeeFormEmployee } from './EmployeeForm';
 import { EMPLOYEE_JOB_TITLES } from "@/lib/constants";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  // DialogDescription, // If needed
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -21,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, PlusCircle, QrCode } from "lucide-react";
+import { AlertTriangle, Loader2, PlusCircle, QrCode, UserX } from "lucide-react";
 import EmployeeQRPanel from '@/components/features/admin/employees/EmployeeQRPanel';
 import { toast } from "sonner";
 
@@ -64,6 +63,7 @@ export default function EmployeeList() {
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<EmployeeFormEmployee | null>(null);
   const [qrEmployee, setQrEmployee] = useState<DisplayEmployee | null>(null);
+  const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
 
   const fetchEmployees = useCallback(async () => {
     setIsLoading(true);
@@ -119,7 +119,25 @@ export default function EmployeeList() {
 
   const handleFormSuccess = () => {
     setShowEmployeeForm(false);
-    fetchEmployees(); // Refresh list
+    fetchEmployees();
+  };
+
+  const handleDeactivate = async (employee: DisplayEmployee) => {
+    if (!confirm(t("notifications.confirmDeactivate", { name: employee.name }))) return;
+    setDeactivatingId(employee.id);
+    try {
+      const response = await fetch(`/api/v1/owner/employees/${employee.id}`, { method: 'DELETE' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || t("notifications.deactivateError"));
+      }
+      toast.success(t("notifications.deactivateSuccess", { name: employee.name }));
+      fetchEmployees();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("notifications.deactivateError"));
+    } finally {
+      setDeactivatingId(null);
+    }
   };
 
   if (isLoading && employees.length === 0) {
@@ -195,12 +213,26 @@ export default function EmployeeList() {
                 <TableCell>{emp.email}</TableCell>
                 <TableCell>{emp.employee_job_title}</TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => handleEditEmployee(emp)} disabled={isLoading}>
+                  <Button variant="outline" size="sm" onClick={() => handleEditEmployee(emp)} disabled={isLoading || deactivatingId === emp.id}>
                     {t("actions.edit")}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setQrEmployee(emp)} disabled={isLoading}>
+                  <Button variant="outline" size="sm" onClick={() => setQrEmployee(emp)} disabled={isLoading || deactivatingId === emp.id}>
                     <QrCode className="mr-1 h-3 w-3" />
                     {t("actions.qrCode")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive hover:border-destructive"
+                    onClick={() => handleDeactivate(emp)}
+                    disabled={isLoading || deactivatingId === emp.id}
+                  >
+                    {deactivatingId === emp.id ? (
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    ) : (
+                      <UserX className="mr-1 h-3 w-3" />
+                    )}
+                    {t("actions.deactivate")}
                   </Button>
                 </TableCell>
               </TableRow>

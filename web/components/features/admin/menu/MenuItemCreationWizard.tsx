@@ -5,6 +5,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Image as ImageIcon,
   Languages,
   Plus,
   Sparkles,
@@ -31,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
 
 type PrimaryLanguage = 'en' | 'ja' | 'vi';
 
@@ -69,13 +71,19 @@ interface MenuItemCreationWizardProps {
   onCreated: () => Promise<void> | void;
 }
 
+const SIZE_KEY_NAMES: Record<string, string> = {
+  S: 'Small',
+  M: 'Medium',
+  L: 'Large',
+  XL: 'Extra Large',
+};
+
 function createEmptyTranslations(): LocalizedFields {
   return { en: '', ja: '', vi: '' };
 }
 
 function localeToLanguage(locale: string): PrimaryLanguage {
   const normalizedLocale = locale.toLowerCase();
-
   if (normalizedLocale.startsWith('ja')) return 'ja';
   if (normalizedLocale.startsWith('vi')) return 'vi';
   return 'en';
@@ -97,13 +105,16 @@ function buildLocaleCopy(locale: string) {
       itemName: 'メニュー名',
       descriptionLabel: '短い説明',
       price: '基本価格',
+      image: '画像',
+      uploadImage: '画像をアップロード',
+      changeImage: '画像を変更',
       sizes: 'サイズ',
       toppings: 'トッピング',
       addSize: 'サイズを追加',
       addTopping: 'トッピングを追加',
       optionName: '名前',
-      optionPrice: '追加価格',
-      sizeAdjustment: '価格補正 %',
+      optionPrice: '価格',
+      sizePrice: '価格',
       generate: 'AIで確認',
       generating: '確認中...',
       back: '戻る',
@@ -119,14 +130,13 @@ function buildLocaleCopy(locale: string) {
       savedMessage: 'メニューを追加しました。',
       aiDescriptionPlaceholder: '例: 牛肉、米麺、香味野菜、透明感のあるスープ',
       itemPlaceholder: '例: 牛肉フォー、抹茶ラテ、揚げ春巻き',
-      optionPlaceholder: '例: Lサイズ、チーズ、追加卵',
+      optionPlaceholder: '例: チーズ、追加卵',
       standardSizes: 'S / M / L を追加',
-      sizePreview: '適用価格',
       emptySizes: 'サイズなし',
       emptyToppings: 'トッピングなし',
       selectedLanguage: '選択言語',
       categoryItems: '登録済み',
-      percentSuffix: '%',
+      imageTooLarge: '画像は5MB以下にしてください。',
     };
   }
 
@@ -139,13 +149,16 @@ function buildLocaleCopy(locale: string) {
       itemName: 'Tên món',
       descriptionLabel: 'Mô tả ngắn',
       price: 'Giá cơ bản',
+      image: 'Hình ảnh',
+      uploadImage: 'Tải ảnh lên',
+      changeImage: 'Đổi ảnh',
       sizes: 'Size',
       toppings: 'Topping',
       addSize: 'Thêm size',
       addTopping: 'Thêm topping',
       optionName: 'Tên',
       optionPrice: 'Giá cộng thêm',
-      sizeAdjustment: 'Điều chỉnh giá %',
+      sizePrice: 'Giá',
       generate: 'Duyệt bằng AI',
       generating: 'Đang duyệt...',
       back: 'Quay lại',
@@ -161,14 +174,13 @@ function buildLocaleCopy(locale: string) {
       savedMessage: 'Đã thêm món mới.',
       aiDescriptionPlaceholder: 'Ví dụ: bò thái lát, bánh phở, rau thơm, nước dùng trong',
       itemPlaceholder: 'Ví dụ: Pho bò, Matcha latte, Chả giò chiên',
-      optionPlaceholder: 'Ví dụ: Cỡ lớn, phô mai, thêm trứng',
+      optionPlaceholder: 'Ví dụ: phô mai, thêm trứng',
       standardSizes: 'Thêm S / M / L',
-      sizePreview: 'Giá áp dụng',
       emptySizes: 'Chưa có size',
       emptyToppings: 'Chưa có topping',
       selectedLanguage: 'Ngôn ngữ chọn',
       categoryItems: 'Món hiện có',
-      percentSuffix: '%',
+      imageTooLarge: 'Ảnh phải nhỏ hơn 5MB.',
     };
   }
 
@@ -180,13 +192,16 @@ function buildLocaleCopy(locale: string) {
     itemName: 'Menu item name',
     descriptionLabel: 'Short description',
     price: 'Base price',
+    image: 'Image',
+    uploadImage: 'Upload image',
+    changeImage: 'Change image',
     sizes: 'Sizes',
     toppings: 'Toppings',
     addSize: 'Add size',
     addTopping: 'Add topping',
     optionName: 'Name',
     optionPrice: 'Extra price',
-    sizeAdjustment: 'Price adjustment %',
+    sizePrice: 'Price',
     generate: 'Review with AI',
     generating: 'Reviewing...',
     back: 'Back',
@@ -202,14 +217,13 @@ function buildLocaleCopy(locale: string) {
     savedMessage: 'Menu item added.',
     aiDescriptionPlaceholder: 'Example: sliced beef, rice noodles, herbs, clear broth',
     itemPlaceholder: 'Example: Pho beef bowl, Matcha latte, Crispy spring rolls',
-    optionPlaceholder: 'Example: Large size, Cheese, Extra egg',
+    optionPlaceholder: 'Example: Cheese, Extra egg',
     standardSizes: 'Add S / M / L',
-    sizePreview: 'Applied price',
     emptySizes: 'No size options',
     emptyToppings: 'No toppings',
     selectedLanguage: 'Selected language',
     categoryItems: 'Current items',
-    percentSuffix: '%',
+    imageTooLarge: 'Image must be under 5 MB.',
   };
 }
 
@@ -246,22 +260,11 @@ function currencyValue(rawValue: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function adjustmentValue(rawValue: string) {
-  const parsed = Number(rawValue);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function resolvedSizePrice(basePrice: string, adjustment: string) {
-  const base = currencyValue(basePrice);
-  return Math.round(base * (1 + adjustmentValue(adjustment) / 100));
-}
-
 function localizedCategoryName(
   category: Pick<WizardCategory, 'name_en' | 'name_ja' | 'name_vi'>,
   locale: string
 ) {
   const language = localeToLanguage(locale);
-
   if (language === 'vi') return category.name_vi || category.name_en || category.name_ja || '';
   if (language === 'ja') return category.name_ja || category.name_en || category.name_vi || '';
   return category.name_en || category.name_ja || category.name_vi || '';
@@ -284,7 +287,6 @@ function secondaryLanguageValues(values: LocalizedFields, primaryLanguage: Prima
     .map((language) => values[language].trim())
     .filter((value) => {
       if (!value) return false;
-
       const normalizedValue = value.toLocaleLowerCase();
       if (seen.has(normalizedValue)) return false;
       seen.add(normalizedValue);
@@ -304,9 +306,12 @@ export function MenuItemCreationWizard({
   onCreated,
 }: MenuItemCreationWizardProps) {
   const copy = useMemo(() => buildLocaleCopy(locale), [locale]);
+  const supabase = createClient();
   const [step, setStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [form, setForm] = useState({
     categoryId: categories[0]?.id ?? '',
     primaryLanguage: ownerLanguage,
@@ -325,6 +330,8 @@ export function MenuItemCreationWizard({
     setStep(0);
     setIsGenerating(false);
     setIsSaving(false);
+    setImageFile(null);
+    setImagePreview(null);
     setForm({
       categoryId: categories[0]?.id ?? '',
       primaryLanguage: ownerLanguage,
@@ -338,28 +345,46 @@ export function MenuItemCreationWizard({
     });
   };
 
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(copy.imageTooLarge);
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+    // Reset input so same file can be re-selected after removal
+    event.target.value = '';
+  };
+
   const addStandardSizes = () => {
+    const base = currencyValue(form.basePrice);
     setForm((current) => ({
       ...current,
       sizes: [
         {
           id: crypto.randomUUID(),
           baseName: 'Small',
-          basePrice: '-25',
+          basePrice: String(Math.round(base * 0.8)),
           sizeKey: 'S',
           translations: createEmptyTranslations(),
         },
         {
           id: crypto.randomUUID(),
           baseName: 'Medium',
-          basePrice: '0',
+          basePrice: String(base),
           sizeKey: 'M',
           translations: createEmptyTranslations(),
         },
         {
           id: crypto.randomUUID(),
           baseName: 'Large',
-          basePrice: '25',
+          basePrice: String(Math.round(base * 1.3)),
           sizeKey: 'L',
           translations: createEmptyTranslations(),
         },
@@ -377,9 +402,9 @@ export function MenuItemCreationWizard({
   const addOption = (type: 'sizes' | 'toppings') => {
     const nextOption: OptionDraft = {
       id: crypto.randomUUID(),
-      baseName: '',
-      basePrice: '',
-      sizeKey: type === 'sizes' ? '' : undefined,
+      baseName: type === 'sizes' ? 'Medium' : '',
+      basePrice: type === 'sizes' ? form.basePrice : '',
+      sizeKey: type === 'sizes' ? 'M' : undefined,
       translations: createEmptyTranslations(),
     };
 
@@ -457,7 +482,10 @@ export function MenuItemCreationWizard({
           form.sizes.map(async (size) => ({
             id: size.id,
             translations: applyPrimaryLanguage(
-              await translateText(size.baseName || 'Size option', 'item'),
+              await translateText(
+                size.baseName || SIZE_KEY_NAMES[size.sizeKey ?? ''] || 'Size option',
+                'item'
+              ),
               size.baseName
             ),
           }))
@@ -516,6 +544,31 @@ export function MenuItemCreationWizard({
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      let imageUrl: string | null = null;
+
+      if (imageFile) {
+        const sessionResponse = await fetch('/api/v1/auth/session');
+        const sessionData = await sessionResponse.json();
+        if (!sessionData.authenticated || !sessionData.user?.restaurantId) {
+          throw new Error('User not authenticated or missing restaurant ID');
+        }
+
+        const fileName = `${Date.now()}-${imageFile.name}`;
+        const filePath = `restaurants/${sessionData.user.restaurantId}/menu_items/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('restaurant-uploads')
+          .upload(filePath, imageFile, { cacheControl: '3600', upsert: false });
+
+        if (uploadError) throw new Error(uploadError.message);
+
+        const { data: publicUrlData } = supabase.storage
+          .from('restaurant-uploads')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrlData.publicUrl;
+      }
+
       const response = await fetch(`/api/v1/owner/menu/menu-items?branchId=${encodeURIComponent(branchId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -528,17 +581,18 @@ export function MenuItemCreationWizard({
           description_ja: form.reviewDescriptions.ja,
           description_vi: form.reviewDescriptions.vi,
           price: currencyValue(form.basePrice),
+          image_url: imageUrl,
           available: true,
           weekday_visibility: [1, 2, 3, 4, 5, 6, 7],
           position: selectedCategory?.itemCount ?? 0,
           sizes: form.sizes
-            .filter((size) => size.baseName.trim().length > 0)
+            .filter((size) => size.sizeKey || size.baseName.trim().length > 0)
             .map((size, index) => ({
               size_key: size.sizeKey?.trim() || `size-${index + 1}`,
-              name_en: size.translations.en || size.baseName,
+              name_en: size.translations.en || SIZE_KEY_NAMES[size.sizeKey ?? ''] || size.baseName,
               name_ja: size.translations.ja || size.baseName,
               name_vi: size.translations.vi || size.baseName,
-              price: resolvedSizePrice(form.basePrice, size.basePrice),
+              price: currencyValue(size.basePrice),
               position: index,
             })),
           toppings: form.toppings
@@ -568,62 +622,89 @@ export function MenuItemCreationWizard({
     }
   };
 
-  const renderOptionEditor = (type: 'sizes' | 'toppings', options: OptionDraft[]) => (
-    <div className="space-y-3">
-      {options.map((option) => (
-        <div
-          key={option.id}
-          className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950"
+  const renderSizeRow = (option: OptionDraft) => (
+    <div
+      key={option.id}
+      className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950"
+    >
+      <div className="flex items-center gap-2">
+        <Select
+          value={option.sizeKey ?? 'M'}
+          onValueChange={(value) =>
+            updateOption('sizes', option.id, {
+              sizeKey: value,
+              baseName: SIZE_KEY_NAMES[value] ?? value,
+            })
+          }
         >
-          <div className="grid gap-3 md:grid-cols-[1.2fr_0.8fr_auto]">
-            <div className="space-y-2">
-              {type === 'sizes' ? (
-                <Input
-                  value={option.sizeKey ?? ''}
-                  onChange={(event) =>
-                    updateOption(type, option.id, { sizeKey: event.target.value })
-                  }
-                  placeholder="S / M / L"
-                  className="h-10 rounded-xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                />
-              ) : null}
-              <Input
-                value={option.baseName}
-                onChange={(event) =>
-                  updateOption(type, option.id, { baseName: event.target.value })
-                }
-                placeholder={copy.optionPlaceholder}
-                className="h-10 rounded-xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-              />
-            </div>
-            <Input
-              value={option.basePrice}
-              onChange={(event) =>
-                updateOption(type, option.id, { basePrice: event.target.value })
-              }
-              placeholder={type === 'sizes' ? copy.sizeAdjustment : copy.optionPrice}
-              inputMode="decimal"
-              className="h-10 rounded-xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900"
-              onClick={() => removeOption(type, option.id)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          {type === 'sizes' ? (
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-              {copy.sizePreview}: {resolvedSizePrice(form.basePrice, option.basePrice)} (
-              {adjustmentValue(option.basePrice)}
-              {copy.percentSuffix})
-            </p>
-          ) : null}
-        </div>
-      ))}
+          <SelectTrigger className="h-10 w-24 shrink-0 rounded-xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+            {(['S', 'M', 'L', 'XL'] as const).map((key) => (
+              <SelectItem key={key} value={key}>
+                {key} — {SIZE_KEY_NAMES[key]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          type="number"
+          value={option.basePrice}
+          onChange={(event) =>
+            updateOption('sizes', option.id, { basePrice: event.target.value })
+          }
+          placeholder="0"
+          inputMode="decimal"
+          className="h-10 flex-1 rounded-xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10 shrink-0 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900"
+          onClick={() => removeOption('sizes', option.id)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderToppingRow = (option: OptionDraft) => (
+    <div
+      key={option.id}
+      className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950"
+    >
+      <div className="grid gap-2 sm:grid-cols-[1fr_0.55fr_auto]">
+        <Input
+          value={option.baseName}
+          onChange={(event) =>
+            updateOption('toppings', option.id, { baseName: event.target.value })
+          }
+          placeholder={copy.optionPlaceholder}
+          className="h-10 rounded-xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+        />
+        <Input
+          type="number"
+          value={option.basePrice}
+          onChange={(event) =>
+            updateOption('toppings', option.id, { basePrice: event.target.value })
+          }
+          placeholder="0"
+          inputMode="decimal"
+          className="h-10 rounded-xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900"
+          onClick={() => removeOption('toppings', option.id)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 
@@ -700,6 +781,7 @@ export function MenuItemCreationWizard({
         <div className="space-y-6 px-6 py-6">
           {step === 0 ? (
             <>
+              {/* Row 1: category / language / price */}
               <div className="grid gap-4 md:grid-cols-[1fr_1fr_0.8fr]">
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{copy.category}</p>
@@ -756,6 +838,7 @@ export function MenuItemCreationWizard({
                 </div>
               </div>
 
+              {/* Row 2: item name + category info */}
               <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{copy.itemName}</p>
@@ -790,6 +873,7 @@ export function MenuItemCreationWizard({
                 </div>
               </div>
 
+              {/* Description */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{copy.descriptionLabel}</p>
                 <Textarea
@@ -801,17 +885,55 @@ export function MenuItemCreationWizard({
                     }))
                   }
                   placeholder={copy.aiDescriptionPlaceholder}
-                  rows={4}
+                  rows={3}
                   className="rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 />
               </div>
 
+              {/* Image upload */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{copy.image}</p>
+                <div className="flex items-center gap-3">
+                  {imagePreview ? (
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagePreview} alt="" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview(null);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
+                      <ImageIcon className="h-6 w-6 text-slate-400" />
+                    </div>
+                  )}
+                  <label className="cursor-pointer">
+                    <span className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-950 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900">
+                      {imageFile ? copy.changeImage : copy.uploadImage}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleImageSelect}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Sizes + Toppings */}
               <div className="grid gap-5 lg:grid-cols-2">
+                {/* Sizes */}
                 <div className="rounded-[28px] border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/60">
                   <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{copy.sizes}</p>
-                    </div>
+                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{copy.sizes}</p>
                     <div className="flex gap-2">
                       <Button
                         type="button"
@@ -832,14 +954,19 @@ export function MenuItemCreationWizard({
                       </Button>
                     </div>
                   </div>
-                  {renderOptionEditor('sizes', form.sizes)}
+                  {form.sizes.length > 0 ? (
+                    <div className="space-y-2">
+                      {form.sizes.map(renderSizeRow)}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{copy.emptySizes}</p>
+                  )}
                 </div>
 
+                {/* Toppings */}
                 <div className="rounded-[28px] border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/60">
                   <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{copy.toppings}</p>
-                    </div>
+                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{copy.toppings}</p>
                     <Button
                       type="button"
                       variant="outline"
@@ -850,7 +977,13 @@ export function MenuItemCreationWizard({
                       {copy.addTopping}
                     </Button>
                   </div>
-                  {renderOptionEditor('toppings', form.toppings)}
+                  {form.toppings.length > 0 ? (
+                    <div className="space-y-2">
+                      {form.toppings.map(renderToppingRow)}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{copy.emptyToppings}</p>
+                  )}
                 </div>
               </div>
             </>
@@ -885,11 +1018,7 @@ export function MenuItemCreationWizard({
                             </Badge>
                           ) : null}
                           <Badge variant="secondary" className="rounded-full">
-                            {resolvedSizePrice(form.basePrice, size.basePrice)}
-                          </Badge>
-                          <Badge variant="secondary" className="rounded-full">
-                            {adjustmentValue(size.basePrice)}
-                            {copy.percentSuffix}
+                            {currencyValue(size.basePrice)}
                           </Badge>
                         </div>
                         <div className="grid gap-3 md:grid-cols-3">
@@ -964,9 +1093,15 @@ export function MenuItemCreationWizard({
                   <Badge variant="secondary" className="rounded-full">
                     {currencyValue(form.basePrice)}
                   </Badge>
+                  {imageFile ? (
+                    <Badge variant="secondary" className="rounded-full">
+                      <ImageIcon className="mr-1.5 h-3 w-3" />
+                      {imageFile.name}
+                    </Badge>
+                  ) : null}
                 </div>
                 <div className="mt-4 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div>
+                  <div>
                     <p className="text-sm font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                       {copy.reviewTitle}
                     </p>
@@ -1005,25 +1140,19 @@ export function MenuItemCreationWizard({
                           form.sizes.map((size) => (
                             <div
                               key={size.id}
-                            className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-800"
-                          >
-                            <div>
+                              className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-800"
+                            >
+                              <div>
                                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                  {primaryLanguageValue(size.translations, form.primaryLanguage, size.baseName)}
+                                  {primaryLanguageValue(size.translations, form.primaryLanguage, SIZE_KEY_NAMES[size.sizeKey ?? ''] || size.baseName)}
                                 </p>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                                  {secondaryLanguageValues(size.translations, form.primaryLanguage).join(' • ') || size.baseName}
+                                  {secondaryLanguageValues(size.translations, form.primaryLanguage).join(' • ') || size.sizeKey}
                                 </p>
                               </div>
-                              <div className="text-right">
-                                <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                  {resolvedSizePrice(form.basePrice, size.basePrice)}
-                                </span>
-                                <span className="text-xs text-slate-500 dark:text-slate-400">
-                                  {adjustmentValue(size.basePrice)}
-                                  {copy.percentSuffix}
-                                </span>
-                              </div>
+                              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                {currencyValue(size.basePrice)}
+                              </span>
                             </div>
                           ))
                         ) : (
@@ -1039,9 +1168,9 @@ export function MenuItemCreationWizard({
                           form.toppings.map((topping) => (
                             <div
                               key={topping.id}
-                            className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-800"
-                          >
-                            <div>
+                              className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-800"
+                            >
+                              <div>
                                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                                   {primaryLanguageValue(
                                     topping.translations,

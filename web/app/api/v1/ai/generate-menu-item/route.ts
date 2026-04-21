@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createGeminiHelper } from '@/lib/gemini';
 
-/**
- * API endpoint for generating menu descriptions using Google Gemini AI
- * POST /api/v1/ai/generate-description
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -23,24 +19,35 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
     const contextInfo = `
       Dish Description: ${existingDescription || 'No existing description provided.'}
       Restaurant Name: ${restaurantName}
       Restaurant Description: ${restaurantDescription || 'No restaurant description provided.'}
     `;
 
-    const gemini = createGeminiHelper();
-    const data = await gemini.generateMenuItemNameDescTags(itemName, contextInfo, language);
+    let gemini;
+    try {
+      gemini = createGeminiHelper();
+    } catch {
+      // Gemini not configured — return the item name prefilled so the UI still advances
+      return NextResponse.json({
+        name_en: language === 'en' ? itemName : '',
+        name_ja: language === 'ja' ? itemName : '',
+        name_vi: language === 'vi' ? itemName : '',
+        description_en: '',
+        description_ja: '',
+        description_vi: '',
+        tags: [],
+      });
+    }
 
+    const data = await gemini.generateMenuItemNameDescTags(itemName, contextInfo, language);
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Description generation error:', error);
-    
+    console.error('AI menu item generation error:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to generate description',
-        fallback: `Could not generate description at this time.`
-      },
+      { error: 'Failed to generate menu item copy' },
       { status: 500 }
     );
   }

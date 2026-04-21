@@ -27,9 +27,10 @@ export async function GET() {
     const { data, error } = await supabaseAdmin
       .from("employees")
       .select(
-        `id, role, user_id, users(id, email, name, role)`
+        `id, role, user_id, is_active, deactivated_at, users(id, email, name, role)`
       )
-      .eq("restaurant_id", user.restaurantId);
+      .eq("restaurant_id", user.restaurantId)
+      .eq("is_active", true);
 
     if (error) {
       await logger.error('employees-api-get', 'Error fetching employees', {

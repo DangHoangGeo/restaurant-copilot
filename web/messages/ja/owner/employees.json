@@ -19,7 +19,8 @@
       "addEmployee": "新しい従業員を追加",
       "edit": "編集",
       "qrCode": "QRコード",
-      "manageSchedule": "スケジュール管理"
+      "manageSchedule": "スケジュール管理",
+      "deactivate": "無効化"
     },
     "table": {
       "name": "氏名",
@@ -30,7 +31,10 @@
     },
     "notifications": {
       "fetchError": "従業員の取得に失敗しました: {error}",
-      "errorTitle": "エラー"
+      "errorTitle": "エラー",
+      "confirmDeactivate": "{name} を無効化しますか？すぐにすべてのアクセスが失われます。",
+      "deactivateSuccess": "{name} を無効化しました。",
+      "deactivateError": "従業員の無効化に失敗しました。"
     }
   },
   "form": {
