@@ -316,6 +316,7 @@ export function ItemDetailModal({
                         onClick={() => setDescExpanded((p) => !p)}
                         className="ml-1.5 text-xs font-medium underline-offset-2 hover:underline transition-colors"
                         style={{ color: brandColor }}
+                        aria-expanded={descExpanded}
                       >
                         {descExpanded ? t("show_less") : t("show_more")}
                       </button>
