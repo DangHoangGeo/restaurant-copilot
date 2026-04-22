@@ -2,6 +2,7 @@ import { createRouteHandlerClient, SupabaseClient } from '@supabase/auth-helpers
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 
 // Zod schema for updating a schedule entry (all fields optional)
 const updateScheduleSchema = z.object({
@@ -22,17 +23,6 @@ const updateScheduleSchema = z.object({
     path: ["end_time"],
 });
 
-
-// Placeholder for getting restaurant_id from user session or JWT
-async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<string | null> {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !session) {
-    console.error("Session error for schedule update/delete:", sessionError);
-    return null;
-  }
-  return session.user?.app_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
-}
-
 // PATCH handler for updating a schedule
 export async function PATCH(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
@@ -43,7 +33,8 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const userRestaurantId = await getRestaurantIdFromSession(supabase);
+    const user = await getUserFromRequest();
+    const userRestaurantId = user?.restaurantId;
     if (!userRestaurantId) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
@@ -114,7 +105,8 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    const userRestaurantId = await getRestaurantIdFromSession(supabase);
+    const user = await getUserFromRequest();
+    const userRestaurantId = user?.restaurantId;
     if (!userRestaurantId) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }

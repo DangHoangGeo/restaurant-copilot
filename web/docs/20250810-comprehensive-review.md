@@ -92,7 +92,7 @@ The existing internal performance plan is excellent. This section summarizes and
 ### **B. API & Database Optimization**
 
 *   **Priority 1: Transactional Order Creation:**
-    *   **Action:** Create a single Postgres function `create_order(...)` that handles the entire order creation process within a transaction. Call this via `supabase.rpc()`. This prevents N+1 queries and guarantees data consistency.
+    *   **Action:** Create a single Postgres function `create_order(...)` that handles the entire order creation process within a transaction. Call this from an owned server route via `supabaseAdmin.rpc(...)`, not directly from the browser. This prevents N+1 queries, keeps execute permissions tight, and guarantees data consistency.
 *   **Priority 2: API-wide Pagination:**
     *   **Action:** Enforce cursor-based pagination on all list endpoints (`/orders`, `/menu`, `/reports`). Default to a `pageSize` of 25 and set a maximum of 100.
 *   **Priority 3: Asynchronous Reporting:**

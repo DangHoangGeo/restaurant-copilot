@@ -1,4 +1,5 @@
 import { getCachedUser } from './request-context';
+import type { OrgMemberRole, OrgPermission } from './organizations/types';
 
 export interface AuthUserRestaurantSettings {
   id: string;
@@ -23,6 +24,12 @@ export interface AuthUser {
   subdomain: string | null;
   role: string | null;
   restaurantSettings: AuthUserRestaurantSettings | null;
+  organization: {
+    organizationId: string;
+    role: OrgMemberRole;
+    accessibleRestaurantIds: string[];
+    permissionOverrides: Partial<Record<OrgPermission, boolean>>;
+  } | null;
 }
 
 export async function getUserFromRequest(): Promise<AuthUser | null> {

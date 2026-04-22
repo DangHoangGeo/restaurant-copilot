@@ -14,6 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSubdomainFromHost } from "@/lib/utils";
 import { buildCustomerPath } from "@/lib/customer-branch";
+import {
+  CUSTOMER_SESSION_CODE_LENGTH,
+  sanitizeCustomerSessionCodeInput,
+} from "@/shared/customer-session";
 
 interface MenuPageClientProps {
   locale: string;
@@ -155,15 +159,17 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     setIsStartingSession(true);
 
     try {
-      const subdomain = getSubdomainFromHost(window.location.host);
-      const params = new URLSearchParams({ tableId });
-      params.append("guests", String(guestCount));
-      params.append("restaurantId", restaurantSettings.id);
-      if (subdomain) params.append("subdomain", subdomain);
-
-      const res = await fetch(
-        `/api/v1/customer/session/create?${params.toString()}`,
-      );
+      const res = await fetch("/api/v1/customer/session/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tableId,
+          guests: guestCount,
+          restaurantId: restaurantSettings.id,
+        }),
+      });
       const data = await res.json();
 
       if (data.success) {
@@ -172,7 +178,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           "guestCount",
           String(data.guestCount || guestCount),
         );
-        setSessionPasscode(data.passcode || "");
+        setSessionPasscode(data.sessionCode || data.passcode || "");
 
         // Transition to passcode step within the same dialog
         setGuestDialogStep("passcode");
@@ -199,7 +205,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     if (!pendingSessionId) return;
     if (!restaurantSettings) return;
 
-    if (requirePasscode && passcode.length !== 4) {
+    if (requirePasscode && passcode.length !== CUSTOMER_SESSION_CODE_LENGTH) {
       setJoinError(t("invalid_passcode_error"));
       return;
     }
@@ -208,17 +214,17 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     setIsJoiningSession(true);
 
     try {
-      const subdomain = getSubdomainFromHost(window.location.host);
-      const params = new URLSearchParams({
-        sessionId: pendingSessionId,
-        passcode: requirePasscode ? passcode : "default",
+      const response = await fetch("/api/v1/customer/session/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId: pendingSessionId,
+          passcode: requirePasscode ? passcode : "default",
+          restaurantId: restaurantSettings.id,
+        }),
       });
-      params.append("restaurantId", restaurantSettings.id);
-      if (subdomain) params.append("subdomain", subdomain);
-
-      const response = await fetch(
-        `/api/v1/customer/session/join?${params.toString()}`,
-      );
       const data = await response.json();
 
       if (data.success) {
@@ -234,7 +240,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         currentUrl.searchParams.set("sessionId", data.sessionId);
         window.history.replaceState({}, "", currentUrl.toString());
       } else {
-        if (data.error === "Invalid passcode") {
+        if (data.error === "Invalid passcode" || data.error === "Invalid session code") {
           setJoinError(t("invalid_passcode_error"));
         } else if (data.error === "Session is no longer active") {
           setJoinError(t("session_expired_message"));
@@ -663,12 +669,13 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
             {requirePasscode && (
               <Input
                 type="text"
-                inputMode="numeric"
-                maxLength={4}
+                inputMode="text"
+                autoCapitalize="characters"
+                maxLength={CUSTOMER_SESSION_CODE_LENGTH}
                 placeholder={t("enter_passcode")}
                 value={passcode}
                 onChange={(e) => {
-                  setPasscode(e.target.value.replace(/\D/g, "").slice(0, 4));
+                  setPasscode(sanitizeCustomerSessionCodeInput(e.target.value));
                   if (joinError) setJoinError(null);
                 }}
                 onKeyDown={(e) => {
@@ -694,7 +701,9 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
             <Button
               onClick={joinSession}
               disabled={
-                isJoiningSession || (requirePasscode && passcode.length !== 4)
+                isJoiningSession ||
+                (requirePasscode &&
+                  passcode.length !== CUSTOMER_SESSION_CODE_LENGTH)
               }
               className="w-full h-12 text-base font-semibold text-white mb-3"
               style={{ backgroundColor: brandColor, borderColor: brandColor }}

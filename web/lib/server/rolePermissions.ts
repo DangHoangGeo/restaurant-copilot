@@ -1,5 +1,7 @@
 import { AuthUser } from './getUserFromRequest';
 import { NextResponse } from 'next/server';
+import { ROLE_DEFAULT_PERMISSIONS } from './authorization/types';
+import type { OrgMemberRole, OrgPermission } from './organizations/types';
 
 export type UserRole = 'owner' | 'manager' | 'chef' | 'server';
 
@@ -47,6 +49,65 @@ export const DELETE_PERMISSIONS: Partial<RolePermissions> = {
   bookings: ['owner', 'manager'], // servers can't delete bookings
 };
 
+type OrgPermissionBridge =
+  | { kind: 'permission'; permission: OrgPermission }
+  | { kind: 'roles'; roles: OrgMemberRole[] };
+
+// When a user has an organization context, the org model is authoritative.
+// Legacy users.role mappings must not silently over-grant access once org scope
+// exists. The bridge below keeps transitional owner APIs usable while the route
+// surface moves to dedicated org-aware services.
+const ORG_RESOURCE_PERMISSIONS: Record<keyof RolePermissions, OrgPermissionBridge> = {
+  categories: { kind: 'permission', permission: 'restaurant_settings' },
+  menu_items: { kind: 'permission', permission: 'restaurant_settings' },
+  menu_item_sizes: { kind: 'permission', permission: 'restaurant_settings' },
+  toppings: { kind: 'permission', permission: 'restaurant_settings' },
+  tables: { kind: 'permission', permission: 'restaurant_settings' },
+  orders: {
+    kind: 'roles',
+    roles: ['founder_full_control', 'founder_operations', 'branch_general_manager'],
+  },
+  order_items: {
+    kind: 'roles',
+    roles: ['founder_full_control', 'founder_operations', 'branch_general_manager'],
+  },
+  reviews: { kind: 'permission', permission: 'restaurant_settings' },
+  feedback: { kind: 'permission', permission: 'restaurant_settings' },
+  inventory_items: { kind: 'permission', permission: 'purchases' },
+  bookings: {
+    kind: 'roles',
+    roles: ['founder_full_control', 'founder_operations', 'branch_general_manager'],
+  },
+  employees: { kind: 'permission', permission: 'employees' },
+  schedules: { kind: 'permission', permission: 'employees' },
+  analytics: { kind: 'permission', permission: 'reports' },
+  settings: { kind: 'permission', permission: 'restaurant_settings' },
+};
+
+function hasOrganizationPermission(
+  user: AuthUser,
+  resource: keyof RolePermissions
+): boolean {
+  const organization = user.organization;
+
+  if (!organization) {
+    return false;
+  }
+
+  const rule = ORG_RESOURCE_PERMISSIONS[resource];
+
+  if (rule.kind === 'roles') {
+    return rule.roles.includes(organization.role);
+  }
+
+  const override = organization.permissionOverrides[rule.permission];
+  if (typeof override === 'boolean') {
+    return override;
+  }
+
+  return ROLE_DEFAULT_PERMISSIONS[organization.role][rule.permission] ?? false;
+}
+
 /**
  * Check if a user has permission to perform an operation on a resource
  * @param user - The authenticated user
@@ -59,12 +120,20 @@ export function hasPermission(
   resource: keyof RolePermissions,
   operation: 'INSERT' | 'UPDATE' | 'DELETE' | 'SELECT' = 'SELECT'
 ): boolean {
-  if (!user || !user.role) {
+  if (!user) {
+    return false;
+  }
+
+  if (user.organization) {
+    return hasOrganizationPermission(user, resource);
+  }
+
+  if (!user.role) {
     return false;
   }
 
   const userRole = user.role as UserRole;
-  
+
   // For DELETE operations, use more restrictive permissions if defined
   if (operation === 'DELETE' && DELETE_PERMISSIONS[resource]) {
     return DELETE_PERMISSIONS[resource]!.includes(userRole);
@@ -97,7 +166,7 @@ export function checkAuthorization(
     return NextResponse.json(
       { 
         error: 'Forbidden: Insufficient permissions',
-        details: `User with role '${user.role}' cannot ${operation} ${resource}`
+        details: `User cannot ${operation} ${resource} in the current branch scope`
       },
       { status: 403 }
     );

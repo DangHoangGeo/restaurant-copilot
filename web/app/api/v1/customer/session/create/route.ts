@@ -1,42 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { randomUUID } from "crypto";
-import { resolveCustomerEntryContext } from "@/lib/server/customer-entry";
+import { z } from "zod";
+import {
+  createCustomerOrderSession,
+  createCustomerSessionCode,
+} from "@/lib/server/customer-session";
+import { protectEndpoint, RATE_LIMIT_CONFIGS } from "@/lib/server/rateLimit";
 
-export async function GET(req: NextRequest) {
+const createCustomerSessionSchema = z.object({
+  tableId: z.string().uuid(),
+  restaurantId: z.string().uuid(),
+  guests: z.number().int().min(1).max(20).optional().default(1),
+});
+
+export async function GET() {
+  return NextResponse.json(
+    { success: false, error: "Use POST to create a customer session" },
+    { status: 405 },
+  );
+}
+
+export async function POST(req: NextRequest) {
   try {
-    let tableId = req.nextUrl.searchParams.get("tableId");
-    const guestsParam = req.nextUrl.searchParams.get("guests");
-    let restaurantId = req.nextUrl.searchParams.get("restaurantId");
-    const branchCode = req.nextUrl.searchParams.get("branch");
-    const tableCode = req.nextUrl.searchParams.get("table");
-    const orgIdentifier = req.nextUrl.searchParams.get("org");
-
-    const parsedGuests = guestsParam ? parseInt(guestsParam, 10) : NaN;
-    const guestCount = Number.isFinite(parsedGuests) && parsedGuests > 0 ? parsedGuests : 1;
-    
-    if ((!tableId || !restaurantId) && tableCode) {
-      const entry = await resolveCustomerEntryContext({
-        host: req.headers.get('host'),
-        orgIdentifier,
-        branchCode,
-        tableCode,
-        restaurantId,
-      });
-
-      if (entry) {
-        tableId = entry.tableId;
-        restaurantId = entry.restaurant.id;
-      }
+    const protectionError = await protectEndpoint(
+      req,
+      RATE_LIMIT_CONFIGS.MUTATION,
+      "customer-session-create",
+    );
+    if (protectionError) {
+      return protectionError;
     }
 
-    if (!tableId) {
-      return NextResponse.json({ success: false, error: "Table ID is required" }, { status: 400 });
+    const body = await req.json();
+    const parsed = createCustomerSessionSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: "Invalid session request", details: parsed.error.flatten() },
+        { status: 400 },
+      );
     }
 
-    if (!restaurantId) {
-      return NextResponse.json({ success: false, error: "Invalid restaurant" }, { status: 400 });
-    }
+    const { tableId, restaurantId, guests } = parsed.data;
 
     // Verify table belongs to this restaurant
     const { data: table, error: tableError } = await supabaseAdmin
@@ -51,67 +55,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid table ID" }, { status: 404 });
     }
 
-    // Check if there's already an active session for this table
-    const { data: existingOrder } = await supabaseAdmin
-      .from("orders")
-      .select("session_id, status, id, guest_count")
-      .eq("table_id", tableId)
-      .eq("restaurant_id", restaurantId)
-      .neq("status", "completed") // Exclude completed orders
-      .neq("status", "canceled") // Exclude canceled orders
-      .neq("status", "expired") // Exclude expired orders
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    // If there's already an active session, return it
-    if (existingOrder) {
-      console.log('Returning existing session:', existingOrder.session_id);
-      return NextResponse.json({ 
-        success: true, 
-        sessionId: existingOrder.session_id, 
-        tableNumber: table.name,
-        isNewSession: false,
-        orderId: existingOrder.id,
-        guestCount: existingOrder.guest_count
-      });
-    }
-
-    // Create new session with a UUID
-    const sessionId = randomUUID();
-    console.log('Creating new session with ID:', sessionId);
-    
-    const { data: newOrder, error: orderError } = await supabaseAdmin
-      .from("orders")
-      .insert([{
-        restaurant_id: restaurantId,
-        table_id: tableId,
-        session_id: sessionId,
-        status: "new",
-        total_amount: 0,
-        guest_count: guestCount
-      }])
-      .select("id, session_id, guest_count")
-      .single();
-
-    if (orderError || !newOrder) {
-      console.error("Failed to create order:", orderError);
-      return NextResponse.json({ success: false, error: "Failed to create session" }, { status: 500 });
-    }
-
-    // Generate passcode from the last 4 characters of the order ID
-    const passcode = newOrder.id.substring(newOrder.id.length - 4);
-    
-    return NextResponse.json({ 
-      success: true, 
-      sessionId: newOrder.session_id, 
-      tableNumber: table.name,
-      isNewSession: true,
-      orderId: newOrder.id,
-      guestCount: newOrder.guest_count,
-      passcode: passcode // Add passcode to response
+    const orderSession = await createCustomerOrderSession({
+      restaurantId,
+      tableId,
+      guestCount: guests,
     });
+    const sessionCode = createCustomerSessionCode(
+      orderSession.session_id,
+      restaurantId,
+    );
 
+    return NextResponse.json({
+      success: true,
+      sessionId: orderSession.session_id,
+      tableNumber: table.name,
+      isNewSession: orderSession.createdNew,
+      orderId: orderSession.id,
+      guestCount: orderSession.guest_count,
+      sessionCode,
+      passcode: sessionCode,
+    });
   } catch (error) {
     console.error("Session creation error:", error);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });

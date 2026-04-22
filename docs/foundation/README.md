@@ -36,6 +36,16 @@ Read these when relevant:
   Current readiness review, blockers, and execution order.
 - `04_expo_mobile_execution_plan.md`
   Supporting mobile plan only for mobile or printer work.
+- `06_supabase_foundation_guidelines.md`
+  Required when the task touches schema, RLS, RPCs, Edge Functions, or rollout migrations.
+- `07_supabase_foundation_review_20260422.md`
+  Current database foundation audit and residual watchlist.
+- `08_supabase_release_pipeline.md`
+  Required when the task touches Supabase CI/CD, rollout migrations, or staging/production release flow.
+- `09_feature_production_review_20260422.md`
+  Current actor-by-actor production readiness review for owner, platform admin, staff, and public customer flows.
+- `10_review_execution_20260422.md`
+  Current implementation status for the production hardening work executed from the April 22 review.
 
 ## Working Rules
 

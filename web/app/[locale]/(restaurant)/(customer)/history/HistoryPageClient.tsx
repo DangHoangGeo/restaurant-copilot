@@ -108,10 +108,10 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
   // Helper function to get passcode from orderId
   const getPasscode = () => {
-    if (historyData?.order?.id) {
-      return historyData.order.id.slice(-4);
+    if (historyData?.order?.session_code) {
+      return historyData.order.session_code;
     }
-    return sessionId?.slice(-8) || "";
+    return "";
   };
 
   const copyPasscode = async () => {

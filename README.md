@@ -154,8 +154,14 @@ xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug test
 ### Database
 
 ```bash
-# Production migrations live in infra/production/migrations/
-# Supporting scripts live in infra/production/ and infra/scripts/
+# Canonical bootstrap lives in supabase/bootstrap.sql
+# Self-contained SQL lives in supabase/sql/
+# Forward-only rollout migrations live in supabase/migrations/
+# Edge Functions live in supabase/functions/
+# Apply to a blank or reset Supabase database with:
+# ./infra/scripts/apply_supabase_baseline.sh
+# Apply to a live Supabase database with:
+# ./infra/scripts/apply_supabase_migrations.sh
 ```
 
 ## Repository Layout
@@ -163,7 +169,8 @@ xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug test
 ```text
 web/                    Next.js app for founder control, branch ops, and customer surfaces
 mobile/SOder/           Current SwiftUI staff app
-infra/                  SQL migrations, production scripts, edge jobs, test data
+infra/                  Bootstrap scripts and SQL test fixtures
+supabase/               Canonical self-contained database foundation, config, and edge functions
 docs/                   Foundation docs, plans, and archived legacy docs
 ```
 

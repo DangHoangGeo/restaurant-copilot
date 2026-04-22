@@ -65,7 +65,7 @@ Key Workstreams and Tasks
 
 6) Database Indexes for Hot Paths
 - Ensure efficient queries for orders and dashboard.
-  - Files: `infra/migrations/023_perf_indexes.sql` (verify), add `024+` migration if needed.
+- Files: `supabase/sql/10_branch_core/keys.sql` (verify current hot-path indexes), update the canonical `supabase/sql/*` foundation if more are needed.
   - Actions:
     - Add/verify composite indexes: orders(restaurant_id, created_at DESC), orders(restaurant_id, status, created_at DESC), order_items(order_id), tables(restaurant_id), menu_items(restaurant_id, category_id).
     - Analyze query plans for `/api/v1/owner/orders` and dashboard metrics; adjust indexes.

@@ -81,6 +81,7 @@ export async function GET(
   try {
     const { orderId} = await params;
     const restaurantId = req.nextUrl.searchParams.get("restaurantId");
+    const sessionId = req.nextUrl.searchParams.get("sessionId");
     if (!orderId) {
       return NextResponse.json({
         success: false,
@@ -92,6 +93,13 @@ export async function GET(
       return NextResponse.json({
         success: false,
         error: "Invalid restaurant"
+      }, { status: 400 });
+    }
+
+    if (!sessionId) {
+      return NextResponse.json({
+        success: false,
+        error: "Session ID is required"
       }, { status: 400 });
     }
 
@@ -148,6 +156,7 @@ export async function GET(
         )
       `)
       .eq("id", orderId)
+      .eq("session_id", sessionId)
       .eq("restaurant_id", restaurantId)
       .single() as { data: OrderData | null, error: Error | null };
 

@@ -5,18 +5,15 @@ import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import type { AuthUser } from './getUserFromRequest';
 import { ACTIVE_BRANCH_COOKIE } from './organizations/active-branch';
+import type { OrgMemberRole, OrgPermission, ShopScope } from './organizations/types';
 
 // Cache the user data for the duration of the request.
 //
 // Active-branch override (Phase 2):
 //   Multi-branch org members can switch their active branch via the
-//   x-coorder-active-branch cookie.  After resolving the base restaurantId from
-//   users.restaurant_id, this function checks if the cookie is set to a different
-//   restaurant the user is authorised to access.  If so, the cookie value becomes
-//   the effective restaurantId for this request.
-//
-//   Validation uses the is_org_member_for_restaurant() DB function (SECURITY DEFINER,
-//   reads auth.uid()) so the check is RLS-safe and a single round-trip.
+//   x-coorder-active-branch cookie. After resolving the user's org membership,
+//   this function validates the cookie against the member's allowed branch IDs.
+//   If valid, the cookie value becomes the effective restaurantId for the request.
 export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
 
@@ -43,6 +40,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
         subdomain: null,
         role: supabaseUser.app_metadata?.role || null,
         restaurantSettings: null,
+        organization: null,
       };
     }
 
@@ -79,11 +77,68 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     let restaurantId: string | null =
       userRecord?.restaurant_id ?? supabaseUser.app_metadata?.restaurant_id ?? null;
     let subdomain: string | null = (primaryRestaurant as RestaurantRow)?.subdomain ?? null;
+    let organization: AuthUser['organization'] = null;
 
     // Build restaurant settings from the already-joined row (no extra DB call).
     let restaurantSettings = primaryRestaurant
       ? buildRestaurantSettings(primaryRestaurant as RestaurantRow)
       : null;
+
+    // Resolve the first active organization membership once per request so
+    // branch access and branch-scoped authorization can share the same source.
+    const { data: organizationMembers } = await supabase
+      .from('organization_members')
+      .select('id, organization_id, role, shop_scope')
+      .eq('user_id', supabaseUser.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .limit(1);
+
+    const organizationMember = organizationMembers?.[0] as
+      | {
+          id: string;
+          organization_id: string;
+          role: OrgMemberRole;
+          shop_scope: ShopScope;
+        }
+      | undefined;
+
+    if (organizationMember) {
+      const [scopeResult, permissionResult] = await Promise.all([
+        organizationMember.shop_scope === 'all_shops'
+          ? supabase
+              .from('organization_restaurants')
+              .select('restaurant_id')
+              .eq('organization_id', organizationMember.organization_id)
+          : supabase
+              .from('organization_member_shop_scopes')
+              .select('restaurant_id')
+              .eq('member_id', organizationMember.id),
+        supabase
+          .from('organization_member_permissions')
+          .select('permission, granted')
+          .eq('member_id', organizationMember.id),
+      ]);
+
+      const accessibleRestaurantIds =
+        scopeResult.data?.map((row: { restaurant_id: string }) => row.restaurant_id) ?? [];
+
+      const permissionOverrides =
+        permissionResult.data?.reduce<Partial<Record<OrgPermission, boolean>>>(
+          (overrides, row) => {
+            overrides[row.permission as OrgPermission] = row.granted;
+            return overrides;
+          },
+          {},
+        ) ?? {};
+
+      organization = {
+        organizationId: organizationMember.organization_id,
+        role: organizationMember.role,
+        accessibleRestaurantIds,
+        permissionOverrides,
+      };
+    }
 
     // ── Approval / suspension guard for owner accounts ────────────────────────
     // Owner APIs rely on a valid restaurantId to enforce RLS. If the restaurant
@@ -99,20 +154,17 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     }
 
     // ── Active-branch cookie override ─────────────────────────────────────────
-    // If the user has set an active-branch cookie pointing to a *different*
-    // restaurant than their base restaurant_id, validate it and, if valid, use
-    // it as the effective restaurantId for this request.
+    // If the user has set an active-branch cookie pointing to a different
+    // restaurant than their base restaurant_id, validate it against the
+    // resolved org scope and, if valid, use it as the effective restaurantId.
     const cookieStore = await cookies();
     const activeBranchCookie = cookieStore.get(ACTIVE_BRANCH_COOKIE)?.value;
 
-    if (activeBranchCookie && activeBranchCookie !== restaurantId) {
-      // is_org_member_for_restaurant() checks both all_shops scope and
-      // selected_shops rows in a single SECURITY DEFINER call.
-      const { data: hasAccess } = await supabase.rpc('is_org_member_for_restaurant', {
-        p_restaurant_id: activeBranchCookie,
-      });
-
-      if (hasAccess === true) {
+    if (
+      activeBranchCookie &&
+      activeBranchCookie !== restaurantId &&
+      organization?.accessibleRestaurantIds.includes(activeBranchCookie)
+    ) {
         restaurantId = activeBranchCookie;
         // Fetch the active branch's full settings so downstream callers have
         // everything they need (subdomain, name, logo, etc.) without an extra query.
@@ -125,10 +177,9 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
         restaurantSettings = activeBranchRow
           ? buildRestaurantSettings(activeBranchRow as RestaurantRow)
           : null;
-      }
-      // If validation fails (access revoked, stale cookie), fall through to
-      // the base restaurantId — the stale cookie is silently ignored.
     }
+    // If validation fails (access revoked, stale cookie), fall through to
+    // the base restaurantId — the stale cookie is silently ignored.
 
     if (restaurantId && restaurantSettings) {
       const { data: orgLink } = await supabaseAdmin
@@ -154,6 +205,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       subdomain,
       role: userRecord?.role ?? supabaseUser.app_metadata?.role ?? null,
       restaurantSettings,
+      organization,
     };
   } catch (error) {
     console.error('Error in getCachedUser:', error);
@@ -164,6 +216,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       subdomain: null,
       role: supabaseUser.app_metadata?.role || null,
       restaurantSettings: null,
+      organization: null,
     };
   }
 });

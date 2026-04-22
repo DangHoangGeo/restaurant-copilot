@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
-import { createClient } from '@/lib/supabase/client';
 // Assuming a toast notification system is in place, e.g., react-hot-toast or similar
 // import toast from 'react-hot-toast';
 
@@ -41,15 +40,18 @@ const RecommendationsWidget: React.FC<RecommendationsWidgetProps> = ({ restauran
       setApplySuccess(false);
       setApplyError(null);
       try {
-        const { data, error: rpcError } = await createClient().rpc('get_top_sellers_7days', {
-          p_restaurant_id: restaurantId,
-          p_limit: 3,
+        const response = await fetch('/api/v1/owner/dashboard/popular-items', {
+          method: 'GET',
+          credentials: 'same-origin',
         });
 
-        if (rpcError) {
-          throw rpcError;
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || `Failed to fetch popular items (status: ${response.status})`);
         }
-        setTopSellers(data || []);
+
+        setTopSellers((result || []).slice(0, 3));
       } catch (error) {
         setError(t('errorFetching', { error: (error as Error).message }));
         setTopSellers([]);

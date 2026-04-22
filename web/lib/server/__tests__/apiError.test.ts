@@ -2,6 +2,13 @@
 
 import { createApiError } from '../apiError';
 
+function setNodeEnv(value: string) {
+  Object.defineProperty(process.env, 'NODE_ENV', {
+    value,
+    configurable: true,
+  });
+}
+
 describe('API Error Utilities', () => {
   describe('createApiError', () => {
     it('should create a standard error response', () => {
@@ -20,18 +27,18 @@ describe('API Error Utilities', () => {
     });
 
     it('should not include details in production by default', () => {
-      process.env.NODE_ENV = 'production';
+      setNodeEnv('production');
       const errorResponse = createApiError('INTERNAL_ERROR', undefined, { sensitive: 'data' });
       expect(errorResponse.error.details).toBeUndefined();
-      process.env.NODE_ENV = 'test'; // Reset env
+      setNodeEnv('test');
     });
 
     it('should include details in development', () => {
-      process.env.NODE_ENV = 'development';
+      setNodeEnv('development');
       const details = { info: 'some debug info' };
       const errorResponse = createApiError('INTERNAL_ERROR', undefined, details);
       expect(errorResponse.error.details).toEqual(details);
-      process.env.NODE_ENV = 'test'; // Reset env
+      setNodeEnv('test');
     });
 
     it('should use the provided requestId', () => {

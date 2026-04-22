@@ -39,6 +39,7 @@ Mobile work should not disrupt those priorities.
 - `mobile/SOder/` remains the active native mobile app in this repo.
 - Any future Expo app should be incremental and should not block current operations.
 - Printing remains a first-class requirement, not a future enhancement.
+- Native mobile sessions must keep an explicit active branch context. Multi-branch access can exist through the organization layer, but every in-service mobile request still has to resolve to one selected branch at a time.
 
 ## Rules For Mobile Work
 

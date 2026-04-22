@@ -10,7 +10,7 @@ Outcomes
 
 Workstreams and Tasks
 1) Audit Trails End-to-End
-- Files: `infra/migrations/002_audit_logs.sql` (verify), new/updated triggers for settings, roles, menu items, prices. UI in `web/app/[locale]/(restaurant)/dashboard/reports/audit-log/*`.
+- Files: `supabase/sql/10_branch_core/schema.sql`, `supabase/sql/10_branch_core/functions.sql`, and `supabase/sql/10_branch_core/triggers.sql` (verify audit logs and triggers), plus new or updated triggers for settings, roles, menu items, prices. UI in `web/app/[locale]/(restaurant)/dashboard/reports/audit-log/*`.
 - Actions:
   - Ensure DB triggers capture who/when/what (before/after values where safe) for sensitive tables.
   - Build an Audit Log viewer with filters (actor, entity, date range) and export.

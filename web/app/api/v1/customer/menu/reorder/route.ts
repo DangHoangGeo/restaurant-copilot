@@ -1,34 +1,22 @@
-import { createRouteHandlerClient, SupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
+import { checkAuthorization } from '@/lib/server/rolePermissions';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 interface ReorderedCategory {
   id: string;
   position: number;
 }
 
-// Placeholder for getting restaurant_id from user session or JWT
-// In a real app, this would involve decoding a JWT or querying a session table
-async function getRestaurantIdFromSession(supabase: SupabaseClient): Promise<string | null> {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !session) {
-    console.error("Session error or no session:", sessionError);
-    return null;
-  }
-  // Assuming you have a way to get restaurant_id from the user or session
-  // For example, if it's in app_metadata or a custom claim in the JWT
-  // Or if the user is directly linked to one restaurant_id
-  // This is a placeholder, adapt to your actual authentication/session management
-  return session.user?.app_metadata?.restaurant_id || "mock-restaurant-id-123"; // Replace with actual logic
-}
-
 
 export async function POST(req: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies });
-
   try {
-    const userRestaurantId = await getRestaurantIdFromSession(supabase);
-    if (!userRestaurantId) {
+    const user = await getUserFromRequest();
+    if (!user || !user.restaurantId) {
       return NextResponse.json({ error: 'Unauthorized or restaurant ID not found in session' }, { status: 401 });
+    }
+    const authError = checkAuthorization(user, 'categories', 'UPDATE');
+    if (authError) {
+      return authError;
     }
 
     const reorderedCategories: ReorderedCategory[] = await req.json();
@@ -39,11 +27,11 @@ export async function POST(req: NextRequest) {
     }
 
     const updates = reorderedCategories.map(category =>
-      supabase
+      supabaseAdmin
         .from('categories')
         .update({ position: category.position })
         .eq('id', category.id)
-        .eq('restaurant_id', userRestaurantId) // Ensure user can only update their own restaurant's categories
+        .eq('restaurant_id', user.restaurantId)
     );
 
     const results = await Promise.all(updates);
