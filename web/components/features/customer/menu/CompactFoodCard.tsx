@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, TrendingUp, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { getLocalizedText } from "@/lib/customerUtils";
 import Image from "next/image";
 import { FoodItem } from "@/shared/types/menu";
@@ -110,6 +111,7 @@ export function CompactFoodCard({
   showPopularBadge = false,
   showRecommendedBadge = false,
 }: CompactFoodCardProps) {
+  const t = useTranslations("customer.menu");
   const itemName = getLocalizedText(
     { name_en: item.name_en, name_vi: item.name_vi || '', name_ja: item.name_ja || '' },
     locale,
@@ -199,7 +201,7 @@ export function CompactFoodCard({
             >
               <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 shadow-md border-0 rounded-sm">
                 <TrendingUp className="h-2 w-2" />
-                <span>Popular</span>
+                <span>{t("food_card.popular")}</span>
               </Badge>
             </motion.div>
           )}
@@ -211,7 +213,7 @@ export function CompactFoodCard({
             >
               <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 shadow-md border-0 rounded-sm">
                 <Sparkles className="h-2 w-2" />
-                <span>AI Pick</span>
+                <span>{t("food_card.recommended")}</span>
               </Badge>
             </motion.div>
           )}
@@ -235,7 +237,7 @@ export function CompactFoodCard({
       {!item.available && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
           <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            Out of Stock
+            {t("food_card.out_of_stock")}
           </span>
         </div>
       )}
@@ -297,7 +299,7 @@ export function CompactFoodCard({
                     ? `0 0 25px ${brandColor}80`
                     : `0 4px 15px ${brandColor}40`
                 }}
-                aria-label={`Add ${itemName} to cart`}
+                aria-label={`${t("food_card.add_to_cart")}: ${itemName}`}
               >
                 {isAddingToCart && (
                   <motion.div

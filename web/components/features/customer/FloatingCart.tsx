@@ -289,7 +289,7 @@ export function FloatingCart({
                 )}
 
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  ¥{item.price} each
+                  {t("item_card.price_each", { price: item.price })}
                 </p>
               </button>
             </div>
