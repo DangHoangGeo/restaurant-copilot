@@ -30,12 +30,12 @@ async function fetchJson(url, init) {
   return json;
 }
 
-async function fetchWithRetry(url, attempts = 5) {
+async function fetchWithRetry(url, init, attempts = 5) {
   let lastError;
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      return await fetchJson(url);
+      return await fetchJson(url, init);
     } catch (error) {
       lastError = error;
       if (attempt === attempts) break;
@@ -78,11 +78,19 @@ async function main() {
   assert.equal(homepage.menu[0].menu_items[0].name_en, "Smoked Pho");
 
   const sessionUrl = new URL("/api/v1/customer/session/create", appBaseUrl);
-  sessionUrl.searchParams.set("restaurantId", restaurantId);
-  sessionUrl.searchParams.set("tableId", tableId);
-  sessionUrl.searchParams.set("guests", String(guestCount));
+  const sessionRequest = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      restaurantId,
+      tableId,
+      guests: guestCount,
+    }),
+  };
 
-  const firstSession = await fetchJson(sessionUrl);
+  const firstSession = await fetchJson(sessionUrl, sessionRequest);
 
   assert.equal(firstSession.success, true);
   assert.equal(firstSession.isNewSession, true);
@@ -90,15 +98,18 @@ async function main() {
   assert.equal(firstSession.guestCount, guestCount);
   assert.match(firstSession.sessionId, /^[0-9a-f-]{36}$/i);
   assert.match(firstSession.orderId, /^[0-9a-f-]{36}$/i);
-  assert.equal(firstSession.passcode, firstSession.orderId.slice(-4));
+  assert.equal(typeof firstSession.sessionCode, "string");
+  assert.equal(firstSession.sessionCode.length, 8);
+  assert.equal(firstSession.passcode, firstSession.sessionCode);
 
-  const secondSession = await fetchJson(sessionUrl);
+  const secondSession = await fetchJson(sessionUrl, sessionRequest);
 
   assert.equal(secondSession.success, true);
   assert.equal(secondSession.isNewSession, false);
   assert.equal(secondSession.sessionId, firstSession.sessionId);
   assert.equal(secondSession.orderId, firstSession.orderId);
   assert.equal(secondSession.guestCount, guestCount);
+  assert.equal(secondSession.sessionCode, firstSession.sessionCode);
 
   console.log("Customer public smoke test passed.");
 }
