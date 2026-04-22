@@ -6,39 +6,19 @@ import { ZodError } from "zod"; // Import ZodError explicitly
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { bootstrapOrganizationForRestaurant } from "@/lib/server/organizations/service";
 import { verifyRecaptchaToken } from "@/lib/utils/captcha";
-
-const ipCounters: Record<string, { tokens: number; lastRefill: number }> = {};
-
-function rateLimit(ip: string, limit = 10, windowSec = 60): boolean {
-  const now = Date.now();
-  const entry = ipCounters[ip] || { tokens: limit, lastRefill: now };
-
-  const timePassed = (now - entry.lastRefill) / 1000;
-  entry.tokens = Math.min(limit, entry.tokens + timePassed * (limit / windowSec));
-  entry.lastRefill = now;
-
-  if (entry.tokens >= 1) {
-    entry.tokens -= 1;
-    ipCounters[ip] = entry;
-    return true;
-  }
-
-  ipCounters[ip] = entry;
-  return false;
-}
+import { protectEndpoint, RATE_LIMIT_CONFIGS } from "@/lib/server/rateLimit";
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || "unknown";
   let body: z.infer<typeof signupSchema> | null = null; // Initialize body to null
   try {
-    if (!rateLimit(ip)) {
-      await logEvent({
-        level: "WARN",
-        endpoint: "/api/v1/register",
-        message: "Rate limit exceeded",
-        metadata: { ip },
-      });
-      return new Response("Too Many Requests", { status: 429 });
+    const protectionError = await protectEndpoint(
+      req,
+      RATE_LIMIT_CONFIGS.AUTH,
+      "auth-register",
+    );
+    if (protectionError) {
+      return protectionError;
     }
 
     body = await req.json(); // Assign to the outer-scoped body

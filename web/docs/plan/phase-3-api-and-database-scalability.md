@@ -10,10 +10,10 @@ Outcomes
 
 Workstreams and Tasks
 1) Transactional Order Creation (RPC)
-- Files: `infra/migrations/022_create_order_transaction.sql` (verify), `/infra/migrations/*` for updates, `web/app/api/v1/owner/orders/route.ts`, `web/app/api/v1/customer/orders/route.ts`, `web/app/[locale]/(restaurant)/dashboard/orders/orders-client-content.tsx` (client call sites).
+- Files: `supabase/sql/20_ordering_customer/functions.sql` (verify `create_order(...)`), `supabase/sql/*` for any database foundation updates, `web/app/api/v1/owner/orders/route.ts`, `web/app/api/v1/customer/orders/route.ts`, `web/app/[locale]/(restaurant)/dashboard/orders/orders-client-content.tsx` (client call sites).
 - Actions:
   - Implement/verify Postgres function `create_order(p_restaurant_id, p_table_id, p_guest_count, p_items jsonb)` that inserts order + items atomically and returns computed totals.
-  - Replace multiple Supabase inserts with `supabase.rpc('create_order', {...})` in both owner and customer flows.
+  - Replace multiple Supabase inserts with owned server-route calls that use `supabaseAdmin.rpc('create_order', {...})` for both owner and customer flows.
   - Handle conflicts, constraints, and validation inside the function; return structured error codes.
 - Tests: API integration tests asserting atomicity (fail mid-way → no partial rows). Load tests for p95 < 200ms for typical orders.
 - Acceptance: No partial writes observed; rollback guaranteed on error; metrics show fewer DB roundtrips.

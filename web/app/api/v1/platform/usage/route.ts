@@ -88,7 +88,8 @@ export async function GET(request: NextRequest) {
       avg_revenue_per_restaurant: 0
     };
 
-    // Get trend data if date range is provided
+    // Get trend data from a single SQL aggregation rather than grouping raw
+    // snapshot rows in Node for every dashboard request.
     interface TrendPoint {
       date: string;
       orders: number;
@@ -98,38 +99,29 @@ export async function GET(request: NextRequest) {
 
     let trends: TrendPoint[] = [];
     if (query.start_date && query.end_date) {
-      const { data: trendData } = await supabase
-        .from('tenant_usage_snapshots')
-        .select('snapshot_date, total_orders, total_revenue, unique_customers')
-        .gte('snapshot_date', query.start_date)
-        .lte('snapshot_date', query.end_date)
-        .order('snapshot_date', { ascending: true });
-
-      // Group by date and sum
-      const trendMap = new Map<
-        string,
-        { orders: number; revenue: number; customers: number }
-      >();
-
-      trendData?.forEach((t) => {
-        const existing = trendMap.get(t.snapshot_date) || {
-          orders: 0,
-          revenue: 0,
-          customers: 0
-        };
-        trendMap.set(t.snapshot_date, {
-          orders: existing.orders + t.total_orders,
-          revenue: existing.revenue + Number(t.total_revenue),
-          customers: existing.customers + t.unique_customers
-        });
+      const { data: trendData, error: trendError } = await supabase.rpc('get_platform_usage_trends', {
+        p_start_date: query.start_date,
+        p_end_date: query.end_date,
+        p_restaurant_id: null,
       });
 
-      trends = Array.from(trendMap.entries()).map(([date, values]) => ({
-        date,
-        orders: values.orders,
-        revenue: values.revenue,
-        customers: values.customers
-      }));
+      if (trendError) {
+        console.error('Error fetching platform usage trends:', trendError);
+        return platformApiError('Failed to fetch usage trends', 500);
+      }
+
+      trends =
+        trendData?.map((trend: {
+          snapshot_date: string;
+          total_orders: number | string | null;
+          total_revenue: number | string | null;
+          unique_customers: number | string | null;
+        }) => ({
+          date: trend.snapshot_date,
+          orders: Number(trend.total_orders ?? 0),
+          revenue: Number(trend.total_revenue ?? 0),
+          customers: Number(trend.unique_customers ?? 0),
+        })) ?? [];
     }
 
     return platformApiResponse({

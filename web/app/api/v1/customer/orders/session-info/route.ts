@@ -1,6 +1,5 @@
-// File: app/api/public/session-info/route.ts
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server'
+import { getCustomerSessionInfo } from '@/lib/server/customer-session';
 
 export async function GET(req: NextRequest) {
    const sessionId = req.nextUrl.searchParams.get("sessionId");
@@ -21,22 +20,12 @@ export async function GET(req: NextRequest) {
     }
 
   try {
-    const { data, error } = await supabaseAdmin
-      .rpc('get_order_session_info', {
-        p_session_id:    sessionId,
-        p_restaurant_id: restaurantId
-      })
+    const order = await getCustomerSessionInfo({
+      sessionId,
+      restaurantId,
+    });
 
-    if (error) {
-      // 404 for “not found” or other client errors
-      const status = error.code === 'PGRST100' ? 404 : 500
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status }
-      )
-    }
-
-    return NextResponse.json({ success: true, order: data })
+    return NextResponse.json({ success: true, order })
   } catch (err) {
     console.error('RPC error:', err)
     return NextResponse.json(

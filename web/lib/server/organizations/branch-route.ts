@@ -20,6 +20,21 @@ export async function resolveScopedBranchRouteAccess(
     return null;
   }
 
+  const organizationContext = await resolveOrgContext();
+  const authz = buildAuthorizationService(organizationContext);
+
+  if (organizationContext) {
+    if (!authz?.canAccessRestaurant(branchId)) {
+      return null;
+    }
+
+    return {
+      user,
+      organizationContext,
+      branchId,
+    };
+  }
+
   const isLegacyBranchScopedUser =
     user.restaurantId === branchId &&
     (user.role === 'owner' || user.role === 'manager');
@@ -32,18 +47,7 @@ export async function resolveScopedBranchRouteAccess(
     };
   }
 
-  const organizationContext = await resolveOrgContext();
-  const authz = buildAuthorizationService(organizationContext);
-
-  if (!organizationContext || !authz?.canAccessRestaurant(branchId)) {
-    return null;
-  }
-
-  return {
-    user,
-    organizationContext,
-    branchId,
-  };
+  return null;
 }
 
 export async function ensureBranchRouteContext(params: {

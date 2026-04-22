@@ -8,11 +8,16 @@ class AutoPrintingTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        orderManager = OrderManager()
+        UserDefaults.standard.removeObject(forKey: "auto_printing_enabled")
+        orderManager = OrderManager.shared
+        orderManager.setAutoPrintingEnabled(false)
+        orderManager.clearPrintHistory()
         mockPrinterManager = MockPrinterManager()
     }
     
     override func tearDown() {
+        orderManager.setAutoPrintingEnabled(false)
+        orderManager.clearPrintHistory()
         orderManager = nil
         mockPrinterManager = nil
         super.tearDown()
@@ -21,20 +26,13 @@ class AutoPrintingTests: XCTestCase {
     // MARK: - Auto-printing Settings Tests
     
     func testAutoPrintingEnabledByDefault() {
-        XCTAssertTrue(orderManager.autoPrintingEnabled, "Auto-printing should be enabled by default")
+        XCTAssertFalse(orderManager.autoPrintingEnabled, "Auto-printing should start disabled until explicitly enabled")
     }
     
     func testAutoPrintingSettingsPersistence() {
-        // Set to false
-        orderManager.setAutoPrintingEnabled(false)
-        XCTAssertFalse(orderManager.autoPrintingEnabled)
-        
-        // Create new instance to test persistence
-        let newOrderManager = OrderManager()
-        XCTAssertFalse(newOrderManager.autoPrintingEnabled, "Auto-printing setting should persist")
-        
-        // Reset to true for other tests
         orderManager.setAutoPrintingEnabled(true)
+        XCTAssertTrue(orderManager.autoPrintingEnabled)
+        XCTAssertEqual(UserDefaults.standard.object(forKey: "auto_printing_enabled") as? Bool, true)
     }
     
     // MARK: - New Order Auto-printing Tests
@@ -64,12 +62,12 @@ class AutoPrintingTests: XCTestCase {
     // MARK: - Ready Item Auto-printing Tests
     
     func testReadyItemDetection() async {
-        let orderItem1 = createMockOrderItem(id: "item1", status: .cooking)
+        let orderItem1 = createMockOrderItem(id: "item1", status: .preparing)
         let orderItem2 = createMockOrderItem(id: "item2", status: .ready)
         
         let previousOrder = createMockOrder(id: "order1", tableId: "table1", items: [
-            createMockOrderItem(id: "item1", status: .cooking),
-            createMockOrderItem(id: "item2", status: .cooking)
+            createMockOrderItem(id: "item1", status: .preparing),
+            createMockOrderItem(id: "item2", status: .preparing)
         ])
         
         let currentOrder = createMockOrder(id: "order1", tableId: "table1", items: [
@@ -141,12 +139,17 @@ class AutoPrintingTests: XCTestCase {
             table_id: tableId,
             session_id: "test-session",
             guest_count: 2,
-            status: .cooking,
+            status: .new,
             total_amount: 1000,
+            order_number: nil,
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
             table: nil,
-            order_items: items.isEmpty ? nil : items
+            order_items: items.isEmpty ? nil : items,
+            payment_method: nil,
+            discount_amount: nil,
+            tax_amount: nil,
+            tip_amount: nil
         )
     }
     
@@ -178,6 +181,7 @@ class AutoPrintingTests: XCTestCase {
             name_en: "Test Item",
             name_ja: "テストアイテム",
             name_vi: "Món Test",
+            code: "TEST-001",
             description_en: "Test description",
             description_ja: "テスト説明",
             description_vi: "Mô tả test",
@@ -186,6 +190,7 @@ class AutoPrintingTests: XCTestCase {
             image_url: nil,
             stock_level: 10,
             available: true,
+            position: 1,
             created_at: ISO8601DateFormatter().string(from: Date()),
             updated_at: ISO8601DateFormatter().string(from: Date()),
             category: nil

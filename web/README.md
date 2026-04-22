@@ -414,12 +414,13 @@ npm run start
 - **Supabase Client** (`lib/supabaseAdmin.ts` for server, `lib/supabaseClient.ts` for client).
 - **Server Components** use `supabaseAdmin` (service role key) to fetch tenant data in `getServersideProps`–style or `cache()` calls.
 - **Client Components** use `createServerComponentClient` or `createClientComponentClient` (from `@supabase/auth-helpers-nextjs`) with the user’s JWT for RLS-protected queries.
+- **Canonical bootstrap** now lives under `/supabase` at the repository root (`bootstrap.sql`, `sql/*`, `functions/*`).
 
 ### Row-Level Security (RLS)
 
 - Every tenant-scoped table (e.g., `menu_items`, `orders`, `bookings`) has RLS enabled.
 - Policies require `restaurant_id = auth.jwt() →> 'restaurant_id'` for all CRUD operations.
-- Supabase Storage bucket `restaurant-uploads` uses RLS to restrict file paths to `restaurants/{restaurant_id}/…`.
+- Supabase Storage bucket `restaurant-uploads` uses org-aware and branch-aware RLS for `restaurants/{restaurant_id}/…` and `organizations/{organization_id}/…` asset paths.
 
 ---
 

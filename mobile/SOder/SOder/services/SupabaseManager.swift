@@ -3,8 +3,17 @@ import Supabase
 
 class SupabaseManager: ObservableObject {
     static let shared = SupabaseManager()
+    static let activeRestaurantHeaderName = "x-soder-active-restaurant-id"
+
+    struct BranchSelectionState {
+        let selectedBranch: Restaurant?
+        let needsBranchSelection: Bool
+    }
     
-    let client: SupabaseClient
+    private(set) var client: SupabaseClient
+    private let supabaseURL: URL
+    private let supabaseKey: String
+    private let authStorageKey: String
     
     @Published var currentUser: User?
     @Published var currentRestaurant: Restaurant? {
@@ -42,8 +51,7 @@ class SupabaseManager: ObservableObject {
     private let searchDebounceDelay: TimeInterval = 0.3 // 300ms as specified in plan
 
     var currentRestaurantId: String? {
-        // Prioritize ID from token if available, otherwise from loaded restaurant
-        return restaurantIdFromToken ?? currentRestaurant?.id
+        currentRestaurant?.id ?? restaurantIdFromToken
     }
 
     var currentCurrencyCode: String {
@@ -58,19 +66,32 @@ class SupabaseManager: ObservableObject {
             // In a real app, you might want to handle this more gracefully than a fatal error,
             // perhaps by setting a state that disables all Supabase-related functionality.
             // For this example, we'll proceed with a dummy client to avoid a hard crash.
-            self.client = SupabaseClient(supabaseURL: URL(string: "http://localhost")!, supabaseKey: "dummy")
+            self.supabaseURL = URL(string: "http://localhost")!
+            self.supabaseKey = "dummy"
+            self.authStorageKey = "sb-localhost-auth-token"
+            self.client = SupabaseClient(supabaseURL: self.supabaseURL, supabaseKey: self.supabaseKey)
             return
         }
         
         guard let supabaseKey = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String else {
             print("FATAL ERROR: SUPABASE_ANON_KEY not found in Info.plist. Please check your configuration.")
-            self.client = SupabaseClient(supabaseURL: URL(string: "http://localhost")!, supabaseKey: "dummy")
+            self.supabaseURL = URL(string: "http://localhost")!
+            self.supabaseKey = "dummy"
+            self.authStorageKey = "sb-localhost-auth-token"
+            self.client = SupabaseClient(supabaseURL: self.supabaseURL, supabaseKey: self.supabaseKey)
             return
         }
-        
+
+        self.supabaseURL = supabaseURL
+        self.supabaseKey = supabaseKey
+        self.authStorageKey = "sb-\(supabaseURL.host?.split(separator: ".").first ?? "default")-auth-token"
         self.client = SupabaseClient(
             supabaseURL: supabaseURL,
-            supabaseKey: supabaseKey
+            supabaseKey: supabaseKey,
+            options: Self.makeClientOptions(
+                activeRestaurantId: nil,
+                authStorageKey: self.authStorageKey
+            )
         )
 
         loadPersistedCurrentRestaurant()
@@ -95,9 +116,9 @@ class SupabaseManager: ObservableObject {
 
         await parseJWTAndSetClaims(token: token)
 
-        guard isAuthenticated, restaurantIdFromToken != nil else {
+        guard isAuthenticated else {
             await handleAuthFailure()
-            throw AuthError.missingRestaurantClaim
+            throw AuthError.tokenError
         }
 
         do {
@@ -111,6 +132,7 @@ class SupabaseManager: ObservableObject {
     @MainActor
     func signOut() async throws {
         try await client.auth.signOut()
+        applyActiveRestaurantContext(nil)
         currentUser = nil
         currentRestaurant = nil
         accessibleBranches = []
@@ -120,6 +142,7 @@ class SupabaseManager: ObservableObject {
         restaurantIdFromToken = nil
         clearCache()
         clearPersistedCurrentRestaurant()
+        clearSavedBranchId()
     }
     
     @MainActor
@@ -136,7 +159,7 @@ class SupabaseManager: ObservableObject {
 
             await parseJWTAndSetClaims(token: token)
 
-            guard isAuthenticated, restaurantIdFromToken != nil else {
+            guard isAuthenticated else {
                 await handleAuthFailure()
                 return
             }
@@ -173,18 +196,15 @@ class SupabaseManager: ObservableObject {
             return
         }
 
-        guard let appMetadata = json["app_metadata"] as? [String: Any],
-              let restaurantIdClaim = appMetadata["restaurant_id"] as? String,
-              let roleClaim = appMetadata["role"] as? String,
-              !restaurantIdClaim.isEmpty else { // Role claim can be optional depending on needs
-            print("Essential claims (restaurant_id) missing or invalid in JWT app_metadata.")
-            await handleAuthFailure()
-            return
-        }
+        let appMetadata = json["app_metadata"] as? [String: Any]
+        let restaurantIdClaim = (appMetadata?["restaurant_id"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let roleClaim = (appMetadata?["role"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        self.restaurantIdFromToken = restaurantIdClaim
-        self.userRole = roleClaim // Store the role
-        self.isAuthenticated = true // Set authenticated only after successful parsing
+        self.restaurantIdFromToken = restaurantIdClaim?.isEmpty == false ? restaurantIdClaim : nil
+        self.userRole = roleClaim?.isEmpty == false ? roleClaim : nil
+        self.isAuthenticated = currentUser != nil
     }
     
     /// Loads all branches the authenticated user can access and selects one.
@@ -202,37 +222,47 @@ class SupabaseManager: ObservableObject {
             throw AuthError.noRestaurantAssociated
         }
 
-        if let code = branchCode, !code.isEmpty {
-            // Try to match by branch_code field, fall back to subdomain for compatibility
-            let match = branches.first { $0.branchCode == code || $0.subdomain == code }
-            if let matched = match {
-                self.currentRestaurant = matched
-                self.needsBranchSelection = false
-                saveSavedBranchId(matched.id)
-            } else {
-                // Branch code not found among accessible branches — still sign in, prompt selection
-                self.currentRestaurant = branches.first
-                self.needsBranchSelection = branches.count > 1
-            }
+        let selection = Self.resolveBranchSelection(
+            branches: branches,
+            requestedBranchCode: branchCode,
+            savedBranchId: loadSavedBranchId()
+        )
+
+        applyActiveRestaurantContext(selection.selectedBranch?.id)
+        self.currentRestaurant = selection.selectedBranch
+        self.needsBranchSelection = selection.needsBranchSelection
+
+        if let selectedBranch = selection.selectedBranch {
+            saveSavedBranchId(selectedBranch.id)
         } else {
-            // Restoring session: use last used branch if still accessible
-            let savedId = loadSavedBranchId()
-            if let saved = branches.first(where: { $0.id == savedId }) {
-                self.currentRestaurant = saved
-                self.needsBranchSelection = false
-            } else if branches.count == 1 {
-                self.currentRestaurant = branches[0]
-                self.needsBranchSelection = false
-            } else {
-                self.currentRestaurant = nil
-                self.needsBranchSelection = true
-            }
+            clearSavedBranchId()
         }
     }
 
     /// Fetches all restaurant/branch records this user's JWT grants access to.
     private func fetchAccessibleBranches() async throws -> [Restaurant] {
-        guard let restaurantIdToLoad = self.restaurantIdFromToken else {
+        do {
+            let branches: [AccessibleBranchRecord] = try await client
+                .rpc("get_accessible_branches_for_current_user")
+                .execute()
+                .value
+
+            let mappedBranches = branches
+                .map { $0.toRestaurant() }
+                .sorted { lhs, rhs in
+                    let lhsName = (lhs.name ?? lhs.subdomain).localizedLowercase
+                    let rhsName = (rhs.name ?? rhs.subdomain).localizedLowercase
+                    return lhsName < rhsName
+                }
+
+            if !mappedBranches.isEmpty {
+                return mappedBranches
+            }
+        } catch {
+            print("Failed to fetch accessible branches via RPC: \(error.localizedDescription)")
+        }
+
+        guard let restaurantIdToLoad = restaurantIdFromToken else {
             throw AuthError.noRestaurantAssociated
         }
 
@@ -272,6 +302,7 @@ class SupabaseManager: ObservableObject {
     /// Switches the active branch without signing out.
     @MainActor
     func selectBranch(_ branch: Restaurant) {
+        applyActiveRestaurantContext(branch.id)
         currentRestaurant = branch
         needsBranchSelection = false
         saveSavedBranchId(branch.id)
@@ -286,18 +317,26 @@ class SupabaseManager: ObservableObject {
         UserDefaults.standard.string(forKey: "lastUsedBranchId")
     }
 
+    private func clearSavedBranchId() {
+        UserDefaults.standard.removeObject(forKey: "lastUsedBranchId")
+    }
+
     // Helper function to consolidate auth failure cleanup
     @MainActor
     private func handleAuthFailure() {
         print("Handling authentication failure: Clearing sensitive data.")
+        applyActiveRestaurantContext(nil)
         currentUser = nil
         currentRestaurant = nil
+        accessibleBranches = []
         isAuthenticated = false
+        needsBranchSelection = false
         userRole = nil
         restaurantIdFromToken = nil
         // Clear cache when auth fails
         clearCache()
         clearPersistedCurrentRestaurant()
+        clearSavedBranchId()
     }
 
     private func loadPersistedCurrentRestaurant() {
@@ -324,6 +363,73 @@ class SupabaseManager: ObservableObject {
 
     private func clearPersistedCurrentRestaurant() {
         UserDefaults.standard.removeObject(forKey: persistedCurrentRestaurantKey)
+    }
+
+    private func applyActiveRestaurantContext(_ restaurantId: String?) {
+        client = makeClient(activeRestaurantId: restaurantId)
+    }
+
+    private func makeClient(activeRestaurantId: String?) -> SupabaseClient {
+        SupabaseClient(
+            supabaseURL: supabaseURL,
+            supabaseKey: supabaseKey,
+            options: Self.makeClientOptions(
+                activeRestaurantId: activeRestaurantId,
+                authStorageKey: authStorageKey
+            )
+        )
+    }
+
+    static func activeRestaurantHeaders(activeRestaurantId: String?) -> [String: String] {
+        guard let activeRestaurantId,
+              !activeRestaurantId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return [:]
+        }
+
+        return [activeRestaurantHeaderName: activeRestaurantId]
+    }
+
+    private static func makeClientOptions(activeRestaurantId: String?, authStorageKey: String) -> SupabaseClientOptions {
+        SupabaseClientOptions(
+            auth: .init(storageKey: authStorageKey),
+            global: .init(headers: activeRestaurantHeaders(activeRestaurantId: activeRestaurantId))
+        )
+    }
+
+    static func resolveBranchSelection(
+        branches: [Restaurant],
+        requestedBranchCode: String?,
+        savedBranchId: String?
+    ) -> BranchSelectionState {
+        guard !branches.isEmpty else {
+            return BranchSelectionState(selectedBranch: nil, needsBranchSelection: false)
+        }
+
+        if let code = requestedBranchCode?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !code.isEmpty {
+            let matchedBranch = branches.first { $0.matchesBranchCode(code) }
+            if let matchedBranch {
+                return BranchSelectionState(selectedBranch: matchedBranch, needsBranchSelection: false)
+            }
+
+            if branches.count == 1 {
+                return BranchSelectionState(selectedBranch: branches[0], needsBranchSelection: false)
+            }
+
+            return BranchSelectionState(selectedBranch: nil, needsBranchSelection: true)
+        }
+
+        if let savedBranchId,
+           let savedBranch = branches.first(where: { $0.id == savedBranchId }) {
+            return BranchSelectionState(selectedBranch: savedBranch, needsBranchSelection: false)
+        }
+
+        if branches.count == 1 {
+            return BranchSelectionState(selectedBranch: branches[0], needsBranchSelection: false)
+        }
+
+        return BranchSelectionState(selectedBranch: nil, needsBranchSelection: true)
     }
     
     // MARK: - Cache Management
@@ -583,9 +689,51 @@ struct Restaurant: Codable {
     let created_at: String
     let updated_at: String
     let taxRate: Double?
+    private let companyPublicSubdomainValue: String?
+
+    init(
+        id: String,
+        name: String?,
+        subdomain: String,
+        branchCode: String?,
+        timezone: String,
+        currency: String?,
+        address: String?,
+        phone: String?,
+        email: String?,
+        website: String?,
+        paymentMethods: [String]?,
+        organizationLinks: [RestaurantOrganizationLink]?,
+        created_at: String,
+        updated_at: String,
+        taxRate: Double?,
+        companyPublicSubdomainValue: String? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.subdomain = subdomain
+        self.branchCode = branchCode
+        self.timezone = timezone
+        self.currency = currency
+        self.address = address
+        self.phone = phone
+        self.email = email
+        self.website = website
+        self.paymentMethods = paymentMethods
+        self.organizationLinks = organizationLinks
+        self.created_at = created_at
+        self.updated_at = updated_at
+        self.taxRate = taxRate
+        self.companyPublicSubdomainValue = companyPublicSubdomainValue
+    }
 
     var companyPublicSubdomain: String? {
-        organizationLinks?
+        if let companyPublicSubdomainValue,
+           !companyPublicSubdomainValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return companyPublicSubdomainValue
+        }
+
+        return organizationLinks?
             .compactMap { $0.ownerOrganizations?.first?.publicSubdomain }
             .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
     }
@@ -596,6 +744,12 @@ struct Restaurant: Codable {
         case paymentMethods = "payment_methods"
         case organizationLinks = "organization_restaurants"
         case taxRate = "tax_rate"
+        case companyPublicSubdomainValue = "company_public_subdomain"
+    }
+
+    func matchesBranchCode(_ code: String) -> Bool {
+        let normalizedCode = code.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return branchCode?.lowercased() == normalizedCode || subdomain.lowercased() == normalizedCode
     }
 }
 
@@ -612,6 +766,53 @@ struct RestaurantOwnerOrganization: Codable {
 
     enum CodingKeys: String, CodingKey {
         case publicSubdomain = "public_subdomain"
+    }
+}
+
+private struct AccessibleBranchRecord: Codable {
+    let id: String
+    let name: String?
+    let subdomain: String
+    let branchCode: String?
+    let timezone: String
+    let currency: String?
+    let address: String?
+    let phone: String?
+    let email: String?
+    let website: String?
+    let paymentMethods: [String]?
+    let created_at: String
+    let updated_at: String
+    let taxRate: Double?
+    let companyPublicSubdomain: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, subdomain, timezone, currency, address, phone, email, website, created_at, updated_at
+        case branchCode = "branch_code"
+        case paymentMethods = "payment_methods"
+        case taxRate = "tax_rate"
+        case companyPublicSubdomain = "company_public_subdomain"
+    }
+
+    func toRestaurant() -> Restaurant {
+        Restaurant(
+            id: id,
+            name: name,
+            subdomain: subdomain,
+            branchCode: branchCode,
+            timezone: timezone,
+            currency: currency,
+            address: address,
+            phone: phone,
+            email: email,
+            website: website,
+            paymentMethods: paymentMethods,
+            organizationLinks: nil,
+            created_at: created_at,
+            updated_at: updated_at,
+            taxRate: taxRate,
+            companyPublicSubdomainValue: companyPublicSubdomain
+        )
     }
 }
 

@@ -1,0 +1,7 @@
+project_id = "restaurant-copilot"
+
+[functions.daily-usage-snapshot]
+verify_jwt = false
+
+[functions.trial-notifications]
+verify_jwt = false

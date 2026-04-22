@@ -44,7 +44,7 @@ describe('root dashboard urls', () => {
     process.env.NEXT_PUBLIC_PRODUCTION_URL = 'coorder.ai';
 
     expect(buildRootControlUrl('ja')).toBe(
-      'https://coorder.ai/ja/control/overview'
+      'https://coorder.ai/ja/control/onboarding'
     );
   });
 

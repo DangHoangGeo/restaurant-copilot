@@ -305,10 +305,7 @@ struct LoginView: View {
         guard isFormValid else { return }
         focusedField = nil
         isLoading = true
-        withAnimation {
-            showError = false
-            errorMessage = ""
-        }
+        withAnimation { showError = false; errorMessage = "" }
 
         do {
             let trimmedBranchCode = branchCode.trimmingCharacters(in: .whitespacesAndNewlines)

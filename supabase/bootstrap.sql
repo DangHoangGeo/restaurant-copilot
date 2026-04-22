@@ -1,0 +1,57 @@
+\set ON_ERROR_STOP on
+
+\echo 'Applying Restaurant Copilot Supabase foundation bootstrap'
+\i 'supabase/sql/00_foundation/00_extensions.sql'
+
+\i 'supabase/sql/10_branch_core/schema.sql'
+\i 'supabase/sql/30_founder_control/schema.sql'
+\i 'supabase/sql/50_finance_billing/schema.sql'
+\i 'supabase/sql/40_people_attendance/schema.sql'
+\i 'supabase/sql/60_platform_admin_support/schema.sql'
+\i 'supabase/sql/20_ordering_customer/schema.sql'
+
+\i 'supabase/sql/00_foundation/functions.sql'
+\i 'supabase/sql/30_founder_control/functions.sql'
+\i 'supabase/sql/60_platform_admin_support/functions.sql'
+\i 'supabase/sql/50_finance_billing/functions.sql'
+\i 'supabase/sql/10_branch_core/functions.sql'
+\i 'supabase/sql/20_ordering_customer/functions.sql'
+\i 'supabase/sql/40_people_attendance/functions.sql'
+
+\i 'supabase/sql/10_branch_core/keys.sql'
+\i 'supabase/sql/30_founder_control/keys.sql'
+\i 'supabase/sql/50_finance_billing/keys.sql'
+\i 'supabase/sql/40_people_attendance/keys.sql'
+\i 'supabase/sql/60_platform_admin_support/keys.sql'
+\i 'supabase/sql/20_ordering_customer/keys.sql'
+
+\i 'supabase/sql/30_founder_control/relations.sql'
+\i 'supabase/sql/60_platform_admin_support/relations.sql'
+\i 'supabase/sql/10_branch_core/relations.sql'
+\i 'supabase/sql/50_finance_billing/relations.sql'
+\i 'supabase/sql/40_people_attendance/relations.sql'
+\i 'supabase/sql/20_ordering_customer/relations.sql'
+
+\i 'supabase/sql/10_branch_core/policies.sql'
+\i 'supabase/sql/30_founder_control/policies.sql'
+\i 'supabase/sql/50_finance_billing/policies.sql'
+\i 'supabase/sql/40_people_attendance/policies.sql'
+\i 'supabase/sql/60_platform_admin_support/policies.sql'
+\i 'supabase/sql/20_ordering_customer/policies.sql'
+
+\i 'supabase/sql/10_branch_core/triggers.sql'
+\i 'supabase/sql/30_founder_control/triggers.sql'
+\i 'supabase/sql/50_finance_billing/triggers.sql'
+\i 'supabase/sql/40_people_attendance/triggers.sql'
+\i 'supabase/sql/60_platform_admin_support/triggers.sql'
+\i 'supabase/sql/20_ordering_customer/triggers.sql'
+
+\i 'supabase/sql/00_foundation/grants.sql'
+\i 'supabase/sql/30_founder_control/grants.sql'
+\i 'supabase/sql/10_branch_core/grants.sql'
+\i 'supabase/sql/20_ordering_customer/grants.sql'
+\i 'supabase/sql/50_finance_billing/grants.sql'
+\i 'supabase/sql/60_platform_admin_support/grants.sql'
+
+\i 'supabase/sql/70_storage/storage.sql'
+\echo 'Supabase foundation bootstrap complete'

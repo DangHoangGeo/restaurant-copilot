@@ -210,8 +210,10 @@ xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug -destinat
 ### Database
 
 ```bash
-# Migration files are in infra/migrations/
-# Production scripts are in infra/production/
+# Canonical bootstrap is in supabase/bootstrap.sql
+# Self-contained SQL is in supabase/sql/
+# Apply to a blank or reset Supabase database with:
+# ./infra/scripts/apply_supabase_baseline.sh
 ```
 
 ## Repository Shape
@@ -228,8 +230,11 @@ xcodebuild -project SOder.xcodeproj -scheme SOder -configuration Debug -destinat
 │   ├── SOderTests/
 │   └── SOderUITests/
 ├── infra/
-│   ├── migrations/
-│   └── production/
+│   ├── scripts/
+│   └── test_data/
+├── supabase/
+│   ├── functions/
+│   └── sql/
 └── docs/
 ```
 

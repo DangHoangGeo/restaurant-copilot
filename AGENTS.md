@@ -31,6 +31,10 @@ Also read these when the task touches the area:
   Use for control-plane, branch flow, auth, security, finance, attendance, onboarding, and AI support tasks.
 - `docs/foundation/04_expo_mobile_execution_plan.md`
   Use only for mobile app or printer work.
+- `docs/foundation/06_supabase_foundation_guidelines.md`
+  Use for schema, RLS, RPC, Edge Function, bootstrap, or migration work.
+- `docs/foundation/07_supabase_foundation_review_20260422.md`
+  Use for current database strengths, residual risks, and follow-up priorities.
 
 ## Foundation Rules
 
@@ -165,7 +169,8 @@ Do not create parallel structures when the correct home already exists.
 - Validate and sanitize input at the boundary.
 - Preserve or improve auditability on sensitive actions.
 - Do not hardcode secrets.
-- Use migrations for schema changes.
+- Keep `supabase/sql/*` as the canonical final state for schema changes.
+- When a live environment already exists, pair that baseline update with a forward-only rollout migration under `supabase/migrations/*` or explain why no rollout SQL is needed.
 - Keep failure handling explicit for setup, money, invites, and approval flows.
 
 ## Performance Rules

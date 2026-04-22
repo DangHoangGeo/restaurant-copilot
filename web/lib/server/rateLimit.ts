@@ -12,7 +12,7 @@ if (process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN) {
     token: process.env.UPSTASH_REDIS_TOKEN,
   });
 } else {
-  console.warn('Upstash Redis environment variables not set. Rate limiting will be disabled.');
+  console.warn('Upstash Redis environment variables not set. Falling back to in-memory rate limiting.');
 }
 
 /**
@@ -39,6 +39,12 @@ export const RATE_LIMIT_CONFIGS = {
   UPLOAD: { max: 5, window: '60s' },
 } as const;
 
+type MemoryRateLimitEntry = {
+  tokens: number;
+  lastRefill: number;
+};
+
+const memoryRateLimitStore = new Map<string, MemoryRateLimitEntry>();
 
 /**
  * Default key generator - uses IP address
@@ -47,7 +53,47 @@ function defaultKeyGenerator(request: NextRequest): string {
   const ip = request.headers.get('x-forwarded-for')
     ?? request.headers.get('x-real-ip')
     ?? '127.0.0.1';
-  return ip;
+  return ip.split(',')[0]?.trim() || '127.0.0.1';
+}
+
+function windowToMs(window: RateLimitConfig['window']): number {
+  const value = Number.parseInt(window.slice(0, -1), 10);
+  const unit = window.slice(-1);
+
+  switch (unit) {
+    case 's':
+      return value * 1000;
+    case 'm':
+      return value * 60 * 1000;
+    case 'h':
+      return value * 60 * 60 * 1000;
+    case 'd':
+      return value * 24 * 60 * 60 * 1000;
+    default:
+      return 60 * 1000;
+  }
+}
+
+function consumeMemoryRateLimit(
+  key: string,
+  limit: number,
+  windowMs: number
+): boolean {
+  const now = Date.now();
+  const entry = memoryRateLimitStore.get(key) || { tokens: limit, lastRefill: now };
+  const timePassed = now - entry.lastRefill;
+
+  entry.tokens = Math.min(limit, entry.tokens + (timePassed / windowMs) * limit);
+  entry.lastRefill = now;
+
+  if (entry.tokens >= 1) {
+    entry.tokens -= 1;
+    memoryRateLimitStore.set(key, entry);
+    return true;
+  }
+
+  memoryRateLimitStore.set(key, entry);
+  return false;
 }
 
 /**
@@ -58,8 +104,25 @@ export async function rateLimit(
   config: RateLimitConfig,
   endpoint: string = 'api'
 ) {
-  // Do not rate limit in development or if Redis is not configured
-  if (process.env.NODE_ENV === 'development' || !redis) {
+  const identifier = defaultKeyGenerator(request);
+
+  if (!redis) {
+    const windowMs = windowToMs(config.window);
+    const allowed = consumeMemoryRateLimit(
+      `${endpoint}:${identifier}`,
+      config.max,
+      windowMs
+    );
+
+    if (!allowed) {
+      return handleRateLimitError(
+        endpoint,
+        identifier,
+        config.max,
+        windowMs
+      );
+    }
+
     return null;
   }
 
@@ -69,8 +132,6 @@ export async function rateLimit(
     limiter: Ratelimit.slidingWindow(config.max, config.window),
     prefix: `ratelimit:${endpoint}`,
   });
-
-  const identifier = defaultKeyGenerator(request);
 
   const { success, limit, remaining: _remaining, reset } = await ratelimiter.limit(identifier);
 
@@ -90,8 +151,10 @@ export async function rateLimit(
  * CSRF protection - validates origin header for same-site requests
  */
 export function validateCSRF(request: NextRequest): boolean {
-    // Allow requests in dev environment for easier testing
-    if (process.env.NODE_ENV === 'development') return true;
+    // Allow requests in dev and test environments for easier local iteration.
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+        return true;
+    }
 
     const origin = request.headers.get('origin');
     const referer = request.headers.get('referer');
@@ -101,9 +164,7 @@ export function validateCSRF(request: NextRequest): boolean {
     const sourceUrl = origin || referer;
     
     if (!sourceUrl || !host) {
-        // Allow requests without origin/referer for certain cases (like direct API calls)
-        // This could be from server-side requests or certain browser configurations
-        return true;
+        return false;
     }
 
     try {
@@ -151,9 +212,10 @@ export async function protectEndpoint(
   endpoint: string = 'api',
   requestId?: string
 ) {
+  const method = request.method.toUpperCase();
+  const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
 
-  // Check CSRF protection first
-  if (!validateCSRF(request)) {
+  if (isMutation && !validateCSRF(request)) {
     return handleCsrfError(
       endpoint,
       request,
@@ -163,6 +225,10 @@ export async function protectEndpoint(
 
   // Then apply rate limiting
   return rateLimit(request, config, endpoint);
+}
+
+export function __resetRateLimitMemoryStore() {
+  memoryRateLimitStore.clear();
 }
 
 // No cleanup function needed for Upstash Redis client

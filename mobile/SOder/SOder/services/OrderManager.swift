@@ -69,7 +69,6 @@ class OrderManager: ObservableObject {
     typealias ToppingId = String      // String ID for Topping
 
     // Define status constants
-    let ORDER_STATUS_DRAFT = "draft"
     let ORDER_ITEM_STATUS_DRAFT = "new" // Use 'new' status for items in draft orders (per DB constraint)
     let ORDER_STATUS_NEW = "new" // For when order is confirmed to kitchen
 
@@ -314,7 +313,7 @@ class OrderManager: ObservableObject {
             table_id: tableId,
             session_id: userId.uuidString,
             guest_count: guestCount,
-            status: ORDER_STATUS_DRAFT
+            status: ORDER_STATUS_NEW
         )
 
         do {

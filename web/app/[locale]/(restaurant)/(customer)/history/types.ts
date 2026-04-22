@@ -37,6 +37,7 @@ export interface OrderItem {
 export interface Order {
 	id: string;
 	session_id: string;
+	session_code?: string;
 	guest_count: number;
 	status: string;
 	table_id: string | null;

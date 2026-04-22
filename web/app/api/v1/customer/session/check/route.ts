@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import {
+  getCustomerSessionOrder,
+  isCustomerSessionActiveStatus,
+} from "@/lib/server/customer-session";
+
+function getTableName(
+  table:
+    | { name?: string | null }
+    | { name?: string | null }[]
+    | null
+    | undefined,
+): string | undefined {
+  if (!table) return undefined;
+  return Array.isArray(table) ? table[0]?.name ?? undefined : table.name ?? undefined;
+}
 
 /**
  * Customer API: Check session status
@@ -16,40 +30,23 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    let query = supabaseAdmin
-      .from("orders")
-      .select(`
-        id,
-        session_id,
-        status,
-        table_id,
-        guest_count,
-        total_amount,
-        created_at,
-        updated_at,
-        tables (
-          name,
-          capacity
-        )
-      `)
-      .eq("session_id", sessionId);
-
-    // Reject sessions that don't belong to the requesting restaurant
-    if (restaurantId) {
-      query = query.eq("restaurant_id", restaurantId);
+    if (!restaurantId) {
+      return NextResponse.json({
+        success: false,
+        error: "Restaurant ID required",
+      }, { status: 400 });
     }
 
-    const { data, error } = await query.single();
-
-    if (error || !data) {
+    const data = await getCustomerSessionOrder({ sessionId, restaurantId });
+    if (!data) {
       return NextResponse.json({
         success: false,
         error: "Session not found"
       }, { status: 404 });
     }
 
-    const isActive = !['completed', 'canceled', 'expired'].includes(data.status);
-    const canAddItems = isActive && data.status !== 'served';
+    const isActive = isCustomerSessionActiveStatus(data.status);
+    const canAddItems = isActive;
 
     return NextResponse.json({
       success: true,
@@ -58,7 +55,7 @@ export async function GET(req: NextRequest) {
       sessionData: {
         sessionId: data.session_id,
         orderId: data.id,
-        tableNumber: data.tables?.[0]?.name,
+        tableNumber: getTableName(data.tables),
         guestCount: data.guest_count,
         status: data.status,
         totalAmount: data.total_amount,
