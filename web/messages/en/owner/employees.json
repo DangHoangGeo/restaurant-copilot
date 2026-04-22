@@ -3,9 +3,12 @@
     "tabs": {
       "approvals": "Approvals",
       "summaries": "Attendance",
-      "employees": "Employees",
+      "employees": "People",
       "schedule": "Schedule",
-      "performance": "Performance"
+      "performance": "Performance",
+      "leave": "Days Off",
+      "payroll": "Payroll",
+      "restaurantQr": "QR Code"
     },
     "actions": {
       "scanCheckIn": "Scan Check-In",
@@ -14,20 +17,21 @@
     "scanExceptionWarning": "Attendance exception detected — please review in the Approvals tab."
   },
   "list": {
-    "title": "Employee Management",
+    "title": "People",
     "actions": {
-      "addEmployee": "Add New Employee",
+      "addEmployee": "Add Employee",
       "edit": "Edit",
-      "qrCode": "QR Code",
-      "manageSchedule": "Manage Schedule",
+      "qrCode": "QR",
+      "checkinCode": "Code",
+      "manageSchedule": "Schedule",
       "deactivate": "Deactivate"
     },
     "table": {
       "name": "Name",
       "email": "Email",
-      "jobTitle": "Job Title",
+      "jobTitle": "Role",
       "actions": "Actions",
-      "noEmployees": "No employees found. Add your first employee to get started."
+      "noEmployees": "No employees yet. Add your first team member to get started."
     },
     "notifications": {
       "fetchError": "Failed to fetch employees: {error}",
@@ -40,6 +44,10 @@
   "form": {
     "addTitle": "Add New Employee",
     "editTitle": "Edit Employee Details",
+    "tabs": {
+      "info": "Info",
+      "bankAccount": "Bank Account"
+    },
     "fields": {
       "name": {
         "label": "Full Name",
@@ -51,19 +59,49 @@
         "editDisabledHint": "Email cannot be changed after creation."
       },
       "jobTitle": {
-        "label": "Job Title",
-        "placeholder": "Select a job title"
+        "label": "Role",
+        "placeholder": "Select a role"
+      },
+      "bankName": {
+        "label": "Bank Name",
+        "placeholder": "e.g. Mitsubishi UFJ Bank"
+      },
+      "branchName": {
+        "label": "Branch Name",
+        "placeholder": "e.g. Shibuya Branch"
+      },
+      "accountType": {
+        "label": "Account Type",
+        "checking": "Checking (普通)",
+        "savings": "Savings (貯蓄)",
+        "current": "Current (当座)"
+      },
+      "accountNumber": {
+        "label": "Account Number",
+        "placeholder": "e.g. 1234567"
+      },
+      "accountHolder": {
+        "label": "Account Holder Name",
+        "placeholder": "Name as it appears on the account"
+      },
+      "notes": {
+        "label": "Notes",
+        "placeholder": "Optional notes"
       }
     },
     "actions": {
       "save": "Save Changes",
       "saving": "Saving...",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "inviteEmployee": "Invite Employee",
+      "saveBankAccount": "Save Bank Account"
     },
     "notifications": {
-      "createSuccess": "Employee added successfully.",
+      "createSuccess": "Employee invited successfully. They will receive an email to set their password.",
       "updateSuccess": "Employee details updated.",
-      "saveError": "Failed to save employee: {error}"
+      "saveError": "Failed to save employee: {error}",
+      "bankSaveSuccess": "Bank account saved.",
+      "bankSaveError": "Failed to save bank account."
     }
   },
   "roles": {
@@ -96,6 +134,99 @@
       "noChanges": "No changes detected in the schedule."
     }
   },
+  "checkinCode": {
+    "title": "Checkin Code",
+    "description": "{name} uses this code at the restaurant QR kiosk to clock in/out.",
+    "noCode": "No code assigned yet.",
+    "generatedAt": "Generated {date}",
+    "actions": {
+      "generate": "Generate Code",
+      "regenerate": "Generate New Code",
+      "generating": "Generating..."
+    },
+    "confirmRegenerate": "Generate a new code? The current code will stop working immediately.",
+    "notifications": {
+      "generated": "Checkin code generated. Give this code to the employee.",
+      "generateFailed": "Failed to generate code."
+    }
+  },
+  "restaurantQr": {
+    "title": "Restaurant Check-in QR",
+    "description": "Print and display this QR in your branch. Employees scan it to clock in/out.",
+    "expiresAt": "Valid until {date}",
+    "expired": "This QR has expired.",
+    "noQr": "No QR code generated yet.",
+    "actions": {
+      "generate": "Generate QR Code",
+      "rotate": "Rotate Monthly",
+      "renew": "Renew QR",
+      "download": "Download",
+      "rotating": "Rotating..."
+    },
+    "confirmRotate": "Rotate QR code? All employees will need to re-scan. The old QR becomes invalid.",
+    "notifications": {
+      "rotated": "Restaurant QR code rotated. Print and display the new code.",
+      "rotateFailed": "Failed to rotate QR code."
+    }
+  },
+  "leave": {
+    "title": "Days Off Requests",
+    "statusTabs": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "types": {
+      "day_off": "Day Off",
+      "sick": "Sick Leave",
+      "vacation": "Vacation",
+      "personal": "Personal"
+    },
+    "empty": "No {status} leave requests",
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "refresh": "Refresh"
+    },
+    "notifications": {
+      "approved": "Leave request approved.",
+      "rejected": "Leave request rejected.",
+      "actionFailed": "Failed to process request."
+    }
+  },
+  "payroll": {
+    "title": "Payroll",
+    "monthlyLabel": "{month}",
+    "summary": {
+      "pendingPayment": "Pending payment",
+      "paidThisMonth": "Paid this month"
+    },
+    "fields": {
+      "hours": "Hours",
+      "basePay": "Base",
+      "bonus": "Bonus",
+      "bonusReason": "Bonus reason",
+      "deductions": "Deductions",
+      "totalPay": "Total Pay"
+    },
+    "status": {
+      "draft": "Draft",
+      "approved": "Approved",
+      "paid": "Paid"
+    },
+    "actions": {
+      "editApprove": "Edit & Approve",
+      "saveDraft": "Save Draft",
+      "approve": "Approve",
+      "markPaid": "Mark Paid"
+    },
+    "empty": "No payroll records for this month.",
+    "notifications": {
+      "approved": "Payroll approved.",
+      "paid": "Payroll marked as paid.",
+      "saveFailed": "Failed to update payroll record."
+    }
+  },
   "attendance": {
     "title": "Employee Attendance",
     "selectEmployeePlaceholder": "Select an employee to view attendance",
@@ -106,7 +237,7 @@
       "date": "Date",
       "checkIn": "Check-In",
       "checkOut": "Check-Out",
-      "hoursWorked": "Hours Worked",
+      "hoursWorked": "Hours",
       "status": "Status",
       "actions": "Actions"
     },

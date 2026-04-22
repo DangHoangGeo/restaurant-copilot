@@ -1,116 +1,85 @@
 "use client";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import EmployeeList from './EmployeeList';
 import ScheduleWeek from './ScheduleWeek';
-import QRScannerModal from './QRScannerModal';
-import PerformanceOverview from './PerformanceOverview';
 import AttendanceSummaryView from '@/components/features/admin/employees/AttendanceSummaryView';
 import AttendanceApprovalInbox from '@/components/features/admin/employees/AttendanceApprovalInbox';
-import { QrCode } from "lucide-react";
-import { toast } from "sonner";
+import LeaveManagement from '@/components/features/admin/employees/LeaveManagement';
+import RestaurantQRManager from '@/components/features/admin/employees/RestaurantQRManager';
+import PayrollDashboard from '@/components/features/admin/employees/PayrollDashboard';
+import {
+  Users,
+  CalendarDays,
+  ClipboardCheck,
+  Clock,
+  Umbrella,
+  QrCode,
+  Banknote,
+} from "lucide-react";
 
-// Scan type toggled by the manager before scanning — explicit intent prevents
-// the old ambiguity where a missing check_out time determined the scan meaning.
-type ScanIntent = "check_in" | "check_out";
+type Tab = "approvals" | "employees" | "schedule" | "leave" | "payroll" | "restaurant-qr" | "summaries";
+
+const TABS: { value: Tab; label: string; icon: React.ElementType }[] = [
+  { value: "approvals", label: "Approvals", icon: ClipboardCheck },
+  { value: "employees", label: "People", icon: Users },
+  { value: "schedule", label: "Schedule", icon: CalendarDays },
+  { value: "leave", label: "Days Off", icon: Umbrella },
+  { value: "payroll", label: "Payroll", icon: Banknote },
+  { value: "restaurant-qr", label: "QR Code", icon: QrCode },
+  { value: "summaries", label: "Attendance", icon: Clock },
+];
 
 export default function EmployeesDashboard() {
   const t = useTranslations("owner.employees.dashboard");
-  const t_qr = useTranslations("owner.employees.qrScannerModal");
-
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [scanIntent, setScanIntent] = useState<ScanIntent>("check_in");
-
-  const handleScanSuccess = async (qrData: string) => {
-    // qrData is now the secure credential token from the QR code image,
-    // not the employee_id. The scan_type is set explicitly by the manager
-    // before opening the scanner.
-    try {
-      const response = await fetch('/api/v1/attendance/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          credential_token: qrData,
-          scan_type: scanIntent,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || result.message || t_qr("notifications.scanApiError"));
-      }
-
-      toast.success(result.message || t_qr("notifications.scanSuccess"));
-
-      if (result.summary?.has_exception) {
-        toast.warning(t("scanExceptionWarning"));
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : String(error));
-    } finally {
-      setIsQrModalOpen(false);
-    }
-  };
-
-  const openScanner = (intent: ScanIntent) => {
-    setScanIntent(intent);
-    setIsQrModalOpen(true);
-  };
+  const [activeTab, setActiveTab] = useState<Tab>("approvals");
 
   return (
-    <>
-      {/* Scan action bar */}
-      <div className="flex flex-wrap justify-end items-center gap-2 mb-4">
-        <Button variant="outline" size="sm" onClick={() => openScanner("check_in")}>
-          <QrCode className="mr-2 h-4 w-4" />
-          {t("actions.scanCheckIn")}
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => openScanner("check_out")}>
-          <QrCode className="mr-2 h-4 w-4" />
-          {t("actions.scanCheckOut")}
-        </Button>
-      </div>
-
-      <Tabs defaultValue="approvals" className="space-y-4">
-        <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="approvals">{t("tabs.approvals")}</TabsTrigger>
-          <TabsTrigger value="summaries">{t("tabs.summaries")}</TabsTrigger>
-          <TabsTrigger value="employees">{t("tabs.employees")}</TabsTrigger>
-          <TabsTrigger value="schedule">{t("tabs.schedule")}</TabsTrigger>
-          <TabsTrigger value="performance">{t("tabs.performance")}</TabsTrigger>
+    <div className="space-y-4">
+      {/* Mobile-optimized tab strip */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)}>
+        <TabsList className="w-full h-auto flex flex-wrap gap-1 p-1 bg-muted/60 rounded-xl">
+          {TABS.map(({ value, label, icon: Icon }) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="flex-1 min-w-[72px] flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900"
+            >
+              <Icon className="h-4 w-4" />
+              <span className="leading-tight">{label}</span>
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        {/* Approvals inbox — the primary daily manager view */}
-        <TabsContent value="approvals" className="p-0">
+        <TabsContent value="approvals" className="mt-4 p-0">
           <AttendanceApprovalInbox />
         </TabsContent>
 
-        {/* Full summaries view with filtering */}
-        <TabsContent value="summaries" className="p-0">
-          <AttendanceSummaryView />
-        </TabsContent>
-
-        <TabsContent value="employees" className="p-0">
+        <TabsContent value="employees" className="mt-4 p-0">
           <EmployeeList />
         </TabsContent>
 
-        <TabsContent value="schedule" className="p-0">
+        <TabsContent value="schedule" className="mt-4 p-0">
           <ScheduleWeek />
         </TabsContent>
 
-        <TabsContent value="performance" className="p-0">
-          <PerformanceOverview />
+        <TabsContent value="leave" className="mt-4 p-0">
+          <LeaveManagement />
+        </TabsContent>
+
+        <TabsContent value="payroll" className="mt-4 p-0">
+          <PayrollDashboard />
+        </TabsContent>
+
+        <TabsContent value="restaurant-qr" className="mt-4 p-0">
+          <RestaurantQRManager />
+        </TabsContent>
+
+        <TabsContent value="summaries" className="mt-4 p-0">
+          <AttendanceSummaryView />
         </TabsContent>
       </Tabs>
-
-      <QRScannerModal
-        isOpen={isQrModalOpen}
-        onClose={() => setIsQrModalOpen(false)}
-        onScanSuccess={handleScanSuccess}
-      />
-    </>
+    </div>
   );
 }
