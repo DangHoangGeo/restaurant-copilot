@@ -7,8 +7,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPendingInviteByToken } from '@/lib/server/organizations/invites';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { protectEndpoint, RATE_LIMIT_CONFIGS } from '@/lib/server/rateLimit';
 
 export async function GET(req: NextRequest) {
+  // Rate limit invite token validation to prevent brute-force
+  const rateLimitError = await protectEndpoint(req, RATE_LIMIT_CONFIGS.AUTH, 'auth-validate-invite');
+  if (rateLimitError) return rateLimitError;
+
   const token = req.nextUrl.searchParams.get('token');
   if (!token) {
     return NextResponse.json({ error: 'Token is required' }, { status: 400 });
@@ -22,11 +27,14 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Check if the invited email already has a Supabase auth account
-  const { data: users } = await supabaseAdmin.auth.admin.listUsers();
-  const existingUser = users?.users?.find(
-    (u) => u.email?.toLowerCase() === invite.email.toLowerCase()
-  );
+  // Check if the invited email already has a Supabase auth account.
+  // We query the indexed users table instead of listUsers() to avoid pagination
+  // issues and unbounded scans that could lead to false negatives for new users.
+  const { data: existingUser } = await supabaseAdmin
+    .from('users')
+    .select('id')
+    .eq('email', invite.email.toLowerCase())
+    .maybeSingle();
 
   return NextResponse.json({
     email: invite.email,
