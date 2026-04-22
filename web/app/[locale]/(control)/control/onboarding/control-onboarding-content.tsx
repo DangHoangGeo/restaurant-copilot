@@ -622,7 +622,11 @@ export function ControlOnboardingContent({
               name_en: category.name_en?.trim() || '',
               name_ja: category.name_ja?.trim() || category.name_en?.trim() || '',
               name_vi: category.name_vi?.trim() || category.name_en?.trim() || '',
+<<<<<<< HEAD
               kind: category.kind === 'specialty' ? 'specialty' : 'basic' as 'basic' | 'specialty',
+=======
+              kind: category.kind === 'specialty' ? 'specialty' : 'basic',
+>>>>>>> e6e3e96 (feat(onboarding): Enhance organization onboarding with AI-generated branding and shared menu categories)
             }))
             .filter((category) => category.name_en.length > 0)
         : [];
