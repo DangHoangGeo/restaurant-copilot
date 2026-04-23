@@ -34,10 +34,6 @@ function toYMD(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function formatDisplayDate(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
 function isToday(date: Date): boolean {
   return toYMD(date) === toYMD(new Date());
 }

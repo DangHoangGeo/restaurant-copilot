@@ -54,7 +54,6 @@ function getJobTitleLabel(value: string) {
 
 export default function EmployeeForm({ employee, onClose, onSuccess }: EmployeeFormProps) {
   const t = useTranslations("owner.employees.form");
-  const common_t = useTranslations("common");
 
   const [bankData, setBankData] = useState<Partial<BankAccountData>>({
     account_type: "checking",
