@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDate(s: string): boolean {
+  return DATE_REGEX.test(s) && !isNaN(Date.parse(s));
+}
+
+/** Returns the last day of a given year+month as YYYY-MM-DD. Safe for all months. */
+function lastDayOfMonth(year: number, month: number): string {
+  // Day 0 of the next month = last day of current month
+  const d = new Date(year, month, 0); // month is already 1-based, day 0 wraps correctly
+  return d.toISOString().slice(0, 10);
+}
+
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest();
   if (!user?.restaurantId || !user.userId) {
@@ -24,12 +37,20 @@ export async function GET(req: NextRequest) {
   const from = searchParams.get("from");
   const to = searchParams.get("to");
 
-  // Default: current month
+  // Validate explicit date params
+  if (from && !isValidDate(from)) {
+    return NextResponse.json({ error: "Invalid from date" }, { status: 400 });
+  }
+  if (to && !isValidDate(to)) {
+    return NextResponse.json({ error: "Invalid to date" }, { status: 400 });
+  }
+
+  // Default: current calendar month
   const now = new Date();
-  const defaultFrom = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-  const defaultTo = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    .toISOString()
-    .slice(0, 10);
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-based
+  const defaultFrom = `${year}-${String(month).padStart(2, "0")}-01`;
+  const defaultTo = lastDayOfMonth(year, month);
 
   const { data, error } = await supabaseAdmin
     .from("attendance_daily_summaries")
@@ -41,11 +62,14 @@ export async function GET(req: NextRequest) {
     .order("work_date", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch attendance records" }, { status: 500 });
   }
 
   const totalApproved = (data ?? [])
-    .filter((r: { status: string; total_hours: number | null }) => r.status === "approved" && r.total_hours != null)
+    .filter(
+      (r: { status: string; total_hours: number | null }) =>
+        r.status === "approved" && r.total_hours != null
+    )
     .reduce((sum: number, r: { total_hours: number }) => sum + r.total_hours, 0);
 
   return NextResponse.json({

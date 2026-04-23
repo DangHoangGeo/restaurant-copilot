@@ -4,7 +4,9 @@ import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const leaveSchema = z.object({
-  leave_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  leave_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((s) => !isNaN(Date.parse(s)), {
+    message: "leave_date must be a valid date",
+  }),
   leave_type: z.enum(["day_off", "sick", "vacation", "personal"]).default("day_off"),
   reason: z.string().max(500).optional(),
 });
@@ -38,13 +40,23 @@ export async function GET(req: NextRequest) {
     .eq("restaurant_id", user.restaurantId)
     .order("leave_date", { ascending: false });
 
-  if (from) query = query.gte("leave_date", from);
-  if (to) query = query.lte("leave_date", to);
+  if (from) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || isNaN(Date.parse(from))) {
+      return NextResponse.json({ error: "Invalid from date" }, { status: 400 });
+    }
+    query = query.gte("leave_date", from);
+  }
+  if (to) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(to) || isNaN(Date.parse(to))) {
+      return NextResponse.json({ error: "Invalid to date" }, { status: 400 });
+    }
+    query = query.lte("leave_date", to);
+  }
 
   const { data, error } = await query;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch leave requests" }, { status: 500 });
   }
 
   return NextResponse.json({ requests: data ?? [] });
@@ -106,7 +118,10 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error.code === "23505") {
+      return NextResponse.json({ error: "A leave request for this date already exists" }, { status: 409 });
+    }
+    return NextResponse.json({ error: "Failed to submit leave request" }, { status: 500 });
   }
 
   return NextResponse.json({ request: data }, { status: 201 });

@@ -7,9 +7,9 @@ import { USER_ROLES } from "@/lib/constants";
 
 const updatePayrollSchema = z.object({
   bonus: z.number().min(0).optional(),
-  bonus_reason: z.string().optional(),
+  bonus_reason: z.string().max(500).optional(),
   deductions: z.number().min(0).optional(),
-  notes: z.string().optional(),
+  notes: z.string().max(1000).optional(),
   status: z.enum(["draft", "approved", "paid"]).optional(),
 });
 
@@ -21,7 +21,7 @@ export async function PATCH(
   if (!user?.restaurantId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (user.role !== USER_ROLES.OWNER && user.role !== USER_ROLES.MANAGER) {
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(user.role as "owner" | "manager")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -31,7 +31,7 @@ export async function PATCH(
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
   const parsed = updatePayrollSchema.safeParse(body);
@@ -39,10 +39,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  // Fetch current record to recalculate total
+  // Fetch current record — verify it belongs to this restaurant
   const { data: current, error: fetchErr } = await supabaseAdmin
     .from("payroll_records")
-    .select("base_pay, bonus, deductions, status")
+    .select("base_pay, bonus, deductions, status, employee_id, employees(user_id)")
     .eq("id", payrollId)
     .eq("restaurant_id", user.restaurantId)
     .single();
@@ -51,15 +51,41 @@ export async function PATCH(
     return NextResponse.json({ error: "Payroll record not found" }, { status: 404 });
   }
 
-  // Only owner can approve/mark as paid
-  if (parsed.data.status && parsed.data.status !== "draft" && user.role !== USER_ROLES.OWNER) {
-    return NextResponse.json({ error: "Only owner can approve or mark as paid" }, { status: 403 });
+  // Privilege escalation guard: a user cannot approve or modify their own payroll record
+  const emp = current.employees as { user_id: string } | null;
+  if (emp?.user_id === user.userId) {
+    return NextResponse.json(
+      { error: "You cannot modify your own payroll record" },
+      { status: 403 }
+    );
+  }
+
+  // Status transitions: only owner can approve or mark as paid
+  if (
+    parsed.data.status &&
+    parsed.data.status !== "draft" &&
+    user.role !== USER_ROLES.OWNER
+  ) {
+    return NextResponse.json(
+      { error: "Only the owner can approve or mark payroll as paid" },
+      { status: 403 }
+    );
+  }
+
+  // Cannot go backwards: paid → approved, approved → draft
+  const currentStatus = current.status as string;
+  const newStatus = parsed.data.status;
+  if (currentStatus === "paid") {
+    return NextResponse.json({ error: "Paid payroll records cannot be modified" }, { status: 409 });
+  }
+  if (currentStatus === "approved" && newStatus === "draft") {
+    return NextResponse.json({ error: "Approved payroll cannot be reverted to draft" }, { status: 409 });
   }
 
   const newBonus = parsed.data.bonus ?? (current.bonus as number);
   const newDeductions = parsed.data.deductions ?? (current.deductions as number);
   const basePay = current.base_pay as number;
-  const totalPay = basePay + newBonus - newDeductions;
+  const totalPay = Math.max(0, basePay + newBonus - newDeductions);
 
   const updates: Record<string, unknown> = {
     bonus: newBonus,
@@ -91,7 +117,7 @@ export async function PATCH(
 
   if (error) {
     await logger.error("payroll-patch", "Failed to update payroll record", { error: error.message, payrollId }, user.restaurantId, user.userId);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update payroll record" }, { status: 500 });
   }
 
   await logger.info("payroll-patch", "Payroll record updated", { payrollId, status: parsed.data.status }, user.restaurantId, user.userId);

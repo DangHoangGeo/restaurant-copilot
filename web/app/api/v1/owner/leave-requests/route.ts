@@ -4,17 +4,41 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { logger } from "@/lib/logger";
 import { USER_ROLES } from "@/lib/constants";
 
+const VALID_STATUSES = ["pending", "approved", "rejected"] as const;
+type LeaveStatus = typeof VALID_STATUSES[number];
+
+function isValidDate(s: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s));
+}
+
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest();
   if (!user?.restaurantId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  // Only owner and manager can see all staff leave requests
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(user.role as "owner" | "manager")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { searchParams } = new URL(req.url);
-  const status = searchParams.get("status");
+  const rawStatus = searchParams.get("status");
   const employeeId = searchParams.get("employee_id");
   const from = searchParams.get("from");
   const to = searchParams.get("to");
+
+  // Validate status
+  if (rawStatus && !VALID_STATUSES.includes(rawStatus as LeaveStatus)) {
+    return NextResponse.json({ error: "Invalid status filter" }, { status: 400 });
+  }
+
+  // Validate date params
+  if (from && !isValidDate(from)) {
+    return NextResponse.json({ error: "Invalid from date" }, { status: 400 });
+  }
+  if (to && !isValidDate(to)) {
+    return NextResponse.json({ error: "Invalid to date" }, { status: 400 });
+  }
 
   let query = supabaseAdmin
     .from("employee_leave_requests")
@@ -26,7 +50,7 @@ export async function GET(req: NextRequest) {
     .eq("restaurant_id", user.restaurantId)
     .order("leave_date", { ascending: false });
 
-  if (status) query = query.eq("status", status);
+  if (rawStatus) query = query.eq("status", rawStatus);
   if (employeeId) query = query.eq("employee_id", employeeId);
   if (from) query = query.gte("leave_date", from);
   if (to) query = query.lte("leave_date", to);
@@ -35,7 +59,7 @@ export async function GET(req: NextRequest) {
 
   if (error) {
     await logger.error("leave-requests-get", "Failed to fetch leave requests", { error: error.message }, user.restaurantId);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch leave requests" }, { status: 500 });
   }
 
   const requests = (data ?? []).map((r: Record<string, unknown>) => {

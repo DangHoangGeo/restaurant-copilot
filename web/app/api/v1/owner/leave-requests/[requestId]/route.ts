@@ -7,7 +7,7 @@ import { USER_ROLES } from "@/lib/constants";
 
 const reviewSchema = z.object({
   action: z.enum(["approved", "rejected"]),
-  review_note: z.string().optional(),
+  review_note: z.string().max(500).optional(),
 });
 
 export async function PATCH(
@@ -54,7 +54,7 @@ export async function PATCH(
 
   if (error) {
     await logger.error("leave-request-patch", "Failed to review leave request", { error: error.message, requestId }, user.restaurantId, user.userId);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update leave request" }, { status: 500 });
   }
 
   await logger.info("leave-request-patch", `Leave request ${action}`, { requestId }, user.restaurantId, user.userId);
