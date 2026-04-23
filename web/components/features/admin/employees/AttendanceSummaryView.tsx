@@ -64,6 +64,7 @@ function StatusBadge({ status }: { status: DailySummary["status"] }) {
 
 export default function AttendanceSummaryView() {
   const t = useTranslations("owner.employees.summaries");
+  const tAttendance = useTranslations("owner.employees.attendance");
   const [employees, setEmployees] = useState<{ id: string; name: string }[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -191,6 +192,7 @@ export default function AttendanceSummaryView() {
             variant="outline"
             size="icon"
             onClick={() => setCurrentMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
+            aria-label={tAttendance("prevMonthBtn")}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -199,6 +201,7 @@ export default function AttendanceSummaryView() {
             variant="outline"
             size="icon"
             onClick={() => setCurrentMonth((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
+            aria-label={tAttendance("nextMonthBtn")}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
