@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import EmployeeForm, { EmployeeFormEmployee } from './EmployeeForm';
 import { EMPLOYEE_JOB_TITLES } from "@/lib/constants";
@@ -10,51 +11,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, Loader2, PlusCircle, QrCode, UserX } from "lucide-react";
+import { AlertTriangle, Loader2, PlusCircle, QrCode, UserX, Hash } from "lucide-react";
 import EmployeeQRPanel from '@/components/features/admin/employees/EmployeeQRPanel';
+import EmployeeCheckinCode from '@/components/features/admin/employees/EmployeeCheckinCode';
 import { toast } from "sonner";
 
-// Type matching the GET /api/v1/owner/employees response structure
-// The API returns employees with a nested 'users' object.
-// The 'role' in the main object is employee_job_title.
-// The 'users.role' is the app-level role (e.g., 'employee').
 export interface ApiEmployee {
-  id: string; // employees.id
-  role: string; // This is the employee_job_title (e.g., "chef", "manager")
-  user_id: string; // users.id
+  id: string;
+  role: string;
+  user_id: string;
   users: {
     id: string;
     email: string;
     name: string;
-    role: string; // This is users.role (e.g., "owner", "employee")
-  } | null; // users can be null if join fails or user not found, though ideally not
-  // Add other fields from your actual API response if needed e.g. created_at
+    role: string;
+  } | null;
 }
 
-// Simplified type for display and form interaction
 export type DisplayEmployee = {
-  id: string; // employees.id
+  id: string;
   user_id: string;
   name: string;
   email: string;
-  employee_job_title: string; // from employees.role
-  user_app_role: string; // from users.role
+  employee_job_title: string;
+  user_app_role: string;
 };
 
+const JOB_TITLE_COLORS: Record<string, string> = {
+  manager: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  chef: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  server: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  cashier: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+};
 
 export default function EmployeeList() {
   const t = useTranslations("owner.employees.list");
-  const t_form = useTranslations("owner.employees.form"); // For dialog title
+  const t_form = useTranslations("owner.employees.form");
 
   const [employees, setEmployees] = useState<DisplayEmployee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +57,7 @@ export default function EmployeeList() {
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<EmployeeFormEmployee | null>(null);
   const [qrEmployee, setQrEmployee] = useState<DisplayEmployee | null>(null);
+  const [codeEmployee, setCodeEmployee] = useState<DisplayEmployee | null>(null);
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
 
   const fetchEmployees = useCallback(async () => {
@@ -75,19 +70,16 @@ export default function EmployeeList() {
         throw new Error(errorData.error || `Failed to fetch employees: ${response.statusText}`);
       }
       const data = await response.json();
-
-      // Transform API data to DisplayEmployee format
       const transformedEmployees: DisplayEmployee[] = (data.employees || []).map((emp: ApiEmployee) => ({
         id: emp.id,
         user_id: emp.user_id,
         name: emp.users?.name || 'N/A',
         email: emp.users?.email || 'N/A',
-        employee_job_title: emp.role, // emp.role is the job title from employees table
+        employee_job_title: emp.role,
         user_app_role: emp.users?.role || 'N/A',
       }));
       setEmployees(transformedEmployees);
     } catch (err) {
-      console.error(err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
       setError(errorMessage);
       toast.error(t("notifications.fetchError", { error: errorMessage }));
@@ -100,13 +92,7 @@ export default function EmployeeList() {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  const handleAddEmployee = () => {
-    setEditingEmployee(null);
-    setShowEmployeeForm(true);
-  };
-
   const handleEditEmployee = (employee: DisplayEmployee) => {
-    // Map DisplayEmployee to EmployeeFormEmployee
     const formEmployee: EmployeeFormEmployee = {
       id: employee.id,
       name: employee.name,
@@ -128,9 +114,7 @@ export default function EmployeeList() {
     try {
       const response = await fetch(`/api/v1/owner/employees/${employee.id}`, { method: 'DELETE' });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(data.error || t("notifications.deactivateError"));
-      }
+      if (!response.ok) throw new Error(data.error || t("notifications.deactivateError"));
       toast.success(t("notifications.deactivateSuccess", { name: employee.name }));
       fetchEmployees();
     } catch (err) {
@@ -139,37 +123,6 @@ export default function EmployeeList() {
       setDeactivatingId(null);
     }
   };
-
-  if (isLoading && employees.length === 0) {
-    return (
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">{t("title")}</h2>
-          <Button disabled><PlusCircle className="mr-2 h-4 w-4" />{t("actions.addEmployee")}</Button>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("table.name")}</TableHead>
-              <TableHead>{t("table.email")}</TableHead>
-              <TableHead>{t("table.jobTitle")}</TableHead>
-              <TableHead>{t("table.actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {[...Array(3)].map((_, i) => (
-              <TableRow key={i}>
-                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-8 w-28" /></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -182,80 +135,98 @@ export default function EmployeeList() {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">{t("title")}</h2>
-        <Button onClick={handleAddEmployee} disabled={isLoading}>
-         <PlusCircle className="mr-2 h-4 w-4" /> {t("actions.addEmployee")}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">{t("title")}</h2>
+        <Button
+          onClick={() => { setEditingEmployee(null); setShowEmployeeForm(true); }}
+          disabled={isLoading}
+          size="sm"
+        >
+          <PlusCircle className="mr-1.5 h-4 w-4" />
+          {t("actions.addEmployee")}
         </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("table.name")}</TableHead>
-            <TableHead>{t("table.email")}</TableHead>
-            <TableHead>{t("table.jobTitle")}</TableHead>
-            <TableHead className="text-right">{t("table.actions")}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {employees.length === 0 && !isLoading ? (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center h-24">
-                {t("table.noEmployees")}
-              </TableCell>
-            </TableRow>
-          ) : (
-            employees.map(emp => (
-              <TableRow key={emp.id}>
-                <TableCell className="font-medium">{emp.name}</TableCell>
-                <TableCell>{emp.email}</TableCell>
-                <TableCell>{emp.employee_job_title}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => handleEditEmployee(emp)} disabled={isLoading || deactivatingId === emp.id}>
-                    {t("actions.edit")}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+        </div>
+      ) : employees.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-14 gap-3 text-muted-foreground">
+          <p className="text-sm">{t("table.noEmployees")}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {employees.map((emp) => (
+            <Card key={emp.id} className="rounded-xl">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{emp.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{emp.email}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium shrink-0 ${JOB_TITLE_COLORS[emp.employee_job_title] ?? "bg-gray-100 text-gray-800"}`}>
+                    {emp.employee_job_title.charAt(0).toUpperCase() + emp.employee_job_title.slice(1)}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => handleEditEmployee(emp)} disabled={deactivatingId === emp.id}>
+                    Edit
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setQrEmployee(emp)} disabled={isLoading || deactivatingId === emp.id}>
+                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setCodeEmployee(emp)} disabled={deactivatingId === emp.id}>
+                    <Hash className="mr-1 h-3 w-3" />
+                    Code
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setQrEmployee(emp)} disabled={deactivatingId === emp.id}>
                     <QrCode className="mr-1 h-3 w-3" />
-                    {t("actions.qrCode")}
+                    QR
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-destructive hover:text-destructive hover:border-destructive"
+                    className="h-8 text-xs text-destructive hover:text-destructive hover:border-destructive ml-auto"
                     onClick={() => handleDeactivate(emp)}
-                    disabled={isLoading || deactivatingId === emp.id}
+                    disabled={deactivatingId === emp.id}
                   >
-                    {deactivatingId === emp.id ? (
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    ) : (
-                      <UserX className="mr-1 h-3 w-3" />
-                    )}
+                    {deactivatingId === emp.id ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <UserX className="mr-1 h-3 w-3" />}
                     {t("actions.deactivate")}
                   </Button>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      {showEmployeeForm && (
-        <Dialog open={showEmployeeForm} onOpenChange={setShowEmployeeForm}>
-          <DialogContent className="sm:max-w-lg">
+      {/* Add/Edit employee dialog */}
+      <Dialog open={showEmployeeForm} onOpenChange={setShowEmployeeForm}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingEmployee ? t_form("editTitle") : t_form("addTitle")}</DialogTitle>
+          </DialogHeader>
+          <EmployeeForm
+            employee={editingEmployee}
+            onClose={() => setShowEmployeeForm(false)}
+            onSuccess={handleFormSuccess}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Employee checkin code dialog */}
+      {codeEmployee && (
+        <Dialog open={!!codeEmployee} onOpenChange={(open) => { if (!open) setCodeEmployee(null); }}>
+          <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle>{editingEmployee ? t_form("editTitle") : t_form("addTitle")}</DialogTitle>
+              <DialogTitle>Checkin Code — {codeEmployee.name}</DialogTitle>
             </DialogHeader>
-            <EmployeeForm
-              employee={editingEmployee}
-              onClose={() => setShowEmployeeForm(false)}
-              onSuccess={handleFormSuccess}
-            />
+            <EmployeeCheckinCode employeeId={codeEmployee.id} employeeName={codeEmployee.name} />
           </DialogContent>
         </Dialog>
       )}
 
+      {/* Legacy QR panel */}
       {qrEmployee && (
         <Dialog open={!!qrEmployee} onOpenChange={(open) => { if (!open) setQrEmployee(null); }}>
           <DialogContent className="sm:max-w-sm">
