@@ -171,11 +171,23 @@ export default function AttendanceTable() {
           {errorEmployees && <Alert variant="destructive" className="mt-2"><AlertTriangle className="h-4 w-4"/><AlertDescription>{errorEmployees}</AlertDescription></Alert>}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => handleMonthChange('prev')} disabled={isLoadingRecords}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handleMonthChange('prev')}
+            disabled={isLoadingRecords}
+            aria-label={t("prevMonthBtn")}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium text-center min-w-[150px]">{monthYearDisplay}</span>
-          <Button variant="outline" size="icon" onClick={() => handleMonthChange('next')} disabled={isLoadingRecords}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handleMonthChange('next')}
+            disabled={isLoadingRecords}
+            aria-label={t("nextMonthBtn")}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
