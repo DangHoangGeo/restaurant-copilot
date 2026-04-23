@@ -1,0 +1,25 @@
+
+> web@0.1.0 dev /app/web
+> next dev --turbopack
+
+ ⚠ Port 3000 is in use, using available port 3002 instead.
+   ▲ Next.js 15.3.9 (Turbopack)
+   - Local:        http://localhost:3002
+   - Network:      http://192.168.0.2:3002
+
+ ✓ Starting...
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 769ms
+ ✓ Ready in 2.6s
+ ⨯ Error: Missing Supabase environment variables.
+    at [project]/lib/supabaseAdmin.ts [middleware-edge] (ecmascript) (lib/supabaseAdmin.ts:7:8)
+    at [project]/middleware.ts [middleware-edge] (ecmascript) (middleware.ts:6:0)
+   5 |
+   6 | if (!supabaseUrl || !supabaseServiceRoleKey) {
+>  7 |   throw new Error("Missing Supabase environment variables.");
+     |        ^
+   8 | }
+   9 |
+  10 | export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1984ms

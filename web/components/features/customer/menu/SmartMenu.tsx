@@ -796,6 +796,7 @@ export function SmartMenu({
                   size="sm"
                   onClick={() => setSearchTerm("")}
                   className="h-6 w-6 p-0 rounded-full"
+                  aria-label={t("clear_search")}
                 >
                   ×
                 </Button>

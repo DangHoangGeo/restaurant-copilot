@@ -134,6 +134,13 @@ export function CompactFoodCard({
     setTimeout(() => setIsAddingToCart(false), 600);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onCardClick();
+    }
+  };
+
   return (
     <motion.div
       whileHover={{
@@ -148,8 +155,12 @@ export function CompactFoodCard({
         damping: 25,
         duration: 0.2
       }}
-      className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer"
+      className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:outline-none"
       onClick={onCardClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={itemName}
     >
       {/* Full-bleed image */}
       <div className="absolute inset-0">
