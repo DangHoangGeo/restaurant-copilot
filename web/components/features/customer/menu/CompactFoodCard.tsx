@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, TrendingUp, Sparkles } from "lucide-react";
@@ -88,8 +88,8 @@ const getCategoryPastelColor = (itemName: string): string => {
 interface CompactFoodCardProps {
   item: FoodItem;
   qtyInCart: number;
-  onAdd: () => void;
-  onCardClick: () => void;
+  onAdd: (item: FoodItem) => void;
+  onCardClick: (item: FoodItem) => void;
   brandColor: string;
   locale: string;
   canAddItems?: boolean;
@@ -98,7 +98,11 @@ interface CompactFoodCardProps {
   showRecommendedBadge?: boolean;
 }
 
-export function CompactFoodCard({
+/**
+ * CompactFoodCard component displays a food item with its image, name, price, and an add-to-cart button.
+ * Optimized with React.memo to prevent unnecessary re-renders when parent lists update.
+ */
+export const CompactFoodCard = React.memo(function CompactFoodCard({
   item,
   qtyInCart,
   onAdd,
@@ -111,7 +115,11 @@ export function CompactFoodCard({
   showRecommendedBadge = false,
 }: CompactFoodCardProps) {
   const itemName = getLocalizedText(
-    { name_en: item.name_en, name_vi: item.name_vi || '', name_ja: item.name_ja || '' },
+    {
+      name_en: item.name_en,
+      name_vi: item.name_vi || "",
+      name_ja: item.name_ja || "",
+    },
     locale,
   );
 
@@ -120,17 +128,19 @@ export function CompactFoodCard({
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!canAddItems || isAddingToCart) return;
-    
+
     // If item has sizes or toppings, open detail view instead of adding directly
-    if ((item.menu_item_sizes && item.menu_item_sizes.length > 0) || 
-        (item.toppings && item.toppings.length > 0)) {
-      onCardClick();
+    if (
+      (item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
+      (item.toppings && item.toppings.length > 0)
+    ) {
+      onCardClick(item);
       return;
     }
-    
+
     // Animate the add button
     setIsAddingToCart(true);
-    onAdd();
+    onAdd(item);
     setTimeout(() => setIsAddingToCart(false), 600);
   };
 
@@ -139,17 +149,18 @@ export function CompactFoodCard({
       whileHover={{
         scale: 1.03,
         y: -2,
-        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
+        boxShadow:
+          "0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1)",
       }}
       whileTap={{ scale: 0.98 }}
       transition={{
         type: "spring",
         stiffness: 300,
         damping: 25,
-        duration: 0.2
+        duration: 0.2,
       }}
       className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer"
-      onClick={onCardClick}
+      onClick={() => onCardClick(item)}
     >
       {/* Full-bleed image */}
       <div className="absolute inset-0">
@@ -328,4 +339,4 @@ export function CompactFoodCard({
       </div>
     </motion.div>
   );
-}
+});

@@ -979,8 +979,8 @@ export function SmartMenu({
                         <CompactFoodCard
                           item={item}
                           qtyInCart={getQuantityByItemId(item.id)}
-                          onAdd={() => handleAddToCart(item)}
-                          onCardClick={() => handleItemClick(item)}
+                          onAdd={handleAddToCart}
+                          onCardClick={handleItemClick}
                           brandColor={brandColor}
                           locale={locale}
                           canAddItems={canAddItems}
