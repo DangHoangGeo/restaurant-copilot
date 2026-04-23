@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -125,7 +126,7 @@ export default function RestaurantQRManager() {
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
               {qrDataUrl ? (
-                <img src={qrDataUrl} alt="Restaurant check-in QR" className="rounded-lg border shadow-sm" width={280} height={280} />
+                <Image src={qrDataUrl} alt="Restaurant check-in QR" className="rounded-lg border shadow-sm" width={280} height={280} unoptimized />
               ) : (
                 <div className="w-[280px] h-[280px] bg-muted rounded-lg flex items-center justify-center">
                   <QrCode className="h-16 w-16 text-muted-foreground opacity-40" />

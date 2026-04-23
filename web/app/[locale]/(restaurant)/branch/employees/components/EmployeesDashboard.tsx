@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTranslations } from "next-intl";
 import EmployeeList from './EmployeeList';
 import ScheduleWeek from './ScheduleWeek';
 import AttendanceSummaryView from '@/components/features/admin/employees/AttendanceSummaryView';
@@ -32,7 +31,6 @@ const TABS: { value: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 export default function EmployeesDashboard() {
-  const t = useTranslations("owner.employees.dashboard");
   const [activeTab, setActiveTab] = useState<Tab>("approvals");
 
   return (

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Umbrella, CheckCircle, XCircle, Loader2, RefreshCw, InboxIcon } from "lucide-react";
+import { Umbrella, CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
 
 interface LeaveRequest {
   id: string;

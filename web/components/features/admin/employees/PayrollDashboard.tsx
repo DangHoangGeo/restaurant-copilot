@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  Banknote, CheckCircle, Clock, RefreshCw, Loader2, ChevronLeft, ChevronRight, Plus,
+  Banknote, CheckCircle, Loader2, ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 interface PayrollRecord {
@@ -31,13 +30,6 @@ interface PayrollRecord {
   notes: string | null;
   approved_at: string | null;
   paid_at: string | null;
-}
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  employee_job_title: string;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -63,11 +55,6 @@ function formatPeriod(start: string, end: string): string {
 function getMonthStart(year: number, month: number): string {
   return `${year}-${String(month).padStart(2, "0")}-01`;
 }
-function getMonthEnd(year: number, month: number): string {
-  const lastDay = new Date(year, month, 0).getDate();
-  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-}
-
 export default function PayrollDashboard() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
