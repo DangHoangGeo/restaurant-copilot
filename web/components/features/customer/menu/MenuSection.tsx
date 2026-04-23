@@ -190,8 +190,8 @@ export function MenuSection({
                 <CompactFoodCard
                   item={item}
                   qtyInCart={getQuantity(item.id)}
-                  onAdd={() => onAddToCart(item)}
-                  onCardClick={() => onItemClick(item)}
+                  onAdd={onAddToCart}
+                  onCardClick={onItemClick}
                   brandColor={brandColor}
                   locale={locale}
                   canAddItems={canAddItems}
