@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, TrendingUp, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { getLocalizedText } from "@/lib/customerUtils";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { FoodItem } from "@/shared/types/menu";
 
@@ -110,6 +111,7 @@ export function CompactFoodCard({
   showPopularBadge = false,
   showRecommendedBadge = false,
 }: CompactFoodCardProps) {
+  const t = useTranslations("customer.menu");
   const itemName = getLocalizedText(
     { name_en: item.name_en, name_vi: item.name_vi || '', name_ja: item.name_ja || '' },
     locale,
@@ -148,8 +150,18 @@ export function CompactFoodCard({
         damping: 25,
         duration: 0.2
       }}
-      className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer"
+      className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+      style={{ "--tw-ring-color": brandColor } as React.CSSProperties}
       onClick={onCardClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onCardClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`${t("food_card.view_details")}: ${itemName}`}
     >
       {/* Full-bleed image */}
       <div className="absolute inset-0">
