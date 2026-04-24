@@ -63,12 +63,14 @@ Both `staging` and `production` environments should define:
 
 - `SUPABASE_DB_URL`
   - direct Postgres connection string for `supabase db push`
+  - Postgres connection string for `supabase db push`
+  - direct Postgres is preferred when the runner can reach it
+  - Supabase Session pooler on port `5432` is acceptable for IPv4-only runners
+  - do not use the transaction pooler on port `6543` for schema migrations
+  - the project ref embedded in this URL must match `SUPABASE_PROJECT_ID`
 - `SUPABASE_PROJECT_ID`
   - Supabase project ref used for Edge Function deploys
 - `SUPABASE_ACCESS_TOKEN`
-  - personal or machine access token used by the Supabase CLI
-
-Only add more secrets when a deployment step truly needs them.
 
 ## Migration Rules For Future Work
 
