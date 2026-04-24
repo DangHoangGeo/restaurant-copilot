@@ -14,6 +14,8 @@ import {
   ShoppingCart,
   LucideIcon,
   Sparkles,
+  BadgePercent,
+  CircleDollarSign,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
@@ -56,6 +58,7 @@ export function AdminBottomNav() {
     { icon: TableSimpleIcon, labelKey: 'admin_sidebar_table_qr_management', href: '/branch/tables' },
     { icon: BarChartBig, labelKey: 'admin_sidebar_reports_analytics', href: '/branch/reports' },
     { icon: ShoppingCart, labelKey: 'admin_sidebar_purchasing', href: '/branch/purchasing' },
+    { icon: BadgePercent, labelKey: 'admin_sidebar_promotions', href: '/branch/promotions' },
   ];
 
   if (needsOnboarding && FEATURE_FLAGS.onboarding) {
@@ -68,15 +71,15 @@ export function AdminBottomNav() {
     navItems.push(
       { icon: Home, labelKey: 'admin_sidebar_dashboard', href: '/branch', exact: true },
       { icon: List, labelKey: 'admin_sidebar_orders', href: '/branch/orders' },
-      { icon: BarChartBig, labelKey: 'admin_sidebar_reports_analytics', href: '/branch/reports' },
       { icon: UserCog, labelKey: 'bottom_nav_people', href: '/branch/employees' },
+      { icon: CircleDollarSign, labelKey: 'bottom_nav_money', href: '/branch/finance' },
     );
   }
 
   return (
     <>
       <nav
-        className="fixed bottom-0 inset-x-0 z-40 bg-card border-t lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-[#AB6E3C]/10 bg-[#FAF3EA]/95 backdrop-blur lg:hidden dark:border-[#AB6E3C]/15 dark:bg-[#170F0C]/95"
         role="navigation"
         aria-label={t('bottom_nav_aria_label')}
       >
@@ -92,12 +95,19 @@ export function AdminBottomNav() {
                 <Link
                   href={fullHref}
                   className={cn(
-                    'flex min-h-16 flex-col items-center justify-center py-2 text-xs',
-                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                    'flex min-h-16 flex-col items-center justify-center gap-1 px-1 py-2 text-xs font-medium',
+                    isActive ? 'text-[#2E2117] dark:text-[#F7F1E9]' : 'text-[#8B6E5A] hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:text-[#F7F1E9]'
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="mb-0.5 h-5 w-5" />
+                  <div
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-xl',
+                      isActive ? 'bg-[#AB6E3C] text-white' : 'bg-[#AB6E3C]/10 text-[#AB6E3C] dark:bg-[#AB6E3C]/15'
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
                   <span className="text-xs leading-tight">{t(labelKey)}</span>
                 </Link>
               </li>
@@ -109,10 +119,12 @@ export function AdminBottomNav() {
               <button
                 type="button"
                 onClick={() => setIsMoreOpen(true)}
-                className="flex min-h-16 w-full flex-col items-center justify-center py-2 text-xs text-muted-foreground hover:text-foreground"
+                className="flex min-h-16 w-full flex-col items-center justify-center py-2 text-xs text-[#8B6E5A] hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:text-[#F7F1E9]"
                 aria-label={t('bottom_nav_more')}
               >
-                <MoreHorizontal className="mb-0.5 h-5 w-5" />
+                <div className="mb-1 flex h-8 w-8 items-center justify-center rounded-xl bg-[#AB6E3C]/10 text-[#AB6E3C] dark:bg-[#AB6E3C]/15">
+                  <MoreHorizontal className="h-4 w-4" />
+                </div>
                 <span className="text-xs leading-tight">{t('bottom_nav_more')}</span>
               </button>
             </li>
@@ -136,9 +148,9 @@ export function AdminBottomNav() {
                     : `/${locale}${href}`
                 }
                 onClick={() => setIsMoreOpen(false)}
-                className="flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                className="flex min-h-11 items-center gap-3 rounded-xl border border-[#AB6E3C]/15 bg-[#FEFAF6] px-3 py-2 text-sm font-medium text-[#2E2117] hover:bg-[#F5EAD8] dark:border-[#AB6E3C]/20 dark:bg-[#251810] dark:text-[#F7F1E9] dark:hover:bg-[#2B1A10]"
               >
-                <Icon className="h-4 w-4 text-muted-foreground" />
+                <Icon className="h-4 w-4 text-[#AB6E3C]" />
                 <span>{t(labelKey)}</span>
               </Link>
             ))}

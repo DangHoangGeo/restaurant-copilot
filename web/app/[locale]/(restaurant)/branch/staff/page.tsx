@@ -33,7 +33,7 @@ export default async function StaffPage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-4">
+    <div className="mx-auto w-full max-w-[1440px]">
       <StaffClient />
     </div>
   );

@@ -19,6 +19,8 @@ import OnboardingPage from "../../onboarding/page";
 
 type BranchSearchParams = Record<string, string | string[] | undefined>;
 
+const BRANCH_PAGE_CLASS = "mx-auto w-full max-w-[1440px]";
+
 export default async function BranchScopedPage({
   params,
   searchParams,
@@ -50,43 +52,43 @@ export default async function BranchScopedPage({
   switch (routeSlug[0]) {
     case undefined:
       return (
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className={BRANCH_PAGE_CLASS}>
           <DashboardClientContent />
         </div>
       );
     case "orders":
       return (
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className={BRANCH_PAGE_CLASS}>
           <OrdersClientContent />
         </div>
       );
     case "menu":
       return (
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className={BRANCH_PAGE_CLASS}>
           <MenuClientContent branchId={branchId} />
         </div>
       );
     case "tables":
       return (
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className={BRANCH_PAGE_CLASS}>
           <TablesClientContent />
         </div>
       );
     case "bookings":
       return (
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className={BRANCH_PAGE_CLASS}>
           <BookingsClientContent />
         </div>
       );
     case "reports":
       return (
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className={BRANCH_PAGE_CLASS}>
           <ReportsClientContent />
         </div>
       );
     case "employees":
       return (
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <div className={BRANCH_PAGE_CLASS}>
           <EmployeesClientContent />
         </div>
       );

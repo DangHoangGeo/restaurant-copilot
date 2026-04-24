@@ -1,6 +1,7 @@
 {
   "title": "Booking Management",
   "subtitle": "Manage table reservations and customer bookings",
+  "retry": "Retry",
   "table": {
     "customer_name": "Customer Name",
     "contact": "Contact",

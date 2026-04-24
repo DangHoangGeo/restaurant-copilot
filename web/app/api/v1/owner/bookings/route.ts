@@ -2,6 +2,7 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
+import { USER_ROLES } from '@/lib/constants';
 
 export async function GET() {
   const supabase = createRouteHandlerClient({ cookies });
@@ -9,6 +10,10 @@ export async function GET() {
 
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID' }, { status: 401 });
+  }
+
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(user.role as 'owner' | 'manager')) {
+    return NextResponse.json({ error: 'Forbidden: managers and owners only' }, { status: 403 });
   }
 
   try {

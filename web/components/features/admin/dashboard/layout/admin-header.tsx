@@ -30,6 +30,7 @@ const viewNameMap: Record<string, string> = {
   '/branch/purchasing': 'admin_sidebar_purchasing',
   '/branch/finance': 'admin_sidebar_finance',
   '/branch/promotions': 'admin_sidebar_promotions',
+  '/branch/staff': 'admin_sidebar_staff',
   '/branch/branches': 'admin_sidebar_branches',
   '/branch/organization': 'admin_sidebar_organization',
   '/branch/profile': 'admin_sidebar_profile',
@@ -109,40 +110,40 @@ export function AdminHeader({
 
   return (
     <header 
-      className="bg-card dark:bg-slate-800 shadow-sm sticky top-0 z-50 border-b"
+      className="sticky top-0 z-50 border-b border-[#AB6E3C]/10 bg-[#FAF3EA]/85 shadow-sm backdrop-blur-md dark:border-[#AB6E3C]/15 dark:bg-[#170F0C]/85"
       style={{
         paddingTop: 'max(env(safe-area-inset-top, 0px), 0px)',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)'
       }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center">
+      <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center">
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="lg:hidden mr-2"
+            className="mr-2 h-10 w-10 rounded-full text-[#8B6E5A] hover:bg-[#F5EAD8] hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#251810] dark:hover:text-[#AB6E3C] lg:hidden"
             aria-label={t('sidebar.toggle_aria_label')}
           >
             <MenuIcon className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold text-foreground">
+          <h1 className="truncate text-lg font-semibold text-[#2E2117] sm:text-xl dark:text-[#F7F1E9]">
             {tNav(currentPageTitleKey)}
           </h1>
         </div>
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           {ownerControlHref ? (
             <>
-              <Button asChild variant="outline" size="icon" className="rounded-xl md:hidden">
+              <Button asChild variant="outline" size="icon" className="h-10 w-10 rounded-full border-[#AB6E3C]/20 bg-[#FEFAF6]/80 text-[#8B6E5A] shadow-sm hover:bg-[#F5EAD8] hover:text-[#AB6E3C] md:hidden dark:border-[#AB6E3C]/25 dark:bg-[#251810]/80 dark:text-[#B89078] dark:hover:bg-[#2B1A10]">
                 <Link href={ownerControlHref} aria-label="Back to owner">
                   <ArrowLeft className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="hidden rounded-xl md:inline-flex">
+              <Button asChild variant="outline" size="sm" className="hidden rounded-full border-[#AB6E3C]/20 bg-[#FEFAF6]/80 text-[#8B6E5A] shadow-sm hover:bg-[#F5EAD8] hover:text-[#AB6E3C] md:inline-flex dark:border-[#AB6E3C]/25 dark:bg-[#251810]/80 dark:text-[#B89078] dark:hover:bg-[#2B1A10]">
                 <Link href={ownerControlHref}>
                   <ArrowLeft className="h-4 w-4" />
-                  Back to owner
+                  Owner control
                 </Link>
               </Button>
             </>
@@ -152,6 +153,7 @@ export function AdminHeader({
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="h-10 w-10 rounded-full text-[#8B6E5A] hover:bg-[#F5EAD8] hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#251810] dark:hover:text-[#AB6E3C]"
             aria-label={tCommon('theme.toggle_aria_label')}
           >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -161,12 +163,12 @@ export function AdminHeader({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center px-2 sm:px-3">
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center mr-0 sm:mr-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
+              <Button variant="ghost" className="flex h-10 items-center rounded-full px-2 text-[#8B6E5A] hover:bg-[#F5EAD8] hover:text-[#AB6E3C] sm:px-3 dark:text-[#B89078] dark:hover:bg-[#251810] dark:hover:text-[#AB6E3C]">
+                <div className="mr-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#AB6E3C]/10 sm:mr-2">
+                  <User className="h-4 w-4 text-[#AB6E3C]" />
                 </div>
                 <span className="hidden sm:inline text-sm font-medium">
-                  {t('user_menu.admin_user_placeholder')}
+                  {t('user_menu.my_account_label')}
                 </span>
                 <ChevronDown className="ml-0 sm:ml-1 h-4 w-4 text-muted-foreground hidden sm:inline" />
               </Button>

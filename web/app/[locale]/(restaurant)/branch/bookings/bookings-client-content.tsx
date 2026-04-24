@@ -65,7 +65,7 @@ export function BookingsClientContent() {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(t('notifications.fetch_error'));
       }
       
       const data = await response.json();
@@ -95,7 +95,7 @@ export function BookingsClientContent() {
       setBookings(transformedBookings);
     } catch (err) {
       console.error('Error fetching bookings:', err);
-      setError(err instanceof Error ? err.message : t('errors.fetch_failed'));
+      setError(err instanceof Error ? err.message : t('notifications.fetch_error'));
     } finally {
       setIsInitialLoading(false);
     }
@@ -120,7 +120,7 @@ export function BookingsClientContent() {
   const handleUpdateStatus = async (bookingId: string, status: 'confirmed' | 'canceled') => {
     setIsUpdatingStatus(true);
     try {
-      const res = await fetch(`/api/v1/owner/bookings/${bookingId}?bookingId=${bookingId}`, {
+      const res = await fetch(`/api/v1/owner/bookings/${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
@@ -144,36 +144,39 @@ export function BookingsClientContent() {
 
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-300',
-      confirmed: 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300',
-      canceled: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-300'
+      pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+      confirmed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+      canceled: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
     }
-    return <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles[status]}`}>{t(`Bookings.status.${status}`)}</span>
+    return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${styles[status]}`}>{t(`status.${status}`)}</span>
   }
 
   return (
-    <div>
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#2E2117] dark:text-[#F7F1E9]">
           {t("title")}
         </h1>
+        <p className="mt-1 text-sm text-[#8B6E5A] dark:text-[#B89078]">
+          {t("subtitle")}
+        </p>
       </header>
 
       {bookings.length === 0 ? (
-        <Card className="p-8 text-center">
-          <CalendarX className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500" />
-          <h3 className="mt-4 text-lg font-semibold text-slate-700 dark:text-slate-200">
+        <Card className="border-dashed border-[#AB6E3C]/20 bg-[#FEFAF6]/70 p-8 text-center shadow-none dark:border-[#AB6E3C]/25 dark:bg-[#251810]/60">
+          <CalendarX className="mx-auto h-12 w-12 text-[#AB6E3C]/45" />
+          <h3 className="mt-4 text-lg font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
             {t('empty_state.title')}
           </h3>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-2 text-sm text-[#8B6E5A] dark:text-[#B89078]">
             {t('empty_state.description')}
           </p>
         </Card>
       ) : (
-        <Card className="p-2">
+        <Card className="overflow-hidden border-[#AB6E3C]/10 bg-[#FEFAF6] shadow-sm shadow-[#AB6E3C]/5 dark:border-[#AB6E3C]/15 dark:bg-[#251810]/85">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
+              <thead className="bg-[#F5EAD8]/70 text-xs uppercase text-[#8B6E5A] dark:bg-[#170F0C]/60 dark:text-[#B89078]">
                 <tr>
                   {['customer_name','contact','date_time','party_size','status','actions'].map(col => (
                     <th key={col} className="px-4 py-3">{t(`table.${col}`)}</th>
@@ -182,7 +185,7 @@ export function BookingsClientContent() {
               </thead>
               <tbody>
                 {bookings.map(booking => (
-                  <tr key={booking.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600">
+                  <tr key={booking.id} className="border-t border-[#AB6E3C]/10 bg-[#FEFAF6] text-[#2E2117] hover:bg-[#FAF3EA] dark:border-[#AB6E3C]/15 dark:bg-[#251810]/85 dark:text-[#F7F1E9] dark:hover:bg-[#2B1A10]">
                     <td className="px-4 py-3 font-medium">{booking.customerName}</td>
                     <td className="px-4 py-3">{booking.contact}</td>
                     <td className="px-4 py-3">{booking.date} @ {booking.time}</td>
@@ -191,7 +194,7 @@ export function BookingsClientContent() {
                     <td className="px-4 py-3">
                       <Button size="sm" variant="ghost" onClick={() => handleViewDetails(booking)}>
                         <Eye className="h-4 w-4 mr-1" />
-                      {t('Common.view_details')}</Button>
+                      {t('actions.view_details')}</Button>
                     </td>
                   </tr>
                 ))}
@@ -213,7 +216,7 @@ export function BookingsClientContent() {
               <p><strong>{t('table.date_time')}:</strong> {selectedBooking.date} @ {selectedBooking.time}</p>
               <p><strong>{t('table.party_size')}:</strong> {selectedBooking.partySize}</p>
               <p><strong>{t('table.status')}:</strong> {statusBadge(selectedBooking.status)}</p>
-              {selectedBooking.preOrderItems?.length === 0 && <p className="text-sm mt-2 text-slate-500">{t('no_preorder_items')}</p>}
+              {selectedBooking.preOrderItems?.length === 0 && <p className="text-sm mt-2 text-[#8B6E5A] dark:text-[#B89078]">{t('preorder.no_preorder_items')}</p>}
             </div>
           )}
            <DialogFooter className="mt-6">
