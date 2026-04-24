@@ -1,14 +1,14 @@
 /**
  * Google Gemini AI Helper Library
- * 
+ *
  * This library provides a unified interface for Google Gemini AI interactions
  * across the restaurant management system. It supports:
  * - Multi-language translation for menu items
  * - Future features: customer chat, owner assistance, content generation
  */
 
-import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
-import { logger } from './logger';
+import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
+import { logger } from "./logger";
 
 // Types for the library
 export interface TranslationResult {
@@ -23,7 +23,7 @@ export interface DescriptionResult {
   vi: string;
 }
 
-export interface MenuItemNameDescTags{
+export interface MenuItemNameDescTags {
   name_en: string;
   name_ja: string;
   name_vi: string;
@@ -33,6 +33,11 @@ export interface MenuItemNameDescTags{
   tags: string[];
 }
 
+export interface GeneratedImageResult {
+  data: string;
+  mimeType: string;
+}
+
 export interface GeminiConfig {
   apiKey: string;
   model?: string;
@@ -40,14 +45,14 @@ export interface GeminiConfig {
 
 export interface TranslationRequest {
   text: string;
-  sourceLanguage?: 'en' | 'ja' | 'vi' | 'auto';
-  context?: 'menu_item' | 'topping' | 'description' | 'general';
+  sourceLanguage?: "en" | "ja" | "vi" | "auto";
+  context?: "menu_item" | "topping" | "description" | "general";
 }
 
 export interface ChatRequest {
   message: string;
-  context: 'owner_assistance' | 'customer_support' | 'menu_help';
-  language?: 'en' | 'ja' | 'vi';
+  context: "owner_assistance" | "customer_support" | "menu_help";
+  language?: "en" | "ja" | "vi";
 }
 
 export interface ChatResponse {
@@ -62,26 +67,32 @@ class GeminiHelper {
 
   constructor(config: GeminiConfig) {
     if (!config.apiKey) {
-      throw new Error('Gemini API key is required');
+      throw new Error("Gemini API key is required");
     }
 
     this.genAI = new GoogleGenerativeAI(config.apiKey);
-    this.model = this.genAI.getGenerativeModel({ 
-      model: config.model || 'gemini-2.0-flash' 
+    this.model = this.genAI.getGenerativeModel({
+      model: config.model || "gemini-3.1-flash-preview",
     });
   }
 
   /**
    * Translate text to multiple languages for restaurant menus
    */
-  async translateMenuText(request: TranslationRequest): Promise<TranslationResult> {
-    const { text, sourceLanguage = 'auto', context = 'menu_item' } = request;
+  async translateMenuText(
+    request: TranslationRequest,
+  ): Promise<TranslationResult> {
+    const { text, sourceLanguage = "auto", context = "menu_item" } = request;
 
     const contextPrompts = {
-      menu_item: 'This is a restaurant menu item name. Provide accurate, appetizing translations.',
-      topping: 'This is a food topping or ingredient. Provide accurate culinary translations.',
-      description: 'This is a restaurant menu item description. Provide detailed, appetizing translations.',
-      general: 'This is general restaurant-related text. Provide accurate translations.'
+      menu_item:
+        "This is a restaurant menu item name. Provide accurate, appetizing translations.",
+      topping:
+        "This is a food topping or ingredient. Provide accurate culinary translations.",
+      description:
+        "This is a restaurant menu item description. Provide detailed, appetizing translations.",
+      general:
+        "This is general restaurant-related text. Provide accurate translations.",
     };
 
     const prompt = `
@@ -112,27 +123,27 @@ Text: "${text}"
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const textResponse = response.text();
-      
+
       // Extract JSON from the response
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
+        throw new Error("No valid JSON found in response");
       }
 
       const translations = JSON.parse(jsonMatch[0]);
-      
+
       // Validate the response structure
       if (!translations.en || !translations.ja || !translations.vi) {
-        throw new Error('Incomplete translation response');
+        throw new Error("Incomplete translation response");
       }
 
       return translations as TranslationResult;
     } catch (error) {
-      await logger.error('gemini-translation', 'Gemini translation error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        text
+      await logger.error("gemini-translation", "Gemini translation error", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        text,
       });
-      
+
       // Fallback to basic translation pattern
       return {
         en: `${text} (English)`,
@@ -145,7 +156,10 @@ Text: "${text}"
   /**
    * Generate restaurant content using AI
    */
-  async generateContent(prompt: string, context: string = 'general'): Promise<string> {
+  async generateContent(
+    prompt: string,
+    context: string = "general",
+  ): Promise<string> {
     const contextualPrompt = `
 You are an AI assistant for a restaurant management system. 
 Context: ${context}
@@ -160,10 +174,71 @@ Please provide a helpful, professional response in plain text.
       const response = await result.response;
       return response.text();
     } catch (error) {
-      await logger.error('gemini-content-generation', 'Gemini content generation error', {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-      throw new Error('Failed to generate content');
+      await logger.error(
+        "gemini-content-generation",
+        "Gemini content generation error",
+        {
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+      );
+      throw new Error("Failed to generate content");
+    }
+  }
+
+  /**
+   * Generate a single raster image. Gemini image models return image bytes as
+   * inline data; callers own moderation, persistence, and fallback behavior.
+   */
+  async generateImage(
+    prompt: string,
+    context: string = "general",
+  ): Promise<GeneratedImageResult> {
+    const contextualPrompt = `
+You are an AI image generation assistant for a restaurant operations platform.
+Context: ${context}
+
+${prompt}
+`;
+
+    try {
+      const result = await this.model.generateContent({
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: contextualPrompt }],
+          },
+        ],
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"],
+        },
+      } as never);
+      const response = await result.response;
+      const parts = response.candidates?.[0]?.content?.parts ?? [];
+      const imagePart = parts.find(
+        (part) => "inlineData" in part && part.inlineData,
+      );
+
+      if (
+        !imagePart ||
+        !("inlineData" in imagePart) ||
+        !imagePart.inlineData?.data
+      ) {
+        throw new Error("No image returned from Gemini image model");
+      }
+
+      return {
+        data: imagePart.inlineData.data,
+        mimeType: imagePart.inlineData.mimeType || "image/png",
+      };
+    } catch (error) {
+      await logger.error(
+        "gemini-image-generation",
+        "Gemini image generation error",
+        {
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+      );
+      throw new Error("Failed to generate image");
     }
   }
 
@@ -171,18 +246,21 @@ Please provide a helpful, professional response in plain text.
    * Chat interface for owner/customer assistance (future feature)
    */
   async chat(request: ChatRequest): Promise<ChatResponse> {
-    const { message, context, language = 'en' } = request;
+    const { message, context, language = "en" } = request;
 
     const contextPrompts = {
-      owner_assistance: 'You are helping a restaurant owner manage their business.',
-      customer_support: 'You are helping a restaurant customer with their experience.',
-      menu_help: 'You are helping with menu-related questions and recommendations.'
+      owner_assistance:
+        "You are helping a restaurant owner manage their business.",
+      customer_support:
+        "You are helping a restaurant customer with their experience.",
+      menu_help:
+        "You are helping with menu-related questions and recommendations.",
     };
 
     const languagePrompts = {
-      en: 'Respond in English.',
-      ja: 'Respond in Japanese (日本語).',
-      vi: 'Respond in Vietnamese (Tiếng Việt).'
+      en: "Respond in English.",
+      ja: "Respond in Japanese (日本語).",
+      vi: "Respond in Vietnamese (Tiếng Việt).",
     };
 
     const prompt = `
@@ -197,26 +275,30 @@ Provide a helpful, professional response that assists with their restaurant-rela
     try {
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      
+
       return {
         response: response.text(),
         language: language,
-        confidence: 0.95 // Placeholder - Gemini doesn't provide confidence scores
+        confidence: 0.95, // Placeholder - Gemini doesn't provide confidence scores
       };
     } catch (error) {
-      console.error('Gemini chat error:', error);
-      throw new Error('Failed to process chat request');
+      console.error("Gemini chat error:", error);
+      throw new Error("Failed to process chat request");
     }
   }
 
   /**
    * Generate menu descriptions from item names
    */
-  async generateMenuDescription(itemName: string, initialData: string, language: 'en' | 'ja' | 'vi' = 'en'): Promise<DescriptionResult> {
+  async generateMenuDescription(
+    itemName: string,
+    initialData: string,
+    language: "en" | "ja" | "vi" = "en",
+  ): Promise<DescriptionResult> {
     const languagePrompts = {
-      en: 'English',
-      ja: 'Japanese (日本語)',
-      vi: 'Vietnamese (Tiếng Việt)'
+      en: "English",
+      ja: "Japanese (日本語)",
+      vi: "Vietnamese (Tiếng Việt)",
     };
 
     const prompt = `
@@ -249,32 +331,36 @@ Dish name: "${itemName}"
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const textResponse = response.text();
-      
+
       // Extract JSON from the response
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
+        throw new Error("No valid JSON found in response");
       }
-	  const descriptions = JSON.parse(jsonMatch[0]);
-	  return descriptions;
+      const descriptions = JSON.parse(jsonMatch[0]);
+      return descriptions;
     } catch (error) {
-      console.error('Gemini description generation error:', error);
+      console.error("Gemini description generation error:", error);
       return {
-		en: `Description for "${itemName}" could not be generated at this time.`,
-		ja: `「${itemName}」の説明は現在生成できません。`,
-		vi: `Mô tả cho "${itemName}" hiện không thể tạo được.`,
-	  };
+        en: `Description for "${itemName}" could not be generated at this time.`,
+        ja: `「${itemName}」の説明は現在生成できません。`,
+        vi: `Mô tả cho "${itemName}" hiện không thể tạo được.`,
+      };
     }
   }
 
   /**
    * Generate restaurant descriptions from restaurant info
    */
-  async generateRestaurantDescription(restaurantName: string, contextInfo: string, language: 'en' | 'ja' | 'vi' = 'en'): Promise<DescriptionResult> {
+  async generateRestaurantDescription(
+    restaurantName: string,
+    contextInfo: string,
+    language: "en" | "ja" | "vi" = "en",
+  ): Promise<DescriptionResult> {
     const languagePrompts = {
-      en: 'English',
-      ja: 'Japanese (日本語)',
-      vi: 'Vietnamese (Tiếng Việt)'
+      en: "English",
+      ja: "Japanese (日本語)",
+      vi: "Vietnamese (Tiếng Việt)",
     };
 
     const prompt = `
@@ -307,32 +393,36 @@ Restaurant: "${restaurantName}"
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const textResponse = response.text();
-      
+
       // Extract JSON from the response
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
+        throw new Error("No valid JSON found in response");
       }
-	  const descriptions = JSON.parse(jsonMatch[0]);
-	  return descriptions;
+      const descriptions = JSON.parse(jsonMatch[0]);
+      return descriptions;
     } catch (error) {
-      console.error('Gemini restaurant description generation error:', error);
+      console.error("Gemini restaurant description generation error:", error);
       return {
-		en: `Description for "${restaurantName}" could not be generated at this time.`,
-		ja: `「${restaurantName}」の説明は現在生成できません。`,
-		vi: `Mô tả cho "${restaurantName}" hiện không thể tạo được.`,
-	  };
+        en: `Description for "${restaurantName}" could not be generated at this time.`,
+        ja: `「${restaurantName}」の説明は現在生成できません。`,
+        vi: `Mô tả cho "${restaurantName}" hiện không thể tạo được.`,
+      };
     }
   }
 
   /**
    * Generate restaurant descriptions from restaurant info
    */
-  async generateMenuItemNameDescTags(itemName: string, contextInfo: string, language: 'en' | 'ja' | 'vi' = 'en'): Promise<MenuItemNameDescTags> {
+  async generateMenuItemNameDescTags(
+    itemName: string,
+    contextInfo: string,
+    language: "en" | "ja" | "vi" = "en",
+  ): Promise<MenuItemNameDescTags> {
     const languagePrompts = {
-      en: 'English',
-      ja: 'Japanese (日本語)',
-      vi: 'Vietnamese (Tiếng Việt)'
+      en: "English",
+      ja: "Japanese (日本語)",
+      vi: "Vietnamese (Tiếng Việt)",
     };
 
     const prompt = `
@@ -384,12 +474,12 @@ Please provide output in this exact JSON format (no additional text):
       // Extract JSON from the response
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
+        throw new Error("No valid JSON found in response");
       }
-	  const descriptions = JSON.parse(jsonMatch[0]);
-	  return descriptions;
+      const descriptions = JSON.parse(jsonMatch[0]);
+      return descriptions;
     } catch (error) {
-      console.error('Gemini restaurant description generation error:', error);
+      console.error("Gemini restaurant description generation error:", error);
       return {
         name_en: `Name for "${itemName}" could not be generated at this time.`,
         name_ja: `「${itemName}」の名前は現在生成できません。`,
@@ -397,7 +487,7 @@ Please provide output in this exact JSON format (no additional text):
         description_en: `Description for "${itemName}" could not be generated at this time.`,
         description_ja: `「${itemName}」の説明は現在生成できません。`,
         description_vi: `Mô tả cho "${itemName}" hiện không thể tạo được.`,
-        tags: ['restaurant', 'menu', 'food', 'cuisine'],
+        tags: ["restaurant", "menu", "food", "cuisine"],
         // Default tags, can be customized later
       };
     }
@@ -423,11 +513,11 @@ You are a restaurant business consultant analyzing a menu item.
 
 Item Details:
 - Name: ${itemData.name}
-- Description: ${itemData.description || 'No description'}
+- Description: ${itemData.description || "No description"}
 - Price: $${itemData.price}
 - Category: ${itemData.category}
-- Average Rating: ${itemData.ratings || 'No ratings'}
-- Total Orders: ${itemData.orders || 'No data'}
+- Average Rating: ${itemData.ratings || "No ratings"}
+- Total Orders: ${itemData.orders || "No data"}
 
 Provide analysis in this JSON format:
 {
@@ -448,39 +538,68 @@ Focus on:
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const textResponse = response.text();
-      
+
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0]);
       }
-      
+
       // Fallback response
       return {
-        suggestions: ['Consider adding more descriptive language to the menu item'],
-        marketingTips: ['Highlight unique ingredients or cooking methods'],
-        pricingAdvice: 'Current pricing appears reasonable for the category'
+        suggestions: [
+          "Consider adding more descriptive language to the menu item",
+        ],
+        marketingTips: ["Highlight unique ingredients or cooking methods"],
+        pricingAdvice: "Current pricing appears reasonable for the category",
       };
     } catch (error) {
-      console.error('Gemini menu analysis error:', error);
+      console.error("Gemini menu analysis error:", error);
       return {
-        suggestions: ['Unable to analyze at this time'],
-        marketingTips: ['Try updating the description'],
-        pricingAdvice: 'Review competitor pricing'
+        suggestions: ["Unable to analyze at this time"],
+        marketingTips: ["Try updating the description"],
+        pricingAdvice: "Review competitor pricing",
       };
     }
   }
 }
 
 // Factory function to create Gemini helper instance
-export function createGeminiHelper(config?: Partial<GeminiConfig>): GeminiHelper {
+export function createGeminiHelper(
+  config?: Partial<GeminiConfig>,
+): GeminiHelper {
   const apiKey = config?.apiKey || process.env.GEMINI_API_KEY;
   const model =
     config?.model ||
     process.env.GEMINI_MODEL ||
     process.env.NEXT_PUBLIC_GEMINI_MODEL;
-  
+
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY environment variable is required');
+    throw new Error("GEMINI_API_KEY environment variable is required");
+  }
+
+  return new GeminiHelper({
+    apiKey,
+    model,
+  });
+}
+
+export function createGeminiImageHelper(
+  config?: Partial<GeminiConfig>,
+): GeminiHelper {
+  const apiKey = config?.apiKey || process.env.GEMINI_API_KEY;
+  const model =
+    config?.model ||
+    process.env.GEMINI_IMAGE_MODEL ||
+    process.env.NEXT_PUBLIC_GEMINI_IMAGE_MODEL;
+
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY environment variable is required");
+  }
+
+  if (!model) {
+    throw new Error(
+      "NEXT_PUBLIC_GEMINI_IMAGE_MODEL environment variable is required",
+    );
   }
 
   return new GeminiHelper({

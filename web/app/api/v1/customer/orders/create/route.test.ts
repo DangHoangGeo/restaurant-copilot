@@ -23,6 +23,7 @@ jest.mock("@/lib/logger", () => ({
 
 import { NextRequest } from "next/server";
 import { POST } from "./route";
+import { logger } from "@/lib/logger";
 import {
   appendItemsToCustomerSession,
   getCustomerSessionOrder,
@@ -32,6 +33,7 @@ import {
 const mockedAppendItemsToCustomerSession = jest.mocked(appendItemsToCustomerSession);
 const mockedGetCustomerSessionOrder = jest.mocked(getCustomerSessionOrder);
 const mockedIsCustomerSessionActiveStatus = jest.mocked(isCustomerSessionActiveStatus);
+const mockedLogger = jest.mocked(logger);
 
 describe("POST /api/v1/customer/orders/create", () => {
   const restaurantId = "55555555-5555-4555-8555-555555555555";
@@ -152,5 +154,68 @@ describe("POST /api/v1/customer/orders/create", () => {
       success: false,
       error: "Invalid or expired session",
     });
+  });
+
+  it("logs structured Supabase RPC errors when item appends fail", async () => {
+    mockedGetCustomerSessionOrder.mockResolvedValue({
+      id: "order-1",
+      restaurant_id: restaurantId,
+      table_id: "66666666-6666-4666-8666-666666666666",
+      session_id: sessionId,
+      guest_count: 2,
+      status: "new",
+      total_amount: 0,
+      created_at: "2026-04-22T00:00:00.000Z",
+      updated_at: "2026-04-22T00:00:00.000Z",
+    });
+    mockedIsCustomerSessionActiveStatus.mockReturnValue(true);
+    mockedAppendItemsToCustomerSession.mockRejectedValue({
+      code: "42702",
+      details: "It could refer to either a PL/pgSQL variable or a table column.",
+      hint: null,
+      message: 'column reference "total_amount" is ambiguous',
+      status: 400,
+    });
+
+    const request = new NextRequest("https://example.com/api/v1/customer/orders/create", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        host: "example.com",
+        origin: "https://example.com",
+      },
+      body: JSON.stringify({
+        restaurantId,
+        sessionId,
+        items: [
+          {
+            menuItemId: "22222222-2222-4222-8222-222222222222",
+            quantity: 1,
+          },
+        ],
+      }),
+    });
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(payload).toEqual({
+      success: false,
+      error: "Failed to save order items",
+    });
+    expect(mockedLogger.error).toHaveBeenCalledWith(
+      "orders-create-api",
+      "Unexpected order creation failure",
+      {
+        error: {
+          code: "42702",
+          details: "It could refer to either a PL/pgSQL variable or a table column.",
+          hint: null,
+          message: 'column reference "total_amount" is ambiguous',
+          status: 400,
+        },
+      },
+    );
   });
 });

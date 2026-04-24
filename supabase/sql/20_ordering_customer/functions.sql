@@ -194,7 +194,7 @@ DECLARE
   v_toppings_total numeric(12,2);
   v_unit_price numeric(12,2);
   v_topping_count integer;
-  v_order_increment numeric(12,2) := 0;
+  v_new_total numeric(12,2) := 0;
   v_today_weekday integer := CASE
     WHEN EXTRACT(DOW FROM now()) = 0 THEN 7
     ELSE EXTRACT(DOW FROM now())::integer
@@ -209,11 +209,11 @@ BEGIN
     RAISE EXCEPTION 'order_items must be a non-empty JSON array';
   END IF;
 
-  SELECT id, total_amount, status
+  SELECT o.id, o.total_amount, o.status
   INTO v_order
-  FROM orders
-  WHERE restaurant_id = p_restaurant_id
-    AND session_id = p_session_id
+  FROM orders AS o
+  WHERE o.restaurant_id = p_restaurant_id
+    AND o.session_id = p_session_id
   FOR UPDATE;
 
   IF NOT FOUND THEN
@@ -282,7 +282,6 @@ BEGIN
     END IF;
 
     v_unit_price := COALESCE(v_base_price, 0) + COALESCE(v_toppings_total, 0);
-    v_order_increment := v_order_increment + (v_unit_price * v_quantity);
 
     INSERT INTO order_items (
       id,
@@ -313,15 +312,20 @@ BEGIN
     );
   END LOOP;
 
-  UPDATE orders
-  SET total_amount = COALESCE(total_amount, 0) + v_order_increment,
+  SELECT COALESCE(SUM(oi.price_at_order * oi.quantity), 0)
+  INTO v_new_total
+  FROM order_items oi
+  WHERE oi.order_id = v_order.id
+    AND oi.status != 'canceled';
+
+  UPDATE orders AS o
+  SET total_amount = v_new_total,
       status = 'serving',
       updated_at = v_updated_at
-  WHERE id = v_order.id
-  RETURNING orders.total_amount
-  INTO total_amount;
+  WHERE o.id = v_order.id;
 
   order_id := v_order.id;
+  total_amount := v_new_total;
   updated_at := v_updated_at;
   RETURN NEXT;
 END;

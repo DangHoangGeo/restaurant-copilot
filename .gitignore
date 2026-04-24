@@ -10,6 +10,7 @@
 
 *.plist
 mobile/SOder/SOder.xcodeproj
+*.pbxproj
 
 # next.js
 /.next/
