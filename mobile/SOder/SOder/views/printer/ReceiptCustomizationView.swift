@@ -27,14 +27,14 @@ struct ReceiptCustomizationView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("save".localized) { persistSettings(showAlert: true) }
+                Button("save".localized) { persistSettings() }
                     .fontWeight(.semibold)
                     .accessibilityLabel("accessibility_save_printer_label".localized)
                     .accessibilityHint("accessibility_save_printer_hint".localized)
             }
         }
         .sheet(isPresented: $showingPreview) {
-            ReceiptPreviewView()
+            ReceiptPreviewView(headerOverride: editingHeader)
         }
         .alert("receipt_settings_saved_title".localized, isPresented: $showSaveSuccessAlert) {
             Button("ok".localized) { }
@@ -141,15 +141,14 @@ struct ReceiptCustomizationView: View {
     private var actionsSection: some View {
         VStack(spacing: Spacing.md) {
             Button {
-                persistSettings(showAlert: false)
                 showingPreview = true
             } label: {
                 HStack {
                     Image(systemName: "doc.text.magnifyingglass")
-                    Text("save_and_preview".localized)
+                    Text("preview_receipt_button".localized)
                 }
             }
-            .buttonStyle(PrimaryButtonStyle())
+            .buttonStyle(SecondaryButtonStyle())
 
             Text("printer_receipt_preview_help".localized)
                 .font(.caption)
@@ -192,16 +191,18 @@ struct ReceiptCustomizationView: View {
         .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
     }
 
-    private func persistSettings(showAlert: Bool) {
+    private func persistSettings() {
         settingsManager.setReceiptTheme(.standard)
         settingsManager.setKitchenTheme(.standard)
         settingsManager.updateReceiptHeader(editingHeader)
-        if showAlert { showSaveSuccessAlert = true }
+        showSaveSuccessAlert = true
     }
 }
 
 // MARK: - Preview (uses real header/footer + fake order data)
 struct ReceiptPreviewView: View {
+    var headerOverride: ReceiptHeaderSettings?
+
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @State private var previewText = ""
@@ -329,7 +330,7 @@ struct ReceiptPreviewView: View {
         dateFormatter.timeStyle = .short
         
         // Get restaurant settings
-        let restaurantSettings = settingsManager.receiptHeader
+        let restaurantSettings = headerOverride ?? settingsManager.receiptHeader
         
         return [
             "restaurant": [

@@ -1101,6 +1101,7 @@
 "printer_kitchen_behavior_same" = "Dùng cùng một máy in";
 "printer_owner_flow_title" = "Những gì bạn có thể làm";
 "printer_owner_setup_subtitle" = "Chọn máy in, giữ thiết lập đơn giản và thử in trước giờ phục vụ.";
+"printer_standard_receipt_title" = "Hóa đơn tiêu chuẩn";
 "printer_standard_receipt_subtitle" = "Dùng hóa đơn tiêu chuẩn và chỉ chỉnh vài thông tin kinh doanh cần thiết.";
 "printer_quick_actions_title" = "Thử nhanh";
 "printer_support_tools_title" = "Công cụ hỗ trợ";
@@ -1113,6 +1114,7 @@
 "printer_setup_simple_subtitle" = "Phần lớn cửa hàng chỉ cần một máy in mạng cho hóa đơn. Chỉ thêm máy in bếp riêng khi đội ngũ thực sự cần.";
 "printer_network_priority_title" = "Ưu tiên máy in mạng";
 "printer_network_priority_subtitle" = "Màn hình này ưu tiên máy in trong mạng nội bộ. Bluetooth chỉ dùng khi bạn chủ động chuyển sang.";
+"printer_separate_options_title" = "Tùy chọn in riêng";
 "printer_use_separate_kitchen_title" = "Dùng máy in bếp riêng";
 "printer_use_separate_kitchen_subtitle" = "Phiếu bếp sẽ được in trên máy in thứ hai.";
 "printer_use_separate_kitchen_disabled" = "Hãy thêm máy in thứ hai trước nếu bạn muốn in phiếu bếp riêng.";
@@ -1129,11 +1131,20 @@
 "printer_advanced_subtitle_simple" = "Chỉ dùng các công cụ này khi cần xử lý sự cố sâu hơn.";
 "printer_role_receipt" = "Máy in hóa đơn";
 "printer_role_kitchen" = "Máy in bếp";
+"printer_default_receipt_name" = "Máy in hóa đơn";
+"printer_default_kitchen_name" = "Máy in bếp";
+"printer_default_label_name" = "Máy in nhãn";
+"printer_type_selection_label" = "Loại in";
+"printer_type_selection_hint" = "Chọn máy in này dùng cho việc gì. Tên bên dưới sẽ đổi theo lựa chọn này.";
 "printer_add_network_printer_help" = "Đặt tên dễ hiểu cho nhân viên, sau đó nhập địa chỉ hiển thị trên trang mạng của máy in.";
+"printer_name_help" = "Dùng tên ngắn để nhân viên dễ nhận ra trên màn hình thiết lập.";
+"printer_ip_address_help" = "Địa chỉ mặc định được điền sẵn để thiết lập nhanh. Hãy thay bằng IP hiển thị trên máy in.";
+"printer_port_help" = "Phần lớn máy in hóa đơn mạng dùng cổng 9100. Chỉ đổi khi hướng dẫn máy in yêu cầu.";
 "printer_more_options_title" = "Tùy chọn thêm";
 "printer_select_placeholder" = "Chọn máy in";
 "printer_optional_details_title" = "Thông tin tùy chọn";
 "printer_receipt_preview_help" = "Bản xem trước dùng bố cục hóa đơn tiêu chuẩn, nên chủ quán chỉ cần kiểm tra thông tin cửa hàng và ngôn ngữ.";
+"preview_receipt_button" = "Xem trước hóa đơn";
 "printer_setup_preview_title" = "Nhân viên sẽ in gì";
 "printer_setup_preview_subtitle" = "Xem trước hóa đơn tiêu chuẩn và phiếu bếp trước khi bắt đầu ca làm.";
 "printer_setup_preview_routing" = "Điều hướng in";
