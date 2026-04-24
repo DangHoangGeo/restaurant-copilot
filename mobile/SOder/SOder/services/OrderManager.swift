@@ -205,87 +205,53 @@ class OrderManager: ObservableObject {
             .execute()
             .value
 
-        // Now save all order items
+        let itemsToSave = (localOrder.order_items ?? []).filter { $0.status != .canceled }
+        guard !itemsToSave.isEmpty else {
+            await rollbackCreatedOrder(createdOrder.id)
+            throw OrderManagerError.generalError("error_confirm_order_empty".localized)
+        }
+
+        // Now save all order items. Confirmation must be all-or-nothing so the
+        // kitchen never receives a partial order while the staff sees success.
         var savedOrderItems: [OrderItem] = []
-        if let items = localOrder.order_items {
-            print("💾 Saving \(items.count) order items to database")
-            
-            // Debug: Print all items before saving
-            for (index, item) in items.enumerated() {
-                print("🔍 Local item \(index + 1): id=\(item.id), menu_item=\(item.menu_item_id), qty=\(item.quantity), price=\(item.price_at_order)")
-            }
-            
-            for (index, item) in items.enumerated() {
-                print("💾 Saving item \(index + 1)/\(items.count): \(item.menu_item?.displayName ?? "Unknown") x\(item.quantity)")
-                
-                do {
-                    let orderItemPayload = NewOrderItemPayload(
-                        order_id: createdOrder.id,
-                        menu_item_id: item.menu_item_id,
-                        quantity: item.quantity,
-                        notes: item.notes,
-                        restaurant_id: restaurantId,
-                        price_at_order: item.price_at_order,
-                        status: "new",
-                        menu_item_size_id: item.menu_item_size_id,
-                        topping_ids: item.topping_ids ?? [] // Ensure non-nil array
-                    )
+        print("💾 Saving \(itemsToSave.count) order items to database")
 
-                    let savedItem: OrderItem = try await supabaseManager.client
-                        .from("order_items")
-                        .insert(orderItemPayload, returning: .representation)
-                        .select("*, menu_item:menu_items(*), menu_item_size:menu_item_sizes(*)")
-                        .single()
-                        .execute()
-                        .value
+        for (index, item) in itemsToSave.enumerated() {
+            print("💾 Saving item \(index + 1)/\(itemsToSave.count): \(item.menu_item?.displayName ?? "Unknown") x\(item.quantity)")
 
-                    savedOrderItems.append(savedItem)
-                    print("✅ Successfully saved item \(index + 1): \(savedItem.id)")
-                    
-                } catch {
-                    print("❌ Error saving item \(index + 1): \(error)")
-                    
-                    // Try without optional fields that might cause issues
-                    struct SimplifiedOrderItemPayload: Codable {
-                        let order_id: String
-                        let menu_item_id: String
-                        let quantity: Int
-                        let restaurant_id: String
-                        let price_at_order: Double
-                        let status: String
-                    }
-                    
-                    let simplifiedPayload = SimplifiedOrderItemPayload(
-                        order_id: createdOrder.id,
-                        menu_item_id: item.menu_item_id,
-                        quantity: item.quantity,
-                        restaurant_id: restaurantId,
-                        price_at_order: item.price_at_order,
-                        status: "new"
-                    )
-                    
-                    do {
-                        print("🔄 Retrying with simplified payload for item \(index + 1)")
-                        let savedItem: OrderItem = try await supabaseManager.client
-                            .from("order_items")
-                            .insert(simplifiedPayload, returning: .representation)
-                            .select("*, menu_item:menu_items(*)")
-                            .single()
-                            .execute()
-                            .value
-                        
-                        savedOrderItems.append(savedItem)
-                        print("✅ Successfully saved item \(index + 1) with simplified payload: \(savedItem.id)")
-                    } catch let retryError {
-                        print("❌ Failed even with simplified payload for item \(index + 1): \(retryError)")
-                        // Skip this item entirely - don't add duplicates
-                        continue
-                    }
-                }
+            do {
+                let orderItemPayload = NewOrderItemPayload(
+                    order_id: createdOrder.id,
+                    menu_item_id: item.menu_item_id,
+                    quantity: item.quantity,
+                    notes: item.notes,
+                    restaurant_id: restaurantId,
+                    price_at_order: item.price_at_order,
+                    status: "new",
+                    menu_item_size_id: item.menu_item_size_id,
+                    topping_ids: item.topping_ids ?? []
+                )
+
+                let savedItem: OrderItem = try await supabaseManager.client
+                    .from("order_items")
+                    .insert(orderItemPayload, returning: .representation)
+                    .select("*, menu_item:menu_items(*), menu_item_size:menu_item_sizes(*)")
+                    .single()
+                    .execute()
+                    .value
+
+                savedOrderItems.append(savedItem)
+                print("✅ Successfully saved item \(index + 1): \(savedItem.id)")
+            } catch {
+                print("❌ Error saving item \(index + 1). Rolling back order \(createdOrder.id): \(error)")
+                await rollbackCreatedOrder(createdOrder.id)
+                throw OrderManagerError.generalError(String(format: "error_confirm_order_item_save_failed".localized, index + 1))
             }
-            print("💾 Saved \(savedOrderItems.count)/\(items.count) items to database")
-        } else {
-            print("⚠️ No order items found in local order")
+        }
+
+        guard savedOrderItems.count == itemsToSave.count else {
+            await rollbackCreatedOrder(createdOrder.id)
+            throw OrderManagerError.generalError("error_confirm_order_incomplete".localized)
         }
 
         // Create final order with all items
@@ -295,6 +261,20 @@ class OrderManager: ObservableObject {
 
         print("Saved local draft order to database: \(finalOrder.id)")
         return finalOrder
+    }
+
+    @MainActor
+    private func rollbackCreatedOrder(_ orderId: String) async {
+        do {
+            try await supabaseManager.client
+                .from("orders")
+                .delete()
+                .eq("id", value: orderId)
+                .execute()
+            print("Rolled back partially saved order: \(orderId)")
+        } catch {
+            print("Failed to roll back partially saved order \(orderId): \(error)")
+        }
     }
 
     @MainActor
@@ -1001,17 +981,22 @@ class OrderManager: ObservableObject {
     ) async throws {
         struct CheckoutUpdatePayload: Codable {
             let status: String
+            let payment_method: String
+            let discount_amount: Double
+            let tax_amount: Double
+            let tip_amount: Double
             let total_amount: Double
             let updated_at: String
         }
 
         let updatedAt = ISO8601DateFormatter().string(from: Date())
-        let persistedSubtotal = mergedOrders()
-            .first(where: { $0.id == orderId })?
-            .subtotal ?? max(0, totalAmount - taxAmount + discountAmount - tipAmount)
         let payload = CheckoutUpdatePayload(
             status: OrderStatus.completed.rawValue,
-            total_amount: persistedSubtotal,
+            payment_method: paymentMethod,
+            discount_amount: discountAmount,
+            tax_amount: taxAmount,
+            tip_amount: tipAmount,
+            total_amount: totalAmount,
             updated_at: updatedAt
         )
 
@@ -1028,7 +1013,7 @@ class OrderManager: ObservableObject {
                 orders[index].discount_amount = discountAmount
                 orders[index].tax_amount = taxAmount
                 orders[index].tip_amount = tipAmount
-                orders[index].total_amount = persistedSubtotal
+                orders[index].total_amount = totalAmount
                 orders[index].updated_at = updatedAt
                 orders.remove(at: index)
             }
@@ -1039,7 +1024,7 @@ class OrderManager: ObservableObject {
                 allOrders[index].discount_amount = discountAmount
                 allOrders[index].tax_amount = taxAmount
                 allOrders[index].tip_amount = tipAmount
-                allOrders[index].total_amount = persistedSubtotal
+                allOrders[index].total_amount = totalAmount
                 allOrders[index].updated_at = updatedAt
             }
         } catch {
@@ -1384,7 +1369,8 @@ class OrderManager: ObservableObject {
         if let orderItemsUpdate = realtimeChannel?.postgresChange(
             UpdateAction.self,
             schema: "public",
-            table: "order_items"
+            table: "order_items",
+            filter: "restaurant_id=eq.\(restaurantId)"
         ) {
             Task { [weak self] in
                 for await _ in orderItemsUpdate {
@@ -1400,7 +1386,8 @@ class OrderManager: ObservableObject {
         if let orderItemsInsertion = realtimeChannel?.postgresChange(
             InsertAction.self,
             schema: "public",
-            table: "order_items"
+            table: "order_items",
+            filter: "restaurant_id=eq.\(restaurantId)"
         ) {
             Task { [weak self] in
                 for await _ in orderItemsInsertion {
@@ -1771,17 +1758,10 @@ class OrderManager: ObservableObject {
         outputData.append("\n\n\n".data(using: encoding) ?? Data()) // Additional line feeds before cutting
         outputData.append(Data(PrinterConfig.Commands.cutPaperAdvanced)) // Advanced cut with feed
         
-        // Use kitchen printer if configured, otherwise use default
-        switch settingsManager.printerMode {
-        case .single:
-            try await printerService.connectAndSendData(data: outputData)
-        case .dual:
-            if let kitchenConfig = settingsManager.getKitchenPrinterConfig() {
-                try await printerService.connectAndSendData(data: outputData, to: kitchenConfig)
-            } else {
-                try await printerService.connectAndSendData(data: outputData)
-            }
+        guard let kitchenConfig = settingsManager.getRequiredPrinterConfig(for: .kitchen) else {
+            throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
+        try await printerService.connectAndSendData(data: outputData, target: .kitchen, to: kitchenConfig)
     }
     
     @MainActor
@@ -1915,17 +1895,10 @@ class OrderManager: ObservableObject {
         
         let printData = Data(overview.utf8)
         
-        // Use kitchen printer if configured, otherwise use default
-        switch settingsManager.printerMode {
-        case .single:
-            try await printerService.connectAndSendData(data: printData)
-        case .dual:
-            if let kitchenConfig = settingsManager.getKitchenPrinterConfig() {
-                try await printerService.connectAndSendData(data: printData, to: kitchenConfig)
-            } else {
-                try await printerService.connectAndSendData(data: printData)
-            }
+        guard let kitchenConfig = settingsManager.getRequiredPrinterConfig(for: .kitchen) else {
+            throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
+        try await printerService.connectAndSendData(data: printData, target: .kitchen, to: kitchenConfig)
     }
     
     // MARK: - Manual Testing Functions

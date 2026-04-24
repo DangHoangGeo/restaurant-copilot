@@ -117,7 +117,7 @@
 "complete_checkout" = "チェックアウト完了";
 "print_receipt_only" = "レシートのみ印刷";
 "checkout_complete" = "チェックアウト完了";
-"checkout_success_message" = "注文が完了し、レシートが正常に印刷されました。";
+"checkout_success_message" = "注文が正常に完了しました。";
 "insufficient_amount" = "金額不足";
 "processing" = "処理中...";
 
@@ -166,8 +166,11 @@
 "printer_invalid_address_format_error" = "プリンターのアドレス形式が無効です";
 "printer_unable_to_reach_error" = "プリンターに接続できません";
 "printer_bluetooth_connection_failed_error" = "Bluetooth接続に失敗";
+"printer_bluetooth_not_supported_error" = "このビルドではBluetoothプリンターに対応していません。ネットワークプリンターを使用するか、Bluetoothプリンターモジュールを有効にしてください。";
 "printer_disconnected_log" = "プリンターから切断されました";
 "printer_no_printer_connected_error" = "プリンターが接続されていません";
+"printer_no_kitchen_printer_configured_error" = "キッチンプリンターが設定されていません。印刷前にキッチン用プリンターを割り当ててください。";
+"printer_no_checkout_printer_configured_error" = "レシートプリンターが設定されていません。印刷前にレシート用プリンターを割り当ててください。";
 "printer_test_receipt_success_log" = "テストレシートが正常に印刷されました";
 "printer_test_print_failed_log" = "テスト印刷に失敗: %@";
 "printer_order_receipt_success_log" = "注文 %@ のレシートが印刷されました";
@@ -332,6 +335,9 @@
 "error_cancel_item" = "アイテムのキャンセルに失敗しました。もう一度お試しください。";
 "error_update_item_status" = "アイテムのステータスを更新できませんでした。もう一度お試しください。";
 "error_cancel_order_status" = "注文をキャンセルできません。現在のステータス: %@";
+"error_confirm_order_empty" = "キッチンに送信する前に、少なくとも1品を追加してください。";
+"error_confirm_order_item_save_failed" = "%d番目の品目を保存できませんでした。注文は送信されておらず、ドラフトは残っています。";
+"error_confirm_order_incomplete" = "注文を完全に保存できませんでした。ドラフトは残っています。";
 "kitchen_print_failure" = "キッチンサマリーの印刷に失敗しました。プリンターの接続を確認してください。";
 "kitchen_item_print_failure" = "キッチンアイテムの印刷に失敗しました。プリンターの接続を確認してください。";
 
@@ -888,6 +894,10 @@
 "test_item_2_name" = "味噌汁";
 "test_item_3_name" = "緑茶";
 "test_item_1_notes" = "追加のソース";
+"test_size_large" = "大";
+"test_size_regular" = "普通";
+"test_topping_cheese" = "チーズ";
+"test_topping_egg" = "卵";
 "test_special_instructions" = "箸の代わりにフォークを提供してください";
 "test_thank_you_message" = "ご来店ありがとうございます！";
 "test_promotional_message" = "次回のご来店で10%オフのクーポンを使用してください";
@@ -926,14 +936,17 @@
 "tpl_notes" = "メモ";
 "tpl_item" = "アイテム";
 "tpl_price" = "価格";
+"tpl_size" = "サイズ";
+"tpl_toppings" = "トッピング";
 "tpl_total_quantity" = "合計数量";
 "tpl_tables" = "テーブル";
 "tpl_status" = "ステータス";
+"tpl_paid" = "支払い済み";
 "tpl_urgent_high_priority" = "緊急 - 高優先度";
 "tpl_completed" = "完了";
 "tpl_kitchen_summary" = "キッチンサマリー";
 "tpl_phone" = "電話";
-"tpl_official_receipt" = "公式レシート";
+"tpl_official_receipt" = "領収書";
 "tpl_printed" = "印刷済み";
 
 // MARK: - Missing Keys Added
@@ -1051,6 +1064,10 @@
 "order_detail_placed_time" = "%@に注文";
 "order_detail_manage_title" = "管理";
 "checkout_order_reference" = "ID: %@";
+"checkout_print_official_receipt_title" = "領収書として印刷";
+"checkout_print_official_receipt_hint" = "お客様が領収書を希望する場合に使用します。";
+"checkout_print_receipt_title" = "レシートを印刷";
+"checkout_print_receipt_hint" = "多くのお客様は不要なため、初期設定ではオフです。";
 "order_status_update_items_failed" = "一部の商品の更新に失敗しました。";
 
 // MARK: - Order Item Detail
@@ -1145,6 +1162,11 @@
 "printer_optional_details_title" = "任意の情報";
 "printer_receipt_preview_help" = "プレビューは標準レシートのレイアウトを使うため、店舗情報と言語だけ確認すれば大丈夫です。";
 "preview_receipt_button" = "レシートをプレビュー";
+"receipt_render_mode_title" = "印刷品質";
+"receipt_render_mode_hint" = "日本語やベトナム語がきれいに印刷されない場合は画像印刷を使います。";
+"receipt_render_mode_automatic" = "自動";
+"receipt_render_mode_text" = "テキスト";
+"receipt_render_mode_image" = "画像";
 "printer_setup_preview_title" = "スタッフに見える印刷内容";
 "printer_setup_preview_subtitle" = "営業前に標準レシートとキッチン伝票の見え方を確認できます。";
 "printer_setup_preview_routing" = "印刷の振り分け";

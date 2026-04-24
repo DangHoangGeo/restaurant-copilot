@@ -90,7 +90,36 @@ struct ReceiptCustomizationView: View {
                 title: "kitchen_language_title".localized,
                 selection: $settingsManager.selectedKitchenLanguage
             )
+
+            receiptRenderModeRow
         }
+    }
+
+    private var receiptRenderModeRow: some View {
+        HStack {
+            Image(systemName: "photo.on.rectangle")
+                .foregroundColor(.appPrimary)
+
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text("receipt_render_mode_title".localized)
+                    .font(.bodyMedium.weight(.semibold))
+                    .foregroundColor(.appTextPrimary)
+
+                Text("receipt_render_mode_hint".localized)
+                    .font(.caption)
+                    .foregroundColor(.appTextSecondary)
+            }
+
+            Spacer()
+
+            Picker("", selection: $settingsManager.receiptPrintRenderMode) {
+                ForEach(ReceiptPrintRenderMode.allCases, id: \.self) { mode in
+                    Text(mode.displayName).tag(mode)
+                }
+            }
+            .pickerStyle(.menu)
+        }
+        .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
     }
 
     private var businessDetailsSection: some View {
@@ -207,6 +236,14 @@ struct ReceiptPreviewView: View {
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
     @State private var previewText = ""
     @State private var isLoading = true
+
+    private var previewLanguage: PrintLanguage {
+        settingsManager.selectedReceiptLanguage
+    }
+
+    private var previewHeader: ReceiptHeaderSettings {
+        headerOverride ?? settingsManager.receiptHeader
+    }
     
     // Localize a key for a specific receipt language (independent of UI language)
     private func tr(_ key: String, for language: PrintLanguage) -> String {
@@ -250,46 +287,176 @@ struct ReceiptPreviewView: View {
     }
     
     private var receiptPreviewContent: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(previewText)
-                    .font(.system(.caption, design: .monospaced))
-                    .lineSpacing(1)
+        VStack(alignment: .center, spacing: Spacing.sm) {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                VStack(alignment: .center, spacing: Spacing.xs) {
+                    Text(previewRestaurantName)
+                        .font(.system(size: 20, weight: .bold, design: .default))
+                        .foregroundColor(.black)
+                        .multilineTextAlignment(.center)
+
+                    if !previewHeader.address.isEmpty {
+                        Text(previewHeader.address)
+                            .font(.system(size: 12, weight: .regular, design: .default))
+                            .foregroundColor(.black.opacity(0.78))
+                            .multilineTextAlignment(.center)
+                    }
+
+                    if !previewHeader.phone.isEmpty {
+                        Text("\(tr("tpl_phone", for: previewLanguage)): \(previewHeader.phone)")
+                            .font(.system(size: 12, weight: .regular, design: .default))
+                            .foregroundColor(.black.opacity(0.78))
+                    }
+
+                    if previewHeader.showTaxCode, !previewHeader.taxCode.isEmpty {
+                        Text("\(tr("tpl_tax_code", for: previewLanguage)): \(previewHeader.taxCode)")
+                            .font(.system(size: 11, weight: .regular, design: .default))
+                            .foregroundColor(.black.opacity(0.72))
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, Spacing.md)
+
+                Text(tr("tpl_receipt", for: previewLanguage))
+                    .font(.system(size: 15, weight: .bold, design: .default))
                     .foregroundColor(.black)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, Spacing.xs)
+
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    previewMetaRow(label: tr("tpl_order", for: previewLanguage), value: tr("test_order_id", for: previewLanguage))
+                    previewMetaRow(label: tr("tpl_table", for: previewLanguage), value: tr("test_table_name", for: previewLanguage))
+                    previewMetaRow(label: tr("tpl_date", for: previewLanguage), value: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none))
+                    previewMetaRow(label: tr("tpl_time", for: previewLanguage), value: DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short))
+                }
+                .padding(.top, Spacing.xs)
+
+                VStack(spacing: Spacing.sm) {
+                    previewItemRow(
+                        name: tr("test_item_1_name", for: previewLanguage),
+                        quantity: 2,
+                        total: "¥2,400",
+                        size: tr("test_size_large", for: previewLanguage),
+                        toppings: [tr("test_topping_cheese", for: previewLanguage), tr("test_topping_egg", for: previewLanguage)]
+                    )
+                    previewItemRow(name: tr("test_item_2_name", for: previewLanguage), quantity: 1, total: "¥150", size: tr("test_size_regular", for: previewLanguage))
+                    previewItemRow(name: tr("test_item_3_name", for: previewLanguage), quantity: 1, total: "¥200")
+                }
+                .padding(.top, Spacing.sm)
+
+                VStack(spacing: Spacing.xs) {
+                    Divider()
+                        .background(Color.black.opacity(0.42))
+                        .padding(.bottom, Spacing.xs)
+                    previewAmountRow(label: tr("tpl_subtotal", for: previewLanguage), value: "¥2,750")
+                    previewAmountRow(label: tr("tpl_discount", for: previewLanguage), value: "-¥300")
+                    previewMetaRow(label: tr("discount_code", for: previewLanguage), value: "WELCOME300")
+                    previewAmountRow(label: tr("tpl_tax", for: previewLanguage), value: "¥245")
+                    Divider()
+                        .background(Color.black.opacity(0.35))
+                    previewAmountRow(label: tr("tpl_total", for: previewLanguage), value: "¥2,695", emphasized: true)
+                }
+                .padding(.top, Spacing.sm)
+
+                VStack(alignment: .center, spacing: Spacing.xs) {
+                    Text(previewHeader.footerMessage.isEmpty ? tr("tpl_thank_you", for: previewLanguage) : previewHeader.footerMessage)
+                        .font(.system(size: 12, weight: .regular, design: .default))
+                        .foregroundColor(.black.opacity(0.8))
+                        .multilineTextAlignment(.center)
+
+                    if previewHeader.showWebsite, !previewHeader.website.isEmpty {
+                        Text(previewHeader.website)
+                            .font(.system(size: 11, weight: .regular, design: .default))
+                            .foregroundColor(.black.opacity(0.72))
+                    }
+
+                    Text("powered by coorder.ai")
+                        .font(.system(size: 10, weight: .regular, design: .monospaced))
+                        .foregroundColor(.black.opacity(0.55))
+                        .padding(.top, Spacing.xs)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, Spacing.md)
+                .padding(.bottom, Spacing.lg)
             }
-            .padding(Spacing.md)
+            .padding(.horizontal, Spacing.lg)
             .background(Color.white)
-            .cornerRadius(CornerRadius.xs)
-            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-            Text("📄 " + "receipt_preview_simulation".localized)
+            .frame(maxWidth: 360)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.sm))
+            .shadow(color: .black.opacity(0.14), radius: 12, x: 0, y: 6)
+
+            Text("receipt_preview_simulation".localized)
                 .font(.caption2)
                 .foregroundColor(.appTextSecondary)
-                .padding(.top, Spacing.xs)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    private var previewRestaurantName: String {
+        let configured = previewHeader.restaurantName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return configured.isEmpty ? tr("test_restaurant_name", for: previewLanguage) : configured
+    }
+
+    private func previewMetaRow(label: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(label)
+                .font(.system(size: 11, weight: .regular, design: .monospaced))
+                .foregroundColor(.black.opacity(0.58))
+            Spacer()
+            Text(value)
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                .foregroundColor(.black)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private func previewItemRow(name: String, quantity: Int, total: String, size: String? = nil, toppings: [String] = []) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("\(quantity)x \(name)")
+                    .font(.system(size: 13, weight: .semibold, design: .default))
+                    .foregroundColor(.black)
+                    .lineLimit(2)
+
+                Spacer()
+
+                Text(total)
+                    .font(.system(size: 13, weight: .medium, design: .monospaced))
+                    .foregroundColor(.black)
+            }
+
+            if let size, !size.isEmpty {
+                Text("\(tr("tpl_size", for: previewLanguage)): \(size)")
+                    .font(.system(size: 11, weight: .regular, design: .default))
+                    .foregroundColor(.black.opacity(0.62))
+            }
+
+            if !toppings.isEmpty {
+                Text("\(tr("tpl_toppings", for: previewLanguage)): \(toppings.joined(separator: ", "))")
+                    .font(.system(size: 11, weight: .regular, design: .default))
+                    .foregroundColor(.black.opacity(0.62))
+            }
+        }
+    }
+
+    private func previewAmountRow(label: String, value: String, emphasized: Bool = false) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(label)
+                .font(.system(size: emphasized ? 15 : 12, weight: emphasized ? .bold : .regular, design: .default))
+                .foregroundColor(.black)
+
+            Spacer()
+
+            Text(value)
+                .font(.system(size: emphasized ? 16 : 12, weight: emphasized ? .bold : .medium, design: .monospaced))
+                .foregroundColor(.black)
         }
     }
     
     private func generatePreview() {
         Task {
-            let selectedLanguage = settingsManager.selectedReceiptLanguage
-            let selectedTheme = settingsManager.selectedReceiptTheme
-            let themeManager = TemplateThemeManager()
-            
-            // Build data (real header/footer + fake order)
-            var testData = generateLocalizedTestData(for: selectedLanguage)
-            
-            // Inject i18n dictionary for template labels
-            testData["i18n"] = buildI18nDictionary(for: selectedLanguage)
-            
-            let templateToUse = themeManager.loadTemplate(type: .receipt, language: selectedLanguage, theme: selectedTheme) ?? getDefaultTemplate()
-            
-            let renderer = TemplateRenderer()
-            let renderedString = renderer.render(template: templateToUse, data: testData)
-            let cleanedPreview = processForPreview(renderedString)
-            
             await MainActor.run {
-                previewText = cleanedPreview
+                previewText = ""
                 isLoading = false
             }
         }
@@ -380,33 +547,84 @@ struct ReceiptPreviewView: View {
     
     private func processForPreview(_ text: String) -> String {
         var result = text
-        
-        // Remove or replace printer command tags for better preview readability
-        result = result.replacingOccurrences(of: "[CENTER]", with: "")
-        result = result.replacingOccurrences(of: "[/CENTER]", with: "")
-        result = result.replacingOccurrences(of: "[BOLD]", with: "**")
-        result = result.replacingOccurrences(of: "[/BOLD]", with: "**")
-        result = result.replacingOccurrences(of: "[LARGE]", with: "")
-        result = result.replacingOccurrences(of: "[/LARGE]", with: "")
-        result = result.replacingOccurrences(of: "[WIDE]", with: "")
-        result = result.replacingOccurrences(of: "[/WIDE]", with: "")
-        result = result.replacingOccurrences(of: "[LEFT]", with: "")
-        result = result.replacingOccurrences(of: "[/LEFT]", with: "")
-        result = result.replacingOccurrences(of: "[RIGHT]", with: "")
-        result = result.replacingOccurrences(of: "[/RIGHT]", with: "")
-        result = result.replacingOccurrences(of: "[SEPARATOR]", with: String(repeating: "-", count: 48))
-        result = result.replacingOccurrences(of: "[CUT]", with: "\n" + String(repeating: "✂", count: 3) + "\n")
-        
-        // Process row/column layout for preview
         result = processRowColumnsForPreview(result)
-        
-        // Clean up extra whitespace but preserve intentional spacing
-        let lines = result.components(separatedBy: .newlines)
-        let cleanedLines = lines.map { line in
-            line.trimmingCharacters(in: .whitespaces)
+
+        var previewLines: [String] = []
+        var previousLineWasBlank = false
+
+        for rawLine in result.components(separatedBy: .newlines) {
+            guard !rawLine.contains("[CUT]") else { continue }
+
+            var line = rawLine
+            let isCentered = line.contains("[CENTER]")
+            let isRightAligned = line.contains("[RIGHT]")
+
+            line = line.replacingOccurrences(of: "[SEPARATOR]", with: String(repeating: "-", count: 48))
+            line = stripPreviewTags(from: line)
+
+            if line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if !previousLineWasBlank {
+                    previewLines.append("")
+                    previousLineWasBlank = true
+                }
+                continue
+            }
+
+            previousLineWasBlank = false
+            let content = line.trimmingCharacters(in: .whitespaces)
+            if isCentered {
+                previewLines.append(alignPreviewLine(content, width: 42, alignment: .center))
+            } else if isRightAligned {
+                previewLines.append(alignPreviewLine(content, width: 42, alignment: .right))
+            } else {
+                previewLines.append(line)
+            }
         }
-        
-        return cleanedLines.joined(separator: "\n")
+
+        while previewLines.first?.isEmpty == true {
+            previewLines.removeFirst()
+        }
+
+        while previewLines.last?.isEmpty == true {
+            previewLines.removeLast()
+        }
+
+        return previewLines.joined(separator: "\n")
+    }
+
+    private enum PreviewAlignment {
+        case center
+        case right
+    }
+
+    private func alignPreviewLine(_ text: String, width: Int, alignment: PreviewAlignment) -> String {
+        guard text.count < width else { return text }
+        let padding = width - text.count
+
+        switch alignment {
+        case .center:
+            return String(repeating: " ", count: padding / 2) + text
+        case .right:
+            return String(repeating: " ", count: padding) + text
+        }
+    }
+
+    private func stripPreviewTags(from text: String) -> String {
+        var result = text
+        let tags = [
+            "[CENTER]", "[/CENTER]",
+            "[BOLD]", "[/BOLD]",
+            "[LARGE]", "[/LARGE]",
+            "[WIDE]", "[/WIDE]",
+            "[LEFT]", "[/LEFT]",
+            "[RIGHT]", "[/RIGHT]"
+        ]
+
+        for tag in tags {
+            result = result.replacingOccurrences(of: tag, with: "")
+        }
+
+        return result
     }
     
     private func processRowColumnsForPreview(_ text: String) -> String {

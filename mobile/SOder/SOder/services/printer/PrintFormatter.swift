@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 // MARK: - Print Content Models
 struct PrintContent {
@@ -48,7 +49,7 @@ class PrintFormatter {
     private let themeManager = TemplateThemeManager.shared
     
     // MARK: - Template-based Formatting
-    func format(template: String, data: [String: Any], encoding: String.Encoding = .utf8) -> Data {
+    func format(template: String, data: [String: Any], encoding: String.Encoding = .utf8, charsetCommand: [UInt8] = []) -> Data {
         // Render template with data
         let renderedText = templateRenderer.render(template: template, data: data)
         
@@ -56,7 +57,7 @@ class PrintFormatter {
         let crlfText = normalizeToCRLF(renderedText)
         
         // Process format tags and convert to printer commands
-        return formatProcessor.processFormatTags(in: crlfText, encoding: encoding)
+        return formatProcessor.processFormatTags(in: crlfText, encoding: encoding, charsetCommand: charsetCommand)
     }
     
     // MARK: - Convenience Methods
@@ -119,7 +120,7 @@ class PrintFormatter {
         
         let template = themeManager.loadTemplate(type: .receipt, language: language, theme: theme) ?? getDefaultReceiptTemplate()
         let encoding = getSelectedEncoding(for: .receipt)
-        return format(template: template, data: testData, encoding: encoding)
+        return format(template: template, data: testData, encoding: encoding, charsetCommand: getPrinterCharsetCommand(for: .receipt))
     }
     
     // MARK: - Private Methods
@@ -300,6 +301,9 @@ class PrintFormatter {
     // MARK: - Checkout Receipt Formatting
     func formatCheckoutReceipt(_ receiptData: CheckoutReceiptData) -> Data {
         let content = generateCheckoutReceiptPrintContent(receiptData)
+        if settingsManager.shouldRenderReceiptAsImage() {
+            return formatReceiptImage(content)
+        }
         return formatForThermalPrinter(content, target: .receipt)
     }
     
@@ -402,28 +406,34 @@ class PrintFormatter {
     private func generateKitchenOrderContent(order: Order) -> PrintContent {
         var sections: [PrintSection] = []
         let lang = settingsManager.getSelectedLanguage(for: .kitchen)
-        
-        // Header (Table)
         let tableLabel = tr("tpl_table", for: lang)
-        let tableName = order.table?.name ?? "T00"
-        let tableInfo = "\(tableLabel): \(tableName)\n"
+        let orderLabel = tr("tpl_order", for: lang)
+        let guestsLabel = tr("tpl_guests", for: lang)
+        let quantityLabel = tr("tpl_qty", for: lang)
+        let notesLabel = tr("tpl_notes", for: lang)
+        let sizeLabel = tr("tpl_size", for: lang)
+        let toppingsLabel = tr("tpl_toppings", for: lang)
+        
         sections.append(PrintSection(
-            content: "\n\(tableInfo)",
+            content: "\(tr("tpl_kitchen_order", for: lang))\n",
+            alignment: .center,
+            style: PrintStyle(isBold: true, fontSize: .doubleWidth)
+        ))
+
+        let tableName = order.table?.name ?? "Table \(order.table_id)"
+        sections.append(PrintSection(
+            content: "\(tableLabel): \(tableName)\n",
             alignment: .center,
             style: PrintStyle(isBold: true, fontSize: .doubleWidthAndHeight)
         ))
         
-        // Order info
-        let orderLabel = tr("tpl_order", for: lang)
-        let guestsLabel = tr("tpl_guests", for: lang)
-        let orderInfo = "\(orderLabel) #: \(order.id.prefix(8))\n\(guestsLabel): \(order.guest_count)\n"
+        let orderInfo = "\(orderLabel) #: \(order.id.prefix(8))\n\(guestsLabel): \(order.guest_count ?? 0)\n"
         sections.append(PrintSection(
             content: orderInfo,
             alignment: .center,
-            style: PrintStyle(isBold: false, fontSize: .normal)
+            style: PrintStyle(isBold: false, fontSize: .doubleHeight)
         ))
         
-        // Separator
         let separator = String(repeating: "=", count: layout.receiptWidth) + "\n"
         sections.append(PrintSection(
             content: separator,
@@ -431,28 +441,38 @@ class PrintFormatter {
             style: PrintStyle(isBold: false, fontSize: .normal)
         ))
         
-        // Items
-        var itemsContent = ""
         if let items = order.order_items {
             for item in items where item.status.rawValue != "canceled" {
-                let itemName = getItemDisplayName(for: item)
-                itemsContent += "\(itemName)\n"
-                itemsContent += "  \(tr("tpl_qty", for: lang)): \(item.quantity)\n"
+                let itemName = getItemDisplayName(for: item, target: .kitchen)
+                sections.append(PrintSection(
+                    content: "\(item.quantity)x \(itemName)\n",
+                    alignment: .left,
+                    style: PrintStyle(isBold: true, fontSize: .doubleHeight)
+                ))
+
+                var itemDetails = "\(quantityLabel): \(item.quantity)\n"
                 
-                if let notes = item.notes, !notes.isEmpty {
-                    itemsContent += "    \(tr("tpl_notes", for: lang)): \(notes)\n"
+                if let sizeName = getSizeDisplayName(for: item, language: lang) {
+                    itemDetails += "\(sizeLabel): \(sizeName)\n"
                 }
-                itemsContent += "-\n"
+
+                let toppings = getToppingDisplayNames(for: item, language: lang)
+                if !toppings.isEmpty {
+                    itemDetails += "\(toppingsLabel): \(toppings.joined(separator: ", "))\n"
+                }
+
+                if let notes = item.notes, !notes.isEmpty {
+                    itemDetails += "\(notesLabel): \(notes)\n"
+                }
+
+                sections.append(PrintSection(
+                    content: itemDetails + String(repeating: "-", count: layout.receiptWidth) + "\n",
+                    alignment: .left,
+                    style: PrintStyle(isBold: false, fontSize: .doubleHeight)
+                ))
             }
         }
-        
-        sections.append(PrintSection(
-            content: itemsContent,
-            alignment: .left,
-            style: PrintStyle(isBold: false, fontSize: .normal)
-        ))
-        
-        // Footer
+
         sections.append(PrintSection(
             content: separator,
             alignment: .left,
@@ -462,7 +482,8 @@ class PrintFormatter {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = settingsManager.restaurantSettings.dateTimeFormat
         let printedLabel = tr("tpl_printed", for: lang)
-        let timestamp = "\(printedLabel): \(dateFormatter.string(from: Date()))\n\n\n"
+        let minimumTicketFeed = String(repeating: "\n", count: 8)
+        let timestamp = "\(printedLabel): \(dateFormatter.string(from: Date()))\(minimumTicketFeed)"
         sections.append(PrintSection(
             content: timestamp,
             alignment: .left,
@@ -635,7 +656,7 @@ class PrintFormatter {
         
         if let items = order.order_items {
             for item in items where item.status.rawValue != "canceled" {
-                let itemName = getItemDisplayName(for: item)
+                let itemName = getItemDisplayName(for: item, target: .receipt)
                 let price = item.menu_item?.price ?? 0
                 let total = price * Double(item.quantity)
                 subtotal += total
@@ -856,36 +877,41 @@ class PrintFormatter {
     private func generateCheckoutReceiptPrintContent(_ receiptData: CheckoutReceiptData) -> String {
         let receiptHeader = PrinterSettingsManager.shared.receiptHeader
         let restaurantSettings = PrinterSettingsManager.shared.restaurantSettings
+        let language = settingsManager.getSelectedLanguage(for: .receipt)
         var content = ""
         
         // Restaurant header - use receipt header settings
         content += centerText(receiptHeader.restaurantName.uppercased(), width: 48) + "\n"
-        content += centerText(receiptHeader.address, width: 48) + "\n"
+        if !receiptHeader.address.isEmpty {
+            content += centerText(receiptHeader.address, width: 48) + "\n"
+        }
         if !receiptHeader.phone.isEmpty {
-            content += centerText("Tel: \(receiptHeader.phone)", width: 48) + "\n"
+            content += centerText("\(tr("tpl_phone", for: language)): \(receiptHeader.phone)", width: 48) + "\n"
+        }
+        if receiptHeader.showTaxCode, !receiptHeader.taxCode.isEmpty {
+            content += centerText("\(tr("tpl_tax_code", for: language)): \(receiptHeader.taxCode)", width: 48) + "\n"
         }
         content += "\n"
         
         // Receipt title
-        content += centerText("RECEIPT", width: 48) + "\n"
-        content += String(repeating: "=", count: 48) + "\n"
+        let receiptTitle = receiptData.isOfficial ? tr("tpl_official_receipt", for: language) : tr("tpl_receipt", for: language)
+        content += centerText(receiptTitle, width: 48) + "\n\n"
         
         // Order information
         let formatter = DateFormatter()
         formatter.dateFormat = restaurantSettings.dateTimeFormat
         
-        content += "Order ID: \(receiptData.order.id.prefix(8).uppercased())\n"
-        content += "Table: \(receiptData.order.table?.name ?? "Table \(receiptData.order.table_id)")\n"
-        content += "Guests: \(receiptData.order.guest_count)\n"
-        content += "Date: \(formatter.string(from: receiptData.timestamp))\n"
-        content += String(repeating: "-", count: 48) + "\n"
+        content += "\(tr("tpl_order", for: language)): \(receiptData.order.id.prefix(8).uppercased())\n"
+        content += "\(tr("tpl_table", for: language)): \(receiptData.order.table?.name ?? "Table \(receiptData.order.table_id)")\n"
+        content += "\(tr("tpl_guests", for: language)): \(receiptData.order.guest_count ?? 0)\n"
+        content += "\(tr("tpl_date", for: language)): \(formatter.string(from: receiptData.timestamp))\n\n"
         
         // Order items
         if let items = receiptData.order.order_items {
-            for item in items {
-                let itemName = getItemDisplayName(for: item)
+            for item in items where item.status != .canceled {
+                let itemName = getItemDisplayName(for: item, target: .receipt)
                 let quantity = item.quantity
-                let unitPrice = item.menu_item?.price ?? 0
+                let unitPrice = item.price_at_order
                 let totalPrice = unitPrice * Double(quantity)
                 
                 // Item name and quantity
@@ -895,55 +921,154 @@ class PrintFormatter {
                                 unitPrice, 
                                 String(repeating: " ", count: max(1, 30 - String(format: "  %dx @ ¥%.0f", quantity, unitPrice).count)),
                                 totalPrice)
-                
-                // Notes if any
-                if let notes = item.notes, !notes.isEmpty {
-                    content += "  Note: \(notes)\n"
+
+                if let sizeName = getSizeDisplayName(for: item, language: language) {
+                    content += "  \(tr("tpl_size", for: language)): \(sizeName)\n"
+                }
+
+                let toppings = getToppingDisplayNames(for: item, language: language)
+                if !toppings.isEmpty {
+                    content += "  \(tr("tpl_toppings", for: language)): \(toppings.joined(separator: ", "))\n"
                 }
                 content += "\n"
             }
         }
         
-        content += String(repeating: "-", count: 48) + "\n"
+        content += String(repeating: "-", count: 32) + "\n"
         
         // Price breakdown
-        content += String(format: "Subtotal:%@¥%.0f\n", 
-                         String(repeating: " ", count: max(1, 38 - "Subtotal:".count)), 
-                         receiptData.subtotal)
+        content += formatReceiptAmountLine(label: tr("tpl_subtotal", for: language), amount: receiptData.subtotal)
         
         if receiptData.discountAmount > 0 {
-            content += String(format: "Discount:%@-¥%.0f\n", 
-                             String(repeating: " ", count: max(1, 38 - "Discount:".count)), 
-                             receiptData.discountAmount)
+            content += formatReceiptAmountLine(label: tr("tpl_discount", for: language), amount: -receiptData.discountAmount)
             
             if let discountCode = receiptData.discountCode {
-                content += String(format: "  Code: %s\n", discountCode)
+                content += "  \(tr("discount_code", for: language)): \(discountCode)\n"
             }
         }
         
-        content += String(format: "Tax (10%%):%@¥%.0f\n", 
-                         String(repeating: " ", count: max(1, 37 - "Tax (10%):".count)), 
-                         receiptData.taxAmount)
+        content += formatReceiptAmountLine(label: "\(tr("tpl_tax", for: language)) (10%)", amount: receiptData.taxAmount)
         
-        content += String(repeating: "=", count: 48) + "\n"
-        content += String(format: "TOTAL:%@¥%.0f\n", 
-                         String(repeating: " ", count: max(1, 40 - "TOTAL:".count)), 
-                         receiptData.totalAmount)
-        content += String(repeating: "=", count: 48) + "\n"
+        content += String(repeating: "-", count: 32) + "\n"
+        content += formatReceiptAmountLine(label: tr("tpl_total", for: language), amount: receiptData.totalAmount)
         
         // Payment method
-        content += "\nPayment Method: CASH\n"
-        content += "Status: PAID\n"
+        content += "\n\(tr("payment_method", for: language)): \(receiptData.paymentMethod ?? tr("cash", for: language))\n"
+        content += "\(tr("tpl_status", for: language)): \(tr("tpl_paid", for: language))\n"
         
         // Footer
         content += "\n"
-        content += centerText("Thank you for dining with us!", width: 48) + "\n"
-        // Note: Website removed from receipt header - can be added back if needed
+        let footer = receiptHeader.footerMessage.isEmpty ? tr("tpl_thank_you_dining", for: language) : receiptHeader.footerMessage
+        content += centerText(footer, width: 48) + "\n"
+        if receiptHeader.showWebsite, !receiptHeader.website.isEmpty {
+            content += centerText(receiptHeader.website, width: 48) + "\n"
+        }
         content += "\n"
-        content += centerText("Powered by SOder POS", width: 48) + "\n"
+        content += centerText("powered by coorder.ai", width: 48) + "\n"
         content += "\n\n\n\n\n" // Extra line feeds to ensure proper separation before cutting
         
         return content
+    }
+
+    private func formatReceiptAmountLine(label: String, amount: Double) -> String {
+        let amountText = amount < 0
+            ? "-¥\(String(format: "%.0f", abs(amount)))"
+            : "¥\(String(format: "%.0f", amount))"
+        let spaces = String(repeating: " ", count: max(1, 48 - label.count - amountText.count))
+        return "\(label)\(spaces)\(amountText)\n"
+    }
+
+    private func formatReceiptImage(_ content: String) -> Data {
+        var command = Data()
+        command.append(Data(commands.clearBuffer))
+        command.append(Data(commands.initialize))
+        command.append(Data(commands.alignCenter))
+        command.append(renderRasterImageCommands(from: content))
+        command.append(Data(commands.paperFeedExtra))
+        command.append(Data(commands.cutPaperAdvanced))
+        return command
+    }
+
+    private func renderRasterImageCommands(from content: String) -> Data {
+        let imageWidth = 576
+        let horizontalMargin = 24
+        let verticalMargin = 24
+        let textWidth = imageWidth - (horizontalMargin * 2)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineBreakMode = .byWordWrapping
+        paragraphStyle.lineSpacing = 3
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.monospacedSystemFont(ofSize: 18, weight: .regular),
+            .foregroundColor: UIColor.black,
+            .paragraphStyle: paragraphStyle
+        ]
+        let normalized = normalizeToCRLF(content).replacingOccurrences(of: "\r\n", with: "\n")
+        let attributed = NSAttributedString(string: normalized, attributes: attributes)
+        let boundingRect = attributed.boundingRect(
+            with: CGSize(width: CGFloat(textWidth), height: CGFloat.greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            context: nil
+        )
+        let imageHeight = max(64, Int(ceil(boundingRect.height)) + (verticalMargin * 2))
+        let rowBytes = imageWidth
+        var pixels = [UInt8](repeating: 255, count: rowBytes * imageHeight)
+
+        pixels.withUnsafeMutableBytes { rawBuffer in
+            guard let baseAddress = rawBuffer.baseAddress,
+                  let context = CGContext(
+                    data: baseAddress,
+                    width: imageWidth,
+                    height: imageHeight,
+                    bitsPerComponent: 8,
+                    bytesPerRow: rowBytes,
+                    space: CGColorSpaceCreateDeviceGray(),
+                    bitmapInfo: CGImageAlphaInfo.none.rawValue
+                  ) else {
+                return
+            }
+
+            context.setFillColor(UIColor.white.cgColor)
+            context.fill(CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight))
+            UIGraphicsPushContext(context)
+            attributed.draw(
+                with: CGRect(
+                    x: CGFloat(horizontalMargin),
+                    y: CGFloat(verticalMargin),
+                    width: CGFloat(textWidth),
+                    height: CGFloat(imageHeight - (verticalMargin * 2))
+                ),
+                options: [.usesLineFragmentOrigin, .usesFontLeading],
+                context: nil
+            )
+            UIGraphicsPopContext()
+        }
+
+        let widthBytes = (imageWidth + 7) / 8
+        var raster = Data([
+            0x1D, 0x76, 0x30, 0x00,
+            UInt8(widthBytes & 0xFF),
+            UInt8((widthBytes >> 8) & 0xFF),
+            UInt8(imageHeight & 0xFF),
+            UInt8((imageHeight >> 8) & 0xFF)
+        ])
+
+        for y in 0..<imageHeight {
+            for xByte in 0..<widthBytes {
+                var byte: UInt8 = 0
+                for bit in 0..<8 {
+                    let x = (xByte * 8) + bit
+                    guard x < imageWidth else { continue }
+                    let pixel = pixels[(y * rowBytes) + x]
+                    if pixel < 180 {
+                        byte |= UInt8(0x80 >> bit)
+                    }
+                }
+                raster.append(byte)
+            }
+        }
+
+        return raster
     }
     
     private func centerText(_ text: String, width: Int) -> String {
@@ -1039,21 +1164,64 @@ class PrintFormatter {
     
     // MARK: - Private Helper Methods
     
-    private func getItemDisplayName(for item: OrderItem) -> String {
-        // Preserve existing behavior; language selection migrated in M4
+    private func getItemDisplayName(for item: OrderItem, target: PrinterSettingsManager.PrintTarget) -> String {
         let menuItem = item.menu_item
-        if !settingsManager.printLanguage.isPrinterSupported {
-            if let code = menuItem?.code, !code.isEmpty {
-                return code
-            }
-        }
-        switch settingsManager.printLanguage {
+
+        switch settingsManager.getSelectedLanguage(for: target) {
         case .english:
             return menuItem?.name_en ?? menuItem?.code ?? "Unknown Item"
         case .japanese:
             return menuItem?.name_ja ?? menuItem?.name_en ?? menuItem?.code ?? "Unknown Item"
         case .vietnamese:
             return menuItem?.name_vi ?? menuItem?.name_en ?? menuItem?.code ?? "Unknown Item"
+        }
+    }
+
+    private func getItemDisplayName(for item: OrderItem) -> String {
+        getItemDisplayName(for: item, target: .receipt)
+    }
+
+    private func getSizeDisplayName(for item: OrderItem, language: PrintLanguage) -> String? {
+        if let size = item.menu_item_size {
+            return localizedName(
+                english: size.name_en,
+                japanese: size.name_ja,
+                vietnamese: size.name_vi,
+                language: language
+            )
+        }
+
+        return item.menu_item_size_id?.isEmpty == false ? item.menu_item_size_id : nil
+    }
+
+    private func getToppingDisplayNames(for item: OrderItem, language: PrintLanguage) -> [String] {
+        if let toppings = item.toppings, !toppings.isEmpty {
+            return toppings.map { topping in
+                localizedName(
+                    english: topping.name_en,
+                    japanese: topping.name_ja,
+                    vietnamese: topping.name_vi,
+                    language: language
+                )
+            }
+        }
+
+        return item.topping_ids ?? []
+    }
+
+    private func localizedName(
+        english: String,
+        japanese: String?,
+        vietnamese: String?,
+        language: PrintLanguage
+    ) -> String {
+        switch language {
+        case .english:
+            return english
+        case .japanese:
+            return japanese ?? english
+        case .vietnamese:
+            return vietnamese ?? english
         }
     }
 

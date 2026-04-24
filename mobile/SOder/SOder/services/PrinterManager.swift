@@ -153,19 +153,8 @@ class PrinterManager: ObservableObject {
     }
     
     private func connectBluetoothPrinter(_ printer: PrinterInfo) async throws {
-        // Simulate connection delay for Bluetooth
-        try await Task.sleep(nanoseconds: 2_000_000_000)
-        
-        // In a real implementation, you would:
-        // 1. Find the EAAccessory matching the printer
-        // 2. Open a session with the accessory
-        // 3. Configure the printer communication
-        
-        if printer.name.contains("Printer") {
-            return // Simulate successful connection
-        } else {
-            throw PrinterError.connectionFailed(NSError(domain: "PrinterManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "printer_bluetooth_connection_failed_error".localized]))
-        }
+        settingsManager.updateConnectionStatus(for: printer.id, status: .error("printer_bluetooth_not_supported_error".localized))
+        throw PrinterError.configurationError("printer_bluetooth_not_supported_error".localized)
     }
     
     func disconnectPrinter() {
@@ -218,9 +207,7 @@ class PrinterManager: ObservableObject {
             let formatter = PrintFormatter()
             let printData = formatter.formatKitchenSummary(group)
 
-            // Use kitchen printer configuration if available
-            let kitchenConfig = settingsManager.getKitchenPrinterConfig()
-            if kitchenConfig == nil {
+            guard let kitchenConfig = settingsManager.getRequiredPrinterConfig(for: .kitchen) else {
                 errorMessage = "printer_no_kitchen_printer_configured_error".localized
                 addLog("printer_no_kitchen_printer_configured_error".localized)
                 return false
@@ -427,24 +414,12 @@ extension PrinterManager {
         let formatter = PrintFormatter()
         let printData = formatter.formatCheckoutReceipt(receiptData)
         
-        // Use the appropriate printer based on current mode
         let settingsManager = PrinterSettingsManager.shared
-        
-        switch settingsManager.printerMode {
-        case .single:
-            // Use the active printer for both kitchen and checkout
-            try await printerService.connectAndSendData(data: printData)
-            
-        case .dual:
-            // Use the checkout printer specifically
-            if let checkoutConfig = settingsManager.getCheckoutPrinterConfig() {
-                try await printerService.connectAndSendData(data: printData, to: checkoutConfig)
-            } else {
-                // Fallback to any available printer
-                try await printerService.connectAndSendData(data: printData)
-            }
+        guard let checkoutConfig = settingsManager.getRequiredPrinterConfig(for: .receipt) else {
+            throw PrinterError.configurationError("printer_no_checkout_printer_configured_error".localized)
         }
-        
+
+        try await printerService.connectAndSendData(data: printData, target: .receipt, to: checkoutConfig)
         addLog(String(format: "printer_checkout_receipt_success_log".localized, String(format: "%.0f", receiptData.totalAmount)))
     }
     
@@ -454,23 +429,11 @@ extension PrinterManager {
             throw PrinterError.dataEncodingError("printer_failed_to_format_kitchen_slip_error".localized)
         }
         
-        let settingsManager = PrinterSettingsManager.shared
-        
-        switch settingsManager.printerMode {
-        case .single:
-            // Use the active printer
-            try await printerService.connectAndSendData(data: printData)
-            
-        case .dual:
-            // Use the kitchen printer specifically
-            if let kitchenConfig = settingsManager.getKitchenPrinterConfig() {
-                try await printerService.connectAndSendData(data: printData, to: kitchenConfig)
-            } else {
-                // Fallback to any available printer
-                try await printerService.connectAndSendData(data: printData)
-            }
+        guard let kitchenConfig = settingsManager.getRequiredPrinterConfig(for: .kitchen) else {
+            throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
-        
+
+        try await printerService.connectAndSendData(data: printData, target: .kitchen, to: kitchenConfig)
         addLog(String(format: "printer_kitchen_slip_success_log".localized, order.id.prefix(8) as CVarArg))
     }
 }
@@ -479,7 +442,7 @@ extension PrinterManager {
 extension PrinterManager {
     func printKitchenBoardSummary(_ items: [GroupedItem]) async throws {
         // Get kitchen printer configuration
-        guard let kitchenConfig = settingsManager.getKitchenPrinterConfig() else {
+        guard let kitchenConfig = settingsManager.getRequiredPrinterConfig(for: .kitchen) else {
             throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
 
@@ -517,7 +480,7 @@ extension PrinterManager {
 
     func printKitchenItemSummary(_ item: GroupedItem) async throws {
         // Get kitchen printer configuration
-        guard let kitchenConfig = settingsManager.getKitchenPrinterConfig() else {
+        guard let kitchenConfig = settingsManager.getRequiredPrinterConfig(for: .kitchen) else {
             throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
 
@@ -534,7 +497,7 @@ extension PrinterManager {
 
     func printKitchenSlip(_ item: GroupedItem) async throws {
         // Get kitchen printer configuration
-        guard let kitchenConfig = settingsManager.getKitchenPrinterConfig() else {
+        guard let kitchenConfig = settingsManager.getRequiredPrinterConfig(for: .kitchen) else {
             throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
 
@@ -599,24 +562,12 @@ extension PrinterManager {
                 wifiInfo: wifiInfo
             )
 
-            // Use the receipt printer configuration
             let settingsManager = PrinterSettingsManager.shared
-
-            switch settingsManager.printerMode {
-            case .single:
-                // Use the active printer
-                try await printerService.connectAndSendData(data: printData, target: .receipt)
-
-            case .dual:
-                // Use the checkout printer specifically
-                if let checkoutConfig = settingsManager.getCheckoutPrinterConfig() {
-                    try await printerService.connectAndSendData(data: printData, target: .receipt, to: checkoutConfig)
-                } else {
-                    // Fallback to any available printer
-                    try await printerService.connectAndSendData(data: printData, target: .receipt)
-                }
+            guard let checkoutConfig = settingsManager.getRequiredPrinterConfig(for: .receipt) else {
+                throw PrinterError.configurationError("printer_no_checkout_printer_configured_error".localized)
             }
 
+            try await printerService.connectAndSendData(data: printData, target: .receipt, to: checkoutConfig)
             addLog(String(format: "printer_table_qr_success_log".localized, table.name))
             return true
         } catch {

@@ -117,7 +117,7 @@
 "complete_checkout" = "Complete Checkout";
 "print_receipt_only" = "Print Receipt Only";
 "checkout_complete" = "Checkout Complete";
-"checkout_success_message" = "Order has been completed and receipt printed successfully.";
+"checkout_success_message" = "Order has been completed successfully.";
 "insufficient_amount" = "Insufficient amount";
 "processing" = "Processing...";
 
@@ -166,8 +166,11 @@
 "printer_invalid_address_format_error" = "Invalid printer address format";
 "printer_unable_to_reach_error" = "Unable to reach printer";
 "printer_bluetooth_connection_failed_error" = "Bluetooth connection failed";
+"printer_bluetooth_not_supported_error" = "Bluetooth printer support is not available in this build. Use a network printer or enable the Bluetooth printer module first.";
 "printer_disconnected_log" = "Disconnected from printer";
 "printer_no_printer_connected_error" = "No printer connected";
+"printer_no_kitchen_printer_configured_error" = "No kitchen printer is configured. Please assign a kitchen printer before printing.";
+"printer_no_checkout_printer_configured_error" = "No receipt printer is configured. Please assign a receipt printer before printing.";
 "printer_test_receipt_success_log" = "Test receipt printed successfully";
 "printer_test_print_failed_log" = "Test print failed: %@";
 "printer_order_receipt_success_log" = "Order receipt printed for order %@";
@@ -332,6 +335,9 @@
 "error_cancel_item" = "Failed to cancel the item. Please try again.";
 "error_update_item_status" = "Failed to update item status. Please try again.";
 "error_cancel_order_status" = "Order cannot be canceled. Current status: %@";
+"error_confirm_order_empty" = "Add at least one item before sending the order to the kitchen.";
+"error_confirm_order_item_save_failed" = "Could not save item %d. The order was not sent, and the draft is still available.";
+"error_confirm_order_incomplete" = "The order could not be fully saved. The draft is still available.";
 "kitchen_print_failure" = "Failed to print kitchen summary. Please check printer connection.";
 "kitchen_item_print_failure" = "Failed to print kitchen item. Please check printer connection.";
 
@@ -960,6 +966,10 @@
 "test_item_2_name" = "Miso Soup";
 "test_item_3_name" = "Green Tea";
 "test_item_1_notes" = "Extra sauce";
+"test_size_large" = "Large";
+"test_size_regular" = "Regular";
+"test_topping_cheese" = "Cheese";
+"test_topping_egg" = "Egg";
 "test_special_instructions" = "Please provide fork instead of chopsticks";
 "test_thank_you_message" = "Thank you for your visit!";
 "test_promotional_message" = "Use this coupon for 10% off your next visit";
@@ -998,9 +1008,12 @@
 "tpl_notes" = "Notes";
 "tpl_item" = "Item";
 "tpl_price" = "Price";
+"tpl_size" = "Size";
+"tpl_toppings" = "Toppings";
 "tpl_total_quantity" = "Total Quantity";
 "tpl_tables" = "Tables";
 "tpl_status" = "Status";
+"tpl_paid" = "Paid";
 "tpl_urgent_high_priority" = "URGENT - HIGH PRIORITY";
 "tpl_completed" = "COMPLETED";
 "tpl_kitchen_summary" = "KITCHEN SUMMARY";
@@ -1073,6 +1086,10 @@
 "checkout_cash_details" = "Cash Payment";
 "checkout_processing" = "Processing...";
 "checkout_insufficient_cash_hint" = "Please enter an amount equal to or greater than the total";
+"checkout_print_official_receipt_title" = "Print as official receipt";
+"checkout_print_official_receipt_hint" = "Use when the customer needs an official receipt.";
+"checkout_print_receipt_title" = "Print receipt";
+"checkout_print_receipt_hint" = "Off by default because most customers do not need one.";
 
 // MARK: - Table Status
 "table_status_available" = "Available";
@@ -1212,6 +1229,11 @@
 "printer_optional_details_title" = "Optional details";
 "printer_receipt_preview_help" = "Preview uses the standard receipt layout, so owners only need to check the business details and language.";
 "preview_receipt_button" = "Preview receipt";
+"receipt_render_mode_title" = "Print quality";
+"receipt_render_mode_hint" = "Use image printing when Japanese or Vietnamese text does not print clearly.";
+"receipt_render_mode_automatic" = "Auto";
+"receipt_render_mode_text" = "Text";
+"receipt_render_mode_image" = "Image";
 "printer_setup_preview_title" = "What staff will print";
 "printer_setup_preview_subtitle" = "Preview the standard receipt and kitchen output before service starts.";
 "printer_setup_preview_routing" = "Print routing";
