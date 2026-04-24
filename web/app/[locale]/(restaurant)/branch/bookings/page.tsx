@@ -6,7 +6,7 @@ export default async function BookingsPage({ params }: { params: Promise<{ local
   setRequestLocale(locale)
   
   return (
-    <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1440px]">
       <BookingsClientContent />
     </div>
   );

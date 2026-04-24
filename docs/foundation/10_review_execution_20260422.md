@@ -32,3 +32,9 @@ This doc records the production-hardening work executed from the April 22, 2026 
 - more legacy owner endpoints still need migration onto org-aware service boundaries
 - some platform lists still read raw tables directly and should move to explicit query services or RPCs if they become slow
 - a dedicated org-level billing model can be added later, but only after the business rules are fixed clearly enough to avoid churn
+
+## April 24, 2026 Follow-Up
+
+- branch back-office navigation now exposes the implemented daily operations, people, money, promotions, staff, and profile surfaces consistently across desktop and mobile
+- table booking management is treated as an active branch operation by default, with an explicit opt-out flag if a deployment needs to hide it
+- owner booking APIs now require owner or manager authority on the active branch before listing reservations or changing reservation status

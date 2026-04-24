@@ -78,7 +78,7 @@ export function AdminLayoutClient({
   return (
     <RestaurantProvider initialSettings={fullRestaurantSettings}>
       <div 
-        className="flex h-screen bg-background text-foreground"
+        className="flex h-dvh bg-[#FAF3EA] text-[#2E2117] [background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#FAF3EA_0%,#F5EAD8_50%,#EFE0CA_100%)] dark:bg-[#170F0C] dark:text-[#F7F1E9] dark:[background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#170F0C_0%,#1E1209_50%,#251810_100%)]"
         style={themeProperties}
         data-theme-color={sanitizeHexColor(restaurantSettings.primaryColor)}
       >
@@ -89,7 +89,7 @@ export function AdminLayoutClient({
           setIsOpen={setIsSidebarOpen}
         />
         
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <AdminHeader
             toggleSidebar={() => setIsSidebarOpen(prev => !prev)}
             restaurantSettings={restaurantSettings}
@@ -97,7 +97,7 @@ export function AdminLayoutClient({
             onLocaleChange={setSelectedLocale}
             ownerControlHref={ownerControlHref}
           />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8 pb-20">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-5 pb-24 sm:px-6 lg:px-8 lg:py-8">
             {children}
           </main>
           <AdminBottomNav />

@@ -16,7 +16,9 @@ import {
   LucideIcon,
   Sparkles,
   ShoppingCart,
-  LayoutGrid,
+  BadgePercent,
+  CircleDollarSign,
+  User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -143,16 +145,30 @@ export function AdminSidebar({
               labelKey: "admin_sidebar_purchasing",
               href: "/branch/purchasing",
             },
+            {
+              icon: CircleDollarSign,
+              labelKey: "admin_sidebar_finance",
+              href: "/branch/finance",
+            },
+            {
+              icon: BadgePercent,
+              labelKey: "admin_sidebar_promotions",
+              href: "/branch/promotions",
+            },
           ],
         },
         {
           headingKey: "nav_group_settings",
           items: [
             {
-              icon: LayoutGrid,
-              labelKey: "admin_sidebar_overview",
-              href: "/branch",
-              exact: true,
+              icon: UserCog,
+              labelKey: "admin_sidebar_staff",
+              href: "/branch/staff",
+            },
+            {
+              icon: User,
+              labelKey: "admin_sidebar_profile",
+              href: "/branch/profile",
             },
           ],
         },
@@ -179,10 +195,10 @@ export function AdminSidebar({
             if (isOpen && window.innerWidth < 1024) setIsOpen(false);
           }}
           className={cn(
-            "flex items-center w-full px-3 py-2.5 text-sm rounded-lg transition-colors duration-150 ease-in-out group",
+            "group flex min-h-11 w-full items-center rounded-2xl px-3 py-2.5 text-sm transition-colors duration-150 ease-in-out",
             isActive
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              ? "bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20"
+              : "text-[#8B6E5A] hover:bg-[#AB6E3C]/10 hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#AB6E3C]/15 dark:hover:text-[#F7F1E9]",
             isUtility ? "font-normal" : "font-medium",
           )}
           aria-current={isActive ? "page" : undefined}
@@ -191,8 +207,8 @@ export function AdminSidebar({
             className={cn(
               "mr-3 h-5 w-5",
               isActive
-                ? "text-primary-foreground"
-                : "text-muted-foreground group-hover:text-foreground",
+                ? "text-current"
+                : "text-[#AB6E3C]/55 group-hover:text-[#AB6E3C]",
             )}
           />
           <span>{t(labelKey)}</span>
@@ -205,14 +221,14 @@ export function AdminSidebar({
     <>
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-card border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen flex flex-col",
+          "fixed inset-y-0 left-0 z-40 flex w-72 transform flex-col border-r border-[#AB6E3C]/10 bg-[#FAF3EA]/95 transition-transform duration-300 ease-in-out dark:border-[#AB6E3C]/15 dark:bg-[#170F0C]/95 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
           isOpen ? "translate-x-0 shadow-xl" : "-translate-x-full",
         )}
       >
-        <div className="flex items-center justify-between h-16 px-4 border-b flex-shrink-0">
+        <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-[#AB6E3C]/10 px-4 dark:border-[#AB6E3C]/15">
           <Link
             href={buildBranchPath(locale, branchId)}
-            className="flex items-center"
+            className="flex min-w-0 items-center"
             onClick={() => setIsOpen(false)}
           >
             {restaurantSettings.logoUrl ? (
@@ -221,15 +237,15 @@ export function AdminSidebar({
                 alt={`${restaurantSettings.name} Logo`}
                 width={32}
                 height={32}
-                className="h-8 w-8 rounded-md mr-2 object-contain bg-muted p-0.5"
+                className="mr-2 h-9 w-9 rounded-full bg-[#FEFAF6] object-contain p-0.5 shadow-sm dark:bg-[#251810]"
               />
             ) : (
-              <div className="h-8 w-8 rounded-md mr-2 bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold">
+              <div className="mr-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#AB6E3C] text-base font-bold text-white shadow-sm shadow-[#AB6E3C]/25">
                 {restaurantSettings.name?.charAt(0).toUpperCase()}
               </div>
             )}
             <span
-              className="text-lg font-semibold text-foreground truncate"
+              className="truncate text-base font-semibold text-[#2E2117] dark:text-[#F7F1E9]"
               title={restaurantSettings.name}
             >
               {restaurantSettings.name || t("default_restaurant_name")}
@@ -239,16 +255,16 @@ export function AdminSidebar({
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(false)}
-            className="lg:hidden"
+            className="h-10 w-10 rounded-full text-[#8B6E5A] hover:bg-[#F5EAD8] hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#251810] dark:hover:text-[#AB6E3C] lg:hidden"
             aria-label={t("sidebar_close_aria_label")}
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
-        <nav className="p-3 space-y-1.5 flex-grow overflow-y-auto">
+        <nav className="flex-grow space-y-1.5 overflow-y-auto p-3">
           {navSections.map((section, sectionIndex) => (
             <div key={section.headingKey} className={cn(sectionIndex > 0 && "pt-3")}>
-              <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8B6E5A]/75 dark:text-[#B89078]/75">
                 {t(section.headingKey)}
               </p>
               <div className="space-y-1.5">
@@ -263,7 +279,7 @@ export function AdminSidebar({
                     ),
                 )}
               </div>
-              {sectionIndex < navSections.length - 1 && <hr className="my-3" />}
+              {sectionIndex < navSections.length - 1 && <hr className="my-3 border-[#AB6E3C]/10 dark:border-[#AB6E3C]/15" />}
             </div>
           ))}
         </nav>

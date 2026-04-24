@@ -1,6 +1,7 @@
 {
   "title": "Quản Lý Đặt Bàn",
   "subtitle": "Quản lý các đặt bàn và đặt chỗ của khách hàng",
+  "retry": "Thử lại",
   "table": {
     "customer_name": "Tên Khách Hàng",
     "contact": "Liên Hệ",

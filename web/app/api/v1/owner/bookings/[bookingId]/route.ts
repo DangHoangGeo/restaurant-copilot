@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
+import { USER_ROLES } from '@/lib/constants';
 
 const statusSchema = z.object({ status: z.enum(['confirmed', 'canceled']) });
 
@@ -13,6 +14,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ bo
 
   if (!user || !user.restaurantId) {
     return NextResponse.json({ error: 'Unauthorized: Missing user or restaurant ID.' }, { status: 401 });
+  }
+
+  if (![USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(user.role as 'owner' | 'manager')) {
+    return NextResponse.json({ error: 'Forbidden: managers and owners only' }, { status: 403 });
   }
 
   if (!bookingId) {

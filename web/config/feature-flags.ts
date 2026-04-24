@@ -11,6 +11,6 @@ export const FEATURE_FLAGS: FeatureFlags = {
   aiAssistant: process.env.NEXT_PUBLIC_FEATURE_AI === "true",
   onlineReviews: process.env.NEXT_PUBLIC_FEATURE_REVIEWS === "true",
   lowStockAlerts: process.env.NEXT_PUBLIC_FEATURE_LOWSTOCK === "true" || true, // Enabled by default
-  tableBooking: process.env.NEXT_PUBLIC_FEATURE_TABLEBOOKING === "true",
+  tableBooking: process.env.NEXT_PUBLIC_FEATURE_TABLEBOOKING !== "false", // Booking APIs and UI are active by default.
   onboarding: process.env.NEXT_PUBLIC_FEATURE_ONBOARDING !== "false", // Default to true
 };

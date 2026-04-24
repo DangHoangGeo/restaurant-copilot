@@ -1,6 +1,7 @@
 {
   "title": "予約管理",
   "subtitle": "テーブル予約と顧客の予約を管理します",
+  "retry": "再試行",
   "table": {
     "customer_name": "顧客名",
     "contact": "連絡先",
