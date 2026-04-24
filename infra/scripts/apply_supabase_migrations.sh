@@ -41,9 +41,35 @@ detect_supabase_db_url_project_ref() {
   printf '%s' "${project_ref}"
 }
 
+detect_supabase_db_url_host() {
+  local url="$1"
+  local host=""
+
+  if [[ "${url}" =~ @([^:/?#]+) ]]; then
+    host="${BASH_REMATCH[1]}"
+  fi
+
+  printf '%s' "${host}"
+}
+
+detect_supabase_db_url_port() {
+  local url="$1"
+  local port=""
+
+  if [[ "${url}" =~ @[^:/?#]+:([0-9]+) ]]; then
+    port="${BASH_REMATCH[1]}"
+  fi
+
+  printf '%s' "${port}"
+}
+
 validate_supabase_db_url() {
   local project_ref
+  local host
+  local port
   project_ref="$(detect_supabase_db_url_project_ref "${SUPABASE_DB_URL}")"
+  host="$(detect_supabase_db_url_host "${SUPABASE_DB_URL}")"
+  port="$(detect_supabase_db_url_port "${SUPABASE_DB_URL}")"
 
   if [[ -n "${SUPABASE_PROJECT_ID:-}" && -n "${project_ref}" && "${project_ref}" != "${SUPABASE_PROJECT_ID}" ]]; then
     echo "SUPABASE_DB_URL points to project ref '${project_ref}', but SUPABASE_PROJECT_ID is '${SUPABASE_PROJECT_ID}'." >&2
@@ -53,11 +79,30 @@ validate_supabase_db_url() {
 
   if [[ "${SUPABASE_DB_URL}" == *"pooler.supabase.com"* ]]; then
     echo "SUPABASE_DB_URL uses a Supabase shared pooler connection."
+
+    if [[ -z "${project_ref}" ]]; then
+      echo "Shared pooler migrations require a username formatted as 'postgres.<project-ref>'." >&2
+      echo "Copy the Session pooler connection string from the target project's Connect panel and store it in SUPABASE_DB_URL." >&2
+      exit 1
+    fi
+
+    if [[ "${port}" == "6543" ]]; then
+      echo "SUPABASE_DB_URL points to the transaction pooler on port 6543." >&2
+      echo "Use direct Postgres or the Session pooler on port 5432 for schema migrations." >&2
+      exit 1
+    fi
+
+    if [[ -n "${SUPABASE_PROJECT_ID:-}" ]]; then
+      echo "Verified shared pooler username project ref matches SUPABASE_PROJECT_ID."
+    fi
+
     echo "If Supabase reports 'FATAL: (ENOTFOUND) tenant/user ... not found', recopy the Session pooler URL from the target project's Connect panel and verify its project ref and region."
   fi
 
-  if [[ "${SUPABASE_DB_URL}" == *"pooler.supabase.com:6543"* ]]; then
-    echo "Warning: transaction pooler port 6543 is optimized for short-lived app queries. Use direct Postgres or the Session pooler on port 5432 for schema migrations." >&2
+  if [[ "${host}" == db.*.supabase.co && "${port}" == "6543" ]]; then
+    echo "SUPABASE_DB_URL points to a transaction pooler on port 6543." >&2
+    echo "Use direct Postgres or the Session pooler on port 5432 for schema migrations." >&2
+    exit 1
   fi
 }
 
