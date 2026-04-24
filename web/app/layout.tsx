@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Analytics } from "@vercel/analytics/next";
-import {  Lora, Klee_One } from 'next/font/google';
+import { Lora, Klee_One } from "next/font/google";
 
 const lora = Lora({
-  subsets: ['latin', 'vietnamese'],
-  weight: ['400', '500', '600', '700'],
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const kleeOne = Klee_One({
-  subsets: ['latin'],
-  weight: ['400', '600'],
+  subsets: ["latin"],
+  weight: ["400", "600"],
 });
 
 const fontMap = {
@@ -57,25 +57,27 @@ export const metadata: Metadata = {
       url: "https://coorder.ai",
     },
   ],
-  description: "Coorder AI is your co-pilot for restaurant management, providing AI-driven support to streamline operations and enhance efficiency.",
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover'
-  }
+  description:
+    "Coorder AI is your co-pilot for restaurant management, providing AI-driven support to streamline operations and enhance efficiency.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
   children,
-  params
+  params,
 }: {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
   const resolvedParams = await params;
-  const locale = resolvedParams.locale || routing.defaultLocale || 'en';
+  const locale = resolvedParams.locale || routing.defaultLocale || "en";
 
   // Validate that the incoming locale is supported
   if (!hasLocale(routing.locales, locale)) {

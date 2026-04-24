@@ -72,6 +72,38 @@ That script applies `supabase/migrations/*` with the Supabase CLI and is the rel
 
 Do not point `supabase/bootstrap.sql` at a running environment that must be upgraded in place.
 
+## Initial Platform Admin
+
+The first platform admin is an operational bootstrap, not a founder signup path.
+
+After the baseline or migrations have created `public.platform_admins`, create the initial
+operator from the repository root with:
+
+```bash
+SUPABASE_URL="https://your-project-ref.supabase.co" \
+SUPABASE_SERVICE_ROLE_KEY="..." \
+PLATFORM_BOOTSTRAP_ADMIN_EMAIL="ops@example.com" \
+PLATFORM_BOOTSTRAP_ADMIN_FULL_NAME="Platform Operator" \
+PLATFORM_BOOTSTRAP_ADMIN_PASSWORD="use-a-strong-temporary-password" \
+PLATFORM_BOOTSTRAP_CONFIRM="create-platform-admin" \
+node infra/scripts/bootstrap_platform_admin.mjs
+```
+
+For local checks, use:
+
+```bash
+node infra/scripts/bootstrap_platform_admin.mjs --dry-run
+```
+
+The script is idempotent. It finds or creates the Supabase Auth user, creates or reactivates the
+matching `platform_admins` row, and writes a `bootstrap_platform_admin` audit log entry. Keep this
+script service-role only; do not expose first-admin creation through public routes, founder control,
+or branch operations.
+
+Platform admins do not get a `public.users` row because that table is branch-scoped and requires a
+real `restaurant_id`. Runtime auth checks platform admins through `public.platform_admins` before
+falling back to the branch user profile path.
+
 ## Domain Layout
 
 The SQL tree is organized for future human and AI maintenance:

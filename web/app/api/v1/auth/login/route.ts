@@ -10,6 +10,29 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { verifyRecaptchaToken } from "@/lib/utils/captcha";
 import { protectEndpoint, RATE_LIMIT_CONFIGS } from "@/lib/server/rateLimit";
 
+function resolveLocaleFromRequest(req: NextRequest): string {
+  const referer = req.headers.get("referer");
+  if (!referer) return "en";
+
+  try {
+    const pathname = new URL(referer).pathname;
+    const locale = pathname.split("/").filter(Boolean)[0];
+    return locale || "en";
+  } catch {
+    return "en";
+  }
+}
+
+function buildPlatformRedirectUrl(req: NextRequest, locale: string): string {
+  const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
+  const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
+  const rootOrigin = isDevelopment
+    ? req.nextUrl.origin
+    : `https://${productionUrl}`;
+
+  return `${rootOrigin}/${locale}/platform`;
+}
+
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || "unknown";
   try {
@@ -31,13 +54,12 @@ export async function POST(req: NextRequest) {
     if (!captchaValid) {
       return new Response("Invalid CAPTCHA", { status: 400 });
     }
-    const supabase = await createClient()
+    const supabase = await createClient();
     // Authenticate user with Supabase
-    const { data, error: authError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (authError) {
       await logEvent({
@@ -61,6 +83,44 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const { data: platformAdmin, error: platformAdminError } =
+      await supabaseAdmin
+        .from("platform_admins")
+        .select("id")
+        .eq("user_id", data.user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+    if (platformAdminError) {
+      await logEvent({
+        level: "ERROR",
+        endpoint: "/api/v1/auth/login",
+        message: `Failed to query platform admin access: ${platformAdminError.message}`,
+        metadata: { ip, userId: data.user.id },
+      });
+    }
+
+    if (platformAdmin) {
+      const locale = resolveLocaleFromRequest(req);
+
+      await logEvent({
+        level: "INFO",
+        endpoint: "/api/v1/auth/login",
+        message: "Platform admin login successful",
+        metadata: {
+          ip,
+          userId: data.user.id,
+          platformAdminId: platformAdmin.id,
+        },
+      });
+
+      return NextResponse.json({
+        message: "Login successful",
+        role: "platform_admin",
+        redirectUrl: buildPlatformRedirectUrl(req, locale),
+      });
+    }
+
     // Fetch user's restaurant_id and subdomain
     // 1. Get the user's restaurant_id - handle potential duplicates
     const { data: userRecords, error } = await supabase
@@ -75,10 +135,9 @@ export async function POST(req: NextRequest) {
         message: `Failed to query user data: ${error.message}`,
         metadata: { ip, userId: data.user.id },
       });
-      return new Response(
-        "Failed to retrieve user information",
-        { status: 500 },
-      );
+      return new Response("Failed to retrieve user information", {
+        status: 500,
+      });
     }
 
     let userRecord;
@@ -89,7 +148,8 @@ export async function POST(req: NextRequest) {
       await logEvent({
         level: "WARN",
         endpoint: "/api/v1/auth/login",
-        message: "No user record found with regular client, trying admin client",
+        message:
+          "No user record found with regular client, trying admin client",
         metadata: { ip, userId: data.user.id },
       });
 
@@ -104,9 +164,13 @@ export async function POST(req: NextRequest) {
           level: "INFO",
           endpoint: "/api/v1/auth/login",
           message: "Found user record with admin client",
-          metadata: { ip, userId: data.user.id, recordCount: adminUserRecords.length },
+          metadata: {
+            ip,
+            userId: data.user.id,
+            recordCount: adminUserRecords.length,
+          },
         });
-        
+
         userRecord = adminUserRecords[0];
         restaurantId = userRecord?.restaurant_id;
       } else {
@@ -114,8 +178,13 @@ export async function POST(req: NextRequest) {
         await logEvent({
           level: "WARN",
           endpoint: "/api/v1/auth/login",
-          message: "No user record found even with admin client, checking auth metadata for fallback creation",
-          metadata: { ip, userId: data.user.id, adminError: adminError?.message },
+          message:
+            "No user record found even with admin client, checking auth metadata for fallback creation",
+          metadata: {
+            ip,
+            userId: data.user.id,
+            adminError: adminError?.message,
+          },
         });
 
         // Check if user has restaurant metadata from registration
@@ -125,33 +194,45 @@ export async function POST(req: NextRequest) {
         if (authRestaurantId && authRole) {
           // Try to create the missing user record
           try {
-            const { error: insertError } = await supabaseAdmin.from("users").insert([
-              {
-                id: data.user.id,
-                restaurant_id: authRestaurantId,
-                email: data.user.email,
-                name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-                role: authRole,
-              },
-            ]);
+            const { error: insertError } = await supabaseAdmin
+              .from("users")
+              .insert([
+                {
+                  id: data.user.id,
+                  restaurant_id: authRestaurantId,
+                  email: data.user.email,
+                  name:
+                    data.user.user_metadata?.name ||
+                    data.user.email?.split("@")[0] ||
+                    "User",
+                  role: authRole,
+                },
+              ]);
 
             if (insertError) {
               // Check if it's a duplicate key constraint - if so, the record exists but our query had issues
-              if (insertError.code === '23505') { // PostgreSQL unique constraint violation
+              if (insertError.code === "23505") {
+                // PostgreSQL unique constraint violation
                 await logEvent({
                   level: "WARN",
                   endpoint: "/api/v1/auth/login",
-                  message: "User record already exists but query didn't find it, retrying query",
+                  message:
+                    "User record already exists but query didn't find it, retrying query",
                   metadata: { ip, userId: data.user.id, authRestaurantId },
                 });
-                
-                // Retry the query one more time
-                const { data: retryUserRecords, error: retryError } = await supabaseAdmin
-                  .from("users")
-                  .select("restaurant_id, two_factor_enabled, role")
-                  .eq("id", data.user.id);
 
-                if (!retryError && retryUserRecords && retryUserRecords.length > 0) {
+                // Retry the query one more time
+                const { data: retryUserRecords, error: retryError } =
+                  await supabaseAdmin
+                    .from("users")
+                    .select("restaurant_id, two_factor_enabled, role")
+                    .eq("id", data.user.id);
+
+                if (
+                  !retryError &&
+                  retryUserRecords &&
+                  retryUserRecords.length > 0
+                ) {
                   userRecord = retryUserRecords[0];
                   restaurantId = userRecord?.restaurant_id;
                   await logEvent({
@@ -166,21 +247,27 @@ export async function POST(req: NextRequest) {
                   level: "ERROR",
                   endpoint: "/api/v1/auth/login",
                   message: `Failed to create missing user record: ${insertError.message}`,
-                  metadata: { ip, userId: data.user.id, authRestaurantId, errorCode: insertError.code },
+                  metadata: {
+                    ip,
+                    userId: data.user.id,
+                    authRestaurantId,
+                    errorCode: insertError.code,
+                  },
                 });
               }
             } else {
               await logEvent({
                 level: "INFO",
                 endpoint: "/api/v1/auth/login",
-                message: "Successfully created missing user record from auth metadata",
+                message:
+                  "Successfully created missing user record from auth metadata",
                 metadata: { ip, userId: data.user.id, authRestaurantId },
               });
-              
+
               userRecord = {
                 restaurant_id: authRestaurantId,
                 two_factor_enabled: false,
-                role: authRole
+                role: authRole,
               };
               restaurantId = authRestaurantId;
             }
@@ -199,12 +286,13 @@ export async function POST(req: NextRequest) {
           await logEvent({
             level: "ERROR",
             endpoint: "/api/v1/auth/login",
-            message: "No user record found and unable to create from auth metadata",
-            metadata: { 
-              ip, 
-              userId: data.user.id, 
+            message:
+              "No user record found and unable to create from auth metadata",
+            metadata: {
+              ip,
+              userId: data.user.id,
               hasAuthMetadata: !!authRestaurantId,
-              adminQueryError: adminError?.message 
+              adminQueryError: adminError?.message,
             },
           });
           return new Response(
@@ -219,7 +307,11 @@ export async function POST(req: NextRequest) {
           level: "WARN",
           endpoint: "/api/v1/auth/login",
           message: `Multiple user records found (${userRecords.length} records) - using first record`,
-          metadata: { ip, userId: data.user.id, recordCount: userRecords.length },
+          metadata: {
+            ip,
+            userId: data.user.id,
+            recordCount: userRecords.length,
+          },
         });
       }
 
@@ -244,7 +336,9 @@ export async function POST(req: NextRequest) {
     // 2. Get the restaurant's subdomain and approval status
     const { data: restaurant, error: restError } = await supabase
       .from("restaurants")
-      .select("subdomain, default_language, is_verified, is_active, suspended_at")
+      .select(
+        "subdomain, default_language, is_verified, is_active, suspended_at",
+      )
       .eq("id", restaurantId)
       .single();
 
@@ -275,7 +369,8 @@ export async function POST(req: NextRequest) {
     // Supabase client's signInWithPassword handles session cookies.
 
     const isDevelopment = process.env.NEXT_PRIVATE_DEVELOPMENT === "true";
-    const productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
+    const productionUrl =
+      process.env.NEXT_PUBLIC_PRODUCTION_URL || "coorder.ai";
     const { data: orgLink } = await supabaseAdmin
       .from("organization_restaurants")
       .select("owner_organizations(public_subdomain)")
@@ -285,7 +380,8 @@ export async function POST(req: NextRequest) {
     const ownerOrganization = Array.isArray(orgLink?.owner_organizations)
       ? orgLink.owner_organizations[0]
       : orgLink?.owner_organizations;
-    const appSubdomain = ownerOrganization?.public_subdomain || restaurantSubdomain;
+    const appSubdomain =
+      ownerOrganization?.public_subdomain || restaurantSubdomain;
 
     // Check approval/suspension status before allowing access to the dashboard.
     const isSuspended = restaurant.suspended_at != null;
@@ -306,7 +402,10 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json(
-        { message: "Your restaurant account is not yet approved.", redirectUrl: pendingRedirectUrl },
+        {
+          message: "Your restaurant account is not yet approved.",
+          redirectUrl: pendingRedirectUrl,
+        },
         { status: 403 },
       );
     }

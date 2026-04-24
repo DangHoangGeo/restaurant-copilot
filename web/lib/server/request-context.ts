@@ -1,11 +1,15 @@
 // Request-scoped cache for user and restaurant context
-import { cache } from 'react';
-import { cookies } from 'next/headers';
-import { createClient } from '@/lib/supabase/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import type { AuthUser } from './getUserFromRequest';
-import { ACTIVE_BRANCH_COOKIE } from './organizations/active-branch';
-import type { OrgMemberRole, OrgPermission, ShopScope } from './organizations/types';
+import { cache } from "react";
+import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import type { AuthUser } from "./getUserFromRequest";
+import { ACTIVE_BRANCH_COOKIE } from "./organizations/active-branch";
+import type {
+  OrgMemberRole,
+  OrgPermission,
+  ShopScope,
+} from "./organizations/types";
 
 // Cache the user data for the duration of the request.
 //
@@ -17,7 +21,10 @@ import type { OrgMemberRole, OrgPermission, ShopScope } from './organizations/ty
 export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
 
-  const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser();
+  const {
+    data: { user: supabaseUser },
+    error: authError,
+  } = await supabase.auth.getUser();
 
   if (authError || !supabaseUser) {
     return null;
@@ -28,11 +35,32 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     // Select all restaurant fields needed by the layout so getRestaurantSettingsFromSubdomain
     // does not need to make a separate DB call.
     const { data: userRecords, error: userRecordError } = await supabase
-      .from('users')
-      .select('restaurant_id, role, restaurants(id, name, logo_url, subdomain, branch_code, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi, is_verified, is_active, suspended_at)')
-      .eq('id', supabaseUser.id);
+      .from("users")
+      .select(
+        "restaurant_id, role, restaurants(id, name, logo_url, subdomain, branch_code, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi, is_verified, is_active, suspended_at)",
+      )
+      .eq("id", supabaseUser.id);
 
     if (userRecordError || !userRecords || userRecords.length === 0) {
+      const { data: platformAdmin } = await supabaseAdmin
+        .from("platform_admins")
+        .select("id")
+        .eq("user_id", supabaseUser.id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (platformAdmin) {
+        return {
+          userId: supabaseUser.id,
+          email: supabaseUser.email,
+          restaurantId: null,
+          subdomain: null,
+          role: "platform_admin",
+          restaurantSettings: null,
+          organization: null,
+        };
+      }
+
       return {
         userId: supabaseUser.id,
         email: supabaseUser.email,
@@ -45,7 +73,9 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     }
 
     if (userRecords.length > 1) {
-      console.warn(`Multiple user records found for user ${supabaseUser.id} (${userRecords.length} records) - using first record`);
+      console.warn(
+        `Multiple user records found for user ${supabaseUser.id} (${userRecords.length} records) - using first record`,
+      );
     }
 
     const userRecord = userRecords[0];
@@ -75,9 +105,12 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     } | null;
 
     let restaurantId: string | null =
-      userRecord?.restaurant_id ?? supabaseUser.app_metadata?.restaurant_id ?? null;
-    let subdomain: string | null = (primaryRestaurant as RestaurantRow)?.subdomain ?? null;
-    let organization: AuthUser['organization'] = null;
+      userRecord?.restaurant_id ??
+      supabaseUser.app_metadata?.restaurant_id ??
+      null;
+    let subdomain: string | null =
+      (primaryRestaurant as RestaurantRow)?.subdomain ?? null;
+    let organization: AuthUser["organization"] = null;
 
     // Build restaurant settings from the already-joined row (no extra DB call).
     let restaurantSettings = primaryRestaurant
@@ -87,11 +120,11 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     // Resolve the first active organization membership once per request so
     // branch access and branch-scoped authorization can share the same source.
     const { data: organizationMembers } = await supabase
-      .from('organization_members')
-      .select('id, organization_id, role, shop_scope')
-      .eq('user_id', supabaseUser.id)
-      .eq('is_active', true)
-      .order('created_at', { ascending: true })
+      .from("organization_members")
+      .select("id, organization_id, role, shop_scope")
+      .eq("user_id", supabaseUser.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true })
       .limit(1);
 
     const organizationMember = organizationMembers?.[0] as
@@ -105,23 +138,25 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
 
     if (organizationMember) {
       const [scopeResult, permissionResult] = await Promise.all([
-        organizationMember.shop_scope === 'all_shops'
+        organizationMember.shop_scope === "all_shops"
           ? supabase
-              .from('organization_restaurants')
-              .select('restaurant_id')
-              .eq('organization_id', organizationMember.organization_id)
+              .from("organization_restaurants")
+              .select("restaurant_id")
+              .eq("organization_id", organizationMember.organization_id)
           : supabase
-              .from('organization_member_shop_scopes')
-              .select('restaurant_id')
-              .eq('member_id', organizationMember.id),
+              .from("organization_member_shop_scopes")
+              .select("restaurant_id")
+              .eq("member_id", organizationMember.id),
         supabase
-          .from('organization_member_permissions')
-          .select('permission, granted')
-          .eq('member_id', organizationMember.id),
+          .from("organization_member_permissions")
+          .select("permission, granted")
+          .eq("member_id", organizationMember.id),
       ]);
 
       const accessibleRestaurantIds =
-        scopeResult.data?.map((row: { restaurant_id: string }) => row.restaurant_id) ?? [];
+        scopeResult.data?.map(
+          (row: { restaurant_id: string }) => row.restaurant_id,
+        ) ?? [];
 
       const permissionOverrides =
         permissionResult.data?.reduce<Partial<Record<OrgPermission, boolean>>>(
@@ -145,9 +180,14 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
     // is not yet verified, has been deactivated, or is suspended, nulling out
     // restaurantId prevents those APIs from proceeding without a hard sign-out.
     const role = userRecord?.role ?? supabaseUser.app_metadata?.role ?? null;
-    if (role === 'owner' && primaryRestaurant) {
-      const row = primaryRestaurant as RestaurantRow & { is_verified: boolean; is_active: boolean; suspended_at: string | null };
-      const blocked = row.suspended_at != null || !row.is_verified || !row.is_active;
+    if (role === "owner" && primaryRestaurant) {
+      const row = primaryRestaurant as RestaurantRow & {
+        is_verified: boolean;
+        is_active: boolean;
+        suspended_at: string | null;
+      };
+      const blocked =
+        row.suspended_at != null || !row.is_verified || !row.is_active;
       if (blocked) {
         restaurantId = null;
       }
@@ -165,27 +205,29 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       activeBranchCookie !== restaurantId &&
       organization?.accessibleRestaurantIds.includes(activeBranchCookie)
     ) {
-        restaurantId = activeBranchCookie;
-        // Fetch the active branch's full settings so downstream callers have
-        // everything they need (subdomain, name, logo, etc.) without an extra query.
-        const { data: activeBranchRow } = await supabaseAdmin
-          .from('restaurants')
-          .select('id, name, logo_url, subdomain, branch_code, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi')
-          .eq('id', activeBranchCookie)
-          .single();
-        subdomain = activeBranchRow?.subdomain ?? null;
-        restaurantSettings = activeBranchRow
-          ? buildRestaurantSettings(activeBranchRow as RestaurantRow)
-          : null;
+      restaurantId = activeBranchCookie;
+      // Fetch the active branch's full settings so downstream callers have
+      // everything they need (subdomain, name, logo, etc.) without an extra query.
+      const { data: activeBranchRow } = await supabaseAdmin
+        .from("restaurants")
+        .select(
+          "id, name, logo_url, subdomain, branch_code, brand_color, default_language, onboarded, owner_photo_url, owner_story_en, owner_story_ja, owner_story_vi",
+        )
+        .eq("id", activeBranchCookie)
+        .single();
+      subdomain = activeBranchRow?.subdomain ?? null;
+      restaurantSettings = activeBranchRow
+        ? buildRestaurantSettings(activeBranchRow as RestaurantRow)
+        : null;
     }
     // If validation fails (access revoked, stale cookie), fall through to
     // the base restaurantId — the stale cookie is silently ignored.
 
     if (restaurantId && restaurantSettings) {
       const { data: orgLink } = await supabaseAdmin
-        .from('organization_restaurants')
-        .select('owner_organizations(public_subdomain)')
-        .eq('restaurant_id', restaurantId)
+        .from("organization_restaurants")
+        .select("owner_organizations(public_subdomain)")
+        .eq("restaurant_id", restaurantId)
         .maybeSingle();
 
       const ownerOrganization = Array.isArray(orgLink?.owner_organizations)
@@ -208,7 +250,7 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
       organization,
     };
   } catch (error) {
-    console.error('Error in getCachedUser:', error);
+    console.error("Error in getCachedUser:", error);
     return {
       userId: supabaseUser.id,
       email: supabaseUser.email,
@@ -221,23 +263,25 @@ export const getCachedUser = cache(async (): Promise<AuthUser | null> => {
   }
 });
 
-function buildRestaurantSettings(row: {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  subdomain: string;
-  branch_code?: string | null;
-  brand_color: string | null;
-  default_language: string | null;
-  onboarded: boolean | null;
-  owner_photo_url: string | null;
-  owner_story_en: string | null;
-  owner_story_ja: string | null;
-  owner_story_vi: string | null;
-  is_verified?: boolean;
-  is_active?: boolean;
-  suspended_at?: string | null;
-} | null) {
+function buildRestaurantSettings(
+  row: {
+    id: string;
+    name: string;
+    logo_url: string | null;
+    subdomain: string;
+    branch_code?: string | null;
+    brand_color: string | null;
+    default_language: string | null;
+    onboarded: boolean | null;
+    owner_photo_url: string | null;
+    owner_story_en: string | null;
+    owner_story_ja: string | null;
+    owner_story_vi: string | null;
+    is_verified?: boolean;
+    is_active?: boolean;
+    suspended_at?: string | null;
+  } | null,
+) {
   if (!row) return null;
   return {
     id: row.id,
@@ -246,40 +290,41 @@ function buildRestaurantSettings(row: {
     subdomain: row.subdomain,
     branch_code: row.branch_code ?? null,
     company_public_subdomain: null,
-    primaryColor: row.brand_color || '#3B82F6',
-    defaultLocale: row.default_language || 'en',
+    primaryColor: row.brand_color || "#3B82F6",
+    defaultLocale: row.default_language || "en",
     onboarded: row.onboarded || false,
     owner_photo_url: row.owner_photo_url || null,
-    owner_story_en: row.owner_story_en || '',
-    owner_story_ja: row.owner_story_ja || '',
-    owner_story_vi: row.owner_story_vi || '',
+    owner_story_en: row.owner_story_en || "",
+    owner_story_ja: row.owner_story_ja || "",
+    owner_story_vi: row.owner_story_vi || "",
   };
 }
 
 // Cache restaurant context for the request
 export const getCachedRestaurantContext = cache(async (subdomain: string) => {
   const supabase = await createClient();
-  
+
   const { data: restaurant, error } = await supabase
-    .from('restaurants')
-    .select('id, name, subdomain')
-    .eq('subdomain', subdomain)
+    .from("restaurants")
+    .select("id, name, subdomain")
+    .eq("subdomain", subdomain)
     .single();
-    
+
   if (error) {
     return null;
   }
-    
+
   return restaurant;
 });
 
 // Cache menu data for a specific restaurant (request-scoped)
 export const getCachedMenuData = cache(async (restaurantId: string) => {
   const supabase = await createClient();
-  
+
   const { data: categories, error } = await supabase
-    .from('categories')
-    .select(`
+    .from("categories")
+    .select(
+      `
       id, position, name_en, name_ja, name_vi,
       menu_items(
         id, name_en, name_ja, name_vi, description_en, description_ja, description_vi,
@@ -287,10 +332,11 @@ export const getCachedMenuData = cache(async (restaurantId: string) => {
         menu_item_sizes(id, size_key, name_en, name_ja, name_vi, price, position),
         toppings(id, name_en, name_ja, name_vi, price, position)
       )
-    `)
-    .eq('restaurant_id', restaurantId)
-    .order('position', { ascending: true })
-    .order('position', { foreignTable: 'menu_items', ascending: true });
+    `,
+    )
+    .eq("restaurant_id", restaurantId)
+    .order("position", { ascending: true })
+    .order("position", { foreignTable: "menu_items", ascending: true });
 
   if (error) {
     return [];
@@ -302,12 +348,12 @@ export const getCachedMenuData = cache(async (restaurantId: string) => {
 // Cache tables data for a specific restaurant (request-scoped)
 export const getCachedTablesData = cache(async (restaurantId: string) => {
   const supabase = await createClient();
-  
+
   const { data: tables, error } = await supabase
-    .from('tables')
-    .select('id, name, status, is_outdoor, is_accessible, notes, capacity')
-    .eq('restaurant_id', restaurantId)
-    .order('name');
+    .from("tables")
+    .select("id, name, status, is_outdoor, is_accessible, notes, capacity")
+    .eq("restaurant_id", restaurantId)
+    .order("name");
 
   if (error) {
     return [];
@@ -317,26 +363,31 @@ export const getCachedTablesData = cache(async (restaurantId: string) => {
 });
 
 // Cache restaurant settings (request-scoped)
-export const getCachedRestaurantSettings = cache(async (restaurantId: string) => {
-  const supabase = await createClient();
-  
-  const { data: settings, error } = await supabase
-    .from('restaurants')
-    .select('name, logo_url, default_language, brand_color')
-    .eq('id', restaurantId)
-    .single();
+export const getCachedRestaurantSettings = cache(
+  async (restaurantId: string) => {
+    const supabase = await createClient();
 
-  if (error) {
-    return null;
-  }
+    const { data: settings, error } = await supabase
+      .from("restaurants")
+      .select("name, logo_url, default_language, brand_color")
+      .eq("id", restaurantId)
+      .single();
 
-  return settings;
-});
+    if (error) {
+      return null;
+    }
+
+    return settings;
+  },
+);
 
 // Cache configuration from environment variables
-const CACHE_MENU_DURATION = parseInt(process.env.CACHE_MENU_DURATION || '300') * 1000; // 5 minutes default
-const CACHE_RESTAURANT_DURATION = parseInt(process.env.CACHE_RESTAURANT_DURATION || '3600') * 1000; // 1 hour default
-const CACHE_USER_DURATION = parseInt(process.env.CACHE_USER_DURATION || '1800') * 1000; // 30 minutes default
+const CACHE_MENU_DURATION =
+  parseInt(process.env.CACHE_MENU_DURATION || "300") * 1000; // 5 minutes default
+const CACHE_RESTAURANT_DURATION =
+  parseInt(process.env.CACHE_RESTAURANT_DURATION || "3600") * 1000; // 1 hour default
+const CACHE_USER_DURATION =
+  parseInt(process.env.CACHE_USER_DURATION || "1800") * 1000; // 30 minutes default
 
 // In-memory cache for cross-request caching (for production optimization)
 interface CacheEntry<T> {
@@ -352,7 +403,7 @@ class MemoryCache {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     });
   }
 
@@ -404,9 +455,9 @@ export function clearAllCache(): void {
 
 // Enhanced cache functions with cross-request caching (for future use)
 export function getCachedWithMemory<T>(
-  key: string, 
-  fetchFn: () => Promise<T>, 
-  ttl: number = CACHE_MENU_DURATION
+  key: string,
+  fetchFn: () => Promise<T>,
+  ttl: number = CACHE_MENU_DURATION,
 ): Promise<T> {
   // Try memory cache first
   const cached = memoryCache.get<T>(key);
@@ -423,13 +474,13 @@ export function getCachedWithMemory<T>(
 }
 
 // Helper to get appropriate TTL for different data types
-export function getCacheTTL(type: 'user' | 'restaurant' | 'menu'): number {
+export function getCacheTTL(type: "user" | "restaurant" | "menu"): number {
   switch (type) {
-    case 'user':
+    case "user":
       return CACHE_USER_DURATION;
-    case 'restaurant':
+    case "restaurant":
       return CACHE_RESTAURANT_DURATION;
-    case 'menu':
+    case "menu":
       return CACHE_MENU_DURATION;
     default:
       return CACHE_MENU_DURATION;

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const subdomain = searchParams.get('subdomain');
+    const subdomain = searchParams.get('subdomain')?.trim().toLowerCase();
 
     if (!subdomain) {
       return NextResponse.json(
@@ -36,15 +36,13 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const supabase = await createClient();
-
     const [{ data: existingRestaurant, error: restaurantError }, { data: existingOrganization, error: organizationError }] = await Promise.all([
-      supabase
+      supabaseAdmin
         .from('restaurants')
         .select('id')
         .eq('subdomain', subdomain)
         .maybeSingle(),
-      supabase
+      supabaseAdmin
         .from('owner_organizations')
         .select('id')
         .or(`public_subdomain.eq.${subdomain},slug.eq.${subdomain}`)

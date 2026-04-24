@@ -106,7 +106,10 @@ CREATE OR REPLACE FUNCTION public.trigger_restaurant_verified_email()
 AS $function$
 BEGIN
   -- Only send if restaurant just got verified (wasn't verified before)
-  IF NEW.is_verified = true AND (OLD.is_verified = false OR OLD.is_verified IS NULL) THEN
+  IF NEW.is_verified = true
+    AND (OLD.is_verified = false OR OLD.is_verified IS NULL)
+    AND NEW.email IS NOT NULL
+  THEN
     PERFORM queue_email_notification(
       NEW.email,
       NEW.name,

@@ -25,6 +25,8 @@
 \i 'supabase/sql/60_platform_admin_support/keys.sql'
 \i 'supabase/sql/20_ordering_customer/keys.sql'
 
+\i 'supabase/sql/50_finance_billing/seed.sql'
+
 \i 'supabase/sql/30_founder_control/relations.sql'
 \i 'supabase/sql/60_platform_admin_support/relations.sql'
 \i 'supabase/sql/10_branch_core/relations.sql'

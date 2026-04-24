@@ -1,98 +1,107 @@
-'use client';
+"use client";
 
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useRouter } from "next/navigation";
 import {
   Building2,
   Check,
   ChevronRight,
+  AlertCircle,
   ImagePlus,
   Loader2,
   Mail,
   MapPin,
   Palette,
   Phone,
+  RefreshCw,
   Sparkles,
   Store,
   Trash2,
   UtensilsCrossed,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { OperatingHoursEditor } from '@/components/features/admin/dashboard/OperatingHoursEditor';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "lucide-react";
+import { toast } from "sonner";
+import { OperatingHoursEditor } from "@/components/features/admin/dashboard/OperatingHoursEditor";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import {
   createDefaultOpeningHours,
   normalizeOpeningHours,
   summarizeOpeningHours,
   type OpeningHours,
-} from '@/lib/utils/opening-hours';
-import type { Restaurant } from '@/shared/types/restaurant';
+} from "@/lib/utils/opening-hours";
+import type { Restaurant } from "@/shared/types/restaurant";
 
 const TIMEZONES = [
-  { value: 'Asia/Tokyo', label: 'Tokyo' },
-  { value: 'Asia/Ho_Chi_Minh', label: 'Ho Chi Minh' },
-  { value: 'Asia/Singapore', label: 'Singapore' },
+  { value: "Asia/Tokyo", label: "Tokyo" },
+  { value: "Asia/Ho_Chi_Minh", label: "Ho Chi Minh" },
+  { value: "Asia/Singapore", label: "Singapore" },
 ];
 
 const CURRENCIES = [
-  { value: 'JPY', label: 'JPY' },
-  { value: 'VND', label: 'VND' },
-  { value: 'USD', label: 'USD' },
+  { value: "JPY", label: "JPY" },
+  { value: "VND", label: "VND" },
+  { value: "USD", label: "USD" },
 ];
 
 const COUNTRIES = [
-  { value: 'JP', label: 'Japan' },
-  { value: 'VN', label: 'Vietnam' },
-  { value: 'SG', label: 'Singapore' },
+  { value: "JP", label: "Japan" },
+  { value: "VN", label: "Vietnam" },
+  { value: "SG", label: "Singapore" },
 ];
 
 const LANGUAGES = [
-  { value: 'ja', label: '日本語' },
-  { value: 'en', label: 'English' },
-  { value: 'vi', label: 'Tiếng Việt' },
+  { value: "ja", label: "日本語" },
+  { value: "en", label: "English" },
+  { value: "vi", label: "Tiếng Việt" },
 ] as const;
 
 const STEPS = [
   {
-    id: 'company',
-    label: 'Company',
-    hint: 'Brand foundation',
+    id: "company",
+    label: "Company",
+    hint: "Brand foundation",
     icon: Building2,
   },
   {
-    id: 'brand',
-    label: 'AI brand',
-    hint: 'Choose a direction',
+    id: "brand",
+    label: "AI brand",
+    hint: "Choose a direction",
     icon: Sparkles,
   },
   {
-    id: 'branch',
-    label: 'First branch',
-    hint: 'Starter setup',
+    id: "branch",
+    label: "First branch",
+    hint: "Starter setup",
     icon: Store,
   },
   {
-    id: 'review',
-    label: 'Finish',
-    hint: 'Save and continue',
+    id: "review",
+    label: "Finish",
+    hint: "Save and continue",
     icon: Check,
   },
 ] as const;
 
 const BRAND_COLOR_HEX_RE = /^#([0-9A-Fa-f]{6})$/;
 
-type StepId = (typeof STEPS)[number]['id'];
+type StepId = (typeof STEPS)[number]["id"];
 
 type CompanyDraft = {
   name: string;
@@ -112,7 +121,7 @@ type CompanyDraft = {
 };
 
 type BranchSetupDraft = {
-  ownerLanguage: 'en' | 'ja' | 'vi';
+  ownerLanguage: "en" | "ja" | "vi";
   branchName: string;
   branchCode: string;
   branchAddress: string;
@@ -124,7 +133,7 @@ type BranchDraft = {
   id: string;
   name: string;
   branch_code: string;
-  default_language: 'en' | 'ja' | 'vi';
+  default_language: "en" | "ja" | "vi";
   tax: string;
   opening_hours: OpeningHours;
   logo_url: string;
@@ -153,7 +162,7 @@ type MenuCategorySuggestion = {
   name_en: string;
   name_ja: string;
   name_vi: string;
-  kind: 'basic' | 'specialty';
+  kind: "basic" | "specialty";
 };
 
 type StoredOnboardingDraft = {
@@ -197,24 +206,27 @@ function getCategoryKey(category: {
     category.name_en?.trim() ||
     category.name_ja?.trim() ||
     category.name_vi?.trim() ||
-    '';
+    "";
 
-  return source.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return source
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function getLocalizedValue(
-  locale: 'en' | 'ja' | 'vi',
-  values: { en?: string; ja?: string; vi?: string }
+  locale: "en" | "ja" | "vi",
+  values: { en?: string; ja?: string; vi?: string },
 ) {
-  return values[locale] || values.en || values.ja || values.vi || '';
+  return values[locale] || values.en || values.ja || values.vi || "";
 }
 
 function getLocalizedCategoryName(
-  locale: 'en' | 'ja' | 'vi',
-  category: MenuCategorySuggestion
+  locale: "en" | "ja" | "vi",
+  category: MenuCategorySuggestion,
 ) {
-  if (locale === 'ja') return category.name_ja || category.name_en;
-  if (locale === 'vi') return category.name_vi || category.name_en;
+  if (locale === "ja") return category.name_ja || category.name_en;
+  if (locale === "vi") return category.name_vi || category.name_en;
   return category.name_en;
 }
 
@@ -222,9 +234,9 @@ function sanitizeBranchCode(value: string) {
   return value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
     .slice(0, 50);
 }
 
@@ -251,12 +263,12 @@ function StepButton({
       onClick={onClick}
       disabled={!onClick}
       className={cn(
-        'rounded-[22px] px-4 py-3 text-left transition ring-1 ring-inset',
+        "rounded-[22px] px-4 py-3 text-left transition ring-1 ring-inset",
         isActive
-          ? 'bg-foreground text-background ring-foreground/15'
+          ? "bg-foreground text-background ring-foreground/15"
           : isDone
-            ? 'bg-background/90 text-foreground ring-border/60 hover:bg-background'
-            : 'bg-background/65 text-muted-foreground ring-border/40'
+            ? "bg-background/90 text-foreground ring-border/60 hover:bg-background"
+            : "bg-background/65 text-muted-foreground ring-border/40",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -269,8 +281,8 @@ function StepButton({
         </div>
         <span
           className={cn(
-            'flex h-9 w-9 items-center justify-center rounded-2xl',
-            isActive ? 'bg-background/10' : 'bg-muted'
+            "flex h-9 w-9 items-center justify-center rounded-2xl",
+            isActive ? "bg-background/10" : "bg-muted",
           )}
         >
           <Icon className="h-4 w-4" />
@@ -293,12 +305,14 @@ export function ControlOnboardingContent({
     email: initial.email,
   });
 
-  const [step, setStep] = useState<StepId>('company');
+  const [step, setStep] = useState<StepId>("company");
   const [loadingBranch, setLoadingBranch] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
+  const [branchLoadError, setBranchLoadError] = useState<string | null>(null);
 
   const [company, setCompany] = useState<CompanyDraft>({
     name: initial.name,
@@ -306,7 +320,7 @@ export function ControlOnboardingContent({
     timezone: initial.timezone,
     currency: initial.currency,
     country: initial.country,
-    logo_url: initial.logo_url ?? '',
+    logo_url: initial.logo_url ?? "",
     brand_color: initial.brand_color,
     description_en: initial.description_en,
     description_ja: initial.description_ja,
@@ -315,44 +329,58 @@ export function ControlOnboardingContent({
     phone: initial.phone,
     email: initial.email,
     serviceFocus:
-      initial.description_vi || initial.description_ja || initial.description_en || '',
+      initial.description_vi ||
+      initial.description_ja ||
+      initial.description_en ||
+      "",
   });
 
   const [branchSetup, setBranchSetup] = useState<BranchSetupDraft>({
-    ownerLanguage: (locale as 'en' | 'ja' | 'vi') || 'vi',
-    branchName: '',
-    branchCode: '',
+    ownerLanguage: (locale as "en" | "ja" | "vi") || "vi",
+    branchName: "",
+    branchCode: "",
     branchAddress: initial.address,
     branchPhone: initial.phone,
     branchEmail: initial.email,
   });
 
   const [branch, setBranch] = useState<BranchDraft>({
-    id: '',
-    name: '',
-    branch_code: '',
-    default_language: 'ja',
-    tax: '10',
+    id: "",
+    name: "",
+    branch_code: "",
+    default_language: "ja",
+    tax: "10",
     opening_hours: createDefaultOpeningHours(),
-    logo_url: initial.logo_url ?? '',
-    hero_title_en: '',
-    hero_title_ja: '',
-    hero_title_vi: '',
-    hero_subtitle_en: '',
-    hero_subtitle_ja: '',
-    hero_subtitle_vi: '',
-    owner_story_en: '',
-    owner_story_ja: '',
-    owner_story_vi: '',
+    logo_url: initial.logo_url ?? "",
+    hero_title_en: "",
+    hero_title_ja: "",
+    hero_title_vi: "",
+    hero_subtitle_en: "",
+    hero_subtitle_ja: "",
+    hero_subtitle_vi: "",
+    owner_story_en: "",
+    owner_story_ja: "",
+    owner_story_vi: "",
   });
 
   const [brandOptions, setBrandOptions] = useState<BrandOption[]>([]);
-  const [selectedBrandOptionId, setSelectedBrandOptionId] = useState<string | null>(null);
-  const [categorySuggestions, setCategorySuggestions] = useState<MenuCategorySuggestion[]>([]);
-  const [selectedCategoryKeys, setSelectedCategoryKeys] = useState<string[]>([]);
+  const [selectedBrandOptionId, setSelectedBrandOptionId] = useState<
+    string | null
+  >(null);
+  const [categorySuggestions, setCategorySuggestions] = useState<
+    MenuCategorySuggestion[]
+  >([]);
+  const [selectedCategoryKeys, setSelectedCategoryKeys] = useState<string[]>(
+    [],
+  );
 
   const disabled = !canEdit || saving || uploadingLogo;
   const draftKey = `control_onboarding_draft_${initial.publicSubdomain}`;
+
+  const reportSetupError = useCallback((message: string) => {
+    setSetupError(message);
+    toast.error(message);
+  }, []);
 
   useEffect(() => {
     try {
@@ -417,7 +445,7 @@ export function ControlOnboardingContent({
             selectedBrandOptionId,
             categorySuggestions,
             selectedCategoryKeys,
-          } satisfies StoredOnboardingDraft)
+          } satisfies StoredOnboardingDraft),
         );
       } catch {
         // localStorage can be unavailable in some browser modes.
@@ -462,89 +490,98 @@ export function ControlOnboardingContent({
     };
   }, [company.address, company.email, company.phone]);
 
-  useEffect(() => {
-    let active = true;
+  const loadStarterBranch = useCallback(async () => {
+    setLoadingBranch(true);
+    setBranchLoadError(null);
+    setSetupError(null);
 
-    const loadBranch = async () => {
-      try {
-        const response = await fetch('/api/v1/restaurant/settings', {
-          credentials: 'include',
-        });
+    try {
+      const response = await fetch(
+        "/api/v1/owner/organization/onboarding/starter-branch",
+        {
+          credentials: "include",
+        },
+      );
+      const data = await response.json().catch(() => ({}));
 
-        if (!response.ok) {
-          throw new Error('Failed to load branch');
-        }
-
-        const restaurant = (await response.json()) as Restaurant;
-        if (!active) return;
-
-        setBranch((current) => ({
-          ...current,
-          id: restaurant.id,
-          name: restaurant.name ?? '',
-          branch_code: restaurant.branch_code ?? restaurant.subdomain ?? '',
-          default_language: (restaurant.default_language ?? current.default_language) as
-            | 'en'
-            | 'ja'
-            | 'vi',
-          tax:
-            restaurant.tax != null
-              ? String(Math.round(restaurant.tax * 100))
-              : current.tax,
-          opening_hours: normalizeOpeningHours(restaurant.opening_hours),
-          logo_url: restaurant.logo_url ?? current.logo_url,
-          hero_title_en: restaurant.hero_title_en ?? '',
-          hero_title_ja: restaurant.hero_title_ja ?? '',
-          hero_title_vi: restaurant.hero_title_vi ?? '',
-          hero_subtitle_en: restaurant.hero_subtitle_en ?? '',
-          hero_subtitle_ja: restaurant.hero_subtitle_ja ?? '',
-          hero_subtitle_vi: restaurant.hero_subtitle_vi ?? '',
-          owner_story_en: restaurant.owner_story_en ?? '',
-          owner_story_ja: restaurant.owner_story_ja ?? '',
-          owner_story_vi: restaurant.owner_story_vi ?? '',
-        }));
-
-        setBranchSetup((current) => ({
-          ...current,
-          branchName: restaurant.name ?? current.branchName,
-          branchCode:
-            restaurant.branch_code ??
-            restaurant.subdomain ??
-            current.branchCode,
-          branchAddress: restaurant.address ?? current.branchAddress,
-          branchPhone: restaurant.phone ?? current.branchPhone,
-          branchEmail: restaurant.email ?? current.branchEmail,
-        }));
-      } catch {
-        toast.error('Failed to load starter branch');
-      } finally {
-        if (active) {
-          setLoadingBranch(false);
-        }
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Failed to load starter branch",
+        );
       }
-    };
 
-    loadBranch();
+      const restaurant = data.restaurant as Restaurant | null | undefined;
+      if (!restaurant) {
+        throw new Error("No starter branch was found for this organization");
+      }
 
-    return () => {
-      active = false;
-    };
-  }, []);
+      setBranch((current) => ({
+        ...current,
+        id: restaurant.id,
+        name: restaurant.name ?? "",
+        branch_code: restaurant.branch_code ?? restaurant.subdomain ?? "",
+        default_language: (restaurant.default_language ??
+          current.default_language) as "en" | "ja" | "vi",
+        tax:
+          restaurant.tax != null
+            ? String(Math.round(restaurant.tax * 100))
+            : current.tax,
+        opening_hours: normalizeOpeningHours(restaurant.opening_hours),
+        logo_url: restaurant.logo_url ?? current.logo_url,
+        hero_title_en: restaurant.hero_title_en ?? "",
+        hero_title_ja: restaurant.hero_title_ja ?? "",
+        hero_title_vi: restaurant.hero_title_vi ?? "",
+        hero_subtitle_en: restaurant.hero_subtitle_en ?? "",
+        hero_subtitle_ja: restaurant.hero_subtitle_ja ?? "",
+        hero_subtitle_vi: restaurant.hero_subtitle_vi ?? "",
+        owner_story_en: restaurant.owner_story_en ?? "",
+        owner_story_ja: restaurant.owner_story_ja ?? "",
+        owner_story_vi: restaurant.owner_story_vi ?? "",
+      }));
+
+      setBranchSetup((current) => ({
+        ...current,
+        branchName: restaurant.name ?? current.branchName,
+        branchCode:
+          restaurant.branch_code ?? restaurant.subdomain ?? current.branchCode,
+        branchAddress: restaurant.address ?? current.branchAddress,
+        branchPhone: restaurant.phone ?? current.branchPhone,
+        branchEmail: restaurant.email ?? current.branchEmail,
+      }));
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to load starter branch";
+      setBranchLoadError(message);
+      reportSetupError(message);
+    } finally {
+      setLoadingBranch(false);
+    }
+  }, [reportSetupError]);
+
+  useEffect(() => {
+    void loadStarterBranch();
+  }, [loadStarterBranch]);
 
   const currentStepIndex = STEPS.findIndex((item) => item.id === step);
   const previewLanguage = branchSetup.ownerLanguage;
 
   const selectedBrandOption = useMemo(
-    () => brandOptions.find((option) => option.id === selectedBrandOptionId) ?? null,
-    [brandOptions, selectedBrandOptionId]
+    () =>
+      brandOptions.find((option) => option.id === selectedBrandOptionId) ??
+      null,
+    [brandOptions, selectedBrandOptionId],
   );
 
   const selectedCategories = useMemo(
     () =>
       categorySuggestions.filter((category) =>
-        selectedCategoryKeys.includes(category.key)
+        selectedCategoryKeys.includes(category.key),
       ),
-    [categorySuggestions, selectedCategoryKeys]
+    [categorySuggestions, selectedCategoryKeys],
   );
 
   const previewCompanyDescription = getLocalizedValue(previewLanguage, {
@@ -573,42 +610,47 @@ export function ControlOnboardingContent({
 
   const applyAiDraft = async () => {
     if (!company.name.trim()) {
-      toast.error('Add your company name');
+      reportSetupError("Add your company name");
       return false;
     }
 
     if (!company.serviceFocus.trim()) {
-      toast.error('Describe what makes your food or service special');
+      reportSetupError("Describe what makes your food or service special");
       return false;
     }
 
     setGenerating(true);
 
     try {
-      const response = await fetch('/api/v1/owner/organization/onboarding/ai-generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyName: company.name,
-          branchName: branchSetup.branchName || undefined,
-          ownerLanguage: branchSetup.ownerLanguage,
-          ownerIntro: company.serviceFocus,
-          openingHours: summarizeOpeningHours(branch.opening_hours),
-          city: company.address || branchSetup.branchAddress || undefined,
-          specialties: company.serviceFocus,
-        }),
-      });
+      const response = await fetch(
+        "/api/v1/owner/organization/onboarding/ai-generate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            companyName: company.name,
+            branchName: branchSetup.branchName || undefined,
+            ownerLanguage: branchSetup.ownerLanguage,
+            ownerIntro: company.serviceFocus,
+            openingHours: summarizeOpeningHours(branch.opening_hours),
+            city: company.address || branchSetup.branchAddress || undefined,
+            specialties: company.serviceFocus,
+          }),
+        },
+      );
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        toast.error(data.error ?? 'Failed to generate AI suggestions');
+        reportSetupError(data.error ?? "Failed to generate AI suggestions");
         return false;
       }
 
       const nextBrandOptions = Array.isArray(data.brand_options)
         ? (data.brand_options as BrandOption[])
         : [];
-      const nextCategorySuggestions = Array.isArray(data.food_category_suggestions)
+      const nextCategorySuggestions = Array.isArray(
+        data.food_category_suggestions,
+      )
         ? (
             data.food_category_suggestions as Array<{
               name_en?: string;
@@ -618,11 +660,18 @@ export function ControlOnboardingContent({
             }>
           )
             .map((category) => ({
-              key: getCategoryKey(category) || `category-${Math.random().toString(36).slice(2, 8)}`,
-              name_en: category.name_en?.trim() || '',
-              name_ja: category.name_ja?.trim() || category.name_en?.trim() || '',
-              name_vi: category.name_vi?.trim() || category.name_en?.trim() || '',
-              kind: category.kind === 'specialty' ? 'specialty' : 'basic' as 'basic' | 'specialty',
+              key:
+                getCategoryKey(category) ||
+                `category-${Math.random().toString(36).slice(2, 8)}`,
+              name_en: category.name_en?.trim() || "",
+              name_ja:
+                category.name_ja?.trim() || category.name_en?.trim() || "",
+              name_vi:
+                category.name_vi?.trim() || category.name_en?.trim() || "",
+              kind:
+                category.kind === "specialty"
+                  ? "specialty"
+                  : ("basic" as "basic" | "specialty"),
             }))
             .filter((category) => category.name_en.length > 0)
         : [];
@@ -672,11 +721,12 @@ export function ControlOnboardingContent({
       }));
 
       setShowRegenerateConfirm(false);
-      setStep('brand');
-      toast.success('AI brand suggestions are ready');
+      setSetupError(null);
+      setStep("brand");
+      toast.success("AI brand suggestions are ready");
       return true;
     } catch {
-      toast.error('Failed to generate AI suggestions');
+      reportSetupError("Failed to generate AI suggestions");
       return false;
     } finally {
       setGenerating(false);
@@ -698,7 +748,7 @@ export function ControlOnboardingContent({
 
   const handleLogoSelected = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    event.target.value = '';
+    event.target.value = "";
 
     if (!file) return;
 
@@ -706,16 +756,16 @@ export function ControlOnboardingContent({
 
     try {
       const body = new FormData();
-      body.set('file', file);
+      body.set("file", file);
 
-      const response = await fetch('/api/v1/owner/organization/logo', {
-        method: 'POST',
+      const response = await fetch("/api/v1/owner/organization/logo", {
+        method: "POST",
         body,
       });
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        toast.error(data.error ?? 'Failed to upload logo');
+        toast.error(data.error ?? "Failed to upload logo");
         return;
       }
 
@@ -727,9 +777,9 @@ export function ControlOnboardingContent({
         ...current,
         logo_url: data.url ?? current.logo_url,
       }));
-      toast.success('Logo uploaded');
+      toast.success("Logo uploaded");
     } catch {
-      toast.error('Failed to upload logo');
+      toast.error("Failed to upload logo");
     } finally {
       setUploadingLogo(false);
     }
@@ -737,44 +787,60 @@ export function ControlOnboardingContent({
 
   const validateBrandStep = () => {
     if (brandOptions.length === 0) {
-      toast.error('Generate brand suggestions first');
+      reportSetupError("Generate brand suggestions first");
       return false;
     }
 
     if (selectedCategories.length === 0) {
-      toast.error('Select at least one shared food category');
+      reportSetupError("Select at least one shared food category");
       return false;
     }
 
     if (!BRAND_COLOR_HEX_RE.test(company.brand_color)) {
-      toast.error('Brand color must be a valid hex color like #B65A2E');
+      reportSetupError("Brand color must be a valid hex color like #B65A2E");
       return false;
     }
 
+    setSetupError(null);
     return true;
   };
 
   const validateBranchStep = () => {
+    if (loadingBranch) {
+      reportSetupError(
+        "Starter branch is still loading. Please wait a moment.",
+      );
+      return false;
+    }
+
+    if (branchLoadError) {
+      reportSetupError(branchLoadError);
+      return false;
+    }
+
     if (!branch.id) {
-      toast.error('Starter branch is still loading');
+      reportSetupError(
+        "Starter branch was not loaded. Retry loading it before review.",
+      );
       return false;
     }
 
     if (!branchSetup.branchName.trim()) {
-      toast.error('Add your first branch name');
+      reportSetupError("Add your first branch name");
       return false;
     }
 
     if (!sanitizeBranchCode(branchSetup.branchCode)) {
-      toast.error('Add a branch code using letters, numbers, or hyphens');
+      reportSetupError("Add a branch code using letters, numbers, or hyphens");
       return false;
     }
 
     if (!branchSetup.branchAddress.trim()) {
-      toast.error('Add your branch address');
+      reportSetupError("Add your branch address");
       return false;
     }
 
+    setSetupError(null);
     return true;
   };
 
@@ -784,16 +850,18 @@ export function ControlOnboardingContent({
     }
 
     if (!branch.hero_title_en.trim()) {
-      toast.error('AI did not prepare homepage copy yet. Try generating again.');
+      reportSetupError(
+        "AI did not prepare homepage copy yet. Try generating again.",
+      );
       return;
     }
 
     setSaving(true);
 
     try {
-      const response = await fetch('/api/v1/owner/organization/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/v1/owner/organization/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: company.name,
           country: company.country,
@@ -838,7 +906,7 @@ export function ControlOnboardingContent({
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        toast.error(data.error ?? 'Failed to save setup');
+        reportSetupError(data.error ?? "Failed to save setup");
         return;
       }
 
@@ -848,31 +916,41 @@ export function ControlOnboardingContent({
         // Ignore draft cleanup issues.
       }
 
-      toast.success('Setup completed');
+      toast.success("Setup completed");
       router.push(`/${locale}/control/overview`);
       router.refresh();
     } catch {
-      toast.error('Failed to save setup');
+      reportSetupError("Failed to save setup");
     } finally {
       setSaving(false);
     }
   };
 
   const handleNext = async () => {
-    if (step === 'company') {
+    if (!canEdit) {
+      reportSetupError("You do not have permission to complete owner setup.");
+      return;
+    }
+
+    if (uploadingLogo) {
+      reportSetupError("Logo upload is still running. Please wait a moment.");
+      return;
+    }
+
+    if (step === "company") {
       await applyAiDraft();
       return;
     }
 
-    if (step === 'brand') {
+    if (step === "brand") {
       if (!validateBrandStep()) return;
-      setStep('branch');
+      setStep("branch");
       return;
     }
 
-    if (step === 'branch') {
+    if (step === "branch") {
       if (!validateBranchStep()) return;
-      setStep('review');
+      setStep("review");
       return;
     }
 
@@ -880,29 +958,29 @@ export function ControlOnboardingContent({
   };
 
   const handleBack = () => {
-    if (step === 'brand') {
-      setStep('company');
+    if (step === "brand") {
+      setStep("company");
       return;
     }
 
-    if (step === 'branch') {
-      setStep('brand');
+    if (step === "branch") {
+      setStep("brand");
       return;
     }
 
-    if (step === 'review') {
-      setStep('branch');
+    if (step === "review") {
+      setStep("branch");
     }
   };
 
   const nextButtonLabel =
-    step === 'company'
-      ? 'Generate brand suggestions'
-      : step === 'brand'
-        ? 'Continue to branch'
-        : step === 'branch'
-          ? 'Review setup'
-          : 'Finish setup';
+    step === "company"
+      ? "Generate brand suggestions"
+      : step === "brand"
+        ? "Continue to branch"
+        : step === "branch"
+          ? "Review setup"
+          : "Finish setup";
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 pb-12">
@@ -942,18 +1020,53 @@ export function ControlOnboardingContent({
               icon={item.icon}
               isActive={item.id === step}
               isDone={index < currentStepIndex}
-              onClick={index < currentStepIndex ? () => setStep(item.id) : undefined}
+              onClick={
+                index < currentStepIndex ? () => setStep(item.id) : undefined
+              }
             />
           ))}
         </div>
       </section>
 
+      {setupError ? (
+        <div
+          role="alert"
+          className="flex flex-col gap-3 rounded-[24px] border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <p className="leading-6">{setupError}</p>
+          </div>
+          {branchLoadError ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="rounded-2xl border-destructive/25 text-destructive hover:text-destructive"
+              onClick={() => {
+                void loadStarterBranch();
+              }}
+              disabled={loadingBranch}
+            >
+              {loadingBranch ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              Retry
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
       <section className="rounded-[32px] bg-card p-5 ring-1 ring-border/50 sm:p-8">
-        {step === 'company' ? (
+        {step === "company" ? (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Step 1</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Step 1
+                </p>
                 <h3 className="text-2xl font-semibold tracking-tight">
                   Start with the company profile
                 </h3>
@@ -1105,7 +1218,9 @@ export function ControlOnboardingContent({
                 </div>
 
                 <div className="space-y-1.5 sm:col-span-2">
-                  <Label htmlFor="company-story">What makes your food or service unique?</Label>
+                  <Label htmlFor="company-story">
+                    What makes your food or service unique?
+                  </Label>
                   <Textarea
                     id="company-story"
                     value={company.serviceFocus}
@@ -1129,7 +1244,9 @@ export function ControlOnboardingContent({
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                     Next
                   </p>
-                  <h4 className="mt-2 text-lg font-semibold">AI brand suggestions</h4>
+                  <h4 className="mt-2 text-lg font-semibold">
+                    AI brand suggestions
+                  </h4>
                 </div>
 
                 <div className="space-y-2 text-sm text-muted-foreground">
@@ -1142,11 +1259,13 @@ export function ControlOnboardingContent({
           </div>
         ) : null}
 
-        {step === 'brand' ? (
+        {step === "brand" ? (
           <div className="space-y-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Step 2</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Step 2
+                </p>
                 <h3 className="text-2xl font-semibold tracking-tight">
                   Pick a calm brand direction
                 </h3>
@@ -1168,7 +1287,7 @@ export function ControlOnboardingContent({
                     {generating ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      'Regenerate'
+                      "Regenerate"
                     )}
                   </Button>
                   <Button
@@ -1209,10 +1328,10 @@ export function ControlOnboardingContent({
                     type="button"
                     onClick={() => handleSelectBrandOption(option)}
                     className={cn(
-                      'rounded-[28px] p-4 text-left transition ring-1 ring-inset',
+                      "rounded-[28px] p-4 text-left transition ring-1 ring-inset",
                       isSelected
-                        ? 'bg-foreground text-background ring-foreground/15'
-                        : 'bg-muted/20 text-foreground ring-border/50 hover:bg-muted/35'
+                        ? "bg-foreground text-background ring-foreground/15"
+                        : "bg-muted/20 text-foreground ring-border/50 hover:bg-muted/35",
                     )}
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -1220,7 +1339,9 @@ export function ControlOnboardingContent({
                         <p className="text-[11px] uppercase tracking-[0.22em] opacity-70">
                           Option 0{index + 1}
                         </p>
-                        <h4 className="mt-2 text-lg font-semibold">{option.name}</h4>
+                        <h4 className="mt-2 text-lg font-semibold">
+                          {option.name}
+                        </h4>
                       </div>
                       {isSelected ? <Check className="mt-1 h-5 w-5" /> : null}
                     </div>
@@ -1238,7 +1359,7 @@ export function ControlOnboardingContent({
                           className="flex h-16 w-16 items-center justify-center rounded-2xl text-lg font-semibold text-white"
                           style={{ backgroundColor: option.brand_color }}
                         >
-                          {company.name.slice(0, 2).toUpperCase() || 'BR'}
+                          {company.name.slice(0, 2).toUpperCase() || "BR"}
                         </span>
                       )}
                     </div>
@@ -1257,7 +1378,9 @@ export function ControlOnboardingContent({
                       </span>
                     </div>
 
-                    <p className="mt-4 text-sm leading-6 opacity-80">{option.summary}</p>
+                    <p className="mt-4 text-sm leading-6 opacity-80">
+                      {option.summary}
+                    </p>
                   </button>
                 );
               })}
@@ -1268,13 +1391,17 @@ export function ControlOnboardingContent({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <UtensilsCrossed className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-lg font-semibold">Shared food categories</h4>
+                    <h4 className="text-lg font-semibold">
+                      Shared food categories
+                    </h4>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   {categorySuggestions.map((category) => {
-                    const isSelected = selectedCategoryKeys.includes(category.key);
+                    const isSelected = selectedCategoryKeys.includes(
+                      category.key,
+                    );
                     return (
                       <button
                         key={category.key}
@@ -1282,15 +1409,17 @@ export function ControlOnboardingContent({
                         onClick={() =>
                           setSelectedCategoryKeys((current) =>
                             current.includes(category.key)
-                              ? current.filter((value) => value !== category.key)
-                              : [...current, category.key]
+                              ? current.filter(
+                                  (value) => value !== category.key,
+                                )
+                              : [...current, category.key],
                           )
                         }
                         className={cn(
-                          'rounded-full px-4 py-2 text-sm font-medium transition ring-1 ring-inset',
+                          "rounded-full px-4 py-2 text-sm font-medium transition ring-1 ring-inset",
                           isSelected
-                            ? 'bg-foreground text-background ring-foreground/15'
-                            : 'bg-background text-foreground ring-border/60 hover:bg-muted/30'
+                            ? "bg-foreground text-background ring-foreground/15"
+                            : "bg-background text-foreground ring-border/60 hover:bg-muted/30",
                         )}
                       >
                         {getLocalizedCategoryName(previewLanguage, category)}
@@ -1306,7 +1435,7 @@ export function ControlOnboardingContent({
                     Selected brand
                   </p>
                   <h4 className="text-lg font-semibold">
-                    {selectedBrandOption?.name ?? 'Choose a direction'}
+                    {selectedBrandOption?.name ?? "Choose a direction"}
                   </h4>
                 </div>
 
@@ -1329,9 +1458,11 @@ export function ControlOnboardingContent({
                     <span
                       className="h-10 w-10 rounded-full ring-1 ring-black/10"
                       style={{
-                        backgroundColor: BRAND_COLOR_HEX_RE.test(company.brand_color)
+                        backgroundColor: BRAND_COLOR_HEX_RE.test(
+                          company.brand_color,
+                        )
                           ? company.brand_color
-                          : 'transparent',
+                          : "transparent",
                       }}
                     />
                     <Input
@@ -1362,7 +1493,7 @@ export function ControlOnboardingContent({
                     ) : (
                       <ImagePlus className="mr-2 h-4 w-4" />
                     )}
-                    {company.logo_url ? 'Replace logo' : 'Upload logo'}
+                    {company.logo_url ? "Replace logo" : "Upload logo"}
                   </Button>
 
                   {company.logo_url ? (
@@ -1373,11 +1504,11 @@ export function ControlOnboardingContent({
                       onClick={() => {
                         setCompany((current) => ({
                           ...current,
-                          logo_url: '',
+                          logo_url: "",
                         }));
                         setBranch((current) => ({
                           ...current,
-                          logo_url: '',
+                          logo_url: "",
                         }));
                       }}
                       disabled={disabled}
@@ -1389,8 +1520,8 @@ export function ControlOnboardingContent({
                 </div>
 
                 <p className="text-sm leading-6 text-muted-foreground">
-                  {selectedCategories.length} shared categories selected for the company menu
-                  foundation.
+                  {selectedCategories.length} shared categories selected for the
+                  company menu foundation.
                 </p>
 
                 <input
@@ -1406,11 +1537,13 @@ export function ControlOnboardingContent({
           </div>
         ) : null}
 
-        {step === 'branch' ? (
+        {step === "branch" ? (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Step 3</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Step 3
+                </p>
                 <h3 className="text-2xl font-semibold tracking-tight">
                   Set up the starter branch
                 </h3>
@@ -1420,6 +1553,22 @@ export function ControlOnboardingContent({
                 <div className="flex min-h-[280px] items-center justify-center rounded-[28px] bg-muted/25 text-sm text-muted-foreground ring-1 ring-border/40">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Loading starter branch
+                </div>
+              ) : branchLoadError ? (
+                <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[28px] bg-destructive/8 px-5 text-center text-sm text-destructive ring-1 ring-destructive/20">
+                  <AlertCircle className="h-5 w-5" />
+                  <p className="mt-3 max-w-md leading-6">{branchLoadError}</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-4 rounded-2xl border-destructive/25 text-destructive hover:text-destructive"
+                    onClick={() => {
+                      void loadStarterBranch();
+                    }}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Retry starter branch
+                  </Button>
                 </div>
               ) : (
                 <>
@@ -1465,7 +1614,7 @@ export function ControlOnboardingContent({
                         onValueChange={(value) =>
                           setBranch((current) => ({
                             ...current,
-                            default_language: value as 'en' | 'ja' | 'vi',
+                            default_language: value as "en" | "ja" | "vi",
                           }))
                         }
                         disabled={disabled}
@@ -1475,7 +1624,10 @@ export function ControlOnboardingContent({
                         </SelectTrigger>
                         <SelectContent>
                           {LANGUAGES.map((language) => (
-                            <SelectItem key={language.value} value={language.value}>
+                            <SelectItem
+                              key={language.value}
+                              value={language.value}
+                            >
                               {language.label}
                             </SelectItem>
                           ))}
@@ -1574,7 +1726,9 @@ export function ControlOnboardingContent({
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   Branch inherits
                 </p>
-                <h4 className="text-lg font-semibold">Company menu foundation</h4>
+                <h4 className="text-lg font-semibold">
+                  Company menu foundation
+                </h4>
               </div>
 
               <p className="text-sm leading-6 text-muted-foreground">
@@ -1602,11 +1756,13 @@ export function ControlOnboardingContent({
           </div>
         ) : null}
 
-        {step === 'review' ? (
+        {step === "review" ? (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Step 4</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Step 4
+                </p>
                 <h3 className="text-2xl font-semibold tracking-tight">
                   Review the setup before we save it
                 </h3>
@@ -1621,19 +1777,25 @@ export function ControlOnboardingContent({
                   {previewCompanyDescription}
                 </p>
                 <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                  <p>{company.address || 'No company address yet'}</p>
-                  <p>{company.phone || 'No company phone yet'}</p>
-                  <p>{company.email || 'No company email yet'}</p>
-                  <p>{company.country} · {company.timezone} · {company.currency}</p>
+                  <p>{company.address || "No company address yet"}</p>
+                  <p>{company.phone || "No company phone yet"}</p>
+                  <p>{company.email || "No company email yet"}</p>
+                  <p>
+                    {company.country} · {company.timezone} · {company.currency}
+                  </p>
                 </div>
               </div>
 
               <div className="rounded-[28px] bg-muted/25 p-5 ring-1 ring-border/40">
                 <div className="flex items-center gap-2">
                   <Store className="h-4 w-4 text-muted-foreground" />
-                  <h4 className="text-lg font-semibold">{branchSetup.branchName}</h4>
+                  <h4 className="text-lg font-semibold">
+                    {branchSetup.branchName}
+                  </h4>
                 </div>
-                <p className="mt-3 text-sm font-medium text-foreground">{previewHeroTitle}</p>
+                <p className="mt-3 text-sm font-medium text-foreground">
+                  {previewHeroTitle}
+                </p>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
                   {previewHeroSubtitle}
                 </p>
@@ -1642,8 +1804,8 @@ export function ControlOnboardingContent({
                 </p>
                 <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
                   <p>{branchSetup.branchAddress}</p>
-                  <p>{branchSetup.branchPhone || 'No branch phone yet'}</p>
-                  <p>{branchSetup.branchEmail || 'No branch email yet'}</p>
+                  <p>{branchSetup.branchPhone || "No branch phone yet"}</p>
+                  <p>{branchSetup.branchEmail || "No branch email yet"}</p>
                   <p>{summarizeOpeningHours(branch.opening_hours)}</p>
                 </div>
               </div>
@@ -1667,16 +1829,20 @@ export function ControlOnboardingContent({
                 <span
                   className="h-10 w-10 rounded-full ring-1 ring-black/10"
                   style={{
-                    backgroundColor: BRAND_COLOR_HEX_RE.test(company.brand_color)
+                    backgroundColor: BRAND_COLOR_HEX_RE.test(
+                      company.brand_color,
+                    )
                       ? company.brand_color
-                      : 'transparent',
+                      : "transparent",
                   }}
                 />
                 <div>
                   <p className="text-sm font-medium">
-                    {selectedBrandOption?.name ?? 'Selected direction'}
+                    {selectedBrandOption?.name ?? "Selected direction"}
                   </p>
-                  <p className="text-sm text-muted-foreground">{company.brand_color}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {company.brand_color}
+                  </p>
                 </div>
               </div>
 
@@ -1713,7 +1879,7 @@ export function ControlOnboardingContent({
           variant="ghost"
           className="rounded-2xl"
           onClick={handleBack}
-          disabled={step === 'company' || saving || generating}
+          disabled={step === "company" || saving || generating}
         >
           Back
         </Button>
@@ -1724,14 +1890,14 @@ export function ControlOnboardingContent({
           onClick={() => {
             void handleNext();
           }}
-          disabled={disabled || loadingBranch || generating || saving}
+          disabled={saving || generating}
         >
           {generating || saving ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <ChevronRight className="mr-2 h-4 w-4" />
           )}
-          {saving ? 'Saving setup' : nextButtonLabel}
+          {saving ? "Saving setup" : nextButtonLabel}
         </Button>
       </div>
     </div>

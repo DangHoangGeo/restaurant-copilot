@@ -15,6 +15,7 @@ It is intentionally practical. It should tell future agents and engineers what i
 - branch-scoped route entry with explicit `branchId`
 - active branch switching via validated httpOnly cookie
 - platform approval flow for organizations
+- service-role first platform admin bootstrap runbook and script
 - subscription bootstrap during approval
 - org member and pending invite foundations
 - employee invite foundation
@@ -41,10 +42,12 @@ It is intentionally practical. It should tell future agents and engineers what i
 ### P1
 
 - Signup still uses process-local rate limiting.
+
   - Impact: not reliable across instances or serverless scale.
   - Next action: move signup protection onto the shared distributed rate-limiting path and verify behavior in production hosting.
 
 - Control and branch flows still mix org-aware APIs and legacy branch-scoped APIs.
+
   - Impact: future agents can accidentally implement new work on the wrong contract.
   - Next action: prefer org-aware routes first and document every legacy dependency that remains.
 
@@ -67,6 +70,7 @@ It is intentionally practical. It should tell future agents and engineers what i
   - owner chooses plan and billing cycle at signup
   - organization and first branch are created
   - platform admin approves and boots subscription or trial
+  - first platform admin is bootstrapped operationally with `infra/scripts/bootstrap_platform_admin.mjs`
 - Remaining work:
   - distributed rate limiting
   - more explicit operational runbook for approval failures
@@ -76,6 +80,7 @@ It is intentionally practical. It should tell future agents and engineers what i
 - Status: usable, still partially dependent on legacy settings APIs
 - Current shape:
   - approved founder lands in `control/onboarding`
+  - first-branch setup loads the starter branch through an org-aware onboarding API and surfaces blocking errors in the UI
   - AI can generate multilingual branding and setup suggestions
 - Remaining work:
   - continue migrating founder flows off legacy branch settings endpoints

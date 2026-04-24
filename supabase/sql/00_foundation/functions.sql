@@ -38,7 +38,7 @@ CREATE OR REPLACE FUNCTION public.is_service_role()
  LANGUAGE sql
  STABLE
 AS $function$
-  SELECT COALESCE(current_setting('request.jwt.claim.role', true), '') = 'service_role';
+  SELECT COALESCE(auth.role(), current_setting('request.jwt.claim.role', true), '') = 'service_role';
 $function$;
 
 COMMENT ON FUNCTION public.is_service_role() IS 'Identify internal RPC calls executed with the Supabase service role';

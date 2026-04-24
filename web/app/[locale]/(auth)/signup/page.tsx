@@ -136,26 +136,6 @@ export default function SignupPage() {
     }
 
     try {
-      const captchaRes = await fetch("/api/v1/verify-captcha", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: captchaToken }),
-      });
-      const captchaData = await captchaRes.json();
-      if (!captchaData.valid) {
-        setError("captchaToken", {
-          type: "manual",
-          message: t("captchaInvalid"),
-        });
-        return;
-      }
-    } catch (error) {
-      console.error("Captcha verification failed:", error);
-      setServerError(t("captchaInvalid"));
-      return;
-    }
-
-    try {
       const registerRes = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
