@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import Link from "next/link";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Building2,
   CircleDollarSign,
@@ -14,8 +14,8 @@ import {
   Settings,
   ShieldCheck,
   User,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,8 +23,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface ControlShellProps {
   children: ReactNode;
@@ -43,42 +43,42 @@ interface ControlNavItem {
   href: string;
   icon: ComponentType<{ className?: string }>;
   labelKey: string;
-  requiredAccess?: keyof ControlShellProps['accessControls'];
+  requiredAccess?: keyof ControlShellProps["accessControls"];
 }
 
 const CONTROL_NAV_ITEMS: ControlNavItem[] = [
   {
-    href: '/control/overview',
+    href: "/control/overview",
     icon: LayoutGrid,
-    labelKey: 'nav.overview',
+    labelKey: "nav.overview",
   },
   {
-    href: '/control/restaurants',
+    href: "/control/restaurants",
     icon: Building2,
-    labelKey: 'nav.restaurants',
-    requiredAccess: 'restaurants',
+    labelKey: "nav.restaurants",
+    requiredAccess: "restaurants",
   },
   {
-    href: '/control/people',
+    href: "/control/people",
     icon: ShieldCheck,
-    labelKey: 'nav.people',
-    requiredAccess: 'people',
+    labelKey: "nav.people",
+    requiredAccess: "people",
   },
   {
-    href: '/control/finance',
+    href: "/control/finance",
     icon: CircleDollarSign,
-    labelKey: 'nav.finance',
-    requiredAccess: 'finance',
+    labelKey: "nav.finance",
+    requiredAccess: "finance",
   },
   {
-    href: '/control/settings',
+    href: "/control/settings",
     icon: Settings,
-    labelKey: 'nav.settings',
-    requiredAccess: 'settings',
+    labelKey: "nav.settings",
+    requiredAccess: "settings",
   },
 ];
 
-const SIDEBAR_STORAGE_KEY = 'owner-control-sidebar-open';
+const SIDEBAR_STORAGE_KEY = "owner-control-sidebar-open";
 
 export function ControlShell({
   children,
@@ -89,17 +89,17 @@ export function ControlShell({
 }: ControlShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const t = useTranslations('owner.control');
-  const tDashboard = useTranslations('owner.dashboard');
+  const t = useTranslations("owner.control");
+  const tDashboard = useTranslations("owner.dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const navItems = CONTROL_NAV_ITEMS.filter(
-    ({ requiredAccess }) => !requiredAccess || accessControls[requiredAccess]
+    ({ requiredAccess }) => !requiredAccess || accessControls[requiredAccess],
   );
 
   useEffect(() => {
     const storedValue = window.localStorage.getItem(SIDEBAR_STORAGE_KEY);
-    if (storedValue === 'false') {
+    if (storedValue === "false") {
       setSidebarOpen(false);
     }
   }, []);
@@ -110,9 +110,9 @@ export function ControlShell({
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/v1/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/v1/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
       });
     } finally {
       router.push(`/${locale}/login`);
@@ -120,23 +120,27 @@ export function ControlShell({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF3EA] text-[#2E2117] [background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#FAF3EA_0%,#F5EAD8_50%,#EFE0CA_100%)] dark:bg-[#170F0C] dark:text-[#F7F1E9] dark:[background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#170F0C_0%,#1E1209_50%,#251810_100%)]">
+    <div className="admin-route-surface min-h-screen bg-[#FAF3EA] text-[#2E2117] [background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#FAF3EA_0%,#F5EAD8_50%,#EFE0CA_100%)] dark:bg-[#170F0C] dark:text-[#F7F1E9] dark:[background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#170F0C_0%,#1E1209_50%,#251810_100%)]">
       <button
         type="button"
         onClick={() => setSidebarOpen((current) => !current)}
         className={cn(
-          'fixed top-5 z-50 hidden h-11 w-11 items-center justify-center rounded-full border border-[#AB6E3C]/20 bg-[#FEFAF6]/85 text-[#8B6E5A] shadow-sm transition-all hover:bg-[#F5EAD8] hover:text-[#AB6E3C] dark:border-[#AB6E3C]/25 dark:bg-[#251810]/85 dark:text-[#B89078] dark:hover:bg-[#2B1A10] dark:hover:text-[#AB6E3C] lg:flex',
-          sidebarOpen ? 'left-[244px]' : 'left-4'
+          "fixed top-5 z-50 hidden h-11 w-11 items-center justify-center rounded-full border border-[#AB6E3C]/20 bg-[#FEFAF6]/85 text-[#8B6E5A] shadow-sm transition-all hover:bg-[#F5EAD8] hover:text-[#AB6E3C] dark:border-[#AB6E3C]/25 dark:bg-[#251810]/85 dark:text-[#B89078] dark:hover:bg-[#2B1A10] dark:hover:text-[#AB6E3C] lg:flex",
+          sidebarOpen ? "left-[244px]" : "left-4",
         )}
-        aria-label={sidebarOpen ? 'Hide navigation' : 'Show navigation'}
+        aria-label={sidebarOpen ? "Hide navigation" : "Show navigation"}
       >
-        {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        {sidebarOpen ? (
+          <ChevronLeft className="h-4 w-4" />
+        ) : (
+          <Menu className="h-4 w-4" />
+        )}
       </button>
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 hidden w-[288px] shrink-0 border-r border-[#AB6E3C]/10 bg-[#FAF3EA]/95 transition-transform duration-300 dark:border-[#AB6E3C]/15 dark:bg-[#170F0C]/95 lg:flex lg:flex-col',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          "fixed inset-y-0 left-0 z-40 hidden w-[288px] shrink-0 border-r border-[#AB6E3C]/10 bg-[#FAF3EA]/95 transition-transform duration-300 dark:border-[#AB6E3C]/15 dark:bg-[#170F0C]/95 lg:flex lg:flex-col",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-screen flex-col px-5 py-5">
@@ -144,7 +148,7 @@ export function ControlShell({
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 rounded-full bg-[#AB6E3C]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#8B6E5A] dark:text-[#B89078]">
                 <Building2 className="h-3.5 w-3.5" />
-                {t('eyebrow')}
+                {t("eyebrow")}
               </div>
               <h1 className="text-lg font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
                 {organizationName}
@@ -162,12 +166,12 @@ export function ControlShell({
                   key={href}
                   href={fullHref}
                   className={cn(
-                    'flex min-h-11 items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors',
+                    "flex min-h-11 items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                     isActive
-                      ? 'bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20'
-                      : 'text-[#8B6E5A] hover:bg-[#AB6E3C]/10 hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#AB6E3C]/15 dark:hover:text-[#F7F1E9]'
+                      ? "bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20"
+                      : "text-[#8B6E5A] hover:bg-[#AB6E3C]/10 hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#AB6E3C]/15 dark:hover:text-[#F7F1E9]",
                   )}
-                  aria-current={isActive ? 'page' : undefined}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{t(labelKey)}</span>
@@ -186,7 +190,7 @@ export function ControlShell({
                   {userEmail}
                 </p>
                 <p className="text-xs text-[#8B6E5A] dark:text-[#B89078]">
-                  {tDashboard('user_menu.my_account_label')}
+                  {tDashboard("user_menu.my_account_label")}
                 </p>
               </div>
             </div>
@@ -196,7 +200,7 @@ export function ControlShell({
                 className="flex min-h-11 items-center gap-2 rounded-2xl border border-[#AB6E3C]/15 px-3 py-2 text-sm font-medium text-[#8B6E5A] transition-colors hover:bg-[#F5EAD8] hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#2B1A10]"
               >
                 <User className="h-4 w-4" />
-                <span>{tDashboard('user_menu.profile_link')}</span>
+                <span>{tDashboard("user_menu.profile_link")}</span>
               </Link>
               <Button
                 type="button"
@@ -205,7 +209,7 @@ export function ControlShell({
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
-                <span>{tDashboard('user_menu.logout_button')}</span>
+                <span>{tDashboard("user_menu.logout_button")}</span>
               </Button>
             </div>
           </div>
@@ -214,8 +218,8 @@ export function ControlShell({
 
       <div
         className={cn(
-          'min-w-0 flex-1 transition-[padding] duration-300',
-          sidebarOpen ? 'lg:pl-[288px]' : 'lg:pl-0'
+          "min-w-0 flex-1 transition-[padding] duration-300",
+          sidebarOpen ? "lg:pl-[288px]" : "lg:pl-0",
         )}
       >
         <main className="mx-auto max-w-7xl px-4 py-5 pb-24 sm:px-6 lg:px-8 lg:py-8">
@@ -234,18 +238,24 @@ export function ControlShell({
                 >
                   <User className="h-4 w-4" />
                   <span className="sr-only">
-                    {tDashboard('user_menu.my_account_label')}
+                    {tDashboard("user_menu.my_account_label")}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel>{tDashboard('user_menu.my_account_label')}</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  {tDashboard("user_menu.my_account_label")}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <Link href={`/${locale}/control/profile`} passHref legacyBehavior>
+                <Link
+                  href={`/${locale}/control/profile`}
+                  passHref
+                  legacyBehavior
+                >
                   <DropdownMenuItem asChild className="cursor-pointer">
                     <a>
                       <User className="mr-2 h-4 w-4" />
-                      {tDashboard('user_menu.profile_link')}
+                      {tDashboard("user_menu.profile_link")}
                     </a>
                   </DropdownMenuItem>
                 </Link>
@@ -255,7 +265,7 @@ export function ControlShell({
                   className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600 dark:text-red-400 dark:focus:bg-red-900/50 dark:focus:text-red-400"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  {tDashboard('user_menu.logout_button')}
+                  {tDashboard("user_menu.logout_button")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -281,17 +291,19 @@ export function ControlShell({
                 <Link
                   href={fullHref}
                   className={cn(
-                    'flex min-h-16 flex-col items-center justify-center gap-1 px-1 py-2 text-xs font-medium',
+                    "flex min-h-16 flex-col items-center justify-center gap-1 px-1 py-2 text-xs font-medium",
                     isActive
-                      ? 'text-[#2E2117] dark:text-[#F7F1E9]'
-                      : 'text-[#8B6E5A] hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:text-[#F7F1E9]'
+                      ? "text-[#2E2117] dark:text-[#F7F1E9]"
+                      : "text-[#8B6E5A] hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:text-[#F7F1E9]",
                   )}
-                  aria-current={isActive ? 'page' : undefined}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   <div
                     className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-xl',
-                      isActive ? 'bg-[#AB6E3C] text-white' : 'bg-[#AB6E3C]/10 text-[#AB6E3C] dark:bg-[#AB6E3C]/15'
+                      "flex h-8 w-8 items-center justify-center rounded-xl",
+                      isActive
+                        ? "bg-[#AB6E3C] text-white"
+                        : "bg-[#AB6E3C]/10 text-[#AB6E3C] dark:bg-[#AB6E3C]/15",
                     )}
                   >
                     <Icon className="h-4 w-4" />

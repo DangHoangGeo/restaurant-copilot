@@ -9,34 +9,37 @@
 // Optional:
 //   currency  — default JPY
 
-import { NextRequest, NextResponse } from 'next/server';
-import { resolvePurchasingAccess } from '@/lib/server/purchasing/access';
-import { getPurchaseSummaryForPeriod } from '@/lib/server/purchasing/service';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { resolvePurchasingAccess } from "@/lib/server/purchasing/access";
+import { getPurchaseSummaryForPeriod } from "@/lib/server/purchasing/service";
+import { z } from "zod";
 
 const QuerySchema = z.object({
   from_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  to_date:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  currency:  z.string().length(3).default('JPY'),
+  to_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  currency: z.string().length(3).default("JPY"),
 });
 
 export async function GET(req: NextRequest) {
   const access = await resolvePurchasingAccess();
   if (!access) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);
   const parsed = QuerySchema.safeParse({
-    from_date: searchParams.get('from_date') ?? undefined,
-    to_date:   searchParams.get('to_date')   ?? undefined,
-    currency:  searchParams.get('currency')  ?? undefined,
+    from_date: searchParams.get("from_date") ?? undefined,
+    to_date: searchParams.get("to_date") ?? undefined,
+    currency: searchParams.get("currency") ?? undefined,
   });
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'from_date and to_date (YYYY-MM-DD) are required', details: parsed.error.flatten().fieldErrors },
-      { status: 400 }
+      {
+        error: "from_date and to_date (YYYY-MM-DD) are required",
+        details: parsed.error.flatten().fieldErrors,
+      },
+      { status: 400 },
     );
   }
 
@@ -45,11 +48,12 @@ export async function GET(req: NextRequest) {
       access.restaurantId,
       parsed.data.from_date,
       parsed.data.to_date,
-      parsed.data.currency
+      parsed.data.currency,
     );
     return NextResponse.json({ summary });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Failed to compute purchase summary';
+    const msg =
+      err instanceof Error ? err.message : "Failed to compute purchase summary";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

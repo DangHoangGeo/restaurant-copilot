@@ -1,7 +1,7 @@
 // Purchasing domain: raw database queries.
 // Route handlers call service functions; avoid calling these directly from routes.
 
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import type {
   Supplier,
   PurchaseOrder,
@@ -9,7 +9,7 @@ import type {
   PurchaseOrderWithItems,
   Expense,
   PurchaseSummary,
-} from './types';
+} from "./types";
 import type {
   CreateSupplierInput,
   UpdateSupplierInput,
@@ -19,7 +19,7 @@ import type {
   UpdateExpenseInput,
   ListPurchaseOrdersInput,
   ListExpensesInput,
-} from './schemas';
+} from "./schemas";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Suppliers
@@ -27,15 +27,15 @@ import type {
 
 export async function listSuppliers(
   restaurantId: string,
-  includeInactive = false
+  includeInactive = false,
 ): Promise<Supplier[]> {
   let query = supabaseAdmin
-    .from('suppliers')
-    .select('*')
-    .eq('restaurant_id', restaurantId)
-    .order('name', { ascending: true });
+    .from("suppliers")
+    .select("*")
+    .eq("restaurant_id", restaurantId)
+    .order("name", { ascending: true });
 
-  if (!includeInactive) query = query.eq('is_active', true);
+  if (!includeInactive) query = query.eq("is_active", true);
 
   const { data, error } = await query;
   if (error) throw new Error(`listSuppliers: ${error.message}`);
@@ -44,13 +44,13 @@ export async function listSuppliers(
 
 export async function getSupplierById(
   id: string,
-  restaurantId: string
+  restaurantId: string,
 ): Promise<Supplier | null> {
   const { data, error } = await supabaseAdmin
-    .from('suppliers')
-    .select('*')
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId)
+    .from("suppliers")
+    .select("*")
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId)
     .maybeSingle();
 
   if (error) throw new Error(`getSupplierById: ${error.message}`);
@@ -60,12 +60,12 @@ export async function getSupplierById(
 export async function createSupplier(
   restaurantId: string,
   input: CreateSupplierInput,
-  createdBy: string | null
+  createdBy: string | null,
 ): Promise<Supplier> {
   const { data, error } = await supabaseAdmin
-    .from('suppliers')
+    .from("suppliers")
     .insert({ ...input, restaurant_id: restaurantId, created_by: createdBy })
-    .select('*')
+    .select("*")
     .single();
 
   if (error) throw new Error(`createSupplier: ${error.message}`);
@@ -75,14 +75,14 @@ export async function createSupplier(
 export async function updateSupplier(
   id: string,
   restaurantId: string,
-  input: UpdateSupplierInput
+  input: UpdateSupplierInput,
 ): Promise<Supplier> {
   const { data, error } = await supabaseAdmin
-    .from('suppliers')
+    .from("suppliers")
     .update({ ...input, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId)
-    .select('*')
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId)
+    .select("*")
     .single();
 
   if (error) throw new Error(`updateSupplier: ${error.message}`);
@@ -91,14 +91,14 @@ export async function updateSupplier(
 
 export async function deleteSupplier(
   id: string,
-  restaurantId: string
+  restaurantId: string,
 ): Promise<void> {
   // Soft-delete
   const { error } = await supabaseAdmin
-    .from('suppliers')
+    .from("suppliers")
     .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId);
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId);
 
   if (error) throw new Error(`deleteSupplier: ${error.message}`);
 }
@@ -109,22 +109,22 @@ export async function deleteSupplier(
 
 export async function listPurchaseOrders(
   restaurantId: string,
-  filters: ListPurchaseOrdersInput
+  filters: ListPurchaseOrdersInput,
 ): Promise<PurchaseOrder[]> {
   let query = supabaseAdmin
-    .from('purchase_orders')
-    .select('*')
-    .eq('restaurant_id', restaurantId)
-    .order('order_date', { ascending: false })
+    .from("purchase_orders")
+    .select("*")
+    .eq("restaurant_id", restaurantId)
+    .order("order_date", { ascending: false })
     .range(filters.offset, filters.offset + filters.limit - 1);
 
-  if (filters.status)      query = query.eq('status', filters.status);
-  if (filters.category)    query = query.eq('category', filters.category);
-  if (filters.supplier_id) query = query.eq('supplier_id', filters.supplier_id);
-  if (filters.from_date)   query = query.gte('order_date', filters.from_date);
-  if (filters.to_date)     query = query.lte('order_date', filters.to_date);
+  if (filters.status) query = query.eq("status", filters.status);
+  if (filters.category) query = query.eq("category", filters.category);
+  if (filters.supplier_id) query = query.eq("supplier_id", filters.supplier_id);
+  if (filters.from_date) query = query.gte("order_date", filters.from_date);
+  if (filters.to_date) query = query.lte("order_date", filters.to_date);
   if (filters.is_paid !== undefined) {
-    query = query.eq('is_paid', filters.is_paid === 'true');
+    query = query.eq("is_paid", filters.is_paid === "true");
   }
 
   const { data, error } = await query;
@@ -134,13 +134,13 @@ export async function listPurchaseOrders(
 
 export async function getPurchaseOrderById(
   id: string,
-  restaurantId: string
+  restaurantId: string,
 ): Promise<PurchaseOrderWithItems | null> {
   const { data, error } = await supabaseAdmin
-    .from('purchase_orders')
-    .select('*, purchase_order_items(*)')
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId)
+    .from("purchase_orders")
+    .select("*, purchase_order_items(*)")
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId)
     .maybeSingle();
 
   if (error) throw new Error(`getPurchaseOrderById: ${error.message}`);
@@ -156,18 +156,18 @@ export async function getPurchaseOrderById(
 export async function createPurchaseOrder(
   restaurantId: string,
   input: CreatePurchaseOrderInput,
-  createdBy: string | null
+  createdBy: string | null,
 ): Promise<PurchaseOrderWithItems> {
   const { items, ...orderFields } = input;
 
   const { data: orderData, error: orderError } = await supabaseAdmin
-    .from('purchase_orders')
+    .from("purchase_orders")
     .insert({
       ...orderFields,
       restaurant_id: restaurantId,
       created_by: createdBy,
     })
-    .select('*')
+    .select("*")
     .single();
 
   if (orderError) throw new Error(`createPurchaseOrder: ${orderError.message}`);
@@ -182,11 +182,19 @@ export async function createPurchaseOrder(
     }));
 
     const { data: itemData, error: itemError } = await supabaseAdmin
-      .from('purchase_order_items')
+      .from("purchase_order_items")
       .insert(itemRows)
-      .select('*');
+      .select("*");
 
-    if (itemError) throw new Error(`createPurchaseOrder items: ${itemError.message}`);
+    if (itemError) {
+      await supabaseAdmin
+        .from("purchase_orders")
+        .delete()
+        .eq("id", order.id)
+        .eq("restaurant_id", restaurantId);
+
+      throw new Error(`createPurchaseOrder items: ${itemError.message}`);
+    }
     savedItems = (itemData ?? []) as PurchaseOrderItem[];
   }
 
@@ -196,7 +204,7 @@ export async function createPurchaseOrder(
 export async function updatePurchaseOrder(
   id: string,
   restaurantId: string,
-  input: UpdatePurchaseOrderInput
+  input: UpdatePurchaseOrderInput,
 ): Promise<PurchaseOrder> {
   const updatePayload: Record<string, unknown> = {
     ...input,
@@ -209,16 +217,20 @@ export async function updatePurchaseOrder(
     updatePayload.paid_at = null;
   }
 
-  if (input.status && input.status !== 'received' && input.received_date === undefined) {
+  if (
+    input.status &&
+    input.status !== "received" &&
+    input.received_date === undefined
+  ) {
     updatePayload.received_date = null;
   }
 
   const { data, error } = await supabaseAdmin
-    .from('purchase_orders')
+    .from("purchase_orders")
     .update(updatePayload)
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId)
-    .select('*')
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId)
+    .select("*")
     .single();
 
   if (error) throw new Error(`updatePurchaseOrder: ${error.message}`);
@@ -227,13 +239,13 @@ export async function updatePurchaseOrder(
 
 export async function deletePurchaseOrder(
   id: string,
-  restaurantId: string
+  restaurantId: string,
 ): Promise<void> {
   const { error } = await supabaseAdmin
-    .from('purchase_orders')
+    .from("purchase_orders")
     .delete()
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId);
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId);
 
   if (error) throw new Error(`deletePurchaseOrder: ${error.message}`);
 }
@@ -244,18 +256,18 @@ export async function deletePurchaseOrder(
 
 export async function listExpenses(
   restaurantId: string,
-  filters: ListExpensesInput
+  filters: ListExpensesInput,
 ): Promise<Expense[]> {
   let query = supabaseAdmin
-    .from('expenses')
-    .select('*')
-    .eq('restaurant_id', restaurantId)
-    .order('expense_date', { ascending: false })
+    .from("expenses")
+    .select("*")
+    .eq("restaurant_id", restaurantId)
+    .order("expense_date", { ascending: false })
     .range(filters.offset, filters.offset + filters.limit - 1);
 
-  if (filters.category)  query = query.eq('category', filters.category);
-  if (filters.from_date) query = query.gte('expense_date', filters.from_date);
-  if (filters.to_date)   query = query.lte('expense_date', filters.to_date);
+  if (filters.category) query = query.eq("category", filters.category);
+  if (filters.from_date) query = query.gte("expense_date", filters.from_date);
+  if (filters.to_date) query = query.lte("expense_date", filters.to_date);
 
   const { data, error } = await query;
   if (error) throw new Error(`listExpenses: ${error.message}`);
@@ -264,13 +276,13 @@ export async function listExpenses(
 
 export async function getExpenseById(
   id: string,
-  restaurantId: string
+  restaurantId: string,
 ): Promise<Expense | null> {
   const { data, error } = await supabaseAdmin
-    .from('expenses')
-    .select('*')
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId)
+    .from("expenses")
+    .select("*")
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId)
     .maybeSingle();
 
   if (error) throw new Error(`getExpenseById: ${error.message}`);
@@ -280,12 +292,12 @@ export async function getExpenseById(
 export async function createExpense(
   restaurantId: string,
   input: CreateExpenseInput,
-  createdBy: string | null
+  createdBy: string | null,
 ): Promise<Expense> {
   const { data, error } = await supabaseAdmin
-    .from('expenses')
+    .from("expenses")
     .insert({ ...input, restaurant_id: restaurantId, created_by: createdBy })
-    .select('*')
+    .select("*")
     .single();
 
   if (error) throw new Error(`createExpense: ${error.message}`);
@@ -295,14 +307,14 @@ export async function createExpense(
 export async function updateExpense(
   id: string,
   restaurantId: string,
-  input: UpdateExpenseInput
+  input: UpdateExpenseInput,
 ): Promise<Expense> {
   const { data, error } = await supabaseAdmin
-    .from('expenses')
+    .from("expenses")
     .update({ ...input, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId)
-    .select('*')
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId)
+    .select("*")
     .single();
 
   if (error) throw new Error(`updateExpense: ${error.message}`);
@@ -311,13 +323,13 @@ export async function updateExpense(
 
 export async function deleteExpense(
   id: string,
-  restaurantId: string
+  restaurantId: string,
 ): Promise<void> {
   const { error } = await supabaseAdmin
-    .from('expenses')
+    .from("expenses")
     .delete()
-    .eq('id', id)
-    .eq('restaurant_id', restaurantId);
+    .eq("id", id)
+    .eq("restaurant_id", restaurantId);
 
   if (error) throw new Error(`deleteExpense: ${error.message}`);
 }
@@ -331,34 +343,44 @@ export async function getPurchaseSummary(
   restaurantId: string,
   fromDate: string,
   toDate: string,
-  currency = 'JPY'
+  currency = "JPY",
 ): Promise<PurchaseSummary> {
   const [ordersResult, expensesResult] = await Promise.all([
     supabaseAdmin
-      .from('purchase_orders')
-      .select('total_amount')
-      .eq('restaurant_id', restaurantId)
-      .eq('currency', currency)
-      .neq('status', 'cancelled')
-      .gte('order_date', fromDate)
-      .lte('order_date', toDate),
+      .from("purchase_orders")
+      .select("total_amount")
+      .eq("restaurant_id", restaurantId)
+      .eq("currency", currency)
+      .neq("status", "cancelled")
+      .gte("order_date", fromDate)
+      .lte("order_date", toDate),
     supabaseAdmin
-      .from('expenses')
-      .select('amount')
-      .eq('restaurant_id', restaurantId)
-      .eq('currency', currency)
-      .gte('expense_date', fromDate)
-      .lte('expense_date', toDate),
+      .from("expenses")
+      .select("amount")
+      .eq("restaurant_id", restaurantId)
+      .eq("currency", currency)
+      .gte("expense_date", fromDate)
+      .lte("expense_date", toDate),
   ]);
 
-  if (ordersResult.error) throw new Error(`getPurchaseSummary orders: ${ordersResult.error.message}`);
-  if (expensesResult.error) throw new Error(`getPurchaseSummary expenses: ${expensesResult.error.message}`);
+  if (ordersResult.error)
+    throw new Error(`getPurchaseSummary orders: ${ordersResult.error.message}`);
+  if (expensesResult.error)
+    throw new Error(
+      `getPurchaseSummary expenses: ${expensesResult.error.message}`,
+    );
 
   const orders = (ordersResult.data ?? []) as Array<{ total_amount: number }>;
   const expenses = (expensesResult.data ?? []) as Array<{ amount: number }>;
 
-  const totalOrdersAmount = orders.reduce((sum, r) => sum + (r.total_amount ?? 0), 0);
-  const totalExpensesAmount = expenses.reduce((sum, r) => sum + (r.amount ?? 0), 0);
+  const totalOrdersAmount = orders.reduce(
+    (sum, r) => sum + (r.total_amount ?? 0),
+    0,
+  );
+  const totalExpensesAmount = expenses.reduce(
+    (sum, r) => sum + (r.amount ?? 0),
+    0,
+  );
 
   return {
     total_orders_amount: totalOrdersAmount,
