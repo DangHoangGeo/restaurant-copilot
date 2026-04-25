@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { CompactFoodCard } from "./CompactFoodCard";
 import { FoodItem } from "@/shared/types/menu";
 // Enhanced interfaces for smart features
@@ -51,6 +52,7 @@ export function MenuSection({
   showRecommendedBadge = false,
   icon,
 }: MenuSectionProps) {
+  const t = useTranslations("customer.menu");
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -155,7 +157,7 @@ export function MenuSection({
           )}
         </div>
         <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full">
-          {items.length} items
+          {t("items_count", { count: items.length })}
         </div>
       </div>
 
