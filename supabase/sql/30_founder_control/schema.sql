@@ -56,6 +56,7 @@ CREATE TABLE public.organization_menu_categories (
     name_en text NOT NULL,
     name_ja text,
     name_vi text,
+    is_active boolean DEFAULT true NOT NULL,
     "position" integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL

@@ -43,8 +43,27 @@ export interface OrganizationSharedMenuCategory {
   name_en: string;
   name_ja: string | null;
   name_vi: string | null;
+  is_active: boolean;
   position: number;
   items: OrganizationSharedMenuItem[];
+}
+
+export interface OrganizationMenuTopItemInsight {
+  id: string;
+  name_en: string | null;
+  name_ja: string | null;
+  name_vi: string | null;
+  quantity: number;
+  revenue: number;
+  rating: number | null;
+  reviewCount: number;
+}
+
+export interface OrganizationMenuInsights {
+  topItems: OrganizationMenuTopItemInsight[];
+  averageRating: number | null;
+  reviewCount: number;
+  feedbackCount: number;
 }
 
 type SharedMenuCategoryInsert = {
@@ -52,6 +71,15 @@ type SharedMenuCategoryInsert = {
   name_en: string;
   name_ja?: string | null;
   name_vi?: string | null;
+  is_active?: boolean;
+  position?: number;
+};
+
+type SharedMenuCategoryUpdate = {
+  name_en?: string;
+  name_ja?: string | null;
+  name_vi?: string | null;
+  is_active?: boolean;
   position?: number;
 };
 
@@ -110,6 +138,7 @@ export async function listOrganizationSharedMenu(
       name_en,
       name_ja,
       name_vi,
+      is_active,
       position,
       organization_menu_items (
         id,
@@ -163,6 +192,7 @@ export async function listOrganizationSharedMenu(
     name_en: category.name_en,
     name_ja: category.name_ja,
     name_vi: category.name_vi,
+    is_active: category.is_active ?? true,
     position: category.position,
     items: (category.organization_menu_items ?? []).map((item) => ({
       id: item.id,
@@ -210,9 +240,10 @@ export async function createOrganizationSharedCategory(
       name_en: input.name_en,
       name_ja: input.name_ja ?? null,
       name_vi: input.name_vi ?? null,
+      is_active: input.is_active ?? true,
       position: input.position ?? 0,
     })
-    .select("id, name_en, name_ja, name_vi, position")
+    .select("id, name_en, name_ja, name_vi, is_active, position")
     .single();
 
   if (error || !data) {
@@ -225,6 +256,46 @@ export async function createOrganizationSharedCategory(
     name_en: data.name_en,
     name_ja: data.name_ja,
     name_vi: data.name_vi,
+    is_active: data.is_active ?? true,
+    position: data.position,
+    items: [],
+  };
+}
+
+export async function updateOrganizationSharedCategory(
+  organizationId: string,
+  categoryId: string,
+  input: SharedMenuCategoryUpdate,
+): Promise<OrganizationSharedMenuCategory | null> {
+  const updatePayload: SharedMenuCategoryUpdate & { updated_at: string } = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (typeof input.name_en === "string") updatePayload.name_en = input.name_en;
+  if (input.name_ja !== undefined) updatePayload.name_ja = input.name_ja;
+  if (input.name_vi !== undefined) updatePayload.name_vi = input.name_vi;
+  if (input.is_active !== undefined) updatePayload.is_active = input.is_active;
+  if (input.position !== undefined) updatePayload.position = input.position;
+
+  const { data, error } = await supabaseAdmin
+    .from("organization_menu_categories")
+    .update(updatePayload)
+    .eq("organization_id", organizationId)
+    .eq("id", categoryId)
+    .select("id, name_en, name_ja, name_vi, is_active, position")
+    .single();
+
+  if (error || !data) {
+    console.error("Failed to update organization shared category:", error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    name_en: data.name_en,
+    name_ja: data.name_ja,
+    name_vi: data.name_vi,
+    is_active: data.is_active ?? true,
     position: data.position,
     items: [],
   };
@@ -559,4 +630,156 @@ export async function deleteOrganizationSharedMenuItem(
   }
 
   return true;
+}
+
+export async function getOrganizationMenuInsights(params: {
+  restaurantIds: string[];
+}): Promise<OrganizationMenuInsights> {
+  const { restaurantIds } = params;
+  const empty: OrganizationMenuInsights = {
+    topItems: [],
+    averageRating: null,
+    reviewCount: 0,
+    feedbackCount: 0,
+  };
+
+  if (restaurantIds.length === 0) {
+    return empty;
+  }
+
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
+  const sinceIso = since.toISOString();
+
+  const { data: branchItems, error: branchItemsError } = await supabaseAdmin
+    .from("menu_items")
+    .select("id, organization_menu_item_id, name_en, name_ja, name_vi")
+    .in("restaurant_id", restaurantIds);
+
+  if (branchItemsError || !branchItems) {
+    console.error("Failed to load branch items for menu insights:", branchItemsError);
+    return empty;
+  }
+
+  const branchItemById = new Map(
+    branchItems.map((item) => [
+      item.id as string,
+      {
+        id: (item.organization_menu_item_id as string | null) ?? (item.id as string),
+        name_en: item.name_en as string | null,
+        name_ja: item.name_ja as string | null,
+        name_vi: item.name_vi as string | null,
+      },
+    ]),
+  );
+
+  const { data: orderRows } = await supabaseAdmin
+    .from("orders")
+    .select("id")
+    .in("restaurant_id", restaurantIds)
+    .eq("status", "completed")
+    .gte("created_at", sinceIso);
+
+  const orderIds = (orderRows ?? []).map((order) => order.id as string);
+  const itemStats = new Map<
+    string,
+    OrganizationMenuTopItemInsight & { ratingTotal: number }
+  >();
+
+  if (orderIds.length > 0) {
+    const { data: orderItems, error: orderItemsError } = await supabaseAdmin
+      .from("order_items")
+      .select("menu_item_id, quantity, price_at_order")
+      .in("restaurant_id", restaurantIds)
+      .in("order_id", orderIds)
+      .neq("status", "canceled");
+
+    if (orderItemsError) {
+      console.error("Failed to load menu order items:", orderItemsError);
+    }
+
+    for (const row of orderItems ?? []) {
+      const branchItem = branchItemById.get(row.menu_item_id as string);
+      if (!branchItem) continue;
+
+      const quantity = Number(row.quantity ?? 0);
+      const price = Number(row.price_at_order ?? 0);
+      const current =
+        itemStats.get(branchItem.id) ??
+        ({
+          id: branchItem.id,
+          name_en: branchItem.name_en,
+          name_ja: branchItem.name_ja,
+          name_vi: branchItem.name_vi,
+          quantity: 0,
+          revenue: 0,
+          rating: null,
+          reviewCount: 0,
+          ratingTotal: 0,
+        } satisfies OrganizationMenuTopItemInsight & { ratingTotal: number });
+
+      current.quantity += quantity;
+      current.revenue += quantity * price;
+      itemStats.set(branchItem.id, current);
+    }
+  }
+
+  const { data: reviews, error: reviewsError } = await supabaseAdmin
+    .from("reviews")
+    .select("menu_item_id, rating")
+    .in("restaurant_id", restaurantIds)
+    .gte("created_at", sinceIso);
+
+  if (reviewsError) {
+    console.error("Failed to load menu reviews:", reviewsError);
+  }
+
+  let ratingTotal = 0;
+  let reviewCount = 0;
+
+  for (const review of reviews ?? []) {
+    const branchItem = branchItemById.get(review.menu_item_id as string);
+    if (!branchItem) continue;
+
+    const rating = Number(review.rating ?? 0);
+    if (rating <= 0) continue;
+
+    ratingTotal += rating;
+    reviewCount += 1;
+
+    const current =
+      itemStats.get(branchItem.id) ??
+      ({
+        id: branchItem.id,
+        name_en: branchItem.name_en,
+        name_ja: branchItem.name_ja,
+        name_vi: branchItem.name_vi,
+        quantity: 0,
+        revenue: 0,
+        rating: null,
+        reviewCount: 0,
+        ratingTotal: 0,
+      } satisfies OrganizationMenuTopItemInsight & { ratingTotal: number });
+
+    current.ratingTotal += rating;
+    current.reviewCount += 1;
+    current.rating = current.ratingTotal / current.reviewCount;
+    itemStats.set(branchItem.id, current);
+  }
+
+  const { count: feedbackCount } = await supabaseAdmin
+    .from("feedback")
+    .select("id", { count: "exact", head: true })
+    .in("restaurant_id", restaurantIds)
+    .gte("created_at", sinceIso);
+
+  return {
+    topItems: Array.from(itemStats.values())
+      .sort((a, b) => b.quantity - a.quantity || b.revenue - a.revenue)
+      .slice(0, 6)
+      .map(({ ratingTotal: _ratingTotal, ...item }) => item),
+    averageRating: reviewCount > 0 ? ratingTotal / reviewCount : null,
+    reviewCount,
+    feedbackCount: feedbackCount ?? 0,
+  };
 }

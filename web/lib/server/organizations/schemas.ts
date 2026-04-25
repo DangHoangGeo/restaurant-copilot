@@ -158,6 +158,11 @@ export const organizationSharedMenuCategorySchema = z.object({
   position: z.number().int().min(0).optional(),
 });
 
+export const organizationSharedMenuCategoryUpdateSchema =
+  organizationSharedMenuCategorySchema.partial().extend({
+    is_active: z.boolean().optional(),
+  });
+
 const organizationSharedMenuItemSizeSchema = z.object({
   size_key: z.enum(["S", "M", "L", "XL"]),
   name_en: z.string().min(1, "Size name is required").max(100),

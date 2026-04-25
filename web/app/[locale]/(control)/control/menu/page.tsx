@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { ControlSharedMenuPanel } from "@/components/features/admin/control/control-shared-menu-panel";
 import { buildAuthorizationService } from "@/lib/server/authorization/service";
 import { resolveFounderControlContext } from "@/lib/server/control/access";
-import { listOrganizationSharedMenu } from "@/lib/server/organizations/shared-menu";
+import {
+  getOrganizationMenuInsights,
+  listOrganizationSharedMenu,
+} from "@/lib/server/organizations/shared-menu";
 
 export async function generateMetadata({
   params,
@@ -32,13 +35,19 @@ export default async function ControlMenuPage({
     notFound();
   }
 
-  const categories = await listOrganizationSharedMenu(ctx.organization.id);
+  const [categories, insights] = await Promise.all([
+    listOrganizationSharedMenu(ctx.organization.id),
+    getOrganizationMenuInsights({
+      restaurantIds: ctx.accessibleRestaurantIds,
+    }),
+  ]);
 
   return (
     <ControlSharedMenuPanel
       categories={categories}
       organizationName={ctx.organization.name}
       locale={locale}
+      insights={insights}
     />
   );
 }

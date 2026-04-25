@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { optimizeMenuImageFile } from "@/lib/client/menu-image-processing";
 
 type PrimaryLanguage = "en" | "ja" | "vi";
 
@@ -368,6 +369,9 @@ export function MenuItemCreationWizard({
   );
 
   const reset = () => {
+    if (imagePreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setStep(0);
     setIsGenerating(false);
     setIsSaving(false);
@@ -386,7 +390,9 @@ export function MenuItemCreationWizard({
     });
   };
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -395,12 +401,18 @@ export function MenuItemCreationWizard({
       return;
     }
 
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => setImagePreview(e.target?.result as string);
-    reader.readAsDataURL(file);
-    // Reset input so same file can be re-selected after removal
-    event.target.value = "";
+    try {
+      const optimized = await optimizeMenuImageFile(file);
+      if (imagePreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+      setImageFile(optimized.file);
+      setImagePreview(optimized.previewUrl);
+    } catch {
+      toast.error(copy.imageTooLarge);
+    } finally {
+      event.target.value = "";
+    }
   };
 
   const addStandardSizes = () => {
@@ -1073,6 +1085,9 @@ export function MenuItemCreationWizard({
                           type="button"
                           className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
                           onClick={() => {
+                            if (imagePreview.startsWith("blob:")) {
+                              URL.revokeObjectURL(imagePreview);
+                            }
                             setImageFile(null);
                             setImagePreview(null);
                           }}

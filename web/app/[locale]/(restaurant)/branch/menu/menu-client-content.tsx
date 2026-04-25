@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { optimizeMenuImageFile } from "@/lib/client/menu-image-processing";
 import { cn, formatCurrency, getLocalizedText } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -754,18 +755,19 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
       let imageUrl = data.image_url ?? "";
 
       if (data.imageFile) {
+        const optimizedImage = await optimizeMenuImageFile(data.imageFile);
         const sessionResponse = await fetch("/api/v1/auth/session");
         const sessionData = await sessionResponse.json();
         if (!sessionData.authenticated || !sessionData.user?.restaurantId) {
           throw new Error("User not authenticated or missing restaurant ID");
         }
 
-        const fileName = `${Date.now()}-${data.imageFile.name}`;
+        const fileName = `${Date.now()}-${optimizedImage.file.name}`;
         const filePath = `restaurants/${sessionData.user.restaurantId}/menu_items/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("restaurant-uploads")
-          .upload(filePath, data.imageFile, {
+          .upload(filePath, optimizedImage.file, {
             cacheControl: "3600",
             upsert: false,
           });

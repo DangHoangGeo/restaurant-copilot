@@ -106,6 +106,7 @@ async function loadSharedMenuForSync(organizationId: string) {
       name_en,
       name_ja,
       name_vi,
+      is_active,
       position,
       organization_menu_items(
         id,
@@ -141,6 +142,7 @@ async function loadSharedMenuForSync(organizationId: string) {
     `,
     )
     .eq("organization_id", organizationId)
+    .eq("is_active", true)
     .order("position", { ascending: true })
     .order("position", {
       foreignTable: "organization_menu_items",
@@ -434,7 +436,7 @@ export async function syncOrganizationSharedMenuToBranches(params: {
     const { data: existingCategories, error: existingCategoriesError } =
       await supabaseAdmin
         .from("categories")
-        .select("id, organization_menu_category_id")
+        .select("id, organization_menu_category_id, position")
         .eq("restaurant_id", restaurantId);
 
     if (existingCategoriesError) {
@@ -442,7 +444,12 @@ export async function syncOrganizationSharedMenuToBranches(params: {
     }
 
     const categoryIdByOrgId = new Map<string, string>();
+    const usedCategoryPositions = new Set<number>();
+    let nextCategoryPosition = 0;
     for (const category of existingCategories ?? []) {
+      const position = Number(category.position ?? 0);
+      usedCategoryPositions.add(position);
+      nextCategoryPosition = Math.max(nextCategoryPosition, position + 1);
       if (category.organization_menu_category_id) {
         categoryIdByOrgId.set(
           category.organization_menu_category_id,
@@ -450,6 +457,16 @@ export async function syncOrganizationSharedMenuToBranches(params: {
         );
       }
     }
+
+    const claimNextCategoryPosition = () => {
+      while (usedCategoryPositions.has(nextCategoryPosition)) {
+        nextCategoryPosition += 1;
+      }
+      const position = nextCategoryPosition;
+      usedCategoryPositions.add(position);
+      nextCategoryPosition += 1;
+      return position;
+    };
 
     for (const sharedCategory of sharedCategories) {
       const existingCategoryId = categoryIdByOrgId.get(sharedCategory.id);
@@ -460,7 +477,6 @@ export async function syncOrganizationSharedMenuToBranches(params: {
             name_en: sharedCategory.name_en,
             name_ja: sharedCategory.name_ja,
             name_vi: sharedCategory.name_vi,
-            position: sharedCategory.position,
           })
           .eq("id", existingCategoryId)
           .eq("restaurant_id", restaurantId);
@@ -477,7 +493,7 @@ export async function syncOrganizationSharedMenuToBranches(params: {
             name_en: sharedCategory.name_en,
             name_ja: sharedCategory.name_ja,
             name_vi: sharedCategory.name_vi,
-            position: sharedCategory.position,
+            position: claimNextCategoryPosition(),
           })
           .select("id")
           .single();
