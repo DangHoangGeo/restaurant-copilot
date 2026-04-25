@@ -26,12 +26,29 @@ These pages belong to founder control:
 - `control/overview`
 - `control/restaurants`
 - `control/restaurants/[branchId]`
+- `control/menu`
 - `control/people`
 - `control/finance`
 - `control/settings`
 - `control/homepage`
 - `control/onboarding`
 - `control/profile`
+
+## Founder Control UX Model
+
+Founder control should be organized by owner work area, not by a wall of metrics.
+
+- One-time setup:
+  - `control/settings`
+  - `control/restaurants`
+- Frequent operation settings:
+  - `control/menu`
+  - `control/people`
+- Insight and analyst work:
+  - `control/overview`
+  - `control/finance`
+
+`control/overview` is the owner command center. It should help the owner choose the right work area from a phone, surface only meaningful attention items, and then route into branch-level detail when local execution is needed.
 
 ## Branch-Owned Pages
 

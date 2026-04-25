@@ -1,5 +1,5 @@
 {
-  "eyebrow": "Founder Control",
+  "eyebrow": "オーナー管理",
   "subtitle": "まず組織全体を見て、必要なときだけ各店舗へ入って現場操作を行います。",
   "singleBranch": "アクセス可能な店舗は1件です",
   "allBranches": "アクセス可能な店舗は {count} 件です",
@@ -8,15 +8,37 @@
     "hint": "組織全体ページは会社スコープのまま維持され、店舗別ツールだけが選択中の店舗で開きます。"
   },
   "nav": {
-    "overview": "概要",
+    "groups": {
+      "setup": "設定",
+      "operate": "運用",
+      "insights": "分析"
+    },
+    "groupHints": {
+      "setup": "会社情報と店舗",
+      "operate": "メニュー、人員、給与",
+      "insights": "運用、リソース、レポート"
+    },
+    "home": "ホーム",
+    "overview": "運用分析",
     "restaurants": "店舗",
-    "people": "People",
-    "finance": "Finance",
-    "settings": "設定"
+    "people": "従業員と給与",
+    "finance": "財務レポート",
+    "menu": "メニュー",
+    "alerts": "通知",
+    "more": "その他",
+    "mobileSetup": "設定",
+    "settings": "会社プロフィール"
+  },
+  "preferences": {
+    "label": "表示設定",
+    "navigationLabel": "コントロールナビゲーション",
+    "darkMode": "ダークモード",
+    "lightMode": "ライトモード",
+    "languageSelected": "{language} を選択中"
   },
   "overview": {
-    "title": "オーナーコックピット",
-    "description": "アクセス可能な全店舗を横断して、今どこに注意が必要か、今日の動きはどうか、月次締めが揃っているかを最初に確認します。",
+    "title": "オーナー概要",
+    "description": "{count, plural, =0 {表示できる店舗はまだありません。} other {# 店舗の売上、締め進捗、売れ筋、チーム状況をまとめて確認します。}}",
     "attention": {
       "finance": "月次締めが未完了の店舗",
       "staffing": "従業員が未配置の店舗",
@@ -32,7 +54,8 @@
     "monthlyCoverageHint": "{month} の確定スナップショット",
     "monthRevenue": "今月の売上",
     "monthCosts": "今月のコスト",
-    "monthCostsHint": "確定済み店舗のみ集計",
+    "monthCostsHint": "今月の店舗コストと会社共通経費",
+    "monthCostsBreakdown": "店舗 {branch} · 共通 {shared}",
     "monthGrossProfit": "今月の粗利",
     "monthGrossProfitHint": "売上から値引きとコストを差し引いた値",
     "monthLabor": "承認済み労働時間",
@@ -45,7 +68,111 @@
     "monthCloseStatus": "月次締め",
     "awaitingClose": "締め待ち",
     "awaitingCloseHint": "選択中の月でこの店舗の締めがまだ完了していません。",
-    "branchGrossProfit": "粗利 {amount}"
+    "branchGrossProfit": "粗利 {amount}",
+    "openOrdersNow": "{count}件の進行中オーダー",
+    "grossProfitValue": "粗利 {amount}",
+    "staffedBranches": "{staffed}/{total} 店舗にスタッフ配置",
+    "branchesClosed": "{closed}/{total} 店舗が締め済み",
+    "monthCloseProgress": "月次締め進捗",
+    "closedStillOpen": "{closed} 店舗締め済み · {open} 店舗未締め",
+    "hoursValue": "{hours}時間",
+    "openStaffValue": "進行中 {open} · スタッフ {staff}",
+    "priority": {
+      "title": "優先事項",
+      "count": "{count}件",
+      "openOrdersTitle": "進行中オーダーを確認",
+      "openOrdersContext": "{branches} 店舗に {orders} 件の注文",
+      "monthCloseTitle": "月次締めを完了",
+      "monthCloseContext": "{month} は {count} 店舗が未締め",
+      "staffingTitle": "不足スタッフを追加",
+      "staffingContext": "{count} 店舗に従業員がいません",
+      "menuTitle": "メニュー準備を確認",
+      "menuContext": "売れ筋商品がまだ見つかりません",
+      "now": "今すぐ",
+      "due": "要対応",
+      "today": "今日",
+      "open": "開く",
+      "emptyTitle": "急ぎの対応はありません",
+      "emptyBody": "注文、人員、締め確認は落ち着いています。"
+    },
+    "insight": {
+      "label": "インサイト",
+      "monthCloseTitle": "月次締めが正確な数字を止めています",
+      "monthCloseBody": "財務を信頼できる状態にするには {count} 店舗の締めが必要です。",
+      "staffingTitle": "チーム設定が必要な店舗があります",
+      "staffingBody": "{count} 店舗に従業員がまだ登録されていません。",
+      "calmTitle": "事業シグナルは落ち着いています",
+      "calmClosedBody": "店舗締め、人員、進行中オーダーの確認は整っています。",
+      "calmBody": "今日の状況を見ながら、準備できた店舗から締めを進めてください。",
+      "reviewClose": "締めを確認",
+      "openTeam": "チームを開く",
+      "viewReport": "レポートを見る"
+    },
+    "sections": {
+      "progressKicker": "進捗",
+      "progressTitle": "直近30日",
+      "trendKicker": "推移",
+      "trendTitle": "6か月の事業推移",
+      "menuKicker": "メニュー",
+      "topItemsTitle": "売れ筋商品",
+      "teamKicker": "チーム",
+      "topEmployeesTitle": "上位従業員",
+      "payrollKicker": "給与",
+      "payrollTitle": "給与キャッシュ計画",
+      "branchKicker": "店舗",
+      "branchHealthTitle": "店舗状況",
+      "branchPerformanceTitle": "店舗別パフォーマンス",
+      "branchRevenueTitle": "売上上位店舗",
+      "viewAll": "すべて表示"
+    },
+    "tables": {
+      "item": "商品",
+      "sold": "販売数",
+      "revenue": "売上",
+      "employee": "従業員",
+      "roleBranch": "役割と店舗",
+      "hours": "時間",
+      "branch": "店舗",
+      "openStaff": "進行中・人員",
+      "monthRevenue": "月間売上",
+      "monthCosts": "月間コスト",
+      "grossProfit": "粗利",
+      "approvedPay": "承認済み給与",
+      "projectedPay": "予測給与",
+      "close": "締め"
+    },
+    "payroll": {
+      "approved": "承認済み給与",
+      "projected": "月末予測",
+      "remaining": "準備が必要な現金",
+      "approvedHours": "{hours}時間 承認済み",
+      "dailyAverage": "承認済みペース {amount}/日",
+      "peopleCount": "{count}人に承認済み時間あり",
+      "missingRates": "{count}件の役割単価が未設定です。該当時間は予測から除外されています。",
+      "openSalary": "給与を開く",
+      "emptyTitle": "承認済み給与はまだありません",
+      "emptyBody": "勤怠時間が承認され、給与単価が設定されると予測が表示されます。"
+    },
+    "tooltips": {
+      "revenue": "売上",
+      "expenses": "経費",
+      "orders": "注文",
+      "grossProfit": "粗利"
+    },
+    "status": {
+      "closed": "締め済み",
+      "open": "未締め"
+    },
+    "empty": {
+      "noSalesTitle": "完了済み売上はまだありません",
+      "noSalesBody": "注文が完了すると売れ筋商品が表示されます。",
+      "noHoursTitle": "承認済み時間はまだありません",
+      "noHoursBody": "月次勤怠が承認されると上位従業員が表示されます。",
+      "noBranchesTitle": "表示できる店舗がありません",
+      "noBranchesBody": "アクセス可能な店舗が組織にあるとここに表示されます。",
+      "noBranchRevenueTitle": "店舗売上はまだありません",
+      "noBranchRevenueBody": "店舗で売上が完了するとランキングが表示されます。"
+    }
   },
   "restaurants": {
     "title": "店舗",
@@ -64,6 +191,12 @@
       "homepageDescription": "現在の店舗の公開ストーリー、ギャラリー、ホームページ内容を更新します。",
       "openHomepage": "ホームページツールを開く"
     }
+  },
+  "menu": {
+    "title": "会社メニュー",
+    "description": "共通カテゴリと料理を一度設定し、各店舗がそこから継承して必要な部分だけ店舗別に調整できるようにします。",
+    "eyebrow": "初期設定",
+    "scope": "組織メニュー基盤"
   },
   "people": {
     "title": "People",

@@ -83,6 +83,16 @@
       "branchesReadyAll": "All branches ready",
       "monthClose": "Month close ({month})"
     },
+    "workModes": {
+      "dailyLabel": "Daily branch work",
+      "dailyTitle": "Open the branch that needs attention now",
+      "dailyDescription": "Use this list for live orders, staffing, expenses, and month-close follow-up. Branch execution still opens in the branch workspace.",
+      "setupLabel": "One-time setup",
+      "setupTitle": "Set up the company foundation separately",
+      "setupDescription": "Create the company menu once, then add branches that inherit it before local branch edits.",
+      "menuAction": "Company menu setup",
+      "branchAction": "Add branch"
+    },
     "table": {
       "branch": "Branch",
       "contact": "Contact",

@@ -90,6 +90,7 @@ After onboarding, the founder should primarily work in:
 
 - `control/overview`
 - `control/restaurants`
+- `control/menu`
 - `control/people`
 - `control/finance`
 - `control/settings`

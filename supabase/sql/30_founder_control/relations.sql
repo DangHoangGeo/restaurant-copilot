@@ -39,6 +39,18 @@ ALTER TABLE ONLY public.organization_menu_items
 ALTER TABLE ONLY public.organization_menu_items
     ADD CONSTRAINT organization_menu_items_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.owner_organizations(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY public.organization_menu_item_sizes
+    ADD CONSTRAINT organization_menu_item_sizes_item_id_fkey FOREIGN KEY (organization_menu_item_id) REFERENCES public.organization_menu_items(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.organization_menu_item_sizes
+    ADD CONSTRAINT organization_menu_item_sizes_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.owner_organizations(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.organization_menu_item_toppings
+    ADD CONSTRAINT organization_menu_item_toppings_item_id_fkey FOREIGN KEY (organization_menu_item_id) REFERENCES public.organization_menu_items(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.organization_menu_item_toppings
+    ADD CONSTRAINT organization_menu_item_toppings_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.owner_organizations(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY public.organization_pending_invites
     ADD CONSTRAINT organization_pending_invites_accepted_by_user_id_fkey FOREIGN KEY (accepted_by_user_id) REFERENCES auth.users(id);
 

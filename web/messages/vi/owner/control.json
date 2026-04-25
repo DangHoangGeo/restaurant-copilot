@@ -1,5 +1,5 @@
 {
-  "eyebrow": "Founder Control",
+  "eyebrow": "Quản lý chủ sở hữu",
   "subtitle": "Nhìn toàn doanh nghiệp trước, rồi chỉ đi vào từng chi nhánh khi cần xử lý vận hành tại chỗ.",
   "singleBranch": "Có 1 chi nhánh khả dụng",
   "allBranches": "Có {count} chi nhánh khả dụng",
@@ -8,15 +8,37 @@
     "hint": "Các trang cấp tổ chức vẫn ở phạm vi công ty, còn công cụ theo chi nhánh sẽ mở theo chi nhánh đang chọn."
   },
   "nav": {
-    "overview": "Tổng quan",
+    "groups": {
+      "setup": "Thiết lập",
+      "operate": "Vận hành",
+      "insights": "Phân tích"
+    },
+    "groupHints": {
+      "setup": "Hồ sơ công ty và chi nhánh",
+      "operate": "Menu, nhân sự, lương",
+      "insights": "Vận hành, nguồn lực, báo cáo"
+    },
+    "home": "Trang chủ",
+    "overview": "Phân tích vận hành",
     "restaurants": "Chi nhánh",
-    "people": "Nhân sự",
-    "finance": "Tài chính",
-    "settings": "Cài đặt"
+    "people": "Nhân sự & lương",
+    "finance": "Báo cáo tài chính",
+    "menu": "Menu",
+    "alerts": "Cảnh báo",
+    "more": "Thêm",
+    "mobileSetup": "Thiết lập",
+    "settings": "Hồ sơ công ty"
+  },
+  "preferences": {
+    "label": "Tùy chọn",
+    "navigationLabel": "Điều hướng control",
+    "darkMode": "Chế độ tối",
+    "lightMode": "Chế độ sáng",
+    "languageSelected": "Đang chọn {language}"
   },
   "overview": {
-    "title": "Bảng điều hành chủ sở hữu",
-    "description": "Bắt đầu từ toàn bộ các chi nhánh bạn đang quản lý: chỗ nào cần chú ý, hôm nay đang vận hành ra sao, và tháng này đã khóa sổ đến đâu.",
+    "title": "Tổng quan chủ sở hữu",
+    "description": "{count, plural, =0 {Chưa có chi nhánh nào hiển thị.} other {Đang xem # chi nhánh với doanh thu, tiến độ khóa sổ, món bán chạy và hiệu suất đội ngũ.}}",
     "attention": {
       "finance": "Chi nhánh chưa khóa sổ tháng",
       "staffing": "Chi nhánh chưa có nhân sự",
@@ -32,7 +54,8 @@
     "monthlyCoverageHint": "Snapshot đã khóa của {month}",
     "monthRevenue": "Doanh thu tháng này",
     "monthCosts": "Chi phí tháng này",
-    "monthCostsHint": "Chỉ tính các chi nhánh đã khóa sổ",
+    "monthCostsHint": "Chi phí chi nhánh và chi phí chung công ty trong tháng",
+    "monthCostsBreakdown": "Chi nhánh {branch} · chung {shared}",
     "monthGrossProfit": "Lợi nhuận gộp tháng này",
     "monthGrossProfitHint": "Doanh thu trừ giảm giá và chi phí",
     "monthLabor": "Giờ công đã duyệt",
@@ -45,7 +68,111 @@
     "monthCloseStatus": "Khóa sổ tháng",
     "awaitingClose": "Chưa khóa sổ",
     "awaitingCloseHint": "Chi nhánh này chưa có snapshot đã khóa cho tháng đang chọn.",
-    "branchGrossProfit": "Lợi nhuận gộp {amount}"
+    "branchGrossProfit": "Lợi nhuận gộp {amount}",
+    "openOrdersNow": "{count, plural, =0 {Không có đơn đang mở} other {# đơn đang mở}}",
+    "grossProfitValue": "Lợi nhuận gộp {amount}",
+    "staffedBranches": "{staffed}/{total} chi nhánh có nhân sự",
+    "branchesClosed": "{closed}/{total} chi nhánh đã khóa",
+    "monthCloseProgress": "Tiến độ khóa sổ tháng",
+    "closedStillOpen": "{closed} đã khóa · {open} chưa khóa",
+    "hoursValue": "{hours}h",
+    "openStaffValue": "{open} đơn mở · {staff} nhân sự",
+    "priority": {
+      "title": "Ưu tiên",
+      "count": "{count} mục",
+      "openOrdersTitle": "Kiểm tra đơn đang mở",
+      "openOrdersContext": "{orders} đơn trên {branches} chi nhánh",
+      "monthCloseTitle": "Khóa sổ tháng",
+      "monthCloseContext": "{count} chi nhánh vẫn mở cho {month}",
+      "staffingTitle": "Thêm nhân sự còn thiếu",
+      "staffingContext": "{count} chi nhánh chưa có nhân viên",
+      "menuTitle": "Kiểm tra menu sẵn sàng",
+      "menuContext": "Chưa có món bán chạy",
+      "now": "Ngay",
+      "due": "Cần làm",
+      "today": "Hôm nay",
+      "open": "Mở",
+      "emptyTitle": "Không có việc gấp",
+      "emptyBody": "Đơn hàng, nhân sự và khóa sổ đang ổn."
+    },
+    "insight": {
+      "label": "Nhận định",
+      "monthCloseTitle": "Khóa sổ tháng đang chặn số liệu tin cậy",
+      "monthCloseBody": "{count} chi nhánh cần khóa sổ trước khi số tài chính đáng tin.",
+      "staffingTitle": "Một số chi nhánh cần thiết lập đội ngũ",
+      "staffingBody": "{count} chi nhánh chưa có nhân viên.",
+      "calmTitle": "Tín hiệu kinh doanh đang ổn",
+      "calmClosedBody": "Khóa sổ, nhân sự và đơn đang mở đều trong trạng thái tốt.",
+      "calmBody": "Theo dõi hôm nay và khóa sổ khi chi nhánh đã sẵn sàng.",
+      "reviewClose": "Xem khóa sổ",
+      "openTeam": "Mở đội ngũ",
+      "viewReport": "Xem báo cáo"
+    },
+    "sections": {
+      "progressKicker": "Tiến độ",
+      "progressTitle": "30 ngày gần nhất",
+      "trendKicker": "Xu hướng",
+      "trendTitle": "Xu hướng kinh doanh 6 tháng",
+      "menuKicker": "Menu",
+      "topItemsTitle": "Món bán chạy",
+      "teamKicker": "Đội ngũ",
+      "topEmployeesTitle": "Nhân viên nổi bật",
+      "payrollKicker": "Lương",
+      "payrollTitle": "Kế hoạch tiền lương",
+      "branchKicker": "Chi nhánh",
+      "branchHealthTitle": "Tình trạng chi nhánh",
+      "branchPerformanceTitle": "Hiệu quả chi nhánh",
+      "branchRevenueTitle": "Chi nhánh dẫn đầu doanh thu",
+      "viewAll": "Xem tất cả"
+    },
+    "tables": {
+      "item": "Món",
+      "sold": "Đã bán",
+      "revenue": "Doanh thu",
+      "employee": "Nhân viên",
+      "roleBranch": "Vai trò và chi nhánh",
+      "hours": "Giờ",
+      "branch": "Chi nhánh",
+      "openStaff": "Đơn mở và nhân sự",
+      "monthRevenue": "Doanh thu tháng",
+      "monthCosts": "Chi phí tháng",
+      "grossProfit": "Lợi nhuận gộp",
+      "approvedPay": "Lương đã duyệt",
+      "projectedPay": "Lương dự kiến",
+      "close": "Khóa sổ"
+    },
+    "payroll": {
+      "approved": "Lương đã duyệt",
+      "projected": "Dự kiến cuối tháng",
+      "remaining": "Tiền mặt cần chuẩn bị",
+      "approvedHours": "{hours} giờ đã duyệt",
+      "dailyAverage": "Tốc độ đã duyệt {amount}/ngày",
+      "peopleCount": "{count} nhân viên có giờ đã duyệt",
+      "missingRates": "Thiếu {count} mức lương theo vai trò. Dự báo chưa tính các giờ đó.",
+      "openSalary": "Mở lương",
+      "emptyTitle": "Chưa có lương đã duyệt",
+      "emptyBody": "Dự báo lương sẽ xuất hiện sau khi giờ công được duyệt và mức lương được cấu hình."
+    },
+    "tooltips": {
+      "revenue": "Doanh thu",
+      "expenses": "Chi phí",
+      "orders": "Đơn",
+      "grossProfit": "Lợi nhuận gộp"
+    },
+    "status": {
+      "closed": "Đã khóa",
+      "open": "Chưa khóa"
+    },
+    "empty": {
+      "noSalesTitle": "Chưa có doanh số hoàn tất",
+      "noSalesBody": "Món bán chạy sẽ xuất hiện sau khi đơn hàng hoàn tất.",
+      "noHoursTitle": "Chưa có giờ công đã duyệt",
+      "noHoursBody": "Nhân viên nổi bật sẽ xuất hiện sau khi chấm công tháng được duyệt.",
+      "noBranchesTitle": "Chưa có chi nhánh hiển thị",
+      "noBranchesBody": "Chi nhánh sẽ xuất hiện khi tổ chức có nhà hàng bạn được quyền truy cập.",
+      "noBranchRevenueTitle": "Chưa có doanh thu chi nhánh",
+      "noBranchRevenueBody": "Xếp hạng doanh thu sẽ xuất hiện khi chi nhánh có đơn hoàn tất."
+    }
   },
   "restaurants": {
     "title": "Chi nhánh",
@@ -64,6 +191,12 @@
       "homepageDescription": "Cập nhật câu chuyện công khai, thư viện ảnh và nội dung trang chủ cho chi nhánh đang hoạt động.",
       "openHomepage": "Mở công cụ trang chủ"
     }
+  },
+  "menu": {
+    "title": "Menu công ty",
+    "description": "Thiết lập danh mục và món dùng chung một lần, rồi để các chi nhánh kế thừa trước khi chỉnh riêng tại từng chi nhánh.",
+    "eyebrow": "Thiết lập một lần",
+    "scope": "Nền tảng menu cấp tổ chức"
   },
   "people": {
     "title": "Nhân sự",

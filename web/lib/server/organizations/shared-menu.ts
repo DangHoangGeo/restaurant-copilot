@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export interface OrganizationSharedMenuItem {
   id: string;
@@ -12,6 +12,29 @@ export interface OrganizationSharedMenuItem {
   price: number;
   image_url: string | null;
   available: boolean;
+  position: number;
+  sizes: OrganizationSharedMenuItemSize[];
+  toppings: OrganizationSharedMenuItemTopping[];
+}
+
+export interface OrganizationSharedMenuItemSize {
+  id: string;
+  organization_menu_item_id: string;
+  size_key: string;
+  name_en: string;
+  name_ja: string | null;
+  name_vi: string | null;
+  price: number;
+  position: number;
+}
+
+export interface OrganizationSharedMenuItemTopping {
+  id: string;
+  organization_menu_item_id: string;
+  name_en: string;
+  name_ja: string | null;
+  name_vi: string | null;
+  price: number;
   position: number;
 }
 
@@ -51,18 +74,38 @@ type SharedMenuItemInsert = {
   image_url?: string | null;
   available?: boolean;
   position?: number;
+  sizes?: SharedMenuItemSizeInsert[];
+  toppings?: SharedMenuItemToppingInsert[];
+};
+
+type SharedMenuItemSizeInsert = {
+  size_key: string;
+  name_en: string;
+  name_ja?: string | null;
+  name_vi?: string | null;
+  price: number;
+  position?: number;
+};
+
+type SharedMenuItemToppingInsert = {
+  name_en: string;
+  name_ja?: string | null;
+  name_vi?: string | null;
+  price: number;
+  position?: number;
 };
 
 function normalizeCategoryName(value: string | null | undefined) {
-  return value?.trim().toLowerCase() ?? '';
+  return value?.trim().toLowerCase() ?? "";
 }
 
 export async function listOrganizationSharedMenu(
-  organizationId: string
+  organizationId: string,
 ): Promise<OrganizationSharedMenuCategory[]> {
   const { data, error } = await supabaseAdmin
-    .from('organization_menu_categories')
-    .select(`
+    .from("organization_menu_categories")
+    .select(
+      `
       id,
       name_en,
       name_ja,
@@ -80,15 +123,38 @@ export async function listOrganizationSharedMenu(
         price,
         image_url,
         available,
-        position
+        position,
+        organization_menu_item_sizes (
+          id,
+          organization_menu_item_id,
+          size_key,
+          name_en,
+          name_ja,
+          name_vi,
+          price,
+          position
+        ),
+        organization_menu_item_toppings (
+          id,
+          organization_menu_item_id,
+          name_en,
+          name_ja,
+          name_vi,
+          price,
+          position
+        )
       )
-    `)
-    .eq('organization_id', organizationId)
-    .order('position', { ascending: true })
-    .order('position', { foreignTable: 'organization_menu_items', ascending: true });
+    `,
+    )
+    .eq("organization_id", organizationId)
+    .order("position", { ascending: true })
+    .order("position", {
+      foreignTable: "organization_menu_items",
+      ascending: true,
+    });
 
   if (error || !data) {
-    console.error('Failed to list organization shared menu:', error);
+    console.error("Failed to list organization shared menu:", error);
     return [];
   }
 
@@ -111,15 +177,34 @@ export async function listOrganizationSharedMenu(
       image_url: item.image_url,
       available: item.available,
       position: item.position,
+      sizes: (item.organization_menu_item_sizes ?? []).map((size) => ({
+        id: size.id,
+        organization_menu_item_id: size.organization_menu_item_id,
+        size_key: size.size_key,
+        name_en: size.name_en,
+        name_ja: size.name_ja,
+        name_vi: size.name_vi,
+        price: Number(size.price ?? 0),
+        position: size.position,
+      })),
+      toppings: (item.organization_menu_item_toppings ?? []).map((topping) => ({
+        id: topping.id,
+        organization_menu_item_id: topping.organization_menu_item_id,
+        name_en: topping.name_en,
+        name_ja: topping.name_ja,
+        name_vi: topping.name_vi,
+        price: Number(topping.price ?? 0),
+        position: topping.position,
+      })),
     })),
   }));
 }
 
 export async function createOrganizationSharedCategory(
-  input: SharedMenuCategoryInsert
+  input: SharedMenuCategoryInsert,
 ): Promise<OrganizationSharedMenuCategory | null> {
   const { data, error } = await supabaseAdmin
-    .from('organization_menu_categories')
+    .from("organization_menu_categories")
     .insert({
       organization_id: input.organization_id,
       name_en: input.name_en,
@@ -127,11 +212,11 @@ export async function createOrganizationSharedCategory(
       name_vi: input.name_vi ?? null,
       position: input.position ?? 0,
     })
-    .select('id, name_en, name_ja, name_vi, position')
+    .select("id, name_en, name_ja, name_vi, position")
     .single();
 
   if (error || !data) {
-    console.error('Failed to create organization shared category:', error);
+    console.error("Failed to create organization shared category:", error);
     return null;
   }
 
@@ -147,7 +232,7 @@ export async function createOrganizationSharedCategory(
 
 export async function ensureOrganizationSharedCategories(
   organizationId: string,
-  categories: SharedMenuCategorySeed[]
+  categories: SharedMenuCategorySeed[],
 ): Promise<boolean> {
   if (categories.length === 0) {
     return true;
@@ -158,18 +243,25 @@ export async function ensureOrganizationSharedCategories(
     existingCategories.flatMap((category) =>
       [category.name_en, category.name_ja, category.name_vi]
         .map(normalizeCategoryName)
-        .filter((value) => value.length > 0)
-    )
+        .filter((value) => value.length > 0),
+    ),
   );
 
   let nextPosition = existingCategories.length;
 
   for (const category of categories) {
-    const normalizedNames = [category.name_en, category.name_ja, category.name_vi]
+    const normalizedNames = [
+      category.name_en,
+      category.name_ja,
+      category.name_vi,
+    ]
       .map(normalizeCategoryName)
       .filter((value) => value.length > 0);
 
-    if (normalizedNames.length === 0 || normalizedNames.some((value) => existingNames.has(value))) {
+    if (
+      normalizedNames.length === 0 ||
+      normalizedNames.some((value) => existingNames.has(value))
+    ) {
       continue;
     }
 
@@ -196,22 +288,25 @@ export async function ensureOrganizationSharedCategories(
 }
 
 export async function createOrganizationSharedMenuItem(
-  input: SharedMenuItemInsert
+  input: SharedMenuItemInsert,
 ): Promise<OrganizationSharedMenuItem | null> {
   const { data: category, error: categoryError } = await supabaseAdmin
-    .from('organization_menu_categories')
-    .select('id')
-    .eq('id', input.category_id)
-    .eq('organization_id', input.organization_id)
+    .from("organization_menu_categories")
+    .select("id")
+    .eq("id", input.category_id)
+    .eq("organization_id", input.organization_id)
     .maybeSingle();
 
   if (categoryError || !category) {
-    console.error('Invalid shared menu category for organization:', categoryError);
+    console.error(
+      "Invalid shared menu category for organization:",
+      categoryError,
+    );
     return null;
   }
 
   const { data, error } = await supabaseAdmin
-    .from('organization_menu_items')
+    .from("organization_menu_items")
     .insert({
       organization_id: input.organization_id,
       category_id: input.category_id,
@@ -226,7 +321,8 @@ export async function createOrganizationSharedMenuItem(
       available: input.available ?? true,
       position: input.position ?? 0,
     })
-    .select(`
+    .select(
+      `
       id,
       category_id,
       name_en,
@@ -238,12 +334,159 @@ export async function createOrganizationSharedMenuItem(
       price,
       image_url,
       available,
-      position
-    `)
+      position,
+      organization_menu_item_sizes (
+        id,
+        organization_menu_item_id,
+        size_key,
+        name_en,
+        name_ja,
+        name_vi,
+        price,
+        position
+      ),
+      organization_menu_item_toppings (
+        id,
+        organization_menu_item_id,
+        name_en,
+        name_ja,
+        name_vi,
+        price,
+        position
+      )
+    `,
+    )
     .single();
 
   if (error || !data) {
-    console.error('Failed to create organization shared menu item:', error);
+    console.error("Failed to create organization shared menu item:", error);
+    return null;
+  }
+
+  if (input.sizes && input.sizes.length > 0) {
+    const { error: sizesError } = await supabaseAdmin
+      .from("organization_menu_item_sizes")
+      .insert(
+        input.sizes.map((size, index) => ({
+          organization_id: input.organization_id,
+          organization_menu_item_id: data.id,
+          size_key: size.size_key,
+          name_en: size.name_en,
+          name_ja: size.name_ja ?? null,
+          name_vi: size.name_vi ?? null,
+          price: size.price,
+          position: size.position ?? index,
+        })),
+      );
+
+    if (sizesError) {
+      console.error(
+        "Failed to create organization shared menu item sizes:",
+        sizesError,
+      );
+      await deleteOrganizationSharedMenuItem(input.organization_id, data.id);
+      return null;
+    }
+  }
+
+  if (input.toppings && input.toppings.length > 0) {
+    const { error: toppingsError } = await supabaseAdmin
+      .from("organization_menu_item_toppings")
+      .insert(
+        input.toppings.map((topping, index) => ({
+          organization_id: input.organization_id,
+          organization_menu_item_id: data.id,
+          name_en: topping.name_en,
+          name_ja: topping.name_ja ?? null,
+          name_vi: topping.name_vi ?? null,
+          price: topping.price,
+          position: topping.position ?? index,
+        })),
+      );
+
+    if (toppingsError) {
+      console.error(
+        "Failed to create organization shared menu item toppings:",
+        toppingsError,
+      );
+      await deleteOrganizationSharedMenuItem(input.organization_id, data.id);
+      return null;
+    }
+  }
+
+  const createdItem = await getOrganizationSharedMenuItem(
+    input.organization_id,
+    data.id,
+  );
+  if (createdItem) {
+    return createdItem;
+  }
+
+  return {
+    id: data.id,
+    category_id: data.category_id,
+    name_en: data.name_en,
+    name_ja: data.name_ja,
+    name_vi: data.name_vi,
+    description_en: data.description_en,
+    description_ja: data.description_ja,
+    description_vi: data.description_vi,
+    price: Number(data.price ?? 0),
+    image_url: data.image_url,
+    available: data.available,
+    position: data.position,
+    sizes: [],
+    toppings: [],
+  };
+}
+
+async function getOrganizationSharedMenuItem(
+  organizationId: string,
+  itemId: string,
+): Promise<OrganizationSharedMenuItem | null> {
+  const { data, error } = await supabaseAdmin
+    .from("organization_menu_items")
+    .select(
+      `
+      id,
+      category_id,
+      name_en,
+      name_ja,
+      name_vi,
+      description_en,
+      description_ja,
+      description_vi,
+      price,
+      image_url,
+      available,
+      position,
+      organization_menu_item_sizes (
+        id,
+        organization_menu_item_id,
+        size_key,
+        name_en,
+        name_ja,
+        name_vi,
+        price,
+        position
+      ),
+      organization_menu_item_toppings (
+        id,
+        organization_menu_item_id,
+        name_en,
+        name_ja,
+        name_vi,
+        price,
+        position
+      )
+    `,
+    )
+    .eq("organization_id", organizationId)
+    .eq("id", itemId)
+    .single();
+
+  if (error || !data) {
+    console.error("Failed to load organization shared menu item:", error);
     return null;
   }
 
@@ -260,21 +503,40 @@ export async function createOrganizationSharedMenuItem(
     image_url: data.image_url,
     available: data.available,
     position: data.position,
+    sizes: (data.organization_menu_item_sizes ?? []).map((size) => ({
+      id: size.id,
+      organization_menu_item_id: size.organization_menu_item_id,
+      size_key: size.size_key,
+      name_en: size.name_en,
+      name_ja: size.name_ja,
+      name_vi: size.name_vi,
+      price: Number(size.price ?? 0),
+      position: size.position,
+    })),
+    toppings: (data.organization_menu_item_toppings ?? []).map((topping) => ({
+      id: topping.id,
+      organization_menu_item_id: topping.organization_menu_item_id,
+      name_en: topping.name_en,
+      name_ja: topping.name_ja,
+      name_vi: topping.name_vi,
+      price: Number(topping.price ?? 0),
+      position: topping.position,
+    })),
   };
 }
 
 export async function deleteOrganizationSharedCategory(
   organizationId: string,
-  categoryId: string
+  categoryId: string,
 ): Promise<boolean> {
   const { error } = await supabaseAdmin
-    .from('organization_menu_categories')
+    .from("organization_menu_categories")
     .delete()
-    .eq('organization_id', organizationId)
-    .eq('id', categoryId);
+    .eq("organization_id", organizationId)
+    .eq("id", categoryId);
 
   if (error) {
-    console.error('Failed to delete organization shared category:', error);
+    console.error("Failed to delete organization shared category:", error);
     return false;
   }
 
@@ -283,16 +545,16 @@ export async function deleteOrganizationSharedCategory(
 
 export async function deleteOrganizationSharedMenuItem(
   organizationId: string,
-  itemId: string
+  itemId: string,
 ): Promise<boolean> {
   const { error } = await supabaseAdmin
-    .from('organization_menu_items')
+    .from("organization_menu_items")
     .delete()
-    .eq('organization_id', organizationId)
-    .eq('id', itemId);
+    .eq("organization_id", organizationId)
+    .eq("id", itemId);
 
   if (error) {
-    console.error('Failed to delete organization shared menu item:', error);
+    console.error("Failed to delete organization shared menu item:", error);
     return false;
   }
 

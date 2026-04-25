@@ -158,6 +158,23 @@ export const organizationSharedMenuCategorySchema = z.object({
   position: z.number().int().min(0).optional(),
 });
 
+const organizationSharedMenuItemSizeSchema = z.object({
+  size_key: z.enum(["S", "M", "L", "XL"]),
+  name_en: z.string().min(1, "Size name is required").max(100),
+  name_ja: z.string().max(100).optional().or(z.literal("")),
+  name_vi: z.string().max(100).optional().or(z.literal("")),
+  price: z.number().min(0),
+  position: z.number().int().min(0).optional(),
+});
+
+const organizationSharedMenuItemToppingSchema = z.object({
+  name_en: z.string().min(1, "Topping name is required").max(100),
+  name_ja: z.string().max(100).optional().or(z.literal("")),
+  name_vi: z.string().max(100).optional().or(z.literal("")),
+  price: z.number().min(0),
+  position: z.number().int().min(0).optional(),
+});
+
 const onboardingSharedMenuCategorySchema = z.object({
   name_en: z.string().min(1, "Category name is required").max(100),
   name_ja: z.string().max(100).nullable().optional(),
@@ -176,6 +193,8 @@ export const organizationSharedMenuItemSchema = z.object({
   image_url: z.string().url("Invalid image URL").nullable().optional(),
   available: z.boolean().optional(),
   position: z.number().int().min(0).optional(),
+  sizes: z.array(organizationSharedMenuItemSizeSchema).optional(),
+  toppings: z.array(organizationSharedMenuItemToppingSchema).optional(),
 });
 
 export const organizationOnboardingSchema = z.object({
@@ -193,7 +212,9 @@ export const organizationOnboardingSchema = z.object({
   description_en: z.string().max(1000).nullable().optional(),
   description_ja: z.string().max(1000).nullable().optional(),
   description_vi: z.string().max(1000).nullable().optional(),
-  shared_menu_categories: z.array(onboardingSharedMenuCategorySchema).optional(),
+  shared_menu_categories: z
+    .array(onboardingSharedMenuCategorySchema)
+    .optional(),
   primary_branch: z.object({
     id: z.string().uuid("Valid branch ID required"),
     name: z.string().min(1).max(100),

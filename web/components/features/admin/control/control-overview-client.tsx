@@ -1,39 +1,32 @@
-'use client';
+"use client";
 
-import { useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import type { ComponentType, ReactNode } from "react";
 import {
-  AlertTriangle,
+  BadgeDollarSign,
+  BarChart3,
   Building2,
   CheckCircle2,
-  CircleDollarSign,
-  Users,
+  ReceiptText,
   TrendingUp,
-} from 'lucide-react';
+  Users,
+  UtensilsCrossed,
+} from "lucide-react";
 import {
-  ResponsiveContainer,
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from 'recharts';
-import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import type { FounderControlOverviewData } from '@/lib/server/control/overview';
+} from "recharts";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { FounderControlOverviewData } from "@/lib/server/control/overview";
 
 interface ControlOverviewClientProps {
   data: FounderControlOverviewData;
@@ -41,144 +34,122 @@ interface ControlOverviewClientProps {
   currency: string;
 }
 
+interface MetricItem {
+  label: string;
+  value: string;
+  detail: string;
+  icon: ComponentType<{ className?: string }>;
+}
+
 function fmt(amount: number, currency: string, locale: string) {
   try {
     return new Intl.NumberFormat(locale, {
-      style: 'currency',
+      style: "currency",
       currency,
-      maximumFractionDigits: currency === 'JPY' ? 0 : 2,
+      maximumFractionDigits: currency === "JPY" ? 0 : 2,
     }).format(amount);
   } catch {
     return `${currency} ${amount.toLocaleString()}`;
   }
 }
 
-function fmtCompact(amount: number): string {
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}k`;
-  return String(Math.round(amount));
+function fmtCompact(amount: number, currency: string, locale: string) {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      notation: "compact",
+      maximumFractionDigits: currency === "JPY" ? 0 : 1,
+    }).format(amount);
+  } catch {
+    return `${currency} ${Math.round(amount).toLocaleString()}`;
+  }
 }
 
-function StatItem({
-  label,
-  value,
-  sub,
-  tone,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  tone?: 'amber' | 'green' | 'sky';
-}) {
-  return (
-    <div className="space-y-0.5">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p
-        className={cn(
-          'text-xl font-semibold tabular-nums',
-          tone === 'amber' && 'text-amber-600',
-          tone === 'green' && 'text-emerald-600',
-          tone === 'sky' && 'text-sky-600'
-        )}
-      >
-        {value}
-      </p>
-      {sub && <p className="text-[11px] text-muted-foreground">{sub}</p>}
-    </div>
+function percent(value: number, max: number) {
+  if (max <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round((value / max) * 100)));
+}
+
+function formatMonthLabel(yearMonth: string, locale: string) {
+  const [year, month] = yearMonth.split("/").map(Number);
+  if (!year || !month) return yearMonth;
+  return new Intl.DateTimeFormat(locale, { month: "short" }).format(
+    new Date(year, month - 1, 1),
   );
 }
 
-function ChartCard({
-  title,
-  subtitle,
+function Surface({
   children,
-  empty,
-  emptyText,
+  className,
 }: {
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-  empty?: boolean;
-  emptyText?: string;
+  children: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="mb-4">
-        <p className="text-sm font-medium">{title}</p>
-        {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
-      </div>
-      {empty ? (
-        <div className="flex h-[180px] items-center justify-center text-sm text-muted-foreground">
-          <div className="text-center space-y-1">
-            <TrendingUp className="h-6 w-6 mx-auto opacity-30" />
-            <p>{emptyText ?? 'No data yet'}</p>
-          </div>
-        </div>
-      ) : (
-        children
+    <section
+      className={cn(
+        "rounded-xl bg-[#fff7e9]/[0.075] shadow-[0_22px_70px_-48px_rgba(0,0,0,0.95)] backdrop-blur-xl",
+        className,
       )}
+    >
+      {children}
+    </section>
+  );
+}
+
+function ChartTooltip({
+  label,
+  rows,
+}: {
+  label: ReactNode;
+  rows: Array<{ label: string; value: string; color: string }>;
+}) {
+  return (
+    <div className="rounded-lg bg-[#120d08]/95 px-3 py-2 text-xs shadow-xl backdrop-blur-xl">
+      <p className="font-semibold text-[#fff7e9]">{label}</p>
+      <div className="mt-2 space-y-1">
+        {rows.map((row) => (
+          <div
+            key={row.label}
+            className="flex min-w-36 items-center gap-2 text-[#c9b7a0]"
+          >
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: row.color }}
+            />
+            <span>{row.label}</span>
+            <span className="ml-auto font-semibold text-[#fff7e9]">
+              {row.value}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-// Custom tooltip for currency values
-function CurrencyTooltip({
-  active,
-  payload,
-  label,
-  currency,
-  locale,
-}: {
-  active?: boolean;
-  payload?: Array<{ name: string; value: number; color: string }>;
-  label?: string;
-  currency: string;
-  locale: string;
-}) {
-  if (!active || !payload?.length) return null;
+function MetricStrip({ items }: { items: MetricItem[] }) {
   return (
-    <div className="rounded-lg border bg-popover px-3 py-2 text-xs shadow-md">
-      <p className="mb-1.5 font-medium text-muted-foreground">{label}</p>
-      {payload.map((entry) => (
-        <div key={entry.name} className="flex items-center gap-2">
-          <span className="inline-block h-2 w-2 rounded-full" style={{ background: entry.color }} />
-          <span className="text-muted-foreground capitalize">{entry.name}:</span>
-          <span className="font-medium tabular-nums">{fmt(entry.value, currency, locale)}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function OrdersTooltip({
-  active,
-  payload,
-  label,
-  currency,
-  locale,
-}: {
-  active?: boolean;
-  payload?: Array<{ name: string; value: number; color: string }>;
-  label?: string;
-  currency: string;
-  locale: string;
-}) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-lg border bg-popover px-3 py-2 text-xs shadow-md">
-      <p className="mb-1.5 font-medium text-muted-foreground">{label}</p>
-      {payload.map((entry) => (
-        <div key={entry.name} className="flex items-center gap-2">
-          <span className="inline-block h-2 w-2 rounded-full" style={{ background: entry.color }} />
-          <span className="text-muted-foreground capitalize">{entry.name}:</span>
-          <span className="font-medium tabular-nums">
-            {entry.name === 'revenue'
-              ? fmt(entry.value, currency, locale)
-              : entry.value.toLocaleString()}
-          </span>
-        </div>
-      ))}
-    </div>
+    <Surface className="grid divide-y divide-[#f1dcc4]/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
+      {items.map((item) => {
+        const Icon = item.icon;
+        return (
+          <div key={item.label} className="p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-medium text-[#c9b7a0]">{item.label}</p>
+              <Icon className="h-4 w-4 text-[#e9a35e]" />
+            </div>
+            <p className="mt-2 truncate text-2xl font-semibold tabular-nums text-[#fff7e9]">
+              {item.value}
+            </p>
+            <p className="mt-1 truncate text-xs text-[#b89078]">
+              {item.detail}
+            </p>
+          </div>
+        );
+      })}
+    </Surface>
   );
 }
 
@@ -188,379 +159,574 @@ export function ControlOverviewClient({
   currency,
 }: ControlOverviewClientProps) {
   const appLocale = useLocale();
-  const router = useRouter();
-
-  const monthLabel = `${data.current_month.year}/${String(data.current_month.month).padStart(2, '0')}`;
-
-  const navigateToBranch = (restaurantId: string, tab?: string) => {
-    const base = `/${appLocale}/control/restaurants/${restaurantId}`;
-    router.push(tab ? `${base}?tab=${tab}` : base);
-  };
-
-  // Alerts to show
-  const alerts = [
-    data.attention.branches_missing_snapshot > 0 && {
-      key: 'missing-close',
-      text: `${data.attention.branches_missing_snapshot} branch${data.attention.branches_missing_snapshot > 1 ? 'es' : ''} still need month close`,
-      tone: 'amber' as const,
-    },
-    data.attention.branches_without_employees > 0 && {
-      key: 'unstaffed',
-      text: `${data.attention.branches_without_employees} branch${data.attention.branches_without_employees > 1 ? 'es' : ''} without employees`,
-      tone: 'amber' as const,
-    },
-  ].filter(Boolean) as Array<{ key: string; text: string; tone: 'amber' }>;
-
-  // Chart: daily revenue — abbreviate x-axis labels (show every 5th day)
-  const dailyChartData = data.daily_revenue_30d.map((d) => ({
-    ...d,
-    dayLabel: d.date.slice(5), // "MM-DD"
+  const tRoot = useTranslations("owner.control");
+  const t = useTranslations("owner.control.overview");
+  const monthCloseProgress = percent(
+    data.current_month.branches_with_snapshot,
+    data.current_month.branch_count,
+  );
+  const localizedTrend = data.monthly_trend_6m.map((point) => ({
+    ...point,
+    localizedLabel: formatMonthLabel(point.yearMonth, locale),
   }));
-  const hasDailyData = dailyChartData.some((d) => d.revenue > 0);
+  const branchRows = [...data.branches].sort(
+    (a, b) => b.monthly_revenue - a.monthly_revenue,
+  );
 
-  // Chart: monthly trend
-  const hasMonthlyData = data.monthly_trend_6m.some((m) => m.revenue > 0 || m.gross_profit > 0);
-
-  // Chart: top items (horizontal bar)
-  const hasTopItems = data.top_items_30d.length > 0;
-
-  // Chart: branch revenue comparison
-  const hasBranchRevenue = data.branch_revenue.length > 0;
+  const metricItems: MetricItem[] = [
+    {
+      label: t("todayRevenue"),
+      value: fmt(data.total_today_revenue, currency, locale),
+      detail: t("openOrdersNow", { count: data.total_open_orders }),
+      icon: BadgeDollarSign,
+    },
+    {
+      label: t("monthRevenue"),
+      value: fmtCompact(data.current_month.revenue_total, currency, locale),
+      detail: t("grossProfitValue", {
+        amount: fmtCompact(
+          data.current_month.gross_profit_estimate,
+          currency,
+          locale,
+        ),
+      }),
+      icon: TrendingUp,
+    },
+    {
+      label: t("monthCosts"),
+      value: fmtCompact(
+        data.current_month.combined_cost_total,
+        currency,
+        locale,
+      ),
+      detail: t("monthCostsHint"),
+      icon: ReceiptText,
+    },
+    {
+      label: t("monthlyCoverage"),
+      value: `${monthCloseProgress}%`,
+      detail: t("branchesClosed", {
+        closed: data.current_month.branches_with_snapshot,
+        total: data.current_month.branch_count,
+      }),
+      icon: CheckCircle2,
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Attention bar */}
-      {alerts.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {alerts.map((a) => (
-            <div
-              key={a.key}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 dark:border-amber-800/40 dark:bg-amber-900/20 dark:text-amber-400"
-            >
-              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-              {a.text}
-            </div>
-          ))}
+    <div className="mx-auto max-w-7xl space-y-5">
+      <header>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#e9a35e]">
+            {tRoot("eyebrow")}
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold leading-tight text-[#fff7e9] sm:text-4xl">
+            {t("title")}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#c9b7a0]">
+            {t("description", { count: data.branches.length })}
+          </p>
         </div>
-      )}
+      </header>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-lg border bg-card p-4 sm:grid-cols-4">
-        <StatItem
-          label="Today revenue"
-          value={fmt(data.total_today_revenue, currency, locale)}
-          sub={`${data.branches.length} branches`}
-          tone="green"
-        />
-        <StatItem
-          label="Open orders"
-          value={data.total_open_orders.toString()}
-          sub={`${data.branches_with_open_orders} branches`}
-          tone={data.total_open_orders > 0 ? 'sky' : undefined}
-        />
-        <StatItem
-          label="Employees"
-          value={data.total_employees.toString()}
-          sub={`${data.branches_with_employees} staffed branches`}
-        />
-        <StatItem
-          label={`Month close (${monthLabel})`}
-          value={`${data.current_month.branches_with_snapshot}/${data.current_month.branch_count}`}
-          tone={
-            data.current_month.branches_with_snapshot < data.current_month.branch_count
-              ? 'amber'
-              : 'green'
-          }
-        />
-      </div>
+      <MetricStrip items={metricItems} />
 
-      {/* Month finance row */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-lg border bg-card p-4 sm:grid-cols-4">
-        <StatItem
-          label={`${monthLabel} revenue`}
-          value={fmt(data.current_month.revenue_total, currency, locale)}
-        />
-        <StatItem
-          label="Costs"
-          value={fmt(data.current_month.combined_cost_total, currency, locale)}
-          sub="Closed snapshots only"
-        />
-        <StatItem
-          label="Gross profit"
-          value={fmt(data.current_month.gross_profit_estimate, currency, locale)}
-          tone="green"
-        />
-        <StatItem
-          label="Approved labor"
-          value={`${data.current_month.approved_labor_hours.toFixed(1)}h`}
-          sub="Closed snapshots only"
-        />
-      </div>
-
-      {/* ── Charts row 1: Daily revenue + Monthly trend ── */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* 30-day daily revenue area chart */}
-        <ChartCard
-          title="Revenue last 30 days"
-          subtitle="Completed orders across all branches"
-          empty={!hasDailyData}
-          emptyText="No completed orders in the last 30 days"
-        >
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={dailyChartData} margin={{ top: 4, right: 4, left: -12, bottom: 0 }}>
-              <defs>
-                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis
-                dataKey="dayLabel"
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                tickLine={false}
-                axisLine={false}
-                interval={4}
-              />
-              <YAxis
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(v: number) => fmtCompact(v)}
-                width={44}
-              />
-              <Tooltip
-                content={
-                  <OrdersTooltip currency={currency} locale={locale} />
-                }
-              />
-              <Area
-                type="monotone"
-                dataKey="revenue"
-                stroke="#10b981"
-                strokeWidth={2}
-                fill="url(#revenueGradient)"
-                dot={false}
-                activeDot={{ r: 4, fill: '#10b981' }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        {/* 6-month revenue vs gross profit bar chart */}
-        <ChartCard
-          title="Monthly revenue vs profit"
-          subtitle="Last 6 months — closed snapshots only"
-          empty={!hasMonthlyData}
-          emptyText="No closed monthly snapshots yet"
-        >
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={data.monthly_trend_6m} margin={{ top: 4, right: 4, left: -12, bottom: 0 }} barCategoryGap="30%">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(v: number) => fmtCompact(v)}
-                width={44}
-              />
-              <Tooltip
-                content={<CurrencyTooltip currency={currency} locale={locale} />}
-              />
-              <Legend
-                iconType="circle"
-                iconSize={8}
-                wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
-              />
-              <Bar dataKey="revenue" name="Revenue" fill="#6366f1" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="gross_profit" name="Gross profit" fill="#10b981" radius={[3, 3, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
-
-      {/* ── Charts row 2: Top items + Branch comparison ── */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Top menu items horizontal bar */}
-        <ChartCard
-          title="Top menu items (30 days)"
-          subtitle="By quantity sold across all branches"
-          empty={!hasTopItems}
-          emptyText="No order items in the last 30 days"
-        >
-          <div className="space-y-2 pt-1">
-            {data.top_items_30d.map((item, i) => {
-              const max = data.top_items_30d[0]?.quantity ?? 1;
-              const pct = Math.round((item.quantity / max) * 100);
-              return (
-                <div key={item.name} className="group">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-xs truncate max-w-[65%] text-foreground">{item.name}</span>
-                    <span className="text-xs tabular-nums text-muted-foreground">
-                      ×{item.quantity} · {fmt(item.revenue, currency, locale)}
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={cn(
-                        'h-full rounded-full transition-all',
-                        i === 0 ? 'bg-indigo-500' : i === 1 ? 'bg-emerald-500' : 'bg-sky-400'
-                      )}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <Surface className="p-4">
+          <SectionTitle
+            kicker={t("sections.progressKicker")}
+            title={t("sections.progressTitle")}
+            icon={BarChart3}
+          />
+          <div className="mt-3 h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.daily_revenue_30d}>
+                <defs>
+                  <linearGradient id="dailyRevenue" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="5%" stopColor="#e9a35e" stopOpacity={0.48} />
+                    <stop offset="95%" stopColor="#e9a35e" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  stroke="rgba(241,220,196,0.08)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="date"
+                  minTickGap={26}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "#b89078", fontSize: 11 }}
+                  tickFormatter={(value: string) => value.slice(5)}
+                />
+                <YAxis
+                  width={52}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "#b89078", fontSize: 11 }}
+                  tickFormatter={(value: number) =>
+                    fmtCompact(value, currency, locale)
+                  }
+                />
+                <Tooltip
+                  cursor={{ stroke: "rgba(233,163,94,0.28)" }}
+                  content={({ active, payload, label }) =>
+                    active && payload?.length ? (
+                      <ChartTooltip
+                        label={label}
+                        rows={[
+                          {
+                            label: t("tooltips.revenue"),
+                            value: fmt(
+                              Number(payload[0]?.value ?? 0),
+                              currency,
+                              locale,
+                            ),
+                            color: "#e9a35e",
+                          },
+                          {
+                            label: t("tooltips.expenses"),
+                            value: fmt(
+                              Number(payload[1]?.value ?? 0),
+                              currency,
+                              locale,
+                            ),
+                            color: "#97be73",
+                          },
+                        ]}
+                      />
+                    ) : null
+                  }
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#e9a35e"
+                  strokeWidth={2}
+                  fill="url(#dailyRevenue)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="expenses"
+                  stroke="#97be73"
+                  strokeWidth={2}
+                  fill="transparent"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-        </ChartCard>
+        </Surface>
 
-        {/* Branch revenue comparison */}
-        <ChartCard
-          title="Branch revenue this month"
-          subtitle="Closed snapshots only"
-          empty={!hasBranchRevenue}
-          emptyText="No branches have closed this month yet"
+        <Surface className="p-4">
+          <SectionTitle
+            kicker={t("sections.trendKicker")}
+            title={t("sections.trendTitle")}
+            icon={TrendingUp}
+          />
+          <div className="mt-3 h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={localizedTrend}>
+                <CartesianGrid
+                  stroke="rgba(241,220,196,0.08)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="localizedLabel"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "#b89078", fontSize: 11 }}
+                />
+                <YAxis hide />
+                <Tooltip
+                  cursor={{ fill: "rgba(255,247,233,0.05)" }}
+                  content={({ active, payload, label }) =>
+                    active && payload?.length ? (
+                      <ChartTooltip
+                        label={label}
+                        rows={[
+                          {
+                            label: t("tooltips.revenue"),
+                            value: fmt(
+                              Number(payload[0]?.value ?? 0),
+                              currency,
+                              locale,
+                            ),
+                            color: "#e9a35e",
+                          },
+                          {
+                            label: t("tooltips.expenses"),
+                            value: fmt(
+                              Number(payload[1]?.value ?? 0),
+                              currency,
+                              locale,
+                            ),
+                            color: "#97be73",
+                          },
+                        ]}
+                      />
+                    ) : null
+                  }
+                />
+                <Bar dataKey="revenue" fill="#e9a35e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expenses" fill="#97be73" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Surface>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <DataTable
+          kicker={t("sections.menuKicker")}
+          title={t("sections.topItemsTitle")}
+          emptyIcon={UtensilsCrossed}
+          emptyTitle={t("empty.noSalesTitle")}
+          emptyBody={t("empty.noSalesBody")}
+          hasRows={data.top_items_30d.length > 0}
+          headers={[t("tables.item"), t("tables.sold"), t("tables.revenue")]}
         >
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart
-              data={data.branch_revenue}
-              layout="vertical"
-              margin={{ top: 4, right: 4, left: 4, bottom: 0 }}
-              barCategoryGap="30%"
+          {data.top_items_30d.slice(0, 6).map((item) => (
+            <tr key={item.name}>
+              <td className="max-w-0 truncate py-3 pr-3 font-medium text-[#fff7e9]">
+                {item.name}
+              </td>
+              <td className="py-3 pr-3 text-right tabular-nums text-[#c9b7a0]">
+                {item.quantity}
+              </td>
+              <td className="py-3 text-right tabular-nums text-[#fff7e9]">
+                {fmt(item.revenue, currency, locale)}
+              </td>
+            </tr>
+          ))}
+        </DataTable>
+
+        <Surface className="p-4">
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#e9a35e]">
+                {t("sections.payrollKicker")}
+              </p>
+              <h2 className="mt-1 text-lg font-semibold text-[#fff7e9]">
+                {t("sections.payrollTitle")}
+              </h2>
+            </div>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="h-8 shrink-0 rounded-md text-[#f1dcc4] hover:bg-[#fff7e9]/10 hover:text-[#fff7e9]"
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-              <XAxis
-                type="number"
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(v: number) => fmtCompact(v)}
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                tickLine={false}
-                axisLine={false}
-                width={72}
-              />
-              <Tooltip
-                content={<CurrencyTooltip currency={currency} locale={locale} />}
-              />
-              <Bar dataKey="revenue" name="Revenue" fill="#6366f1" radius={[0, 3, 3, 0]} />
-              <Bar dataKey="gross_profit" name="Gross profit" fill="#10b981" radius={[0, 3, 3, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
+              <Link href={`/${appLocale}/control/people`}>
+                {t("payroll.openSalary")}
+              </Link>
+            </Button>
+          </div>
+
+          {data.payroll_current_month.approved_hours > 0 ? (
+            <div className="space-y-4">
+              <div className="grid gap-2 sm:grid-cols-3">
+                <div className="rounded-lg bg-[#080705]/22 p-3">
+                  <p className="text-xs text-[#b89078]">
+                    {t("payroll.approved")}
+                  </p>
+                  <p className="mt-1 truncate text-xl font-semibold tabular-nums text-[#fff7e9]">
+                    {fmt(
+                      data.payroll_current_month.approved_amount,
+                      currency,
+                      locale,
+                    )}
+                  </p>
+                  <p className="mt-1 text-xs text-[#c9b7a0]">
+                    {t("payroll.approvedHours", {
+                      hours:
+                        data.payroll_current_month.approved_hours.toFixed(1),
+                    })}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-[#080705]/22 p-3">
+                  <p className="text-xs text-[#b89078]">
+                    {t("payroll.projected")}
+                  </p>
+                  <p className="mt-1 truncate text-xl font-semibold tabular-nums text-[#fff7e9]">
+                    {fmt(
+                      data.payroll_current_month.projected_month_amount,
+                      currency,
+                      locale,
+                    )}
+                  </p>
+                  <p className="mt-1 text-xs text-[#c9b7a0]">
+                    {t("payroll.dailyAverage", {
+                      amount: fmt(
+                        data.payroll_current_month.average_daily_amount,
+                        currency,
+                        locale,
+                      ),
+                    })}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-[#080705]/22 p-3">
+                  <p className="text-xs text-[#b89078]">
+                    {t("payroll.remaining")}
+                  </p>
+                  <p className="mt-1 truncate text-xl font-semibold tabular-nums text-[#fff7e9]">
+                    {fmt(
+                      data.payroll_current_month.remaining_projection_amount,
+                      currency,
+                      locale,
+                    )}
+                  </p>
+                  <p className="mt-1 text-xs text-[#c9b7a0]">
+                    {t("payroll.peopleCount", {
+                      count: data.payroll_current_month.employees_with_hours,
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {data.payroll_current_month.missing_rate_count > 0 ? (
+                <p className="text-xs text-amber-200">
+                  {t("payroll.missingRates", {
+                    count: data.payroll_current_month.missing_rate_count,
+                  })}
+                </p>
+              ) : null}
+
+              <div className="overflow-x-auto">
+                <table className="w-full table-fixed text-sm">
+                  <thead>
+                    <tr className="border-b border-[#f1dcc4]/10 text-xs font-medium text-[#b89078]">
+                      <th className="py-2 pr-3 text-left">
+                        {t("tables.branch")}
+                      </th>
+                      <th className="py-2 pr-3 text-right">
+                        {t("tables.hours")}
+                      </th>
+                      <th className="py-2 pr-3 text-right">
+                        {t("tables.approvedPay")}
+                      </th>
+                      <th className="py-2 text-right">
+                        {t("tables.projectedPay")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#f1dcc4]/10">
+                    {data.payroll_current_month.branch_payroll
+                      .slice(0, 4)
+                      .map((branch) => (
+                        <tr key={branch.restaurant_id}>
+                          <td className="max-w-0 truncate py-3 pr-3 font-medium text-[#fff7e9]">
+                            {branch.name}
+                          </td>
+                          <td className="py-3 pr-3 text-right tabular-nums text-[#c9b7a0]">
+                            {t("hoursValue", {
+                              hours: branch.approved_hours.toFixed(1),
+                            })}
+                          </td>
+                          <td className="py-3 pr-3 text-right tabular-nums text-[#fff7e9]">
+                            {fmt(branch.approved_amount, currency, locale)}
+                          </td>
+                          <td className="py-3 text-right tabular-nums text-[#fff7e9]">
+                            {fmt(
+                              branch.projected_month_amount,
+                              currency,
+                              locale,
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <EmptyState
+              icon={Users}
+              title={t("payroll.emptyTitle")}
+              body={t("payroll.emptyBody")}
+            />
+          )}
+        </Surface>
       </div>
 
-      {/* Branch table */}
+      <DataTable
+        kicker={t("sections.branchKicker")}
+        title={t("branchPerformanceTitle")}
+        action={
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-8 rounded-md text-[#f1dcc4] hover:bg-[#fff7e9]/10 hover:text-[#fff7e9]"
+          >
+            <Link href={`/${appLocale}/control/restaurants`}>
+              {t("sections.viewAll")}
+            </Link>
+          </Button>
+        }
+        emptyIcon={Building2}
+        emptyTitle={t("empty.noBranchesTitle")}
+        emptyBody={t("empty.noBranchesBody")}
+        hasRows={data.branches.length > 0}
+        tableClassName="min-w-[760px]"
+        headers={[
+          t("tables.branch"),
+          t("tables.openStaff"),
+          t("monthRevenue"),
+          t("monthCosts"),
+          t("tooltips.grossProfit"),
+          t("tables.close"),
+        ]}
+      >
+        {branchRows.slice(0, 10).map((branch) => (
+          <tr key={branch.restaurant_id}>
+            <td className="max-w-0 py-3 pr-3">
+              <Link
+                href={`/${appLocale}/control/restaurants/${branch.restaurant_id}`}
+                className="font-medium text-[#fff7e9] hover:text-[#e9a35e]"
+              >
+                {branch.name}
+              </Link>
+              <p className="truncate text-xs text-[#b89078]">
+                {branch.subdomain}
+              </p>
+            </td>
+            <td className="py-3 pr-3 text-[#c9b7a0]">
+              {t("openStaffValue", {
+                open: branch.open_orders_count,
+                staff: branch.employee_count,
+              })}
+            </td>
+            <td className="py-3 pr-3 text-right tabular-nums text-[#fff7e9]">
+              {fmt(branch.monthly_revenue, currency, locale)}
+            </td>
+            <td className="py-3 pr-3 text-right tabular-nums text-[#c9b7a0]">
+              {fmt(branch.monthly_spending, currency, locale)}
+            </td>
+            <td className="py-3 pr-3 text-right tabular-nums text-[#fff7e9]">
+              {fmt(branch.monthly_gross_profit, currency, locale)}
+            </td>
+            <td className="py-3 text-right">
+              <span
+                className={cn(
+                  "rounded-md px-2 py-1 text-xs font-medium",
+                  branch.has_closed_snapshot
+                    ? "bg-[#97be73]/14 text-[#c8e7a3]"
+                    : "bg-amber-400/14 text-amber-200",
+                )}
+              >
+                {branch.has_closed_snapshot
+                  ? t("status.closed")
+                  : t("status.open")}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </DataTable>
+    </div>
+  );
+}
+
+function SectionTitle({
+  kicker,
+  title,
+  icon: Icon,
+}: {
+  kicker: string;
+  title: string;
+  icon: ComponentType<{ className?: string }>;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
       <div>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">Branches</h2>
-        {data.branches.length === 0 ? (
-          <div className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
-            No accessible branches found.
-          </div>
-        ) : (
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead>Restaurant</TableHead>
-                  <TableHead className="text-right hidden sm:table-cell">Today rev</TableHead>
-                  <TableHead className="text-center hidden md:table-cell">Orders</TableHead>
-                  <TableHead className="text-center hidden md:table-cell">Team</TableHead>
-                  <TableHead className="text-center">Month close</TableHead>
-                  <TableHead className="text-right pr-3">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.branches.map((branch) => {
-                  return (
-                    <TableRow
-                      key={branch.restaurant_id}
-                      className="cursor-pointer"
-                      onClick={() => navigateToBranch(branch.restaurant_id)}
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted">
-                            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm leading-tight truncate max-w-32">{branch.name}</p>
-                            <p className="text-[11px] text-muted-foreground hidden sm:block">{branch.subdomain}.coorder.ai</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right hidden sm:table-cell tabular-nums text-sm">
-                        {fmt(branch.today_revenue, currency, locale)}
-                      </TableCell>
-                      <TableCell className="text-center hidden md:table-cell">
-                        <span
-                          className={cn(
-                            'inline-flex items-center justify-center h-5 w-5 rounded text-xs font-medium',
-                            branch.open_orders_count > 0
-                              ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          {branch.open_orders_count}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center hidden md:table-cell text-sm text-muted-foreground">
-                        {branch.employee_count}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {branch.has_closed_snapshot ? (
-                          <div className="flex items-center justify-center gap-1 text-emerald-600">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="text-xs hidden sm:inline tabular-nums">
-                              {fmt(branch.monthly_revenue, currency, locale)}
-                            </span>
-                          </div>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-200 bg-amber-50 dark:border-amber-800/40 dark:bg-amber-900/20">
-                            Pending
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="pr-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 gap-1 rounded-lg text-xs"
-                            onClick={() => navigateToBranch(branch.restaurant_id, 'team')}
-                          >
-                            <Users className="h-3 w-3" />
-                            <span className="hidden sm:inline">Team</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 gap-1 rounded-lg text-xs"
-                            onClick={() => router.push(`/${appLocale}/control/finance`)}
-                          >
-                            <CircleDollarSign className="h-3 w-3" />
-                            <span className="hidden sm:inline">Finance</span>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#e9a35e]">
+          {kicker}
+        </p>
+        <h2 className="mt-1 text-lg font-semibold text-[#fff7e9]">{title}</h2>
+      </div>
+      <Icon className="h-5 w-5 text-[#c9b7a0]" />
+    </div>
+  );
+}
+
+function DataTable({
+  kicker,
+  title,
+  headers,
+  hasRows,
+  emptyIcon,
+  emptyTitle,
+  emptyBody,
+  children,
+  action,
+  tableClassName,
+}: {
+  kicker: string;
+  title: string;
+  headers: string[];
+  hasRows: boolean;
+  emptyIcon: ComponentType<{ className?: string }>;
+  emptyTitle: string;
+  emptyBody: string;
+  children: ReactNode;
+  action?: ReactNode;
+  tableClassName?: string;
+}) {
+  return (
+    <Surface className="p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#e9a35e]">
+            {kicker}
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-[#fff7e9]">{title}</h2>
+        </div>
+        {action}
+      </div>
+      {hasRows ? (
+        <div className="overflow-x-auto">
+          <table className={cn("w-full table-fixed text-sm", tableClassName)}>
+            <thead>
+              <tr className="border-b border-[#f1dcc4]/10 text-xs font-medium text-[#b89078]">
+                {headers.map((header, index) => (
+                  <th
+                    key={header}
+                    className={cn(
+                      "py-2 pr-3 text-left",
+                      index > 0 && "text-right",
+                    )}
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#f1dcc4]/10">{children}</tbody>
+          </table>
+        </div>
+      ) : (
+        <EmptyState icon={emptyIcon} title={emptyTitle} body={emptyBody} />
+      )}
+    </Surface>
+  );
+}
+
+function EmptyState({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="flex min-h-[104px] items-center gap-3 rounded-lg bg-[#080705]/22 px-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#fff7e9]/8 text-[#c9b7a0]">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-[#fff7e9]">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-[#b89078]">{body}</p>
       </div>
     </div>
   );

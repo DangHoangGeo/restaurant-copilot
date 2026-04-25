@@ -83,6 +83,16 @@
       "branchesReadyAll": "すべての店舗が準備完了です",
       "monthClose": "月次締め（{month}）"
     },
+    "workModes": {
+      "dailyLabel": "毎日の店舗業務",
+      "dailyTitle": "今すぐ確認が必要な店舗を開く",
+      "dailyDescription": "進行中オーダー、スタッフ、経費、月次締めの確認に使います。現場操作は引き続き店舗ワークスペースで行います。",
+      "setupLabel": "初期設定",
+      "setupTitle": "会社の基盤設定を分けて管理",
+      "setupDescription": "会社メニューを一度作成し、それを継承する店舗を追加してから店舗別に調整します。",
+      "menuAction": "会社メニュー設定",
+      "branchAction": "店舗を追加"
+    },
     "table": {
       "branch": "店舗",
       "contact": "連絡先",

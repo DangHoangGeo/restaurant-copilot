@@ -1,18 +1,19 @@
-import { getTranslations } from 'next-intl/server';
-import { notFound, redirect } from 'next/navigation';
-import { ControlPeopleClient } from '@/components/features/admin/control/control-people-client';
-import { buildAuthorizationService } from '@/lib/server/authorization/service';
-import { resolveFounderControlContext } from '@/lib/server/control/access';
-import { listPendingInvites } from '@/lib/server/organizations/invites';
+import { getTranslations } from "next-intl/server";
+import { notFound, redirect } from "next/navigation";
+import { ControlPeopleClient } from "@/components/features/admin/control/control-people-client";
+import { buildAuthorizationService } from "@/lib/server/authorization/service";
+import { resolveFounderControlContext } from "@/lib/server/control/access";
+import { getBranchTeamPayrollData } from "@/lib/server/control/branch-team";
+import { listPendingInvites } from "@/lib/server/organizations/invites";
 import {
   listOrganizationBranches,
   listOrganizationEmployees,
   listOrganizationMembers,
-} from '@/lib/server/organizations/queries';
+} from "@/lib/server/organizations/queries";
 import type {
   ApiOrganizationMember,
   ApiPendingInvite,
-} from '@/shared/types/organization';
+} from "@/shared/types/organization";
 
 export async function generateMetadata({
   params,
@@ -20,16 +21,19 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'owner.control' });
-  return { title: t('people.title') };
+  const t = await getTranslations({ locale, namespace: "owner.control" });
+  return { title: t("people.title") };
 }
 
 export default async function ControlPeoplePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams?: Promise<{ branch?: string; month?: string }>;
 }) {
   const { locale } = await params;
+  const query = await searchParams;
   const ctx = await resolveFounderControlContext();
 
   if (!ctx) {
@@ -38,7 +42,7 @@ export default async function ControlPeoplePage({
 
   const authz = buildAuthorizationService(ctx);
   const canManage = authz?.canManageMembers() ?? false;
-  const canViewEmployees = authz?.can('employees') ?? false;
+  const canViewEmployees = authz?.can("employees") ?? false;
   const canViewPeople = canManage || canViewEmployees;
 
   if (!canViewPeople) {
@@ -81,8 +85,30 @@ export default async function ControlPeoplePage({
   }));
 
   const accessibleBranches = branches.filter((branch) =>
-    ctx.accessibleRestaurantIds.includes(branch.id)
+    ctx.accessibleRestaurantIds.includes(branch.id),
   );
+  const requestedBranchId = query?.branch ?? null;
+  const requestedMonth =
+    query?.month && /^\d{4}-\d{2}$/.test(query.month) ? query.month : null;
+  const selectedBranch =
+    accessibleBranches.find((branch) => branch.id === requestedBranchId) ??
+    accessibleBranches[0] ??
+    null;
+  const selectedBranchEmployees = selectedBranch
+    ? employees.filter(
+        (employee) => employee.restaurant_id === selectedBranch.id,
+      )
+    : [];
+  const selectedTeamPayroll =
+    selectedBranch && canViewEmployees
+      ? await getBranchTeamPayrollData({
+          branchId: selectedBranch.id,
+          employees: selectedBranchEmployees,
+          timezone: ctx.organization.timezone,
+          currency: ctx.organization.currency,
+          monthKey: requestedMonth,
+        })
+      : null;
 
   return (
     <ControlPeopleClient
@@ -91,6 +117,9 @@ export default async function ControlPeoplePage({
       pendingInvites={mappedInvites}
       branches={accessibleBranches}
       employees={employees}
+      selectedBranchId={selectedBranch?.id ?? null}
+      selectedTeamPayroll={selectedTeamPayroll}
+      currency={ctx.organization.currency}
       canManage={canManage}
       canViewEmployees={canViewEmployees}
     />

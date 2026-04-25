@@ -8,15 +8,37 @@
     "hint": "Branch-specific tools will open for the selected branch while organization-wide pages stay at company scope."
   },
   "nav": {
-    "overview": "Overview",
-    "restaurants": "Restaurants",
-    "people": "People",
-    "finance": "Finance",
-    "settings": "Settings"
+    "groups": {
+      "setup": "Set up",
+      "operate": "Operate",
+      "insights": "Analyze"
+    },
+    "groupHints": {
+      "setup": "Company profile and branches",
+      "operate": "Menu, employees, salary",
+      "insights": "Operations, resources, reports"
+    },
+    "home": "Home",
+    "overview": "Operations analyst",
+    "restaurants": "Branches",
+    "people": "Employees & salary",
+    "finance": "Financial report",
+    "menu": "Menu",
+    "alerts": "Alerts",
+    "more": "More",
+    "mobileSetup": "Set up",
+    "settings": "Company profile"
+  },
+  "preferences": {
+    "label": "Preferences",
+    "navigationLabel": "Control navigation",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "languageSelected": "{language} selected"
   },
   "overview": {
-    "title": "Owner cockpit",
-    "description": "Start with the business across all accessible branches: what needs attention, how today is moving, and whether the month is closing cleanly.",
+    "title": "Owner overview",
+    "description": "{count, plural, =0 {No branches are visible yet.} one {1 branch in view with sales, close progress, menu winners, and team performance.} other {# branches in view with sales, close progress, menu winners, and team performance.}}",
     "attention": {
       "finance": "Branches missing month close",
       "staffing": "Branches without employees",
@@ -32,7 +54,8 @@
     "monthlyCoverageHint": "{month} closed snapshots",
     "monthRevenue": "This month revenue",
     "monthCosts": "This month costs",
-    "monthCostsHint": "Closed branch snapshots only",
+    "monthCostsHint": "Branch costs and company shared expenses this month",
+    "monthCostsBreakdown": "Branches {branch} · shared {shared}",
     "monthGrossProfit": "This month gross profit",
     "monthGrossProfitHint": "Revenue less discounts and costs",
     "monthLabor": "Approved labor",
@@ -45,7 +68,111 @@
     "monthCloseStatus": "Month close",
     "awaitingClose": "Awaiting close",
     "awaitingCloseHint": "This branch has not closed the selected month yet.",
-    "branchGrossProfit": "Gross profit {amount}"
+    "branchGrossProfit": "Gross profit {amount}",
+    "openOrdersNow": "{count, plural, =0 {No open orders now} one {# open order now} other {# open orders now}}",
+    "grossProfitValue": "{amount} gross profit",
+    "staffedBranches": "{staffed}/{total} branches staffed",
+    "branchesClosed": "{closed}/{total} branches closed",
+    "monthCloseProgress": "Month close progress",
+    "closedStillOpen": "{closed} closed · {open} still open",
+    "hoursValue": "{hours}h",
+    "openStaffValue": "{open, plural, =0 {0 open} one {# open} other {# open}} · {staff, plural, =0 {0 staff} one {# staff} other {# staff}}",
+    "priority": {
+      "title": "Priority",
+      "count": "{count} active",
+      "openOrdersTitle": "Check open orders",
+      "openOrdersContext": "{orders, plural, one {# order} other {# orders}} across {branches, plural, one {# branch} other {# branches}}",
+      "monthCloseTitle": "Close monthly books",
+      "monthCloseContext": "{count, plural, one {# branch} other {# branches}} still open for {month}",
+      "staffingTitle": "Add missing staff",
+      "staffingContext": "{count, plural, one {# branch} other {# branches}} without employees",
+      "menuTitle": "Review menu readiness",
+      "menuContext": "No top-selling items found yet",
+      "now": "Now",
+      "due": "Due",
+      "today": "Today",
+      "open": "Open",
+      "emptyTitle": "Nothing urgent",
+      "emptyBody": "Orders, staffing, and close checks are quiet."
+    },
+    "insight": {
+      "label": "Insight",
+      "monthCloseTitle": "Month close is blocking clean numbers",
+      "monthCloseBody": "{count, plural, one {# branch needs} other {# branches need}} closing before finance is reliable.",
+      "staffingTitle": "Some branches need team setup",
+      "staffingBody": "{count, plural, one {# branch has} other {# branches have}} no employees yet.",
+      "calmTitle": "Business signals look calm",
+      "calmClosedBody": "Branch close, staffing, and open order checks are in shape.",
+      "calmBody": "Keep an eye on today and close books when branches are ready.",
+      "reviewClose": "Review close",
+      "openTeam": "Open team",
+      "viewReport": "View report"
+    },
+    "sections": {
+      "progressKicker": "Progress",
+      "progressTitle": "Last 30 days",
+      "trendKicker": "Trend",
+      "trendTitle": "Six-month business trend",
+      "menuKicker": "Menu",
+      "topItemsTitle": "Top selling items",
+      "teamKicker": "Team",
+      "topEmployeesTitle": "Top employees",
+      "payrollKicker": "Payroll",
+      "payrollTitle": "Payroll cash plan",
+      "branchKicker": "Branches",
+      "branchHealthTitle": "Branch health",
+      "branchPerformanceTitle": "Branch performance",
+      "branchRevenueTitle": "Revenue leaders",
+      "viewAll": "View all"
+    },
+    "tables": {
+      "item": "Item",
+      "sold": "Sold",
+      "revenue": "Revenue",
+      "employee": "Employee",
+      "roleBranch": "Role and branch",
+      "hours": "Hours",
+      "branch": "Branch",
+      "openStaff": "Open and staff",
+      "monthRevenue": "Month revenue",
+      "monthCosts": "Month costs",
+      "grossProfit": "Gross profit",
+      "approvedPay": "Approved pay",
+      "projectedPay": "Projected pay",
+      "close": "Close"
+    },
+    "payroll": {
+      "approved": "Approved payroll",
+      "projected": "Projected month end",
+      "remaining": "Cash still to prepare",
+      "approvedHours": "{hours} approved hours",
+      "dailyAverage": "{amount}/day approved run rate",
+      "peopleCount": "{count, plural, =0 {No employees with approved hours} one {# employee with approved hours} other {# employees with approved hours}}",
+      "missingRates": "{count, plural, one {# role rate is missing} other {# role rates are missing}}. Projection excludes those hours.",
+      "openSalary": "Open salary",
+      "emptyTitle": "No approved payroll yet",
+      "emptyBody": "Payroll projection appears after attendance hours are approved and salary rates are configured."
+    },
+    "tooltips": {
+      "revenue": "Revenue",
+      "expenses": "Expenses",
+      "orders": "Orders",
+      "grossProfit": "Gross profit"
+    },
+    "status": {
+      "closed": "Closed",
+      "open": "Open"
+    },
+    "empty": {
+      "noSalesTitle": "No completed sales yet",
+      "noSalesBody": "Top menu items appear after customer orders are completed.",
+      "noHoursTitle": "No approved hours yet",
+      "noHoursBody": "Top employees appear after monthly attendance is approved.",
+      "noBranchesTitle": "No branches visible",
+      "noBranchesBody": "Branches appear here when your organization has accessible restaurants.",
+      "noBranchRevenueTitle": "No branch revenue yet",
+      "noBranchRevenueBody": "Revenue ranking appears as branches complete sales."
+    }
   },
   "restaurants": {
     "title": "Restaurants",
@@ -64,6 +191,12 @@
       "homepageDescription": "Update the public-facing story, gallery, and homepage content for the active branch.",
       "openHomepage": "Open homepage tools"
     }
+  },
+  "menu": {
+    "title": "Company menu",
+    "description": "Set the reusable categories and dishes once, then let branches inherit a clean starter menu before local overrides.",
+    "eyebrow": "One-time setup",
+    "scope": "Organization menu foundation"
   },
   "people": {
     "title": "People",

@@ -1,8 +1,8 @@
-import { getTranslations } from 'next-intl/server';
-import { notFound, redirect } from 'next/navigation';
-import { ControlOverviewClient } from '@/components/features/admin/control/control-overview-client';
-import { resolveFounderControlContext } from '@/lib/server/control/access';
-import { getFounderControlOverview } from '@/lib/server/control/overview';
+import { getTranslations } from "next-intl/server";
+import { notFound, redirect } from "next/navigation";
+import { ControlOverviewClient } from "@/components/features/admin/control/control-overview-client";
+import { resolveFounderControlContext } from "@/lib/server/control/access";
+import { getFounderControlOverview } from "@/lib/server/control/overview";
 
 export async function generateMetadata({
   params,
@@ -10,8 +10,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'owner.control' });
-  return { title: t('overview.title') };
+  const t = await getTranslations({ locale, namespace: "owner.control" });
+  return { title: t("overview.title") };
 }
 
 export default async function ControlOverviewPage({
@@ -34,6 +34,7 @@ export default async function ControlOverviewPage({
     organizationId: ctx.organization.id,
     accessibleRestaurantIds: ctx.accessibleRestaurantIds,
     timezone: ctx.organization.timezone,
+    locale,
   });
 
   return (

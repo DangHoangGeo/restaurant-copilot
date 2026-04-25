@@ -88,6 +88,89 @@ Rules:
 - Keep touch targets at least 44px tall on mobile.
 - Prevent text overlap, clipping, horizontal scrolling, and button label overflow.
 
+## Founder Control UX
+
+Founder control is an owner command center, not a generic analytics dashboard. It must help an owner understand the business quickly and choose the next work area from a phone.
+
+Navigation:
+
+- Use a persistent left navigation on desktop for `control/*` pages.
+- Use a compact bottom or thumb-reachable navigation on mobile.
+- Avoid top navigation that forces repeated clicks before the owner can reach branches, menu, people, finance, or settings.
+- Navigation labels must map to owner jobs: home, branches, menu, employees and salary, financial report, company profile.
+
+Visual style:
+
+- Founder control uses the warm dark CoOrder surface by default.
+- Light cards on dark backgrounds must read as glass: translucent warm cream, backdrop blur, subtle inner separation, and no harsh white rectangles.
+- Avoid excessive borders. Use spacing, typography, and table structure before adding another framed card.
+- Keep corners restrained. Operational panels and tables should feel precise, not bubbly.
+- Do not mix unrelated light and dark sections inside one control page.
+
+Content hierarchy:
+
+- Start from the owner’s actual decision: cash, sales, costs, branches, staff readiness, and menu movement.
+- Show fewer sections with stronger meaning. Remove sections that do not directly help the owner act.
+- Prefer tables for branch, employee, salary, and finance comparison. Use cards for KPI strips, focused summaries, empty states, and repeated item previews.
+- Do not duplicate the same signal in multiple places on one page.
+- Use clear time windows in labels and helper text.
+
+Copy and localization:
+
+- Never hardcode English UI text in founder control components. Add keys under `web/messages/{locale}/owner/control.json` or the correct namespace.
+- Keep helper copy short. The UI should explain what number means, not teach the whole product.
+- Avoid vague labels such as "insight" or "priority" unless the content is genuinely actionable and specific.
+
+## Owner Overview Contract
+
+`/{locale}/control/overview` is the owner’s home page after onboarding. It should answer:
+
+- Are sales moving today and this month?
+- Are total costs visible, including branch costs and shared company expenses?
+- Which menu items are actually selling?
+- How much cash should be prepared for employee pay?
+- Which branches need attention or comparison?
+- Are monthly books closed enough to trust finance reports?
+
+Required overview patterns:
+
+- KPI strip: today revenue, this month revenue, this month costs, and month-close coverage.
+- This month costs must include branch purchasing, branch expenses, and shared company expenses.
+- Charts must compare meaningful totals. A six-month business trend should use live completed order revenue and known expenses, not only closed snapshots.
+- Month close belongs as one coverage signal. Do not also add a separate duplicated month-close progress card.
+- Top selling items must come from completed orders and real order items, with localized menu names.
+- Payroll belongs on the overview; "top employees" does not. Show approved payroll, projected month-end payroll, remaining cash to prepare, missing salary-rate warnings, and a branch payroll breakdown.
+- Branch health and branch leaders should be one branch performance table with revenue, costs, gross profit, open/staff counts, and close status.
+- Empty states must explain what data is missing: no completed sales, no approved payroll, no visible branches, or missing salary rates.
+
+Do not show:
+
+- Decorative priority panels with generic tasks.
+- Generic insight cards that restate obvious status.
+- Employee leaderboards unless there is a clear operational action.
+- Expense-only charts that hide revenue or branch costs.
+- Month-close-only charts on the overview. Month close is a reliability status; finance pages can show close detail.
+
+## Founder Branches Contract
+
+`/{locale}/control/restaurants` and `control/restaurants/[branchId]` are founder-owned branch management surfaces. They are not the same as branch daily execution.
+
+Branch list expectations:
+
+- Show branches in a scannable table or dense list before decorative cards.
+- Include the data an owner uses to choose a branch: branch name/code, revenue, costs, gross profit, open orders, staff count, month-close status, onboarding/setup status, and clear action.
+- Keep drill-down one click from the branch row.
+- Do not make the owner pass through vague "choose what you are managing" screens.
+- Use branch routes for local execution only when the task belongs to daily branch operations.
+
+Branch detail expectations:
+
+- Keep founder-owned tabs focused: overview, finance, team, setup.
+- Use tables for employees, salary, attendance, branch finance rows, and setup checklists.
+- Employee and salary screens must let owners view employees, choose a salary month, inspect detail, and understand payment preparation.
+- Always keep branch identity explicit in the page title or header.
+- When linking to branch operations, label the action as branch operations so the scope change is clear.
+
 ## Components
 
 Buttons:

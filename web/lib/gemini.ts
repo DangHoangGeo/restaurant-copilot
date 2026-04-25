@@ -7,7 +7,11 @@
  * - Future features: customer chat, owner assistance, content generation
  */
 
-import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
+import {
+  GoogleGenAI,
+  type GenerateContentConfig,
+  type GenerateContentResponse,
+} from "@google/genai";
 import { logger } from "./logger";
 
 // Types for the library
@@ -61,19 +65,54 @@ export interface ChatResponse {
   confidence?: number;
 }
 
+const DEFAULT_GEMINI_TEXT_MODEL = "gemini-3-flash-preview";
+
+const GEMINI_TEXT_MODEL_ALIASES: Record<string, string> = {
+  "gemini-3.1-flash-preview": DEFAULT_GEMINI_TEXT_MODEL,
+  "models/gemini-3.1-flash-preview": DEFAULT_GEMINI_TEXT_MODEL,
+  "gemini-3-flash-preview-preview": DEFAULT_GEMINI_TEXT_MODEL,
+};
+
+function normalizeGeminiTextModel(model: string | undefined): string {
+  const normalizedModel = model?.trim();
+  if (!normalizedModel) {
+    return DEFAULT_GEMINI_TEXT_MODEL;
+  }
+
+  return GEMINI_TEXT_MODEL_ALIASES[normalizedModel] ?? normalizedModel;
+}
+
 class GeminiHelper {
-  private genAI: GoogleGenerativeAI;
-  private model: GenerativeModel;
+  private genAI: GoogleGenAI;
+  private model: string;
 
   constructor(config: GeminiConfig) {
     if (!config.apiKey) {
       throw new Error("Gemini API key is required");
     }
 
-    this.genAI = new GoogleGenerativeAI(config.apiKey);
-    this.model = this.genAI.getGenerativeModel({
-      model: config.model || "gemini-3.1-flash-preview",
+    this.genAI = new GoogleGenAI({ apiKey: config.apiKey });
+    this.model = normalizeGeminiTextModel(config.model);
+  }
+
+  private async generateContentResponse(
+    contents: string,
+    config?: GenerateContentConfig,
+  ): Promise<GenerateContentResponse> {
+    return this.genAI.models.generateContent({
+      model: this.model,
+      contents,
+      config,
     });
+  }
+
+  private getResponseText(response: GenerateContentResponse): string {
+    const text = response.text;
+    if (!text) {
+      throw new Error("No text returned from Gemini response");
+    }
+
+    return text;
   }
 
   /**
@@ -120,9 +159,8 @@ Text: "${text}"
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const textResponse = response.text();
+      const response = await this.generateContentResponse(prompt);
+      const textResponse = this.getResponseText(response);
 
       // Extract JSON from the response
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
@@ -170,9 +208,8 @@ Please provide a helpful, professional response in plain text.
 `;
 
     try {
-      const result = await this.model.generateContent(contextualPrompt);
-      const response = await result.response;
-      return response.text();
+      const response = await this.generateContentResponse(contextualPrompt);
+      return this.getResponseText(response);
     } catch (error) {
       await logger.error(
         "gemini-content-generation",
@@ -201,18 +238,9 @@ ${prompt}
 `;
 
     try {
-      const result = await this.model.generateContent({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: contextualPrompt }],
-          },
-        ],
-        generationConfig: {
-          responseModalities: ["TEXT", "IMAGE"],
-        },
-      } as never);
-      const response = await result.response;
+      const response = await this.generateContentResponse(contextualPrompt, {
+        responseModalities: ["TEXT", "IMAGE"],
+      });
       const parts = response.candidates?.[0]?.content?.parts ?? [];
       const imagePart = parts.find(
         (part) => "inlineData" in part && part.inlineData,
@@ -273,11 +301,10 @@ Provide a helpful, professional response that assists with their restaurant-rela
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
+      const response = await this.generateContentResponse(prompt);
 
       return {
-        response: response.text(),
+        response: this.getResponseText(response),
         language: language,
         confidence: 0.95, // Placeholder - Gemini doesn't provide confidence scores
       };
@@ -328,9 +355,8 @@ Dish name: "${itemName}"
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const textResponse = response.text();
+      const response = await this.generateContentResponse(prompt);
+      const textResponse = this.getResponseText(response);
 
       // Extract JSON from the response
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
@@ -390,9 +416,8 @@ Restaurant: "${restaurantName}"
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const textResponse = response.text();
+      const response = await this.generateContentResponse(prompt);
+      const textResponse = this.getResponseText(response);
 
       // Extract JSON from the response
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
@@ -468,9 +493,8 @@ Please provide output in this exact JSON format (no additional text):
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const textResponse = response.text();
+      const response = await this.generateContentResponse(prompt);
+      const textResponse = this.getResponseText(response);
       // Extract JSON from the response
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
@@ -535,9 +559,8 @@ Focus on:
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const textResponse = response.text();
+      const response = await this.generateContentResponse(prompt);
+      const textResponse = this.getResponseText(response);
 
       const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -570,6 +593,7 @@ export function createGeminiHelper(
   const apiKey = config?.apiKey || process.env.GEMINI_API_KEY;
   const model =
     config?.model ||
+    process.env.GEMINI_TEXT_MODEL_FAST ||
     process.env.GEMINI_MODEL ||
     process.env.NEXT_PUBLIC_GEMINI_MODEL;
 
@@ -579,7 +603,7 @@ export function createGeminiHelper(
 
   return new GeminiHelper({
     apiKey,
-    model,
+    model: normalizeGeminiTextModel(model),
   });
 }
 

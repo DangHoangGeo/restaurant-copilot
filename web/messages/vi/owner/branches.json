@@ -83,6 +83,16 @@
       "branchesReadyAll": "Tất cả chi nhánh đã sẵn sàng",
       "monthClose": "Khóa sổ tháng ({month})"
     },
+    "workModes": {
+      "dailyLabel": "Việc chi nhánh hằng ngày",
+      "dailyTitle": "Mở chi nhánh đang cần chú ý ngay",
+      "dailyDescription": "Dùng danh sách này cho đơn đang mở, nhân sự, chi phí và theo dõi khóa sổ tháng. Thao tác vận hành vẫn mở trong workspace chi nhánh.",
+      "setupLabel": "Thiết lập một lần",
+      "setupTitle": "Tách riêng nền tảng cấp công ty",
+      "setupDescription": "Tạo menu công ty một lần, rồi thêm các chi nhánh kế thừa trước khi chỉnh riêng theo từng chi nhánh.",
+      "menuAction": "Thiết lập menu công ty",
+      "branchAction": "Thêm chi nhánh"
+    },
     "table": {
       "branch": "Chi nhánh",
       "contact": "Liên hệ",

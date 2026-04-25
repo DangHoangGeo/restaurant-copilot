@@ -1,8 +1,8 @@
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { getLocalDateString } from '@/lib/server/dashboard/dates';
-import type { OrgEmployeeRow } from '@/lib/server/organizations/queries';
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getLocalDateString } from "@/lib/server/dashboard/dates";
+import type { OrgEmployeeRow } from "@/lib/server/organizations/queries";
 
-const JOB_TITLES = ['manager', 'chef', 'server', 'cashier'] as const;
+const JOB_TITLES = ["manager", "chef", "server", "cashier"] as const;
 type JobTitle = (typeof JOB_TITLES)[number];
 
 interface ScheduleRow {
@@ -15,7 +15,7 @@ interface ScheduleRow {
 interface AttendanceSummaryRow {
   employee_id: string;
   total_hours: number | null;
-  status: 'pending' | 'approved' | 'rejected' | 'correction_pending';
+  status: "pending" | "approved" | "rejected" | "correction_pending";
   has_exception: boolean;
 }
 
@@ -71,30 +71,30 @@ export interface BranchTeamPayrollData {
 }
 
 function monthBounds(monthKey: string): { from: string; to: string } {
-  const [yearString, monthString] = monthKey.split('-');
+  const [yearString, monthString] = monthKey.split("-");
   const year = Number(yearString);
   const month = Number(monthString);
   const lastDay = new Date(year, month, 0).getDate();
 
   return {
     from: `${monthKey}-01`,
-    to: `${monthKey}-${String(lastDay).padStart(2, '0')}`,
+    to: `${monthKey}-${String(lastDay).padStart(2, "0")}`,
   };
 }
 
 function buildMonthLabel(monthKey: string): string {
-  const [yearString, monthString] = monthKey.split('-');
+  const [yearString, monthString] = monthKey.split("-");
   const year = Number(yearString);
   const month = Number(monthString);
 
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    year: 'numeric',
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
   }).format(new Date(year, month - 1, 1));
 }
 
 function weekdayOccurrencesInMonth(monthKey: string, weekday: number): number {
-  const [yearString, monthString] = monthKey.split('-');
+  const [yearString, monthString] = monthKey.split("-");
   const year = Number(yearString);
   const month = Number(monthString);
   const lastDay = new Date(year, month, 0).getDate();
@@ -112,8 +112,8 @@ function weekdayOccurrencesInMonth(monthKey: string, weekday: number): number {
 }
 
 function calculateDurationHours(startTime: string, endTime: string): number {
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const [endHour, endMinute] = endTime.split(':').map(Number);
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [endHour, endMinute] = endTime.split(":").map(Number);
   const startMinutes = startHour * 60 + startMinute;
   const endMinutes = endHour * 60 + endMinute;
   const durationMinutes = Math.max(endMinutes - startMinutes, 0);
@@ -125,45 +125,47 @@ export async function getBranchTeamPayrollData(params: {
   employees: OrgEmployeeRow[];
   timezone?: string | null;
   currency?: string | null;
+  monthKey?: string | null;
 }): Promise<BranchTeamPayrollData> {
   const { branchId, employees, timezone, currency } = params;
   const localToday = getLocalDateString(timezone);
-  const monthKey = localToday.slice(0, 7);
+  const monthKey = params.monthKey?.match(/^\d{4}-\d{2}$/)
+    ? params.monthKey
+    : localToday.slice(0, 7);
   const { from, to } = monthBounds(monthKey);
 
   const [schedulesResult, summariesResult, payRatesResult] = await Promise.all([
     supabaseAdmin
-      .from('schedules')
-      .select('employee_id, weekday, start_time, end_time')
-      .eq('restaurant_id', branchId)
-      .order('weekday', { ascending: true })
-      .order('start_time', { ascending: true }),
+      .from("schedules")
+      .select("employee_id, weekday, start_time, end_time")
+      .eq("restaurant_id", branchId)
+      .order("weekday", { ascending: true })
+      .order("start_time", { ascending: true }),
     supabaseAdmin
-      .from('attendance_daily_summaries')
-      .select('employee_id, total_hours, status, has_exception')
-      .eq('restaurant_id', branchId)
-      .gte('work_date', from)
-      .lte('work_date', to),
+      .from("attendance_daily_summaries")
+      .select("employee_id, total_hours, status, has_exception")
+      .eq("restaurant_id", branchId)
+      .gte("work_date", from)
+      .lte("work_date", to),
     supabaseAdmin
-      .from('restaurant_role_pay_rates')
-      .select('job_title, hourly_rate, currency')
-      .eq('restaurant_id', branchId),
+      .from("restaurant_role_pay_rates")
+      .select("job_title, hourly_rate, currency")
+      .eq("restaurant_id", branchId),
   ]);
 
-  const scheduleRows = ((schedulesResult.data ?? []) as ScheduleRow[]).reduce<Map<string, BranchEmployeeScheduleSlot[]>>(
-    (map, row) => {
-      const existing = map.get(row.employee_id) ?? [];
-      existing.push({
-        weekday: row.weekday,
-        startTime: row.start_time,
-        endTime: row.end_time,
-        hours: calculateDurationHours(row.start_time, row.end_time),
-      });
-      map.set(row.employee_id, existing);
-      return map;
-    },
-    new Map()
-  );
+  const scheduleRows = ((schedulesResult.data ?? []) as ScheduleRow[]).reduce<
+    Map<string, BranchEmployeeScheduleSlot[]>
+  >((map, row) => {
+    const existing = map.get(row.employee_id) ?? [];
+    existing.push({
+      weekday: row.weekday,
+      startTime: row.start_time,
+      endTime: row.end_time,
+      hours: calculateDurationHours(row.start_time, row.end_time),
+    });
+    map.set(row.employee_id, existing);
+    return map;
+  }, new Map());
 
   const attendanceRows = (summariesResult.data ?? []) as AttendanceSummaryRow[];
   const attendanceByEmployee = attendanceRows.reduce<
@@ -185,10 +187,10 @@ export async function getBranchTeamPayrollData(params: {
     };
 
     const totalHours = Number(row.total_hours ?? 0);
-    if (row.status === 'approved') {
+    if (row.status === "approved") {
       existing.approvedHours += totalHours;
     }
-    if (row.status === 'pending' || row.status === 'correction_pending') {
+    if (row.status === "pending" || row.status === "correction_pending") {
       existing.pendingHours += totalHours;
       existing.pendingSummaries += 1;
     }
@@ -200,58 +202,70 @@ export async function getBranchTeamPayrollData(params: {
   const rolePayRatesMap = new Map(
     ((payRatesResult.data ?? []) as RolePayRateRow[]).map((row) => [
       row.job_title,
-      { jobTitle: row.job_title, hourlyRate: Number(row.hourly_rate), currency: row.currency },
-    ])
+      {
+        jobTitle: row.job_title,
+        hourlyRate: Number(row.hourly_rate),
+        currency: row.currency,
+      },
+    ]),
   );
 
   const rolePayRates: BranchRolePayRate[] = JOB_TITLES.map((jobTitle) => ({
     jobTitle,
     hourlyRate: rolePayRatesMap.get(jobTitle)?.hourlyRate ?? null,
-    currency: rolePayRatesMap.get(jobTitle)?.currency ?? currency ?? 'JPY',
+    currency: rolePayRatesMap.get(jobTitle)?.currency ?? currency ?? "JPY",
   }));
 
-  const employeeSummaries = employees.map<BranchTeamEmployeeSummary>((employee) => {
-    const weeklySchedule = scheduleRows.get(employee.employee_id) ?? [];
-    const weeklyScheduledHours = parseFloat(
-      weeklySchedule.reduce((sum, slot) => sum + slot.hours, 0).toFixed(2)
-    );
-    const monthlyScheduledHours = parseFloat(
-      weeklySchedule
-        .reduce((sum, slot) => sum + slot.hours * weekdayOccurrencesInMonth(monthKey, slot.weekday), 0)
-        .toFixed(2)
-    );
-    const attendance = attendanceByEmployee.get(employee.employee_id) ?? {
-      approvedHours: 0,
-      pendingHours: 0,
-      pendingSummaries: 0,
-      hasException: false,
-    };
-    const roleRate = rolePayRatesMap.get(employee.job_title as JobTitle)?.hourlyRate ?? null;
+  const employeeSummaries = employees.map<BranchTeamEmployeeSummary>(
+    (employee) => {
+      const weeklySchedule = scheduleRows.get(employee.employee_id) ?? [];
+      const weeklyScheduledHours = parseFloat(
+        weeklySchedule.reduce((sum, slot) => sum + slot.hours, 0).toFixed(2),
+      );
+      const monthlyScheduledHours = parseFloat(
+        weeklySchedule
+          .reduce(
+            (sum, slot) =>
+              sum +
+              slot.hours * weekdayOccurrencesInMonth(monthKey, slot.weekday),
+            0,
+          )
+          .toFixed(2),
+      );
+      const attendance = attendanceByEmployee.get(employee.employee_id) ?? {
+        approvedHours: 0,
+        pendingHours: 0,
+        pendingSummaries: 0,
+        hasException: false,
+      };
+      const roleRate =
+        rolePayRatesMap.get(employee.job_title as JobTitle)?.hourlyRate ?? null;
 
-    return {
-      employeeId: employee.employee_id,
-      userId: employee.user_id,
-      name: employee.name,
-      email: employee.email,
-      jobTitle: employee.job_title,
-      weeklySchedule,
-      weeklyScheduledHours,
-      monthlyScheduledHours,
-      approvedHours: parseFloat(attendance.approvedHours.toFixed(2)),
-      pendingHours: parseFloat(attendance.pendingHours.toFixed(2)),
-      pendingSummaries: attendance.pendingSummaries,
-      hasException: attendance.hasException,
-      estimatedPayroll:
-        roleRate != null
-          ? parseFloat((attendance.approvedHours * roleRate).toFixed(2))
-          : null,
-    };
-  });
+      return {
+        employeeId: employee.employee_id,
+        userId: employee.user_id,
+        name: employee.name,
+        email: employee.email,
+        jobTitle: employee.job_title,
+        weeklySchedule,
+        weeklyScheduledHours,
+        monthlyScheduledHours,
+        approvedHours: parseFloat(attendance.approvedHours.toFixed(2)),
+        pendingHours: parseFloat(attendance.pendingHours.toFixed(2)),
+        pendingSummaries: attendance.pendingSummaries,
+        hasException: attendance.hasException,
+        estimatedPayroll:
+          roleRate != null
+            ? parseFloat((attendance.approvedHours * roleRate).toFixed(2))
+            : null,
+      };
+    },
+  );
 
   const missingRateRoles = JOB_TITLES.filter(
     (jobTitle) =>
       employeeSummaries.some((employee) => employee.jobTitle === jobTitle) &&
-      !rolePayRatesMap.has(jobTitle)
+      !rolePayRatesMap.has(jobTitle),
   );
   const estimatedPayrollValues = employeeSummaries
     .map((employee) => employee.estimatedPayroll)
@@ -265,21 +279,33 @@ export async function getBranchTeamPayrollData(params: {
     totals: {
       employeeCount: employeeSummaries.length,
       weeklyScheduledHours: parseFloat(
-        employeeSummaries.reduce((sum, employee) => sum + employee.weeklyScheduledHours, 0).toFixed(2)
+        employeeSummaries
+          .reduce((sum, employee) => sum + employee.weeklyScheduledHours, 0)
+          .toFixed(2),
       ),
       approvedHours: parseFloat(
-        employeeSummaries.reduce((sum, employee) => sum + employee.approvedHours, 0).toFixed(2)
+        employeeSummaries
+          .reduce((sum, employee) => sum + employee.approvedHours, 0)
+          .toFixed(2),
       ),
       pendingHours: parseFloat(
-        employeeSummaries.reduce((sum, employee) => sum + employee.pendingHours, 0).toFixed(2)
+        employeeSummaries
+          .reduce((sum, employee) => sum + employee.pendingHours, 0)
+          .toFixed(2),
       ),
       pendingSummaries: employeeSummaries.reduce(
         (sum, employee) => sum + employee.pendingSummaries,
-        0
+        0,
       ),
       estimatedPayroll:
-        estimatedPayrollValues.length === employeeSummaries.filter((employee) => employee.approvedHours > 0).length
-          ? parseFloat(estimatedPayrollValues.reduce((sum, value) => sum + value, 0).toFixed(2))
+        estimatedPayrollValues.length ===
+        employeeSummaries.filter((employee) => employee.approvedHours > 0)
+          .length
+          ? parseFloat(
+              estimatedPayrollValues
+                .reduce((sum, value) => sum + value, 0)
+                .toFixed(2),
+            )
           : null,
       missingRateRoles,
     },

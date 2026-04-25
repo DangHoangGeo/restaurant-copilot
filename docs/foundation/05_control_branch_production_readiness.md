@@ -42,12 +42,10 @@ It is intentionally practical. It should tell future agents and engineers what i
 ### P1
 
 - Signup still uses process-local rate limiting.
-
   - Impact: not reliable across instances or serverless scale.
   - Next action: move signup protection onto the shared distributed rate-limiting path and verify behavior in production hosting.
 
 - Control and branch flows still mix org-aware APIs and legacy branch-scoped APIs.
-
   - Impact: future agents can accidentally implement new work on the wrong contract.
   - Next action: prefer org-aware routes first and document every legacy dependency that remains.
 
@@ -109,6 +107,7 @@ It is intentionally practical. It should tell future agents and engineers what i
 - Current shape:
   - branch workspace exists
   - organization shared-menu inheritance exists
+  - founder control exposes `control/menu` for the one-time company menu foundation before branches inherit it
 - Remaining work:
   - more rollout and comparison tooling
   - more verification around branch overrides and inheritance auditability

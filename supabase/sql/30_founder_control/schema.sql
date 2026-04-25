@@ -70,6 +70,40 @@ CREATE TABLE public.organization_menu_items (
 
 COMMENT ON TABLE public.organization_menu_items IS 'Organization-level shared menu items. Branch menus remain independent until copied or applied separately.';
 
+CREATE TABLE public.organization_menu_item_sizes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    organization_id uuid NOT NULL,
+    organization_menu_item_id uuid NOT NULL,
+    size_key text NOT NULL,
+    name_en text NOT NULL,
+    name_ja text,
+    name_vi text,
+    price numeric(12,2) DEFAULT 0 NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT organization_menu_item_sizes_price_check CHECK ((price >= (0)::numeric)),
+    CONSTRAINT organization_menu_item_sizes_size_key_check CHECK ((size_key = ANY (ARRAY['S'::text, 'M'::text, 'L'::text, 'XL'::text])))
+);
+
+COMMENT ON TABLE public.organization_menu_item_sizes IS 'Organization-level shared menu item sizes copied into branch menu_item_sizes during inheritance sync.';
+
+CREATE TABLE public.organization_menu_item_toppings (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    organization_id uuid NOT NULL,
+    organization_menu_item_id uuid NOT NULL,
+    name_en text NOT NULL,
+    name_ja text,
+    name_vi text,
+    price numeric(12,2) DEFAULT 0 NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT organization_menu_item_toppings_price_check CHECK ((price >= (0)::numeric))
+);
+
+COMMENT ON TABLE public.organization_menu_item_toppings IS 'Organization-level shared menu item toppings copied into branch toppings during inheritance sync.';
+
 CREATE TABLE public.organization_pending_invites (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     organization_id uuid NOT NULL,

@@ -122,7 +122,12 @@
   --brand-color-surface: #14100b;
   --brand-color-cream: #fff7e9;
   --brand-color-muted: #c9b7a0;
-  --brand-gradient: linear-gradient(135deg, #c8773e 0%, #e9a35e 52%, #97be73 100%);
+  --brand-gradient: linear-gradient(
+    135deg,
+    #c8773e 0%,
+    #e9a35e 52%,
+    #97be73 100%
+  );
 }
 
 .dark {
@@ -187,6 +192,119 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
+
+/* Founder control glass layer.
+   Scoped to the control shell so public ordering and root marketing keep their own themes. */
+.admin-route-surface {
+  --control-ink: #fff7e9;
+  --control-text: #efe0ca;
+  --control-muted: #c9b7a0;
+  --control-soft-muted: #b89078;
+  --control-surface: rgba(255, 247, 233, 0.09);
+  --control-surface-strong: rgba(255, 247, 233, 0.14);
+  --control-surface-soft: rgba(255, 247, 233, 0.06);
+  --control-line: rgba(241, 220, 196, 0.16);
+  --control-line-soft: rgba(241, 220, 196, 0.1);
+  --control-copper: #a95f2f;
+  --control-shadow: 0 20px 70px rgba(0, 0, 0, 0.26);
+  color-scheme: dark;
+}
+
+.admin-route-surface .bg-card,
+.admin-route-surface .bg-white {
+  background-color: var(--control-surface);
+  color: var(--control-text);
+  backdrop-filter: blur(18px);
+}
+
+.admin-route-surface .bg-slate-50,
+.admin-route-surface .bg-slate-100,
+.admin-route-surface .bg-muted {
+  background-color: var(--control-surface-soft);
+}
+
+.admin-route-surface .text-muted-foreground,
+.admin-route-surface .text-slate-500,
+.admin-route-surface .text-slate-600 {
+  color: var(--control-muted);
+}
+
+.admin-route-surface .text-slate-700 {
+  color: var(--control-text);
+}
+
+.admin-route-surface .text-slate-900,
+.admin-route-surface .text-foreground {
+  color: var(--control-ink);
+}
+
+.admin-route-surface .border,
+.admin-route-surface .border-slate-100,
+.admin-route-surface .border-slate-200,
+.admin-route-surface .border-border {
+  border-color: var(--control-line);
+}
+
+.admin-route-surface
+  [class*="rounded-"][class*="border"]:not(button):not(a):not(input):not(
+    textarea
+  ):not(select):not([class*="bg-["]):not([class*="bg-amber"]):not(
+    [class*="bg-emerald"]
+  ):not([class*="bg-rose"]):not([class*="bg-red"]):not([class*="bg-sky"]):not(
+    [class*="bg-blue"]
+  ):not([class*="bg-purple"]):not([class*="bg-orange"]):not(
+    [class*="bg-green"]
+  ) {
+  background-color: var(--control-surface);
+}
+
+.admin-route-surface section[class*="rounded-"][class*="border"],
+.admin-route-surface div[class*="rounded-"][class*="border"].bg-card,
+.admin-route-surface div[class*="rounded-"][class*="border"].bg-white {
+  box-shadow: var(--control-shadow);
+}
+
+.admin-route-surface th,
+.admin-route-surface [data-slot="table-head"] {
+  color: var(--control-muted);
+}
+
+.admin-route-surface tr {
+  border-color: var(--control-line-soft);
+}
+
+.admin-route-surface input,
+.admin-route-surface textarea,
+.admin-route-surface [role="combobox"] {
+  background-color: rgba(255, 247, 233, 0.08);
+  border-color: var(--control-line);
+  color: var(--control-ink);
+}
+
+.admin-route-surface input::placeholder,
+.admin-route-surface textarea::placeholder {
+  color: var(--control-soft-muted);
+}
+
+.admin-route-surface .bg-popover {
+  background-color: rgba(23, 15, 10, 0.96);
+  color: var(--control-text);
+  border-color: var(--control-line);
+  backdrop-filter: blur(18px);
+}
+
+.dark .admin-route-surface {
+  --control-ink: #f7f1e9;
+  --control-text: #efe0ca;
+  --control-muted: #c9b7a0;
+  --control-soft-muted: #b89078;
+  --control-surface: #251810;
+  --control-surface-strong: #2b1a10;
+  --control-surface-soft: #332116;
+  --control-line: rgba(241, 220, 196, 0.18);
+  --control-line-soft: rgba(241, 220, 196, 0.12);
+  --control-shadow: none;
 }
 
 /* Print styles for legal pages */
@@ -448,9 +566,6 @@
 }
 
 /* Route-scoped dark compatibility for older founder control and branch components. */
-.admin-route-surface {
-  color-scheme: light dark;
-}
 
 .dark
   .admin-route-surface

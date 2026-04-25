@@ -1,11 +1,11 @@
-import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-import { ControlRestaurantsClient } from '@/components/features/admin/control/control-restaurants-client';
-import { buildAuthorizationService } from '@/lib/server/authorization/service';
-import { resolveFounderControlContext } from '@/lib/server/control/access';
-import { getActiveBranchId } from '@/lib/server/organizations/active-branch';
-import { getFounderControlOverview } from '@/lib/server/control/overview';
-import { listOrganizationBranches } from '@/lib/server/organizations/queries';
+import { getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { ControlRestaurantsClient } from "@/components/features/admin/control/control-restaurants-client";
+import { buildAuthorizationService } from "@/lib/server/authorization/service";
+import { resolveFounderControlContext } from "@/lib/server/control/access";
+import { getActiveBranchId } from "@/lib/server/organizations/active-branch";
+import { getFounderControlOverview } from "@/lib/server/control/overview";
+import { listOrganizationBranches } from "@/lib/server/organizations/queries";
 
 export async function generateMetadata({
   params,
@@ -13,15 +13,16 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'owner.branches' });
-  return { title: t('pageTitle') };
+  const t = await getTranslations({ locale, namespace: "owner.branches" });
+  return { title: t("pageTitle") };
 }
 
 export default async function ControlRestaurantsPage({
-  params: _params,
+  params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   const ctx = await resolveFounderControlContext();
 
   if (!ctx) {
@@ -36,6 +37,7 @@ export default async function ControlRestaurantsPage({
       organizationId: ctx.organization.id,
       accessibleRestaurantIds: ctx.accessibleRestaurantIds,
       timezone: ctx.organization.timezone,
+      locale,
     }),
   ]);
   const accessibleIds = new Set(ctx.accessibleRestaurantIds);
@@ -43,7 +45,7 @@ export default async function ControlRestaurantsPage({
 
   const activeBranchId = await getActiveBranchId(ctx);
   const overviewBranchById = new Map(
-    overview.branches.map((branch) => [branch.restaurant_id, branch])
+    overview.branches.map((branch) => [branch.restaurant_id, branch]),
   );
 
   const branchesWithMeta = branches.map((branch) => ({

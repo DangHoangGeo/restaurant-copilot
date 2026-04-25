@@ -27,6 +27,12 @@ ALTER TABLE ONLY public.organization_menu_categories
 ALTER TABLE ONLY public.organization_menu_items
     ADD CONSTRAINT organization_menu_items_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.organization_menu_item_sizes
+    ADD CONSTRAINT organization_menu_item_sizes_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.organization_menu_item_toppings
+    ADD CONSTRAINT organization_menu_item_toppings_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY public.organization_pending_invites
     ADD CONSTRAINT organization_pending_invites_invite_token_key UNIQUE (invite_token);
 
@@ -63,6 +69,10 @@ CREATE INDEX idx_org_restaurants_restaurant_id ON public.organization_restaurant
 CREATE INDEX idx_organization_menu_categories_org_position ON public.organization_menu_categories USING btree (organization_id, "position");
 
 CREATE INDEX idx_organization_menu_items_org_category_position ON public.organization_menu_items USING btree (organization_id, category_id, "position");
+
+CREATE INDEX idx_organization_menu_item_sizes_item_position ON public.organization_menu_item_sizes USING btree (organization_menu_item_id, "position");
+
+CREATE INDEX idx_organization_menu_item_toppings_item_position ON public.organization_menu_item_toppings USING btree (organization_menu_item_id, "position");
 
 CREATE INDEX idx_owner_organizations_created_by ON public.owner_organizations USING btree (created_by);
 
