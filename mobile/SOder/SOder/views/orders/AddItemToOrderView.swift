@@ -18,6 +18,7 @@ struct AddItemToOrderView: View {
     @State private var selectedCategoryId: String? = nil
     @State private var orderSummary: (itemsCount: Int, totalAmount: Double) = (0, 0.0)
     @State private var isSavingToDatabase = false
+    @State private var itemDetailLoadingId: String? = nil
     @State private var showingCartSheet = false
     @State private var itemToCustomize: MenuItem? = nil
     @State private var itemToEdit: OrderItem? = nil
@@ -134,21 +135,20 @@ struct AddItemToOrderView: View {
                     showCategoryHeaders: true,
                     isAddingItem: coordinator.isAddingItem,
                     onItemTap: { item in
-                        itemToEdit = nil
-                        itemToCustomize = item
+                        Task {
+                            await handleMenuItemSelection(item)
+                        }
                     },
                     onQuickAdd: { item in
                         Task {
-                            await coordinator.handleAddItem(item, to: localDraftOrderId) { menuItem in
-                                itemToEdit = nil
-                                itemToCustomize = menuItem
-                            }
+                            await handleMenuItemSelection(item)
                             await updateOrderSummary()
                         }
                     },
                     onCustomize: { item in
-                        itemToEdit = nil
-                        itemToCustomize = item
+                        Task {
+                            await presentCustomization(for: item)
+                        }
                     }
                 )
             }
@@ -232,6 +232,48 @@ struct AddItemToOrderView: View {
                 orderManager.localDraftOrders.removeValue(forKey: localDraftOrderId)
                 print("🧹 Cleaned up unsaved local draft for add-items session \(localDraftOrderId)")
             }
+        }
+    }
+
+    @MainActor
+    private func handleMenuItemSelection(_ item: MenuItem) async {
+        let detailedItem = await loadMenuItemDetailsIfNeeded(item)
+
+        if coordinator.shouldShowCustomizeSheet(for: detailedItem) {
+            itemToEdit = nil
+            itemToCustomize = detailedItem
+            return
+        }
+
+        await coordinator.quickAddItem(detailedItem, to: localDraftOrderId)
+    }
+
+    @MainActor
+    private func presentCustomization(for item: MenuItem) async {
+        itemToEdit = nil
+        itemToCustomize = await loadMenuItemDetailsIfNeeded(item)
+    }
+
+    @MainActor
+    private func loadMenuItemDetailsIfNeeded(_ item: MenuItem) async -> MenuItem {
+        guard item.availableSizes?.isEmpty != false || item.availableToppings?.isEmpty != false else {
+            return item
+        }
+
+        itemDetailLoadingId = item.id
+        defer {
+            itemDetailLoadingId = nil
+        }
+
+        do {
+            let detailedItem = try await supabaseManager.fetchMenuItemDetails(menuItemId: item.id)
+            if let index = menuItems.firstIndex(where: { $0.id == item.id }) {
+                menuItems[index] = detailedItem
+            }
+            return detailedItem
+        } catch {
+            print("Error loading menu item options: \(error.localizedDescription)")
+            return item
         }
     }
 

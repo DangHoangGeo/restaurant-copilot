@@ -227,6 +227,10 @@ struct CompactKitchenItemCard: View {
                             }
                         }
 
+                        if !item.tableNames.isEmpty {
+                            KitchenTableChipRow(tables: item.tableNames)
+                        }
+
                         Text(item.itemName)
                             .font(.cardTitle)
                             .foregroundColor(.appTextPrimary)
@@ -235,9 +239,12 @@ struct CompactKitchenItemCard: View {
                             .fixedSize(horizontal: false, vertical: true)
 
                         if let size = item.size {
-                            Text("\("kitchen_size".localized) \(size)")
-                                .font(.captionRegular)
-                                .foregroundColor(.appTextSecondary)
+                            itemMetaBlock(
+                                label: "pos_size_section_title".localized,
+                                text: size,
+                                textColor: .appTextPrimary,
+                                isModifier: true
+                            )
                         }
                     }
 
@@ -263,19 +270,18 @@ struct CompactKitchenItemCard: View {
                     }
                 }
 
-                if !item.tableNames.isEmpty {
-                    KitchenTableChipRow(tables: item.tableNames)
-                }
-
                 if !item.toppings.isEmpty {
                     itemMetaBlock(
+                        label: "pos_toppings_section_title".localized,
                         text: item.toppings.prefix(3).joined(separator: " • "),
-                        textColor: visualStyle.secondaryText
+                        textColor: .appTextPrimary,
+                        isModifier: true
                     )
                 }
 
                 if !item.displayNotes.isEmpty {
                     itemMetaBlock(
+                        label: "item_detail_notes_label".localized,
                         text: item.displayNotes,
                         textColor: visualStyle.secondaryText
                     )
@@ -409,19 +415,20 @@ struct CompactKitchenItemCard: View {
     }
 
     @ViewBuilder
-    private func itemMetaBlock(text: String, textColor: Color) -> some View {
-        Text(text)
-            .font(.captionRegular)
-            .foregroundColor(textColor)
-            .lineLimit(2)
-            .padding(.horizontal, Spacing.sm)
-            .padding(.vertical, Spacing.xs)
-            .background(Color.appSurfaceSecondary.opacity(0.9))
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.sm)
-                    .stroke(Color.appBorderLight.opacity(0.8), lineWidth: 1)
-            )
-            .cornerRadius(CornerRadius.sm)
+    private func itemMetaBlock(label: String, text: String, textColor: Color, isModifier: Bool = false) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+            Text(label.uppercased())
+                .font(.monoCaption)
+                .foregroundColor(.appTextSecondary)
+                .frame(width: 72, alignment: .leading)
+
+            Text(text)
+                .font(isModifier ? .bodyMedium.weight(.semibold) : .captionRegular)
+                .foregroundColor(textColor)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -457,20 +464,20 @@ private struct KitchenTableChipRow: View {
             HStack(spacing: Spacing.xs) {
                 ForEach(visibleTables, id: \.self) { table in
                     Text(table)
-                        .font(.captionBold)
-                        .foregroundColor(.appPrimary)
+                        .font(.bodyMedium.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
                         .padding(.horizontal, Spacing.sm)
-                        .padding(.vertical, Spacing.xs)
-                        .background(Color.appPrimary.opacity(0.1))
+                        .padding(.vertical, 3)
+                        .background(Color.appPrimary.opacity(0.12))
                         .cornerRadius(CornerRadius.sm)
                 }
 
                 if remainingTablesCount > 0 {
                     Text("+\(remainingTablesCount)")
-                        .font(.captionBold)
+                        .font(.bodyMedium.weight(.semibold))
                         .foregroundColor(.appTextSecondary)
                         .padding(.horizontal, Spacing.sm)
-                        .padding(.vertical, Spacing.xs)
+                        .padding(.vertical, 3)
                         .background(Color.appBackground)
                         .cornerRadius(CornerRadius.sm)
                 }

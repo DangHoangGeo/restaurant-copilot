@@ -210,7 +210,11 @@ class AddToOrderCoordinator: ObservableObject {
                     status: .draft,
                     created_at: existingItem.created_at,
                     updated_at: ISO8601DateFormatter().string(from: Date()),
-                    menu_item: menuItem
+                    menu_item: menuItem,
+                    menu_item_size: menuItem.availableSizes?.first(where: { $0.id == selectedSizeId }),
+                    toppings: normalizedToppingIds.flatMap { toppingIds in
+                        menuItem.availableToppings?.filter { toppingIds.contains($0.id) }
+                    }
                 )
 
                 localOrder.order_items?[itemIndex] = updatedItem

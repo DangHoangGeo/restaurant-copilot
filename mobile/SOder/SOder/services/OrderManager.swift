@@ -365,7 +365,11 @@ class OrderManager: ObservableObject {
                     status: .draft,
                     created_at: ISO8601DateFormatter().string(from: Date()),
                     updated_at: ISO8601DateFormatter().string(from: Date()),
-                    menu_item: menuItem
+                    menu_item: menuItem,
+                    menu_item_size: menuItem.availableSizes?.first(where: { $0.id == selectedSizeId }),
+                    toppings: selectedToppingIds.flatMap { toppingIds in
+                        menuItem.availableToppings?.filter { toppingIds.contains($0.id) }
+                    }
                 )
                 updatedOrder.order_items?.append(newOrderItem)
                 resultItem = newOrderItem
@@ -866,7 +870,10 @@ class OrderManager: ObservableObject {
                 .execute()
                 .value
 
-            self.orders = response.map { $0.toOrder() }
+            self.orders = try await hydrateOrderItemToppings(
+                in: response.map { $0.toOrder() },
+                restaurantId: restaurantId
+            )
             print("Fetched \(orders.count) active orders in a single query")
             
         } catch {
@@ -920,7 +927,10 @@ class OrderManager: ObservableObject {
                 .execute()
                 .value
             
-            self.allOrders = response.map { $0.toOrder() }
+            self.allOrders = try await hydrateOrderItemToppings(
+                in: response.map { $0.toOrder() },
+                restaurantId: restaurantId
+            )
             print("Fetched \(allOrders.count) total orders")
             
         } catch {
@@ -929,6 +939,43 @@ class OrderManager: ObservableObject {
         }
         
         isLoading = false
+    }
+
+    private func hydrateOrderItemToppings(in orders: [Order], restaurantId: String) async throws -> [Order] {
+        let toppingIds = Set(
+            orders.flatMap { order in
+                (order.order_items ?? []).flatMap { $0.topping_ids ?? [] }
+            }
+        )
+
+        guard !toppingIds.isEmpty else {
+            return orders
+        }
+
+        let toppings: [Topping] = try await supabaseManager.client
+            .from("toppings")
+            .select()
+            .eq("restaurant_id", value: restaurantId)
+            .in("id", value: Array(toppingIds))
+            .execute()
+            .value
+
+        let toppingsById = Dictionary(uniqueKeysWithValues: toppings.map { ($0.id, $0) })
+
+        return orders.map { order in
+            var hydratedOrder = order
+            hydratedOrder.order_items = order.order_items?.map { orderItem in
+                var hydratedItem = orderItem
+                let existingToppings = hydratedItem.toppings ?? []
+
+                if existingToppings.isEmpty {
+                    hydratedItem.toppings = (orderItem.topping_ids ?? []).compactMap { toppingsById[$0] }
+                }
+
+                return hydratedItem
+            }
+            return hydratedOrder
+        }
     }
     
     // MARK: - Update Order Status
