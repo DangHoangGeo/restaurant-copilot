@@ -15,7 +15,7 @@
   },
   "hero": {
     "live_badge": "Số liệu mạng lưới trực tiếp",
-    "headline": "Điều hành ca bán.",
+    "headline": "Điều hành.",
     "headline_accent": "Từ điện thoại.",
     "headline_part1": "SaaS ưu tiên di động, hỗ trợ AI cho",
     "headline_part2": "Nhà hàng nhỏ.",
@@ -55,7 +55,7 @@
   "features": {
     "eyebrow": "Bớt áp lực, phục vụ nhanh hơn",
     "title": "Những việc làm nhà hàng chậm lại được gom về một nơi.",
-    "subtitle": "CoOrder nối đặt món QR, cập nhật thực đơn, tình hình nhân sự, sức khỏe chi nhánh và kiểm tra tiền hằng ngày để đội ngũ chạy nhanh hơn và khách chờ ít hơn.",
+    "subtitle": "CoOrder nối đặt món QR, cập nhật thực đơn, tình hình nhân sự, chi nhánh và kiểm tra dòng tiền hằng ngày để đội ngũ chạy nhanh hơn và khách chờ ít hơn.",
     "menu_management": {
       "title": "Quản lý thực đơn trực quan",
       "description": "Dễ dàng tạo, cập nhật và sắp xếp thực đơn số với ảnh, mô tả và giá cả. Hỗ trợ nhiều ngôn ngữ.",
