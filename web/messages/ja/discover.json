@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "title": "レストランを探す — CoOrder",
+    "description": "CoOrderの認証済みレストランを検索。都道府県・区市町村でフィルタリングできます。"
+  },
+  "page": {
+    "heading": "レストランを探す",
+    "subheading": "近くの認証済みレストランを検索"
+  },
+  "search": {
+    "placeholder": "名前・住所・料理で検索...",
+    "clear": "クリア"
+  },
+  "filters": {
+    "all_provinces": "すべての都道府県",
+    "all_districts": "すべての区市町村",
+    "province_label": "都道府県",
+    "district_label": "区市町村",
+    "clear_filters": "フィルターをクリア"
+  },
+  "card": {
+    "view_menu": "メニューを見る",
+    "reviews": "{count}件のレビュー",
+    "no_rating": "まだ評価なし",
+    "part_of_brand": "{brand}グループ",
+    "open_now": "営業中",
+    "closed": "閉店中"
+  },
+  "empty": {
+    "title": "レストランが見つかりません",
+    "description": "フィルターや検索条件を変更してください。",
+    "clear_filters": "フィルターをすべてクリア"
+  },
+  "loading": "読み込み中...",
+  "results_count": "{count}件のレストラン"
+}

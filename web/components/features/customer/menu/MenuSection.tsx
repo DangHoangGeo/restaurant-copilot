@@ -10,14 +10,7 @@ interface SmartMenuItem extends FoodItem {
   categoryId: string;
   categoryName: string;
   searchText: string;
-  rating?: number;
-  reviewCount?: number;
-  isPopular?: boolean;
-  isNew?: boolean;
   tags?: string[];
-  contextScore?: number;
-  estimatedPrepTime?: number;
-  calories?: number;
   isRecommended?: boolean;
   recommendationReason?: string;
 }
@@ -28,6 +21,7 @@ interface MenuSectionProps {
   items: SmartMenuItem[];
   brandColor: string;
   locale: string;
+  currency?: string;
   canAddItems: boolean;
   onItemClick: (item: SmartMenuItem) => void;
   onAddToCart: (item: SmartMenuItem) => void;
@@ -43,6 +37,7 @@ export function MenuSection({
   items,
   brandColor,
   locale,
+  currency,
   canAddItems,
   onItemClick,
   onAddToCart,
@@ -194,6 +189,7 @@ export function MenuSection({
                   onCardClick={() => onItemClick(item)}
                   brandColor={brandColor}
                   locale={locale}
+                  currency={currency}
                   canAddItems={canAddItems}
                   showPopularBadge={showPopularBadge}
                   showRecommendedBadge={showRecommendedBadge}

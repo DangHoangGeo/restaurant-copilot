@@ -60,6 +60,8 @@
   "cart": "Cart",
   "view_cart_label": "View Cart",
   "order_history_label": "Order History",
+  "open_now": "Open Now",
+  "closed_now": "Closed",
   "weekdays": {
     "mon": "Monday",
     "tue": "Tuesday",

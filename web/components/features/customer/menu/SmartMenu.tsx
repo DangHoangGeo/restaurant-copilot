@@ -60,14 +60,7 @@ interface SmartMenuItem extends FoodItem {
   categoryId: string;
   categoryName: string;
   searchText: string;
-  rating?: number;
-  reviewCount?: number;
-  isPopular?: boolean;
-  isNew?: boolean;
   tags?: string[];
-  contextScore?: number;
-  estimatedPrepTime?: number;
-  calories?: number;
   isRecommended?: boolean;
   recommendationReason?: string;
 }
@@ -82,18 +75,6 @@ interface SmartCategory {
   count: number;
 }
 
-const hashString = (value: string): number => {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
-  }
-  return hash;
-};
-
-const normalizedHash = (value: string, salt: string): number => {
-  const hash = hashString(`${value}:${salt}`);
-  return hash / 0xffffffff;
-};
 
 interface SmartMenuProps {
   categories?: Category[]; // Optional fallback data
@@ -101,6 +82,7 @@ interface SmartMenuProps {
   searchPlaceholder?: string;
   locale: string;
   brandColor: string;
+  currency?: string;
   canAddItems: boolean;
   setView: (view: ViewType, props?: ViewProps) => void;
   tableId?: string;
@@ -139,15 +121,6 @@ const transformToSmartMenuItems = (
       )
       .map((item): SmartMenuItem => {
         const isRecommended = recommendedItems.includes(item.id);
-        const stableSeed =
-          item.id || item.name_en || `${category.id}-${item.position}`;
-        const rating = 4 + normalizedHash(stableSeed, "rating");
-        const reviewCount =
-          5 + Math.floor(normalizedHash(stableSeed, "reviews") * 50);
-        const estimatedPrepTime =
-          5 + Math.floor(normalizedHash(stableSeed, "prep") * 20);
-        const calories =
-          200 + Math.floor(normalizedHash(stableSeed, "calories") * 400);
 
         return {
           ...item,
@@ -168,13 +141,7 @@ const transformToSmartMenuItems = (
             },
             locale,
           )} ${item.description_en || ""} ${item.description_ja || ""} ${item.description_vi || ""}`.toLowerCase(),
-          rating,
-          reviewCount,
-          isPopular: normalizedHash(stableSeed, "popular") > 0.7,
-          isNew: normalizedHash(stableSeed, "new") > 0.9,
           tags: item.tags || [],
-          estimatedPrepTime,
-          calories,
           isRecommended,
           recommendationReason: isRecommended
             ? recommendationReasons[item.id]
@@ -200,6 +167,7 @@ export function SmartMenu({
   restaurantId,
   logoUrl,
   allowOrderNotes = true,
+  currency,
 }: SmartMenuProps) {
   const { addToCart, getQuantityByItemId, cart } = useCart();
   const { theme, setTheme } = useTheme();
@@ -304,8 +272,8 @@ export function SmartMenu({
   // Smart categorization logic with enhanced algorithms
   const smartCategories = useMemo((): Record<string, SmartCategory> => {
     const popularItems = allMenuItems
-      .filter((item) => item.reviewCount && item.reviewCount > 10)
-      .sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
+      .filter((item) => item.averageRating && item.averageRating > 0)
+      .sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
       .slice(0, 8);
 
     const recommendedItemsData = allMenuItems
@@ -473,16 +441,7 @@ export function SmartMenu({
       selectedToppings?: Topping[],
       notes?: string,
     ) => {
-      console.log("Adding to cart:", {
-        item: item.id,
-        quantity,
-        selectedSize,
-        selectedToppings,
-        notes,
-      });
-
-      // Use the cart context's addToCart function which properly handles size, toppings, and notes
-      addToCart(
+        addToCart(
         item as SmartMenuItem,
         quantity,
         selectedSize,
@@ -809,7 +768,7 @@ export function SmartMenu({
           <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-hide">
             <button
               onClick={() => setActiveCategoryFilter(null)}
-              className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus:outline-none"
+              className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-slate-400"
               style={
                 !activeCategoryFilter
                   ? {
@@ -842,7 +801,7 @@ export function SmartMenu({
                   onClick={() =>
                     setActiveCategoryFilter(isActive ? null : cat.id)
                   }
-                  className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus:outline-none"
+                  className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-slate-400"
                   style={
                     isActive
                       ? {
@@ -1039,6 +998,7 @@ export function SmartMenu({
                     items={filteredItems}
                     brandColor={brandColor}
                     locale={locale}
+                    currency={currency}
                     canAddItems={canAddItems}
                     onItemClick={handleItemClick}
                     onAddToCart={handleAddToCart}
@@ -1056,6 +1016,7 @@ export function SmartMenu({
                           items={smartCategories.popular.items}
                           brandColor={brandColor}
                           locale={locale}
+                          currency={currency}
                           canAddItems={canAddItems}
                           onItemClick={handleItemClick}
                           onAddToCart={handleAddToCart}
@@ -1074,6 +1035,7 @@ export function SmartMenu({
                           items={smartCategories.recommended.items}
                           brandColor={brandColor}
                           locale={locale}
+                          currency={currency}
                           canAddItems={canAddItems}
                           onItemClick={handleItemClick}
                           onAddToCart={handleAddToCart}
@@ -1104,6 +1066,7 @@ export function SmartMenu({
                           items={categoryItems}
                           brandColor={brandColor}
                           locale={locale}
+                          currency={currency}
                           canAddItems={canAddItems}
                           onItemClick={handleItemClick}
                           onAddToCart={handleAddToCart}
@@ -1141,6 +1104,7 @@ export function SmartMenu({
         item={selectedItem}
         locale={locale}
         brandColor={brandColor}
+        currency={currency}
         companyName={restaurantName}
         branchName={branchName}
         logoUrl={logoUrl}

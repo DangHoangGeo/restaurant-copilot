@@ -634,12 +634,6 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
                   {t("locations.eyebrow")}
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-                  {t("locations.title")}
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
-                  {t("locations.description")}
-                </p>
               </div>
             </div>
 

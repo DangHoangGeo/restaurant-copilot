@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 import {
   Clock,
   Users,
@@ -18,6 +19,7 @@ import {
   Printer,
 } from "lucide-react";
 import { useCustomerData } from "@/components/features/customer/layout/CustomerDataContext";
+import { formatPrice } from "@/lib/customerUtils";
 import { QRCodeDialog } from "@/components/features/customer/QRCodeDialog";
 import type {
   OrderHistoryResponse,
@@ -54,56 +56,51 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   // Get sessionId from URL params or context
   const sessionId = searchParams.get("sessionId") || sessionData.sessionId;
 
+  const TERMINAL_STATUSES = ["completed", "canceled"];
+  const POLL_INTERVAL_MS = 30_000;
+
   useEffect(() => {
-    const fetchOrderHistory = async () => {
-      // Wait for context to finish loading before checking for missing data
-      if (contextLoading) {
-        return;
-      }
-
-      if (!sessionId) {
-        setError("Session information not found");
+    if (contextLoading || !sessionId || !restaurantSettings?.id) {
+      if (!contextLoading) {
+        if (!sessionId) setError("Session information not found");
+        else setError("Restaurant information not found");
         setIsLoading(false);
-        return;
       }
+      return;
+    }
 
-      if (!restaurantSettings?.id) {
-        setError("Restaurant information not found");
-        setIsLoading(false);
-        return;
-      }
-
+    const fetchOrderHistory = async (silent = false) => {
+      if (!silent) setIsLoading(true);
+      setError(null);
       try {
-        setIsLoading(true);
-        setError(null);
         const params = new URLSearchParams({ sessionId });
         params.append("restaurantId", restaurantSettings.id);
-
         const response = await fetch(
           `/api/v1/customer/orders/session-info?${params.toString()}`,
         );
-
         const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch order history");
-        }
-
-        if (data.success) {
-          setHistoryData(data);
-        } else {
-          throw new Error(data.error || "Failed to load order history");
-        }
+        if (!response.ok) throw new Error(data.error || "Failed to fetch order history");
+        if (data.success) setHistoryData(data);
+        else throw new Error(data.error || "Failed to load order history");
       } catch (err) {
         console.error("Error fetching order history:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load order history",
-        );
+        if (!silent) setError(err instanceof Error ? err.message : "Failed to load order history");
       } finally {
-        setIsLoading(false);
+        if (!silent) setIsLoading(false);
       }
     };
 
     fetchOrderHistory();
+
+    // Poll every 30 s while the order is still in progress
+    const interval = setInterval(() => {
+      const currentStatus = historyData?.order?.status;
+      if (!currentStatus || TERMINAL_STATUSES.includes(currentStatus)) return;
+      fetchOrderHistory(true);
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, restaurantSettings?.id, contextLoading]);
 
   // Helper function to get passcode from orderId
@@ -127,21 +124,37 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     }
   };
 
+  const escHtml = (str: string): string =>
+    str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
   const handlePrintReceipt = async () => {
     if (!historyData?.order) return;
 
     setIsPrinting(true);
     try {
-      // Create a print-friendly version of the receipt
       const printWindow = window.open("", "_blank");
       if (!printWindow) return;
+
+      const order = historyData.order;
+      const currency = restaurantSettings?.currency || "JPY";
+      const formatPrice = (amount: number) =>
+        new Intl.NumberFormat(locale, {
+          style: "currency",
+          currency,
+          maximumFractionDigits: 0,
+        }).format(amount);
 
       const receiptHtml = `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="UTF-8">
-          <title>${t("receipt_title", { orderId: historyData.order.id.slice(-8) })}</title>
+          <title>${escHtml(t("receipt_title", { orderId: order.id.slice(-8) }))}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
             .header { text-align: center; margin-bottom: 20px; }
@@ -159,69 +172,55 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
         </head>
         <body>
           <div class="header">
-            <h1>${restaurantSettings?.name || "Restaurant"}</h1>
-            <p>${restaurantSettings?.address || "Address not available"}</p>
-            <p>${restaurantSettings?.phone || "Phone not available"}</p>
-            <p>${t("receipt_title", { orderId: historyData.order.id.slice(-8) })}</p>
+            <h1>${escHtml(restaurantSettings?.name || "Restaurant")}</h1>
+            <p>${escHtml(restaurantSettings?.address || "")}</p>
+            <p>${escHtml(restaurantSettings?.phone || "")}</p>
+            <p>${escHtml(t("receipt_title", { orderId: order.id.slice(-8) }))}</p>
           </div>
           <div class="order-info">
-            <p><strong>${t("table")}</strong> ${historyData.order.table_name}</p>
-            <p><strong>${t("date")}</strong> ${formatDate(historyData.order.created_at)} ${formatTime(historyData.order.created_at)}</p>
+            <p><strong>${escHtml(t("table"))}</strong> ${escHtml(order.table_name || "")}</p>
+            <p><strong>${escHtml(t("date"))}</strong> ${escHtml(formatDate(order.created_at))} ${escHtml(formatTime(order.created_at))}</p>
           </div>
           <div class="items">
-            <h3>${t("items")}</h3>
-            ${(historyData.order.items || [])
+            <h3>${escHtml(t("items"))}</h3>
+            ${(order.items || [])
               .map((item) => {
                 const sizeName = getSizeName(item);
                 const quantityDisplay = sizeName
-                  ? `× ${item.quantity} (${sizeName})`
+                  ? `× ${item.quantity} (${escHtml(sizeName)})`
                   : `× ${item.quantity}`;
+                const itemTotal = item.total || (item.price_at_order || item.unit_price) * item.quantity;
 
                 return `
                 <div class="item">
                   <div class="item-header">
-                    <div class="item-name">${getMenuItemName(item)}</div>
-                    <div class="item-price">¥${item.total || (item.price_at_order || item.unit_price) * item.quantity}</div>
+                    <div class="item-name">${escHtml(getMenuItemName(item))}</div>
+                    <div class="item-price">${escHtml(formatPrice(itemTotal))}</div>
                   </div>
                   <div class="quantity-size">
                     <span>${quantityDisplay}</span>
                   </div>
                   ${
                     item.toppings && item.toppings.length > 0
-                      ? `
-                    <div class="item-details">${t("toppings")}: ${item.toppings.map(getToppingName).join(", ")}</div>
-                  `
+                      ? `<div class="item-details">${escHtml(t("toppings"))}: ${item.toppings.map((tp) => escHtml(getToppingName(tp))).join(", ")}</div>`
                       : ""
                   }
-                  ${
-                    item.notes
-                      ? `
-                    <div class="item-details">${t("notes")}: ${item.notes}</div>
-                  `
-                      : ""
-                  }
+                  ${item.notes ? `<div class="item-details">${escHtml(t("notes"))}: ${escHtml(item.notes)}</div>` : ""}
                 </div>
               `;
               })
               .join("")}
           </div>
           <div class="total">
-            <div style="margin-bottom: 8px;">
-              <span>${t("subtotal")}: ¥${Math.round((historyData.order.total_amount || 0) / 1.1)}</span>
-            </div>
-            <div style="margin-bottom: 8px;">
-              <span>${t("tax")} (10%): ¥${Math.round(((historyData.order.total_amount || 0) * 0.1) / 1.1)}</span>
-            </div>
             <div style="border-top: 1px solid #333; padding-top: 8px; font-size: 20px;">
-              <span>${t("total")}: ¥${historyData.order.total_amount}</span>
+              <span>${escHtml(t("total"))}: ${escHtml(formatPrice(order.total_amount || 0))}</span>
             </div>
           </div>
         </body>
         </html>
       `;
 
-      printWindow.document.write(receiptHtml);
-      printWindow.document.close();
+      printWindow.document.documentElement.innerHTML = receiptHtml;
       printWindow.focus();
       printWindow.print();
       printWindow.close();
@@ -299,16 +298,21 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     }
   };
 
+  const currency = restaurantSettings?.currency;
+  const fp = (amount: number) => formatPrice(amount, currency, locale);
+
   const totalAmount = historyData?.order?.total_amount || 0;
-  const subtotalAmount = Math.round(totalAmount / 1.1);
-  const taxAmount = Math.max(0, totalAmount - subtotalAmount);
+
+  const histBrandColor = restaurantSettings?.primaryColor || "#4f46e5";
+  const spinnerStyle = { borderBottomColor: histBrandColor };
+  const btnStyle = { backgroundColor: histBrandColor, borderColor: histBrandColor };
 
   if (isLoading || contextLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={spinnerStyle}></div>
             <p className="text-gray-600">{t("loading")}</p>
           </div>
         </div>
@@ -328,9 +332,9 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               {error || t("error_message")}
             </p>
             <Button
+              className="text-white"
+              style={btnStyle}
               onClick={() => {
-                // Only include sessionId if the session is still active (not completed)
-                // When in error state, check session status from context instead of historyData
                 const menuUrl = new URLSearchParams();
                 if (sessionId && sessionData.sessionStatus === "active") {
                   menuUrl.set("sessionId", sessionId);
@@ -353,7 +357,33 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     );
   }
 
+  const brandColor = restaurantSettings?.primaryColor || "#4f46e5";
+  const companyName = restaurantSettings?.companyName || restaurantSettings?.name || "";
+
   return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      {/* Slim brand header */}
+      <header
+        className="sticky top-0 z-40 bg-white dark:bg-slate-900 shadow-sm"
+        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
+      >
+        <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+          {restaurantSettings?.logoUrl ? (
+            <div className="h-8 w-8 relative overflow-hidden rounded-md flex-shrink-0">
+              <Image src={restaurantSettings.logoUrl} alt={companyName} fill className="object-cover" />
+            </div>
+          ) : (
+            <div
+              className="h-8 w-8 rounded-md flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+              style={{ backgroundColor: brandColor }}
+            >
+              {companyName.charAt(0) || "R"}
+            </div>
+          )}
+          <span className="font-semibold text-slate-900 dark:text-white truncate">{companyName}</span>
+        </div>
+      </header>
+
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -490,21 +520,9 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
                 {/* Financial Breakdown */}
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {t("subtotal")}
-                    </span>
-                    <span>¥{subtotalAmount}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {t("tax")} (10%)
-                    </span>
-                    <span>¥{taxAmount}</span>
-                  </div>
                   <div className="border-t pt-2 flex justify-between font-semibold">
                     <span>{t("total")}</span>
-                    <span>¥{totalAmount}</span>
+                    <span>{fp(totalAmount)}</span>
                   </div>
                   <div className="text-right text-xs text-gray-500 dark:text-gray-400">
                     {historyData.order?.items?.length || 0} {t("items_count")}
@@ -588,10 +606,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
                       <div className="text-right">
                         <p className="font-medium">×{item.quantity}</p>
                         <p className="text-sm font-semibold">
-                          ¥
-                          {item.total ||
-                            (item.price_at_order || item.unit_price) *
-                              item.quantity}
+                          {fp(item.total || (item.price_at_order || item.unit_price) * item.quantity)}
                         </p>
                       </div>
                     </div>
@@ -639,6 +654,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
           restaurantSubdomain={restaurantSettings?.subdomain || "restaurant"}
         />
       )}
+    </div>
     </div>
   );
 }

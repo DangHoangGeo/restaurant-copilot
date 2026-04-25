@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "title": "Find a Restaurant — CoOrder",
+    "description": "Browse all verified restaurants on CoOrder. Filter by province, district, or search by name."
+  },
+  "page": {
+    "heading": "Find a Restaurant",
+    "subheading": "Browse verified restaurants near you"
+  },
+  "search": {
+    "placeholder": "Search by name, address, or cuisine...",
+    "clear": "Clear search"
+  },
+  "filters": {
+    "all_provinces": "All Provinces",
+    "all_districts": "All Districts",
+    "province_label": "Province",
+    "district_label": "District",
+    "clear_filters": "Clear filters"
+  },
+  "card": {
+    "view_menu": "View Menu",
+    "reviews": "{count} reviews",
+    "no_rating": "No rating yet",
+    "part_of_brand": "Part of {brand}",
+    "open_now": "Open Now",
+    "closed": "Closed"
+  },
+  "empty": {
+    "title": "No restaurants found",
+    "description": "Try adjusting your filters or search term.",
+    "clear_filters": "Clear all filters"
+  },
+  "loading": "Loading restaurants...",
+  "results_count": "{count} restaurants"
+}

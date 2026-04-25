@@ -174,6 +174,7 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
           total={totalCartPrice}
           onPlaceOrder={handlePlaceOrder}
           brandColor={restaurantSettings.primaryColor || "#4f46e5"}
+          currency={restaurantSettings.currency}
           branchCode={activeBranchCode}
           restaurantId={restaurantSettings.id}
         />

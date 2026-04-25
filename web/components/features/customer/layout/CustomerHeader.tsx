@@ -33,9 +33,30 @@ export function CustomerHeader({
   //const router = useRouter();
   const { theme, setTheme } = useTheme();
 
-  const is_opening = true;
   const companyName = restaurantSettings.companyName || restaurantSettings.name;
   const branchName = restaurantSettings.name;
+
+  const is_opening = (() => {
+    const hours = restaurantSettings.opening_hours;
+    if (!hours) return null; // unknown — don't show either label
+    try {
+      const tz = restaurantSettings.timezone || "UTC";
+      const now = new Date();
+      const localStr = now.toLocaleString("en-US", { timeZone: tz, weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false });
+      const parts = localStr.split(", ");
+      const dayMap: Record<string, string> = { Sun: "sunday", Mon: "monday", Tue: "tuesday", Wed: "wednesday", Thu: "thursday", Fri: "friday", Sat: "saturday" };
+      const dayKey = dayMap[parts[0]] ?? parts[0].toLowerCase();
+      const [h, m] = parts[1].split(":").map(Number);
+      const todayHours = hours[dayKey] as { openTime?: string; closeTime?: string; isClosed?: boolean } | undefined;
+      if (!todayHours || todayHours.isClosed) return false;
+      const [oh, om] = (todayHours.openTime || "00:00").split(":").map(Number);
+      const [ch, cm] = (todayHours.closeTime || "23:59").split(":").map(Number);
+      const nowMin = h * 60 + m;
+      return nowMin >= oh * 60 + om && nowMin < ch * 60 + cm;
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <header
@@ -80,8 +101,14 @@ export function CustomerHeader({
                   {branchName}
                 </span>
               ) : null}
-              <Clock size={12} className="mr-1" />
-              <span>{is_opening ? " Open Now" : "Closed"}</span>
+              {is_opening !== null && (
+                <>
+                  <Clock size={12} className="mr-1" />
+                  <span className={is_opening ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}>
+                    {is_opening ? t("open_now") : t("closed_now")}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>

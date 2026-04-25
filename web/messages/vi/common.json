@@ -60,6 +60,8 @@
   "cart": "Giỏ hàng",
   "view_cart_label": "Xem giỏ hàng",
   "order_history_label": "Lịch sử đơn hàng",
+  "open_now": "Đang mở cửa",
+  "closed_now": "Đã đóng cửa",
   "weekdays": {
     "mon": "Thứ Hai",
     "tue": "Thứ Ba",

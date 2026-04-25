@@ -1,6 +1,28 @@
 // web/lib/customerUtils.ts
 import { useParams } from "next/navigation";
 
+/**
+ * Format a monetary amount using the restaurant's configured currency.
+ * Falls back to JPY (¥) when currency is unset, preserving existing behaviour.
+ */
+export function formatPrice(
+  amount: number,
+  currency: string | undefined,
+  locale = "en",
+): string {
+  const cur = currency || "JPY";
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: cur,
+      maximumFractionDigits: cur === "JPY" ? 0 : 2,
+    }).format(amount);
+  } catch {
+    // Fallback if the currency code is invalid
+    return `${amount}`;
+  }
+}
+
 export function useGetCurrentLocale() {
   const params = useParams();
   return (params.locale as string) || "en";

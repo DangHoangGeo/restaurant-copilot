@@ -8,6 +8,7 @@ const NAMESPACES = [
   'landing',
   'auth',
   'legal',
+  'discover',
   // service admin
   'serviceAdmin/home',
   'serviceAdmin/users',

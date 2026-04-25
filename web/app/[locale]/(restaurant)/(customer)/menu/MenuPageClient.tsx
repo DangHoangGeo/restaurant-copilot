@@ -371,12 +371,15 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     ],
   );
 
+  const spinnerStyle = { borderBottomColor: brandColor };
+  const btnStyle = { backgroundColor: brandColor, borderColor: brandColor };
+
   // Show loading state
   if (contextLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={spinnerStyle}></div>
           <p className="text-gray-600">{t("loading")}</p>
         </div>
       </div>
@@ -394,7 +397,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             {t("invalid_session_message")}
           </p>
-          <Button onClick={() => router.push(`/${locale}/`)}>
+          <Button onClick={() => router.push(`/${locale}/`)} className="text-white" style={btnStyle}>
             {t("scan_qr_again")}
           </Button>
         </div>
@@ -412,7 +415,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             {resolveError}
           </p>
-          <Button onClick={() => router.push(`/${locale}/`)}>
+          <Button onClick={() => router.push(`/${locale}/`)} className="text-white" style={btnStyle}>
             {t("scan_qr_again")}
           </Button>
         </div>
@@ -437,7 +440,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={spinnerStyle}></div>
           <p className="text-gray-600">{t("redirecting_to_history")}</p>
         </div>
       </div>
@@ -452,6 +455,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         tableNumber={sessionData.tableNumber || ""}
         canAddItems={sessionData.canAddItems}
         brandColor={restaurantSettings?.primaryColor || "#3b82f6"}
+        currency={restaurantSettings?.currency}
         setView={handleSetView}
         restaurantId={restaurantSettings?.id || ""}
         restaurantName={companyName}
