@@ -2,7 +2,13 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getLocalDateString } from "@/lib/server/dashboard/dates";
 import type { OrgEmployeeRow } from "@/lib/server/organizations/queries";
 
-const JOB_TITLES = ["manager", "chef", "server", "cashier"] as const;
+const JOB_TITLES = [
+  "manager",
+  "chef",
+  "server",
+  "cashier",
+  "part_time",
+] as const;
 type JobTitle = (typeof JOB_TITLES)[number];
 
 interface ScheduleRow {
@@ -23,6 +29,10 @@ interface RolePayRateRow {
   job_title: JobTitle;
   hourly_rate: number;
   currency: string;
+}
+
+interface OrganizationRestaurantRow {
+  organization_id: string;
 }
 
 export interface BranchRolePayRate {
@@ -134,7 +144,12 @@ export async function getBranchTeamPayrollData(params: {
     : localToday.slice(0, 7);
   const { from, to } = monthBounds(monthKey);
 
-  const [schedulesResult, summariesResult, payRatesResult] = await Promise.all([
+  const [
+    schedulesResult,
+    summariesResult,
+    organizationResult,
+    branchPayRatesResult,
+  ] = await Promise.all([
     supabaseAdmin
       .from("schedules")
       .select("employee_id, weekday, start_time, end_time")
@@ -148,10 +163,24 @@ export async function getBranchTeamPayrollData(params: {
       .gte("work_date", from)
       .lte("work_date", to),
     supabaseAdmin
+      .from("organization_restaurants")
+      .select("organization_id")
+      .eq("restaurant_id", branchId)
+      .maybeSingle(),
+    supabaseAdmin
       .from("restaurant_role_pay_rates")
       .select("job_title, hourly_rate, currency")
       .eq("restaurant_id", branchId),
   ]);
+  const organizationId = (
+    organizationResult.data as OrganizationRestaurantRow | null
+  )?.organization_id;
+  const organizationPayRatesResult = organizationId
+    ? await supabaseAdmin
+        .from("organization_role_pay_rates")
+        .select("job_title, hourly_rate, currency")
+        .eq("organization_id", organizationId)
+    : { data: null };
 
   const scheduleRows = ((schedulesResult.data ?? []) as ScheduleRow[]).reduce<
     Map<string, BranchEmployeeScheduleSlot[]>
@@ -199,8 +228,8 @@ export async function getBranchTeamPayrollData(params: {
     return map;
   }, new Map());
 
-  const rolePayRatesMap = new Map(
-    ((payRatesResult.data ?? []) as RolePayRateRow[]).map((row) => [
+  const organizationPayRatesMap = new Map(
+    ((organizationPayRatesResult.data ?? []) as RolePayRateRow[]).map((row) => [
       row.job_title,
       {
         jobTitle: row.job_title,
@@ -210,11 +239,33 @@ export async function getBranchTeamPayrollData(params: {
     ]),
   );
 
-  const rolePayRates: BranchRolePayRate[] = JOB_TITLES.map((jobTitle) => ({
-    jobTitle,
-    hourlyRate: rolePayRatesMap.get(jobTitle)?.hourlyRate ?? null,
-    currency: rolePayRatesMap.get(jobTitle)?.currency ?? currency ?? "JPY",
-  }));
+  const branchPayRatesMap = new Map(
+    ((branchPayRatesResult.data ?? []) as RolePayRateRow[]).map((row) => [
+      row.job_title,
+      {
+        jobTitle: row.job_title,
+        hourlyRate: Number(row.hourly_rate),
+        currency: row.currency,
+      },
+    ]),
+  );
+
+  const rolePayRatesMap =
+    organizationPayRatesMap.size > 0
+      ? organizationPayRatesMap
+      : branchPayRatesMap;
+
+  const rolePayRates: BranchRolePayRate[] = JOB_TITLES.map((jobTitle) => {
+    const organizationRate = organizationPayRatesMap.get(jobTitle);
+    const branchFallbackRate = branchPayRatesMap.get(jobTitle);
+    const resolvedRate = organizationRate ?? branchFallbackRate;
+
+    return {
+      jobTitle,
+      hourlyRate: resolvedRate?.hourlyRate ?? null,
+      currency: resolvedRate?.currency ?? currency ?? "JPY",
+    };
+  });
 
   const employeeSummaries = employees.map<BranchTeamEmployeeSummary>(
     (employee) => {

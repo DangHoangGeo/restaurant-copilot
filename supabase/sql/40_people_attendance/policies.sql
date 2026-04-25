@@ -27,6 +27,8 @@ CREATE POLICY "Tenant can manage attendance_records" ON public.attendance_record
 
 CREATE POLICY "Tenant can manage employee_qr_credentials" ON public.employee_qr_credentials USING (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text]))) WITH CHECK (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text])));
 
+CREATE POLICY "Tenant can manage branch salary month closes" ON public.branch_salary_month_closes USING (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text]))) WITH CHECK (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text])));
+
 ALTER TABLE public.attendance_approvals ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.attendance_daily_summaries ENABLE ROW LEVEL SECURITY;
@@ -36,6 +38,8 @@ ALTER TABLE public.attendance_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.attendance_records ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.employee_qr_credentials ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE public.branch_salary_month_closes ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.restaurant_role_pay_rates ENABLE ROW LEVEL SECURITY;
 

@@ -159,7 +159,9 @@ export async function listOrganizationBranches(
   // newly-added org branches.
   const { data: restaurants } = await supabaseAdmin
     .from("restaurants")
-    .select("id, name, subdomain, branch_code, address, phone, email, onboarded")
+    .select(
+      "id, name, subdomain, branch_code, address, phone, email, onboarded",
+    )
     .in("id", restaurantIds);
 
   const restaurantMap = new Map(
@@ -727,7 +729,9 @@ export async function updateOrganizationSettings(
     "email",
   ]);
 
-  const extractMissingColumn = (error: { code?: string; message?: string } | null) => {
+  const extractMissingColumn = (
+    error: { code?: string; message?: string } | null,
+  ) => {
     if (!error || error.code !== "PGRST204" || !error.message) {
       return null;
     }
@@ -736,12 +740,10 @@ export async function updateOrganizationSettings(
     return match?.[1] ?? null;
   };
 
-  let currentOrganization:
-    | {
-        logo_url?: string | null;
-        brand_color?: string | null;
-      }
-    | null = null;
+  let currentOrganization: {
+    logo_url?: string | null;
+    brand_color?: string | null;
+  } | null = null;
 
   const { data: currentOrganizationData, error: currentOrganizationError } =
     await supabaseAdmin
@@ -802,7 +804,8 @@ export async function updateOrganizationSettings(
                 ? (patch.logo_url as string | null)
                 : undefined,
             brand_color:
-              typeof patch.brand_color === "string" || patch.brand_color === null
+              typeof patch.brand_color === "string" ||
+              patch.brand_color === null
                 ? (patch.brand_color as string | null)
                 : undefined,
           },
@@ -900,6 +903,22 @@ export interface OrgEmployeeRow {
   restaurant_id: string;
   restaurant_name: string;
   restaurant_subdomain: string;
+  is_active: boolean;
+  created_at: string | null;
+  private_profile: {
+    gender: string | null;
+    phone: string | null;
+    contact_email: string | null;
+    address: string | null;
+    facebook_url: string | null;
+    bank_name: string | null;
+    bank_branch_name: string | null;
+    bank_account_type: string | null;
+    bank_account_number: string | null;
+    bank_account_holder: string | null;
+    tax_social_number: string | null;
+    insurance_number: string | null;
+  } | null;
 }
 
 /**
@@ -914,7 +933,7 @@ export async function listOrganizationEmployees(
   const { data, error } = await supabaseAdmin
     .from("employees")
     .select(
-      "id, role, user_id, restaurant_id, restaurants(id, name, subdomain), users:users!employees_user_id_fkey(id, email, name)",
+      "id, role, user_id, restaurant_id, is_active, created_at, restaurants(id, name, subdomain), users:users!employees_user_id_fkey(id, email, name), employee_private_profiles(gender, phone, contact_email, address, facebook_url, bank_name, bank_branch_name, bank_account_type, bank_account_number, bank_account_holder, tax_social_number, insurance_number)",
     )
     .in("restaurant_id", restaurantIds)
     .order("restaurant_id", { ascending: true });
@@ -930,6 +949,8 @@ export async function listOrganizationEmployees(
       role: string;
       user_id: string;
       restaurant_id: string;
+      is_active: boolean;
+      created_at: string | null;
       restaurants:
         | { id: string; name: string; subdomain: string }
         | Array<{ id: string; name: string; subdomain: string }>
@@ -938,12 +959,19 @@ export async function listOrganizationEmployees(
         | { id: string; email: string; name: string }
         | Array<{ id: string; email: string; name: string }>
         | null;
+      employee_private_profiles:
+        | OrgEmployeeRow["private_profile"]
+        | Array<OrgEmployeeRow["private_profile"]>
+        | null;
     }>
   ).flatMap((row) => {
     const restaurant = Array.isArray(row.restaurants)
       ? row.restaurants[0]
       : row.restaurants;
     const user = Array.isArray(row.users) ? row.users[0] : row.users;
+    const profile = Array.isArray(row.employee_private_profiles)
+      ? row.employee_private_profiles[0]
+      : row.employee_private_profiles;
     if (!restaurant || !user) return [];
     return [
       {
@@ -955,6 +983,9 @@ export async function listOrganizationEmployees(
         restaurant_id: row.restaurant_id,
         restaurant_name: restaurant.name,
         restaurant_subdomain: restaurant.subdomain,
+        is_active: row.is_active,
+        created_at: row.created_at,
+        private_profile: profile ?? null,
       },
     ];
   });

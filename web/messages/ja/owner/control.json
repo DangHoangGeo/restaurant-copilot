@@ -21,7 +21,7 @@
     "home": "ホーム",
     "overview": "運用分析",
     "restaurants": "店舗",
-    "people": "従業員と給与",
+    "people": "スタッフ",
     "finance": "財務レポート",
     "menu": "メニュー",
     "alerts": "通知",
@@ -199,7 +199,7 @@
     "scope": "組織メニュー基盤"
   },
   "people": {
-    "title": "People",
+    "title": "スタッフ",
     "description": "組織アクセスと店舗ごとの人員状況を同じオーナー画面で管理しつつ、店舗別の従業員運用は明示的に切り分けます。",
     "metrics": {
       "members": "有効メンバー",
@@ -278,6 +278,7 @@
       "overview": "概要",
       "finance": "財務",
       "team": "チーム",
+      "staff": "スタッフ",
       "setup": "設定"
     },
     "actions": {
@@ -293,15 +294,54 @@
     "common": {
       "notSet": "未設定"
     },
+    "ownerInsights": {
+      "title": "オーナー管理ビュー",
+      "subtitle": "この店舗の設定、資金、人員、メニューの状況を1か所で確認します。",
+      "table": {
+        "area": "領域",
+        "status": "状態",
+        "detail": "詳細",
+        "action": "操作"
+      },
+      "rows": {
+        "setup": "設定",
+        "finance": "財務",
+        "team": "チームと給与",
+        "menu": "メニューシグナル"
+      },
+      "status": {
+        "ready": "準備完了",
+        "needsRate": "時給設定が必要",
+        "hasWinner": "販売あり",
+        "noSales": "シグナルなし"
+      },
+      "details": {
+        "setup": "店舗情報、既定言語、税率、営業時間は店舗設定で管理します。時給は会社ポリシーから継承します。",
+        "finance": "{month} の売上、コスト、締め状態を月次締め前から確認できます。",
+        "team": "承認済み {approved}、保留 {pending}。給与見込みには役割別時給が必要です。",
+        "menuWinner": "直近30日で {item} が {quantity}点売れ、この店舗の上位商品です。",
+        "menuEmpty": "完了済み注文が入ると、店舗別の売れ筋シグナルがここに表示されます。"
+      },
+      "actions": {
+        "setup": "設定を開く",
+        "finance": "財務を開く",
+        "team": "チームを開く",
+        "menu": "売れ筋を見る",
+        "snapshot": "スナップショットを確認"
+      }
+    },
     "stats": {
       "todayRevenue": "本日の売上",
       "orderCount": "{count}件の注文",
       "openOrders": "進行中オーダー",
       "openOrdersCount": "{count}件の進行中オーダー",
       "inKitchen": "キッチン進行中",
+      "monthRevenue": "今月の売上",
+      "monthRevenueHint": "{month} のライブ売上",
       "monthSpending": "今月の支出",
       "monthSpendingHint": "発注と経費の記録",
-      "monthClose": "{month} の月次締め"
+      "monthClose": "{month} の月次締め",
+      "openStatus": "締め状態"
     },
     "info": {
       "tableLabel": "店舗情報",
@@ -371,6 +411,7 @@
     },
     "team": {
       "employeeCount": "{count}人の従業員",
+      "staff": "スタッフ",
       "addEmployee": "従業員を追加",
       "inviteTitle": "新しい従業員を招待",
       "fullName": "氏名",
@@ -409,7 +450,11 @@
       "openingHours": "営業時間",
       "openingHoursHint": "公開営業時間と店舗の基本時間をオーナー画面から素早く更新できます。",
       "roleRates": "従業員の時給設定",
-      "roleRatesHint": "給与見込みに使う時給は、日々のチーム画面ではなくここで管理します。",
+      "roleRatesHint": "時給は会社設定から継承されるため、全店舗で同じ給与ポリシーを使います。",
+      "inheritedFromCompany": "継承",
+      "companyPolicy": "会社ポリシー",
+      "rateSource": "参照元",
+      "roleRatesCompanyNote": "変更は会社の人事・給与設定から行います。店舗設定では、この店舗の給与見込みに使われる時給だけを表示します。",
       "day": "曜日",
       "hours": "時間",
       "closed": "休業",
@@ -445,7 +490,8 @@
         "manager": "マネージャー",
         "chef": "シェフ",
         "server": "ホール",
-        "cashier": "レジ"
+        "cashier": "レジ",
+        "part_time": "パートタイム"
       }
     },
     "teamPanel": {
@@ -462,7 +508,8 @@
         "manager": "マネージャー",
         "chef": "シェフ",
         "server": "ホール",
-        "cashier": "レジ"
+        "cashier": "レジ",
+        "part_time": "パートタイム"
       },
       "cards": {
         "thisMonth": "今月",
@@ -487,6 +534,12 @@
         "title": "シフトと給与ビュー",
         "description": "週次ロスター、承認済み時間、給与見込みを1つの画面で確認できます。",
         "staffCount": "{count}名のスタッフ",
+        "employee": "スタッフ",
+        "role": "役割",
+        "actions": "操作",
+        "edit": "編集",
+        "editEmployee": "スタッフを編集",
+        "saveEmployee": "スタッフを保存",
         "empty": "この店舗にはまだスタッフが追加されていません。",
         "attendanceIssue": "勤怠エラー",
         "waitingCount": "{count}件待機中",
@@ -505,7 +558,9 @@
       "toasts": {
         "invalidRate": "{role} の有効な時給を入力してください",
         "saveRatesSuccess": "時給を更新しました",
-        "saveRatesError": "時給の保存に失敗しました"
+        "saveRatesError": "時給の保存に失敗しました",
+        "updateEmployeeSuccess": "スタッフを更新しました",
+        "updateEmployeeError": "スタッフの更新に失敗しました"
       }
     },
     "toasts": {

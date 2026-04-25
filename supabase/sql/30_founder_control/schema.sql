@@ -37,6 +37,19 @@ CREATE TABLE public.organization_members (
     CONSTRAINT organization_members_shop_scope_check CHECK ((shop_scope = ANY (ARRAY['all_shops'::text, 'selected_shops'::text])))
 );
 
+CREATE TABLE public.organization_role_pay_rates (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    organization_id uuid NOT NULL,
+    job_title text NOT NULL,
+    hourly_rate numeric(12,2) NOT NULL,
+    currency text DEFAULT 'JPY'::text NOT NULL,
+    updated_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT organization_role_pay_rates_hourly_rate_check CHECK ((hourly_rate >= (0)::numeric)),
+    CONSTRAINT organization_role_pay_rates_job_title_check CHECK ((job_title = ANY (ARRAY['manager'::text, 'chef'::text, 'server'::text, 'cashier'::text, 'part_time'::text])))
+);
+
 CREATE TABLE public.organization_menu_categories (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     organization_id uuid NOT NULL,

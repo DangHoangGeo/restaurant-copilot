@@ -59,10 +59,15 @@
   "addBranchError": "Failed to create branch. Please try again.",
   "workspace": {
     "ownerWorkspace": "{subdomain} owner workspace",
+    "eyebrow": "Branch control",
+    "title": "Branch management",
+    "description": "{count, plural, =0 {No branches yet. Add the first branch and finish setup from the owner view.} one {# branch in this company. Open owner view to manage setup, finance, team, and branch insight.} other {# branches in this company. Open owner view to manage setup, finance, team, and branch insight.}}",
+    "alertsTitle": "Needs owner attention",
     "activeBranch": "Active branch",
     "addressNotSet": "Address not set",
     "contactNotSet": "Contact not set",
     "openOrdersCount": "{count, plural, =0 {0 open orders} one {# open order} other {# open orders}}",
+    "staffCount": "{count, plural, =0 {0 staff} one {# staff} other {# staff}}",
     "staffOnBranch": "staff on branch",
     "ready": "Ready",
     "setupNeeded": "Setup needed",
@@ -76,8 +81,13 @@
     "stats": {
       "todayRevenue": "Today revenue",
       "todayRevenueHint": "{count, plural, =0 {0 open orders} one {# open order} other {# open orders}}",
+      "monthRevenue": "Month revenue",
+      "monthRevenueHint": "Live revenue for {month}",
       "totalExpenses": "Total expenses",
       "totalExpensesHint": "Purchase orders and expense records this month",
+      "grossProfit": "Gross profit",
+      "openOrders": "Open orders",
+      "openOrdersHint": "{count, plural, =0 {No branch has open orders} one {# branch has open orders} other {# branches have open orders}}",
       "branchesReady": "Branches ready",
       "branchesReadyPending": "{count, plural, one {# still needs setup} other {# still need setup}}",
       "branchesReadyAll": "All branches ready",
@@ -93,13 +103,26 @@
       "menuAction": "Company menu setup",
       "branchAction": "Add branch"
     },
+    "tableTitle": "Branches",
+    "tableHint": "Open a branch owner view for setup, finance, team, and detailed insight.",
     "table": {
       "branch": "Branch",
+      "code": "Code",
       "contact": "Contact",
       "today": "Today",
       "expenses": "Expenses",
+      "openOrders": "Open orders",
+      "revenue": "Revenue",
+      "costs": "Costs",
+      "grossProfit": "Gross profit",
+      "close": "Close",
+      "setup": "Setup",
       "status": "Status",
       "actions": "Actions"
+    },
+    "closeStatus": {
+      "closed": "Closed",
+      "open": "Open"
     },
     "expensesThisMonth": "this month",
     "actions": {

@@ -74,9 +74,14 @@
   },
   "spending": {
     "addExpenseTitle": "店舗経費を追加",
-    "addExpenseHint": "ここで店舗のクイック経費を記録できます。誰が追加したかは自動で保存されます。",
-    "dialogHint": "{branch} のクイック経費を記録します。記録者は監査用に自動保存されます。",
-    "auditHint": "店舗、記録者、記録時刻は自動で保存されます。",
+    "addPurchaseOrderTitle": "仕入発注を追加",
+    "addExpenseHint": "店舗の支払い済みコストをすばやく記録します。",
+    "dialogHint": "{branch} の支払い済みコストを記録します。",
+    "purchaseOrderDialogHint": "{branch} の仕入先からの注文を記録します。後日支払いの場合は支払い済みにしないでください。",
+    "quickExpenseTitle": "すぐ支払うクイック経費",
+    "quickExpenseBody": "光熱費、家賃、税金、修理、店舗ですでに支払ったレシートなど、シンプルな店舗コストに使います。",
+    "purchaseOrderSaved": "{branch} の仕入発注を保存しました。",
+    "suppliersLoadFailed": "仕入先を読み込めませんでした。",
     "expenseSaved": "{branch} の経費を保存しました。",
     "manageLocked": "ここで支出は確認できますが、現在のロールでは経費の追加や削除はできません。",
     "expenseLedger": "経費台帳",
@@ -86,6 +91,52 @@
     "emptyExpenses": "今月のクイック経費はまだありません。",
     "emptyPurchases": "今月の仕入発注はまだありません。",
     "unknownCreator": "不明"
+  },
+  "branchLedger": {
+    "title": "店舗財務台帳",
+    "subtitle": "{period} を種類、カテゴリ、日付、キーワードで絞り込みます。選択行に合わせて集計が変わります。",
+    "noPrevious": "前月締めデータなし",
+    "delta": "前回締め比: {amount}",
+    "margin": "営業利益率 {percent}%",
+    "filteredIncome": "選択した収入",
+    "filteredSpend": "選択した支出",
+    "filteredNet": "選択した差引",
+    "filteredRows": "{count}行を選択中",
+    "exportFiltered": "絞り込みシートを書き出す",
+    "balanceSheetPdf": "貸借対照表PDF",
+    "reportTitle": "レポートと書き出し",
+    "reportBody": "絞り込み行は表計算ソフトで開ける形式で書き出せます。標準の貸借対照表PDFは、会計フォーマットを揃えるためレポート工程で扱います。",
+    "noCounterparty": "取引先なし",
+    "empty": "この条件に一致する台帳行はありません。",
+    "deleteTitle": "この経費を削除しますか？",
+    "deleteBody": "店舗経費台帳から「{description}」を削除します。",
+    "deleteConfirm": "経費を削除",
+    "categories": {
+      "sales": "売上"
+    },
+    "types": {
+      "all": "すべて",
+      "income": "収入",
+      "expense": "経費",
+      "purchase": "仕入"
+    },
+    "filters": {
+      "search": "検索",
+      "searchPlaceholder": "仕入先、メモ、注文、記録者",
+      "type": "種類",
+      "category": "カテゴリ",
+      "allCategories": "すべてのカテゴリ",
+      "from": "開始日",
+      "to": "終了日"
+    },
+    "table": {
+      "date": "日付",
+      "type": "種類",
+      "category": "カテゴリ",
+      "description": "内容",
+      "recordedBy": "記録者",
+      "amount": "金額"
+    }
   },
   "company": {
     "sectionLabel": "会社財務",
@@ -170,11 +221,10 @@
       "description": "本部費、共通ツール、会計費、家賃など、店舗に混ぜない会社費用をここで扱います。",
       "add": "共通経費を追加",
       "dialogTitle": "会社共通経費を追加",
-      "dialogDescription": "会社レベルの経費を記録します。誰が記録したかは監査用に保存されます。",
+      "dialogDescription": "会社レベルの経費を記録します。",
       "descriptionPlaceholder": "この会社経費は何のためですか？",
       "vendor": "支払先",
       "vendorPlaceholder": "任意の支払先または取引先",
-      "auditHint": "記録者と記録時刻は自動で保存されます。",
       "saved": "会社共通経費を保存しました。",
       "total": "期間内の共通経費",
       "totalHint": "会社レベルの経費のみ",

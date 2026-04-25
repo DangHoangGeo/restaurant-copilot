@@ -54,6 +54,15 @@ ALTER TABLE ONLY public.employee_qr_credentials
 ALTER TABLE ONLY public.employee_qr_credentials
     ADD CONSTRAINT employee_qr_credentials_rotated_by_fkey FOREIGN KEY (rotated_by) REFERENCES public.users(id);
 
+ALTER TABLE ONLY public.branch_salary_month_closes
+    ADD CONSTRAINT branch_salary_month_closes_closed_by_fkey FOREIGN KEY (closed_by) REFERENCES public.users(id);
+
+ALTER TABLE ONLY public.branch_salary_month_closes
+    ADD CONSTRAINT branch_salary_month_closes_expense_id_fkey FOREIGN KEY (expense_id) REFERENCES public.expenses(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY public.branch_salary_month_closes
+    ADD CONSTRAINT branch_salary_month_closes_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY public.restaurant_role_pay_rates
     ADD CONSTRAINT restaurant_role_pay_rates_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
 

@@ -47,6 +47,8 @@ CREATE POLICY "Authenticated users can SELECT chat_logs" ON public.chat_logs FOR
 
 CREATE POLICY "Authenticated users can SELECT employees" ON public.employees FOR SELECT TO authenticated USING ((restaurant_id = public.get_user_restaurant_id()));
 
+CREATE POLICY "Authenticated users can SELECT employee private profiles" ON public.employee_private_profiles FOR SELECT TO authenticated USING (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text])));
+
 CREATE POLICY "Authenticated users can SELECT feedback" ON public.feedback FOR SELECT TO authenticated USING ((restaurant_id = public.get_user_restaurant_id()));
 
 CREATE POLICY "Authenticated users can SELECT inventory_items" ON public.inventory_items FOR SELECT TO authenticated USING ((restaurant_id = public.get_user_restaurant_id()));
@@ -74,6 +76,8 @@ CREATE POLICY "Authenticated users can see own restaurant" ON public.restaurants
 CREATE POLICY "Managers can manage analytics_snapshots" ON public.analytics_snapshots TO authenticated USING (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text]))) WITH CHECK (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text])));
 
 CREATE POLICY "Managers can manage employees" ON public.employees TO authenticated USING (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text]))) WITH CHECK (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text])));
+
+CREATE POLICY "Managers can manage employee private profiles" ON public.employee_private_profiles TO authenticated USING (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text]))) WITH CHECK (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text])));
 
 CREATE POLICY "Managers can manage schedules" ON public.schedules TO authenticated USING (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text]))) WITH CHECK (((restaurant_id = public.get_user_restaurant_id()) AND public.user_has_restaurant_role(restaurant_id, ARRAY['owner'::text, 'manager'::text])));
 
@@ -172,6 +176,8 @@ CREATE POLICY categories_platform_admin_read ON public.categories FOR SELECT USI
 ALTER TABLE public.chat_logs ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.employees ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE public.employee_private_profiles ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
 

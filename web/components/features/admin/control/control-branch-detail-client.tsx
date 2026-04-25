@@ -13,7 +13,6 @@ import {
   Globe,
   Loader2,
   Plus,
-  Users,
   XCircle,
 } from "lucide-react";
 import {
@@ -41,6 +40,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -132,17 +139,17 @@ function ChartPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-[#C8773E]/16 bg-[#FFFDF8] p-4 shadow-sm shadow-[#8A4E24]/5">
+    <div className="rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] p-4 text-[#FFF7E9] shadow-xl shadow-[#8A4E24]/10 backdrop-blur-xl">
       <div className="mb-4">
-        <p className="text-sm font-medium text-[#24170F]">{title}</p>
+        <p className="text-sm font-medium">{title}</p>
         {subtitle ? (
-          <p className="mt-0.5 text-xs text-[#7A5D45]">{subtitle}</p>
+          <p className="mt-0.5 text-xs text-[#C9B7A0]">{subtitle}</p>
         ) : null}
       </div>
       {empty ? (
-        <div className="flex h-[220px] items-center justify-center rounded-2xl border border-dashed border-[#D8B993] bg-[#FFF7E9] text-sm text-[#7A5D45]">
+        <div className="flex h-[220px] items-center justify-center rounded-lg border border-dashed border-[#F1DCC4]/18 bg-[#FFF7E9]/[0.04] text-sm text-[#C9B7A0]">
           <div className="space-y-2 text-center">
-            <BarChart3 className="mx-auto h-6 w-6 text-[#A95F2F]" />
+            <BarChart3 className="mx-auto h-6 w-6 text-[#E9A35E]" />
             <p>{emptyText}</p>
           </div>
         </div>
@@ -169,16 +176,16 @@ function CurrencyTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm">
-      <p className="mb-1.5 font-medium text-slate-500">{label}</p>
+    <div className="rounded-lg border border-[#F1DCC4]/14 bg-[#14100B] px-3 py-2 text-xs text-[#FFF7E9] shadow-xl">
+      <p className="mb-1.5 font-medium text-[#C9B7A0]">{label}</p>
       {payload.map((entry) => (
         <div key={entry.name} className="flex items-center gap-2">
           <span
             className="inline-block h-2 w-2 rounded-full"
             style={{ background: entry.color }}
           />
-          <span className="text-slate-500">{entry.name}:</span>
-          <span className="font-medium tabular-nums text-slate-900">
+          <span className="text-[#C9B7A0]">{entry.name}:</span>
+          <span className="font-medium tabular-nums text-[#FFF7E9]">
             {formatCurrency(entry.value, currency, locale)}
           </span>
         </div>
@@ -199,16 +206,16 @@ function HoursTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm">
-      <p className="mb-1.5 font-medium text-slate-500">{label}</p>
+    <div className="rounded-lg border border-[#F1DCC4]/14 bg-[#14100B] px-3 py-2 text-xs text-[#FFF7E9] shadow-xl">
+      <p className="mb-1.5 font-medium text-[#C9B7A0]">{label}</p>
       {payload.map((entry) => (
         <div key={entry.name} className="flex items-center gap-2">
           <span
             className="inline-block h-2 w-2 rounded-full"
             style={{ background: entry.color }}
           />
-          <span className="text-slate-500">{entry.name}:</span>
-          <span className="font-medium tabular-nums text-slate-900">
+          <span className="text-[#C9B7A0]">{entry.name}:</span>
+          <span className="font-medium tabular-nums text-[#FFF7E9]">
             {formatHours(entry.value)}
           </span>
         </div>
@@ -270,7 +277,7 @@ export function ControlBranchDetailClient({
     ...(canViewFinance
       ? [{ key: "finance" as const, label: t("tabs.finance") }]
       : []),
-    { key: "team", label: t("tabs.team") },
+    { key: "team", label: t("tabs.staff") },
     { key: "setup", label: t("tabs.setup") },
   ];
 
@@ -418,7 +425,7 @@ export function ControlBranchDetailClient({
 
   return (
     <div className="mx-auto max-w-6xl space-y-5">
-      <div className="rounded-[30px] bg-[#14100B] p-5 text-[#FFF7E9] shadow-xl shadow-[#8A4E24]/18">
+      <div className="rounded-xl bg-[#14100B] p-5 text-[#FFF7E9] shadow-xl shadow-[#8A4E24]/18">
         <div className="flex items-start gap-3">
           <Button
             variant="ghost"
@@ -434,15 +441,18 @@ export function ControlBranchDetailClient({
           </Button>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100">
-                <Building2 className="h-4 w-4 text-[#A95F2F]" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF7E9]/10">
+                <Building2 className="h-4 w-4 text-[#E9A35E]" />
               </div>
               <h1 className="truncate text-2xl font-semibold leading-tight text-[#FFF7E9]">
                 {initialBranch.name}
               </h1>
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-2 pl-10">
-              <Badge variant="outline" className="rounded-full text-xs">
+              <Badge
+                variant="outline"
+                className="rounded-full border-[#F1DCC4]/18 bg-[#FFF7E9]/8 text-xs text-[#F1DCC4]"
+              >
                 {initialBranch.branch_code ?? initialBranch.subdomain}
               </Badge>
               {initialBranch.onboarded ? (
@@ -503,17 +513,17 @@ export function ControlBranchDetailClient({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-[18px] border border-[#C8773E]/16 bg-[#FFFDF8] p-1 shadow-sm shadow-[#8A4E24]/5">
+      <div className="overflow-x-auto rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] p-1 text-[#FFF7E9] shadow-xl shadow-[#8A4E24]/10 backdrop-blur-xl">
         <nav className="flex min-w-max gap-1">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => switchTab(tab.key)}
               className={cn(
-                "rounded-xl px-4 py-2 text-sm font-medium transition-colors",
+                "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                 activeTab === tab.key
                   ? "bg-[#C8773E] text-white"
-                  : "text-[#6F563E] hover:bg-[#FFF7E9] hover:text-[#24170F]",
+                  : "text-[#C9B7A0] hover:bg-[#FFF7E9]/10 hover:text-[#FFF7E9]",
               )}
             >
               {tab.label}
@@ -524,129 +534,120 @@ export function ControlBranchDetailClient({
 
       {activeTab === "overview" && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-[24px] border border-[#C8773E]/16 bg-[#FFFDF8] p-4 shadow-sm shadow-[#8A4E24]/5 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] p-4 text-[#FFF7E9] shadow-xl shadow-[#8A4E24]/10 backdrop-blur-xl sm:grid-cols-4">
             <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground">
-                {t("stats.todayRevenue")}
-              </p>
-              <p className="text-xl font-semibold tabular-nums text-emerald-600">
-                {formatCurrency(
-                  overview.today_revenue,
-                  financeCurrency,
-                  appLocale,
-                )}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("stats.orderCount", { count: overview.today_order_count })}
-              </p>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground">
-                {t("stats.openOrders")}
-              </p>
+              <p className="text-xs text-[#C9B7A0]">{t("stats.openOrders")}</p>
               <p
                 className={cn(
                   "text-xl font-semibold tabular-nums",
                   overview.open_orders_count > 0
-                    ? "text-sky-600"
-                    : "text-muted-foreground",
+                    ? "text-[#F2B36F]"
+                    : "text-[#C9B7A0]",
                 )}
               >
                 {overview.open_orders_count}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {t("stats.inKitchen")}
+              <p className="text-xs text-[#B89078]">{t("stats.inKitchen")}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-xs text-[#C9B7A0]">
+                {t("stats.monthRevenue")}
+              </p>
+              <p className="text-xl font-semibold tabular-nums text-[#B9D79B]">
+                {formatCurrency(
+                  overview.month.revenue_total,
+                  financeCurrency,
+                  appLocale,
+                )}
+              </p>
+              <p className="text-xs text-[#B89078]">
+                {t("stats.monthRevenueHint", { month: monthLabel })}
               </p>
             </div>
             <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-[#C9B7A0]">
                 {t("stats.monthSpending")}
               </p>
-              <p className="text-xl font-semibold tabular-nums text-slate-900">
+              <p className="text-xl font-semibold tabular-nums text-[#FFF7E9]">
                 {formatCurrency(
                   overview.month.spending_total,
                   financeCurrency,
                   appLocale,
                 )}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-[#B89078]">
                 {t("stats.monthSpendingHint")}
               </p>
             </div>
             <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground">
-                {t("stats.monthClose", { month: monthLabel })}
-              </p>
+              <p className="text-xs text-[#C9B7A0]">{t("stats.openStatus")}</p>
               {overview.month.has_closed_snapshot ? (
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  <span className="text-sm font-medium text-emerald-600">
+                  <CheckCircle2 className="h-5 w-5 text-[#B9D79B]" />
+                  <span className="text-sm font-medium text-[#B9D79B]">
                     {t("status.closed")}
                   </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5">
-                  <XCircle className="h-5 w-5 text-amber-500" />
-                  <span className="text-sm font-medium text-amber-600">
+                  <XCircle className="h-5 w-5 text-[#F2B36F]" />
+                  <span className="text-sm font-medium text-[#F2B36F]">
                     {t("status.open")}
                   </span>
                 </div>
               )}
-              {overview.month.has_closed_snapshot ? (
-                <p className="text-xs text-muted-foreground">
-                  {formatCurrency(
-                    overview.month.revenue_total,
-                    financeCurrency,
-                    appLocale,
-                  )}
-                </p>
-              ) : null}
+              <p className="text-xs text-[#B89078]">
+                {t("stats.monthClose", { month: monthLabel })}
+              </p>
             </div>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
+            <div
+              id="branch-month-snapshot"
+              className="overflow-hidden rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] text-[#FFF7E9] backdrop-blur-xl"
+            >
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="px-4 py-3">
+                  <TableRow className="border-[#F1DCC4]/10 hover:bg-transparent">
+                    <TableHead className="px-4 py-3 text-[#B89078]">
                       {t("info.tableLabel")}
                     </TableHead>
-                    <TableHead className="px-4 py-3">
+                    <TableHead className="px-4 py-3 text-[#B89078]">
                       {t("info.tableValue")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("info.name")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {initialBranch.name}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("info.code")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {initialBranch.branch_code ?? initialBranch.subdomain}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("info.address")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {initialBranch.address ?? t("common.notSet")}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("info.contact")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {initialBranch.phone || initialBranch.email
                         ? [initialBranch.phone, initialBranch.email]
                             .filter(Boolean)
@@ -654,22 +655,22 @@ export function ControlBranchDetailClient({
                         : t("common.notSet")}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("info.workingHours")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {t("info.workingHoursValue", {
                         approved: formatHours(teamPayroll.totals.approvedHours),
                         pending: formatHours(teamPayroll.totals.pendingHours),
                       })}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("info.bestSeller")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {topSellingItem
                         ? t("info.bestSellerValue", {
                             item: topSellingItem.item_name,
@@ -682,42 +683,42 @@ export function ControlBranchDetailClient({
               </Table>
             </div>
 
-            <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
+            <div className="overflow-hidden rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] text-[#FFF7E9] backdrop-blur-xl">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="px-4 py-3">
+                  <TableRow className="border-[#F1DCC4]/10 hover:bg-transparent">
+                    <TableHead className="px-4 py-3 text-[#B89078]">
                       {t("snapshot.tableLabel")}
                     </TableHead>
-                    <TableHead className="px-4 py-3">
+                    <TableHead className="px-4 py-3 text-[#B89078]">
                       {t("snapshot.tableValue")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("snapshot.period")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {monthLabel}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("snapshot.status")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {overview.month.has_closed_snapshot
                         ? t("status.closed")
                         : t("status.open")}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("snapshot.revenue")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {formatCurrency(
                         overview.month.revenue_total,
                         financeCurrency,
@@ -725,11 +726,11 @@ export function ControlBranchDetailClient({
                       )}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("snapshot.grossProfit")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {formatCurrency(
                         overview.month.gross_profit,
                         financeCurrency,
@@ -737,21 +738,21 @@ export function ControlBranchDetailClient({
                       )}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("snapshot.openOrders")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {t("stats.openOrdersCount", {
                         count: overview.open_orders_count,
                       })}
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F1DCC4]/10">
                     <TableCell className="px-4 py-3 text-sm font-medium">
                       {t("snapshot.monthSpending")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+                    <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                       {formatCurrency(
                         overview.month.spending_total,
                         financeCurrency,
@@ -794,18 +795,18 @@ export function ControlBranchDetailClient({
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="#e2e8f0"
+                    stroke="rgba(241, 220, 196, 0.14)"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="dayLabel"
-                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tick={{ fontSize: 10, fill: "#C9B7A0" }}
                     tickLine={false}
                     axisLine={false}
                     interval={2}
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tick={{ fontSize: 10, fill: "#C9B7A0" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value: number) => formatCompact(value)}
@@ -846,18 +847,18 @@ export function ControlBranchDetailClient({
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="#e2e8f0"
+                    stroke="rgba(241, 220, 196, 0.14)"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="shortName"
-                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tick={{ fontSize: 10, fill: "#C9B7A0" }}
                     tickLine={false}
                     axisLine={false}
                     interval={0}
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tick={{ fontSize: 10, fill: "#C9B7A0" }}
                     tickLine={false}
                     axisLine={false}
                     width={36}
@@ -866,7 +867,11 @@ export function ControlBranchDetailClient({
                   <Legend
                     iconType="circle"
                     iconSize={8}
-                    wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
+                    wrapperStyle={{
+                      fontSize: "11px",
+                      paddingTop: "8px",
+                      color: "#C9B7A0",
+                    }}
                   />
                   <Bar
                     dataKey="approvedHours"
@@ -888,13 +893,11 @@ export function ControlBranchDetailClient({
           <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
             <div
               id="branch-best-sellers"
-              className="rounded-[24px] border border-slate-200 bg-white p-4"
+              className="rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] p-4 text-[#FFF7E9] backdrop-blur-xl"
             >
               <div className="mb-4">
-                <p className="text-sm font-medium text-slate-900">
-                  {t("bestSellers.title")}
-                </p>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="text-sm font-medium">{t("bestSellers.title")}</p>
+                <p className="mt-0.5 text-xs text-[#C9B7A0]">
                   {t("bestSellers.subtitle")}
                 </p>
               </div>
@@ -913,10 +916,10 @@ export function ControlBranchDetailClient({
                         className="space-y-1"
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <p className="truncate text-sm font-medium text-slate-900">
+                          <p className="truncate text-sm font-medium text-[#FFF7E9]">
                             {item.item_name}
                           </p>
-                          <p className="text-xs tabular-nums text-slate-500">
+                          <p className="text-xs tabular-nums text-[#C9B7A0]">
                             {t("bestSellers.itemMeta", {
                               quantity: item.quantity,
                               revenue: formatCurrency(
@@ -927,15 +930,15 @@ export function ControlBranchDetailClient({
                             })}
                           </p>
                         </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-2 overflow-hidden rounded-full bg-[#FFF7E9]/10">
                           <div
                             className={cn(
                               "h-full rounded-full",
                               index === 0
-                                ? "bg-slate-900"
+                                ? "bg-[#E9A35E]"
                                 : index === 1
-                                  ? "bg-emerald-600"
-                                  : "bg-sky-500",
+                                  ? "bg-[#97BE73]"
+                                  : "bg-[#7AA7C7]",
                             )}
                             style={{ width: `${width}%` }}
                           />
@@ -945,50 +948,50 @@ export function ControlBranchDetailClient({
                   })}
                 </div>
               ) : (
-                <div className="flex items-center gap-2 rounded-2xl border border-dashed px-4 py-5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 rounded-lg border border-dashed border-[#F1DCC4]/18 px-4 py-5 text-sm text-[#C9B7A0]">
                   <Clock className="h-4 w-4 shrink-0" />
                   {t("bestSellers.empty")}
                 </div>
               )}
             </div>
 
-            <div className="rounded-[24px] border border-slate-200 bg-white p-4">
+            <div className="rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] p-4 text-[#FFF7E9] backdrop-blur-xl">
               <div className="mb-4">
-                <p className="text-sm font-medium text-slate-900">
+                <p className="text-sm font-medium">
                   {t("hoursSnapshot.title")}
                 </p>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-[#C9B7A0]">
                   {t("hoursSnapshot.subtitle")}
                 </p>
               </div>
               <div className="space-y-3">
-                <div className="rounded-2xl border bg-slate-50 px-4 py-3">
-                  <p className="text-xs text-slate-500">
+                <div className="rounded-lg bg-[#FFF7E9]/8 px-4 py-3">
+                  <p className="text-xs text-[#C9B7A0]">
                     {t("hoursSnapshot.approvedHours")}
                   </p>
-                  <p className="mt-1 text-lg font-semibold text-emerald-700">
+                  <p className="mt-1 text-lg font-semibold text-[#B9D79B]">
                     {formatHours(teamPayroll.totals.approvedHours)}
                   </p>
                 </div>
-                <div className="rounded-2xl border bg-slate-50 px-4 py-3">
-                  <p className="text-xs text-slate-500">
+                <div className="rounded-lg bg-[#FFF7E9]/8 px-4 py-3">
+                  <p className="text-xs text-[#C9B7A0]">
                     {t("hoursSnapshot.pendingReview")}
                   </p>
-                  <p className="mt-1 text-lg font-semibold text-amber-600">
+                  <p className="mt-1 text-lg font-semibold text-[#F2B36F]">
                     {formatHours(teamPayroll.totals.pendingHours)}
                   </p>
                 </div>
-                <div className="rounded-2xl border bg-slate-50 px-4 py-3">
-                  <p className="text-xs text-slate-500">
+                <div className="rounded-lg bg-[#FFF7E9]/8 px-4 py-3">
+                  <p className="text-xs text-[#C9B7A0]">
                     {t("hoursSnapshot.reviewLabel")}
                   </p>
-                  <p className="mt-1 text-sm text-slate-700">
+                  <p className="mt-1 text-sm text-[#F1DCC4]">
                     {t("hoursSnapshot.reviewBody")}
                   </p>
                 </div>
                 <Button
                   variant="outline"
-                  className="w-full rounded-xl"
+                  className="w-full rounded-lg border-[#F1DCC4]/18 bg-[#FFF7E9]/8 text-[#FFF7E9] hover:bg-[#FFF7E9]/12"
                   onClick={() => switchTab("team")}
                 >
                   {t("hoursSnapshot.openTeam")}
@@ -1001,43 +1004,6 @@ export function ControlBranchDetailClient({
 
       {activeTab === "finance" && canViewFinance && (
         <div className="space-y-4">
-          <div className="flex flex-col gap-3 rounded-[24px] border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap gap-2">
-              {canViewFinanceIncome ? (
-                <Badge variant="secondary" className="rounded-full">
-                  {t("finance.badges.income")}
-                </Badge>
-              ) : null}
-              {canViewFinanceSpending ? (
-                <Badge variant="secondary" className="rounded-full">
-                  {t("finance.badges.spending")}
-                </Badge>
-              ) : null}
-              {canManageExpenses ? (
-                <Badge className="rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-                  {t("finance.badges.manage")}
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="rounded-full">
-                  {t("finance.badges.readOnly")}
-                </Badge>
-              )}
-              {canExportFinance ? (
-                <Badge variant="secondary" className="rounded-full">
-                  {t("finance.badges.export")}
-                </Badge>
-              ) : null}
-            </div>
-            <BranchScopedLinkButton
-              restaurantId={initialBranch.id}
-              href={`/${appLocale}/branch/${initialBranch.id}/finance`}
-              label={t("finance.openBranchFinance")}
-              size="sm"
-              className="rounded-xl"
-              openInNewTab
-            />
-          </div>
-
           <BranchFinanceWorkspace
             branchId={initialBranch.id}
             branchName={initialBranch.name}
@@ -1060,27 +1026,86 @@ export function ControlBranchDetailClient({
 
       {activeTab === "team" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>
-                {t("team.employeeCount", { count: employees.length })}
-              </span>
+          <section className="overflow-hidden rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] text-[#FFF7E9] backdrop-blur-xl">
+            <div className="flex flex-col gap-3 border-b border-[#F1DCC4]/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold">{t("team.rosterTitle")}</p>
+                <p className="mt-0.5 text-xs text-[#C9B7A0]">
+                  {t("team.rosterDescription")}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                className="gap-1.5 rounded-lg bg-[#C8773E] text-white hover:bg-[#A95F2F]"
+                onClick={() => setShowAddEmployee(true)}
+              >
+                <Plus className="h-4 w-4" />
+                {t("team.addEmployee")}
+              </Button>
             </div>
-            <Button
-              size="sm"
-              className="gap-1.5 rounded-lg"
-              onClick={() => setShowAddEmployee((value) => !value)}
-            >
-              <Plus className="h-4 w-4" />
-              {t("team.addEmployee")}
-            </Button>
-          </div>
+            <div className="grid gap-y-4 py-4 sm:grid-cols-4">
+              <div className="border-l border-[#F1DCC4]/12 px-4 first:border-l-0">
+                <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-[#B89078]">
+                  {t("team.staff")}
+                </p>
+                <p className="mt-1 text-lg font-semibold tabular-nums">
+                  {employees.length}
+                </p>
+              </div>
+              <div className="border-l border-[#F1DCC4]/12 px-4 first:border-l-0">
+                <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-[#B89078]">
+                  {t("hoursSnapshot.approvedHours")}
+                </p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-[#B9D79B]">
+                  {formatHours(teamPayroll.totals.approvedHours)}
+                </p>
+              </div>
+              <div className="border-l border-[#F1DCC4]/12 px-4 first:border-l-0">
+                <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-[#B89078]">
+                  {t("hoursSnapshot.pendingReview")}
+                </p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-[#F2B36F]">
+                  {formatHours(teamPayroll.totals.pendingHours)}
+                </p>
+              </div>
+              <div className="border-l border-[#F1DCC4]/12 px-4 first:border-l-0">
+                <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-[#B89078]">
+                  {t("teamPanel.cards.payrollEstimate")}
+                </p>
+                <p className="mt-1 text-lg font-semibold tabular-nums">
+                  {teamPayroll.totals.estimatedPayroll != null
+                    ? formatCurrency(
+                        teamPayroll.totals.estimatedPayroll,
+                        initialBranch.currency ?? currency,
+                        appLocale,
+                      )
+                    : t("teamPanel.cards.needRoleRates")}
+                </p>
+              </div>
+            </div>
+          </section>
 
-          {showAddEmployee ? (
-            <div className="space-y-4 rounded-[24px] border border-slate-200 bg-white p-4">
-              <h3 className="text-sm font-medium">{t("team.inviteTitle")}</h3>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {employees.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-[#F1DCC4]/18 bg-[#FFF7E9]/[0.055] py-14 text-center text-[#FFF7E9]">
+              <p className="text-sm font-medium">{t("team.emptyTitle")}</p>
+              <p className="mt-1 text-xs text-[#C9B7A0]">
+                {t("team.emptyDescription")}
+              </p>
+            </div>
+          ) : (
+            <ControlBranchTeamPanel
+              currency={initialBranch.currency ?? currency}
+              data={teamPayroll}
+            />
+          )}
+
+          <Dialog open={showAddEmployee} onOpenChange={setShowAddEmployee}>
+            <DialogContent className="rounded-xl sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>{t("team.inviteTitle")}</DialogTitle>
+                <DialogDescription>{t("team.inviteHelp")}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs">{t("team.fullName")}</Label>
                   <Input
@@ -1091,7 +1116,7 @@ export function ControlBranchDetailClient({
                         name: event.target.value,
                       }))
                     }
-                    className="h-8 rounded-lg text-sm"
+                    className="h-10 rounded-lg text-sm"
                     placeholder={t("team.fullNamePlaceholder")}
                     autoFocus
                   />
@@ -1107,7 +1132,7 @@ export function ControlBranchDetailClient({
                         email: event.target.value,
                       }))
                     }
-                    className="h-8 rounded-lg text-sm"
+                    className="h-10 rounded-lg text-sm"
                     placeholder={t("team.emailPlaceholder")}
                   />
                 </div>
@@ -1122,7 +1147,7 @@ export function ControlBranchDetailClient({
                       }))
                     }
                   >
-                    <SelectTrigger className="h-8 rounded-lg text-sm">
+                    <SelectTrigger className="h-10 rounded-lg text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1135,9 +1160,18 @@ export function ControlBranchDetailClient({
                   </Select>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <DialogFooter>
                 <Button
-                  size="sm"
+                  variant="ghost"
+                  className="rounded-lg"
+                  onClick={() => {
+                    setShowAddEmployee(false);
+                    setAddForm({ name: "", email: "", job_title: "server" });
+                  }}
+                >
+                  {t("team.cancel")}
+                </Button>
+                <Button
                   onClick={handleAddEmployee}
                   disabled={addingEmployee}
                   className="gap-1.5 rounded-lg"
@@ -1147,56 +1181,9 @@ export function ControlBranchDetailClient({
                   ) : null}
                   {t("team.sendInvitation")}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-lg text-muted-foreground"
-                  onClick={() => {
-                    setShowAddEmployee(false);
-                    setAddForm({ name: "", email: "", job_title: "server" });
-                  }}
-                >
-                  {t("team.cancel")}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t("team.inviteHelp")}
-              </p>
-            </div>
-          ) : null}
-
-          {employees.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-slate-200 py-14 text-center">
-              <Users className="mx-auto mb-3 h-7 w-7 text-muted-foreground/40" />
-              <p className="text-sm font-medium">{t("team.emptyTitle")}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("team.emptyDescription")}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="rounded-[24px] border border-slate-200 bg-white p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-semibold">
-                      {t("team.rosterTitle")}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {t("team.rosterDescription")}
-                    </p>
-                  </div>
-                  <Badge variant="secondary" className="rounded-full">
-                    {teamPayroll.monthLabel}
-                  </Badge>
-                </div>
-              </div>
-
-              <ControlBranchTeamPanel
-                currency={initialBranch.currency ?? currency}
-                data={teamPayroll}
-              />
-            </div>
-          )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
 

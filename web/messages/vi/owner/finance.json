@@ -74,9 +74,14 @@
   },
   "spending": {
     "addExpenseTitle": "Thêm chi phí chi nhánh",
-    "addExpenseHint": "Ghi nhanh một khoản chi của chi nhánh tại đây. Hệ thống sẽ tự lưu người tạo.",
-    "dialogHint": "Ghi nhanh một khoản chi cho {branch}. Người tạo sẽ được lưu tự động để kiểm tra.",
-    "auditHint": "Chi nhánh, người ghi nhận và thời gian tạo được lưu tự động.",
+    "addPurchaseOrderTitle": "Thêm đơn mua hàng",
+    "addExpenseHint": "Ghi nhanh khoản chi đã thanh toán của chi nhánh.",
+    "dialogHint": "Ghi khoản chi đã thanh toán cho {branch}.",
+    "purchaseOrderDialogHint": "Ghi đơn mua từ nhà cung cấp cho {branch}. Nếu thanh toán sau, đừng đánh dấu đã thanh toán.",
+    "quickExpenseTitle": "Chi nhanh, đã thanh toán",
+    "quickExpenseBody": "Dùng cho các chi phí đơn giản của chi nhánh như điện nước, thuê mặt bằng, thuế, sửa chữa hoặc hóa đơn đã được chi nhánh thanh toán.",
+    "purchaseOrderSaved": "Đã lưu đơn mua hàng cho {branch}.",
+    "suppliersLoadFailed": "Không tải được nhà cung cấp.",
     "expenseSaved": "Đã lưu chi phí cho {branch}.",
     "manageLocked": "Bạn có thể xem chi tiêu của chi nhánh tại đây, nhưng vai trò hiện tại không được thêm hoặc xóa chi phí.",
     "expenseLedger": "Sổ chi phí",
@@ -86,6 +91,52 @@
     "emptyExpenses": "Chưa có khoản chi nhanh nào trong tháng này.",
     "emptyPurchases": "Chưa có đơn mua nào trong tháng này.",
     "unknownCreator": "Không rõ"
+  },
+  "branchLedger": {
+    "title": "Sổ tài chính chi nhánh",
+    "subtitle": "Lọc {period} theo loại, danh mục, ngày hoặc nội dung. Phần tổng hợp thay đổi theo các dòng đang chọn.",
+    "noPrevious": "Chưa có tháng trước đã chốt",
+    "delta": "so với lần chốt trước: {amount}",
+    "margin": "biên lợi nhuận vận hành {percent}%",
+    "filteredIncome": "Thu vào đã chọn",
+    "filteredSpend": "Chi ra đã chọn",
+    "filteredNet": "Chênh lệch đã chọn",
+    "filteredRows": "{count} dòng đang chọn",
+    "exportFiltered": "Xuất sheet đã lọc",
+    "balanceSheetPdf": "PDF bảng cân đối",
+    "reportTitle": "Báo cáo và xuất dữ liệu",
+    "reportBody": "Các dòng đã lọc có thể xuất ở định dạng mở được bằng bảng tính. PDF bảng cân đối chuẩn sẽ nằm ở bước báo cáo để giữ đúng định dạng kế toán.",
+    "noCounterparty": "Không có đối tác",
+    "empty": "Không có dòng sổ nào khớp bộ lọc.",
+    "deleteTitle": "Xóa khoản chi này?",
+    "deleteBody": "Thao tác này sẽ xóa \"{description}\" khỏi sổ chi phí chi nhánh.",
+    "deleteConfirm": "Xóa chi phí",
+    "categories": {
+      "sales": "Doanh thu"
+    },
+    "types": {
+      "all": "Tất cả",
+      "income": "Thu vào",
+      "expense": "Chi phí",
+      "purchase": "Mua hàng"
+    },
+    "filters": {
+      "search": "Tìm kiếm",
+      "searchPlaceholder": "Nhà cung cấp, ghi chú, đơn, người ghi",
+      "type": "Loại",
+      "category": "Danh mục",
+      "allCategories": "Tất cả danh mục",
+      "from": "Từ",
+      "to": "Đến"
+    },
+    "table": {
+      "date": "Ngày",
+      "type": "Loại",
+      "category": "Danh mục",
+      "description": "Mô tả",
+      "recordedBy": "Người ghi",
+      "amount": "Số tiền"
+    }
   },
   "company": {
     "sectionLabel": "Tài chính công ty",
@@ -170,11 +221,10 @@
       "description": "Dùng cho chi phí văn phòng, công cụ dùng chung, kế toán, tiền thuê hoặc bất kỳ khoản nào phải giữ ở cấp công ty.",
       "add": "Thêm chi phí chung",
       "dialogTitle": "Thêm chi phí chung công ty",
-      "dialogDescription": "Ghi một khoản chi ở cấp công ty tại đây. Hệ thống sẽ lưu người ghi để phục vụ đối soát.",
+      "dialogDescription": "Ghi một khoản chi ở cấp công ty.",
       "descriptionPlaceholder": "Khoản chi công ty này dùng cho việc gì?",
       "vendor": "Nhà cung cấp",
       "vendorPlaceholder": "Tùy chọn nhà cung cấp hoặc người nhận tiền",
-      "auditHint": "Người ghi nhận và thời gian tạo được lưu tự động.",
       "saved": "Đã lưu chi phí chung công ty.",
       "total": "Chi phí chung trong kỳ",
       "totalHint": "Chỉ tính các khoản ở cấp công ty",

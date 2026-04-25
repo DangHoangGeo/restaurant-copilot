@@ -21,6 +21,9 @@ ALTER TABLE ONLY public.chat_logs
 ALTER TABLE ONLY public.employees
     ADD CONSTRAINT employees_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.employee_private_profiles
+    ADD CONSTRAINT employee_private_profiles_pkey PRIMARY KEY (employee_id);
+
 ALTER TABLE ONLY public.feedback
     ADD CONSTRAINT feedback_pkey PRIMARY KEY (id);
 
@@ -93,6 +96,8 @@ CREATE INDEX idx_chat_logs_restaurant_created ON public.chat_logs USING btree (r
 CREATE INDEX idx_employees_is_active ON public.employees USING btree (restaurant_id, is_active);
 
 CREATE INDEX idx_employees_restaurant_role ON public.employees USING btree (restaurant_id, role);
+
+CREATE INDEX idx_employee_private_profiles_restaurant ON public.employee_private_profiles USING btree (restaurant_id);
 
 CREATE INDEX idx_feedback_restaurant ON public.feedback USING btree (restaurant_id);
 

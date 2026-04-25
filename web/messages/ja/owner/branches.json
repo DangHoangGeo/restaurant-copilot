@@ -59,10 +59,15 @@
   "addBranchError": "ブランチの作成に失敗しました。もう一度お試しください。",
   "workspace": {
     "ownerWorkspace": "{subdomain} オーナーワークスペース",
+    "eyebrow": "店舗コントロール",
+    "title": "店舗管理",
+    "description": "{count}店舗を会社内で管理しています。オーナー表示から設定、財務、チーム、店舗別インサイトを確認できます。",
+    "alertsTitle": "オーナー確認が必要",
     "activeBranch": "現在の店舗",
     "addressNotSet": "住所未設定",
     "contactNotSet": "連絡先未設定",
     "openOrdersCount": "{count}件の進行中オーダー",
+    "staffCount": "スタッフ {count}名",
     "staffOnBranch": "この店舗のスタッフ",
     "ready": "準備完了",
     "setupNeeded": "要セットアップ",
@@ -76,8 +81,13 @@
     "stats": {
       "todayRevenue": "本日の売上",
       "todayRevenueHint": "{count}件の進行中オーダー",
+      "monthRevenue": "今月の売上",
+      "monthRevenueHint": "{month} のライブ売上",
       "totalExpenses": "総支出",
       "totalExpensesHint": "今月の発注と経費の合計",
+      "grossProfit": "粗利",
+      "openOrders": "進行中オーダー",
+      "openOrdersHint": "{count}店舗で進行中オーダーがあります",
       "branchesReady": "準備完了店舗",
       "branchesReadyPending": "{count}店舗はまだセットアップが必要です",
       "branchesReadyAll": "すべての店舗が準備完了です",
@@ -93,13 +103,26 @@
       "menuAction": "会社メニュー設定",
       "branchAction": "店舗を追加"
     },
+    "tableTitle": "店舗一覧",
+    "tableHint": "店舗のオーナー表示を開き、設定、財務、チーム、詳細インサイトを確認します。",
     "table": {
       "branch": "店舗",
+      "code": "コード",
       "contact": "連絡先",
       "today": "今日",
       "expenses": "支出",
+      "openOrders": "進行中",
+      "revenue": "売上",
+      "costs": "コスト",
+      "grossProfit": "粗利",
+      "close": "締め",
+      "setup": "設定",
       "status": "状態",
       "actions": "操作"
+    },
+    "closeStatus": {
+      "closed": "締め済み",
+      "open": "未締め"
     },
     "expensesThisMonth": "今月",
     "actions": {

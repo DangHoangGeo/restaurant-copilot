@@ -31,9 +31,13 @@ CREATE POLICY "Org members can view permissions in their organization" ON public
 
 CREATE POLICY "Org members can view restaurants in their organization" ON public.organization_restaurants FOR SELECT USING (public.is_org_member(organization_id));
 
+CREATE POLICY "Org members can view role pay rates in their organization" ON public.organization_role_pay_rates FOR SELECT USING (public.is_org_member(organization_id));
+
 CREATE POLICY "Org members can view shop scopes in their organization" ON public.organization_member_shop_scopes FOR SELECT USING (public.is_org_member(organization_id));
 
 CREATE POLICY "Org members can view their organization" ON public.owner_organizations FOR SELECT USING (public.is_org_member(id));
+
+CREATE POLICY "Org founders can manage role pay rates" ON public.organization_role_pay_rates USING (public.is_org_founder(organization_id)) WITH CHECK (public.is_org_founder(organization_id));
 
 ALTER TABLE public.organization_member_permissions ENABLE ROW LEVEL SECURITY;
 
@@ -44,5 +48,7 @@ ALTER TABLE public.organization_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.organization_pending_invites ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.organization_restaurants ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE public.organization_role_pay_rates ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.owner_organizations ENABLE ROW LEVEL SECURITY;

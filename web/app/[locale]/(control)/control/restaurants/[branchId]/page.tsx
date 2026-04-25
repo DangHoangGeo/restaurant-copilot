@@ -1,15 +1,22 @@
-import { notFound } from 'next/navigation';
-import { resolveFounderControlContext } from '@/lib/server/control/access';
-import { buildAuthorizationService } from '@/lib/server/authorization/service';
-import { getMonthlyReport, listMonthlySnapshots, parseYearMonth } from '@/lib/server/finance/service';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { listOrganizationEmployees } from '@/lib/server/organizations/queries';
-import { getBranchOverview } from '@/lib/server/control/branch-overview';
-import { getBranchFinanceDetail } from '@/lib/server/control/branch-finance-detail';
-import { getBranchTeamPayrollData } from '@/lib/server/control/branch-team';
-import { ControlBranchDetailClient } from '@/components/features/admin/control/control-branch-detail-client';
-import type { MonthlyFinanceReport, MonthlyFinanceSnapshot } from '@/lib/server/finance/types';
-import type { BranchFinanceDetailData } from '@/lib/server/control/branch-finance-detail';
+import { notFound } from "next/navigation";
+import { resolveFounderControlContext } from "@/lib/server/control/access";
+import { buildAuthorizationService } from "@/lib/server/authorization/service";
+import {
+  getMonthlyReport,
+  listMonthlySnapshots,
+  parseYearMonth,
+} from "@/lib/server/finance/service";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { listOrganizationEmployees } from "@/lib/server/organizations/queries";
+import { getBranchOverview } from "@/lib/server/control/branch-overview";
+import { getBranchFinanceDetail } from "@/lib/server/control/branch-finance-detail";
+import { getBranchTeamPayrollData } from "@/lib/server/control/branch-team";
+import { ControlBranchDetailClient } from "@/components/features/admin/control/control-branch-detail-client";
+import type {
+  MonthlyFinanceReport,
+  MonthlyFinanceSnapshot,
+} from "@/lib/server/finance/types";
+import type { BranchFinanceDetailData } from "@/lib/server/control/branch-finance-detail";
 
 export interface BranchSettings {
   id: string;
@@ -27,7 +34,7 @@ export interface BranchSettings {
   onboarded: boolean | null;
 }
 
-export type BranchDetailTab = 'overview' | 'finance' | 'team' | 'setup';
+export type BranchDetailTab = "overview" | "finance" | "team" | "setup";
 
 export default async function ControlBranchDetailPage({
   params,
@@ -36,7 +43,7 @@ export default async function ControlBranchDetailPage({
   params: Promise<{ locale: string; branchId: string }>;
   searchParams: Promise<{ tab?: string; year?: string; month?: string }>;
 }) {
-  const [{ branchId }, sp, ctx] = await Promise.all([
+  const [{ locale, branchId }, sp, ctx] = await Promise.all([
     params,
     searchParams,
     resolveFounderControlContext(),
@@ -51,23 +58,28 @@ export default async function ControlBranchDetailPage({
   }
 
   const authz = buildAuthorizationService(ctx);
-  const canExportFinance = Boolean(authz?.can('finance_exports'));
-  const canViewFinanceIncome = Boolean(authz?.can('reports') || authz?.can('finance_exports'));
-  const canViewFinanceSpending = Boolean(authz?.can('purchases') || authz?.can('finance_exports'));
-  const canManageExpenses = Boolean(authz?.can('purchases'));
+  const canExportFinance = Boolean(authz?.can("finance_exports"));
+  const canViewFinanceIncome = Boolean(
+    authz?.can("reports") || authz?.can("finance_exports"),
+  );
+  const canViewFinanceSpending = Boolean(
+    authz?.can("purchases") || authz?.can("finance_exports"),
+  );
+  const canManageExpenses = Boolean(authz?.can("purchases"));
   const canViewFinance = canViewFinanceIncome || canViewFinanceSpending;
   const canCloseFinance =
-    ctx.member.role === 'founder_full_control' &&
-    canExportFinance;
+    ctx.member.role === "founder_full_control" && canExportFinance;
 
   const [branchResult, employees, overview] = await Promise.all([
     supabaseAdmin
-      .from('restaurants')
-      .select('id, name, subdomain, branch_code, address, phone, email, timezone, currency, tax, default_language, opening_hours, onboarded')
-      .eq('id', branchId)
+      .from("restaurants")
+      .select(
+        "id, name, subdomain, branch_code, address, phone, email, timezone, currency, tax, default_language, opening_hours, onboarded",
+      )
+      .eq("id", branchId)
       .single(),
     listOrganizationEmployees([branchId]),
-    getBranchOverview(branchId, ctx.organization.timezone),
+    getBranchOverview(branchId, ctx.organization.timezone, locale),
   ]);
 
   if (branchResult.error || !branchResult.data) {
@@ -83,13 +95,13 @@ export default async function ControlBranchDetailPage({
   });
   const rawTab = sp.tab;
   const activeTab: BranchDetailTab =
-    rawTab === 'finance' && canViewFinance
-      ? 'finance'
-      : rawTab === 'team'
-        ? 'team'
-        : rawTab === 'setup'
-          ? 'setup'
-          : 'overview';
+    rawTab === "finance" && canViewFinance
+      ? "finance"
+      : rawTab === "team"
+        ? "team"
+        : rawTab === "setup"
+          ? "setup"
+          : "overview";
 
   let year: number;
   let month: number;
@@ -102,13 +114,13 @@ export default async function ControlBranchDetailPage({
   let financeHistory: MonthlyFinanceSnapshot[] = [];
   let financeDetail: BranchFinanceDetailData | null = null;
 
-  if (canViewFinance && activeTab === 'finance') {
+  if (canViewFinance && activeTab === "finance") {
     [financeReport, financeHistory, financeDetail] = await Promise.all([
       getMonthlyReport(
         branchId,
         year,
         month,
-        branch.currency ?? ctx.organization.currency
+        branch.currency ?? ctx.organization.currency,
       ).catch(() => null),
       listMonthlySnapshots(branchId, 12).catch(() => []),
       getBranchFinanceDetail({

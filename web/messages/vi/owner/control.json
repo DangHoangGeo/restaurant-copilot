@@ -21,7 +21,7 @@
     "home": "Trang chủ",
     "overview": "Phân tích vận hành",
     "restaurants": "Chi nhánh",
-    "people": "Nhân sự & lương",
+    "people": "Nhân sự",
     "finance": "Báo cáo tài chính",
     "menu": "Menu",
     "alerts": "Cảnh báo",
@@ -278,6 +278,7 @@
       "overview": "Tổng quan",
       "finance": "Tài chính",
       "team": "Đội ngũ",
+      "staff": "Nhân sự",
       "setup": "Thiết lập"
     },
     "actions": {
@@ -293,15 +294,54 @@
     "common": {
       "notSet": "Chưa thiết lập"
     },
+    "ownerInsights": {
+      "title": "Góc quản lý của owner",
+      "subtitle": "Thiết lập, tiền, nhân sự và tín hiệu menu của chi nhánh trong một nơi.",
+      "table": {
+        "area": "Khu vực",
+        "status": "Trạng thái",
+        "detail": "Chi tiết",
+        "action": "Thao tác"
+      },
+      "rows": {
+        "setup": "Thiết lập",
+        "finance": "Tài chính",
+        "team": "Đội ngũ và lương",
+        "menu": "Tín hiệu menu"
+      },
+      "status": {
+        "ready": "Sẵn sàng",
+        "needsRate": "Cần mức lương",
+        "hasWinner": "Đang bán",
+        "noSales": "Chưa có tín hiệu"
+      },
+      "details": {
+        "setup": "Thông tin chi nhánh, ngôn ngữ mặc định, thuế và giờ mở cửa nằm trong thiết lập chi nhánh. Mức lương lấy từ chính sách công ty.",
+        "finance": "Doanh thu, chi phí và trạng thái khóa sổ của {month} được hiển thị trước khi chốt tháng.",
+        "team": "{approved} đã duyệt và {pending} chờ duyệt. Ước tính lương phụ thuộc vào mức lương theo vai trò.",
+        "menuWinner": "{item} đang dẫn đầu chi nhánh với {quantity} món bán ra trong 30 ngày gần nhất.",
+        "menuEmpty": "Đơn hoàn tất sẽ tạo tín hiệu bán chạy theo chi nhánh tại đây."
+      },
+      "actions": {
+        "setup": "Mở thiết lập",
+        "finance": "Mở tài chính",
+        "team": "Mở đội ngũ",
+        "menu": "Xem món bán chạy",
+        "snapshot": "Xem snapshot"
+      }
+    },
     "stats": {
       "todayRevenue": "Doanh thu hôm nay",
       "orderCount": "{count} đơn",
       "openOrders": "Đơn đang mở",
       "openOrdersCount": "{count} đơn đang mở",
       "inKitchen": "đang ở bếp",
+      "monthRevenue": "Doanh thu tháng này",
+      "monthRevenueHint": "Doanh thu live của {month}",
       "monthSpending": "Chi phí tháng này",
       "monthSpendingHint": "Đơn mua hàng và khoản chi đã ghi nhận",
-      "monthClose": "Khóa sổ {month}"
+      "monthClose": "Khóa sổ {month}",
+      "openStatus": "Trạng thái khóa sổ"
     },
     "info": {
       "tableLabel": "Thông tin chi nhánh",
@@ -371,6 +411,7 @@
     },
     "team": {
       "employeeCount": "{count} nhân viên",
+      "staff": "Nhân sự",
       "addEmployee": "Thêm nhân viên",
       "inviteTitle": "Mời nhân viên mới",
       "fullName": "Họ và tên",
@@ -409,7 +450,11 @@
       "openingHours": "Giờ mở cửa",
       "openingHoursHint": "Cập nhật giờ mở cửa và mặc định vận hành của chi nhánh bằng một cửa sổ riêng.",
       "roleRates": "Mức lương theo giờ",
-      "roleRatesHint": "Mức lương dùng cho payroll estimate nên nằm trong Setup, không nằm trong màn hình team hằng ngày.",
+      "roleRatesHint": "Mức lương được kế thừa từ thiết lập công ty để mọi chi nhánh dùng chung một chính sách payroll.",
+      "inheritedFromCompany": "Kế thừa",
+      "companyPolicy": "Chính sách công ty",
+      "rateSource": "Nguồn",
+      "roleRatesCompanyNote": "Thay đổi phần này trong thiết lập nhân sự và lương cấp công ty. Thiết lập chi nhánh chỉ hiển thị mức lương đang dùng để ước tính payroll của chi nhánh này.",
       "day": "Ngày",
       "hours": "Khung giờ",
       "closed": "Đóng cửa",
@@ -445,7 +490,8 @@
         "manager": "Quản lý",
         "chef": "Bếp",
         "server": "Phục vụ",
-        "cashier": "Thu ngân"
+        "cashier": "Thu ngân",
+        "part_time": "Bán thời gian"
       }
     },
     "teamPanel": {
@@ -462,7 +508,8 @@
         "manager": "Quản lý",
         "chef": "Bếp",
         "server": "Phục vụ",
-        "cashier": "Thu ngân"
+        "cashier": "Thu ngân",
+        "part_time": "Bán thời gian"
       },
       "cards": {
         "thisMonth": "Tháng này",
@@ -487,6 +534,12 @@
         "title": "Lịch làm và lương",
         "description": "Lịch tuần, giờ đã duyệt và ước tính lương trong cùng một màn hình.",
         "staffCount": "{count} nhân sự",
+        "employee": "Nhân sự",
+        "role": "Vai trò",
+        "actions": "Thao tác",
+        "edit": "Sửa",
+        "editEmployee": "Sửa nhân sự",
+        "saveEmployee": "Lưu nhân sự",
         "empty": "Chi nhánh này chưa có nhân sự nào.",
         "attendanceIssue": "Lỗi chấm công",
         "waitingCount": "{count} đang chờ",
@@ -505,7 +558,9 @@
       "toasts": {
         "invalidRate": "Nhập mức lương hợp lệ cho {role}",
         "saveRatesSuccess": "Đã cập nhật mức lương theo giờ",
-        "saveRatesError": "Không thể lưu mức lương theo giờ"
+        "saveRatesError": "Không thể lưu mức lương theo giờ",
+        "updateEmployeeSuccess": "Đã cập nhật nhân sự",
+        "updateEmployeeError": "Không thể cập nhật nhân sự"
       }
     },
     "toasts": {

@@ -59,10 +59,15 @@
   "addBranchError": "Tạo chi nhánh thất bại. Vui lòng thử lại.",
   "workspace": {
     "ownerWorkspace": "Không gian chủ sở hữu {subdomain}",
+    "eyebrow": "Kiểm soát chi nhánh",
+    "title": "Quản lý chi nhánh",
+    "description": "{count} chi nhánh trong công ty. Mở phần xem của owner để quản lý thiết lập, tài chính, đội ngũ và insight theo từng chi nhánh.",
+    "alertsTitle": "Owner cần kiểm tra",
     "activeBranch": "Chi nhánh đang dùng",
     "addressNotSet": "Chưa có địa chỉ",
     "contactNotSet": "Chưa có liên hệ",
     "openOrdersCount": "{count} đơn đang mở",
+    "staffCount": "{count} nhân sự",
     "staffOnBranch": "nhân sự tại chi nhánh",
     "ready": "Sẵn sàng",
     "setupNeeded": "Cần thiết lập",
@@ -76,8 +81,13 @@
     "stats": {
       "todayRevenue": "Doanh thu hôm nay",
       "todayRevenueHint": "{count} đơn đang mở",
+      "monthRevenue": "Doanh thu tháng",
+      "monthRevenueHint": "Doanh thu live của {month}",
       "totalExpenses": "Tổng chi phí",
       "totalExpensesHint": "Đơn mua hàng và khoản chi trong tháng này",
+      "grossProfit": "Lợi nhuận gộp",
+      "openOrders": "Đơn đang mở",
+      "openOrdersHint": "{count} chi nhánh có đơn đang mở",
       "branchesReady": "Chi nhánh sẵn sàng",
       "branchesReadyPending": "{count} chi nhánh vẫn cần thiết lập",
       "branchesReadyAll": "Tất cả chi nhánh đã sẵn sàng",
@@ -93,13 +103,26 @@
       "menuAction": "Thiết lập menu công ty",
       "branchAction": "Thêm chi nhánh"
     },
+    "tableTitle": "Danh sách chi nhánh",
+    "tableHint": "Mở owner view của từng chi nhánh để xem thiết lập, tài chính, đội ngũ và insight chi tiết.",
     "table": {
       "branch": "Chi nhánh",
+      "code": "Mã",
       "contact": "Liên hệ",
       "today": "Hôm nay",
       "expenses": "Chi phí",
+      "openOrders": "Đơn mở",
+      "revenue": "Doanh thu",
+      "costs": "Chi phí",
+      "grossProfit": "Lợi nhuận gộp",
+      "close": "Khóa sổ",
+      "setup": "Thiết lập",
       "status": "Trạng thái",
       "actions": "Thao tác"
+    },
+    "closeStatus": {
+      "closed": "Đã khóa",
+      "open": "Đang mở"
     },
     "expensesThisMonth": "tháng này",
     "actions": {

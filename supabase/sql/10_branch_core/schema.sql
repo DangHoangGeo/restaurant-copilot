@@ -101,7 +101,27 @@ CREATE TABLE public.employees (
     is_active boolean DEFAULT true NOT NULL,
     deactivated_at timestamp with time zone,
     deactivated_by uuid,
-    CONSTRAINT employees_role_check CHECK ((role = ANY (ARRAY['chef'::text, 'server'::text, 'cashier'::text, 'manager'::text])))
+    CONSTRAINT employees_role_check CHECK ((role = ANY (ARRAY['chef'::text, 'server'::text, 'cashier'::text, 'manager'::text, 'part_time'::text])))
+);
+
+CREATE TABLE public.employee_private_profiles (
+    employee_id uuid NOT NULL,
+    restaurant_id uuid NOT NULL,
+    gender text,
+    phone text,
+    contact_email text,
+    address text,
+    facebook_url text,
+    bank_name text,
+    bank_branch_name text,
+    bank_account_type text,
+    bank_account_number text,
+    bank_account_holder text,
+    tax_social_number text,
+    insurance_number text,
+    updated_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 CREATE TABLE public.feedback (

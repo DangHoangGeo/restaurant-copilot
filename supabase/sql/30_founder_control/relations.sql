@@ -60,6 +60,12 @@ ALTER TABLE ONLY public.organization_pending_invites
 ALTER TABLE ONLY public.organization_pending_invites
     ADD CONSTRAINT organization_pending_invites_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.owner_organizations(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY public.organization_role_pay_rates
+    ADD CONSTRAINT organization_role_pay_rates_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.owner_organizations(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.organization_role_pay_rates
+    ADD CONSTRAINT organization_role_pay_rates_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id);
+
 ALTER TABLE ONLY public.organization_restaurants
     ADD CONSTRAINT organization_restaurants_added_by_fkey FOREIGN KEY (added_by) REFERENCES auth.users(id);
 

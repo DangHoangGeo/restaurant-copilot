@@ -74,9 +74,14 @@
   },
   "spending": {
     "addExpenseTitle": "Add branch expense",
-    "addExpenseHint": "Record a quick branch expense here. The system saves who added it automatically.",
-    "dialogHint": "Record a quick expense for {branch}. The creator is stored automatically for audit.",
-    "auditHint": "The branch, creator, and timestamp are saved automatically.",
+    "addPurchaseOrderTitle": "Add purchase order",
+    "addExpenseHint": "Record a quick paid cost for the branch.",
+    "dialogHint": "Record a quick paid cost for {branch}.",
+    "purchaseOrderDialogHint": "Record supplier goods for {branch}. Leave already paid unchecked when payment is due later.",
+    "quickExpenseTitle": "Quick expense, paid now",
+    "quickExpenseBody": "Use this for simple branch costs such as utilities, rent, tax, repairs, or a receipt already paid by the branch.",
+    "purchaseOrderSaved": "Purchase order saved for {branch}.",
+    "suppliersLoadFailed": "Could not load suppliers.",
     "expenseSaved": "Expense saved for {branch}.",
     "manageLocked": "You can review branch spending here, but your role cannot add or remove expenses.",
     "expenseLedger": "Expense ledger",
@@ -86,6 +91,52 @@
     "emptyExpenses": "No quick expenses recorded for this month.",
     "emptyPurchases": "No purchase orders recorded for this month.",
     "unknownCreator": "Unknown"
+  },
+  "branchLedger": {
+    "title": "Branch finance ledger",
+    "subtitle": "Filter {period} by type, category, date, or text. The summary changes with the selected rows.",
+    "noPrevious": "No previous closed month",
+    "delta": "vs previous close: {amount}",
+    "margin": "{percent}% operating margin",
+    "filteredIncome": "Selected income",
+    "filteredSpend": "Selected spend",
+    "filteredNet": "Selected net",
+    "filteredRows": "{count, plural, =0 {0 rows selected} one {# row selected} other {# rows selected}}",
+    "exportFiltered": "Export filtered sheet",
+    "balanceSheetPdf": "Balance sheet PDF",
+    "reportTitle": "Report and export",
+    "reportBody": "Filtered rows export as a spreadsheet-compatible sheet now. Standard balance-sheet PDF is reserved for the reporting step so the accountant format stays consistent.",
+    "noCounterparty": "No counterparty",
+    "empty": "No ledger rows match this filter.",
+    "deleteTitle": "Delete this expense?",
+    "deleteBody": "This will remove \"{description}\" from the branch expense ledger.",
+    "deleteConfirm": "Delete expense",
+    "categories": {
+      "sales": "Sales"
+    },
+    "types": {
+      "all": "All",
+      "income": "Income",
+      "expense": "Expense",
+      "purchase": "Purchase"
+    },
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Supplier, note, order, creator",
+      "type": "Type",
+      "category": "Category",
+      "allCategories": "All categories",
+      "from": "From",
+      "to": "To"
+    },
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "category": "Category",
+      "description": "Description",
+      "recordedBy": "Recorded by",
+      "amount": "Amount"
+    }
   },
   "company": {
     "sectionLabel": "Company finance",
@@ -170,11 +221,10 @@
       "description": "Use this for head-office, shared tools, accounting, rent, or any cost that should stay at company level.",
       "add": "Add shared expense",
       "dialogTitle": "Add shared company expense",
-      "dialogDescription": "Record a company-level expense here. The system stores who recorded it for audit.",
+      "dialogDescription": "Record a company-level expense.",
       "descriptionPlaceholder": "What was this company expense for?",
       "vendor": "Vendor",
       "vendorPlaceholder": "Optional vendor or payee",
-      "auditHint": "The creator and timestamp are saved automatically.",
       "saved": "Shared company expense saved.",
       "total": "Shared expenses in period",
       "totalHint": "Company-level expenses only",

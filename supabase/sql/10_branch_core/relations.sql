@@ -39,6 +39,15 @@ ALTER TABLE ONLY public.employees
 ALTER TABLE ONLY public.employees
     ADD CONSTRAINT employees_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY public.employee_private_profiles
+    ADD CONSTRAINT employee_private_profiles_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES public.employees(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.employee_private_profiles
+    ADD CONSTRAINT employee_private_profiles_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.employee_private_profiles
+    ADD CONSTRAINT employee_private_profiles_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id);
+
 ALTER TABLE ONLY public.feedback
     ADD CONSTRAINT feedback_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id) ON DELETE CASCADE;
 

@@ -82,6 +82,20 @@ CREATE TABLE public.employee_qr_credentials (
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
+CREATE TABLE public.branch_salary_month_closes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    restaurant_id uuid NOT NULL,
+    month_key text NOT NULL,
+    approved_hours numeric(10,2) DEFAULT 0 NOT NULL,
+    salary_total numeric(12,2) DEFAULT 0 NOT NULL,
+    currency text DEFAULT 'JPY'::text NOT NULL,
+    expense_id uuid,
+    closed_by uuid,
+    closed_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT branch_salary_month_closes_month_key_check CHECK ((month_key ~ '^\d{4}-\d{2}$'::text))
+);
+
 CREATE TABLE public.restaurant_role_pay_rates (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     restaurant_id uuid NOT NULL,
@@ -92,5 +106,5 @@ CREATE TABLE public.restaurant_role_pay_rates (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT restaurant_role_pay_rates_hourly_rate_check CHECK ((hourly_rate >= (0)::numeric)),
-    CONSTRAINT restaurant_role_pay_rates_job_title_check CHECK ((job_title = ANY (ARRAY['manager'::text, 'chef'::text, 'server'::text, 'cashier'::text])))
+    CONSTRAINT restaurant_role_pay_rates_job_title_check CHECK ((job_title = ANY (ARRAY['manager'::text, 'chef'::text, 'server'::text, 'cashier'::text, 'part_time'::text])))
 );

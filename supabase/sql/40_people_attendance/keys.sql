@@ -27,6 +27,12 @@ ALTER TABLE ONLY public.employee_qr_credentials
 ALTER TABLE ONLY public.employee_qr_credentials
     ADD CONSTRAINT employee_qr_credentials_token_key UNIQUE (token);
 
+ALTER TABLE ONLY public.branch_salary_month_closes
+    ADD CONSTRAINT branch_salary_month_closes_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.branch_salary_month_closes
+    ADD CONSTRAINT branch_salary_month_closes_restaurant_month_key UNIQUE (restaurant_id, month_key);
+
 ALTER TABLE ONLY public.restaurant_role_pay_rates
     ADD CONSTRAINT restaurant_role_pay_rates_pkey PRIMARY KEY (id);
 
@@ -60,5 +66,7 @@ CREATE INDEX idx_eqr_employee_id ON public.employee_qr_credentials USING btree (
 CREATE INDEX idx_eqr_restaurant_id ON public.employee_qr_credentials USING btree (restaurant_id);
 
 CREATE INDEX idx_eqr_token_active ON public.employee_qr_credentials USING btree (token) WHERE (is_active = true);
+
+CREATE INDEX idx_branch_salary_month_closes_restaurant_month ON public.branch_salary_month_closes USING btree (restaurant_id, month_key);
 
 CREATE INDEX idx_restaurant_role_pay_rates_restaurant ON public.restaurant_role_pay_rates USING btree (restaurant_id);

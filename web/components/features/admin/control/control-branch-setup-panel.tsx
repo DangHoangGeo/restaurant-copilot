@@ -1,13 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { OperatingHoursEditor } from '@/components/features/admin/dashboard/OperatingHoursEditor';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { Loader2, Pencil } from "lucide-react";
+import { OperatingHoursEditor } from "@/components/features/admin/dashboard/OperatingHoursEditor";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,16 +13,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -32,9 +30,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import type { BranchTeamPayrollData } from '@/lib/server/control/branch-team';
-import type { OpeningHours } from '@/lib/utils/opening-hours';
+} from "@/components/ui/table";
+import type { BranchTeamPayrollData } from "@/lib/server/control/branch-team";
+import type { OpeningHours } from "@/lib/utils/opening-hours";
 
 export interface BranchSetupState {
   name: string;
@@ -67,14 +65,12 @@ interface ControlBranchSetupPanelProps {
   fallbackCurrency: string;
 }
 
-type RoleRatesDraft = Record<string, string>;
-
 function formatMoney(amount: number, currency: string, locale: string): string {
   try {
     return new Intl.NumberFormat(locale, {
-      style: 'currency',
+      style: "currency",
       currency,
-      maximumFractionDigits: currency === 'JPY' ? 0 : 2,
+      maximumFractionDigits: currency === "JPY" ? 0 : 2,
     }).format(amount);
   } catch {
     return `${currency} ${amount.toFixed(2)}`;
@@ -82,26 +78,32 @@ function formatMoney(amount: number, currency: string, locale: string): string {
 }
 
 const weekdayKeys = [
-  ['monday', 'teamPanel.weekdays.mon'],
-  ['tuesday', 'teamPanel.weekdays.tue'],
-  ['wednesday', 'teamPanel.weekdays.wed'],
-  ['thursday', 'teamPanel.weekdays.thu'],
-  ['friday', 'teamPanel.weekdays.fri'],
-  ['saturday', 'teamPanel.weekdays.sat'],
-  ['sunday', 'teamPanel.weekdays.sun'],
+  ["monday", "teamPanel.weekdays.mon"],
+  ["tuesday", "teamPanel.weekdays.tue"],
+  ["wednesday", "teamPanel.weekdays.wed"],
+  ["thursday", "teamPanel.weekdays.thu"],
+  ["friday", "teamPanel.weekdays.fri"],
+  ["saturday", "teamPanel.weekdays.sat"],
+  ["sunday", "teamPanel.weekdays.sun"],
 ] as const;
 
-function buildRatesDraft(data: BranchTeamPayrollData): RoleRatesDraft {
-  return Object.fromEntries(
-    data.rolePayRates.map((rate) => [
-      rate.jobTitle,
-      rate.hourlyRate != null ? String(rate.hourlyRate) : '',
-    ])
-  );
-}
+const editButtonClass =
+  "rounded-md border-[#E9C27B]/45 bg-[#E9C27B]/12 px-3 text-xs font-medium text-[#FFE3A6] hover:bg-[#E9C27B]/20 hover:text-[#FFF7E9]";
+const dialogContentClass =
+  "max-h-[92svh] overflow-y-auto rounded-lg border-[#F1DCC4]/14 bg-[#17110C] p-0 text-[#FFF7E9] shadow-2xl shadow-black/40";
+const dialogHeaderClass =
+  "border-b border-[#F1DCC4]/10 bg-[#FFF7E9]/6 px-5 py-4";
+const dialogBodyClass = "space-y-4 px-5 py-5";
+const labelClass = "text-xs font-medium text-[#D8C6AF]";
+const inputClass =
+  "h-10 rounded-md border-[#F1DCC4]/18 bg-[#FFF7E9]/8 text-[#FFF7E9] placeholder:text-[#8F7762] focus-visible:ring-[#D6A85F]/35";
+const selectContentClass = "border-[#F1DCC4]/14 bg-[#201812] text-[#FFF7E9]";
+const cancelButtonClass =
+  "rounded-md text-[#D8C6AF] hover:bg-[#FFF7E9]/10 hover:text-[#FFF7E9]";
+const saveButtonClass =
+  "gap-2 rounded-md bg-[#E9C27B] text-[#20150C] hover:bg-[#FFD991]";
 
 export function ControlBranchSetupPanel({
-  branchId,
   subdomain,
   onboarded,
   settings,
@@ -114,17 +116,13 @@ export function ControlBranchSetupPanel({
   fallbackCurrency,
 }: ControlBranchSetupPanelProps) {
   const locale = useLocale();
-  const router = useRouter();
-  const t = useTranslations('owner.control.branchDetail');
+  const t = useTranslations("owner.control.branchDetail");
   const [basicDialogOpen, setBasicDialogOpen] = useState(false);
   const [regionalDialogOpen, setRegionalDialogOpen] = useState(false);
   const [hoursDialogOpen, setHoursDialogOpen] = useState(false);
-  const [ratesDialogOpen, setRatesDialogOpen] = useState(false);
   const [basicDraft, setBasicDraft] = useState(settings);
   const [regionalDraft, setRegionalDraft] = useState(settings);
   const [hoursDraft, setHoursDraft] = useState(settings.opening_hours);
-  const [rateDraft, setRateDraft] = useState<RoleRatesDraft>(buildRatesDraft(teamPayroll));
-  const [savingRates, setSavingRates] = useState(false);
 
   useEffect(() => {
     setBasicDraft(settings);
@@ -132,24 +130,20 @@ export function ControlBranchSetupPanel({
     setHoursDraft(settings.opening_hours);
   }, [settings]);
 
-  useEffect(() => {
-    setRateDraft(buildRatesDraft(teamPayroll));
-  }, [teamPayroll]);
-
   const payrollCurrency =
     teamPayroll.rolePayRates.find((rate) => rate.currency)?.currency ??
     settings.currency ??
     fallbackCurrency;
-  const taxLabel = settings.tax ? `${settings.tax}%` : t('common.notSet');
+  const taxLabel = settings.tax ? `${settings.tax}%` : t("common.notSet");
   const defaultLanguageLabel =
-    languageOptions.find((option) => option.value === settings.default_language)?.label ??
-    t('common.notSet');
+    languageOptions.find((option) => option.value === settings.default_language)
+      ?.label ?? t("common.notSet");
   const timezoneLabel =
-    timezoneOptions.find((option) => option.value === settings.timezone)?.label ??
-    settings.timezone;
+    timezoneOptions.find((option) => option.value === settings.timezone)
+      ?.label ?? settings.timezone;
   const currencyLabel =
-    currencyOptions.find((option) => option.value === settings.currency)?.label ??
-    settings.currency;
+    currencyOptions.find((option) => option.value === settings.currency)
+      ?.label ?? settings.currency;
 
   const openingHoursRows = useMemo(
     () =>
@@ -160,11 +154,11 @@ export function ControlBranchSetupPanel({
           dayLabel: t(labelKey),
           value:
             !value || value.isClosed || !value.isOpen
-              ? t('setup.closed')
+              ? t("setup.closed")
               : `${value.openTime} - ${value.closeTime}`,
         };
       }),
-    [settings.opening_hours, t]
+    [settings.opening_hours, t],
   );
 
   const handleBasicSave = async () => {
@@ -206,189 +200,209 @@ export function ControlBranchSetupPanel({
     }
   };
 
-  const handleRatesSave = async () => {
-    const payloadRates = teamPayroll.rolePayRates
-      .map((rate) => {
-        const rawValue = rateDraft[rate.jobTitle]?.trim();
-        if (!rawValue) {
-          return null;
-        }
-
-        const hourlyRate = Number(rawValue);
-        if (!Number.isFinite(hourlyRate) || hourlyRate < 0) {
-          throw new Error(
-            t('teamPanel.toasts.invalidRate', {
-              role: t(`options.roles.${rate.jobTitle}`),
-            })
-          );
-        }
-
-        return {
-          job_title: rate.jobTitle,
-          hourly_rate: hourlyRate,
-          currency: payrollCurrency,
-        };
-      })
-      .filter(
-        (
-          rate
-        ): rate is {
-          job_title: 'manager' | 'chef' | 'server' | 'cashier';
-          hourly_rate: number;
-          currency: string;
-        } => rate != null
-      );
-
-    setSavingRates(true);
-    try {
-      const response = await fetch(
-        `/api/v1/owner/organization/restaurants/${branchId}/role-pay-rates`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rates: payloadRates }),
-        }
-      );
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(body.error ?? t('teamPanel.toasts.saveRatesError'));
-      }
-      toast.success(t('teamPanel.toasts.saveRatesSuccess'));
-      setRatesDialogOpen(false);
-      router.refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t('teamPanel.toasts.saveRatesError')
-      );
-    } finally {
-      setSavingRates(false);
-    }
-  };
-
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="max-w-5xl space-y-5">
       {onboarded !== true ? (
-        <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-          {t('setup.readyBanner')}
+        <div className="rounded-xl border border-[#F2B36F]/25 bg-[#F2B36F]/12 px-4 py-4 text-sm text-[#F2B36F]">
+          {t("setup.readyBanner")}
         </div>
       ) : null}
 
-      <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+      <section className="overflow-hidden rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] text-[#FFF7E9] backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3 border-b border-[#F1DCC4]/10 px-4 py-3">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">{t('setup.basicInfo')}</h2>
-            <p className="mt-0.5 text-xs text-slate-500">{t('setup.basicInfoHint')}</p>
+            <h2 className="text-sm font-semibold text-[#FFF7E9]">
+              {t("setup.basicInfo")}
+            </h2>
+            <p className="mt-0.5 text-xs text-[#C9B7A0]">
+              {t("setup.basicInfoHint")}
+            </p>
           </div>
-          <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setBasicDialogOpen(true)}>
-            {t('setup.edit')}
+          <Button
+            variant="outline"
+            size="sm"
+            className={editButtonClass}
+            onClick={() => setBasicDialogOpen(true)}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            {t("setup.edit")}
           </Button>
         </div>
         <Table>
           <TableBody>
             <TableRow>
-              <TableCell className="w-40 px-4 py-3 text-sm font-medium">{t('setup.branchName')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{settings.name}</TableCell>
+              <TableCell className="w-40 px-4 py-3 text-sm font-medium">
+                {t("setup.branchName")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {settings.name}
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="px-4 py-3 text-sm font-medium">{t('setup.domain')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{subdomain}.coorder.ai</TableCell>
+              <TableCell className="px-4 py-3 text-sm font-medium">
+                {t("setup.domain")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {subdomain}.coorder.ai
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="px-4 py-3 text-sm font-medium">{t('setup.phone')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{settings.phone || t('common.notSet')}</TableCell>
+              <TableCell className="px-4 py-3 text-sm font-medium">
+                {t("setup.phone")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {settings.phone || t("common.notSet")}
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="px-4 py-3 text-sm font-medium">{t('setup.email')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{settings.email || t('common.notSet')}</TableCell>
+              <TableCell className="px-4 py-3 text-sm font-medium">
+                {t("setup.email")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {settings.email || t("common.notSet")}
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="px-4 py-3 text-sm font-medium">{t('setup.address')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{settings.address || t('common.notSet')}</TableCell>
+              <TableCell className="px-4 py-3 text-sm font-medium">
+                {t("setup.address")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {settings.address || t("common.notSet")}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </section>
 
-      <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+      <section className="overflow-hidden rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] text-[#FFF7E9] backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3 border-b border-[#F1DCC4]/10 px-4 py-3">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">{t('setup.regional')}</h2>
-            <p className="mt-0.5 text-xs text-slate-500">{t('setup.regionalHint')}</p>
+            <h2 className="text-sm font-semibold text-[#FFF7E9]">
+              {t("setup.regional")}
+            </h2>
+            <p className="mt-0.5 text-xs text-[#C9B7A0]">
+              {t("setup.regionalHint")}
+            </p>
           </div>
-          <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setRegionalDialogOpen(true)}>
-            {t('setup.edit')}
+          <Button
+            variant="outline"
+            size="sm"
+            className={editButtonClass}
+            onClick={() => setRegionalDialogOpen(true)}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            {t("setup.edit")}
           </Button>
         </div>
         <Table>
           <TableBody>
             <TableRow>
-              <TableCell className="w-40 px-4 py-3 text-sm font-medium">{t('setup.timezone')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{timezoneLabel || t('common.notSet')}</TableCell>
+              <TableCell className="w-40 px-4 py-3 text-sm font-medium">
+                {t("setup.timezone")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {timezoneLabel || t("common.notSet")}
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="px-4 py-3 text-sm font-medium">{t('setup.currency')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{currencyLabel || t('common.notSet')}</TableCell>
+              <TableCell className="px-4 py-3 text-sm font-medium">
+                {t("setup.currency")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {currencyLabel || t("common.notSet")}
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="px-4 py-3 text-sm font-medium">{t('setup.taxRate')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{taxLabel}</TableCell>
+              <TableCell className="px-4 py-3 text-sm font-medium">
+                {t("setup.taxRate")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {taxLabel}
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="px-4 py-3 text-sm font-medium">{t('setup.defaultLanguage')}</TableCell>
-              <TableCell className="px-4 py-3 text-sm text-slate-600">{defaultLanguageLabel}</TableCell>
+              <TableCell className="px-4 py-3 text-sm font-medium">
+                {t("setup.defaultLanguage")}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                {defaultLanguageLabel}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </section>
 
-      <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+      <section className="overflow-hidden rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] text-[#FFF7E9] backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3 border-b border-[#F1DCC4]/10 px-4 py-3">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">{t('setup.openingHours')}</h2>
-            <p className="mt-0.5 text-xs text-slate-500">{t('setup.openingHoursHint')}</p>
+            <h2 className="text-sm font-semibold text-[#FFF7E9]">
+              {t("setup.openingHours")}
+            </h2>
+            <p className="mt-0.5 text-xs text-[#C9B7A0]">
+              {t("setup.openingHoursHint")}
+            </p>
           </div>
-          <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setHoursDialogOpen(true)}>
-            {t('setup.edit')}
+          <Button
+            variant="outline"
+            size="sm"
+            className={editButtonClass}
+            onClick={() => setHoursDialogOpen(true)}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            {t("setup.edit")}
           </Button>
         </div>
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="px-4 py-3">{t('setup.day')}</TableHead>
-              <TableHead className="px-4 py-3">{t('setup.hours')}</TableHead>
+              <TableHead className="px-4 py-3">{t("setup.day")}</TableHead>
+              <TableHead className="px-4 py-3">{t("setup.hours")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {openingHoursRows.map((row) => (
               <TableRow key={row.key}>
-                <TableCell className="px-4 py-3 text-sm font-medium">{row.dayLabel}</TableCell>
-                <TableCell className="px-4 py-3 text-sm text-slate-600">{row.value}</TableCell>
+                <TableCell className="px-4 py-3 text-sm font-medium">
+                  {row.dayLabel}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                  {row.value}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </section>
 
-      <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+      <section className="overflow-hidden rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] text-[#FFF7E9] backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3 border-b border-[#F1DCC4]/10 px-4 py-3">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">{t('setup.roleRates')}</h2>
-            <p className="mt-0.5 text-xs text-slate-500">{t('setup.roleRatesHint')}</p>
+            <h2 className="text-sm font-semibold text-[#FFF7E9]">
+              {t("setup.roleRates")}
+            </h2>
+            <p className="mt-0.5 text-xs text-[#C9B7A0]">
+              {t("setup.roleRatesHint")}
+            </p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="rounded-full">
+            <Badge className="rounded-full border border-[#E9C27B]/30 bg-[#E9C27B]/10 text-[#FFE3A6] hover:bg-[#E9C27B]/10">
+              {t("setup.inheritedFromCompany")}
+            </Badge>
+            <Badge className="rounded-full border border-[#F1DCC4]/14 bg-[#FFF7E9]/8 text-[#C9B7A0] hover:bg-[#FFF7E9]/8">
               {payrollCurrency}
             </Badge>
-            <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setRatesDialogOpen(true)}>
-              {t('setup.edit')}
-            </Button>
           </div>
         </div>
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="px-4 py-3">{t('setup.role')}</TableHead>
-              <TableHead className="px-4 py-3">{t('setup.hourlyRate')}</TableHead>
+              <TableHead className="px-4 py-3">{t("setup.role")}</TableHead>
+              <TableHead className="px-4 py-3">
+                {t("setup.hourlyRate")}
+              </TableHead>
+              <TableHead className="px-4 py-3">
+                {t("setup.rateSource")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -397,101 +411,148 @@ export function ControlBranchSetupPanel({
                 <TableCell className="px-4 py-3 text-sm font-medium">
                   {t(`options.roles.${rate.jobTitle}`)}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-sm text-slate-600">
+                <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
                   {rate.hourlyRate != null
-                    ? formatMoney(rate.hourlyRate, rate.currency || payrollCurrency, locale)
-                    : t('setup.rateNotSet')}
+                    ? formatMoney(
+                        rate.hourlyRate,
+                        rate.currency || payrollCurrency,
+                        locale,
+                      )
+                    : t("setup.rateNotSet")}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                  {t("setup.companyPolicy")}
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+        <div className="border-t border-[#F1DCC4]/10 px-4 py-3 text-xs leading-5 text-[#A98F75]">
+          {t("setup.roleRatesCompanyNote")}
+        </div>
       </section>
 
       <Dialog open={basicDialogOpen} onOpenChange={setBasicDialogOpen}>
-        <DialogContent className="sm:max-w-lg rounded-[28px]">
-          <DialogHeader>
-            <DialogTitle>{t('setup.basicInfo')}</DialogTitle>
-            <DialogDescription>{t('setup.basicInfoHint')}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
+        <DialogContent className={`${dialogContentClass} sm:max-w-lg`}>
+          <div className={dialogHeaderClass}>
+            <DialogHeader>
+              <DialogTitle className="text-base font-semibold text-[#FFF7E9]">
+                {t("setup.basicInfo")}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-[#CDBAA3]">
+                {t("setup.basicInfoHint")}
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className={dialogBodyClass}>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('setup.branchName')}</Label>
+              <Label className={labelClass}>{t("setup.branchName")}</Label>
               <Input
                 value={basicDraft.name}
                 onChange={(event) =>
-                  setBasicDraft((current) => ({ ...current, name: event.target.value }))
+                  setBasicDraft((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }))
                 }
-                className="h-10 rounded-xl"
-                placeholder={t('setup.branchNamePlaceholder')}
+                className={inputClass}
+                placeholder={t("setup.branchNamePlaceholder")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('setup.phone')}</Label>
+              <Label className={labelClass}>{t("setup.phone")}</Label>
               <Input
                 value={basicDraft.phone}
                 onChange={(event) =>
-                  setBasicDraft((current) => ({ ...current, phone: event.target.value }))
+                  setBasicDraft((current) => ({
+                    ...current,
+                    phone: event.target.value,
+                  }))
                 }
-                className="h-10 rounded-xl"
-                placeholder={t('setup.phonePlaceholder')}
+                className={inputClass}
+                placeholder={t("setup.phonePlaceholder")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('setup.email')}</Label>
+              <Label className={labelClass}>{t("setup.email")}</Label>
               <Input
                 type="email"
                 value={basicDraft.email}
                 onChange={(event) =>
-                  setBasicDraft((current) => ({ ...current, email: event.target.value }))
+                  setBasicDraft((current) => ({
+                    ...current,
+                    email: event.target.value,
+                  }))
                 }
-                className="h-10 rounded-xl"
-                placeholder={t('setup.emailPlaceholder')}
+                className={inputClass}
+                placeholder={t("setup.emailPlaceholder")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('setup.address')}</Label>
+              <Label className={labelClass}>{t("setup.address")}</Label>
               <Input
                 value={basicDraft.address}
                 onChange={(event) =>
-                  setBasicDraft((current) => ({ ...current, address: event.target.value }))
+                  setBasicDraft((current) => ({
+                    ...current,
+                    address: event.target.value,
+                  }))
                 }
-                className="h-10 rounded-xl"
-                placeholder={t('setup.addressPlaceholder')}
+                className={inputClass}
+                placeholder={t("setup.addressPlaceholder")}
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" className="rounded-xl" onClick={() => setBasicDialogOpen(false)}>
-              {t('team.cancel')}
+          <DialogFooter className="border-t border-[#F1DCC4]/10 px-5 py-4">
+            <Button
+              variant="ghost"
+              className={cancelButtonClass}
+              onClick={() => setBasicDialogOpen(false)}
+            >
+              {t("team.cancel")}
             </Button>
-            <Button onClick={handleBasicSave} disabled={savingSettings} className="gap-2 rounded-xl">
-              {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {t('setup.saveBasicInfo')}
+            <Button
+              onClick={handleBasicSave}
+              disabled={savingSettings}
+              className={saveButtonClass}
+            >
+              {savingSettings ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : null}
+              {t("setup.saveBasicInfo")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={regionalDialogOpen} onOpenChange={setRegionalDialogOpen}>
-        <DialogContent className="sm:max-w-lg rounded-[28px]">
-          <DialogHeader>
-            <DialogTitle>{t('setup.regional')}</DialogTitle>
-            <DialogDescription>{t('setup.regionalHint')}</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 sm:grid-cols-2">
+        <DialogContent className={`${dialogContentClass} sm:max-w-lg`}>
+          <div className={dialogHeaderClass}>
+            <DialogHeader>
+              <DialogTitle className="text-base font-semibold text-[#FFF7E9]">
+                {t("setup.regional")}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-[#CDBAA3]">
+                {t("setup.regionalHint")}
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className={`${dialogBodyClass} grid gap-4 sm:grid-cols-2`}>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('setup.timezone')}</Label>
+              <Label className={labelClass}>{t("setup.timezone")}</Label>
               <Select
                 value={regionalDraft.timezone}
                 onValueChange={(value) =>
-                  setRegionalDraft((current) => ({ ...current, timezone: value }))
+                  setRegionalDraft((current) => ({
+                    ...current,
+                    timezone: value,
+                  }))
                 }
               >
-                <SelectTrigger className="h-10 rounded-xl text-sm">
+                <SelectTrigger className={`${inputClass} w-full text-sm`}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={selectContentClass}>
                   {timezoneOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -501,17 +562,20 @@ export function ControlBranchSetupPanel({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('setup.currency')}</Label>
+              <Label className={labelClass}>{t("setup.currency")}</Label>
               <Select
                 value={regionalDraft.currency}
                 onValueChange={(value) =>
-                  setRegionalDraft((current) => ({ ...current, currency: value }))
+                  setRegionalDraft((current) => ({
+                    ...current,
+                    currency: value,
+                  }))
                 }
               >
-                <SelectTrigger className="h-10 rounded-xl text-sm">
+                <SelectTrigger className={`${inputClass} w-full text-sm`}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={selectContentClass}>
                   {currencyOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -521,7 +585,7 @@ export function ControlBranchSetupPanel({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('setup.taxRate')}</Label>
+              <Label className={labelClass}>{t("setup.taxRate")}</Label>
               <Input
                 type="number"
                 min="0"
@@ -529,24 +593,30 @@ export function ControlBranchSetupPanel({
                 step="1"
                 value={regionalDraft.tax}
                 onChange={(event) =>
-                  setRegionalDraft((current) => ({ ...current, tax: event.target.value }))
+                  setRegionalDraft((current) => ({
+                    ...current,
+                    tax: event.target.value,
+                  }))
                 }
-                className="h-10 rounded-xl"
+                className={inputClass}
                 placeholder="10"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('setup.defaultLanguage')}</Label>
+              <Label className={labelClass}>{t("setup.defaultLanguage")}</Label>
               <Select
                 value={regionalDraft.default_language}
                 onValueChange={(value) =>
-                  setRegionalDraft((current) => ({ ...current, default_language: value }))
+                  setRegionalDraft((current) => ({
+                    ...current,
+                    default_language: value,
+                  }))
                 }
               >
-                <SelectTrigger className="h-10 rounded-xl text-sm">
+                <SelectTrigger className={`${inputClass} w-full text-sm`}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={selectContentClass}>
                   {languageOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -556,80 +626,65 @@ export function ControlBranchSetupPanel({
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" className="rounded-xl" onClick={() => setRegionalDialogOpen(false)}>
-              {t('team.cancel')}
+          <DialogFooter className="border-t border-[#F1DCC4]/10 px-5 py-4">
+            <Button
+              variant="ghost"
+              className={cancelButtonClass}
+              onClick={() => setRegionalDialogOpen(false)}
+            >
+              {t("team.cancel")}
             </Button>
-            <Button onClick={handleRegionalSave} disabled={savingSettings} className="gap-2 rounded-xl">
-              {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {t('setup.saveRegional')}
+            <Button
+              onClick={handleRegionalSave}
+              disabled={savingSettings}
+              className={saveButtonClass}
+            >
+              {savingSettings ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : null}
+              {t("setup.saveRegional")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={hoursDialogOpen} onOpenChange={setHoursDialogOpen}>
-        <DialogContent className="sm:max-w-2xl rounded-[28px]">
-          <DialogHeader>
-            <DialogTitle>{t('setup.openingHours')}</DialogTitle>
-            <DialogDescription>{t('setup.openingHoursHint')}</DialogDescription>
-          </DialogHeader>
-          <div className="rounded-[24px] border border-slate-200 p-4">
-            <OperatingHoursEditor value={hoursDraft} onChange={setHoursDraft} />
+        <DialogContent className={`${dialogContentClass} sm:max-w-2xl`}>
+          <div className={dialogHeaderClass}>
+            <DialogHeader>
+              <DialogTitle className="text-base font-semibold text-[#FFF7E9]">
+                {t("setup.openingHours")}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-[#CDBAA3]">
+                {t("setup.openingHoursHint")}
+              </DialogDescription>
+            </DialogHeader>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" className="rounded-xl" onClick={() => setHoursDialogOpen(false)}>
-              {t('team.cancel')}
-            </Button>
-            <Button onClick={handleHoursSave} disabled={savingSettings} className="gap-2 rounded-xl">
-              {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {t('setup.saveOpeningHours')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={ratesDialogOpen} onOpenChange={setRatesDialogOpen}>
-        <DialogContent className="sm:max-w-lg rounded-[28px]">
-          <DialogHeader>
-            <DialogTitle>{t('setup.roleRates')}</DialogTitle>
-            <DialogDescription>{t('setup.roleRatesHint')}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            {teamPayroll.rolePayRates.map((rate) => (
-              <div key={rate.jobTitle} className="flex items-center gap-3 rounded-2xl border border-slate-200 px-3 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-900">{t(`options.roles.${rate.jobTitle}`)}</p>
-                  <p className="text-xs text-slate-500">{t('teamPanel.rates.appliesHint')}</p>
-                </div>
-                <div className="flex w-32 items-center rounded-xl border bg-background px-3">
-                  <Input
-                    value={rateDraft[rate.jobTitle] ?? ''}
-                    onChange={(event) =>
-                      setRateDraft((current) => ({
-                        ...current,
-                        [rate.jobTitle]: event.target.value,
-                      }))
-                    }
-                    inputMode="decimal"
-                    className="h-10 border-0 bg-transparent px-0 shadow-none"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-            ))}
+          <div className="px-5 py-5">
+            <OperatingHoursEditor
+              value={hoursDraft}
+              onChange={setHoursDraft}
+              surface="controlDark"
+            />
           </div>
-          <DialogFooter className="gap-2 sm:justify-between">
-            <p className="text-xs text-muted-foreground">{t('teamPanel.rates.footerHint')}</p>
-            <div className="flex gap-2">
-              <Button variant="ghost" className="rounded-xl" onClick={() => setRatesDialogOpen(false)}>
-                {t('team.cancel')}
-              </Button>
-              <Button onClick={handleRatesSave} disabled={savingRates} className="gap-2 rounded-xl">
-                {savingRates ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {t('setup.saveRates')}
-              </Button>
-            </div>
+          <DialogFooter className="border-t border-[#F1DCC4]/10 px-5 py-4">
+            <Button
+              variant="ghost"
+              className={cancelButtonClass}
+              onClick={() => setHoursDialogOpen(false)}
+            >
+              {t("team.cancel")}
+            </Button>
+            <Button
+              onClick={handleHoursSave}
+              disabled={savingSettings}
+              className={saveButtonClass}
+            >
+              {savingSettings ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : null}
+              {t("setup.saveOpeningHours")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

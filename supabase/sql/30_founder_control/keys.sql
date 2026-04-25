@@ -39,6 +39,12 @@ ALTER TABLE ONLY public.organization_pending_invites
 ALTER TABLE ONLY public.organization_pending_invites
     ADD CONSTRAINT organization_pending_invites_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.organization_role_pay_rates
+    ADD CONSTRAINT organization_role_pay_rates_organization_id_job_title_key UNIQUE (organization_id, job_title);
+
+ALTER TABLE ONLY public.organization_role_pay_rates
+    ADD CONSTRAINT organization_role_pay_rates_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY public.organization_restaurants
     ADD CONSTRAINT organization_restaurants_organization_id_restaurant_id_key UNIQUE (organization_id, restaurant_id);
 
@@ -65,6 +71,8 @@ CREATE INDEX idx_org_members_user_id ON public.organization_members USING btree 
 CREATE INDEX idx_org_restaurants_org_id ON public.organization_restaurants USING btree (organization_id);
 
 CREATE INDEX idx_org_restaurants_restaurant_id ON public.organization_restaurants USING btree (restaurant_id);
+
+CREATE INDEX idx_organization_role_pay_rates_org ON public.organization_role_pay_rates USING btree (organization_id);
 
 CREATE INDEX idx_organization_menu_categories_org_position ON public.organization_menu_categories USING btree (organization_id, "position");
 

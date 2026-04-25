@@ -1,24 +1,24 @@
 // Shared organization types for use on both client and server
 
 export type OrgMemberRole =
-  | 'founder_full_control'
-  | 'founder_operations'
-  | 'founder_finance'
-  | 'accountant_readonly'
-  | 'branch_general_manager';
+  | "founder_full_control"
+  | "founder_operations"
+  | "founder_finance"
+  | "accountant_readonly"
+  | "branch_general_manager";
 
-export type ShopScope = 'all_shops' | 'selected_shops';
+export type ShopScope = "all_shops" | "selected_shops";
 
 export type OrgPermission =
-  | 'reports'
-  | 'finance_exports'
-  | 'purchases'
-  | 'promotions'
-  | 'employees'
-  | 'attendance_approvals'
-  | 'restaurant_settings'
-  | 'organization_settings'
-  | 'billing';
+  | "reports"
+  | "finance_exports"
+  | "purchases"
+  | "promotions"
+  | "employees"
+  | "attendance_approvals"
+  | "restaurant_settings"
+  | "organization_settings"
+  | "billing";
 
 export interface ApiOrganization {
   id: string;
@@ -110,11 +110,11 @@ export interface UpdateMemberResponse {
 
 /** Human-readable labels for each org role */
 export const ORG_ROLE_LABELS: Record<OrgMemberRole, string> = {
-  founder_full_control:   'Founder (Full Control)',
-  founder_operations:     'Founder (Operations)',
-  founder_finance:        'Founder (Finance)',
-  accountant_readonly:    'Accountant (Read Only)',
-  branch_general_manager: 'Branch General Manager',
+  founder_full_control: "Founder (Full Control)",
+  founder_operations: "Founder (Operations)",
+  founder_finance: "Founder (Finance)",
+  accountant_readonly: "Accountant (Read Only)",
+  branch_general_manager: "Branch General Manager",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -193,7 +193,7 @@ export interface SetActiveBranchRequest {
 export interface AddBranchRequest {
   name: string;
   subdomain: string;
-  default_language: 'en' | 'ja' | 'vi';
+  default_language: "en" | "ja" | "vi";
   brand_color: string;
   tax?: number;
   address?: string;
@@ -279,6 +279,22 @@ export interface OrgEmployee {
   restaurant_id: string;
   restaurant_name: string;
   restaurant_subdomain: string;
+  is_active: boolean;
+  created_at: string | null;
+  private_profile?: {
+    gender: string | null;
+    phone: string | null;
+    contact_email: string | null;
+    address: string | null;
+    facebook_url: string | null;
+    bank_name: string | null;
+    bank_branch_name: string | null;
+    bank_account_type: string | null;
+    bank_account_number: string | null;
+    bank_account_holder: string | null;
+    tax_social_number: string | null;
+    insurance_number: string | null;
+  } | null;
 }
 
 /** Response shape for GET /api/v1/owner/organization/employees */
@@ -286,7 +302,6 @@ export interface GetOrgEmployeesResponse {
   employees: OrgEmployee[];
   total_count: number;
 }
-
 
 /** Request body for POST /api/v1/owner/organization/menu/copy */
 export interface CopyMenuRequest {

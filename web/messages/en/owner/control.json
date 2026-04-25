@@ -21,7 +21,7 @@
     "home": "Home",
     "overview": "Operations analyst",
     "restaurants": "Branches",
-    "people": "Employees & salary",
+    "people": "Staff",
     "finance": "Financial report",
     "menu": "Menu",
     "alerts": "Alerts",
@@ -199,7 +199,7 @@
     "scope": "Organization menu foundation"
   },
   "people": {
-    "title": "People",
+    "title": "Staff",
     "description": "Control organization access and branch staffing from one owner surface while keeping branch employee operations explicit.",
     "metrics": {
       "members": "Active members",
@@ -278,6 +278,7 @@
       "overview": "Overview",
       "finance": "Finance",
       "team": "Team",
+      "staff": "Staff",
       "setup": "Setup"
     },
     "actions": {
@@ -293,15 +294,54 @@
     "common": {
       "notSet": "Not set"
     },
+    "ownerInsights": {
+      "title": "Owner management view",
+      "subtitle": "Setup, money, people, and menu signals for this branch in one place.",
+      "table": {
+        "area": "Area",
+        "status": "Status",
+        "detail": "Detail",
+        "action": "Action"
+      },
+      "rows": {
+        "setup": "Setup",
+        "finance": "Finance",
+        "team": "Team and payroll",
+        "menu": "Menu signal"
+      },
+      "status": {
+        "ready": "Ready",
+        "needsRate": "Needs rate",
+        "hasWinner": "Selling",
+        "noSales": "No signal"
+      },
+      "details": {
+        "setup": "Branch identity, default language, tax, and opening hours live in branch setup. Pay rates come from company policy.",
+        "finance": "{month} revenue, costs, and close status are shown here before month-end close.",
+        "team": "{approved} approved and {pending} pending. Payroll estimate depends on role pay rates.",
+        "menuWinner": "{item} is leading this branch with {quantity} sold in the last 30 days.",
+        "menuEmpty": "Completed orders will create a branch-level selling signal here."
+      },
+      "actions": {
+        "setup": "Open setup",
+        "finance": "Open finance",
+        "team": "Open team",
+        "menu": "See sellers",
+        "snapshot": "Review snapshot"
+      }
+    },
     "stats": {
       "todayRevenue": "Today revenue",
       "orderCount": "{count, plural, =0 {0 orders} one {# order} other {# orders}}",
       "openOrders": "Open orders",
       "openOrdersCount": "{count, plural, =0 {0 open orders} one {# open order} other {# open orders}}",
       "inKitchen": "in kitchen",
+      "monthRevenue": "Revenue this month",
+      "monthRevenueHint": "Live revenue for {month}",
       "monthSpending": "Expenses this month",
       "monthSpendingHint": "Purchase orders and expense records",
-      "monthClose": "{month} close"
+      "monthClose": "{month} close",
+      "openStatus": "Open status"
     },
     "info": {
       "tableLabel": "Branch info",
@@ -371,6 +411,7 @@
     },
     "team": {
       "employeeCount": "{count, plural, =0 {0 employees} one {# employee} other {# employees}}",
+      "staff": "Staff",
       "addEmployee": "Add employee",
       "inviteTitle": "Invite new employee",
       "fullName": "Full name",
@@ -409,7 +450,11 @@
       "openingHours": "Opening hours",
       "openingHoursHint": "Keep the public hours and branch defaults accurate without leaving owner control.",
       "roleRates": "Employee working rates",
-      "roleRatesHint": "Set branch pay rates here so payroll estimates stay out of the daily team workspace.",
+      "roleRatesHint": "Rates are inherited from company setup so every branch uses one payroll policy.",
+      "inheritedFromCompany": "Inherited",
+      "companyPolicy": "Company policy",
+      "rateSource": "Source",
+      "roleRatesCompanyNote": "Change these from company people and salary setup. Branch setup only shows the rates used for this branch payroll estimate.",
       "day": "Day",
       "hours": "Hours",
       "closed": "Closed",
@@ -445,7 +490,8 @@
         "manager": "Manager",
         "chef": "Chef",
         "server": "Server",
-        "cashier": "Cashier"
+        "cashier": "Cashier",
+        "part_time": "Part-time"
       }
     },
     "teamPanel": {
@@ -462,7 +508,8 @@
         "manager": "Manager",
         "chef": "Chef",
         "server": "Server",
-        "cashier": "Cashier"
+        "cashier": "Cashier",
+        "part_time": "Part-time"
       },
       "cards": {
         "thisMonth": "This month",
@@ -487,6 +534,12 @@
         "title": "Schedules and salary view",
         "description": "Weekly roster, approved hours, and payroll estimate in one view.",
         "staffCount": "{count, plural, =0 {0 staff} one {# staff} other {# staff}}",
+        "employee": "Employee",
+        "role": "Role",
+        "actions": "Actions",
+        "edit": "Edit",
+        "editEmployee": "Edit employee",
+        "saveEmployee": "Save employee",
         "empty": "No staff added to this branch yet.",
         "attendanceIssue": "Attendance issue",
         "waitingCount": "{count, plural, one {# waiting} other {# waiting}}",
@@ -505,7 +558,9 @@
       "toasts": {
         "invalidRate": "Enter a valid hourly rate for {role}",
         "saveRatesSuccess": "Hourly rates updated",
-        "saveRatesError": "Failed to save hourly rates"
+        "saveRatesError": "Failed to save hourly rates",
+        "updateEmployeeSuccess": "Employee updated",
+        "updateEmployeeError": "Failed to update employee"
       }
     },
     "toasts": {

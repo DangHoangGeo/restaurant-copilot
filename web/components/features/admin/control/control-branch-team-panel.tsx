@@ -1,16 +1,40 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
-  AlertTriangle,
-  CalendarDays,
-  Clock3,
-  WalletCards,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import type { BranchTeamPayrollData } from '@/lib/server/control/branch-team';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type {
+  BranchTeamEmployeeSummary,
+  BranchTeamPayrollData,
+} from "@/lib/server/control/branch-team";
 
 interface ControlBranchTeamPanelProps {
   currency: string;
@@ -24,9 +48,9 @@ function formatHours(hours: number): string {
 function formatMoney(amount: number, currency: string, locale: string): string {
   try {
     return new Intl.NumberFormat(locale, {
-      style: 'currency',
+      style: "currency",
       currency,
-      maximumFractionDigits: currency === 'JPY' ? 0 : 2,
+      maximumFractionDigits: currency === "JPY" ? 0 : 2,
     }).format(amount);
   } catch {
     return `${currency} ${amount.toFixed(2)}`;
@@ -38,207 +62,232 @@ export function ControlBranchTeamPanel({
   data,
 }: ControlBranchTeamPanelProps) {
   const locale = useLocale();
-  const t = useTranslations('owner.control.branchDetail.teamPanel');
-  const payrollCurrency = data.rolePayRates.find((rate) => rate.currency)?.currency ?? currency;
-  const employeesWithHours = useMemo(
-    () => data.employees.filter((employee) => employee.approvedHours > 0 || employee.pendingHours > 0),
-    [data.employees]
+  const router = useRouter();
+  const t = useTranslations("owner.control.branchDetail.teamPanel");
+  const tDetail = useTranslations("owner.control.branchDetail");
+  const payrollCurrency =
+    data.rolePayRates.find((rate) => rate.currency)?.currency ?? currency;
+  const [editingEmployee, setEditingEmployee] =
+    useState<BranchTeamEmployeeSummary | null>(null);
+  const [editDraft, setEditDraft] = useState({ name: "", jobTitle: "server" });
+  const [saving, setSaving] = useState(false);
+  const employees = useMemo(
+    () =>
+      [...data.employees].sort(
+        (left, right) =>
+          right.pendingSummaries - left.pendingSummaries ||
+          right.pendingHours - left.pendingHours ||
+          left.name.localeCompare(right.name),
+      ),
+    [data.employees],
   );
-  const weekdayLabels: Record<number, string> = {
-    1: t('weekdays.mon'),
-    2: t('weekdays.tue'),
-    3: t('weekdays.wed'),
-    4: t('weekdays.thu'),
-    5: t('weekdays.fri'),
-    6: t('weekdays.sat'),
-    7: t('weekdays.sun'),
+
+  const openEdit = (employee: BranchTeamEmployeeSummary) => {
+    setEditingEmployee(employee);
+    setEditDraft({ name: employee.name, jobTitle: employee.jobTitle });
+  };
+
+  const saveEdit = async () => {
+    if (!editingEmployee) return;
+    setSaving(true);
+    try {
+      const response = await fetch(
+        `/api/v1/owner/organization/employees/${editingEmployee.employeeId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: editDraft.name.trim(),
+            job_title: editDraft.jobTitle,
+          }),
+        },
+      );
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error ?? t("toasts.updateEmployeeError"));
+      }
+      toast.success(t("toasts.updateEmployeeSuccess"));
+      setEditingEmployee(null);
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("toasts.updateEmployeeError"),
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-3xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            <CalendarDays className="h-3.5 w-3.5" />
-            {t('cards.thisMonth')}
-          </div>
-          <p className="mt-3 text-lg font-semibold">{data.monthLabel}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('cards.staffOnBranch', { count: data.totals.employeeCount })}
-          </p>
-        </div>
-
-        <div className="rounded-3xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            <Clock3 className="h-3.5 w-3.5" />
-            {t('cards.approvedHours')}
-          </div>
-          <p className="mt-3 text-2xl font-semibold text-emerald-600">
-            {formatHours(data.totals.approvedHours)}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('cards.pendingHours', { hours: formatHours(data.totals.pendingHours) })}
-          </p>
-        </div>
-
-        <div className="rounded-3xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            <WalletCards className="h-3.5 w-3.5" />
-            {t('cards.payrollEstimate')}
-          </div>
-          <p className="mt-3 text-2xl font-semibold text-slate-900">
-            {data.totals.estimatedPayroll != null
-              ? formatMoney(data.totals.estimatedPayroll, payrollCurrency, locale)
-              : t('cards.needRoleRates')}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('cards.payrollHint')}
-          </p>
-        </div>
-
-        <div className="rounded-3xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            <AlertTriangle className="h-3.5 w-3.5" />
-            {t('cards.needsAttention')}
-          </div>
-          <p className="mt-3 text-2xl font-semibold text-amber-600">
-            {data.totals.pendingSummaries}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {data.totals.missingRateRoles.length > 0
-              ? t('cards.missingRates', {
-                  roles: data.totals.missingRateRoles.map((role) => t(`roles.${role}`)).join(', '),
-                })
-              : t('cards.allRatesReady')}
-          </p>
-        </div>
+    <section className="overflow-hidden rounded-xl border border-[#F1DCC4]/14 bg-[#FFF7E9]/[0.075] text-[#FFF7E9] backdrop-blur-xl">
+      <div className="border-b border-[#F1DCC4]/10 px-4 py-3">
+        <p className="text-sm font-semibold">{t("schedule.title")}</p>
+        <p className="mt-0.5 text-xs text-[#C9B7A0]">
+          {t("schedule.description")}
+        </p>
+      </div>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-[#F1DCC4]/10 hover:bg-transparent">
+              <TableHead className="min-w-[220px] px-4 py-3 text-[#B89078]">
+                {t("schedule.employee")}
+              </TableHead>
+              <TableHead className="px-4 py-3 text-[#B89078]">
+                {t("schedule.role")}
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-[#B89078]">
+                {t("schedule.approved")}
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-[#B89078]">
+                {t("schedule.pendingReview")}
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-[#B89078]">
+                {t("schedule.monthPlan")}
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-[#B89078]">
+                {t("schedule.salary")}
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-[#B89078]">
+                {t("schedule.actions")}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {employees.map((employee) => (
+              <TableRow
+                key={employee.employeeId}
+                className="border-[#F1DCC4]/10 hover:bg-[#FFF7E9]/[0.055]"
+              >
+                <TableCell className="px-4 py-3">
+                  <p className="text-sm font-semibold text-[#FFF7E9]">
+                    {employee.name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-[#C9B7A0]">
+                    {employee.email}
+                  </p>
+                </TableCell>
+                <TableCell className="px-4 py-3 text-sm text-[#C9B7A0]">
+                  {t(`roles.${employee.jobTitle}`)}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-right text-sm font-medium tabular-nums text-[#B9D79B]">
+                  {formatHours(employee.approvedHours)}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-right text-sm font-medium tabular-nums text-[#F2B36F]">
+                  {formatHours(employee.pendingHours)}
+                  {employee.pendingSummaries > 0 ? (
+                    <span className="ml-2 text-xs text-[#C9B7A0]">
+                      {t("schedule.waitingCount", {
+                        count: employee.pendingSummaries,
+                      })}
+                    </span>
+                  ) : null}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-right text-sm tabular-nums text-[#C9B7A0]">
+                  {formatHours(employee.monthlyScheduledHours)}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-right text-sm font-medium tabular-nums text-[#FFF7E9]">
+                  {employee.estimatedPayroll != null
+                    ? formatMoney(
+                        employee.estimatedPayroll,
+                        payrollCurrency,
+                        locale,
+                      )
+                    : t("schedule.setRate")}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-right">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg border-[#F1DCC4]/18 bg-[#FFF7E9]/8 text-[#FFF7E9] hover:bg-[#FFF7E9]/12"
+                    onClick={() => openEdit(employee)}
+                  >
+                    {t("schedule.edit")}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
-      <section className="rounded-[28px] border bg-card p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h3 className="text-base font-semibold">{t('schedule.title')}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t('schedule.description')}
-              </p>
+      <Dialog
+        open={Boolean(editingEmployee)}
+        onOpenChange={(open) => {
+          if (!open) setEditingEmployee(null);
+        }}
+      >
+        <DialogContent className="rounded-xl sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("schedule.editEmployee")}</DialogTitle>
+            <DialogDescription>
+              {editingEmployee?.email ?? tDetail("common.notSet")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs">{tDetail("team.fullName")}</Label>
+              <Input
+                value={editDraft.name}
+                onChange={(event) =>
+                  setEditDraft((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }))
+                }
+                className="h-10 rounded-lg"
+              />
             </div>
-            <Badge variant="secondary" className="rounded-full">
-              {t('schedule.staffCount', {
-                count: employeesWithHours.length || data.employees.length,
-              })}
-            </Badge>
+            <div className="space-y-1.5">
+              <Label className="text-xs">{tDetail("team.role")}</Label>
+              <Select
+                value={editDraft.jobTitle}
+                onValueChange={(value) =>
+                  setEditDraft((current) => ({
+                    ...current,
+                    jobTitle: value,
+                  }))
+                }
+              >
+                <SelectTrigger className="h-10 rounded-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(["manager", "chef", "server", "cashier"] as const).map(
+                    (role) => (
+                      <SelectItem key={role} value={role}>
+                        {t(`roles.${role}`)}
+                      </SelectItem>
+                    ),
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-
-          <div className="mt-5 space-y-3">
-            {data.employees.length === 0 ? (
-              <div className="rounded-2xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-                {t('schedule.empty')}
-              </div>
-            ) : (
-              data.employees.map((employee) => (
-                <article
-                  key={employee.employeeId}
-                  className="rounded-3xl border bg-muted/10 p-4"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold text-slate-900">{employee.name}</p>
-                        <Badge variant="secondary" className="rounded-full capitalize">
-                          {t(`roles.${employee.jobTitle}`)}
-                        </Badge>
-                        {employee.hasException ? (
-                          <Badge className="rounded-full bg-amber-100 text-amber-800 hover:bg-amber-100">
-                            {t('schedule.attendanceIssue')}
-                          </Badge>
-                        ) : null}
-                        {employee.pendingSummaries > 0 ? (
-                          <Badge className="rounded-full bg-sky-100 text-sky-800 hover:bg-sky-100">
-                            {t('schedule.waitingCount', { count: employee.pendingSummaries })}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">{employee.email}</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 sm:min-w-[280px] sm:grid-cols-3">
-                      <div className="rounded-2xl bg-background px-3 py-2">
-                        <p className="text-xs text-muted-foreground">{t('schedule.weeklyPlan')}</p>
-                        <p className="mt-1 text-sm font-semibold">
-                          {formatHours(employee.weeklyScheduledHours)}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-background px-3 py-2">
-                        <p className="text-xs text-muted-foreground">{t('schedule.approved')}</p>
-                        <p className="mt-1 text-sm font-semibold text-emerald-600">
-                          {formatHours(employee.approvedHours)}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-background px-3 py-2 col-span-2 sm:col-span-1">
-                        <p className="text-xs text-muted-foreground">{t('schedule.salary')}</p>
-                        <p className="mt-1 text-sm font-semibold">
-                          {employee.estimatedPayroll != null
-                            ? formatMoney(employee.estimatedPayroll, payrollCurrency, locale)
-                            : t('schedule.setRate')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 space-y-3">
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                        {t('schedule.weeklySchedule')}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {employee.weeklySchedule.length > 0 ? (
-                          employee.weeklySchedule.map((slot, index) => (
-                            <span
-                              key={`${employee.employeeId}-${slot.weekday}-${index}`}
-                              className="inline-flex items-center rounded-full border bg-background px-3 py-1 text-xs font-medium text-slate-700"
-                            >
-                              {weekdayLabels[slot.weekday]} {slot.startTime.slice(0, 5)}-{slot.endTime.slice(0, 5)}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            {t('schedule.noWeeklyTemplate')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid gap-2 sm:grid-cols-3">
-                      <div className="rounded-2xl bg-background px-3 py-2">
-                        <p className="text-xs text-muted-foreground">{t('schedule.monthPlan')}</p>
-                        <p className="mt-1 text-sm font-semibold">
-                          {formatHours(employee.monthlyScheduledHours)}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-background px-3 py-2">
-                        <p className="text-xs text-muted-foreground">{t('schedule.pendingReview')}</p>
-                        <p className={cn(
-                          'mt-1 text-sm font-semibold',
-                          employee.pendingHours > 0 ? 'text-amber-600' : 'text-slate-900'
-                        )}>
-                          {formatHours(employee.pendingHours)}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-background px-3 py-2">
-                        <p className="text-xs text-muted-foreground">{t('schedule.payrollStatus')}</p>
-                        <p className="mt-1 text-sm font-semibold">
-                          {employee.estimatedPayroll != null
-                            ? t('schedule.ready')
-                            : t('schedule.needsRate')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              ))
-            )}
-          </div>
-      </section>
-    </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              className="rounded-lg"
+              onClick={() => setEditingEmployee(null)}
+            >
+              {tDetail("team.cancel")}
+            </Button>
+            <Button
+              type="button"
+              className="gap-2 rounded-lg"
+              onClick={saveEdit}
+              disabled={saving}
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {t("schedule.saveEmployee")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </section>
   );
 }
