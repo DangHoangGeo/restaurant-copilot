@@ -70,7 +70,7 @@ export default async function DashboardLayout({
       name: tCommon('fallbackRestaurantName'),
       logoUrl: null,
       subdomain: user.subdomain,
-      primaryColor: '#3B82F6',
+      primaryColor: '#c8773e',
     } as const;
     return (
       <ProtectedLayout initialUser={initialUser}>
@@ -93,7 +93,7 @@ export default async function DashboardLayout({
       name: tCommon('adminPanelTitle'),
       logoUrl: null,
       subdomain: 'admin',
-      primaryColor: '#3B82F6',
+      primaryColor: '#c8773e',
     } as const;
     return (
       <ProtectedLayout initialUser={initialUser}>

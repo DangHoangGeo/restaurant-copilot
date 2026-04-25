@@ -170,7 +170,7 @@ export async function GET() {
       branch_code: restaurant.branch_code,
       company_public_subdomain: ownerOrganization?.public_subdomain ?? null,
       logo_url: restaurant.logo_url,
-      brand_color: restaurant.brand_color || "#3B82F6",
+      brand_color: restaurant.brand_color || "#c8773e",
       default_language: restaurant.default_language || "en",
       address: restaurant.address,
       phone: restaurant.phone,

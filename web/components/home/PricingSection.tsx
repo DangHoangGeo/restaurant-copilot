@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Check } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { PRICING_PLANS, PRICING_CONFIG } from "@/config/pricing";
 
 export const PricingSection = () => {
@@ -23,50 +23,48 @@ export const PricingSection = () => {
   };
 
   return (
-    <section className="py-20 px-5" style={{ background: "linear-gradient(160deg, #EFE0CA 0%, #F5EAD8 100%)" }}>
-      <div className="max-w-5xl mx-auto">
-        {/* Section header */}
-        <div className="text-center mb-12">
-          <h2
-            className="text-3xl sm:text-4xl font-medium tracking-tight text-[#2E2117]"
-            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-          >
+    <section className="bg-[#ece4d6] px-5 py-20 text-[#18120c] sm:px-8 lg:px-10">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="mb-4 text-sm font-semibold text-[#9d6338]">
+              {t("pricing.eyebrow")}
+            </p>
+            <h2 className="max-w-xl text-balance text-4xl font-semibold leading-tight sm:text-5xl">
             {t("pricing.title")}
-          </h2>
-          <p className="mt-4 text-base text-[#8B6E5A] max-w-xl mx-auto leading-relaxed">
+            </h2>
+            <p className="mt-4 max-w-xl text-base leading-7 text-[#725f4c]">
             {t("pricing.subtitle")}
-          </p>
+            </p>
+          </div>
 
-          {/* Billing toggle */}
           <div
-            className="inline-flex mt-8 rounded-full p-1"
-            style={{ background: "rgba(171,110,60,0.08)", border: "1px solid rgba(171,110,60,0.15)" }}
+            className="inline-flex w-fit rounded-lg border border-[#17110b]/10 bg-[#17110b]/5 p-1"
           >
             <button
               onClick={() => setBillingCycle("monthly")}
-              className="px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200"
+              className="rounded-md px-5 py-2 text-sm font-semibold transition-all duration-200"
               style={
                 billingCycle === "monthly"
-                  ? { background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)", color: "#fff", boxShadow: "0 2px 8px rgba(171,110,60,0.28)" }
-                  : { color: "#8B6E5A" }
+                  ? { background: "#17110b", color: "#fff7e9", boxShadow: "0 2px 8px rgba(23,17,11,0.20)" }
+                  : { color: "#725f4c" }
               }
             >
               {t("pricing.billing.monthly")}
             </button>
             <button
               onClick={() => setBillingCycle("yearly")}
-              className="relative px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200"
+              className="relative rounded-md px-5 py-2 text-sm font-semibold transition-all duration-200"
               style={
                 billingCycle === "yearly"
-                  ? { background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)", color: "#fff", boxShadow: "0 2px 8px rgba(171,110,60,0.28)" }
-                  : { color: "#8B6E5A" }
+                  ? { background: "#17110b", color: "#fff7e9", boxShadow: "0 2px 8px rgba(23,17,11,0.20)" }
+                  : { color: "#725f4c" }
               }
             >
               {t("pricing.billing.yearly")}
               {billingCycle !== "yearly" && (
                 <span
-                  className="absolute -top-2 -right-2 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                  style={{ background: "#36B080" }}
+                  className="absolute -right-2 -top-2 rounded-md bg-[#76945e] px-1.5 py-0.5 text-[10px] font-semibold text-white"
                 >
                   {t("pricing.billing.save_20")}
                 </span>
@@ -75,8 +73,7 @@ export const PricingSection = () => {
           </div>
         </div>
 
-        {/* Plan cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PRICING_PLANS.map((plan) => {
             const monthlyEquiv =
               billingCycle === "yearly" ? plan.price.yearly / 12 : plan.price.monthly;
@@ -85,26 +82,25 @@ export const PricingSection = () => {
             return (
               <div
                 key={plan.id}
-                className="relative rounded-2xl p-6 flex flex-col"
+                className="relative flex min-h-[500px] flex-col rounded-lg p-6"
                 style={
                   plan.highlighted
                     ? {
-                        background: "#FEFAF6",
-                        border: "2px solid rgba(171,110,60,0.35)",
-                        boxShadow: "0 4px 24px rgba(171,110,60,0.14)",
+                        background: "#17110b",
+                        color: "#fff7e9",
+                        border: "1px solid rgba(23,17,11,0.80)",
+                        boxShadow: "0 30px 70px rgba(23,17,11,0.24)",
                       }
                     : {
-                        background: "#FEFAF6",
-                        border: "1px solid rgba(171,110,60,0.10)",
-                        boxShadow: "0 2px 12px rgba(171,110,60,0.06)",
+                        background: "rgba(255,255,255,0.42)",
+                        border: "1px solid rgba(23,17,11,0.10)",
                       }
                 }
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className="absolute right-5 top-5">
                     <span
-                      className="text-white text-[11px] font-semibold tracking-widest uppercase px-3 py-1 rounded-full"
-                      style={{ background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)" }}
+                      className="rounded-md bg-[#c8793f] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white"
                     >
                       {t("pricing.popular")}
                     </span>
@@ -112,26 +108,23 @@ export const PricingSection = () => {
                 )}
 
                 <div className="mb-5">
-                  <h3
-                    className="text-lg font-semibold text-[#2E2117] mb-1"
-                    style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-                  >
+                  <h3 className={`mb-1 text-xl font-semibold ${plan.highlighted ? "text-[#fff7e9]" : "text-[#18120c]"}`}>
                     {t(`pricing.plans.${plan.id}.title`)}
                   </h3>
-                  <p className="text-sm text-[#8B6E5A] leading-relaxed">
+                  <p className={`text-sm leading-relaxed ${plan.highlighted ? "text-[#c9b7a0]" : "text-[#725f4c]"}`}>
                     {t(`pricing.plans.${plan.id}.description`)}
                   </p>
                 </div>
 
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-semibold text-[#2E2117]">
+                    <span className={`text-4xl font-semibold ${plan.highlighted ? "text-[#fff7e9]" : "text-[#18120c]"}`}>
                       {formatPrice(monthlyEquiv)}
                     </span>
-                    <span className="text-sm text-[#8B6E5A]">/{t("pricing.billing.per_month")}</span>
+                    <span className={`text-sm ${plan.highlighted ? "text-[#c9b7a0]" : "text-[#725f4c]"}`}>/{t("pricing.billing.per_month")}</span>
                   </div>
                   {billingCycle === "yearly" && (
-                    <p className="text-xs text-[#8B6E5A] mt-1">
+                    <p className={`mt-1 text-xs ${plan.highlighted ? "text-[#a99782]" : "text-[#725f4c]"}`}>
                       {t("pricing.billing.billed_yearly")} ({formatPrice(annualTotal)})
                     </p>
                   )}
@@ -140,13 +133,10 @@ export const PricingSection = () => {
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5">
-                      <div
-                        className="w-4 h-4 rounded-full flex items-center justify-center mt-0.5 shrink-0"
-                        style={{ background: "rgba(54,176,128,0.14)" }}
-                      >
-                        <Check size={10} style={{ color: "#36B080" }} strokeWidth={3} />
+                      <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${plan.highlighted ? "bg-[#8db87a]/20" : "bg-[#76945e]/16"}`}>
+                        <Check size={10} style={{ color: "#8db87a" }} strokeWidth={3} />
                       </div>
-                      <span className="text-sm text-[#5A3E2B] leading-snug">
+                      <span className={`text-sm leading-snug ${plan.highlighted ? "text-[#ddcfbc]" : "text-[#4d3b2d]"}`}>
                         {t(`pricing.features.${feature}`)}
                       </span>
                     </li>
@@ -155,26 +145,26 @@ export const PricingSection = () => {
 
                 <button
                   onClick={() => handlePlanSelection(plan.id)}
-                  className="w-full h-11 rounded-full text-sm font-semibold tracking-widest uppercase transition-all duration-200"
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5"
                   style={
                     plan.highlighted
                       ? {
-                          background: "linear-gradient(135deg, #AB6E3C 0%, #8B5A2B 100%)",
+                          background: "#c8793f",
                           color: "#fff",
-                          boxShadow: "0 4px 16px rgba(171,110,60,0.28)",
+                          boxShadow: "0 14px 34px rgba(200,121,63,0.28)",
                         }
                       : {
-                          background: "transparent",
-                          color: "#AB6E3C",
-                          border: "1.5px solid rgba(171,110,60,0.35)",
+                          background: "#17110b",
+                          color: "#fff7e9",
                         }
                   }
                 >
                   {t(`pricing.cta.${plan.buttonText || "choose_plan"}`)}
+                  <ArrowRight className="h-4 w-4" />
                 </button>
 
                 {plan.id !== "enterprise" && (
-                  <p className="text-center text-[11px] text-[#8B6E5A] mt-3">
+                  <p className={`mt-3 text-center text-[11px] ${plan.highlighted ? "text-[#a99782]" : "text-[#725f4c]"}`}>
                     {t("pricing.trial_info", { days: PRICING_CONFIG.trialDays })}
                   </p>
                 )}

@@ -2,6 +2,7 @@ import "server-only";
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getSubdomainFromHost } from "@/lib/utils";
+import { createCustomerBrandTheme } from "@/lib/utils/colors";
 import type {
   CustomerHomepageBranch,
   CustomerHomepageCompany,
@@ -85,13 +86,17 @@ function mapCompany(
   organization: OrganizationRow | null,
   currentBranch: BranchRow,
 ): CustomerHomepageCompany {
+  const theme = createCustomerBrandTheme(
+    organization?.brand_color ?? currentBranch.brand_color,
+  );
+
   return {
     id: organization?.id ?? currentBranch.id,
     name: organization?.name ?? currentBranch.name,
     slug: organization?.slug ?? currentBranch.subdomain,
     publicSubdomain: organization?.public_subdomain ?? currentBranch.subdomain,
     logoUrl: organization?.logo_url ?? currentBranch.logo_url,
-    brandColor: organization?.brand_color ?? currentBranch.brand_color,
+    brandColor: theme.primary,
     description_en:
       organization?.description_en ?? currentBranch.description_en,
     description_ja:
@@ -109,13 +114,15 @@ function mapBranch(
   company: CustomerHomepageCompany,
   currentBranchId: string,
 ): CustomerHomepageBranch {
+  const theme = createCustomerBrandTheme(row.brand_color ?? company.brandColor);
+
   return {
     id: row.id,
     name: row.name,
     subdomain: row.subdomain,
     branchCode: row.branch_code ?? row.subdomain,
     logoUrl: company.logoUrl ?? row.logo_url,
-    brandColor: company.brandColor ?? row.brand_color,
+    brandColor: theme.primary,
     address: row.address,
     phone: row.phone,
     email: row.email,

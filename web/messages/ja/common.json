@@ -60,6 +60,8 @@
   "cart": "カート",
   "view_cart_label": "カートを見る",
   "order_history_label": "注文履歴",
+  "open_now": "営業中",
+  "closed_now": "閉店",
   "weekdays": {
     "mon": "月曜日",
     "tue": "火曜日",

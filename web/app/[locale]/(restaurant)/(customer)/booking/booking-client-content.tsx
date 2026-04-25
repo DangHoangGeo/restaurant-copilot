@@ -24,6 +24,10 @@ import {
   RestaurantNotFoundError,
 } from "@/components/features/customer/error/CustomerError";
 import { buildCustomerPath, getActiveBranchCode } from "@/lib/customer-branch";
+import {
+  createCustomerBrandTheme,
+  createCustomerThemeProperties,
+} from "@/lib/utils/colors";
 
 interface BookingFormData {
   tableId: string;
@@ -64,7 +68,8 @@ export function BookingClientContent() {
   if (error) return <CustomerError error={error} onRetry={reload} />;
   if (!restaurant) return <RestaurantNotFoundError />;
 
-  const primaryColor = restaurant.primaryColor || "#3B82F6";
+  const customerTheme = createCustomerBrandTheme(restaurant.primaryColor);
+  const primaryColor = customerTheme.primary;
   const activeBranchCode = getActiveBranchCode({
     searchParams,
     branchCode: restaurant.branchCode,
@@ -166,8 +171,10 @@ export function BookingClientContent() {
 
   return (
     <div
-      className="min-h-screen bg-slate-50 dark:bg-slate-900 relative"
-      style={{ "--brand-color": primaryColor } as React.CSSProperties}
+      className="relative min-h-screen bg-[var(--customer-background)] dark:bg-slate-900"
+      style={
+        createCustomerThemeProperties(primaryColor) as React.CSSProperties
+      }
     >
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
@@ -214,9 +221,10 @@ export function BookingClientContent() {
                 onClick={handleBackToMenu}
                 size="lg"
                 style={{
-                  backgroundColor: restaurant.primaryColor || "#0ea5e9",
+                  backgroundColor: primaryColor,
+                  color: customerTheme.primaryForeground,
                 }}
-                className="text-white hover:opacity-90"
+                className="hover:opacity-90"
               >
                 {tCommon("back_to_menu")}
               </Button>
@@ -358,8 +366,7 @@ export function BookingClientContent() {
                               className="form-checkbox h-4 w-4 rounded accent-[--brand-color]"
                               style={
                                 {
-                                  "--brand-color":
-                                    restaurant.primaryColor || "#0ea5e9",
+                                  "--brand-color": primaryColor,
                                 } as React.CSSProperties
                               }
                             />
@@ -397,9 +404,10 @@ export function BookingClientContent() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full mt-6 text-white hover:opacity-90"
+                    className="mt-6 w-full hover:opacity-90"
                     style={{
-                      backgroundColor: restaurant.primaryColor || "#0ea5e9",
+                      backgroundColor: primaryColor,
+                      color: customerTheme.primaryForeground,
                     }}
                     disabled={isSubmitting}
                   >

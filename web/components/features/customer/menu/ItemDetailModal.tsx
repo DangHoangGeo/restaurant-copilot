@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Star, Minus, Plus, ShoppingCart, Check } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { getLocalizedText } from "@/lib/customerUtils";
+import { getLocalizedText, formatPrice } from "@/lib/customerUtils";
 import type { FoodItem, MenuItemSize, Topping } from "@/shared/types/menu";
 
 interface ItemDetailModalProps {
@@ -24,6 +24,7 @@ interface ItemDetailModalProps {
   item: FoodItem | null;
   locale: string;
   brandColor: string;
+  currency?: string;
   companyName?: string;
   branchName?: string;
   logoUrl?: string | null;
@@ -49,6 +50,7 @@ export function ItemDetailModal({
   item,
   locale,
   brandColor,
+  currency,
   companyName: _companyName,
   branchName: _branchName,
   logoUrl: _logoUrl,
@@ -63,6 +65,8 @@ export function ItemDetailModal({
 }: ItemDetailModalProps) {
   const t = useTranslations("customer.menu.item_detail");
   const tCommon = useTranslations("common");
+
+  const fp = (amount: number) => formatPrice(amount, currency, locale);
 
   // Portal mount guard (SSR safety)
   const [mounted, setMounted] = useState(false);
@@ -96,7 +100,6 @@ export function ItemDetailModal({
       setQuantity(initialQuantity);
       const defaultSize =
         initialSelectedSize ||
-        item.menu_item_sizes?.[1] ||
         item.menu_item_sizes?.[0] ||
         null;
       setSelectedSize(defaultSize?.id ? defaultSize : null);
@@ -301,7 +304,7 @@ export function ItemDetailModal({
                     className="text-xl font-bold flex-shrink-0 pt-0.5"
                     style={{ color: brandColor }}
                   >
-                    ¥{selectedSize ? selectedSize.price : displayItem.price}
+                    {fp(selectedSize ? selectedSize.price : displayItem.price)}
                   </span>
                 </div>
 
@@ -359,7 +362,7 @@ export function ItemDetailModal({
                                 className="opacity-70"
                                 style={{ color: active ? brandColor : "#94a3b8" }}
                               >
-                                ¥{size.price}
+                                {fp(size.price)}
                               </span>
                             </button>
                           );
@@ -419,7 +422,7 @@ export function ItemDetailModal({
                                   {name}
                                 </span>
                                 <span className="text-[10px] text-slate-400 flex-shrink-0">
-                                  +¥{topping.price}
+                                  +{fp(topping.price)}
                                 </span>
                               </span>
                             </button>
@@ -488,7 +491,7 @@ export function ItemDetailModal({
                   disabled={!canAddItems || !displayItem.available || isAdding}
                   className="flex-1 h-11 rounded-xl text-white font-bold text-sm flex items-center justify-between px-4 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: brandColor }}
-                  aria-label={`${isEditMode ? t("update") : t("add_to_cart")} — ¥${totalPrice}`}
+                  aria-label={`${isEditMode ? t("update") : t("add_to_cart")} — ${fp(totalPrice)}`}
                 >
                   <div className="flex items-center gap-2">
                     {isAdding ? (
@@ -499,7 +502,7 @@ export function ItemDetailModal({
                     <span>{isEditMode ? t("update") : t("add_to_cart")}</span>
                   </div>
                   <span className="bg-white/20 px-2.5 py-0.5 rounded-lg font-bold text-sm">
-                    ¥{totalPrice}
+                    {fp(totalPrice)}
                   </span>
                 </button>
               </div>

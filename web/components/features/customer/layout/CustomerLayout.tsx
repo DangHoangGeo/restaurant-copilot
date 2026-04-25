@@ -12,6 +12,10 @@ import { FloatingCart } from "../FloatingCart";
 import { Skeleton } from "@/components/ui/skeletons/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { buildCustomerPath } from "@/lib/customer-branch";
+import {
+  createCustomerBrandTheme,
+  createCustomerThemeProperties,
+} from "@/lib/utils/colors";
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
@@ -33,6 +37,12 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
     error,
   } = useCustomerData();
   const { toast } = useToast();
+  const customerTheme = createCustomerBrandTheme(
+    restaurantSettings?.primaryColor,
+  );
+  const customerThemeProperties = createCustomerThemeProperties(
+    customerTheme.primary,
+  );
 
   //const [isAIOpen, setIsAIOpen] = useState(false);
 
@@ -163,7 +173,10 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div
+      className="flex min-h-screen flex-col bg-[var(--customer-background)] dark:bg-slate-900"
+      style={customerThemeProperties as React.CSSProperties}
+    >
       <main className="flex-1">{children}</main>
 
       <CustomerFooter restaurantSettings={restaurantSettings} />
@@ -173,7 +186,8 @@ function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
           count={totalCartItems}
           total={totalCartPrice}
           onPlaceOrder={handlePlaceOrder}
-          brandColor={restaurantSettings.primaryColor || "#4f46e5"}
+          brandColor={customerTheme.primary}
+          currency={restaurantSettings.currency}
           branchCode={activeBranchCode}
           restaurantId={restaurantSettings.id}
         />

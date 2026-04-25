@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, TrendingUp, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { getLocalizedText } from "@/lib/customerUtils";
+import { getLocalizedText, formatPrice } from "@/lib/customerUtils";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { FoodItem } from "@/shared/types/menu";
 
@@ -69,13 +70,13 @@ const getCategoryPastelColor = (itemName: string): string => {
     return 'from-red-100 via-orange-50 to-yellow-100 dark:from-red-900/20 dark:via-orange-900/10 dark:to-yellow-900/20';
   }
   if (name.includes('sushi') || name.includes('fish') || name.includes('seafood')) {
-    return 'from-blue-100 via-cyan-50 to-teal-100 dark:from-blue-900/20 dark:via-cyan-900/10 dark:to-teal-900/20';
+    return 'from-emerald-100 via-teal-50 to-lime-100 dark:from-emerald-900/20 dark:via-teal-900/10 dark:to-lime-900/20';
   }
   if (name.includes('salad') || name.includes('vegetable') || name.includes('green')) {
     return 'from-green-100 via-emerald-50 to-lime-100 dark:from-green-900/20 dark:via-emerald-900/10 dark:to-lime-900/20';
   }
   if (name.includes('cake') || name.includes('dessert') || name.includes('ice cream')) {
-    return 'from-pink-100 via-rose-50 to-purple-100 dark:from-pink-900/20 dark:via-rose-900/10 dark:to-purple-900/20';
+    return 'from-rose-100 via-orange-50 to-amber-100 dark:from-rose-900/20 dark:via-orange-900/10 dark:to-amber-900/20';
   }
   if (name.includes('meat') || name.includes('beef') || name.includes('chicken')) {
     return 'from-orange-100 via-red-50 to-pink-100 dark:from-orange-900/20 dark:via-red-900/10 dark:to-pink-900/20';
@@ -92,6 +93,7 @@ interface CompactFoodCardProps {
   onCardClick: () => void;
   brandColor: string;
   locale: string;
+  currency?: string;
   canAddItems?: boolean;
   showBadge?: boolean;
   showPopularBadge?: boolean;
@@ -105,11 +107,13 @@ export function CompactFoodCard({
   onCardClick,
   brandColor,
   locale,
+  currency,
   canAddItems = true,
   showBadge = true,
   showPopularBadge = false,
   showRecommendedBadge = false,
 }: CompactFoodCardProps) {
+  const tMenu = useTranslations("customer.menu");
   const itemName = getLocalizedText(
     { name_en: item.name_en, name_vi: item.name_vi || '', name_ja: item.name_ja || '' },
     locale,
@@ -135,7 +139,8 @@ export function CompactFoodCard({
   };
 
   return (
-    <motion.div
+    <motion.button
+      type="button"
       whileHover={{
         scale: 1.03,
         y: -2,
@@ -148,8 +153,9 @@ export function CompactFoodCard({
         damping: 25,
         duration: 0.2
       }}
-      className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer"
+      className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-400"
       onClick={onCardClick}
+      aria-label={itemName}
     >
       {/* Full-bleed image */}
       <div className="absolute inset-0">
@@ -199,7 +205,7 @@ export function CompactFoodCard({
             >
               <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 shadow-md border-0 rounded-sm">
                 <TrendingUp className="h-2 w-2" />
-                <span>Popular</span>
+                <span>{tMenu("food_card.popular")}</span>
               </Badge>
             </motion.div>
           )}
@@ -211,7 +217,7 @@ export function CompactFoodCard({
             >
               <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 shadow-md border-0 rounded-sm">
                 <Sparkles className="h-2 w-2" />
-                <span>AI Pick</span>
+                <span>{tMenu("food_card.recommended")}</span>
               </Badge>
             </motion.div>
           )}
@@ -235,7 +241,7 @@ export function CompactFoodCard({
       {!item.available && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
           <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            Out of Stock
+            {tMenu("food_card.out_of_stock")}
           </span>
         </div>
       )}
@@ -256,7 +262,7 @@ export function CompactFoodCard({
         </div>
         <div className="flex items-center justify-between">
           <div className="font-bold text-base md:text-xl text-white drop-shadow-md">
-            ¥{item.price}
+            {formatPrice(item.price, currency, locale)}
           </div>
           {canAddItems && (
             <motion.div
@@ -326,6 +332,6 @@ export function CompactFoodCard({
           )}
         </div>
       </div>
-    </motion.div>
+    </motion.button>
   );
 }

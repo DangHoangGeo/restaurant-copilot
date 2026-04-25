@@ -15,29 +15,29 @@ export const FaqSection = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0); // Open first FAQ by default
 
   return (
-    <section className="py-16 sm:py-20 lg:py-28 bg-slate-50 dark:bg-slate-800/30">
+    <section className="bg-[#14100b] py-16 text-[#f6e8d3] sm:py-20 lg:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-[#fff7e9] sm:text-4xl">
             {t('faq.title')}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-[#c9b7a0]">
             {t('faq.subtitle')}
           </p>
         </div>
-        <div className="max-w-3xl mx-auto mt-12">
+        <div className="mx-auto mt-12 max-w-3xl">
           {faqs.map((faq, idx) => (
-            <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-2xl mb-4 overflow-hidden">
+            <div key={idx} className="mb-4 overflow-hidden rounded-lg border border-[#f1dcc4]/14 bg-[#fff7e9]/6">
               <button
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full flex items-center justify-between p-5 sm:p-6 text-left bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-150"
+                className="flex w-full items-center justify-between gap-4 p-5 text-left transition-colors duration-150 hover:bg-[#fff7e9]/8 sm:p-6"
               >
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t(faq.q)}</h3>
-                <Icon name={openFaq === idx ? Minus : Plus} size={20} className="text-[--brand-color-landing]" />
+                <h3 className="text-lg font-semibold text-[#fff7e9]">{t(faq.q)}</h3>
+                <Icon name={openFaq === idx ? Minus : Plus} size={20} className="text-[#e9a35e]" />
               </button>
               {openFaq === idx && (
-                <div className="p-5 sm:p-6 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-                  <p className="text-slate-600 dark:text-slate-300">{t(faq.a)}</p>
+                <div className="border-t border-[#f1dcc4]/12 bg-[#080705]/18 p-5 sm:p-6">
+                  <p className="text-[#c9b7a0]">{t(faq.a)}</p>
                 </div>
               )}
             </div>

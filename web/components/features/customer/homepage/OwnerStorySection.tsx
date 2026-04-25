@@ -57,20 +57,20 @@ export function OwnerStorySection({
         <section className="py-8 px-4">
           <div className="max-w-4xl mx-auto">
             <motion.div
-              className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 text-center"
+              className="rounded-2xl border border-[#c8773e]/20 bg-gradient-to-r from-[#fff7e9] to-[#f6e8d3] p-6 text-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <div className="mb-4">
-                <Heart className="h-8 w-8 text-blue-500 mx-auto" />
+                <Heart className="mx-auto h-8 w-8 text-[#c8773e]" />
               </div>
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+              <h3 className="mb-2 text-lg font-semibold text-[#372719]">
                 Add Your Story
               </h3>
-              <p className="text-blue-700 mb-4">
+              <p className="mb-4 text-[#6d5a45]">
                 Share your passion and story to help customers connect with your restaurant!
               </p>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="rounded-lg bg-[#c8773e] px-4 py-2 text-white transition-colors hover:bg-[#a9572d]">
                 Add Owner Story
               </button>
             </motion.div>
@@ -81,7 +81,7 @@ export function OwnerStorySection({
     return null;
   }
 
-  const primaryColor = restaurant.primaryColor || "#3B82F6";
+  const primaryColor = restaurant.primaryColor || "#c8773e";
 
   return (
     <section 

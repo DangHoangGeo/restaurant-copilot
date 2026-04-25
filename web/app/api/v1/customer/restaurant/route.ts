@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
         subdomain: restaurant.subdomain,
         branchCode: restaurant.branchCode,
         companyPublicSubdomain: restaurant.companyPublicSubdomain,
-        primaryColor: restaurant.primaryColor || "#3B82F6",
+        primaryColor: restaurant.primaryColor,
         defaultLocale: restaurant.defaultLocale || "en",
         address: restaurant.address,
         phone: restaurant.phone,

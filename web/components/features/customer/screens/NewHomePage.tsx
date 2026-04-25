@@ -15,7 +15,10 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { createThemeProperties, sanitizeHexColor } from "@/lib/utils/colors";
+import {
+  createCustomerBrandTheme,
+  createCustomerThemeProperties,
+} from "@/lib/utils/colors";
 import { cn } from "@/lib/utils";
 import type { CustomerHomepageData } from "@/shared/types";
 
@@ -149,10 +152,14 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
 
   const { company, currentBranch, branches, owners, gallery, featuredItems } =
     initialData;
-  const brandColor = sanitizeHexColor(
-    company.brandColor ?? currentBranch.brandColor ?? "#2563eb",
+  const rawBrandColor =
+    initialData.source === "branch"
+      ? currentBranch.brandColor ?? company.brandColor
+      : company.brandColor ?? currentBranch.brandColor;
+  const customerTheme = createCustomerBrandTheme(rawBrandColor);
+  const themeProperties = createCustomerThemeProperties(
+    customerTheme.primary,
   );
-  const themeProperties = createThemeProperties(brandColor);
   const description =
     getLocalizedText(locale, {
       en: company.description_en,
@@ -186,9 +193,7 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
           className="absolute inset-0 opacity-90"
           style={{
             background: `
-              radial-gradient(circle at top left, var(--theme-primary-700), transparent 38%),
-              radial-gradient(circle at top right, rgba(255,255,255,0.08), transparent 24%),
-              linear-gradient(180deg, #020617 0%, #0f172a 54%, #111827 100%)
+              var(--customer-hero-gradient)
             `,
           }}
         />
@@ -285,8 +290,11 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
                 <Button
                   asChild
                   size="lg"
-                  className="h-12 rounded-2xl border-0 px-5 text-sm font-semibold text-white shadow-lg shadow-black/30"
-                  style={{ backgroundColor: "var(--theme-primary)" }}
+                    className="h-12 rounded-2xl border-0 px-5 text-sm font-semibold shadow-lg shadow-black/30"
+                  style={{
+                    backgroundColor: "var(--customer-brand)",
+                    color: "var(--customer-brand-foreground)",
+                  }}
                 >
                   <Link
                     href={getMenuHref(
@@ -367,7 +375,7 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
                     className="flex aspect-[4/3] items-end p-5"
                     style={{
                       background:
-                        "linear-gradient(135deg, var(--theme-primary-500), rgba(15, 23, 42, 0.85))",
+                        "linear-gradient(135deg, var(--theme-primary-500), var(--customer-dark-surface))",
                     }}
                   >
                     <div>
@@ -477,7 +485,7 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
                             className="flex h-full items-center justify-center"
                             style={{
                               background:
-                                "linear-gradient(135deg, var(--theme-primary-500), rgba(15, 23, 42, 0.4))",
+                                "linear-gradient(135deg, var(--theme-primary-500), var(--customer-dark-surface-elevated))",
                             }}
                           >
                             <UtensilsCrossed className="h-10 w-10 text-white/85" />
@@ -532,8 +540,11 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
                           <Button
                             asChild
                             size="sm"
-                            className="rounded-full text-white"
-                            style={{ backgroundColor: "var(--theme-primary)" }}
+                            className="rounded-full"
+                            style={{
+                              backgroundColor: "var(--customer-brand)",
+                              color: "var(--customer-brand-foreground)",
+                            }}
                           >
                             <Link
                               href={getMenuHref(
@@ -634,12 +645,6 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
                   {t("locations.eyebrow")}
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-                  {t("locations.title")}
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
-                  {t("locations.description")}
-                </p>
               </div>
             </div>
 
@@ -736,8 +741,11 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                       <Button
                         asChild
-                        className="flex-1 rounded-2xl text-white"
-                        style={{ backgroundColor: "var(--theme-primary)" }}
+                        className="flex-1 rounded-2xl"
+                        style={{
+                          backgroundColor: "var(--customer-brand)",
+                          color: "var(--customer-brand-foreground)",
+                        }}
                       >
                         <Link
                           href={getMenuHref(

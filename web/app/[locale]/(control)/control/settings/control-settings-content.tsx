@@ -86,7 +86,7 @@ export function ControlSettingsContent({
     currency: initial.currency,
     country: initial.country,
     logo_url: initial.logo_url ?? '',
-    brand_color: initial.brand_color ?? '#3B82F6',
+    brand_color: initial.brand_color ?? '#c8773e',
     description_en: initial.description_en ?? '',
     description_ja: initial.description_ja ?? '',
     description_vi: initial.description_vi ?? '',
@@ -278,7 +278,7 @@ export function ControlSettingsContent({
                       disabled={disabled}
                       className="h-10 rounded-xl font-mono"
                       maxLength={7}
-                      placeholder="#3B82F6"
+                      placeholder="#c8773e"
                     />
                   </div>
                 </div>

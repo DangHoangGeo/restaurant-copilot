@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "title": "Tìm Nhà Hàng — CoOrder",
+    "description": "Khám phá tất cả nhà hàng đã được xác minh trên CoOrder. Lọc theo tỉnh, quận hoặc tìm kiếm theo tên."
+  },
+  "page": {
+    "heading": "Tìm Nhà Hàng",
+    "subheading": "Khám phá nhà hàng đã xác minh gần bạn",
+    "eyebrow": "Danh sách nhà hàng công khai",
+    "verified_network": "Mạng lưới đã xác minh"
+  },
+  "search": {
+    "placeholder": "Tìm theo tên, địa chỉ, hoặc món ăn...",
+    "clear": "Xóa tìm kiếm"
+  },
+  "filters": {
+    "all_provinces": "Tất cả tỉnh/thành",
+    "all_districts": "Tất cả quận/huyện",
+    "province_label": "Tỉnh/Thành phố",
+    "district_label": "Quận/Huyện",
+    "title": "Tìm trong mạng lưới",
+    "clear_filters": "Xóa bộ lọc"
+  },
+  "card": {
+    "view_menu": "Xem Thực Đơn",
+    "signature_dish": "Món bán chạy",
+    "signature_placeholder": "Món nổi bật sắp có",
+    "reviews": "{count} đánh giá",
+    "no_rating": "Chưa có đánh giá",
+    "part_of_brand": "Thuộc {brand}",
+    "open_now": "Đang mở cửa",
+    "closed": "Đã đóng cửa"
+  },
+  "empty": {
+    "title": "Không tìm thấy nhà hàng",
+    "description": "Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm.",
+    "clear_filters": "Xóa tất cả bộ lọc"
+  },
+  "loading": "Đang tải nhà hàng...",
+  "results_count": "{count} nhà hàng"
+}

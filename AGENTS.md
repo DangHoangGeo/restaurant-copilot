@@ -23,6 +23,11 @@ Read these before any implementation:
 3. `docs/foundation/01_organization_branch_menu_foundation.md`
 4. `docs/foundation/02_ai_agent_execution_plan.md`
 
+Before any UI or UX implementation, also read:
+
+5. `DESIGN.md`
+   Use for web, mobile, public customer, founder control, branch operations, platform admin, marketing, shared UI primitives, visual assets, copy tone, and motion.
+
 Also read these when the task touches the area:
 
 - `docs/foundation/03_founder_control_route_map.md`

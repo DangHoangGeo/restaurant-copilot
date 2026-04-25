@@ -2,6 +2,7 @@ import "server-only";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
+import { createCustomerBrandTheme } from "@/lib/utils/colors";
 import type { RestaurantSettings } from "@/shared/types/customer";
 
 async function getOrganizationBrandingForRestaurant(
@@ -68,6 +69,10 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
     const organizationBranding = await getOrganizationBrandingForRestaurant(
       restaurant.id,
     );
+    const theme = createCustomerBrandTheme(
+      restaurant.brand_color ?? organizationBranding?.brandColor,
+    );
+
     return {
       id: restaurant.id,
       name: restaurant.name,
@@ -76,9 +81,7 @@ export async function getRestaurantSettingsFromSubdomain(subdomain: string) {
       subdomain: restaurant.subdomain,
       branchCode: restaurant.branch_code ?? restaurant.subdomain,
       companyPublicSubdomain: organizationBranding?.publicSubdomain ?? null,
-      primaryColor:
-        (organizationBranding?.brandColor ?? restaurant.brand_color) ||
-        "#3B82F6",
+      primaryColor: theme.primary,
       defaultLocale: restaurant.default_language || "en",
       onboarded: restaurant.onboarded || false,
       owner_photo_url: restaurant.owner_photo_url || null,
@@ -148,6 +151,10 @@ export async function getCustomerRestaurantFromSubdomain(
       restaurant.id,
     );
 
+    const theme = createCustomerBrandTheme(
+      restaurant.brand_color ?? organizationBranding?.brandColor,
+    );
+
     return {
       id: restaurant.id,
       name: restaurant.name,
@@ -157,9 +164,7 @@ export async function getCustomerRestaurantFromSubdomain(
       companyPublicSubdomain: organizationBranding?.publicSubdomain ?? null,
       logoUrl: organizationBranding?.logoUrl ?? restaurant.logo_url,
       allowOrderNotes: restaurant.allow_order_notes ?? true,
-      primaryColor:
-        (organizationBranding?.brandColor ?? restaurant.brand_color) ||
-        "#3B82F6",
+      primaryColor: theme.primary,
       defaultLocale: restaurant.default_language || "en",
       address: restaurant.address,
       phone: restaurant.phone,

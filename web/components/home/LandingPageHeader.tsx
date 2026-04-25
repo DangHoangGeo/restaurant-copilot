@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { LanguageSwitcherLanding } from "./LanguageSwitcherLanding";
 import Link from "next/link";
+import { Compass } from "lucide-react";
 
 interface LandingPageHeaderProps {
   locale: string;
@@ -13,35 +14,34 @@ export const LandingPageHeader = ({ locale }: LandingPageHeaderProps) => {
   const t = useTranslations("landing");
 
   return (
-    <header className="sticky top-0 z-40 h-14 flex items-center bg-[#FAF3EA]/80 dark:bg-[#170F0C]/80 backdrop-blur-md border-b border-[#AB6E3C]/10 dark:border-[#AB6E3C]/15">
-      <div className="w-full max-w-5xl mx-auto px-5 flex items-center justify-between">
-        {/* Logo */}
+    <header className="sticky top-0 z-40 flex h-14 items-center border-b border-[#f1dcc4]/10 bg-[#080705]/78 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
         <Link href={`/${locale}`} className="flex items-center gap-2.5">
           <Image
-            src="/coorder-ai.png"
+            src="/brand/coorder-wordmark.svg"
             alt="CoOrder.ai"
-            width={28}
-            height={28}
-            className="w-7 h-7"
+            width={159}
+            height={36}
+            priority
           />
-          <span
-            className="text-base font-medium text-[#2E2117] dark:text-[#F7F1E9]"
-            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-          >
-            coorder<span style={{ color: "#AB6E3C" }}>.ai</span>
-          </span>
         </Link>
 
-        {/* Right controls */}
-        <div className="flex items-center gap-3">
+        <nav className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href={`/${locale}/discover`}
+            className="hidden h-9 items-center gap-2 rounded-lg border border-[#f1dcc4]/12 px-3 text-sm font-medium text-[#dbc7ad] transition-colors hover:bg-[#fff7e9]/8 hover:text-[#fff7e9] sm:inline-flex"
+          >
+            <Compass className="h-4 w-4" />
+            {t("header.discover")}
+          </Link>
           <LanguageSwitcherLanding />
           <Link
             href={`/${locale}/login`}
-            className="text-sm font-medium text-[#8B6E5A] dark:text-[#B89078] hover:text-[#AB6E3C] dark:hover:text-[#AB6E3C] transition-colors"
+            className="text-sm font-medium text-[#dbc7ad] transition-colors hover:text-[#fff7e9]"
           >
             {t("header.login")}
           </Link>
-        </div>
+        </nav>
       </div>
     </header>
   );

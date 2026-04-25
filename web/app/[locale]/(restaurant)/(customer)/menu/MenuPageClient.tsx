@@ -2,7 +2,7 @@
 
 import { SmartMenu } from "@/components/features/customer/menu/SmartMenu";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   ViewType,
   ViewProps,
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSubdomainFromHost } from "@/lib/utils";
 import { buildCustomerPath } from "@/lib/customer-branch";
+import { createCustomerBrandTheme } from "@/lib/utils/colors";
 import {
   CUSTOMER_SESSION_CODE_LENGTH,
   sanitizeCustomerSessionCodeInput,
@@ -61,7 +62,11 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const [resolveError, setResolveError] = useState<string | null>(null);
   const [passcodeCopied, setPasscodeCopied] = useState<boolean>(false);
 
-  const brandColor = restaurantSettings?.primaryColor || "#3b82f6";
+  const customerTheme = useMemo(
+    () => createCustomerBrandTheme(restaurantSettings?.primaryColor),
+    [restaurantSettings?.primaryColor],
+  );
+  const brandColor = customerTheme.primary;
   const companyName =
     restaurantSettings?.companyName ?? restaurantSettings?.name ?? "";
   const branchName = restaurantSettings?.name ?? "";
@@ -371,12 +376,15 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     ],
   );
 
+  const spinnerStyle = { borderBottomColor: brandColor };
+  const btnStyle = { backgroundColor: brandColor, borderColor: brandColor };
+
   // Show loading state
   if (contextLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={spinnerStyle}></div>
           <p className="text-gray-600">{t("loading")}</p>
         </div>
       </div>
@@ -394,7 +402,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             {t("invalid_session_message")}
           </p>
-          <Button onClick={() => router.push(`/${locale}/`)}>
+          <Button onClick={() => router.push(`/${locale}/`)} className="text-white" style={btnStyle}>
             {t("scan_qr_again")}
           </Button>
         </div>
@@ -412,7 +420,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             {resolveError}
           </p>
-          <Button onClick={() => router.push(`/${locale}/`)}>
+          <Button onClick={() => router.push(`/${locale}/`)} className="text-white" style={btnStyle}>
             {t("scan_qr_again")}
           </Button>
         </div>
@@ -437,7 +445,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={spinnerStyle}></div>
           <p className="text-gray-600">{t("redirecting_to_history")}</p>
         </div>
       </div>
@@ -451,7 +459,8 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         sessionId={sessionData.sessionId || ""}
         tableNumber={sessionData.tableNumber || ""}
         canAddItems={sessionData.canAddItems}
-        brandColor={restaurantSettings?.primaryColor || "#3b82f6"}
+        brandColor={brandColor}
+        currency={restaurantSettings?.currency}
         setView={handleSetView}
         restaurantId={restaurantSettings?.id || ""}
         restaurantName={companyName}
@@ -476,7 +485,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               <div className="mb-6">
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-                  style={{ backgroundColor: `${brandColor}20` }}
+                  style={{ backgroundColor: customerTheme.soft }}
                 >
                   <svg
                     className="w-7 h-7"
@@ -571,7 +580,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               {/* Success icon */}
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ backgroundColor: `${brandColor}20` }}
+                style={{ backgroundColor: customerTheme.soft }}
               >
                 <svg
                   className="w-9 h-9"
@@ -598,7 +607,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               {/* Passcode display */}
               <div
                 className="rounded-2xl px-6 py-5 mb-4"
-                style={{ backgroundColor: `${brandColor}12` }}
+                style={{ backgroundColor: customerTheme.softer }}
               >
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
                   {t("table_passcode_label")}
@@ -642,7 +651,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           <div className="text-center p-6">
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ backgroundColor: `${brandColor}20` }}
+              style={{ backgroundColor: customerTheme.soft }}
             >
               <svg
                 className="w-7 h-7"

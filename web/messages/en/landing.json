@@ -7,19 +7,35 @@
   "header": {
       "logo_aria_label": "CoOrder logo",
       "login": "Login",
+      "discover": "Discover",
       "signup": "Sign Up"
     },
     "theme": {
       "toggle": "Toggle theme"
     },
     "hero": {
+      "live_badge": "Live network numbers",
+      "headline": "Run service.",
+      "headline_accent": "From your phone.",
       "headline_part1": "Mobile-First, AI-Augmented SaaS for ",
       "headline_part2": "Small Restaurants.",
-      "subheadline": "CoOrder empowers small restaurants to manage their entire operation—menus, orders, table bookings, staff, and analytics—entirely from a smartphone or tablet.",
+      "subheadline": "One calm command center for orders, branches, menus, staff, and money. Cut daily admin, prevent service mistakes, and keep guests happier from scan to checkout.",
       "cta": {
         "signup": "Start Free Trial",
+        "discover": "Find restaurants",
         "demo": "Watch Demo",
         "subtext": "No credit card required. 14-day free trial."
+      },
+      "stats": {
+        "restaurants": "verified restaurants",
+        "orders": "orders in 24h"
+      },
+      "timeline": {
+        "title": "Order #1028 is moving",
+        "received": "Received",
+        "preparing": "Preparing",
+        "ready": "Ready",
+        "delivering": "Delivering"
       },
       "image_alt": "CoOrder Dashboard Mockup"
     },
@@ -36,8 +52,9 @@
       "security_badge3": "GDPR Compliant"
     },
     "features": {
-      "title": "Powerful Features to Accelerate Your Business",
-      "subtitle": "CoOrder is packed with features designed to streamline your operations and delight your customers.",
+      "eyebrow": "Less stress, sharper service",
+      "title": "The work that slows restaurants down gets handled in one place.",
+      "subtitle": "CoOrder connects QR ordering, menu updates, staff visibility, branch health, and daily money checks so teams move faster and guests wait less.",
       "menu_management": {
         "title": "Intuitive Menu Management",
         "description": "Easily create, update, and organize your digital menus with photos, descriptions, and pricing. Supports multiple languages.",
@@ -67,6 +84,22 @@
         "title": "True Mobile-First Experience",
         "description": "Manage your entire restaurant from any smartphone or tablet. No bulky hardware or complex setups required.",
         "benefit": "Run your business from anywhere."
+      },
+      "control_strip": {
+        "eyebrow": "Operational strengths",
+        "title": "Clear orders, accurate menus, faster service, and cleaner numbers create a better guest experience.",
+        "orders": {
+          "label": "Order mistakes reduced",
+          "value": "18"
+        },
+        "branches": {
+          "label": "Branch status",
+          "value": "3/4"
+        },
+        "payout": {
+          "label": "Close visibility",
+          "value": "Today"
+        }
       }
     },
     "howitworks": {
@@ -120,8 +153,9 @@
       }
     },
     "pricing": {
-      "title": "Choose Your Plan",
-      "subtitle": "Select the perfect plan for your restaurant's needs. Start with a free trial and upgrade when you're ready.",
+      "eyebrow": "Start small, add branches later",
+      "title": "Choose your operating base.",
+      "subtitle": "Start with one restaurant, then grow into multi-branch control without changing systems.",
       "popular": "Most Popular",
       "billing": {
         "monthly": "Monthly",

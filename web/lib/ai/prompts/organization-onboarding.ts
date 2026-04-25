@@ -99,6 +99,11 @@ Guidelines:
 - The owner story should sound human and grounded in daily restaurant work.
 - Return exactly 3 brand options that feel distinct but still calm and practical.
 - For each brand option, explain why the primary and accent color fit the customer's own context.
+- Choose restaurant-safe colors only:
+  - primary color must be medium-dark enough for readable customer-facing buttons
+  - accent color must be softer and used as a supporting tint, not a second loud brand color
+  - avoid pure black, pure white, neon colors, generic blue SaaS palettes, and purple AI gradients
+  - prefer warm food, ingredient, wood, herb, tea, clay, charcoal, rice, or muted hospitality tones
 - For each brand option, write a logo_prompt for Gemini Image:
   - generate a simple square restaurant logo mark, not a full poster
   - no readable words, no small text, no address, no phone number

@@ -3,6 +3,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createCustomerBrandTheme } from "@/lib/utils/colors";
 import type { AuthUser } from "./getUserFromRequest";
 import { ACTIVE_BRANCH_COOKIE } from "./organizations/active-branch";
 import type {
@@ -283,6 +284,8 @@ function buildRestaurantSettings(
   } | null,
 ) {
   if (!row) return null;
+  const theme = createCustomerBrandTheme(row.brand_color);
+
   return {
     id: row.id,
     name: row.name,
@@ -290,7 +293,7 @@ function buildRestaurantSettings(
     subdomain: row.subdomain,
     branch_code: row.branch_code ?? null,
     company_public_subdomain: null,
-    primaryColor: row.brand_color || "#3B82F6",
+    primaryColor: theme.primary,
     defaultLocale: row.default_language || "en",
     onboarded: row.onboarded || false,
     owner_photo_url: row.owner_photo_url || null,

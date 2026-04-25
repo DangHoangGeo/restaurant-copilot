@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useMemo } from "react";
 import Image from "next/image";
 import { useCart } from "./CartContext";
-import { getLocalizedText, useGetCurrentLocale } from "@/lib/customerUtils";
+import { getLocalizedText, useGetCurrentLocale, formatPrice } from "@/lib/customerUtils";
 import { ItemDetailModal } from "./menu/ItemDetailModal";
 import type { CartItem } from "./CartContext";
 import type {
@@ -28,6 +28,7 @@ interface Props {
   total: number;
   onPlaceOrder: () => Promise<void> | void;
   brandColor: string;
+  currency?: string;
   locale?: string;
   branchCode?: string | null;
   restaurantId?: string;
@@ -38,6 +39,7 @@ export function FloatingCart({
   total,
   onPlaceOrder,
   brandColor,
+  currency,
   branchCode,
   restaurantId,
 }: Props) {
@@ -82,7 +84,6 @@ export function FloatingCart({
   const handleEditItem = async (item: CartItem) => {
     setEditingItem(item);
 
-    // Fetch the original menu item data to get all available sizes and toppings
     try {
       const params = new URLSearchParams();
       if (restaurantId) {
@@ -95,29 +96,16 @@ export function FloatingCart({
       }
 
       const response = await fetch(
-        `/api/v1/customer/menu?${params.toString()}`,
+        `/api/v1/customer/menu/items/${item.itemId}?${params.toString()}`,
       );
       if (response.ok) {
-        const menuData = await response.json();
-
-        // Find the original menu item
-        let originalItem: MenuItem | null = null;
-        for (const category of menuData.categories) {
-          const foundItem = category.menu_items.find(
-            (menuItem: MenuItem) => menuItem.id === item.itemId,
-          );
-          if (foundItem) {
-            originalItem = foundItem;
-            break;
-          }
-        }
-
+        const originalItem: MenuItem | null = await response.json();
         if (originalItem) {
           setOriginalMenuItem(originalItem);
         }
       }
     } catch (error) {
-      console.error("Failed to fetch original menu item:", error);
+      console.error("Failed to fetch menu item:", error);
     }
 
     setIsEditModalOpen(true);
@@ -228,7 +216,7 @@ export function FloatingCart({
                 className="text-left w-full group hover:bg-slate-50 dark:hover:bg-slate-700 rounded p-1 -m-1 transition-colors"
               >
                 <p
-                  className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  className="truncate text-sm font-medium text-slate-800 group-hover:text-[var(--customer-brand)] dark:text-slate-100 dark:group-hover:text-[var(--customer-accent)]"
                   title={localizedItemName}
                 >
                   {localizedItemName}
@@ -243,7 +231,7 @@ export function FloatingCart({
                     {item.selectedSize && (
                       <Badge
                         variant="secondary"
-                        className="text-xs bg-blue-100 text-blue-700"
+                        className="bg-[var(--customer-brand-soft)] text-xs text-[var(--customer-brand)]"
                       >
                         {getLocalizedText(
                           {
@@ -288,7 +276,7 @@ export function FloatingCart({
                 )}
 
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  ¥{item.price} each
+                  {formatPrice(item.price, currency, currentLocale)} each
                 </p>
               </button>
             </div>
@@ -344,7 +332,7 @@ export function FloatingCart({
               transition={{ duration: 0.2 }}
               className="mb-2"
             >
-              <Card className="p-4 shadow-2xl bg-white dark:bg-slate-800 border-2 max-h-[500px] overflow-hidden">
+              <Card className="p-4 shadow-2xl bg-white dark:bg-slate-800 border-2">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-slate-800 dark:text-slate-100">
                     {t("floating_cart.title")}
@@ -377,7 +365,7 @@ export function FloatingCart({
                       className="font-bold text-lg"
                       style={{ color: brandColor }}
                     >
-                      ¥{total.toFixed(0)}
+                      {formatPrice(total, currency, currentLocale)}
                     </span>
                   </div>
                   <Button

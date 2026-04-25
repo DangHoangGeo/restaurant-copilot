@@ -14,32 +14,32 @@ export const HowItWorksSection = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-20 lg:py-28 bg-slate-50 dark:bg-slate-800/50">
+    <section className="bg-[#f6e8d3] py-16 text-[#17110b] sm:py-20 lg:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-[#17110b] sm:text-4xl">
             {t('howitworks.title')}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-[#6d5a45]">
             {t('howitworks.subtitle')}
           </p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
+        <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, idx) => (
             <div key={idx} className="text-center">
               <div className="relative">
-                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[--brand-color-landing] text-white mx-auto mb-6 text-xl font-bold">
+                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#c8773e] text-xl font-bold text-[#fff7e9]">
                   {step.number}
                 </div>
-                <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
-                  <Icon name={step.icon} size={24} className="text-white" />
+                <div className="absolute left-1/2 top-8 -translate-x-1/2">
+                  <Icon name={step.icon} size={24} className="text-[#fff7e9]" />
                 </div>
                 {idx < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-full w-full h-0.5 bg-[--brand-color-landing]/30 transform translate-x-4" />
+                  <div className="absolute left-full top-8 hidden h-0.5 w-full translate-x-4 bg-[#c8773e]/30 lg:block" />
                 )}
               </div>
-              <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{t(step.title)}</h3>
-              <p className="mt-2 text-slate-600 dark:text-slate-300">{t(step.description)}</p>
+              <h3 className="text-xl font-semibold text-[#17110b]">{t(step.title)}</h3>
+              <p className="mt-2 text-[#6d5a45]">{t(step.description)}</p>
             </div>
           ))}
         </div>

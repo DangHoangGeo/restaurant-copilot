@@ -16,26 +16,26 @@ export const BenefitsSection = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-20 lg:py-28">
+    <section className="bg-[#fff7e9] py-16 text-[#17110b] sm:py-20 lg:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-[#17110b] sm:text-4xl">
             {t('benefits.title')}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-[#6d5a45]">
             {t('benefits.subtitle')}
           </p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {benefits.map((benefit, idx) => (
-            <div key={idx} className="flex items-center space-x-4 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+            <div key={idx} className="flex items-center gap-4 rounded-lg border border-[#17110b]/10 bg-white/55 p-6">
               <div className="flex-shrink-0">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-[--brand-color-landing]/10">
-                  <Icon name={benefit.icon} size={24} className="text-[--brand-color-landing]" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#c8773e]/12">
+                  <Icon name={benefit.icon} size={24} className="text-[#c8773e]" />
                 </div>
               </div>
               <div>
-                <p className="text-lg text-slate-700 dark:text-slate-200">{t(benefit.text)}</p>
+                <p className="text-lg text-[#372719]">{t(benefit.text)}</p>
               </div>
             </div>
           ))}
