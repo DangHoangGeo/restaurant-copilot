@@ -300,13 +300,17 @@ extension PrinterService {
         // Determine the target printer based on job type
         let target = job.jobType.printTarget
 
-        // Get the appropriate printer configuration
-        let printerConfig: PrinterConfig.Hardware?
+        // Get the appropriate printer configuration without falling back across roles.
+        let missingPrinterMessage: String
         switch target {
         case .kitchen:
-            printerConfig = PrinterSettingsManager.shared.getKitchenPrinterConfig()
+            missingPrinterMessage = "printer_no_kitchen_printer_configured_error".localized
         case .receipt:
-            printerConfig = PrinterSettingsManager.shared.getCheckoutPrinterConfig()
+            missingPrinterMessage = "printer_no_checkout_printer_configured_error".localized
+        }
+
+        guard let printerConfig = PrinterSettingsManager.shared.getRequiredPrinterConfig(for: target) else {
+            throw PrinterError.configurationError(missingPrinterMessage)
         }
 
         // Execute the print job with the appropriate target and configuration

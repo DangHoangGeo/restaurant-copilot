@@ -22,6 +22,31 @@ const orderSchema = z.object({
   ),
 });
 
+function serializeOrderCreationError(error: unknown): Record<string, unknown> {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      cause: error.cause,
+    };
+  }
+
+  if (error && typeof error === "object") {
+    const errorRecord = error as Record<string, unknown>;
+    return {
+      code: errorRecord.code,
+      message: errorRecord.message,
+      details: errorRecord.details,
+      hint: errorRecord.hint,
+      status: errorRecord.status,
+    };
+  }
+
+  return {
+    message: String(error),
+  };
+}
+
 export async function POST(req: NextRequest) {
   const requestId = `order-create-${Date.now()}-${Math.random()}`;
   startPerformanceTimer(requestId);
@@ -73,7 +98,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     await logger.error('orders-create-api', 'Unexpected order creation failure', {
-      error: error instanceof Error ? error.message : String(error),
+      error: serializeOrderCreationError(error),
     });
     return NextResponse.json({ success: false, error: "Failed to save order items" }, { status: 500 });
   }

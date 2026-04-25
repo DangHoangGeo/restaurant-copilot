@@ -58,7 +58,7 @@ struct CustomizeMenuItemSheet: View {
                     .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.lg) {
+                    VStack(alignment: .leading, spacing: Spacing.md) {
                         headerCard
 
                         if let sizes = menuItem.availableSizes, !sizes.isEmpty {
@@ -189,8 +189,8 @@ struct CustomizeMenuItemSheet: View {
     }
 
     private var headerCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack(alignment: .top) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     if let code = menuItem.code, !code.isEmpty {
                         Text(code)
@@ -205,6 +205,7 @@ struct CustomizeMenuItemSheet: View {
                     Text(menuItem.displayName)
                         .font(.cardTitle)
                         .foregroundColor(.appTextPrimary)
+                        .lineLimit(2)
 
                     if let secondaryName = menuItem.staffSecondaryName {
                         Text(secondaryName)
@@ -217,7 +218,7 @@ struct CustomizeMenuItemSheet: View {
 
                 VStack(alignment: .trailing, spacing: Spacing.xs) {
                     Text("pos_unit_price_label".localized)
-                        .font(.captionBold)
+                        .font(.monoCaption)
                         .foregroundColor(.appTextSecondary)
                     Text(AppCurrencyFormatter.format(unitPrice))
                         .font(.sectionHeader)
@@ -229,21 +230,22 @@ struct CustomizeMenuItemSheet: View {
                 Text(description)
                     .font(.bodyMedium)
                     .foregroundColor(.appTextSecondary)
+                    .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.lg)
+        .padding(.vertical, Spacing.sm)
     }
 
     private func optionSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Text(title)
-                .font(.captionBold)
+                .font(.monoCaption)
                 .foregroundColor(.appTextSecondary)
-                .tracking(1.0)
 
             content()
         }
+        .padding(.top, Spacing.xs)
     }
 
     private func selectionRow(
@@ -254,38 +256,38 @@ struct CustomizeMenuItemSheet: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            HStack(spacing: Spacing.md) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.bodyMedium)
-                    .foregroundColor(isSelected ? .appPrimary : .appTextTertiary)
+            VStack(spacing: 0) {
+                HStack(spacing: Spacing.md) {
+                    Rectangle()
+                        .fill(isSelected ? Color.appPrimary : Color.clear)
+                        .frame(width: 4)
 
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(title)
-                        .font(.bodyMedium)
-                        .foregroundColor(.appTextPrimary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(.bodyMedium.weight(isSelected ? .semibold : .regular))
+                            .foregroundColor(.appTextPrimary)
 
-                    if let subtitle, !subtitle.isEmpty {
-                        Text(subtitle)
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextSecondary)
+                        if let subtitle, !subtitle.isEmpty {
+                            Text(subtitle)
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextSecondary)
+                        }
                     }
+
+                    Spacer()
+
+                    Text(trailingText)
+                        .font(.buttonSmall)
+                        .foregroundColor(isSelected ? .appPrimary : .appTextSecondary)
+
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.bodyMedium)
+                        .foregroundColor(isSelected ? .appPrimary : .appTextTertiary)
                 }
+                .frame(minHeight: 48)
 
-                Spacer()
-
-                Text(trailingText)
-                    .font(.buttonSmall)
-                    .foregroundColor(isSelected ? .appPrimary : .appTextSecondary)
+                Divider()
             }
-            .padding(Spacing.md)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.md)
-                    .fill(isSelected ? Color.appSurfaceElevated : Color.appSurface)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.md)
-                    .stroke(isSelected ? Color.appPrimary.opacity(0.35) : Color.appBorderLight, lineWidth: 1)
-            )
         }
         .buttonStyle(.plain)
     }
@@ -312,7 +314,7 @@ struct CustomizeMenuItemSheet: View {
                     .foregroundColor(.appPrimary)
             }
         }
-        .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.lg)
+        .padding(.vertical, Spacing.md)
     }
 
     private var bottomBar: some View {

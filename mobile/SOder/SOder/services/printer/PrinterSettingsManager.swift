@@ -44,6 +44,7 @@ class PrinterSettingsManager: ObservableObject {
     // Template theme selection
     @Published var selectedReceiptTheme: TemplateTheme = .standard { didSet { saveTemplateThemes() } }
     @Published var selectedKitchenTheme: TemplateTheme = .standard { didSet { saveTemplateThemes() } }
+    @Published var receiptPrintRenderMode: ReceiptPrintRenderMode = .automatic { didSet { saveReceiptPrintRenderMode() } }
     
     private let userDefaults = UserDefaults.standard
     private let printersKey = "configured_printers"
@@ -62,6 +63,7 @@ class PrinterSettingsManager: ObservableObject {
     private let languageCapabilitiesKey = "printer_language_capabilities"
     private let receiptThemeKey = "selected_receipt_theme"
     private let kitchenThemeKey = "selected_kitchen_theme"
+    private let receiptPrintRenderModeKey = "receipt_print_render_mode"
     
     private init() {
         // Initialize with default restaurant settings
@@ -167,23 +169,40 @@ class PrinterSettingsManager: ObservableObject {
     
     func getKitchenPrinterConfig() -> PrinterConfig.Hardware? {
         guard let kitchenPrinter = kitchenPrinter else { return nil }
-        return PrinterConfig.Hardware(
-            ipAddress: kitchenPrinter.ipAddress,
-            port: kitchenPrinter.port,
-            name: kitchenPrinter.name,
-            connectionTimeout: kitchenPrinter.connectionTimeout,
-            maxRetries: kitchenPrinter.maxRetries
-        )
+        return hardwareConfig(for: kitchenPrinter)
     }
     
     func getCheckoutPrinterConfig() -> PrinterConfig.Hardware? {
         guard let checkoutPrinter = checkoutPrinter else { return nil }
+        return hardwareConfig(for: checkoutPrinter)
+    }
+
+    func getRequiredPrinterConfig(for target: PrintTarget) -> PrinterConfig.Hardware? {
+        let configuredPrinter: ConfiguredPrinter?
+
+        switch printerMode {
+        case .single:
+            configuredPrinter = activePrinter ?? configuredPrinters.first
+        case .dual:
+            switch target {
+            case .kitchen:
+                configuredPrinter = kitchenPrinter
+            case .receipt:
+                configuredPrinter = checkoutPrinter
+            }
+        }
+
+        guard let configuredPrinter else { return nil }
+        return hardwareConfig(for: configuredPrinter)
+    }
+
+    private func hardwareConfig(for printer: ConfiguredPrinter) -> PrinterConfig.Hardware {
         return PrinterConfig.Hardware(
-            ipAddress: checkoutPrinter.ipAddress,
-            port: checkoutPrinter.port,
-            name: checkoutPrinter.name,
-            connectionTimeout: checkoutPrinter.connectionTimeout,
-            maxRetries: checkoutPrinter.maxRetries
+            ipAddress: printer.ipAddress,
+            port: printer.port,
+            name: printer.name,
+            connectionTimeout: printer.connectionTimeout,
+            maxRetries: printer.maxRetries
         )
     }
     
@@ -203,24 +222,12 @@ class PrinterSettingsManager: ObservableObject {
     func getCurrentPrinterConfig() -> PrinterConfig.Hardware {
         // Use user-configured printer if available
         if let activePrinter = activePrinter {
-            return PrinterConfig.Hardware(
-                ipAddress: activePrinter.ipAddress,
-                port: activePrinter.port,
-                name: activePrinter.name,
-                connectionTimeout: activePrinter.connectionTimeout,
-                maxRetries: activePrinter.maxRetries
-            )
+            return hardwareConfig(for: activePrinter)
         }
         
         // Fallback to first configured printer
         if let firstPrinter = configuredPrinters.first {
-            return PrinterConfig.Hardware(
-                ipAddress: firstPrinter.ipAddress,
-                port: firstPrinter.port,
-                name: firstPrinter.name,
-                connectionTimeout: firstPrinter.connectionTimeout,
-                maxRetries: firstPrinter.maxRetries
-            )
+            return hardwareConfig(for: firstPrinter)
         }
         
         // Final fallback to default printer
@@ -430,6 +437,7 @@ class PrinterSettingsManager: ObservableObject {
         loadEncodingStrategy()
         loadLanguageCapabilities()
         loadTemplateThemes()
+        loadReceiptPrintRenderMode()
     }
     
     private func loadConfiguredPrinters() {
@@ -526,6 +534,7 @@ class PrinterSettingsManager: ObservableObject {
         saveEncodingStrategy()
         saveLanguageCapabilities()
         saveTemplateThemes()
+        saveReceiptPrintRenderMode()
         saveSelectedLanguages() // NEW
     }
     
@@ -732,6 +741,34 @@ class PrinterSettingsManager: ObservableObject {
             return selectedKitchenTheme
         }
     }
+
+    private func loadReceiptPrintRenderMode() {
+        if let rawValue = userDefaults.string(forKey: receiptPrintRenderModeKey),
+           let mode = ReceiptPrintRenderMode(rawValue: rawValue) {
+            receiptPrintRenderMode = mode
+        }
+    }
+
+    private func saveReceiptPrintRenderMode() {
+        userDefaults.set(receiptPrintRenderMode.rawValue, forKey: receiptPrintRenderModeKey)
+    }
+
+    func shouldRenderReceiptAsImage() -> Bool {
+        switch receiptPrintRenderMode {
+        case .text:
+            return false
+        case .image:
+            return true
+        case .automatic:
+            let language = selectedReceiptLanguage
+            guard language != .english, let printerId = primaryReceiptPrinter?.id else {
+                return false
+            }
+
+            return hasTestedLanguage(for: printerId, language: language) &&
+                !isLanguageSupported(for: printerId, language: language)
+        }
+    }
     
     // MARK: - Validation
     func validatePrinterConfig(_ printer: ConfiguredPrinter) -> [String] {
@@ -909,6 +946,20 @@ enum PrinterMode: String, Codable, CaseIterable {
         switch self {
         case .single: return "printer"
         case .dual: return "printer.dotmatrix"
+        }
+    }
+}
+
+enum ReceiptPrintRenderMode: String, Codable, CaseIterable {
+    case automatic = "automatic"
+    case text = "text"
+    case image = "image"
+
+    var displayName: String {
+        switch self {
+        case .automatic: return "receipt_render_mode_automatic".localized
+        case .text: return "receipt_render_mode_text".localized
+        case .image: return "receipt_render_mode_image".localized
         }
     }
 }

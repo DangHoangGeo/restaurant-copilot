@@ -11,7 +11,7 @@
 import {
   getSnapshot,
   listSnapshots,
-  upsertSnapshot,
+  closeSnapshot,
   computeRevenue,
   computeLaborHours,
   computePurchasing,
@@ -19,41 +19,51 @@ import {
   buildLiveSummary,
   getBranchIdsForOrg,
   getClosedSnapshotsForBranches,
-} from './queries';
-import { getJapanLocalDate } from '@/lib/server/attendance/service';
+} from "./queries";
+import { getJapanLocalDate } from "@/lib/server/attendance/service";
 import type {
   MonthlyFinanceReport,
   MonthlyFinanceSnapshot,
   LiveMonthlySummary,
-} from './types';
+} from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Date helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Return Japan-local today's YYYY-MM-DD for the given month boundaries. */
-function monthBoundaries(year: number, month: number): { fromDate: string; toDate: string } {
-  const mm = String(month).padStart(2, '0');
+function monthBoundaries(
+  year: number,
+  month: number,
+): { fromDate: string; toDate: string } {
+  const mm = String(month).padStart(2, "0");
   const lastDay = new Date(year, month, 0).getDate();
   return {
     fromDate: `${year}-${mm}-01`,
-    toDate:   `${year}-${mm}-${String(lastDay).padStart(2, '0')}`,
+    toDate: `${year}-${mm}-${String(lastDay).padStart(2, "0")}`,
   };
 }
 
 /** Parse YYYY-MM-DD into { year, month }. Falls back to current Japan-local month. */
 export function parseYearMonth(
   yearStr: string | null,
-  monthStr: string | null
+  monthStr: string | null,
 ): { year: number; month: number } {
   const today = getJapanLocalDate();
-  const [defaultYear, defaultMonth] = today.split('-').map(Number);
+  const [defaultYear, defaultMonth] = today.split("-").map(Number);
 
-  const year  = yearStr  ? parseInt(yearStr,  10) : defaultYear;
+  const year = yearStr ? parseInt(yearStr, 10) : defaultYear;
   const month = monthStr ? parseInt(monthStr, 10) : defaultMonth;
 
-  if (isNaN(year) || isNaN(month) || year < 2020 || year > 2100 || month < 1 || month > 12) {
-    throw Object.assign(new Error('Invalid year or month'), { status: 400 });
+  if (
+    isNaN(year) ||
+    isNaN(month) ||
+    year < 2020 ||
+    year > 2100 ||
+    month < 1 ||
+    month > 12
+  ) {
+    throw Object.assign(new Error("Invalid year or month"), { status: 400 });
   }
   return { year, month };
 }
@@ -66,7 +76,7 @@ async function computeLiveSummary(
   restaurantId: string,
   year: number,
   month: number,
-  currency: string
+  currency: string,
 ): Promise<LiveMonthlySummary> {
   const { fromDate, toDate } = monthBoundaries(year, month);
 
@@ -101,16 +111,16 @@ export async function getMonthlyReport(
   restaurantId: string,
   year: number,
   month: number,
-  currency: string
+  currency: string,
 ): Promise<MonthlyFinanceReport> {
   const existing = await getSnapshot(restaurantId, year, month);
 
-  if (existing && existing.snapshot_status === 'closed') {
-    return { kind: 'snapshot', data: existing };
+  if (existing && existing.snapshot_status === "closed") {
+    return { kind: "snapshot", data: existing };
   }
 
   const live = await computeLiveSummary(restaurantId, year, month, currency);
-  return { kind: 'live', data: live };
+  return { kind: "live", data: live };
 }
 
 /**
@@ -129,31 +139,31 @@ export async function closeMonth(params: {
   const { restaurantId, year, month, currency, closedBy, notes } = params;
 
   const existing = await getSnapshot(restaurantId, year, month);
-  if (existing?.snapshot_status === 'closed') {
+  if (existing?.snapshot_status === "closed") {
     throw Object.assign(
-      new Error('This month is already closed. Reopen is not supported.'),
-      { status: 409 }
+      new Error("This month is already closed. Reopen is not supported."),
+      { status: 409 },
     );
   }
 
   const live = await computeLiveSummary(restaurantId, year, month, currency);
 
-  return upsertSnapshot(restaurantId, {
+  return closeSnapshot(restaurantId, {
     year,
     month,
     currency,
-    revenue_total:        live.revenue_total,
-    order_count:          live.order_count,
-    discount_total:       live.discount_total,
+    revenue_total: live.revenue_total,
+    order_count: live.order_count,
+    discount_total: live.discount_total,
     approved_labor_hours: live.approved_labor_hours,
-    labor_entry_count:    live.labor_entry_count,
-    purchasing_total:     live.purchasing_total,
-    expense_total:        live.expense_total,
-    combined_cost_total:  live.combined_cost_total,
-    snapshot_status:      'closed',
-    notes:                notes ?? null,
-    closed_by:            closedBy,
-    closed_at:            new Date().toISOString(),
+    labor_entry_count: live.labor_entry_count,
+    purchasing_total: live.purchasing_total,
+    expense_total: live.expense_total,
+    combined_cost_total: live.combined_cost_total,
+    snapshot_status: "closed",
+    notes: notes ?? null,
+    closed_by: closedBy,
+    closed_at: new Date().toISOString(),
   });
 }
 
@@ -162,7 +172,7 @@ export async function closeMonth(params: {
  */
 export async function listMonthlySnapshots(
   restaurantId: string,
-  limit = 12
+  limit = 12,
 ): Promise<MonthlyFinanceSnapshot[]> {
   return listSnapshots(restaurantId, limit);
 }
@@ -186,17 +196,24 @@ export async function getMonthlyRollupForBranches(params: {
   const { branchIds, year, month } = params;
   const snapshots = await getClosedSnapshotsForBranches(branchIds, year, month);
 
-  const revenue_total = snapshots.reduce((sum, snapshot) => sum + snapshot.revenue_total, 0);
-  const discount_total = snapshots.reduce((sum, snapshot) => sum + snapshot.discount_total, 0);
+  const revenue_total = snapshots.reduce(
+    (sum, snapshot) => sum + snapshot.revenue_total,
+    0,
+  );
+  const discount_total = snapshots.reduce(
+    (sum, snapshot) => sum + snapshot.discount_total,
+    0,
+  );
   const approved_labor_hours = snapshots.reduce(
     (sum, snapshot) => sum + snapshot.approved_labor_hours,
-    0
+    0,
   );
   const combined_cost_total = snapshots.reduce(
     (sum, snapshot) => sum + snapshot.combined_cost_total,
-    0
+    0,
   );
-  const gross_profit_estimate = revenue_total - discount_total - combined_cost_total;
+  const gross_profit_estimate =
+    revenue_total - discount_total - combined_cost_total;
 
   return {
     year,
@@ -249,41 +266,48 @@ export async function getOrgMonthlyRollup(params: {
  */
 export function buildExportCsv(
   report: MonthlyFinanceReport,
-  restaurantName: string
+  restaurantName: string,
 ): string {
-  const d = report.kind === 'snapshot' ? report.data : report.data;
-  const status = report.kind === 'snapshot' ? report.data.snapshot_status : 'live';
+  const d = report.kind === "snapshot" ? report.data : report.data;
+  const status =
+    report.kind === "snapshot" ? report.data.snapshot_status : "live";
 
   const fmt = (n: number) => n.toFixed(2);
 
   const rows: string[][] = [
-    ['Monthly Finance Report'],
-    ['Branch', restaurantName],
-    ['Period', `${d.year}-${String(d.month).padStart(2, '0')}`],
-    ['Status', status],
-    ['Currency', d.currency],
+    ["Monthly Finance Report"],
+    ["Branch", restaurantName],
+    ["Period", `${d.year}-${String(d.month).padStart(2, "0")}`],
+    ["Status", status],
+    ["Currency", d.currency],
     [],
-    ['Category', 'Amount', 'Count / Hours'],
-    ['Revenue (completed orders)', fmt(d.revenue_total), String(d.order_count)],
-    ['Discounts', fmt(d.discount_total), ''],
-    ['Net Revenue', fmt(d.revenue_total - d.discount_total), ''],
+    ["Category", "Amount", "Count / Hours"],
+    ["Revenue (completed orders)", fmt(d.revenue_total), String(d.order_count)],
+    ["Discounts", fmt(d.discount_total), ""],
+    ["Net Revenue", fmt(d.revenue_total - d.discount_total), ""],
     [],
-    ['Approved Labor Hours', fmt(d.approved_labor_hours), String(d.labor_entry_count)],
+    [
+      "Approved Labor Hours",
+      fmt(d.approved_labor_hours),
+      String(d.labor_entry_count),
+    ],
     [],
-    ['Purchase Orders', fmt(d.purchasing_total), ''],
-    ['Other Expenses', fmt(d.expense_total), ''],
-    ['Total Costs', fmt(d.combined_cost_total), ''],
+    ["Purchase Orders", fmt(d.purchasing_total), ""],
+    ["Other Expenses", fmt(d.expense_total), ""],
+    ["Total Costs", fmt(d.combined_cost_total), ""],
     [],
-    ['Gross Profit Estimate', fmt(d.gross_profit_estimate), ''],
+    ["Gross Profit Estimate", fmt(d.gross_profit_estimate), ""],
     [],
-    ['Generated at', new Date().toISOString(), ''],
+    ["Generated at", new Date().toISOString(), ""],
   ];
 
-  if (report.kind === 'snapshot' && report.data.notes) {
-    rows.push(['Notes', report.data.notes, '']);
+  if (report.kind === "snapshot" && report.data.notes) {
+    rows.push(["Notes", report.data.notes, ""]);
   }
 
   return rows
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    .join('\n');
+    .map((row) =>
+      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+    )
+    .join("\n");
 }

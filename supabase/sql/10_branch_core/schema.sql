@@ -10,11 +10,18 @@ CREATE TABLE public.orders (
     session_id uuid NOT NULL,
     guest_count integer DEFAULT 1 NOT NULL,
     status text DEFAULT 'new'::text NOT NULL,
+    payment_method text,
+    discount_amount numeric DEFAULT 0,
+    tax_amount numeric DEFAULT 0,
+    tip_amount numeric DEFAULT 0,
     total_amount numeric,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT orders_discount_amount_check CHECK (((discount_amount IS NULL) OR (discount_amount >= (0)::numeric))),
     CONSTRAINT orders_guest_count_check CHECK ((guest_count > 0)),
     CONSTRAINT orders_status_check CHECK ((status = ANY (ARRAY['new'::text, 'serving'::text, 'completed'::text, 'canceled'::text]))),
+    CONSTRAINT orders_tax_amount_check CHECK (((tax_amount IS NULL) OR (tax_amount >= (0)::numeric))),
+    CONSTRAINT orders_tip_amount_check CHECK (((tip_amount IS NULL) OR (tip_amount >= (0)::numeric))),
     CONSTRAINT orders_total_amount_check CHECK ((total_amount >= (0)::numeric))
 );
 

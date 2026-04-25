@@ -568,13 +568,13 @@ class SupabaseManager: ObservableObject {
         do {
             let menuItems: [MenuItem] = try await client
                 .from("menu_items")
-                .select("*, category:categories(*)") // Example of joining category details
+                .select("*, category:categories(*), availableSizes:menu_item_sizes(*), availableToppings:toppings(*)")
                 .eq("restaurant_id", value: restaurantId)
                 .eq("category_id", value: categoryId)
                 .order("position", ascending: true) // Assuming 'position' for ordering
                 .execute()
                 .value
-            return menuItems
+            return menuItems.map(normalizedMenuOptions)
         } catch {
             print("Error fetching menu items for category \(categoryId): \(error.localizedDescription)")
             throw SupabaseManagerError.fetchError(error.localizedDescription)
@@ -597,18 +597,19 @@ class SupabaseManager: ObservableObject {
             print("🌐 Fetching menu items from database")
             let menuItems: [MenuItem] = try await client
                 .from("menu_items")
-                .select("*, category:categories(*)") // Join category details for filtering
+                .select("*, category:categories(*), availableSizes:menu_item_sizes(*), availableToppings:toppings(*)")
                 .eq("restaurant_id", value: restaurantId)
                 .eq("available", value: true) // Only fetch available items for POS
                 .order("position", ascending: true)
                 .execute()
                 .value
+            let normalizedMenuItems = menuItems.map(normalizedMenuOptions)
             
             // Cache the result
-            menuItemsCache = CacheItem(data: menuItems, timestamp: Date(), ttl: cacheTTL)
-            print("✅ Cached \(menuItems.count) menu items")
+            menuItemsCache = CacheItem(data: normalizedMenuItems, timestamp: Date(), ttl: cacheTTL)
+            print("✅ Cached \(normalizedMenuItems.count) menu items")
             
-            return menuItems
+            return normalizedMenuItems
         } catch {
             print("Error fetching all menu items: \(error.localizedDescription)")
             throw SupabaseManagerError.fetchError(error.localizedDescription)
@@ -632,16 +633,38 @@ class SupabaseManager: ObservableObject {
                 .single()
                 .execute()
                 .value
+            let normalizedMenuItem = normalizedMenuOptions(menuItem)
             
             // Cache the result
-            menuItemDetailsCache[menuItemId] = CacheItem(data: menuItem, timestamp: Date(), ttl: cacheTTL)
+            menuItemDetailsCache[menuItemId] = CacheItem(data: normalizedMenuItem, timestamp: Date(), ttl: cacheTTL)
             print("✅ Cached menu item details for \(menuItemId)")
             
-            return menuItem
+            return normalizedMenuItem
         } catch {
             print("Error fetching menu item details for \(menuItemId): \(error.localizedDescription)")
             throw SupabaseManagerError.fetchError(error.localizedDescription)
         }
+    }
+
+    private func normalizedMenuOptions(_ menuItem: MenuItem) -> MenuItem {
+        var normalized = menuItem
+        normalized.availableSizes = menuItem.availableSizes?.sorted { lhs, rhs in
+            let lhsPosition = lhs.position ?? Int.max
+            let rhsPosition = rhs.position ?? Int.max
+            if lhsPosition != rhsPosition {
+                return lhsPosition < rhsPosition
+            }
+            return lhs.displayName.localizedStandardCompare(rhs.displayName) == .orderedAscending
+        }
+        normalized.availableToppings = menuItem.availableToppings?.sorted { lhs, rhs in
+            let lhsPosition = lhs.position ?? Int.max
+            let rhsPosition = rhs.position ?? Int.max
+            if lhsPosition != rhsPosition {
+                return lhsPosition < rhsPosition
+            }
+            return lhs.displayName.localizedStandardCompare(rhs.displayName) == .orderedAscending
+        }
+        return normalized
     }
 
     // MARK: - Tables Management

@@ -173,6 +173,10 @@ struct CartItemRow: View {
     }
 
     private var sizeDisplay: String? {
+        if let size = item.menu_item_size {
+            return size.staffSecondaryName.map { "\(size.displayName) / \($0)" } ?? size.displayName
+        }
+
         guard let sizeId = item.menu_item_size_id,
               let size = menuItem?.availableSizes?.first(where: { $0.id == sizeId }) else {
             return nil
@@ -182,6 +186,12 @@ struct CartItemRow: View {
     }
 
     private var toppingDisplay: String? {
+        if let toppings = item.toppings, !toppings.isEmpty {
+            return toppings.map { topping in
+                topping.staffSecondaryName.map { "\(topping.displayName) / \($0)" } ?? topping.displayName
+            }.joined(separator: ", ")
+        }
+
         guard let toppingIds = item.topping_ids,
               !toppingIds.isEmpty,
               let allToppings = menuItem?.availableToppings else {

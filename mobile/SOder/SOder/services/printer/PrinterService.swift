@@ -390,8 +390,9 @@ extension PrinterService {
             throw PrinterError.dataEncodingError("Failed to format kitchen order")
         }
         
-        // Use kitchen printer if configured, otherwise fallback to default
-        let printerConfig = PrinterSettingsManager.shared.getKitchenPrinterConfig()
+        guard let printerConfig = PrinterSettingsManager.shared.getRequiredPrinterConfig(for: .kitchen) else {
+            throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
+        }
         try await connectAndSendData(data: printData, target: .kitchen, to: printerConfig)
     }
     
@@ -401,21 +402,25 @@ extension PrinterService {
             throw PrinterError.dataEncodingError("Failed to format customer receipt")
         }
         
-        // Use checkout printer if configured, otherwise fallback to default
-        let printerConfig = PrinterSettingsManager.shared.getCheckoutPrinterConfig()
+        guard let printerConfig = PrinterSettingsManager.shared.getRequiredPrinterConfig(for: .receipt) else {
+            throw PrinterError.configurationError("printer_no_checkout_printer_configured_error".localized)
+        }
         try await connectAndSendData(data: printData, target: .receipt, to: printerConfig)
     }
     
     func printTestReceipt() async throws {
         let formatter = PrintFormatter()
         let printData = formatter.formatTestReceipt()
-        try await connectAndSendData(data: printData, target: .receipt)
+        guard let printerConfig = PrinterSettingsManager.shared.getRequiredPrinterConfig(for: .receipt) else {
+            throw PrinterError.configurationError("printer_no_checkout_printer_configured_error".localized)
+        }
+        try await connectAndSendData(data: printData, target: .receipt, to: printerConfig)
     }
     
     // MARK: - Dual Printer Test Functions
     func testKitchenPrinter() async throws {
-        guard let kitchenConfig = PrinterSettingsManager.shared.getKitchenPrinterConfig() else {
-            throw PrinterError.configurationError("No kitchen printer configured")
+        guard let kitchenConfig = PrinterSettingsManager.shared.getRequiredPrinterConfig(for: .kitchen) else {
+            throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
         }
         
         let formatter = PrintFormatter()
@@ -424,8 +429,8 @@ extension PrinterService {
     }
     
     func testCheckoutPrinter() async throws {
-        guard let checkoutConfig = PrinterSettingsManager.shared.getCheckoutPrinterConfig() else {
-            throw PrinterError.configurationError("No checkout printer configured")
+        guard let checkoutConfig = PrinterSettingsManager.shared.getRequiredPrinterConfig(for: .receipt) else {
+            throw PrinterError.configurationError("printer_no_checkout_printer_configured_error".localized)
         }
         
         let formatter = PrintFormatter()
@@ -512,15 +517,18 @@ extension PrinterService {
         case .single:
             // Single printer mode: print both kitchen and receipt to the same printer
             let formatter = PrintFormatter()
+            guard let printerConfig = settingsManager.getRequiredPrinterConfig(for: .receipt) else {
+                throw PrinterError.configurationError("printer_no_checkout_printer_configured_error".localized)
+            }
             
             // Print kitchen order first
             if let kitchenData = formatter.formatOrderForKitchen(order: order) {
-                try await connectAndSendData(data: kitchenData, target: .kitchen)
+                try await connectAndSendData(data: kitchenData, target: .kitchen, to: printerConfig)
             }
             
             // Then print customer receipt
             if let receiptData = formatter.formatCustomerReceipt(order: order, isOfficial: false) {
-                try await connectAndSendData(data: receiptData, target: .receipt)
+                try await connectAndSendData(data: receiptData, target: .receipt, to: printerConfig)
             }
             
         case .dual:
@@ -528,22 +536,24 @@ extension PrinterService {
             var kitchenError: Error?
             var checkoutError: Error?
             
-            // Print to kitchen printer if configured
-            if settingsManager.hasKitchenPrinter() {
-                do {
-                    try await printKitchenOrder(order)
-                } catch {
-                    kitchenError = error
-                }
+            guard settingsManager.hasKitchenPrinter() else {
+                throw PrinterError.configurationError("printer_no_kitchen_printer_configured_error".localized)
+            }
+
+            guard settingsManager.hasCheckoutPrinter() else {
+                throw PrinterError.configurationError("printer_no_checkout_printer_configured_error".localized)
+            }
+
+            do {
+                try await printKitchenOrder(order)
+            } catch {
+                kitchenError = error
             }
             
-            // Print to checkout printer if configured
-            if settingsManager.hasCheckoutPrinter() {
-                do {
-                    try await printCustomerReceipt(order, isOfficial: false)
-                } catch {
-                    checkoutError = error
-                }
+            do {
+                try await printCustomerReceipt(order, isOfficial: false)
+            } catch {
+                checkoutError = error
             }
             
             // Throw error if both failed

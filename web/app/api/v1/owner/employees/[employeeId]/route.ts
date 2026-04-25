@@ -45,7 +45,7 @@ export async function GET(
     const { data, error } = await supabaseAdmin
       .from("employees")
       .select(
-        "id, role, users(id, email, name, role)" // Added user role for clarity
+        "id, role, users:users!employees_user_id_fkey(id, email, name, role)" // Added user role for clarity
       )
       .eq("id", employeeId)
       .eq("restaurant_id", callingUser.restaurantId)
@@ -182,7 +182,7 @@ export async function PATCH(
     // Fetch the updated employee data to return
     const { data: updatedEmployeeData, error: finalFetchError } = await supabaseAdmin
       .from("employees")
-      .select("id, role, users(id, email, name, role)")
+      .select("id, role, users:users!employees_user_id_fkey(id, email, name, role)")
       .eq("id", employeeId)
       .eq("restaurant_id", callingUser.restaurantId)
       .single();

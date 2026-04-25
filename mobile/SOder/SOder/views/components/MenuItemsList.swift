@@ -73,7 +73,7 @@ struct MenuItemsList: View {
             emptyStateView
         } else {
             ScrollView {
-                LazyVStack(spacing: Spacing.sm) {
+                LazyVStack(spacing: 0) {
                     ForEach(0..<groupedItems.count, id: \.self) { groupIndex in
                         let group = groupedItems[groupIndex]
                         
@@ -93,7 +93,6 @@ struct MenuItemsList: View {
                                 onQuickAdd: onQuickAdd != nil ? { onQuickAdd!(item) } : nil,
                                 onCustomize: onCustomize != nil ? { onCustomize!(item) } : nil
                             )
-                            .padding(.horizontal)
                         }
                     }
                 }
@@ -173,117 +172,104 @@ struct MenuItemRowCompactUnified: View {
     private var hasCustomizationOptions: Bool {
         return (menuItem.availableSizes?.isEmpty == false) || (menuItem.availableToppings?.isEmpty == false)
     }
+
+    private var optionSummary: String? {
+        let sizeCount = menuItem.availableSizes?.count ?? 0
+        let toppingCount = menuItem.availableToppings?.count ?? 0
+        var parts: [String] = []
+
+        if sizeCount > 0 {
+            parts.append("\(sizeCount) \("pos_size_section_title".localized.lowercased())")
+        }
+
+        if toppingCount > 0 {
+            parts.append("\(toppingCount) \("pos_toppings_section_title".localized.lowercased())")
+        }
+
+        return parts.isEmpty ? nil : parts.joined(separator: " • ")
+    }
     
     var body: some View {
-        HStack(spacing: Spacing.md) {
-            // Leading: Code badge (if available)
-            if let code = menuItem.code, !code.isEmpty {
-                Text(code)
-                    .font(.captionBold)
-                    .foregroundColor(.appPrimary)
-                    .padding(.horizontal, Spacing.xs)
-                    .padding(.vertical, 2)
-                    .background(Color.appPrimary.opacity(0.1))
-                    .cornerRadius(4)
-            }
-            
-            // Title and subtitle
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                // Primary name
-                Text(menuItem.displayName)
-                    .font(.bodyMedium)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.appTextPrimary)
-                    .lineLimit(1)
-                
-                // Secondary name (if different)
-                if let secondary = menuItem.staffSecondaryName {
-                    Text(secondary)
-                        .font(.captionRegular)
-                        .foregroundColor(.appTextSecondary)
-                        .lineLimit(1)
-                }
-                
-                // Status chip (if stock level available)
-                if let stockLevel = menuItem.stock_level {
-                    HStack {
-                        Image(systemName: stockLevel > 0 ? "checkmark.circle.fill" : "xmark.circle.fill")
-                            .font(.captionRegular)
-                            .foregroundColor(stockLevel > 0 ? .appSuccess : .appError)
-                        Text(stockLevel > 0 ? "pos_available".localized : "pos_out_of_stock".localized)
-                            .font(.captionRegular)
-                            .foregroundColor(.appTextSecondary)
+        VStack(spacing: 0) {
+            HStack(alignment: .center, spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: Spacing.xs) {
+                        if let code = menuItem.code, !code.isEmpty {
+                            Text(code)
+                                .font(.monoCaption)
+                                .foregroundColor(.appTextSecondary)
+                        }
+
+                        Text(menuItem.displayName)
+                            .font(.bodyMedium.weight(.semibold))
+                            .foregroundColor(.appTextPrimary)
+                            .lineLimit(1)
+                    }
+
+                    HStack(spacing: Spacing.xs) {
+                        if let secondary = menuItem.staffSecondaryName {
+                            Text(secondary)
+                                .font(.captionRegular)
+                                .foregroundColor(.appTextSecondary)
+                                .lineLimit(1)
+                        }
+
+                        if let optionSummary {
+                            Text(optionSummary)
+                                .font(.captionRegular)
+                                .foregroundColor(.appPrimary)
+                                .lineLimit(1)
+                        }
+                    }
+
+                    if let stockLevel = menuItem.stock_level, stockLevel <= 0 {
+                        Text("pos_out_of_stock".localized)
+                            .font(.captionBold)
+                            .foregroundColor(.appError)
                     }
                 }
-            }
-            
-            Spacer()
-            
-            // Trailing: Price and actions
-            VStack(alignment: .trailing, spacing: Spacing.xs) {
+
+                Spacer(minLength: Spacing.sm)
+
                 Text(AppCurrencyFormatter.format(menuItem.price))
                     .font(.bodyMedium)
                     .fontWeight(.bold)
                     .foregroundColor(.appPrimary)
-                
-                HStack(spacing: Spacing.xs) {
-                    // Quick add button
-                    if showQuickAdd {
-                        Button(action: {
-                            if hasCustomizationOptions {
-                                onCustomize?()
-                            } else {
-                                onQuickAdd?()
-                            }
-                        }) {
-                            Image(systemName: hasCustomizationOptions ? "slider.horizontal.3" : "plus")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(width: 28, height: 28)
-                                .background(Color.appPrimary)
-                                .clipShape(Circle())
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(isAddingItem)
-                        .opacity(isAddingItem ? 0.6 : 1.0)
-                        .accessibilityLabel(hasCustomizationOptions ? 
-                                          "pos_customize_item".localized : 
-                                          "pos_quick_add".localized)
+
+                if showQuickAdd {
+                    Button(action: primaryAction) {
+                        Image(systemName: hasCustomizationOptions ? "slider.horizontal.3" : "plus")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.appOnHighlight)
+                            .frame(width: 44, height: 40)
+                            .background(Color.appPrimary)
+                            .cornerRadius(CornerRadius.sm)
                     }
-                    
-                    // Customize button (separate if both options available)
-                    if showCustomize && hasCustomizationOptions && showQuickAdd {
-                        Button(action: { onCustomize?() }) {
-                            Image(systemName: "ellipsis")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.appTextSecondary)
-                                .frame(width: 28, height: 28)
-                                .background(Color.appSurfaceSecondary)
-                                .clipShape(Circle())
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(isAddingItem)
-                        .opacity(isAddingItem ? 0.6 : 1.0)
-                        .accessibilityLabel("pos_more_options".localized)
-                    }
+                    .buttonStyle(.plain)
+                    .disabled(isAddingItem)
+                    .opacity(isAddingItem ? 0.6 : 1.0)
+                    .accessibilityLabel(hasCustomizationOptions ? "pos_customize_item".localized : "pos_quick_add".localized)
                 }
             }
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: primaryAction)
+
+            Divider()
+                .padding(.leading, Spacing.md)
         }
-        .padding(.vertical, Spacing.md)
-        .padding(.horizontal, Spacing.md)
         .background(Color.appSurface)
-        .cornerRadius(CornerRadius.md)
-        .shadow(
-            color: Elevation.level1.color,
-            radius: Elevation.level1.radius,
-            y: Elevation.level1.y
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.md)
-                .stroke(Color.appBorderLight, lineWidth: 0.5)
-        )
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onTap)
+    }
+
+    private func primaryAction() {
+        if hasCustomizationOptions {
+            onCustomize?()
+        } else if showQuickAdd {
+            onQuickAdd?()
+        } else {
+            onTap()
+        }
     }
 }
 

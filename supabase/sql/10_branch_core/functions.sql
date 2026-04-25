@@ -390,6 +390,8 @@ $function$;
 CREATE OR REPLACE FUNCTION public.update_order_total()
  RETURNS trigger
  LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
 AS $function$
 DECLARE
   new_total NUMERIC;

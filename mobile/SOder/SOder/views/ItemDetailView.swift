@@ -14,40 +14,39 @@ struct ItemDetailView: View {
     private let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        ZStack {
-            // Background overlay
-            Color.black.opacity(0.3)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    onComplete()
-                }
-            // Detail dialog
-            VStack(spacing: 0) {
-                // Header
-                headerSection
-                
-                // Content
-                ScrollView {
-                    VStack(spacing: Spacing.md) {
-                        // Item summary
-                        itemSummarySection
-                        
-                        // Status management
-                        statusManagementSection
-                        
-                        // Action buttons
-                        actionButtonsSection
+        GeometryReader { proxy in
+            let isCompact = proxy.size.width < 520
+
+            ZStack {
+                Color.black.opacity(0.34)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        onComplete()
                     }
-                    .padding()
+
+                VStack(spacing: 0) {
+                    headerSection(isCompact: isCompact)
+
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            itemSummarySection
+                            statusManagementSection
+                            actionButtonsSection
+                        }
+                        .padding(.horizontal, isCompact ? Spacing.md : Spacing.lg)
+                        .padding(.top, Spacing.md)
+                        .padding(.bottom, Spacing.xl)
+                    }
+                    .background(Color.appBackground)
                 }
+                .frame(maxWidth: isCompact ? .infinity : 620)
+                .frame(maxHeight: isCompact ? .infinity : proxy.size.height * 0.86)
                 .background(Color.appBackground)
+                .clipShape(RoundedRectangle(cornerRadius: isCompact ? 0 : CornerRadius.lg))
+                .shadow(color: Color.black.opacity(isCompact ? 0 : 0.16), radius: 22, x: 0, y: 12)
+                .padding(isCompact ? 0 : Spacing.md)
+                .ignoresSafeArea(edges: isCompact ? [.bottom] : [])
             }
-            .frame(maxWidth: 600)
-            .frame(maxHeight: UIScreen.main.bounds.height * 0.8)
-            .background(Color.appSurface)
-            .cornerRadius(CornerRadius.lg)
-            .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
-            .padding()
         }
         .onAppear(perform: updateTimeAgoText)
         .onReceive(timer) { _ in
@@ -56,52 +55,52 @@ struct ItemDetailView: View {
     }
     
     // MARK: - Sections
-    
-    private var headerSection: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
+
+    private func headerSection(isCompact: Bool) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(alignment: .top, spacing: Spacing.md) {
                 Text(item.itemName)
                     .font(.cardTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.appTextPrimary)
-                
-                HStack(spacing: 16) {
-                    Label("\(item.quantity)", systemImage: "number.circle")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Label(timeAgoText, systemImage: "clock")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    if item.priority >= KitchenBoardConfig.urgentThreshold {
-                        HStack(spacing: 4) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                            Text("URGENT")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                        }
-                        .foregroundColor(.red)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.red.opacity(0.2))
-                        .cornerRadius(8)
-                    }
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Spacer(minLength: Spacing.sm)
+
+                Button(action: onComplete) {
+                    Image(systemName: "xmark")
+                        .font(.bodyMedium.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
+                        .frame(width: 40, height: 40)
+                        .background(Color.appSurfaceSecondary)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("item_detail_close_button".localized)
+            }
+
+            KitchenDetailChipWrap(spacing: Spacing.xs) {
+                KitchenDetailChip(
+                    icon: "number.circle",
+                    text: String(format: "item_detail_quantity_format".localized, item.quantity),
+                    tint: .appPrimary
+                )
+                KitchenDetailChip(icon: "clock", text: timeAgoText, tint: timeColor)
+                KitchenDetailChip(icon: statusIcon, text: item.status.displayName, tint: statusColor)
+
+                if item.priority >= KitchenBoardConfig.urgentThreshold {
+                    KitchenDetailChip(
+                        icon: "exclamationmark.triangle.fill",
+                        text: "kitchen_urgent".localized,
+                        tint: .appError
+                    )
                 }
             }
-            
-            Spacer()
-            
-            Button("item_detail_close_button".localized) {
-                onComplete()
-            }
-            .font(.bodyMedium)
-            .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.sm)
-            .background(Color.appSurface)
-            .cornerRadius(CornerRadius.sm)
         }
-        .padding()
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, isCompact ? Spacing.lg : Spacing.md)
+        .padding(.bottom, Spacing.md)
         .background(Color.appSurface)
         .overlay(
             Rectangle()
@@ -114,136 +113,73 @@ struct ItemDetailView: View {
     private var itemSummarySection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("item_detail_item_details_title".localized)
-                .font(.sectionHeader)
+                .font(.monoCaption)
                 .fontWeight(.semibold)
-                .foregroundColor(.appTextPrimary)
+                .foregroundColor(.appTextSecondary)
             
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                // Name and size
-                HStack {
-                    Text("Name:")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
-                    Text(item.itemName)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Spacer()
-                    
-                    if let size = item.size {
-                        Text("Size: \(size)")
-                            .font(.subheadline)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(.systemGray5))
-                            .cornerRadius(8)
-                    }
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                KitchenDetailInfoRow(
+                    label: "item_detail_name_label".localized,
+                    value: item.itemName
+                )
+
+                KitchenDetailInfoRow(
+                    label: "item_detail_quantity_label".localized,
+                    value: "\(item.quantity)",
+                    valueColor: .appPrimary,
+                    emphasize: true
+                )
+
+                if let size = item.size {
+                    KitchenDetailInfoRow(
+                        label: "pos_size_section_title".localized,
+                        value: size
+                    )
                 }
-                
-                // Quantity and merged tables
-                HStack {
-                    Text("Quantity:")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
-                    Text("\(item.quantity)")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(.orange)
+
+                if !item.toppings.isEmpty {
+                    KitchenDetailInfoRow(
+                        label: "pos_toppings_section_title".localized,
+                        value: item.toppings.joined(separator: ", "),
+                        valueColor: .appInfo
+                    )
                 }
 
                 if !item.tableNames.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(item.tableNames, id: \.self) { table in
-                                Text(table)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(Color.appPrimary.opacity(0.1))
-                                    .foregroundColor(.appPrimary)
-                                    .cornerRadius(8)
-                            }
-                        }
-                    }
+                    KitchenDetailInfoRow(
+                        label: "item_detail_tables_label".localized,
+                        value: item.tableSummary
+                    )
                 }
                 
-                // Toppings/modifications
-                if !item.toppings.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Modifications:")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-                        
-                        ForEach(item.toppings, id: \.self) { topping in
-                            HStack {
-                                Circle()
-                                    .fill(Color.blue)
-                                    .frame(width: 6, height: 6)
-                                
-                                Text(topping)
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
-                                
-                                Spacer()
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(12)
-                }
-                
-                // Notes
                 if !item.displayNotes.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Special Notes:")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-                        
-                        Text(item.displayNotes)
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
-                            .fontWeight(.medium)
-                    }
-                    .padding()
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(12)
+                    KitchenDetailInfoRow(
+                        label: "item_detail_notes_label".localized,
+                        value: item.displayNotes,
+                        valueColor: .appWarning,
+                        emphasize: true
+                    )
                 }
             }
         }
-        .padding()
-        .background(Color.appSurface)
-        .cornerRadius(CornerRadius.lg)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .padding(.vertical, Spacing.sm)
     }
     
     private var statusManagementSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("item_detail_status_management_title".localized)
-                .font(.sectionHeader)
+                .font(.monoCaption)
                 .fontWeight(.semibold)
-                .foregroundColor(.appTextPrimary)
+                .foregroundColor(.appTextSecondary)
             
             VStack(spacing: Spacing.sm) {
                 // Current status display
-                HStack {
-                    Circle()
-                        .fill(statusColor)
-                        .frame(width: 16, height: 16)
-                    
-                    Text("Current Status: \(item.status.displayName)")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Spacer()
-                }
+                KitchenDetailInfoRow(
+                    label: "order_item_detail_current_status".localized,
+                    value: item.status.displayName,
+                    valueColor: statusColor,
+                    emphasize: true
+                )
                 
                 // Status progression
                 StatusProgressView(currentStatus: item.status)
@@ -268,7 +204,7 @@ struct ItemDetailView: View {
                             Image(systemName: statusIcon)
                         }
                         
-                        Text(isAdvancingStatus ? "Updating..." : "Mark as \(nextStatusText)")
+                        Text(isAdvancingStatus ? "item_detail_updating_status".localized : "order_item_detail_mark_as".localized(with: nextStatusText))
                             .fontWeight(.semibold)
                     }
                     .frame(maxWidth: .infinity)
@@ -280,10 +216,7 @@ struct ItemDetailView: View {
                 .disabled(item.status == .served || isAdvancingStatus)
             }
         }
-        .padding()
-        .background(Color.appSurface)
-        .cornerRadius(CornerRadius.lg)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .padding(.vertical, Spacing.sm)
     }
     
     private var actionButtonsSection: some View {
@@ -296,7 +229,7 @@ struct ItemDetailView: View {
             }) {
                 HStack {
                     Image(systemName: "doc.text")
-                    Text("Print Kitchen Slip")
+                    Text("item_detail_print_kitchen_slip".localized)
                         .fontWeight(.medium)
                 }
                 .frame(maxWidth: .infinity)
@@ -306,10 +239,7 @@ struct ItemDetailView: View {
                 .cornerRadius(8)
             }
         }
-        .padding()
-        .background(Color.appSurface)
-        .cornerRadius(CornerRadius.lg)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .padding(.vertical, Spacing.sm)
     }
     
     // MARK: - Computed Properties
@@ -330,6 +260,20 @@ struct ItemDetailView: View {
         case .canceled: return .appError
         }
     }
+
+    private var timeColor: Color {
+        let minutes = Int(Date().timeIntervalSince(item.orderTime) / 60)
+
+        if minutes < 10 {
+            return .appSuccess
+        }
+
+        if minutes < 20 {
+            return .appWarning
+        }
+
+        return .appError
+    }
     
     private var statusIcon: String {
         switch item.status {
@@ -344,12 +288,12 @@ struct ItemDetailView: View {
     
     private var nextStatusText: String {
         switch item.status {
-        case .draft: return "Ordered"
-        case .new: return "Preparing"
-        case .preparing: return "Ready"
-        case .ready: return "Served"
-        case .served: return "Completed"
-        case .canceled: return "canceled"
+        case .draft: return OrderItemStatus.new.displayName
+        case .new: return OrderItemStatus.preparing.displayName
+        case .preparing: return OrderItemStatus.ready.displayName
+        case .ready: return OrderItemStatus.served.displayName
+        case .served: return OrderStatus.completed.displayName
+        case .canceled: return OrderItemStatus.canceled.displayName
         }
     }
     
@@ -359,9 +303,9 @@ struct ItemDetailView: View {
     private func printItemSummary() async {
         do {
             try await printerManager.printKitchenItemSummary(item)
-            onPrintResult("Item summary printed successfully")
+            onPrintResult("item_detail_print_success".localized)
         } catch {
-            onPrintResult("Failed to print item summary: \(error.localizedDescription)")
+            onPrintResult("item_detail_print_failure".localized(with: error.localizedDescription))
         }
     }
     
@@ -369,14 +313,74 @@ struct ItemDetailView: View {
     private func printKitchenSlip() async {
         do {
             try await printerManager.printKitchenSlip(item)
-            onPrintResult("Kitchen slip printed successfully")
+            onPrintResult("item_detail_print_success".localized)
         } catch {
-            onPrintResult("Failed to print kitchen slip: \(error.localizedDescription)")
+            onPrintResult("item_detail_print_failure".localized(with: error.localizedDescription))
         }
     }
 }
 
 // MARK: - Supporting Views
+
+private struct KitchenDetailInfoRow: View {
+    let label: String
+    let value: String
+    var valueColor: Color = .appTextPrimary
+    var emphasize = false
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
+            Text(label.uppercased())
+                .font(.monoCaption)
+                .foregroundColor(.appTextSecondary)
+                .frame(width: 82, alignment: .leading)
+
+            Text(value)
+                .font(emphasize ? .bodyMedium.weight(.semibold) : .bodyMedium)
+                .foregroundColor(valueColor)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
+    }
+}
+
+private struct KitchenDetailChip: View {
+    let icon: String
+    let text: String
+    let tint: Color
+
+    var body: some View {
+        Label(text, systemImage: icon)
+            .font(.captionBold)
+            .foregroundColor(tint)
+            .lineLimit(1)
+            .padding(.trailing, Spacing.xs)
+    }
+}
+
+private struct KitchenDetailChipWrap<Content: View>: View {
+    let spacing: CGFloat
+    let content: Content
+
+    init(spacing: CGFloat, @ViewBuilder content: () -> Content) {
+        self.spacing = spacing
+        self.content = content()
+    }
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: spacing) {
+                content
+            }
+
+            VStack(alignment: .leading, spacing: spacing) {
+                content
+            }
+        }
+    }
+}
 
 struct OrderItemDetailRow: View {
     let orderItem: OrderItem
@@ -454,9 +458,7 @@ struct StatusProgressView: View {
                 }
             }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .padding(.vertical, Spacing.xs)
     }
     
     private func statusColor(for status: OrderItemStatus) -> Color {

@@ -27,7 +27,7 @@ export async function GET() {
     const { data, error } = await supabaseAdmin
       .from("employees")
       .select(
-        `id, role, user_id, is_active, deactivated_at, users(id, email, name, role)`
+        `id, role, user_id, is_active, deactivated_at, users:users!employees_user_id_fkey(id, email, name, role)`
       )
       .eq("restaurant_id", user.restaurantId)
       .eq("is_active", true);
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
         user_id: invitedUserId, // Link to the new user created
         role: employee_job_title, // This is the job title like 'chef', 'server'
       })
-      .select('id, user_id, role, created_at, users(email, name, role)') // Fetch related user data
+      .select('id, user_id, role, created_at, users:users!employees_user_id_fkey(email, name, role)') // Fetch related user data
       .single();
 
     if (employeeInsertError) {

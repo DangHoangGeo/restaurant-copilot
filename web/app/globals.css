@@ -147,7 +147,7 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: rgb(203 213 225) transparent;
@@ -172,7 +172,7 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -186,21 +186,21 @@
   body {
     background: white !important;
   }
-  
+
   .print\:min-h-auto {
     min-height: auto !important;
   }
-  
+
   .print\:bg-white {
     background: white !important;
     border: none !important;
     box-shadow: none !important;
   }
-  
+
   .print\:no-rounded {
     border-radius: 0 !important;
   }
-  
+
   .print\:no-shadow {
     box-shadow: none !important;
   }
@@ -211,46 +211,46 @@
   .safe-area-top {
     padding-top: max(env(safe-area-inset-top), 0px);
   }
-  
+
   .safe-area-bottom {
     padding-bottom: max(env(safe-area-inset-bottom), 16px);
   }
-  
+
   .safe-area-left {
     padding-left: max(env(safe-area-inset-left), 0px);
   }
-  
+
   .safe-area-right {
     padding-right: max(env(safe-area-inset-right), 0px);
   }
-  
+
   .safe-area-x {
     padding-left: max(env(safe-area-inset-left), 0px);
     padding-right: max(env(safe-area-inset-right), 0px);
   }
-  
+
   .safe-area-y {
     padding-top: max(env(safe-area-inset-top), 0px);
     padding-bottom: max(env(safe-area-inset-bottom), 0px);
   }
-  
+
   .safe-area-all {
     padding-top: max(env(safe-area-inset-top), 0px);
     padding-bottom: max(env(safe-area-inset-bottom), 16px);
     padding-left: max(env(safe-area-inset-left), 0px);
     padding-right: max(env(safe-area-inset-right), 0px);
   }
-  
+
   /* Safe area margins for special cases */
   .safe-margin-bottom {
     margin-bottom: max(env(safe-area-inset-bottom), 16px);
   }
-  
+
   /* For fixed/sticky elements that need safe area positioning */
   .safe-top {
     top: env(safe-area-inset-top, 0px);
   }
-  
+
   .safe-bottom {
     bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -260,10 +260,22 @@
 @supports (padding: max(0px)) {
   /* Modal container safe area support */
   .modal-container {
-    margin: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-    width: calc(100vw - max(16px, env(safe-area-inset-left, 0px)) - max(16px, env(safe-area-inset-right, 0px)));
-    height: calc(100vh - max(32px, env(safe-area-inset-top, 0px)) - max(32px, env(safe-area-inset-bottom, 0px)));
-    max-height: calc(90vh - max(32px, env(safe-area-inset-top, 0px)) - max(32px, env(safe-area-inset-bottom, 0px)));
+    margin: max(16px, env(safe-area-inset-top, 0px))
+      max(16px, env(safe-area-inset-right, 0px))
+      max(16px, env(safe-area-inset-bottom, 0px))
+      max(16px, env(safe-area-inset-left, 0px));
+    width: calc(
+      100vw - max(16px, env(safe-area-inset-left, 0px)) -
+        max(16px, env(safe-area-inset-right, 0px))
+    );
+    height: calc(
+      100vh - max(32px, env(safe-area-inset-top, 0px)) -
+        max(32px, env(safe-area-inset-bottom, 0px))
+    );
+    max-height: calc(
+      90vh - max(32px, env(safe-area-inset-top, 0px)) -
+        max(32px, env(safe-area-inset-bottom, 0px))
+    );
   }
 
   /* Modal content padding */
@@ -273,7 +285,7 @@
   }
 
   /* Bottom action bar safe area support */
-  .modal-footer, 
+  .modal-footer,
   .bottom-action-bar,
   .sticky-bottom-bar {
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
@@ -291,13 +303,21 @@
 
   /* Full-height modal content area */
   .modal-content-scrollable {
-    max-height: calc(100vh - max(200px, 150px + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
+    max-height: calc(
+      100vh -
+        max(
+          200px,
+          150px + env(safe-area-inset-top, 0px) +
+            env(safe-area-inset-bottom, 0px)
+        )
+    );
   }
 
   /* Bottom sheet specific styles */
   .bottom-sheet {
     padding-bottom: calc(env(safe-area-inset-bottom, 0px));
-    border-radius: max(20px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) 0 0;
+    border-radius: max(20px, env(safe-area-inset-bottom, 0px))
+      max(20px, env(safe-area-inset-bottom, 0px)) 0 0;
   }
 
   /* Overlay protection for swipe gestures */
@@ -320,7 +340,7 @@
     padding-right: 16px;
   }
 
-  .modal-footer, 
+  .modal-footer,
   .bottom-action-bar,
   .sticky-bottom-bar {
     padding-bottom: 32px; /* Extra padding for devices without safe area support */
@@ -417,4 +437,217 @@
 /* Specifically target Select content inside Dialog */
 [data-radix-dialog-content] [data-radix-select-content] {
   z-index: 10000 !important;
+}
+
+/* Route-scoped dark compatibility for older founder control and branch components. */
+.admin-route-surface {
+  color-scheme: light dark;
+}
+
+.dark
+  .admin-route-surface
+  :is(
+    .bg-white,
+    [class*="bg-white/"],
+    .bg-gray-50,
+    [class*="bg-gray-50/"],
+    .bg-gray-100,
+    [class*="bg-gray-100/"],
+    .bg-slate-50,
+    [class*="bg-slate-50/"],
+    .bg-slate-100,
+    [class*="bg-slate-100/"],
+    .from-white,
+    .to-white
+  ):not([class*="dark:bg-"]) {
+  background-color: #251810 !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(
+    .bg-gray-200,
+    [class*="bg-gray-200/"],
+    .bg-gray-300,
+    [class*="bg-gray-300/"],
+    .bg-slate-200,
+    [class*="bg-slate-200/"],
+    .bg-slate-300
+  ):not([class*="dark:bg-"]) {
+  background-color: #352217 !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(
+    .bg-gray-800,
+    [class*="bg-gray-800/"],
+    .bg-gray-900,
+    [class*="bg-gray-900/"],
+    .bg-slate-800,
+    [class*="bg-slate-800/"],
+    .bg-slate-900,
+    [class*="bg-slate-900/"],
+    .bg-slate-950,
+    [class*="bg-slate-950/"],
+    .bg-neutral-800,
+    .bg-neutral-900
+  ):not([class*="dark:bg-"]) {
+  background-color: #1f140f !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.bg-blue-50, .bg-indigo-50, .bg-sky-50):not([class*="dark:bg-"]) {
+  background-color: rgba(59, 130, 246, 0.16) !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.bg-emerald-50, .bg-green-50):not([class*="dark:bg-"]) {
+  background-color: rgba(16, 185, 129, 0.16) !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.bg-amber-50, .bg-yellow-50):not([class*="dark:bg-"]) {
+  background-color: rgba(245, 158, 11, 0.16) !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.bg-red-50, .bg-rose-50):not([class*="dark:bg-"]) {
+  background-color: rgba(244, 63, 94, 0.16) !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.from-white, [class*="from-white"]):not([class*="dark:from-"]) {
+  --tw-gradient-from: #251810 !important;
+  --tw-gradient-stops: var(
+    --tw-gradient-via-stops,
+    var(--tw-gradient-position),
+    var(--tw-gradient-from) var(--tw-gradient-from-position),
+    var(--tw-gradient-to) var(--tw-gradient-to-position)
+  ) !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.to-white, [class*="to-white"]):not([class*="dark:to-"]) {
+  --tw-gradient-to: #1f140f !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(
+    .text-gray-950,
+    .text-gray-900,
+    .text-gray-800,
+    .text-slate-950,
+    .text-slate-900,
+    .text-slate-800,
+    .text-neutral-950,
+    .text-neutral-900
+  ):not([class*="dark:text-"]) {
+  color: #f7f1e9 !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(
+    .text-gray-700,
+    .text-gray-600,
+    .text-slate-700,
+    .text-slate-600,
+    .text-neutral-700,
+    .text-neutral-600
+  ):not([class*="dark:text-"]) {
+  color: #dec5ad !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(
+    .text-gray-500,
+    .text-gray-400,
+    .text-slate-500,
+    .text-slate-400,
+    .text-neutral-500,
+    .text-neutral-400,
+    .placeholder-gray-500,
+    .placeholder-gray-400,
+    .placeholder-slate-500,
+    .placeholder-slate-400
+  ):not([class*="dark:text-"]) {
+  color: #b89078 !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.text-gray-300, .text-slate-300, .text-neutral-300):not(
+    [class*="dark:text-"]
+  ) {
+  color: #d9c1ab !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.text-black, .text-slate-950, .text-gray-950):not([class*="dark:text-"]) {
+  color: #f7f1e9 !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(
+    .border-gray-100,
+    .border-gray-200,
+    .border-gray-300,
+    .border-slate-100,
+    .border-slate-200,
+    .border-slate-300,
+    .border-neutral-200,
+    .border-neutral-300,
+    .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+    .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+    .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+    .divide-slate-200 > :not([hidden]) ~ :not([hidden])
+  ):not([class*="dark:border-"]) {
+  border-color: rgba(171, 110, 60, 0.24) !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(
+    .border-gray-600,
+    .border-gray-700,
+    .border-gray-800,
+    .border-slate-600,
+    .border-slate-700,
+    .border-slate-800,
+    .border-neutral-700,
+    .border-neutral-800
+  ):not([class*="dark:border-"]) {
+  border-color: rgba(171, 110, 60, 0.3) !important;
+}
+
+.dark
+  .admin-route-surface
+  :is(.ring-gray-200, .ring-gray-300, .ring-slate-200, .ring-slate-300):not(
+    [class*="dark:ring-"]
+  ) {
+  --tw-ring-color: rgba(171, 110, 60, 0.32) !important;
+}
+
+.dark .admin-route-surface :is(input, textarea, select):not([class*="bg-"]) {
+  background-color: rgba(37, 24, 16, 0.72);
+}
+
+.dark .admin-route-surface :is(input, textarea, select)::placeholder {
+  color: #b89078;
+}
+
+.dark .admin-route-surface [data-slot="table-row"]:hover,
+.dark .admin-route-surface tr:hover {
+  background-color: rgba(171, 110, 60, 0.08);
 }

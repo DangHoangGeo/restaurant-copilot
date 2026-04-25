@@ -177,59 +177,83 @@ class TemplateRenderer {
 class TemplateFormatProcessor {
     private let escPosPrinter = ESCPOSPrinter()
     
-    func processFormatTags(in text: String, encoding: String.Encoding) -> Data {
+    func processFormatTags(in text: String, encoding: String.Encoding, charsetCommand: [UInt8] = []) -> Data {
         var result = text
         var commands = Data()
         
         // Add initialization commands
         commands.append(escPosPrinter.initializePrinter())
+        commands.append(Data(charsetCommand))
         
-        // Process format tags
-        result = processTag(result, tag: "CENTER", startCommand: escPosPrinter.alignCenter(), endCommand: escPosPrinter.alignLeft())
-        result = processTag(result, tag: "RIGHT", startCommand: escPosPrinter.alignRight(), endCommand: escPosPrinter.alignLeft())
-        result = processTag(result, tag: "LEFT", startCommand: escPosPrinter.alignLeft(), endCommand: Data())
-        result = processTag(result, tag: "BOLD", startCommand: escPosPrinter.boldOn(), endCommand: escPosPrinter.boldOff())
-        result = processTag(result, tag: "LARGE", startCommand: escPosPrinter.doubleHeight(), endCommand: escPosPrinter.normalSize())
-        result = processTag(result, tag: "WIDE", startCommand: escPosPrinter.doubleWidth(), endCommand: escPosPrinter.normalSize())
-        
-        // Process special tags
-        result = result.replacingOccurrences(of: "[SEPARATOR]", with: "--------------------------------\n")
+        let shouldCut = result.contains("[CUT]")
+
+        // Process special layout tags before command tags.
+        result = result.replacingOccurrences(of: "[SEPARATOR]", with: String(repeating: "-", count: 48) + "\r\n")
         result = result.replacingOccurrences(of: "[CUT]", with: "")
-        
-        // Process row/column layout
         result = processRowColumns(in: result)
-        
-        // Convert to data with specified encoding
-        if let textData = result.data(using: encoding) {
-            commands.append(textData)
+
+        appendFormattedText(result, to: &commands, encoding: encoding)
+
+        if shouldCut {
+            commands.append(Data([0x1B, 0x4A, 0x0C]))
+            commands.append(escPosPrinter.cutPaper())
         }
-        
-        // Add cut command
-        commands.append(escPosPrinter.cutPaper())
-        
+
         return commands
     }
-    
-    private func processTag(_ text: String, tag: String, startCommand: Data, endCommand: Data) -> String {
-        let startTag = "[" + tag + "]"
-        let endTag = "[/" + tag + "]"
-        
-        var result = text
-        while let startRange = result.range(of: startTag),
-              let endRange = result.range(of: endTag, range: startRange.upperBound..<result.endIndex) {
-            
-            let beforeStart = result[..<startRange.lowerBound]
-            let content = result[startRange.upperBound..<endRange.lowerBound]
-            let afterEnd = result[endRange.upperBound...]
-            
-            // Convert commands to string representation for now
-            let startCmd = startCommand.isEmpty ? "" : "[CMD]"
-            let endCmd = endCommand.isEmpty ? "" : "[CMD]"
-            
-            result = String(beforeStart) + startCmd + String(content) + endCmd + String(afterEnd)
+
+    private func appendFormattedText(_ text: String, to commands: inout Data, encoding: String.Encoding) {
+        var cursor = text.startIndex
+
+        while cursor < text.endIndex {
+            guard let tagStart = text[cursor...].firstIndex(of: "["),
+                  let tagEnd = text[tagStart...].firstIndex(of: "]") else {
+                appendPlainText(String(text[cursor...]), to: &commands, encoding: encoding)
+                break
+            }
+
+            if tagStart > cursor {
+                appendPlainText(String(text[cursor..<tagStart]), to: &commands, encoding: encoding)
+            }
+
+            let token = String(text[tagStart...tagEnd])
+            appendCommand(for: token, to: &commands)
+            cursor = text.index(after: tagEnd)
         }
-        
-        return result
+    }
+
+    private func appendPlainText(_ text: String, to commands: inout Data, encoding: String.Encoding) {
+        guard !text.isEmpty else { return }
+        if let data = text.data(using: encoding) {
+            commands.append(data)
+        } else if let fallback = text.data(using: .ascii, allowLossyConversion: true) {
+            commands.append(fallback)
+        }
+    }
+
+    private func appendCommand(for token: String, to commands: inout Data) {
+        switch token {
+        case "[CENTER]":
+            commands.append(escPosPrinter.alignCenter())
+        case "[/CENTER]", "[/RIGHT]":
+            commands.append(escPosPrinter.alignLeft())
+        case "[RIGHT]":
+            commands.append(escPosPrinter.alignRight())
+        case "[LEFT]", "[/LEFT]":
+            commands.append(escPosPrinter.alignLeft())
+        case "[BOLD]":
+            commands.append(escPosPrinter.boldOn())
+        case "[/BOLD]":
+            commands.append(escPosPrinter.boldOff())
+        case "[LARGE]":
+            commands.append(escPosPrinter.doubleHeight())
+        case "[WIDE]":
+            commands.append(escPosPrinter.doubleWidth())
+        case "[/LARGE]", "[/WIDE]":
+            commands.append(escPosPrinter.normalSize())
+        default:
+            appendPlainText(token, to: &commands, encoding: .utf8)
+        }
     }
     
     private func processRowColumns(in text: String) -> String {

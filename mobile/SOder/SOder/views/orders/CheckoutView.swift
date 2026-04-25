@@ -19,6 +19,8 @@ struct CheckoutView: View {
     @State private var receivedAmount: Double = 0
     @State private var paymentMethod: PaymentMethod = .cash
     @State private var showingDiscount = false
+    @State private var shouldPrintReceipt = false
+    @State private var printAsOfficialReceipt = false
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -656,6 +658,8 @@ struct CheckoutView: View {
 
     private var actionButtons: some View {
         VStack(spacing: Spacing.md) {
+            receiptPrintOptions
+
             Button(action: processCheckout) {
                 HStack(spacing: Spacing.md) {
                     Image(systemName: isProcessing ? "hourglass" : "checkmark.circle.fill")
@@ -754,6 +758,56 @@ struct CheckoutView: View {
             }
         }
     }
+
+    private var receiptPrintOptions: some View {
+        VStack(spacing: Spacing.sm) {
+            Toggle(isOn: $shouldPrintReceipt) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("checkout_print_receipt_title".localized)
+                        .font(.bodyMedium.weight(.semibold))
+                        .foregroundColor(.appTextPrimary)
+
+                    Text("checkout_print_receipt_hint".localized)
+                        .font(.caption)
+                        .foregroundColor(.appTextSecondary)
+                }
+            }
+            .toggleStyle(SwitchToggleStyle(tint: .appPrimary))
+            .onChange(of: shouldPrintReceipt) { _, newValue in
+                if !newValue {
+                    printAsOfficialReceipt = false
+                }
+            }
+
+            if shouldPrintReceipt {
+                Divider()
+                    .background(Color.appBorderLight)
+
+                Toggle(isOn: $printAsOfficialReceipt) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("checkout_print_official_receipt_title".localized)
+                            .font(.bodyMedium.weight(.semibold))
+                            .foregroundColor(.appTextPrimary)
+
+                        Text("checkout_print_official_receipt_hint".localized)
+                            .font(.caption)
+                            .foregroundColor(.appTextSecondary)
+                    }
+                }
+                .toggleStyle(SwitchToggleStyle(tint: .appPrimary))
+            }
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                .fill(Color.appSurface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.lg)
+                        .stroke(Color.appBorderLight, lineWidth: 1)
+                )
+        )
+    }
     
     private var canCompleteCheckout: Bool {
         if paymentMethod == .cash {
@@ -765,7 +819,7 @@ struct CheckoutView: View {
     private func processCheckout() {
         isReceivedAmountFocused = false
         Task {
-            await performCheckout(printReceipt: true)
+            await performCheckout(printReceipt: shouldPrintReceipt)
         }
     }
     
@@ -824,7 +878,9 @@ struct CheckoutView: View {
             discountCode: discountCode.isEmpty ? nil : discountCode,
             taxAmount: taxAmount,
             totalAmount: totalAmount,
-            timestamp: Date()
+            timestamp: Date(),
+            isOfficial: printAsOfficialReceipt,
+            paymentMethod: paymentMethod.displayName
         )
 
         do {
@@ -928,6 +984,8 @@ struct CheckoutReceiptData {
     let taxAmount: Double
     let totalAmount: Double
     let timestamp: Date
+    var isOfficial: Bool = false
+    var paymentMethod: String? = nil
 }
 
 #if DEBUG

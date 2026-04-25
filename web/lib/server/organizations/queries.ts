@@ -914,7 +914,7 @@ export async function listOrganizationEmployees(
   const { data, error } = await supabaseAdmin
     .from("employees")
     .select(
-      "id, role, user_id, restaurant_id, restaurants(id, name, subdomain), users(id, email, name)",
+      "id, role, user_id, restaurant_id, restaurants(id, name, subdomain), users:users!employees_user_id_fkey(id, email, name)",
     )
     .in("restaurant_id", restaurantIds)
     .order("restaurant_id", { ascending: true });

@@ -20,7 +20,7 @@ struct UnifiedPrinterSetupView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.lg) {
-                introCard
+                simpleSetupSection
                 printerListSection
                 printerAssignmentSection
                 previewSection
@@ -112,15 +112,12 @@ struct UnifiedPrinterSetupView: View {
         }
     }
 
-    private var introCard: some View {
+    private var simpleSetupSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("printer_setup_simple_title".localized)
-                .font(.sectionHeader)
-                .foregroundColor(.appTextPrimary)
-
-            Text("printer_setup_simple_subtitle".localized)
-                .font(.bodyMedium)
-                .foregroundColor(.appTextSecondary)
+            sectionHeader(
+                title: "printer_setup_simple_title".localized,
+                subtitle: "printer_setup_simple_subtitle".localized
+            )
 
             HStack(alignment: .top, spacing: Spacing.sm) {
                 Image(systemName: "network")
@@ -138,25 +135,31 @@ struct UnifiedPrinterSetupView: View {
             }
             .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurfaceSecondary.opacity(0.78))
 
-            Toggle(isOn: $useSeparateKitchenPrinter) {
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text("printer_use_separate_kitchen_title".localized)
-                        .font(.bodyMedium.weight(.semibold))
-                        .foregroundColor(.appTextPrimary)
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("printer_separate_options_title".localized)
+                    .font(.bodyMedium.weight(.semibold))
+                    .foregroundColor(.appTextPrimary)
 
-                    Text(
-                        settingsManager.configuredPrinters.count > 1
-                            ? "printer_use_separate_kitchen_subtitle".localized
-                            : "printer_use_separate_kitchen_disabled".localized
-                    )
-                    .font(.caption)
-                    .foregroundColor(.appTextSecondary)
+                Toggle(isOn: $useSeparateKitchenPrinter) {
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        Text("printer_use_separate_kitchen_title".localized)
+                            .font(.bodyMedium.weight(.semibold))
+                            .foregroundColor(.appTextPrimary)
+
+                        Text(
+                            settingsManager.configuredPrinters.count > 1
+                                ? "printer_use_separate_kitchen_subtitle".localized
+                                : "printer_use_separate_kitchen_disabled".localized
+                        )
+                        .font(.caption)
+                        .foregroundColor(.appTextSecondary)
+                    }
                 }
+                .toggleStyle(SwitchToggleStyle(tint: .appPrimary))
+                .disabled(settingsManager.configuredPrinters.count < 2)
             }
-            .toggleStyle(SwitchToggleStyle(tint: .appPrimary))
-            .disabled(settingsManager.configuredPrinters.count < 2)
+            .appPanel(padding: Spacing.md, cornerRadius: CornerRadius.lg, surfaceColor: Color.appSurface.opacity(0.92))
         }
-        .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.xl, surfaceColor: Color.appSurface.opacity(0.94))
     }
 
     private var printerListSection: some View {
@@ -735,11 +738,10 @@ struct AddEditPrinterView: View {
     let onSave: (ConfiguredPrinter) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
-    @State private var ipAddress = ""
+    @State private var name = ConfiguredPrinterType.receipt.defaultName
+    @State private var ipAddress = PrinterConfig.shared.defaultPrinter.ipAddress
     @State private var port = "9100"
     @State private var printerType: ConfiguredPrinterType = .receipt
-    @State private var showAdvanced = false
 
     private var isEditing: Bool {
         printer != nil
@@ -767,31 +769,47 @@ struct AddEditPrinterView: View {
                     .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.xl, surfaceColor: Color.appSurface.opacity(0.94))
 
                     VStack(alignment: .leading, spacing: Spacing.md) {
-                        TextField("printer_manual_setup_printer_name_label".localized, text: $name)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                        TextField("printer_manual_setup_ip_address_label".localized, text: $ipAddress)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
-
-                        DisclosureGroup(isExpanded: $showAdvanced) {
-                            VStack(alignment: .leading, spacing: Spacing.md) {
-                                TextField("printer_manual_setup_port_label".localized, text: $port)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .keyboardType(.numberPad)
-
-                                Picker("printer_type_receipt_display_name".localized, selection: $printerType) {
-                                    ForEach(ConfiguredPrinterType.allCases, id: \.self) { type in
-                                        Text(type.displayName).tag(type)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                            }
-                            .padding(.top, Spacing.sm)
-                        } label: {
-                            Text("printer_more_options_title".localized)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("printer_type_selection_label".localized)
                                 .font(.bodyMedium.weight(.semibold))
                                 .foregroundColor(.appTextPrimary)
+
+                            Text("printer_type_selection_hint".localized)
+                                .font(.caption)
+                                .foregroundColor(.appTextSecondary)
+
+                            Picker("printer_type_selection_label".localized, selection: $printerType) {
+                                ForEach(ConfiguredPrinterType.allCases, id: \.self) { type in
+                                    Label(type.displayName, systemImage: type.icon).tag(type)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+
+                        formField(
+                            label: "printer_manual_setup_printer_name_label".localized,
+                            helpText: "printer_name_help".localized
+                        ) {
+                            TextField("printer_manual_setup_printer_name_label".localized, text: $name)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+
+                        formField(
+                            label: "printer_manual_setup_ip_address_label".localized,
+                            helpText: "printer_ip_address_help".localized
+                        ) {
+                            TextField("printer_manual_setup_ip_address_label".localized, text: $ipAddress)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .keyboardType(.decimalPad)
+                        }
+
+                        formField(
+                            label: "printer_manual_setup_port_label".localized,
+                            helpText: "printer_port_help".localized
+                        ) {
+                            TextField("printer_manual_setup_port_label".localized, text: $port)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .keyboardType(.numberPad)
                         }
                     }
                     .appPanel(padding: Spacing.lg, cornerRadius: CornerRadius.xl, surfaceColor: Color.appSurface.opacity(0.92))
@@ -825,6 +843,12 @@ struct AddEditPrinterView: View {
                 printerType = printer.printerType
             }
         }
+        .onChange(of: printerType) { oldValue, newValue in
+            guard !isEditing else { return }
+            if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || name == oldValue.defaultName {
+                name = newValue.defaultName
+            }
+        }
     }
 
     private func savePrinter() {
@@ -841,6 +865,37 @@ struct AddEditPrinterView: View {
 
         onSave(newPrinter)
         dismiss()
+    }
+
+    private func formField<Content: View>(
+        label: String,
+        helpText: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(label)
+                .font(.bodyMedium.weight(.semibold))
+                .foregroundColor(.appTextPrimary)
+
+            content()
+
+            Text(helpText)
+                .font(.caption)
+                .foregroundColor(.appTextSecondary)
+        }
+    }
+}
+
+private extension ConfiguredPrinterType {
+    var defaultName: String {
+        switch self {
+        case .receipt:
+            return "printer_default_receipt_name".localized
+        case .kitchen:
+            return "printer_default_kitchen_name".localized
+        case .label:
+            return "printer_default_label_name".localized
+        }
     }
 }
 

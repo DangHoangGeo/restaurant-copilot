@@ -1,7 +1,7 @@
 export interface OrganizationOnboardingAIRequest {
   companyName: string;
   branchName?: string;
-  ownerLanguage: 'en' | 'ja' | 'vi';
+  ownerLanguage: "en" | "ja" | "vi";
   ownerIntro: string;
   openingHours?: string;
   cuisine?: string;
@@ -11,7 +11,7 @@ export interface OrganizationOnboardingAIRequest {
 }
 
 export function buildOrganizationOnboardingPrompt(
-  data: OrganizationOnboardingAIRequest
+  data: OrganizationOnboardingAIRequest,
 ): string {
   const contextInfo = [
     `Company Name: ${data.companyName}`,
@@ -25,7 +25,7 @@ export function buildOrganizationOnboardingPrompt(
     data.specialties ? `Specialties: ${data.specialties}` : null,
   ]
     .filter(Boolean)
-    .join('\n');
+    .join("\n");
 
   return `
 You are helping a restaurant founder in Japan prepare calm, trustworthy brand foundations for a new restaurant company.
@@ -53,35 +53,38 @@ Return valid JSON only in this exact shape:
       "summary": "One-sentence explanation of the direction",
       "brand_color": "#RRGGBB",
       "accent_color": "#RRGGBB",
-      "logo_svg": "<svg ...>...</svg>"
+      "color_reason": "Why these colors fit the provided customer context",
+      "logo_prompt": "Concrete image-generation prompt for a simple square logo mark"
     },
     {
       "name": "Short concept name",
       "summary": "One-sentence explanation of the direction",
       "brand_color": "#RRGGBB",
       "accent_color": "#RRGGBB",
-      "logo_svg": "<svg ...>...</svg>"
+      "color_reason": "Why these colors fit the provided customer context",
+      "logo_prompt": "Concrete image-generation prompt for a simple square logo mark"
     },
     {
       "name": "Short concept name",
       "summary": "One-sentence explanation of the direction",
       "brand_color": "#RRGGBB",
       "accent_color": "#RRGGBB",
-      "logo_svg": "<svg ...>...</svg>"
+      "color_reason": "Why these colors fit the provided customer context",
+      "logo_prompt": "Concrete image-generation prompt for a simple square logo mark"
     }
   ],
   "food_category_suggestions": [
     {
-      "name_en": "Starters",
-      "name_ja": "前菜",
-      "name_vi": "Món khai vị",
+      "name_en": "Context-specific English category",
+      "name_ja": "Natural Japanese category",
+      "name_vi": "Natural Vietnamese category",
       "kind": "basic"
     },
     {
-      "name_en": "Main dishes",
-      "name_ja": "メイン",
-      "name_vi": "Món chính",
-      "kind": "basic"
+      "name_en": "Context-specific English category",
+      "name_ja": "Natural Japanese category",
+      "name_vi": "Natural Vietnamese category",
+      "kind": "specialty"
     }
   ]
 }
@@ -95,19 +98,18 @@ Guidelines:
 - The hero copy should feel clean and premium, not noisy.
 - The owner story should sound human and grounded in daily restaurant work.
 - Return exactly 3 brand options that feel distinct but still calm and practical.
-- The logo SVG for each option must be simple, elegant, and production-safe:
-  - valid standalone SVG only
-  - no scripts
-  - no external assets
-  - use the company or branch initials if helpful
-  - work on light backgrounds
+- For each brand option, explain why the primary and accent color fit the customer's own context.
+- For each brand option, write a logo_prompt for Gemini Image:
+  - generate a simple square restaurant logo mark, not a full poster
+  - no readable words, no small text, no address, no phone number
+  - use the company or branch initials only if the initials are simple and likely to render cleanly
+  - include the brand_color and accent_color as the intended palette
+  - work on light backgrounds and small mobile UI
 - Use one primary brand color and one accent color for each option.
-- The category list must include practical basics first:
-  - Starters
-  - Main dishes
-  - Drinks
-  - Desserts
-- Then add 2-4 categories tailored to the company's unique food or service style.
+- The category list must be based on the provided owner intro, cuisine, city, style, specialties, and opening hours.
+- Return 5-8 reusable company-level menu categories.
+- Do not use generic categories like Starters, Main dishes, Drinks, or Desserts unless the customer's information specifically supports them.
+- Prefer concrete categories customers would recognize from this restaurant, such as pho, banh mi, grilled dishes, lunch sets, family sets, coffee, late-night bowls, seasonal specials, or similar context-specific groupings.
 - Keep categories reusable at the company level so future branches can inherit them first.
 `;
 }

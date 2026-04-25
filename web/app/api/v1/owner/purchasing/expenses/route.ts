@@ -4,35 +4,37 @@
 // Query params for GET (all optional):
 //   category, from_date, to_date, limit, offset
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { USER_ROLES } from '@/lib/constants';
-import { CreateExpenseSchema, ListExpensesSchema } from '@/lib/server/purchasing/schemas';
-import { resolvePurchasingAccess } from '@/lib/server/purchasing/access';
-import { getExpenses, addExpense } from '@/lib/server/purchasing/service';
-
-const ALLOWED_ROLES = [USER_ROLES.OWNER, USER_ROLES.MANAGER] as const;
+import { NextRequest, NextResponse } from "next/server";
+import {
+  CreateExpenseSchema,
+  ListExpensesSchema,
+} from "@/lib/server/purchasing/schemas";
+import { resolvePurchasingAccess } from "@/lib/server/purchasing/access";
+import { getExpenses, addExpense } from "@/lib/server/purchasing/service";
 
 export async function GET(req: NextRequest) {
   const access = await resolvePurchasingAccess();
   if (!access) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);
   const rawQuery = {
-    category:  searchParams.get('category')  ?? undefined,
-    from_date: searchParams.get('from_date') ?? undefined,
-    to_date:   searchParams.get('to_date')   ?? undefined,
-    limit:     searchParams.get('limit')     ?? undefined,
-    offset:    searchParams.get('offset')    ?? undefined,
+    category: searchParams.get("category") ?? undefined,
+    from_date: searchParams.get("from_date") ?? undefined,
+    to_date: searchParams.get("to_date") ?? undefined,
+    limit: searchParams.get("limit") ?? undefined,
+    offset: searchParams.get("offset") ?? undefined,
   };
 
   const parsed = ListExpensesSchema.safeParse(rawQuery);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Invalid query parameters', details: parsed.error.flatten().fieldErrors },
-      { status: 400 }
+      {
+        error: "Invalid query parameters",
+        details: parsed.error.flatten().fieldErrors,
+      },
+      { status: 400 },
     );
   }
 
@@ -40,34 +42,38 @@ export async function GET(req: NextRequest) {
     const expenses = await getExpenses(access.restaurantId, parsed.data);
     return NextResponse.json({ expenses });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Failed to fetch expenses';
+    const msg = err instanceof Error ? err.message : "Failed to fetch expenses";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getUserFromRequest();
-  if (!user?.restaurantId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  if (!ALLOWED_ROLES.includes(user.role as 'owner' | 'manager')) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const access = await resolvePurchasingAccess();
+  if (!access || !access.canWrite) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await req.json();
   const parsed = CreateExpenseSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Validation error', details: parsed.error.flatten().fieldErrors },
-      { status: 400 }
+      {
+        error: "Validation error",
+        details: parsed.error.flatten().fieldErrors,
+      },
+      { status: 400 },
     );
   }
 
   try {
-    const expense = await addExpense(user.restaurantId, parsed.data, user.userId);
+    const expense = await addExpense(
+      access.restaurantId,
+      parsed.data,
+      access.userId,
+    );
     return NextResponse.json({ expense }, { status: 201 });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Failed to record expense';
+    const msg = err instanceof Error ? err.message : "Failed to record expense";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

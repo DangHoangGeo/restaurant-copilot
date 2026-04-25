@@ -154,6 +154,7 @@ type BrandOption = {
   summary: string;
   brand_color: string;
   accent_color: string;
+  color_reason?: string;
   logo_url: string | null;
 };
 
@@ -1250,9 +1251,9 @@ export function ControlOnboardingContent({
                 </div>
 
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>2-3 logo directions</p>
-                  <p>Brand colors</p>
-                  <p>Shared food categories</p>
+                  <p>Generated logo directions</p>
+                  <p>Brand colors with rationale</p>
+                  <p>Menu categories from your story</p>
                 </div>
               </div>
             </aside>
@@ -1267,7 +1268,7 @@ export function ControlOnboardingContent({
                   Step 2
                 </p>
                 <h3 className="text-2xl font-semibold tracking-tight">
-                  Pick a calm brand direction
+                  Pick a generated brand direction
                 </h3>
               </div>
 
@@ -1381,6 +1382,11 @@ export function ControlOnboardingContent({
                     <p className="mt-4 text-sm leading-6 opacity-80">
                       {option.summary}
                     </p>
+                    {option.color_reason ? (
+                      <p className="mt-3 text-xs leading-5 opacity-70">
+                        {option.color_reason}
+                      </p>
+                    ) : null}
                   </button>
                 );
               })}
@@ -1392,7 +1398,7 @@ export function ControlOnboardingContent({
                   <div className="flex items-center gap-2">
                     <UtensilsCrossed className="h-4 w-4 text-muted-foreground" />
                     <h4 className="text-lg font-semibold">
-                      Shared food categories
+                      Shared food categories from your context
                     </h4>
                   </div>
                 </div>
