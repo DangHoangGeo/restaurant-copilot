@@ -41,7 +41,7 @@ export function SignatureDishesSection({
   signatureDishes, 
   locale, 
   currency = "JPY",
-  primaryColor = "#3B82F6",
+  primaryColor = "#c8773e",
   isAdmin = false 
 }: SignatureDishesSectionProps) {
   const t = useTranslations("owner.homepage");

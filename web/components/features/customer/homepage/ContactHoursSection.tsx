@@ -43,7 +43,7 @@ export function ContactHoursSection({
   const t = useTranslations("customer.home.contact");
   const [showAllHours, setShowAllHours] = useState(false);
 
-  const primaryColor = restaurant.primaryColor || "#3B82F6";
+  const primaryColor = restaurant.primaryColor || "#c8773e";
 
   // Parse opening hours
   const getOpeningHours = (): OpeningHours | null => {

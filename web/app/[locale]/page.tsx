@@ -13,6 +13,7 @@ import {
 import { getSubdomainFromHost } from "@/lib/utils";
 import { NewHomePage } from "@/components/features/customer/homepage";
 import { getPublicHomepageData } from "@/lib/server/customer-homepage";
+import { getPublicPlatformStats } from "@/lib/server/public-platform-stats";
 
 interface PageProps {
   params: Promise<{
@@ -40,16 +41,13 @@ export default async function Page({ params }: PageProps) {
     return <NewHomePage locale={locale} initialData={initialHomepageData} />;
   }
 
+  const platformStats = await getPublicPlatformStats();
+
   return (
     <ThemeProviderLanding>
-      <div
-        className="min-h-screen font-sans antialiased"
-        style={{
-          background: "linear-gradient(160deg, #FAF3EA 0%, #F5EAD8 50%, #EFE0CA 100%)",
-        }}
-      >
+      <div className="min-h-screen bg-[#080705] font-sans text-[#f7efe2] antialiased">
         <LandingPageHeader locale={locale} />
-        <HeroSection />
+        <HeroSection stats={platformStats} />
         <FeaturesSection />
         <PricingSection />
         <FooterSection />

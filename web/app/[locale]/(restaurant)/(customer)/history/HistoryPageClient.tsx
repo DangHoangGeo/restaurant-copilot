@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import type {
   Topping,
 } from "./types";
 import { buildCustomerPath } from "@/lib/customer-branch";
+import { createCustomerBrandTheme } from "@/lib/utils/colors";
 
 interface HistoryPageClientProps {
   locale: string;
@@ -303,9 +304,17 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
   const totalAmount = historyData?.order?.total_amount || 0;
 
-  const histBrandColor = restaurantSettings?.primaryColor || "#4f46e5";
+  const customerTheme = useMemo(
+    () => createCustomerBrandTheme(restaurantSettings?.primaryColor),
+    [restaurantSettings?.primaryColor],
+  );
+  const histBrandColor = customerTheme.primary;
   const spinnerStyle = { borderBottomColor: histBrandColor };
-  const btnStyle = { backgroundColor: histBrandColor, borderColor: histBrandColor };
+  const btnStyle = {
+    backgroundColor: histBrandColor,
+    borderColor: histBrandColor,
+    color: customerTheme.primaryForeground,
+  };
 
   if (isLoading || contextLoading) {
     return (
@@ -357,7 +366,7 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     );
   }
 
-  const brandColor = restaurantSettings?.primaryColor || "#4f46e5";
+  const brandColor = customerTheme.primary;
   const companyName = restaurantSettings?.companyName || restaurantSettings?.name || "";
 
   return (
@@ -375,7 +384,10 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
           ) : (
             <div
               className="h-8 w-8 rounded-md flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-              style={{ backgroundColor: brandColor }}
+              style={{
+                backgroundColor: brandColor,
+                color: customerTheme.primaryForeground,
+              }}
             >
               {companyName.charAt(0) || "R"}
             </div>
@@ -498,9 +510,9 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-center justify-between rounded-lg bg-[var(--customer-brand-soft)] p-3">
                   <div>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="text-sm text-[var(--customer-brand)]">
                       {t("passcode")}
                     </p>
                     <p className="font-mono font-bold text-lg">

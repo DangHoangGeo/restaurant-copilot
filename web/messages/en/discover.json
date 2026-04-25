@@ -5,7 +5,9 @@
   },
   "page": {
     "heading": "Find a Restaurant",
-    "subheading": "Browse verified restaurants near you"
+    "subheading": "Browse verified restaurants near you",
+    "eyebrow": "Public restaurant list",
+    "verified_network": "Verified network"
   },
   "search": {
     "placeholder": "Search by name, address, or cuisine...",
@@ -16,10 +18,13 @@
     "all_districts": "All Districts",
     "province_label": "Province",
     "district_label": "District",
+    "title": "Search the network",
     "clear_filters": "Clear filters"
   },
   "card": {
     "view_menu": "View Menu",
+    "signature_dish": "Best seller",
+    "signature_placeholder": "Signature dish coming soon",
     "reviews": "{count} reviews",
     "no_rating": "No rating yet",
     "part_of_brand": "Part of {brand}",

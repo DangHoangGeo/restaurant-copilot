@@ -13,38 +13,15 @@ import { buildOrganizationOnboardingPrompt } from "@/lib/ai/prompts/organization
 import { resolveOrgContext } from "@/lib/server/organizations/service";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { sanitizeGeneratedLogoSvg } from "@/lib/utils/branding-assets";
+import {
+  getProfessionalRestaurantPalettes,
+  normalizeProfessionalBrandPalette,
+  type ProfessionalBrandPalette,
+} from "@/lib/utils/colors";
 
 const HEX_COLOR_RE = /^#([0-9A-Fa-f]{6})$/;
 const MAX_LOGO_IMAGE_BYTES = 5 * 1024 * 1024;
 const LOGO_IMAGE_TIMEOUT_MS = 35_000;
-
-const FALLBACK_BRAND_PALETTES = [
-  {
-    name: "Warm hearth",
-    summary: "A steady, welcoming direction for everyday comfort food.",
-    brand_color: "#B65A2E",
-    accent_color: "#F4D7B8",
-    color_reason:
-      "Warm clay and cream tones fit a welcoming restaurant brand built around comfort and daily hospitality.",
-  },
-  {
-    name: "Market green",
-    summary:
-      "A fresh, ingredient-led look for balanced menus and daily specials.",
-    brand_color: "#4E6F52",
-    accent_color: "#DDE7D2",
-    color_reason:
-      "Fresh green tones work well when the founder wants the brand to feel ingredient-led and calm.",
-  },
-  {
-    name: "Midnight service",
-    summary: "A more refined option for brands that want a clean premium feel.",
-    brand_color: "#2E4057",
-    accent_color: "#D9C7A2",
-    color_reason:
-      "Deep blue with a soft gold accent creates a more polished evening-service feel.",
-  },
-] as const;
 
 const DEFAULT_CONTEXTUAL_CATEGORY_SUGGESTIONS = [
   {
@@ -99,6 +76,18 @@ type FoodCategorySuggestion = {
 function normalizeHexColor(value: string | undefined, fallback: string) {
   const trimmed = value?.trim();
   return trimmed && HEX_COLOR_RE.test(trimmed) ? trimmed : fallback;
+}
+
+function getFallbackBrandPalettes(context: {
+  ownerIntro?: string;
+  cuisine?: string;
+  specialties?: string;
+}): ProfessionalBrandPalette[] {
+  return getProfessionalRestaurantPalettes({
+    ownerIntro: context.ownerIntro,
+    cuisine: context.cuisine,
+    specialties: context.specialties,
+  });
 }
 
 function normalizeCategoryKey(value: string | null | undefined) {
@@ -542,19 +531,31 @@ export async function POST(request: NextRequest) {
     const rawBrandOptions = Array.isArray(parsed.brand_options)
       ? parsed.brand_options
       : [];
+    const fallbackBrandPalettes = getFallbackBrandPalettes({
+      ownerIntro,
+      cuisine,
+      specialties,
+    });
 
     const brandOptions = await Promise.all(
       Array.from({ length: 3 }, async (_, index): Promise<BrandOption> => {
-        const fallback = FALLBACK_BRAND_PALETTES[index];
+        const fallback = fallbackBrandPalettes[index];
         const rawOption = rawBrandOptions[index];
-        const brandColor = normalizeHexColor(
-          rawOption?.brand_color,
-          fallback.brand_color,
+        const normalizedPalette = normalizeProfessionalBrandPalette(
+          {
+            brandColor: normalizeHexColor(
+              rawOption?.brand_color,
+              fallback.brand_color,
+            ),
+            accentColor: normalizeHexColor(
+              rawOption?.accent_color,
+              fallback.accent_color,
+            ),
+          },
+          fallback,
         );
-        const accentColor = normalizeHexColor(
-          rawOption?.accent_color,
-          fallback.accent_color,
-        );
+        const brandColor = normalizedPalette.brandColor;
+        const accentColor = normalizedPalette.accentColor;
         const optionName = rawOption?.name?.trim() || fallback.name;
         const summary = rawOption?.summary?.trim() || fallback.summary;
         const colorReason =
@@ -671,7 +672,7 @@ export async function POST(request: NextRequest) {
       owner_story_vi: parsed.owner_story_vi ?? "",
       brand_options: brandOptions,
       brand_color:
-        brandOptions[0]?.brand_color ?? FALLBACK_BRAND_PALETTES[0].brand_color,
+        brandOptions[0]?.brand_color ?? fallbackBrandPalettes[0].brand_color,
       logo_url: brandOptions[0]?.logo_url ?? null,
       food_category_suggestions: categorySuggestions,
     });
@@ -680,15 +681,23 @@ export async function POST(request: NextRequest) {
 
     const fallbackInitials = getCompanyInitials(fallbackContext.companyName);
     const fallbackBrandOptions: BrandOption[] = [];
+    const fallbackBrandPalettes = getFallbackBrandPalettes(fallbackContext);
 
-    for (let index = 0; index < FALLBACK_BRAND_PALETTES.length; index += 1) {
-      const palette = FALLBACK_BRAND_PALETTES[index];
+    for (let index = 0; index < fallbackBrandPalettes.length; index += 1) {
+      const palette = fallbackBrandPalettes[index];
+      const normalizedPalette = normalizeProfessionalBrandPalette(
+        {
+          brandColor: palette.brand_color,
+          accentColor: palette.accent_color,
+        },
+        palette,
+      );
       const logoUrl = await uploadLogoSvg({
         organizationId: ctx!.organization.id,
         svg: buildFallbackLogoSvg({
           initials: fallbackInitials,
-          brandColor: palette.brand_color,
-          accentColor: palette.accent_color,
+          brandColor: normalizedPalette.brandColor,
+          accentColor: normalizedPalette.accentColor,
           variant: index + 1,
         }),
         fileName: `fallback_ai_logo_option_${index + 1}_${Date.now()}.svg`,
@@ -698,8 +707,8 @@ export async function POST(request: NextRequest) {
         id: `option-${index + 1}`,
         name: palette.name,
         summary: palette.summary,
-        brand_color: palette.brand_color,
-        accent_color: palette.accent_color,
+        brand_color: normalizedPalette.brandColor,
+        accent_color: normalizedPalette.accentColor,
         color_reason: palette.color_reason,
         logo_url: logoUrl,
       });
@@ -718,7 +727,7 @@ export async function POST(request: NextRequest) {
         "私たちは、安定した品質とあたたかいおもてなしを大切にし、どの店舗でも安心して食事を楽しめる体験を届けます。",
       description_vi:
         "Chúng tôi vận hành nhà hàng với sự chỉn chu, chất lượng ổn định và sự hiếu khách ấm áp để mỗi thực khách đều cảm thấy yên tâm ngay từ lần đầu ghé thăm.",
-      brand_color: "#C45B2D",
+      brand_color: fallbackBrandOptions[0]?.brand_color ?? "#c8773e",
       hero_title_en: "Warm meals, every day",
       hero_title_ja: "毎日に、あたたかい一皿を",
       hero_title_vi: "Mỗi ngày một bữa ăn ấm áp",

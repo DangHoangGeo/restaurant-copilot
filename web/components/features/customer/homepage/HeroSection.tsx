@@ -84,7 +84,7 @@ export function HeroSection({
     );
   };
 
-  const primaryColor = restaurant.primaryColor || "#3B82F6";
+  const primaryColor = restaurant.primaryColor || "#c8773e";
 
   return (
     <section 

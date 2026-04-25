@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import type { RestaurantSettings } from "@/shared/types/customer";
 import Image from "next/image";
 import Link from "next/link";
+import { createCustomerBrandTheme } from "@/lib/utils/colors";
 
 interface CustomerHeaderProps {
   restaurantSettings: RestaurantSettings;
@@ -35,6 +36,9 @@ export function CustomerHeader({
 
   const companyName = restaurantSettings.companyName || restaurantSettings.name;
   const branchName = restaurantSettings.name;
+  const customerTheme = createCustomerBrandTheme(
+    restaurantSettings.primaryColor,
+  );
 
   const is_opening = (() => {
     const hours = restaurantSettings.opening_hours;
@@ -84,7 +88,8 @@ export function CustomerHeader({
               <div
                 className="h-10 w-10 rounded-md flex items-center justify-center text-white text-lg font-bold"
                 style={{
-                  backgroundColor: restaurantSettings.primaryColor || "#4f46e5",
+                  backgroundColor: customerTheme.primary,
+                  color: customerTheme.primaryForeground,
                 }}
               >
                 {restaurantSettings.name?.charAt(0) || "R"}

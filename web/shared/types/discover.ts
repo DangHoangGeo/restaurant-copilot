@@ -6,6 +6,16 @@ export interface DiscoverOrg {
   publicSubdomain: string | null;
 }
 
+export interface DiscoverFeaturedDish {
+  id: string;
+  name_en: string;
+  name_ja: string | null;
+  name_vi: string | null;
+  imageUrl: string | null;
+  price: number;
+  currency: string | null;
+}
+
 export interface DiscoverBranch {
   id: string;
   name: string;
@@ -28,6 +38,7 @@ export interface DiscoverBranch {
   currency: string | null;
   logoUrl: string | null;
   brandColor: string | null;
+  featuredDish: DiscoverFeaturedDish | null;
   org: DiscoverOrg | null;
 }
 

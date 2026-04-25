@@ -70,13 +70,13 @@ const getCategoryPastelColor = (itemName: string): string => {
     return 'from-red-100 via-orange-50 to-yellow-100 dark:from-red-900/20 dark:via-orange-900/10 dark:to-yellow-900/20';
   }
   if (name.includes('sushi') || name.includes('fish') || name.includes('seafood')) {
-    return 'from-blue-100 via-cyan-50 to-teal-100 dark:from-blue-900/20 dark:via-cyan-900/10 dark:to-teal-900/20';
+    return 'from-emerald-100 via-teal-50 to-lime-100 dark:from-emerald-900/20 dark:via-teal-900/10 dark:to-lime-900/20';
   }
   if (name.includes('salad') || name.includes('vegetable') || name.includes('green')) {
     return 'from-green-100 via-emerald-50 to-lime-100 dark:from-green-900/20 dark:via-emerald-900/10 dark:to-lime-900/20';
   }
   if (name.includes('cake') || name.includes('dessert') || name.includes('ice cream')) {
-    return 'from-pink-100 via-rose-50 to-purple-100 dark:from-pink-900/20 dark:via-rose-900/10 dark:to-purple-900/20';
+    return 'from-rose-100 via-orange-50 to-amber-100 dark:from-rose-900/20 dark:via-orange-900/10 dark:to-amber-900/20';
   }
   if (name.includes('meat') || name.includes('beef') || name.includes('chicken')) {
     return 'from-orange-100 via-red-50 to-pink-100 dark:from-orange-900/20 dark:via-red-900/10 dark:to-pink-900/20';

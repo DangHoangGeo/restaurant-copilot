@@ -41,6 +41,16 @@ interface OrgRow {
   description_vi: string | null;
 }
 
+interface FeaturedDishRow {
+  id: string;
+  restaurant_id: string;
+  name_en: string;
+  name_ja: string | null;
+  name_vi: string | null;
+  image_url: string | null;
+  price: number;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const province = searchParams.get("province")?.trim() || null;
@@ -108,6 +118,22 @@ export async function GET(req: NextRequest) {
   }
 
   const branchIds = (branches as BranchRow[]).map((b) => b.id);
+
+  const { data: featuredDishes } = await supabaseAdmin
+    .from("menu_items")
+    .select("id, restaurant_id, name_en, name_ja, name_vi, image_url, price")
+    .in("restaurant_id", branchIds)
+    .eq("available", true)
+    .eq("is_signature", true)
+    .not("image_url", "is", null)
+    .order("position", { ascending: true });
+
+  const branchToFeaturedDish = new Map<string, FeaturedDishRow>();
+  for (const dish of (featuredDishes ?? []) as FeaturedDishRow[]) {
+    if (!branchToFeaturedDish.has(dish.restaurant_id)) {
+      branchToFeaturedDish.set(dish.restaurant_id, dish);
+    }
+  }
 
   // Fetch org links for all returned branches in one query.
   const { data: orgLinks } = await supabaseAdmin
@@ -189,6 +215,7 @@ export async function GET(req: NextRequest) {
 
   const result = (branches as BranchRow[]).map((branch) => {
     const org = branchToOrg.get(branch.id) ?? null;
+    const featuredDish = branchToFeaturedDish.get(branch.id) ?? null;
     return {
       id: branch.id,
       name: branch.name,
@@ -211,6 +238,17 @@ export async function GET(req: NextRequest) {
       currency: branch.currency,
       logoUrl: org?.logo_url ?? branch.logo_url,
       brandColor: org?.brand_color ?? branch.brand_color,
+      featuredDish: featuredDish
+        ? {
+            id: featuredDish.id,
+            name_en: featuredDish.name_en,
+            name_ja: featuredDish.name_ja,
+            name_vi: featuredDish.name_vi,
+            imageUrl: featuredDish.image_url,
+            price: Number(featuredDish.price ?? 0),
+            currency: branch.currency,
+          }
+        : null,
       org: org
         ? {
             id: org.id,

@@ -216,7 +216,7 @@ export function FloatingCart({
                 className="text-left w-full group hover:bg-slate-50 dark:hover:bg-slate-700 rounded p-1 -m-1 transition-colors"
               >
                 <p
-                  className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  className="truncate text-sm font-medium text-slate-800 group-hover:text-[var(--customer-brand)] dark:text-slate-100 dark:group-hover:text-[var(--customer-accent)]"
                   title={localizedItemName}
                 >
                   {localizedItemName}
@@ -231,7 +231,7 @@ export function FloatingCart({
                     {item.selectedSize && (
                       <Badge
                         variant="secondary"
-                        className="text-xs bg-blue-100 text-blue-700"
+                        className="bg-[var(--customer-brand-soft)] text-xs text-[var(--customer-brand)]"
                       >
                         {getLocalizedText(
                           {

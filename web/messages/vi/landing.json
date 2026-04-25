@@ -7,19 +7,36 @@
   "header": {
     "logo_aria_label": "Logo CoOrder",
     "login": "Đăng nhập",
+    "discover": "Khám phá",
     "signup": "Đăng ký"
   },
   "theme": {
     "toggle": "Chuyển đổi giao diện"
   },
   "hero": {
+    "live_badge": "Số liệu mạng lưới trực tiếp",
+    "headline": "Điều hành ca bán.",
+    "headline_accent": "Từ điện thoại.",
     "headline_part1": "SaaS ưu tiên di động, hỗ trợ AI cho",
     "headline_part2": "Nhà hàng nhỏ.",
-    "subheadline": "CoOrder trao quyền cho các nhà hàng nhỏ quản lý toàn bộ hoạt động của họ—thực đơn, đơn hàng, đặt bàn, nhân viên và phân tích—hoàn toàn từ điện thoại thông minh hoặc máy tính bảng.",
+    "subheadline": "Một trung tâm điều hành gọn cho đơn hàng, chi nhánh, thực đơn, nhân sự và dòng tiền. Giảm việc tay chân, tránh sai sót khi phục vụ và giúp khách hài lòng hơn từ lúc quét mã đến khi thanh toán.",
     "cta": {
+      "signup": "Bắt đầu dùng thử",
+      "discover": "Tìm nhà hàng",
       "description": "Bắt đầu dùng thử miễn phí",
       "demo": "Xem bản demo",
       "subtext": "Không yêu cầu thẻ tín dụng. Dùng thử miễn phí 14 ngày."
+    },
+    "stats": {
+      "restaurants": "nhà hàng đã xác minh",
+      "orders": "đơn trong 24 giờ"
+    },
+    "timeline": {
+      "title": "Đơn #1028 đang chạy",
+      "received": "Đã nhận",
+      "preparing": "Đang chuẩn bị",
+      "ready": "Sẵn sàng",
+      "delivering": "Đang giao"
     },
     "image_alt": "Mô hình bảng điều khiển CoOrder"
   },
@@ -36,8 +53,9 @@
     "security_badge3": "Tuân thủ GDPR"
   },
   "features": {
-    "title": "Các tính năng mạnh mẽ để tăng tốc doanh nghiệp của bạn",
-    "subtitle": "CoOrder được trang bị các tính năng được thiết kế để đơn giản hóa hoạt động của bạn và làm hài lòng khách hàng.",
+    "eyebrow": "Bớt áp lực, phục vụ nhanh hơn",
+    "title": "Những việc làm nhà hàng chậm lại được gom về một nơi.",
+    "subtitle": "CoOrder nối đặt món QR, cập nhật thực đơn, tình hình nhân sự, sức khỏe chi nhánh và kiểm tra tiền hằng ngày để đội ngũ chạy nhanh hơn và khách chờ ít hơn.",
     "menu_management": {
       "title": "Quản lý thực đơn trực quan",
       "description": "Dễ dàng tạo, cập nhật và sắp xếp thực đơn số với ảnh, mô tả và giá cả. Hỗ trợ nhiều ngôn ngữ.",
@@ -67,6 +85,22 @@
       "title": "Trải nghiệm ưu tiên di động thực sự",
       "description": "Quản lý toàn bộ nhà hàng từ bất kỳ điện thoại thông minh hoặc máy tính bảng nào. Không cần phần cứng cồng kềnh hay thiết lập phức tạp.",
       "benefit": "Vận hành doanh nghiệp của bạn từ bất kỳ đâu."
+    },
+    "control_strip": {
+      "eyebrow": "Điểm mạnh vận hành",
+      "title": "Đơn rõ ràng, thực đơn chính xác, phục vụ nhanh và số liệu sạch tạo trải nghiệm tốt hơn cho khách.",
+      "orders": {
+        "label": "Giảm sai đơn",
+        "value": "18"
+      },
+      "branches": {
+        "label": "Tình trạng chi nhánh",
+        "value": "3/4"
+      },
+      "payout": {
+        "label": "Theo dõi chốt ngày",
+        "value": "Hôm nay"
+      }
     }
   },
   "howitworks": {
@@ -120,8 +154,9 @@
     }
   },
   "pricing": {
-    "title": "Chọn gói của bạn",
-    "subtitle": "Chọn gói dịch vụ hoàn hảo cho nhu cầu của nhà hàng bạn. Bắt đầu với thử miễn phí và nâng cấp khi bạn sẵn sàng.",
+    "eyebrow": "Bắt đầu nhỏ, thêm chi nhánh sau",
+    "title": "Chọn nền tảng vận hành.",
+    "subtitle": "Bắt đầu với một nhà hàng, rồi mở rộng sang nhiều chi nhánh mà không đổi hệ thống.",
     "popular": "Phổ biến nhất",
     "billing": {
       "monthly": "Hàng tháng",

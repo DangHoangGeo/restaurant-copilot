@@ -112,20 +112,28 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* CoOrder.ai Brand Colors */
+/* CoOrder brand colors */
 :root {
-  --brand-color-landing: #2563eb; /* Blue-600 */
-  --brand-color-primary: #3b82f6; /* Blue-500 */
-  --brand-color-secondary: #60a5fa; /* Blue-400 */
-  --brand-color-accent: #1e40af; /* Blue-800 */
-  --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --brand-color-landing: #c8773e;
+  --brand-color-primary: #c8773e;
+  --brand-color-secondary: #e9a35e;
+  --brand-color-accent: #97be73;
+  --brand-color-ink: #080705;
+  --brand-color-surface: #14100b;
+  --brand-color-cream: #fff7e9;
+  --brand-color-muted: #c9b7a0;
+  --brand-gradient: linear-gradient(135deg, #c8773e 0%, #e9a35e 52%, #97be73 100%);
 }
 
 .dark {
-  --brand-color-landing: #60a5fa; /* Blue-400 for dark mode */
-  --brand-color-primary: #3b82f6; /* Blue-500 */
-  --brand-color-secondary: #93c5fd; /* Blue-300 */
-  --brand-color-accent: #1d4ed8; /* Blue-700 */
+  --brand-color-landing: #e9a35e;
+  --brand-color-primary: #c8773e;
+  --brand-color-secondary: #f0b66e;
+  --brand-color-accent: #a6c985;
+  --brand-color-ink: #080705;
+  --brand-color-surface: #14100b;
+  --brand-color-cream: #fff7e9;
+  --brand-color-muted: #c9b7a0;
 }
 
 @layer base {

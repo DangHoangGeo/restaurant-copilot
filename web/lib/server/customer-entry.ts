@@ -1,6 +1,7 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getSubdomainFromHost } from "@/lib/utils";
+import { createCustomerBrandTheme } from "@/lib/utils/colors";
 import type { RestaurantSettings } from "@/shared/types/customer";
 
 interface OrganizationPublicRow {
@@ -74,6 +75,10 @@ function mapRestaurantSettings(
   restaurant: RestaurantPublicRow,
   company: CompanyContext,
 ): RestaurantSettings {
+  const theme = createCustomerBrandTheme(
+    restaurant.brand_color ?? company.brandColor,
+  );
+
   return {
     id: restaurant.id,
     name: restaurant.name,
@@ -83,7 +88,7 @@ function mapRestaurantSettings(
     companyPublicSubdomain: company.publicSubdomain,
     logoUrl: company.logoUrl ?? restaurant.logo_url,
     allowOrderNotes: restaurant.allow_order_notes ?? true,
-    primaryColor: company.brandColor ?? restaurant.brand_color ?? "#3B82F6",
+    primaryColor: theme.primary,
     defaultLocale: restaurant.default_language || "en",
     address: restaurant.address,
     phone: restaurant.phone,

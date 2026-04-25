@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type CSSProperties,
   type ChangeEvent,
   useCallback,
   useEffect,
@@ -46,6 +47,7 @@ import {
   summarizeOpeningHours,
   type OpeningHours,
 } from "@/lib/utils/opening-hours";
+import { createCustomerThemeProperties } from "@/lib/utils/colors";
 import type { Restaurant } from "@/shared/types/restaurant";
 
 const TIMEZONES = [
@@ -1322,6 +1324,10 @@ export function ControlOnboardingContent({
             <div className="grid gap-3 lg:grid-cols-3">
               {brandOptions.map((option, index) => {
                 const isSelected = option.id === selectedBrandOptionId;
+                const customerThemeStyle = createCustomerThemeProperties(
+                  option.brand_color,
+                  option.accent_color,
+                ) as CSSProperties;
 
                 return (
                   <button
@@ -1377,6 +1383,27 @@ export function ControlOnboardingContent({
                       <span className="text-xs opacity-70">
                         {option.brand_color}
                       </span>
+                    </div>
+
+                    <div
+                      className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-[var(--customer-dark-surface)] p-3 text-[var(--customer-brand-foreground)]"
+                      style={customerThemeStyle}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--customer-dark-muted)]">
+                            Customer page
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-[#fff7e9]">
+                            Menu and homepage preview
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-[var(--customer-brand)] px-3 py-1 text-xs font-semibold text-[var(--customer-brand-foreground)]">
+                          Order
+                        </span>
+                      </div>
+                      <div className="mt-3 h-2 rounded-full bg-[var(--customer-accent)]" />
+                      <div className="mt-2 h-2 w-2/3 rounded-full bg-white/18" />
                     </div>
 
                     <p className="mt-4 text-sm leading-6 opacity-80">
@@ -1460,6 +1487,11 @@ export function ControlOnboardingContent({
 
                 <div className="space-y-2">
                   <Label htmlFor="brand-color">Primary brand color</Label>
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    Customer pages use this as a seed color. CoOrder derives a
+                    professional homepage, menu, button, and subdomain theme
+                    from it so the public pages stay readable.
+                  </p>
                   <div className="flex items-center gap-3">
                     <span
                       className="h-10 w-10 rounded-full ring-1 ring-black/10"

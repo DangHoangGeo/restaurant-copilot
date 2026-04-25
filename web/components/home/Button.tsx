@@ -28,17 +28,16 @@ export const Button = ({
   href, 
   ...props 
 }: ButtonProps) => {
-  const baseStyle = "font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150 ease-in-out inline-flex items-center justify-center shadow-md hover:shadow-lg";
+  const baseStyle = "font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#14100B] transition-colors duration-150 ease-in-out inline-flex items-center justify-center shadow-[0_14px_34px_-22px_rgba(8,7,5,0.8)] hover:shadow-[0_18px_40px_-24px_rgba(8,7,5,0.9)] active:translate-y-px";
   
-  // Landing page specific primary color
-  const primaryColorClass = "bg-sky-500 hover:opacity-90 text-slate-900 dark:text-white focus:ring-sky-500";
+  const primaryColorClass = "bg-[#c8773e] text-[#fff7e9] hover:bg-[#d98a4c] focus:ring-[#e9a35e]";
   
   const variantStyles = {
     primary: `${primaryColorClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
-    secondary: `bg-slate-200 hover:bg-slate-300 text-slate-700 focus:ring-slate-400 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 dark:focus:ring-slate-500 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
-    outline: `bg-transparent border-2 border-sky-500 text-sky-500 hover:bg-sky-500/10 focus:ring-sky-500 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
-    ghost: `bg-transparent hover:bg-slate-100 text-slate-700 focus:ring-slate-400 dark:hover:bg-slate-700 dark:text-slate-200 dark:focus:ring-slate-500 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
-    link: `text-sky-500 hover:underline focus:outline-none focus:ring-1 focus:ring-sky-500 p-0 shadow-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
+    secondary: `border border-[#f1dcc4]/15 bg-[#fff7e9]/8 text-[#f6e8d3] hover:bg-[#fff7e9]/12 focus:ring-[#e9a35e] ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
+    outline: `border border-[#c8773e]/70 bg-transparent text-[#f3c28d] hover:bg-[#c8773e]/12 focus:ring-[#e9a35e] ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
+    ghost: `bg-transparent text-[#dbc7ad] hover:bg-[#fff7e9]/8 hover:text-[#fff7e9] focus:ring-[#e9a35e] ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
+    link: `p-0 text-[#e9a35e] shadow-none hover:underline focus:outline-none focus:ring-1 focus:ring-[#e9a35e] ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`,
   };
   
   const sizeStyles = { 

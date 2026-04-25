@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { DiscoverPageClient } from "@/components/features/discover/DiscoverPageClient";
 import type { DiscoverBranch, DiscoverApiResponse } from "@/shared/types/discover";
@@ -56,6 +57,39 @@ async function getInitialDiscoverData(): Promise<DiscoverApiResponse> {
   }
 
   const branchIds = branches.map((b) => b.id);
+
+  const { data: featuredDishes } = await supabaseAdmin
+    .from("menu_items")
+    .select("id, restaurant_id, name_en, name_ja, name_vi, image_url, price")
+    .in("restaurant_id", branchIds)
+    .eq("available", true)
+    .eq("is_signature", true)
+    .not("image_url", "is", null)
+    .order("position", { ascending: true });
+
+  const branchToFeaturedDish = new Map<string, {
+    id: string;
+    restaurant_id: string;
+    name_en: string;
+    name_ja: string | null;
+    name_vi: string | null;
+    image_url: string | null;
+    price: number;
+  }>();
+
+  for (const dish of featuredDishes ?? []) {
+    if (!branchToFeaturedDish.has(dish.restaurant_id as string)) {
+      branchToFeaturedDish.set(dish.restaurant_id as string, {
+        id: dish.id as string,
+        restaurant_id: dish.restaurant_id as string,
+        name_en: dish.name_en as string,
+        name_ja: (dish.name_ja as string | null) ?? null,
+        name_vi: (dish.name_vi as string | null) ?? null,
+        image_url: (dish.image_url as string | null) ?? null,
+        price: Number(dish.price ?? 0),
+      });
+    }
+  }
 
   const { data: orgLinks } = await supabaseAdmin
     .from("organization_restaurants")
@@ -123,6 +157,7 @@ async function getInitialDiscoverData(): Promise<DiscoverApiResponse> {
 
   const result: DiscoverBranch[] = branches.map((branch) => {
     const org = branchToOrg.get(branch.id) ?? null;
+    const featuredDish = branchToFeaturedDish.get(branch.id) ?? null;
     return {
       id: branch.id,
       name: branch.name,
@@ -145,6 +180,17 @@ async function getInitialDiscoverData(): Promise<DiscoverApiResponse> {
       currency: branch.currency ?? null,
       logoUrl: org?.logoUrl ?? branch.logo_url ?? null,
       brandColor: org?.brandColor ?? branch.brand_color ?? null,
+      featuredDish: featuredDish
+        ? {
+            id: featuredDish.id,
+            name_en: featuredDish.name_en,
+            name_ja: featuredDish.name_ja,
+            name_vi: featuredDish.name_vi,
+            imageUrl: featuredDish.image_url,
+            price: Number(featuredDish.price ?? 0),
+            currency: branch.currency ?? null,
+          }
+        : null,
       org,
     };
   });
@@ -154,7 +200,9 @@ async function getInitialDiscoverData(): Promise<DiscoverApiResponse> {
 
 export default async function DiscoverPage({ params }: Props) {
   const { locale } = await params;
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
   const initialData = await getInitialDiscoverData();
 
-  return <DiscoverPageClient initialData={initialData} locale={locale} />;
+  return <DiscoverPageClient initialData={initialData} locale={locale} host={host} />;
 }

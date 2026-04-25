@@ -9,19 +9,22 @@ export const FooterSection = () => {
 
   return (
     <footer
-      className="py-8 px-5 border-t"
-      style={{ background: "#EFE0CA", borderColor: "rgba(171,110,60,0.12)" }}
+      className="border-t border-[#f1dcc4]/10 bg-[#080705] px-5 py-8"
     >
-      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#8B6E5A]">
-        <span style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
-          © {year} coorder<span style={{ color: "#AB6E3C" }}>.ai</span>
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-sm text-[#b8a58e] sm:flex-row">
+        <span>
+          © {year} coorder<span className="text-[#d18a4e]">.ai</span>
         </span>
         <div className="flex items-center gap-4">
-          <Link href={`/${locale}/privacy`} className="hover:text-[#AB6E3C] transition-colors">
+          <Link href={`/${locale}/discover`} className="transition-colors hover:text-[#fff7e9]">
+            Discover
+          </Link>
+          <span>·</span>
+          <Link href={`/${locale}/privacy`} className="transition-colors hover:text-[#fff7e9]">
             Privacy
           </Link>
           <span>·</span>
-          <Link href={`/${locale}/terms`} className="hover:text-[#AB6E3C] transition-colors">
+          <Link href={`/${locale}/terms`} className="transition-colors hover:text-[#fff7e9]">
             Terms
           </Link>
         </div>

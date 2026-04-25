@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
           subdomain,
           branch_code: subdomain,
           default_language: defaultLanguage,
-          brand_color: "#00a3d7",
+          brand_color: "#c8773e",
           email,
           is_verified: false,
         },

@@ -12,6 +12,10 @@ import {
   ExternalLink
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import {
+  createCustomerBrandTheme,
+  createCustomerThemeProperties,
+} from "@/lib/utils/colors";
 
 interface RestaurantData {
   id: string;
@@ -32,7 +36,8 @@ interface ReviewsMapSectionProps {
 export function ReviewsMapSection({ restaurant }: ReviewsMapSectionProps) {
   const t = useTranslations("customer.home.reviews");
 
-  const primaryColor = restaurant.primaryColor || "#3B82F6";
+  const customerTheme = createCustomerBrandTheme(restaurant.primaryColor);
+  const primaryColor = customerTheme.primary;
   
   // Generate Google Maps URLs
   const addressQuery = encodeURIComponent(restaurant.address || restaurant.name);
@@ -47,7 +52,9 @@ export function ReviewsMapSection({ restaurant }: ReviewsMapSectionProps) {
   return (
     <section 
       className="py-12 px-4 bg-slate-50"
-      style={{ '--brand-color': primaryColor } as React.CSSProperties}
+      style={
+        createCustomerThemeProperties(primaryColor) as React.CSSProperties
+      }
     >
       <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-8">
