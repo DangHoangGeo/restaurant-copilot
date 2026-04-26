@@ -202,6 +202,9 @@ export const organizationSharedMenuItemSchema = z.object({
   toppings: z.array(organizationSharedMenuItemToppingSchema).optional(),
 });
 
+export const organizationSharedMenuItemUpdateSchema =
+  organizationSharedMenuItemSchema.partial();
+
 export const organizationOnboardingSchema = z.object({
   name: z.string().min(1).max(100),
   country: z.string().length(2),

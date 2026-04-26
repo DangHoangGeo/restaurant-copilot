@@ -65,11 +65,15 @@ export interface ChatResponse {
   confidence?: number;
 }
 
-const DEFAULT_GEMINI_TEXT_MODEL = "gemini-3-flash-preview";
+const DEFAULT_GEMINI_TEXT_MODEL = "gemini-2.5-flash";
 
 const GEMINI_TEXT_MODEL_ALIASES: Record<string, string> = {
   "gemini-3.1-flash-preview": DEFAULT_GEMINI_TEXT_MODEL,
   "models/gemini-3.1-flash-preview": DEFAULT_GEMINI_TEXT_MODEL,
+  "gemini-3.1-fast-preview": DEFAULT_GEMINI_TEXT_MODEL,
+  "models/gemini-3.1-fast-preview": DEFAULT_GEMINI_TEXT_MODEL,
+  "gemini-3-flash-preview": DEFAULT_GEMINI_TEXT_MODEL,
+  "models/gemini-3-flash-preview": DEFAULT_GEMINI_TEXT_MODEL,
   "gemini-3-flash-preview-preview": DEFAULT_GEMINI_TEXT_MODEL,
 };
 

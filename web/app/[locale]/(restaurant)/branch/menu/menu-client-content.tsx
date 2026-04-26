@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -306,6 +306,7 @@ function localeCode(locale: string) {
 
 export function MenuClientContent({ branchId }: MenuClientContentProps) {
   const params = useParams();
+  const router = useRouter();
   const locale = normalizeLocale((params.locale as string) || "en");
   const copy = useMemo(() => buildCopy(locale), [locale]);
   const ownerLanguage = locale as PrimaryLanguage;
@@ -872,7 +873,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
             <Button
               type="button"
               className="rounded-xl bg-slate-950 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
-              onClick={() => setIsWizardOpen(true)}
+              onClick={() => router.push(`/${locale}/branch/${branchId}/menu/new`)}
             >
               <Sparkles className="mr-2 h-4 w-4" />
               {copy.newItem}
@@ -1296,7 +1297,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                   <Button
                     type="button"
                     className="rounded-xl bg-slate-950 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
-                    onClick={() => setIsWizardOpen(true)}
+                    onClick={() => router.push(`/${locale}/branch/${branchId}/menu/new`)}
                   >
                     <Sparkles className="mr-2 h-4 w-4" />
                     {copy.newItem}

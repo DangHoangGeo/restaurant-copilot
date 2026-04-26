@@ -6,6 +6,7 @@ import { buildBranchPath } from "@/lib/branch-paths";
 import { DashboardClientContent } from "../../dashboard-client-content";
 import { OrdersClientContent } from "../../orders/orders-client-content";
 import { MenuClientContent } from "../../menu/menu-client-content";
+import { ProfessionalMenuItemEditor } from "@/components/features/admin/menu/professional-menu-item-editor";
 import { TablesClientContent } from "../../tables/tables-client-content";
 import { BookingsClientContent } from "../../bookings/bookings-client-content";
 import { ReportsClientContent } from "../../reports/reports-client-content";
@@ -16,6 +17,7 @@ import PromotionsPage from "../../promotions/page";
 import StaffPage from "../../staff/page";
 import ProfilePage from "../../profile/page";
 import OnboardingPage from "../../onboarding/page";
+import { getBranchMenuWorkspace } from "@/lib/server/organizations/menu-inheritance";
 
 type BranchSearchParams = Record<string, string | string[] | undefined>;
 
@@ -36,7 +38,10 @@ export default async function BranchScopedPage({
   setRequestLocale(locale);
 
   const routeSlug = slug ?? [];
-  if (routeSlug.length > 1) {
+  if (
+    routeSlug.length > 1 &&
+    !(routeSlug[0] === "menu" && routeSlug[1] === "new")
+  ) {
     notFound();
   }
 
@@ -63,6 +68,26 @@ export default async function BranchScopedPage({
         </div>
       );
     case "menu":
+      if (routeSlug[1] === "new") {
+        const workspace = await getBranchMenuWorkspace(branchId);
+        return (
+          <div className={BRANCH_PAGE_CLASS}>
+            <ProfessionalMenuItemEditor
+              mode="branch"
+              branchId={branchId}
+              categories={workspace.categories.map((category) => ({
+                id: category.id,
+                name_en: category.name_en,
+                name_ja: category.name_ja,
+                name_vi: category.name_vi,
+                itemCount: category.menu_items.length,
+              }))}
+              locale={locale}
+              returnHref={buildBranchPath(locale, branchId, "menu")}
+            />
+          </div>
+        );
+      }
       return (
         <div className={BRANCH_PAGE_CLASS}>
           <MenuClientContent branchId={branchId} />
