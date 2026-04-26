@@ -121,6 +121,23 @@ Copy and localization:
 - Keep helper copy short. The UI should explain what number means, not teach the whole product.
 - Avoid vague labels such as "insight" or "priority" unless the content is genuinely actionable and specific.
 
+Interaction quality:
+
+- A control page is not finished when the top-level layout looks better. The list, filters, table actions, detail/edit/create flows, modal styling, mobile view, and data behavior must all match the same design contract.
+- Avoid vague intermediate screens such as "choose what you are managing" when the owner already chose a task. Take the owner directly to the branch, employee, menu item, purchase, expense, supplier, or report surface they requested.
+- Do not use inline editing for substantial changes. Use a full modal or dedicated page for editing company profile, branch setup, menu items, categories, employees, salaries, purchases, expenses, suppliers, and finance filters.
+- Icon-only controls must not carry ambiguous business meaning. Actions such as hide/show item, approve hours, close salary, mark unpaid, export, publish, deactivate, or change scope need explicit labels or clear adjacent text.
+- Owner-facing controls should hide technical implementation details. For example, image optimization can enforce crop and compression rules, but the owner should see visual crop controls rather than file-size or output-quality diagnostics.
+- The current locale must lead the experience. In Vietnamese, show Vietnamese labels and summaries first; in Japanese, show Japanese first. English can be available as supporting multilingual data, not the default visible answer.
+- Any AI-assisted flow must include owner review before publishing or saving business-facing content. AI can draft names, descriptions, translations, categories, branding, and suggestions; it should not silently replace owner approval.
+
+Operational density:
+
+- Dense does not mean crowded. Use compact tables, restrained typography, and clear row actions instead of large blocks of cards.
+- On mobile, tables may reduce columns, but they must still show the row identity, the key state, and the main action without horizontal scrolling.
+- Filters should sit close to the table they affect and use clear labels. Do not make owners guess whether best sellers, revenue, salary, or expense data is branch-specific or company-wide.
+- Technical helper text should be removed when it only explains the implementation. Keep only owner-useful context such as period, branch scope, approval status, unpaid status, or missing setup.
+
 ## Owner Overview Contract
 
 `/{locale}/control/overview` is the owner’s home page after onboarding. It should answer:
@@ -170,6 +187,33 @@ Branch detail expectations:
 - Employee and salary screens must let owners view employees, choose a salary month, inspect detail, and understand payment preparation.
 - Always keep branch identity explicit in the page title or header.
 - When linking to branch operations, label the action as branch operations so the scope change is clear.
+
+## Founder Menu Contract
+
+`/{locale}/control/menu` is the organization-shared menu management surface. It must help an owner create professional multilingual menus that safely inherit to branches while customer ordering continues to read the resolved branch menu.
+
+Menu list expectations:
+
+- Show categories and items as clean tables or dense lists. Do not let category lists consume the whole screen without controls for search/filter/status.
+- Category rows should show the localized name, useful multilingual context, active/hidden state, and edit action. Do not offer delete as the default category action.
+- Item rows should show localized item name, category, price, selling/hidden status, explicit hide/show action, and full edit action.
+- Do not use ambiguous visibility icons by themselves. Item availability actions must read as "Selling/Hidden" and "Hide/Show" or the localized equivalent.
+- Mobile item rows should avoid horizontal scrolling. Show item name, category or state, and the primary action.
+
+Menu creation and editing:
+
+- Adding a menu item is a guided workflow, not a tiny modal. The owner first enters the item name, ingredients/description, optional toppings, base price, optional sizes, and image.
+- AI review should translate and improve names, descriptions, and toppings across English, Japanese, and Vietnamese, then wait for owner approval before publish.
+- Size keys must be fixed and consistent. If sizes are enabled, Medium is the default/base size and should be saved first so customer and employee selection starts at Medium.
+- Size and topping summaries must respect the active locale. For Vietnamese owners, show Vietnamese first; do not summarize sizes or toppings in English only.
+- Editing a menu item must expose the full item: category, multilingual names, multilingual descriptions, image, price, availability, sizes, toppings, and save/cancel. Do not regress to a partial form.
+- Image selection must provide a crop utility matching customer menu card/detail proportions and compress before upload. Keep file size and output-quality details invisible unless troubleshooting.
+
+Menu analytics:
+
+- Best sellers must come from completed orders and real order items.
+- Make branch scope and time window explicit for best sellers, ratings, feedback, and item movement.
+- Avoid decorative menu stats that cannot guide owner action.
 
 ## Components
 

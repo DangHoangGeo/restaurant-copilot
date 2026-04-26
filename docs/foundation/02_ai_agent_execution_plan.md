@@ -120,6 +120,20 @@ When multiple implementation options exist, prefer this order:
 4. reduce legacy coupling
 5. then expand features
 
+## Product Execution Quality Bar
+
+Recent founder feedback exposed repeated agent failure modes. Avoid them explicitly:
+
+- Do not stop at rearranging UI. A feature refactor must cover the full workflow, including list, detail, create/edit, action states, mobile behavior, permissions, API path, and verification.
+- Do not replace operational UX with decorative dashboards. Founder control should help owners act on branches, menu, staff, salary, finance, settings, and reports from a phone.
+- Do not overuse cards. Prefer tables for operational data and keep cards for KPIs, summaries, modals, empty states, and repeated previews.
+- Do not use inline forms for important edits. Use full modals or dedicated pages with complete fields and explicit save/cancel.
+- Do not use hardcoded English or English-first summaries in localized owner flows. The active locale leads; other languages support multilingual data.
+- Do not use ambiguous icon-only actions for business state changes. Hide/show, activate/deactivate, approve, close, publish, export, pay, and mark-unpaid actions need clear labels.
+- Do not surface technical implementation details to restaurant owners unless they are needed for a decision. Compress images, crop assets, and normalize data behind simple controls.
+- Do not jump owners from control pages into branch routes without clear scope labeling. Founder control remains organization-scoped; branch routes are for local execution.
+- Do not show numbers without source, time window, and accounting meaning. Revenue, expense, purchase, payroll, shared company expense, and month-close data must not be mixed ambiguously.
+
 ## Verification Minimums
 
 For meaningful changes, verify at the right level:

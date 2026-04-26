@@ -55,6 +55,24 @@ These are non-negotiable:
 
 If the task conflicts with these rules, stop and surface the conflict.
 
+## Repeated Product Corrections To Internalize
+
+The founder has repeatedly corrected AI work in these areas. Treat these as active operating rules, not preferences:
+
+- Do not "refactor" by only moving sections around. For UX tasks, solve the workflow end to end: list view, detail view, create/edit flow, empty/loading/error states, mobile behavior, data source, permission path, and verification.
+- Founder control must feel like an owner can run the business from a phone. Remove vague dashboards, excessive stats, generic insight panels, and extra navigation steps that do not help the owner act.
+- Use the established warm dark glass control style. Do not mix harsh white cards into dark control pages. Do not overuse borders, nested cards, large rounded corners, or generic SaaS layouts.
+- Prefer tables for operational lists: branches, menu items, categories, employees, salaries, attendance, finance rows, purchases, expenses, suppliers, and reports. Cards are for KPI strips, focused summaries, repeated previews, modals, and empty states.
+- Do not use inline editing for meaningful updates. Use a focused modal or dedicated page with a full form, review step when needed, and clear save/cancel behavior.
+- Avoid hardcoded English UI in product screens. All owner, branch, and customer UI must be localization-aware across English, Japanese, and Vietnamese.
+- Make actions explicit. Icon-only controls are acceptable only when the meaning is unmistakable; destructive, visibility, payment, approval, publish, and scope-changing actions need clear labels or nearby text.
+- Owner workflows must avoid confusing scope jumps. Do not send a founder from `control` into branch management routes unless the action is clearly labeled as branch operations.
+- For menu work, treat multilingual names, descriptions, sizes, toppings, images, category state, active/hidden state, branch inheritance, and customer ordering impact as one connected workflow.
+- For finance work, distinguish revenue, expenses, purchases, shared company expenses, payroll preparation, month close, exports, and live versus closed data. Do not show a number if its time window or accounting meaning is unclear.
+- For people work, show employees in tables with branch filters, role/status, protected personal details, working hours history, rights, and salary close actions. Do not collapse employees into organization members.
+- For image work, provide crop/quality utilities that optimize files silently. Users should adjust the visual result, not read technical file-size or output-quality text unless they ask for diagnostics.
+- Before finishing UI work, inspect it in the running browser at the user's active locale and viewport. Check the actual page, not only lint output.
+
 ## Current Product Contract
 
 ### Route ownership
