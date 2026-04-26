@@ -765,6 +765,7 @@ export function SmartMenu({
               ref={searchInputRef}
               type="search"
               placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 pr-12 w-full h-11 text-base rounded-xl border border-gray-200 dark:border-slate-700 focus:border-[var(--brand-color)] transition-colors bg-slate-50 dark:bg-slate-800"
@@ -779,6 +780,7 @@ export function SmartMenu({
                   variant="ghost"
                   size="sm"
                   onClick={() => setSearchTerm("")}
+                  aria-label={tMenu("clear_filters")}
                   className="h-6 w-6 p-0 rounded-full"
                 >
                   ×
@@ -793,6 +795,7 @@ export function SmartMenu({
           <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-hide">
             <button
               onClick={() => setActiveCategoryFilter(null)}
+              aria-pressed={!activeCategoryFilter}
               className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-slate-400"
               style={
                 !activeCategoryFilter
@@ -826,6 +829,7 @@ export function SmartMenu({
                   onClick={() =>
                     setActiveCategoryFilter(isActive ? null : cat.id)
                   }
+                  aria-pressed={isActive}
                   className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-slate-400"
                   style={
                     isActive
@@ -861,6 +865,7 @@ export function SmartMenu({
                   setActiveSmartCategory("all");
                   setHasUserInteracted(true);
                 }}
+                aria-pressed={activeSmartCategory === "all"}
                 className={`flex-shrink-0 ${
                   activeSmartCategory === "all"
                     ? "text-white font-medium border-0"
@@ -892,6 +897,7 @@ export function SmartMenu({
                       setActiveSmartCategory(categoryKey);
                       setHasUserInteracted(true);
                     }}
+                    aria-pressed={isActive}
                     className={`flex-shrink-0 flex items-center gap-2 ${
                       isActive ? "text-white font-medium border-0" : ""
                     }`}
