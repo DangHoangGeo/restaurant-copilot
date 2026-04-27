@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Check,
   ChevronLeft,
+  Copy,
   Image as ImageIcon,
   Plus,
   Sparkles,
@@ -123,6 +124,7 @@ function buildCopy(locale: string) {
       publish: "公開",
       saving: "保存中...",
       generating: "確認中...",
+      aiFallbackReady: "外部AI用プロンプトを用意しました。",
       category: "カテゴリ",
       inputLanguage: "入力言語",
       originalName: "メニュー名",
@@ -153,6 +155,13 @@ function buildCopy(locale: string) {
       required: "カテゴリ、メニュー名、説明、価格が必要です。",
       saved: "メニューを公開しました。",
       failed: "保存できませんでした。",
+      externalPromptTitle: "外部AI用プロンプト",
+      copyPrompt: "プロンプトをコピー",
+      promptCopied: "コピーしました。",
+      pasteExternalResult: "外部AIのJSONを貼り付け",
+      applyExternalResult: "反映",
+      externalResultApplied: "反映しました。",
+      externalResultInvalid: "JSON形式を確認してください。",
       english: "英語",
       japanese: "日本語",
       vietnamese: "ベトナム語",
@@ -168,6 +177,7 @@ function buildCopy(locale: string) {
       publish: "Đăng bán",
       saving: "Đang lưu...",
       generating: "Đang duyệt...",
+      aiFallbackReady: "Đã chuẩn bị prompt cho AI ngoài.",
       category: "Danh mục",
       inputLanguage: "Ngôn ngữ nhập",
       originalName: "Tên món",
@@ -198,6 +208,13 @@ function buildCopy(locale: string) {
       required: "Cần danh mục, tên món, mô tả và giá.",
       saved: "Đã đăng bán món.",
       failed: "Không thể lưu.",
+      externalPromptTitle: "Prompt cho AI ngoài",
+      copyPrompt: "Sao chép prompt",
+      promptCopied: "Đã sao chép prompt.",
+      pasteExternalResult: "Dán JSON từ AI ngoài",
+      applyExternalResult: "Áp dụng",
+      externalResultApplied: "Đã điền kết quả AI.",
+      externalResultInvalid: "Kết quả AI chưa đúng định dạng JSON.",
       english: "Tiếng Anh",
       japanese: "Tiếng Nhật",
       vietnamese: "Tiếng Việt",
@@ -212,6 +229,7 @@ function buildCopy(locale: string) {
     publish: "Publish",
     saving: "Saving...",
     generating: "Reviewing...",
+    aiFallbackReady: "External AI prompt is ready.",
     category: "Category",
     inputLanguage: "Input language",
     originalName: "Item name",
@@ -242,6 +260,13 @@ function buildCopy(locale: string) {
     required: "Category, item name, description, and price are required.",
     saved: "Menu item published.",
     failed: "Could not save.",
+    externalPromptTitle: "External AI prompt",
+    copyPrompt: "Copy prompt",
+    promptCopied: "Prompt copied.",
+    pasteExternalResult: "Paste external AI JSON",
+    applyExternalResult: "Apply",
+    externalResultApplied: "External AI result applied.",
+    externalResultInvalid: "Check the JSON format.",
     english: "English",
     japanese: "Japanese",
     vietnamese: "Vietnamese",
@@ -268,6 +293,45 @@ function initialSizes(): SizeDraft[] {
     { key: "M", enabled: true, price: "" },
     { key: "L", enabled: false, price: "" },
   ];
+}
+
+function buildExternalAIPrompt({
+  restaurantName,
+  categoryName,
+  itemName,
+  description,
+  toppings,
+}: {
+  restaurantName?: string | null;
+  categoryName: string;
+  itemName: string;
+  description: string;
+  toppings: ToppingDraft[];
+}) {
+  const toppingNames = toppings
+    .map((topping) => topping.originalName.trim())
+    .filter(Boolean);
+
+  return [
+    "You are writing customer-facing restaurant menu copy.",
+    "Create polished menu content in English, Japanese, and Vietnamese.",
+    "Keep the dish identity accurate. Do not invent allergens, meat types, or ingredients that are not implied by the notes.",
+    "",
+    `Restaurant: ${restaurantName?.trim() || "Restaurant"}`,
+    `Category: ${categoryName || "Menu category"}`,
+    `Original item name: ${itemName.trim()}`,
+    `Original description or ingredients: ${description.trim()}`,
+    `Toppings to translate: ${toppingNames.length > 0 ? toppingNames.join(", ") : "None"}`,
+    "",
+    "Return only valid JSON in this exact shape:",
+    "{",
+    '  "name": { "en": "", "ja": "", "vi": "" },',
+    '  "description": { "en": "", "ja": "", "vi": "" },',
+    '  "toppings": [',
+    '    { "original": "", "name": { "en": "", "ja": "", "vi": "" } }',
+    "  ]",
+    "}",
+  ].join("\n");
 }
 
 export function ProfessionalMenuItemEditor({
@@ -305,6 +369,7 @@ export function ProfessionalMenuItemEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [reviewNames, setReviewNames] = useState(emptyTranslations);
   const [reviewDescriptions, setReviewDescriptions] = useState(emptyTranslations);
+  const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
 
   const selectedCategory = categories.find((category) => category.id === categoryId);
   const selectedSizes = useSizes
@@ -414,6 +479,40 @@ export function ProfessionalMenuItemEditor({
     return response.json() as Promise<Record<PrimaryLanguage, string>>;
   };
 
+  const seedManualReview = () => {
+    setReviewNames({
+      en: originalLanguage === "en" ? originalName.trim() : "",
+      ja: originalLanguage === "ja" ? originalName.trim() : "",
+      vi: originalLanguage === "vi" ? originalName.trim() : "",
+    });
+    setReviewDescriptions({
+      en: originalLanguage === "en" ? originalDescription.trim() : "",
+      ja: originalLanguage === "ja" ? originalDescription.trim() : "",
+      vi: originalLanguage === "vi" ? originalDescription.trim() : "",
+    });
+    setToppings((current) =>
+      current.map((topping) => ({
+        ...topping,
+        translations: {
+          en: originalLanguage === "en" ? topping.originalName.trim() : "",
+          ja: originalLanguage === "ja" ? topping.originalName.trim() : "",
+          vi: originalLanguage === "vi" ? topping.originalName.trim() : "",
+        },
+      })),
+    );
+  };
+
+  const handleCopyExternalPrompt = async () => {
+    if (!externalPrompt) return;
+
+    try {
+      await navigator.clipboard.writeText(externalPrompt);
+      toast.success(copy.promptCopied);
+    } catch {
+      toast.error(copy.failed);
+    }
+  };
+
   const handleAIReview = async () => {
     if (!validateInput()) return;
 
@@ -434,6 +533,7 @@ export function ProfessionalMenuItemEditor({
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? copy.failed);
+      setExternalPrompt(null);
 
       setReviewNames({
         en: data.name_en || (originalLanguage === "en" ? originalName : originalName),
@@ -479,8 +579,21 @@ export function ProfessionalMenuItemEditor({
       );
       setToppings(translatedToppings);
       setStep(1);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : copy.failed);
+    } catch {
+      setExternalPrompt(
+        buildExternalAIPrompt({
+          restaurantName,
+          categoryName: selectedCategory
+            ? localizedName(locale, selectedCategory)
+            : "",
+          itemName: originalName,
+          description: originalDescription,
+          toppings,
+        }),
+      );
+      seedManualReview();
+      setStep(1);
+      toast(copy.aiFallbackReady);
     } finally {
       setIsGenerating(false);
     }
@@ -648,6 +761,8 @@ export function ProfessionalMenuItemEditor({
           setReviewDescriptions={setReviewDescriptions}
           toppings={toppings}
           updateTopping={updateTopping}
+          externalPrompt={externalPrompt}
+          onCopyExternalPrompt={handleCopyExternalPrompt}
           onBack={() => setStep(0)}
           onApprove={() => setStep(2)}
         />
@@ -916,6 +1031,8 @@ function ReviewStep({
   setReviewDescriptions,
   toppings,
   updateTopping,
+  externalPrompt,
+  onCopyExternalPrompt,
   onBack,
   onApprove,
 }: {
@@ -927,11 +1044,120 @@ function ReviewStep({
   setReviewDescriptions: Dispatch<SetStateAction<Record<PrimaryLanguage, string>>>;
   toppings: ToppingDraft[];
   updateTopping: (id: string, patch: Partial<ToppingDraft>) => void;
+  externalPrompt: string | null;
+  onCopyExternalPrompt: () => void;
   onBack: () => void;
   onApprove: () => void;
 }) {
+  const [externalResult, setExternalResult] = useState("");
+
+  const applyExternalResult = () => {
+    try {
+      const normalizedResult = externalResult
+        .trim()
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/```$/i, "")
+        .trim();
+      const parsed = JSON.parse(normalizedResult) as {
+        name?: Partial<Record<PrimaryLanguage, unknown>>;
+        description?: Partial<Record<PrimaryLanguage, unknown>>;
+        toppings?: Array<{
+          original?: unknown;
+          name?: Partial<Record<PrimaryLanguage, unknown>>;
+        }>;
+      };
+
+      const stringValue = (value: unknown) =>
+        typeof value === "string" ? value.trim() : "";
+
+      setReviewNames((current) => ({
+        en: stringValue(parsed.name?.en) || current.en,
+        ja: stringValue(parsed.name?.ja) || current.ja,
+        vi: stringValue(parsed.name?.vi) || current.vi,
+      }));
+      setReviewDescriptions((current) => ({
+        en: stringValue(parsed.description?.en) || current.en,
+        ja: stringValue(parsed.description?.ja) || current.ja,
+        vi: stringValue(parsed.description?.vi) || current.vi,
+      }));
+
+      if (Array.isArray(parsed.toppings)) {
+        parsed.toppings.forEach((externalTopping) => {
+          const original = stringValue(externalTopping.original).toLowerCase();
+          if (!original) return;
+
+          const matchingTopping = toppings.find(
+            (topping) =>
+              topping.originalName.trim().toLowerCase() === original,
+          );
+          if (!matchingTopping) return;
+
+          updateTopping(matchingTopping.id, {
+            translations: {
+              en:
+                stringValue(externalTopping.name?.en) ||
+                matchingTopping.translations.en,
+              ja:
+                stringValue(externalTopping.name?.ja) ||
+                matchingTopping.translations.ja,
+              vi:
+                stringValue(externalTopping.name?.vi) ||
+                matchingTopping.translations.vi,
+            },
+          });
+        });
+      }
+
+      toast.success(copy.externalResultApplied);
+    } catch {
+      toast.error(copy.externalResultInvalid);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {externalPrompt ? (
+        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+              {copy.externalPromptTitle}
+            </h2>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] px-3 text-xs text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
+              onClick={onCopyExternalPrompt}
+            >
+              <Copy className="mr-1.5 h-3.5 w-3.5" />
+              {copy.copyPrompt}
+            </Button>
+          </div>
+          <Textarea
+            readOnly
+            value={externalPrompt}
+            rows={10}
+            className="mt-3 max-h-[300px] rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] font-mono text-xs leading-5 text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]"
+          />
+          <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <Textarea
+              value={externalResult}
+              onChange={(event) => setExternalResult(event.target.value)}
+              placeholder={copy.pasteExternalResult}
+              rows={5}
+              className="rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] font-mono text-xs leading-5 text-[#2E2117] placeholder:text-[#B89078] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9] dark:placeholder:text-[#C9B7A0]"
+            />
+            <Button
+              type="button"
+              className="h-10 self-start rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
+              onClick={applyExternalResult}
+              disabled={!externalResult.trim()}
+            >
+              {copy.applyExternalResult}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       <LocalizedFieldsPanel
         title={copy.aiNames}
         values={reviewNames}
