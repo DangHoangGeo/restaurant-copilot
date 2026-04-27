@@ -74,6 +74,16 @@ interface ProfessionalMenuItemEditorProps {
   restaurantName?: string | null;
 }
 
+interface GeneratedMenuCopy {
+  name_en?: unknown;
+  name_ja?: unknown;
+  name_vi?: unknown;
+  description_en?: unknown;
+  description_ja?: unknown;
+  description_vi?: unknown;
+  error?: string;
+}
+
 const LANGUAGES: PrimaryLanguage[] = ["en", "ja", "vi"];
 
 const SIZE_NAMES: Record<
@@ -334,6 +344,38 @@ function buildExternalAIPrompt({
   ].join("\n");
 }
 
+function stringValue(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function isGeneratedFailureText(value: unknown) {
+  const normalized = stringValue(value).toLowerCase();
+  if (!normalized) return true;
+
+  return [
+    "could not be generated",
+    "cannot be generated",
+    "could not generate",
+    "cannot generate",
+    "không thể tạo",
+    "hiện không thể",
+    "không tạo được",
+    "生成できません",
+    "生成できない",
+  ].some((phrase) => normalized.includes(phrase));
+}
+
+function hasUsableGeneratedMenuCopy(data: GeneratedMenuCopy) {
+  return [
+    data.name_en,
+    data.name_ja,
+    data.name_vi,
+    data.description_en,
+    data.description_ja,
+    data.description_vi,
+  ].every((value) => !isGeneratedFailureText(value));
+}
+
 export function ProfessionalMenuItemEditor({
   mode,
   branchId,
@@ -531,25 +573,20 @@ export function ProfessionalMenuItemEditor({
             : "",
         }),
       });
-      const data = await response.json();
+      const data = (await response.json()) as GeneratedMenuCopy;
       if (!response.ok) throw new Error(data.error ?? copy.failed);
+      if (!hasUsableGeneratedMenuCopy(data)) throw new Error(copy.aiFallbackReady);
       setExternalPrompt(null);
 
       setReviewNames({
-        en: data.name_en || (originalLanguage === "en" ? originalName : originalName),
-        ja: data.name_ja || (originalLanguage === "ja" ? originalName : originalName),
-        vi: data.name_vi || (originalLanguage === "vi" ? originalName : originalName),
+        en: stringValue(data.name_en) || originalName,
+        ja: stringValue(data.name_ja) || originalName,
+        vi: stringValue(data.name_vi) || originalName,
       });
       setReviewDescriptions({
-        en:
-          data.description_en ||
-          (originalLanguage === "en" ? originalDescription : originalDescription),
-        ja:
-          data.description_ja ||
-          (originalLanguage === "ja" ? originalDescription : originalDescription),
-        vi:
-          data.description_vi ||
-          (originalLanguage === "vi" ? originalDescription : originalDescription),
+        en: stringValue(data.description_en) || originalDescription,
+        ja: stringValue(data.description_ja) || originalDescription,
+        vi: stringValue(data.description_vi) || originalDescription,
       });
 
       const translatedToppings = await Promise.all(
