@@ -478,11 +478,16 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
   }, [loadWorkspace]);
 
   useEffect(() => {
+    if (selectedCategoryId === "all") return;
+
+    const selectedCategory = (workspace?.categories ?? []).find(
+      (category) => category.id === selectedCategoryId,
+    );
+
     if (
-      selectedCategoryId !== "all" &&
-      !(workspace?.categories ?? []).some(
-        (category) => category.id === selectedCategoryId,
-      )
+      !selectedCategory ||
+      (selectedCategory.source === "organization" &&
+        selectedCategory.menu_items.length === 0)
     ) {
       setSelectedCategoryId("all");
     }
@@ -1041,71 +1046,91 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
         <table className="w-full table-fixed text-left text-sm">
           <tbody className="divide-y divide-[#AB6E3C]/10 dark:divide-[#F1DCC4]/10">
             {categories.length > 0 ? (
-              categories.map((category) => (
-                <tr
-                  key={category.id}
-                  className={cn(
-                    "transition-colors",
-                    selectedCategoryId === category.id
-                      ? "bg-[#2E2117] text-[#FFF7E9] dark:bg-[#F1DCC4] dark:text-[#170F0C]"
-                      : "bg-[#FEFAF6]/62 hover:bg-[#F5EAD8]/75 dark:bg-[#2B1A10]/45 dark:hover:bg-[#332116]",
-                  )}
-                >
-                  {category.source === "branch" ? (
-                    <>
-                      <td className="px-3 py-3">
+              categories.map((category) => {
+                const isSelected = selectedCategoryId === category.id;
+                const isEmptyCompanyCategory =
+                  category.source === "organization" &&
+                  category.menu_items.length === 0;
+
+                return (
+                  <tr
+                    key={category.id}
+                    className={cn(
+                      "transition-colors",
+                      isSelected && !isEmptyCompanyCategory
+                        ? "bg-[#2E2117] text-[#FFF7E9] dark:bg-[#F1DCC4] dark:text-[#170F0C]"
+                        : isEmptyCompanyCategory
+                          ? "bg-[#FEFAF6]/42 text-[#B89078] dark:bg-[#2B1A10]/30 dark:text-[#8B6E5A]"
+                          : "bg-[#FEFAF6]/62 hover:bg-[#F5EAD8]/75 dark:bg-[#2B1A10]/45 dark:hover:bg-[#332116]",
+                    )}
+                  >
+                    {category.source === "branch" ? (
+                      <>
+                        <td className="p-0">
+                          <button
+                            type="button"
+                            className="block w-full min-w-0 px-3 py-3 text-left font-medium leading-5 text-inherit transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AB6E3C]/30"
+                            onClick={() => setSelectedCategoryId(category.id)}
+                          >
+                            {localizeEntry(category, locale)}
+                          </button>
+                        </td>
+                        <td className="w-[148px] px-3 py-3 text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              title={copy.edit}
+                              className={cn(
+                                "h-8 rounded-lg px-2 text-xs",
+                                isSelected
+                                  ? "text-[#FFF7E9] hover:bg-white/10 hover:text-[#FFF7E9] dark:text-[#170F0C] dark:hover:bg-[#EBD9C4] dark:hover:text-[#170F0C]"
+                                  : "text-[#6F4D35] hover:bg-[#F5EAD8] hover:text-[#2E2117] dark:text-[#F1DCC4] dark:hover:bg-[#332116] dark:hover:text-[#F7F1E9]",
+                              )}
+                              onClick={() => openEditCategoryDialog(category)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              {copy.edit}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              title={copy.remove}
+                              className={cn(
+                                "h-8 rounded-lg px-2 text-xs disabled:text-[#B89078]",
+                                isSelected
+                                  ? "text-[#FFD7CC] hover:bg-white/10 hover:text-white dark:text-[#7A1F16] dark:hover:bg-[#EBD9C4] dark:hover:text-[#7A1F16]"
+                                  : "text-[#B42318] hover:bg-[#FDECEC] hover:text-[#B42318] dark:text-[#FFB4A8] dark:hover:bg-[#7A1F16]/18 dark:hover:text-[#FFB4A8]",
+                              )}
+                              disabled={category.menu_items.length > 0}
+                              onClick={() => handleDeleteCategory(category)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              {copy.remove}
+                            </Button>
+                          </div>
+                        </td>
+                      </>
+                    ) : (
+                      <td className="p-0" colSpan={2}>
                         <button
                           type="button"
-                          className="min-w-0 text-left font-medium leading-5"
+                          className={cn(
+                            "block w-full min-w-0 px-3 py-3 text-left font-medium leading-5 text-inherit transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AB6E3C]/30",
+                            isEmptyCompanyCategory
+                              ? "cursor-not-allowed opacity-70"
+                              : "cursor-pointer",
+                          )}
+                          disabled={isEmptyCompanyCategory}
                           onClick={() => setSelectedCategoryId(category.id)}
                         >
                           {localizeEntry(category, locale)}
                         </button>
                       </td>
-                      <td className="w-[148px] px-3 py-3 text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            title={copy.edit}
-                            className={cn(
-                              "h-8 rounded-lg px-2 text-xs",
-                              selectedCategoryId === category.id
-                                ? "text-[#FFF7E9] hover:bg-[#6F4D35] dark:text-[#170F0C] dark:hover:bg-[#EBD9C4]"
-                                : "text-[#6F4D35] hover:bg-[#F5EAD8] dark:text-[#F1DCC4] dark:hover:bg-[#332116]",
-                            )}
-                            onClick={() => openEditCategoryDialog(category)}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                            {copy.edit}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            title={copy.remove}
-                            className="h-8 rounded-lg px-2 text-xs text-[#B42318] hover:bg-[#FDECEC] disabled:text-[#B89078] dark:text-[#FFB4A8] dark:hover:bg-[#7A1F16]/18"
-                            disabled={category.menu_items.length > 0}
-                            onClick={() => handleDeleteCategory(category)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            {copy.remove}
-                          </Button>
-                        </div>
-                      </td>
-                    </>
-                  ) : (
-                    <td className="px-3 py-3" colSpan={2}>
-                      <button
-                        type="button"
-                        className="min-w-0 text-left font-medium leading-5"
-                        onClick={() => setSelectedCategoryId(category.id)}
-                      >
-                        {localizeEntry(category, locale)}
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))
+                    )}
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td
@@ -1462,11 +1487,21 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                   </SelectTrigger>
                   <SelectContent className="border-[#AB6E3C]/20 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
                     <SelectItem value="all">{copy.allCategories}</SelectItem>
-                    {workspace.categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {localizeEntry(category, locale)}
-                      </SelectItem>
-                    ))}
+                    {workspace.categories.map((category) => {
+                      const isEmptyCompanyCategory =
+                        category.source === "organization" &&
+                        category.menu_items.length === 0;
+
+                      return (
+                        <SelectItem
+                          key={category.id}
+                          value={category.id}
+                          disabled={isEmptyCompanyCategory}
+                        >
+                          {localizeEntry(category, locale)}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 <Select
