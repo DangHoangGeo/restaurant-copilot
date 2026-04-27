@@ -121,13 +121,15 @@ export function CompactFoodCard({
 
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
+  const hasOptions = (item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
+                     (item.toppings && item.toppings.length > 0);
+
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!canAddItems || isAddingToCart) return;
     
     // If item has sizes or toppings, open detail view instead of adding directly
-    if ((item.menu_item_sizes && item.menu_item_sizes.length > 0) || 
-        (item.toppings && item.toppings.length > 0)) {
+    if (hasOptions) {
       onCardClick();
       return;
     }
@@ -303,7 +305,7 @@ export function CompactFoodCard({
                     ? `0 0 25px ${brandColor}80`
                     : `0 4px 15px ${brandColor}40`
                 }}
-                aria-label={`Add ${itemName} to cart`}
+                aria-label={`${hasOptions ? tMenu("food_card.view_details") : tMenu("food_card.add_to_cart")}: ${itemName}`}
               >
                 {isAddingToCart && (
                   <motion.div
