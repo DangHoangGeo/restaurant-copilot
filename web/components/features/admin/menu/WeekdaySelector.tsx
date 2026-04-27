@@ -20,19 +20,15 @@ export function WeekdaySelector({ selectedDays, onChange }: WeekdaySelectorProps
   ];
 
   return (
-    <div>
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-        {t('item.weekday_visibility')}
-      </label>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2">
         {days.map(day => (
           <label 
             key={day.value} 
-            className="flex items-center space-x-1.5 px-2.5 py-1.5 border rounded-lg cursor-pointer hover:border-[--brand-color] has-[:checked]:bg-[--brand-color]/10 has-[:checked]:border-[--brand-color]"
+            className="flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-[#e2cfb8] bg-white/70 px-2.5 text-sm transition-colors hover:border-[#b8733d] has-[:checked]:border-[#b8733d] has-[:checked]:bg-[#f4dfc4] dark:border-white/10 dark:bg-black/20 dark:hover:border-[#f5b76d] dark:has-[:checked]:border-[#f5b76d] dark:has-[:checked]:bg-[#f5b76d]/15"
           >
             <input
               type="checkbox"
-              className="form-checkbox h-4 w-4 text-[--brand-color] rounded border-slate-300 focus:ring-[--brand-color]"
+              className="h-4 w-4 rounded border-[#c9ad8e] text-[#9b6339] focus:ring-[#b8733d] dark:border-white/20 dark:text-[#f5b76d]"
               checked={selectedDays.includes(day.value)}
               onChange={e => {
                 const newDays = e.target.checked 
@@ -41,12 +37,11 @@ export function WeekdaySelector({ selectedDays, onChange }: WeekdaySelectorProps
                 onChange(newDays);
               }}
             />
-            <span className="text-sm text-slate-700 dark:text-slate-300">
+            <span className="text-sm text-[#2f2117] dark:text-[#f8eedf]">
               {t(`weekdays.${day.label.toLowerCase()}`)}
             </span>
           </label>
         ))}
-      </div>
     </div>
   );
 }

@@ -185,14 +185,17 @@
     "title": "Menu Item",
     "tabs": {
       "basic": "Basic Info",
+      "basicShort": "Item",
       "variants": "Variants & Options",
-      "advanced": "Advanced Settings"
+      "variantsShort": "Options",
+      "advanced": "Advanced Settings",
+      "advancedShort": "Save"
     },
     "buttons": {
       "save": "Save",
       "cancel": "Cancel",
-      "previous": "← Previous",
-      "next": "Next →"
+      "previous": "Previous",
+      "next": "Next"
     },
     "saving": "Saving...",
     "basic": {

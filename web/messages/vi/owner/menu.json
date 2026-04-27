@@ -185,14 +185,17 @@
     "title": "Món",
     "tabs": {
       "basic": "Thông tin cơ bản",
+      "basicShort": "Món",
       "variants": "Biến thể & Tùy chọn",
-      "advanced": "Cài đặt nâng cao"
+      "variantsShort": "Tùy chọn",
+      "advanced": "Cài đặt nâng cao",
+      "advancedShort": "Lưu"
     },
     "buttons": {
       "save": "Lưu",
       "cancel": "Hủy",
-      "previous": "← Trước",
-      "next": "Tiếp →"
+      "previous": "Trước",
+      "next": "Tiếp"
     },
     "saving": "Đang lưu...",
     "basic": {

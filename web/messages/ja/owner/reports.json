@@ -7,6 +7,10 @@
   },
   "exporting": "エクスポート中...",
   "tabs": {
+    "overview": "概要",
+    "analytics": "分析",
+    "itemsReport": "商品レポート",
+    "recentActivity": "最近の動き",
     "sales": "売上",
     "items": "商品",
     "feedback": "フィードバック"
@@ -109,6 +113,7 @@
     "lowStock": "在庫少",
     "noData": "この期間のデータがありません。",
     "loading": "メトリクスを読み込み中...",
+    "updating": "更新中...",
     "itemsNeedAttention": "注意が必要な商品"
   },
   "recentOrders": {

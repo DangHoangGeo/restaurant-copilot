@@ -18,7 +18,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { MonthlyFinanceReport, MonthlyFinanceSnapshot } from "@/lib/server/finance/types";
+import type {
+  MonthlyFinanceReport,
+  MonthlyFinanceSnapshot,
+} from "@/lib/server/finance/types";
 import { MoneySectionNav } from "@/components/features/admin/money/MoneySectionNav";
 
 interface FinanceDashboardProps {
@@ -89,7 +92,8 @@ export function FinanceDashboard({
 
   function defaultExportFilename(): string {
     const mm = String(month).padStart(2, "0");
-    const safeName = restaurantName.replace(/[^\p{L}\p{N}_-]+/gu, "_") || "branch";
+    const safeName =
+      restaurantName.replace(/[^\p{L}\p{N}_-]+/gu, "_") || "branch";
     return `finance_${year}_${mm}_${safeName}.csv`;
   }
 
@@ -192,7 +196,7 @@ export function FinanceDashboard({
         icon: <DollarSign className="h-4 w-4 text-slate-600" />,
         label: t("netRevenue"),
         primary: fmt(data.revenue_total - data.discount_total),
-      }
+      },
     );
   }
 
@@ -213,7 +217,7 @@ export function FinanceDashboard({
         label: t("totalCosts"),
         primary: fmt(data.combined_cost_total),
         secondary: t("ledger.spending.totalCostsHint"),
-      }
+      },
     );
   }
 
@@ -236,7 +240,7 @@ export function FinanceDashboard({
         label: t("laborHours"),
         primary: fmtHours(data.approved_labor_hours),
         secondary: t("laborEntries", { count: data.labor_entry_count }),
-      }
+      },
     );
   }
 
@@ -258,7 +262,9 @@ export function FinanceDashboard({
               </div>
               <div>
                 <h1 className="text-lg font-semibold">{t("pageTitle")}</h1>
-                <p className="text-xs text-muted-foreground">{t("pageDescription")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("pageDescription")}
+                </p>
               </div>
             </div>
 
@@ -274,21 +280,23 @@ export function FinanceDashboard({
           </div>
         ) : null}
 
-        <div className="rounded-[24px] border border-slate-200 bg-white p-4">
+        <div className="rounded-[24px] border border-border bg-card p-4 text-card-foreground">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center justify-between gap-3 lg:min-w-[260px]">
               <button
                 onClick={() => navigateMonth(-1)}
                 disabled={isPending}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground transition hover:bg-muted disabled:opacity-40"
                 aria-label={t("prevMonth")}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
 
               <div className="min-w-0 flex-1 text-center">
-                <p className="text-sm font-semibold text-slate-900">{periodLabel}</p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="text-sm font-semibold text-foreground">
+                  {periodLabel}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
                   {isClosed ? (
                     <span className="inline-flex items-center gap-1 text-emerald-600">
                       <Lock className="h-3 w-3" />
@@ -303,7 +311,7 @@ export function FinanceDashboard({
               <button
                 onClick={() => navigateMonth(1)}
                 disabled={isPending}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground transition hover:bg-muted disabled:opacity-40"
                 aria-label={t("nextMonth")}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -315,7 +323,7 @@ export function FinanceDashboard({
                 <button
                   onClick={handleExport}
                   disabled={exporting}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-muted disabled:opacity-50"
                 >
                   <Download className="h-4 w-4" />
                   {exporting ? t("exporting") : t("exportCsv")}
@@ -325,7 +333,7 @@ export function FinanceDashboard({
               {canClose && !isClosed ? (
                 <button
                   onClick={() => setShowCloseConfirm(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
                 >
                   <Lock className="h-4 w-4" />
                   {t("closeMonth")}
@@ -336,32 +344,40 @@ export function FinanceDashboard({
         </div>
 
         {!data ? (
-          <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
+          <div className="rounded-[24px] border border-dashed border-border bg-muted/55 px-6 py-10 text-center text-sm text-muted-foreground">
             {t("noData")}
           </div>
         ) : (
           <>
             <div className="grid gap-4 xl:grid-cols-2">
               {canViewIncome ? (
-                <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-                  <div className="border-b border-slate-100 px-4 py-3">
-                    <p className="text-sm font-medium text-slate-900">{t("ledger.income.title")}</p>
+                <div className="overflow-hidden rounded-[24px] border border-border bg-card text-card-foreground">
+                  <div className="border-b border-border px-4 py-3">
+                    <p className="text-sm font-medium text-foreground">
+                      {t("ledger.income.title")}
+                    </p>
                   </div>
-                  <div className="divide-y text-sm">
+                  <div className="divide-y divide-border text-sm">
                     <div className="flex items-center justify-between px-4 py-3">
-                      <span className="text-slate-500">{t("grossSales")}</span>
-                      <span className="font-medium text-slate-900">{fmt(data.revenue_total)}</span>
+                      <span className="text-muted-foreground">
+                        {t("grossSales")}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {fmt(data.revenue_total)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between px-4 py-3">
-                      <span className="flex items-center gap-2 text-slate-500">
+                      <span className="flex items-center gap-2 text-muted-foreground">
                         <Percent className="h-3.5 w-3.5" />
                         {t("discounts")}
                       </span>
-                      <span className="font-medium text-amber-600">-{fmt(data.discount_total)}</span>
+                      <span className="font-medium text-amber-600">
+                        -{fmt(data.discount_total)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between px-4 py-3 font-semibold">
-                      <span className="text-slate-900">{t("netRevenue")}</span>
-                      <span className="text-slate-900">
+                      <span className="text-foreground">{t("netRevenue")}</span>
+                      <span className="text-foreground">
                         {fmt(data.revenue_total - data.discount_total)}
                       </span>
                     </div>
@@ -370,25 +386,37 @@ export function FinanceDashboard({
               ) : null}
 
               {canViewSpending ? (
-                <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-                  <div className="border-b border-slate-100 px-4 py-3">
-                    <p className="text-sm font-medium text-slate-900">{t("ledger.spending.title")}</p>
+                <div className="overflow-hidden rounded-[24px] border border-border bg-card text-card-foreground">
+                  <div className="border-b border-border px-4 py-3">
+                    <p className="text-sm font-medium text-foreground">
+                      {t("ledger.spending.title")}
+                    </p>
                   </div>
-                  <div className="divide-y text-sm">
+                  <div className="divide-y divide-border text-sm">
                     <div className="flex items-center justify-between px-4 py-3">
-                      <span className="flex items-center gap-2 text-slate-500">
+                      <span className="flex items-center gap-2 text-muted-foreground">
                         <ShoppingBag className="h-3.5 w-3.5" />
                         {t("purchaseOrders")}
                       </span>
-                      <span className="font-medium text-slate-900">{fmt(data.purchasing_total)}</span>
+                      <span className="font-medium text-foreground">
+                        {fmt(data.purchasing_total)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between px-4 py-3">
-                      <span className="text-slate-500">{t("otherExpenses")}</span>
-                      <span className="font-medium text-slate-900">{fmt(data.expense_total)}</span>
+                      <span className="text-muted-foreground">
+                        {t("otherExpenses")}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {fmt(data.expense_total)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between px-4 py-3 font-semibold">
-                      <span className="text-slate-900">{t("combinedCosts")}</span>
-                      <span className="text-slate-900">{fmt(data.combined_cost_total)}</span>
+                      <span className="text-foreground">
+                        {t("combinedCosts")}
+                      </span>
+                      <span className="text-foreground">
+                        {fmt(data.combined_cost_total)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -396,15 +424,17 @@ export function FinanceDashboard({
             </div>
 
             {isLive ? (
-              <p className="px-1 text-xs text-slate-500">{t("liveNotice")}</p>
+              <p className="px-1 text-xs text-muted-foreground">
+                {t("liveNotice")}
+              </p>
             ) : null}
 
             {isClosed &&
             report?.kind === "snapshot" &&
             report.data.notes &&
             (canExport || canClose) ? (
-              <div className="rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                <p className="mb-1 font-medium text-slate-900">{t("notes")}</p>
+              <div className="rounded-[24px] border border-border bg-muted/55 px-4 py-3 text-sm text-muted-foreground">
+                <p className="mb-1 font-medium text-foreground">{t("notes")}</p>
                 <p>{report.data.notes}</p>
               </div>
             ) : null}
@@ -413,26 +443,31 @@ export function FinanceDashboard({
 
         {history.length > 0 ? (
           <div className="space-y-2">
-            <p className="px-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+            <p className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {t("recentSnapshots")}
             </p>
-            <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
+            <div className="overflow-hidden rounded-[24px] border border-border bg-card text-card-foreground">
               {history.map((snapshot) => (
                 <button
                   key={snapshot.id}
-                  onClick={() => router.push(buildNavigationUrl(snapshot.year, snapshot.month))}
-                  className="flex w-full items-center justify-between gap-4 border-b border-slate-100 px-4 py-3 text-left text-sm transition hover:bg-slate-50 last:border-b-0"
+                  onClick={() =>
+                    router.push(
+                      buildNavigationUrl(snapshot.year, snapshot.month),
+                    )
+                  }
+                  className="flex w-full items-center justify-between gap-4 border-b border-border px-4 py-3 text-left text-sm transition hover:bg-muted last:border-b-0"
                 >
                   <div>
-                    <span className="font-medium text-slate-900">
-                      {snapshot.year} / {String(snapshot.month).padStart(2, "0")}
+                    <span className="font-medium text-foreground">
+                      {snapshot.year} /{" "}
+                      {String(snapshot.month).padStart(2, "0")}
                     </span>
                     <span
                       className={cn(
                         "ml-2 text-xs",
                         snapshot.snapshot_status === "closed"
                           ? "text-emerald-600"
-                          : "text-amber-600"
+                          : "text-amber-600",
                       )}
                     >
                       {snapshot.snapshot_status === "closed"
@@ -440,7 +475,7 @@ export function FinanceDashboard({
                         : t("statusDraft")}
                     </span>
                   </div>
-                  <span className="tabular-nums text-slate-500">
+                  <span className="tabular-nums text-muted-foreground">
                     {canViewIncome
                       ? new Intl.NumberFormat(locale, {
                           style: "currency",
@@ -462,7 +497,9 @@ export function FinanceDashboard({
         {showCloseConfirm ? (
           <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
             <div className="w-full max-w-sm space-y-4 rounded-[24px] bg-background p-6 shadow-xl">
-              <h2 className="text-base font-semibold">{t("closeConfirmTitle")}</h2>
+              <h2 className="text-base font-semibold">
+                {t("closeConfirmTitle")}
+              </h2>
               <p className="text-sm text-muted-foreground">
                 {t("closeConfirmBody", { period: periodLabel })}
               </p>
@@ -473,7 +510,9 @@ export function FinanceDashboard({
                 rows={3}
                 className="w-full resize-none rounded-xl border bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
-              {closeError ? <p className="text-xs text-destructive">{closeError}</p> : null}
+              {closeError ? (
+                <p className="text-xs text-destructive">{closeError}</p>
+              ) : null}
               <div className="flex gap-2">
                 <button
                   onClick={() => {
@@ -509,25 +548,33 @@ interface SummaryCardProps {
   highlight?: "green" | "blue" | "red" | "amber";
 }
 
-function SummaryCard({ icon, label, primary, secondary, highlight }: SummaryCardProps) {
+function SummaryCard({
+  icon,
+  label,
+  primary,
+  secondary,
+  highlight,
+}: SummaryCardProps) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white p-4">
+    <div className="rounded-[24px] border border-border bg-card p-4 text-card-foreground">
       <div className="flex items-center gap-2">
         {icon}
-        <span className="text-xs text-slate-500">{label}</span>
+        <span className="text-xs text-muted-foreground">{label}</span>
       </div>
       <p
         className={cn(
-          "mt-2 text-lg font-semibold text-slate-900",
+          "mt-2 text-lg font-semibold text-foreground",
           highlight === "green" && "text-emerald-600",
           highlight === "blue" && "text-sky-600",
           highlight === "red" && "text-rose-600",
-          highlight === "amber" && "text-amber-600"
+          highlight === "amber" && "text-amber-600",
         )}
       >
         {primary}
       </p>
-      {secondary ? <p className="mt-1 text-xs text-slate-500">{secondary}</p> : null}
+      {secondary ? (
+        <p className="mt-1 text-xs text-muted-foreground">{secondary}</p>
+      ) : null}
     </div>
   );
 }

@@ -7,6 +7,10 @@
   },
   "exporting": "Exporting...",
   "tabs": {
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "itemsReport": "Items report",
+    "recentActivity": "Recent activity",
     "sales": "Sales",
     "items": "Items",
     "feedback": "Feedback"
@@ -109,6 +113,7 @@
     "lowStock": "Low Stock",
     "noData": "No data available for this period.",
     "loading": "Loading metrics...",
+    "updating": "Updating...",
     "itemsNeedAttention": "Items that need attention"
   },
   "recentOrders": {

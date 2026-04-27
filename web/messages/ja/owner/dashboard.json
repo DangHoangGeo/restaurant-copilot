@@ -169,21 +169,23 @@
   "admin_sidebar_profile": "プロフィール",
   "admin_sidebar_settings": "設定",
   "sidebar": {
-      "toggle_aria_label": "サイドバーナビゲーションを切り替える",
-      "close_aria_label": "サイドバーを閉じる"
-    },
+    "toggle_aria_label": "サイドバーナビゲーションを切り替える",
+    "close_aria_label": "サイドバーを閉じる"
+  },
   "bottom_nav_aria_label": "主要ナビゲーション",
   "bottom_nav_money": "お金",
   "bottom_nav_people": "人員",
   "bottom_nav_more": "その他",
   "bottom_nav_more_title": "その他",
   "bottom_nav_more_description": "残りのオーナーツールを開きます。",
+  "owner_control_back_label": "オーナー管理",
+  "owner_control_back_aria_label": "オーナー管理に戻る",
   "user_menu": {
-      "admin_user_placeholder": "管理者ユーザー",
-      "my_account_label": "マイアカウント",
-      "profile_link": "プロフィール",
-      "settings_link": "レストラン設定",
-      "logout_button": "ログアウト"
-    },
-    "default_restaurant_name": "CoOrder"
+    "admin_user_placeholder": "管理者ユーザー",
+    "my_account_label": "マイアカウント",
+    "profile_link": "プロフィール",
+    "settings_link": "レストラン設定",
+    "logout_button": "ログアウト"
+  },
+  "default_restaurant_name": "CoOrder"
 }

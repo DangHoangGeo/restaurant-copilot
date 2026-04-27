@@ -120,6 +120,8 @@ async function loadSharedMenuForSync(organizationId: string) {
         price,
         image_url,
         available,
+        weekday_visibility,
+        stock_level,
         position,
         organization_menu_item_sizes(
           id,
@@ -173,6 +175,8 @@ async function loadSharedMenuForSync(organizationId: string) {
       price: Number(item.price ?? 0),
       image_url: item.image_url,
       available: item.available,
+      weekday_visibility: item.weekday_visibility ?? defaultWeekdayVisibility(),
+      stock_level: item.stock_level ?? null,
       position: item.position,
       sizes: (item.organization_menu_item_sizes ?? []).map((size) => ({
         size_key: size.size_key,
@@ -511,7 +515,7 @@ export async function syncOrganizationSharedMenuToBranches(params: {
     const { data: existingItems, error: existingItemsError } =
       await supabaseAdmin
         .from("menu_items")
-        .select("id, organization_menu_item_id, weekday_visibility")
+        .select("id, organization_menu_item_id, available, weekday_visibility, stock_level")
         .eq("restaurant_id", restaurantId);
 
     if (existingItemsError) {
@@ -520,13 +524,20 @@ export async function syncOrganizationSharedMenuToBranches(params: {
 
     const itemIdByOrgId = new Map<
       string,
-      { id: string; weekday_visibility: number[] | null }
+      {
+        id: string;
+        available: boolean | null;
+        weekday_visibility: number[] | null;
+        stock_level: number | null;
+      }
     >();
     for (const item of existingItems ?? []) {
       if (item.organization_menu_item_id) {
         itemIdByOrgId.set(item.organization_menu_item_id, {
           id: item.id,
+          available: item.available ?? null,
           weekday_visibility: item.weekday_visibility ?? null,
+          stock_level: item.stock_level ?? null,
         });
       }
     }
@@ -547,9 +558,12 @@ export async function syncOrganizationSharedMenuToBranches(params: {
           description_vi: sharedItem.description_vi,
           price: sharedItem.price,
           image_url: sharedItem.image_url,
-          available: sharedItem.available,
+          available: existingItem?.available ?? sharedItem.available,
           weekday_visibility:
-            existingItem?.weekday_visibility ?? defaultWeekdayVisibility(),
+            existingItem?.weekday_visibility ??
+            sharedItem.weekday_visibility ??
+            defaultWeekdayVisibility(),
+          stock_level: existingItem?.stock_level ?? sharedItem.stock_level ?? null,
           position: sharedItem.position,
         };
 
@@ -589,7 +603,9 @@ export async function syncOrganizationSharedMenuToBranches(params: {
 
           itemIdByOrgId.set(sharedItem.id, {
             id: data.id,
+            available: payload.available,
             weekday_visibility: payload.weekday_visibility,
+            stock_level: payload.stock_level,
           });
 
           await syncInheritedMenuItemOptions({

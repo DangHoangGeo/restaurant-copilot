@@ -1,22 +1,34 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ReportsSkeleton } from '@/components/ui/skeletons';
-import { AlertTriangle, DollarSign, ShoppingCart, TrendingUp, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import dynamic from 'next/dynamic';
-import { DateRangeSelector, DateRange } from '@/components/features/admin/reports/date-range-selector';
-import { ItemsReportTab } from '@/components/features/admin/reports/items-report-tab';
-import { ReportExportService } from '@/lib/export-utils';
-import { subDays } from 'date-fns';
+import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReportsSkeleton } from "@/components/ui/skeletons";
+import {
+  AlertTriangle,
+  DollarSign,
+  ShoppingCart,
+  TrendingUp,
+  AlertCircle,
+} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import dynamic from "next/dynamic";
+import {
+  DateRangeSelector,
+  DateRange,
+} from "@/components/features/admin/reports/date-range-selector";
+import { ItemsReportTab } from "@/components/features/admin/reports/items-report-tab";
+import { ReportExportService } from "@/lib/export-utils";
+import { subDays } from "date-fns";
 
 // Dynamic import for heavy chart components to reduce initial bundle size
 const AdvancedAnalyticsCharts = dynamic(
-  () => import('@/components/features/admin/reports/advanced-analytics-charts').then(mod => ({ default: mod.AdvancedAnalyticsCharts })),
+  () =>
+    import("@/components/features/admin/reports/advanced-analytics-charts").then(
+      (mod) => ({ default: mod.AdvancedAnalyticsCharts }),
+    ),
   {
     loading: () => (
       <div className="space-y-4">
@@ -31,7 +43,7 @@ const AdvancedAnalyticsCharts = dynamic(
       </div>
     ),
     ssr: false,
-  }
+  },
 );
 
 interface ReportsData {
@@ -85,16 +97,22 @@ interface TrendDataPoint {
 }
 
 // Error state component
-function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
-  const t = useTranslations('owner.reports');
-  
+function ErrorState({
+  error,
+  onRetry,
+}: {
+  error: string;
+  onRetry: () => void;
+}) {
+  const t = useTranslations("owner.reports");
+
   return (
     <Alert variant="destructive" className="mb-6">
       <AlertTriangle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between">
         <span>{error}</span>
         <Button variant="outline" size="sm" onClick={onRetry}>
-          {t('retry')}
+          {t("retry")}
         </Button>
       </AlertDescription>
     </Alert>
@@ -102,7 +120,7 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
 }
 
 export function ReportsClientContent() {
-  const t = useTranslations('owner.reports');
+  const t = useTranslations("owner.reports");
   const [metrics, setMetrics] = useState<ReportsData | null>(null);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [salesData, setSalesData] = useState<SalesDataPoint[]>([]);
@@ -113,54 +131,76 @@ export function ReportsClientContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Date range state
   const [selectedRange, setSelectedRange] = useState<DateRange>({
     from: subDays(new Date(), 6),
-    to: new Date()
+    to: new Date(),
   });
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
-    try {
-      const fromParam = selectedRange.from.toISOString().split('T')[0];
-      const toParam = selectedRange.to.toISOString().split('T')[0];
-      
-      const [metricsRes, ordersRes, salesRes, categoryRes, itemsRes] = await Promise.all([
-        fetch('/api/v1/owner/reports', {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        }),
-        fetch('/api/v1/owner/reports/recent-orders', {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        }),
-        fetch(`/api/v1/owner/reports/advanced-sales?from=${fromParam}&to=${toParam}`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        }),
-        fetch(`/api/v1/owner/reports/category-breakdown?from=${fromParam}&to=${toParam}`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        }),
-        fetch(`/api/v1/owner/reports/items-detail?from=${fromParam}&to=${toParam}`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        })
-      ]);
 
-      if (!metricsRes.ok || !ordersRes.ok || !salesRes.ok || !categoryRes.ok || !itemsRes.ok) {
-        throw new Error('Failed to load reports data');
+    try {
+      const fromParam = selectedRange.from.toISOString().split("T")[0];
+      const toParam = selectedRange.to.toISOString().split("T")[0];
+
+      const [metricsRes, ordersRes, salesRes, categoryRes, itemsRes] =
+        await Promise.all([
+          fetch("/api/v1/owner/reports", {
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+          }),
+          fetch("/api/v1/owner/reports/recent-orders", {
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+          }),
+          fetch(
+            `/api/v1/owner/reports/advanced-sales?from=${fromParam}&to=${toParam}`,
+            {
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+            },
+          ),
+          fetch(
+            `/api/v1/owner/reports/category-breakdown?from=${fromParam}&to=${toParam}`,
+            {
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+            },
+          ),
+          fetch(
+            `/api/v1/owner/reports/items-detail?from=${fromParam}&to=${toParam}`,
+            {
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+            },
+          ),
+        ]);
+
+      if (
+        !metricsRes.ok ||
+        !ordersRes.ok ||
+        !salesRes.ok ||
+        !categoryRes.ok ||
+        !itemsRes.ok
+      ) {
+        throw new Error("Failed to load reports data");
       }
 
-      const [metricsData, ordersData, salesDataRes, categoryDataRes, itemsDataRes] = await Promise.all([
+      const [
+        metricsData,
+        ordersData,
+        salesDataRes,
+        categoryDataRes,
+        itemsDataRes,
+      ] = await Promise.all([
         metricsRes.json(),
         ordersRes.json(),
         salesRes.json(),
         categoryRes.json(),
-        itemsRes.json()
+        itemsRes.json(),
       ]);
 
       setMetrics(metricsData);
@@ -168,17 +208,20 @@ export function ReportsClientContent() {
       setSalesData(salesDataRes);
       setCategoryData(categoryDataRes);
       setItemsData(itemsDataRes);
-      
+
       // Generate trend data from sales data
       const trend = salesDataRes.map((item: SalesDataPoint, index: number) => ({
         period: item.date,
         sales: item.sales,
-        growth: index > 0 ? (item.sales - salesDataRes[index - 1].sales) / salesDataRes[index - 1].sales : 0
+        growth:
+          index > 0
+            ? (item.sales - salesDataRes[index - 1].sales) /
+              salesDataRes[index - 1].sales
+            : 0,
       }));
       setTrendData(trend);
-      
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('errors.fetch_failed'));
+      setError(err instanceof Error ? err.message : t("errors.fetch_failed"));
     } finally {
       setIsLoading(false);
       setIsInitialLoading(false);
@@ -193,22 +236,37 @@ export function ReportsClientContent() {
     setSelectedRange(range);
   };
 
-  const handleExport = async (format: 'csv' | 'pdf', reportType: 'sales' | 'items' | 'category') => {
+  const handleExport = async (
+    format: "csv" | "pdf",
+    reportType: "sales" | "items" | "category",
+  ) => {
     setIsExporting(true);
     try {
       switch (reportType) {
-        case 'sales':
-          await ReportExportService.exportSalesReport(salesData, format, selectedRange);
+        case "sales":
+          await ReportExportService.exportSalesReport(
+            salesData,
+            format,
+            selectedRange,
+          );
           break;
-        case 'items':
-          await ReportExportService.exportItemsReport(itemsData, format, selectedRange);
+        case "items":
+          await ReportExportService.exportItemsReport(
+            itemsData,
+            format,
+            selectedRange,
+          );
           break;
-        case 'category':
-          await ReportExportService.exportCategoryReport(categoryData, format, selectedRange);
+        case "category":
+          await ReportExportService.exportCategoryReport(
+            categoryData,
+            format,
+            selectedRange,
+          );
           break;
       }
     } catch (error) {
-      console.error('Export failed:', error);
+      console.error("Export failed:", error);
     } finally {
       setIsExporting(false);
     }
@@ -218,20 +276,20 @@ export function ReportsClientContent() {
   if (error) return <ErrorState error={error} onRetry={loadData} />;
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ja-JP', {
-      style: 'currency',
-      currency: 'JPY'
+    return new Intl.NumberFormat("ja-JP", {
+      style: "currency",
+      currency: "JPY",
     }).format(amount);
   };
 
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-          {t('title')}
+        <h1 className="text-3xl font-semibold leading-tight text-[#2E2117] dark:text-[#F7F1E9]">
+          {t("title")}
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          {t('description')}
+        <p className="max-w-2xl text-sm leading-6 text-[#8B6E5A] dark:text-[#C9B7A0]">
+          {t("description")}
         </p>
       </header>
 
@@ -239,17 +297,37 @@ export function ReportsClientContent() {
       <DateRangeSelector
         selectedRange={selectedRange}
         onRangeChange={handleDateRangeChange}
-        onExport={(format) => handleExport(format, 'sales')}
+        onExport={(format) => handleExport(format, "sales")}
         isExporting={isExporting}
       />
 
       {/* Tabs for different report views */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="items">Items Report</TabsTrigger>
-          <TabsTrigger value="recent">Recent Activity</TabsTrigger>
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-[#F5EAD8]/80 p-1 dark:bg-[#251810]/90 sm:grid-cols-4">
+          <TabsTrigger
+            value="overview"
+            className="min-h-9 whitespace-normal text-center leading-4"
+          >
+            {t("tabs.overview")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="analytics"
+            className="min-h-9 whitespace-normal text-center leading-4"
+          >
+            {t("tabs.analytics")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="items"
+            className="min-h-9 whitespace-normal text-center leading-4"
+          >
+            {t("tabs.itemsReport")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="recent"
+            className="min-h-9 whitespace-normal text-center leading-4"
+          >
+            {t("tabs.recentActivity")}
+          </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -259,22 +337,26 @@ export function ReportsClientContent() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {t('metrics.todaySales')}
+                  {t("metrics.todaySales")}
                 </CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {metrics ? formatCurrency(metrics.todaySales) : '¥0'}
+                  {metrics ? formatCurrency(metrics.todaySales) : "¥0"}
                 </div>
-                {isLoading && <div className="text-xs text-muted-foreground">Updating...</div>}
+                {isLoading && (
+                  <div className="text-xs text-muted-foreground">
+                    {t("metrics.updating")}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {t('metrics.activeOrders')}
+                  {t("metrics.activeOrders")}
                 </CardTitle>
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -282,23 +364,27 @@ export function ReportsClientContent() {
                 <div className="text-2xl font-bold">
                   {metrics?.activeOrdersCount || 0}
                 </div>
-                {isLoading && <div className="text-xs text-muted-foreground">Updating...</div>}
+                {isLoading && (
+                  <div className="text-xs text-muted-foreground">
+                    {t("metrics.updating")}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {t('metrics.topSeller')}
+                  {t("metrics.topSeller")}
                 </CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {metrics?.topSellerToday?.name || t('metrics.noData')}
+                  {metrics?.topSellerToday?.name || t("metrics.noData")}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {metrics?.topSellerToday?.metricValue || ''}
+                  {metrics?.topSellerToday?.metricValue || ""}
                 </p>
               </CardContent>
             </Card>
@@ -306,7 +392,7 @@ export function ReportsClientContent() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {t('metrics.lowStock')}
+                  {t("metrics.lowStock")}
                 </CardTitle>
                 <AlertCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -315,7 +401,7 @@ export function ReportsClientContent() {
                   {metrics?.lowStockItemsCount || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t('metrics.itemsNeedAttention')}
+                  {t("metrics.itemsNeedAttention")}
                 </p>
               </CardContent>
             </Card>
@@ -340,7 +426,7 @@ export function ReportsClientContent() {
           <ItemsReportTab
             data={itemsData}
             isLoading={isLoading}
-            onExport={(format) => handleExport(format, 'items')}
+            onExport={(format) => handleExport(format, "items")}
             isExporting={isExporting}
             currency="JPY"
           />
@@ -350,24 +436,33 @@ export function ReportsClientContent() {
         <TabsContent value="recent" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{t('recentOrders.title')}</CardTitle>
+              <CardTitle>{t("recentOrders.title")}</CardTitle>
             </CardHeader>
             <CardContent>
               {recentOrders.length === 0 ? (
                 <p className="text-center text-gray-500 py-8">
-                  {t('recentOrders.noOrders')}
+                  {t("recentOrders.noOrders")}
                 </p>
               ) : (
                 <div className="space-y-4">
                   {recentOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={order.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div className="space-y-1">
-                        <p className="font-medium">{t('recentOrders.table')} {order.table}</p>
+                        <p className="font-medium">
+                          {t("recentOrders.table")} {order.table}
+                        </p>
                         <p className="text-sm text-gray-500">{order.time}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">{formatCurrency(order.amount)}</p>
-                        <p className="text-sm text-gray-500 capitalize">{order.status}</p>
+                        <p className="font-bold">
+                          {formatCurrency(order.amount)}
+                        </p>
+                        <p className="text-sm text-gray-500 capitalize">
+                          {order.status}
+                        </p>
                       </div>
                     </div>
                   ))}

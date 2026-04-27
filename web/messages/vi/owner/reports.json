@@ -7,6 +7,10 @@
   },
   "exporting": "Đang xuất...",
   "tabs": {
+    "overview": "Tổng quan",
+    "analytics": "Phân tích",
+    "itemsReport": "Báo cáo món",
+    "recentActivity": "Hoạt động gần đây",
     "sales": "Doanh thu",
     "items": "Món",
     "feedback": "Phản hồi"
@@ -109,6 +113,7 @@
     "lowStock": "Thiếu hàng",
     "noData": "Không có dữ liệu cho khoảng này.",
     "loading": "Đang tải số liệu...",
+    "updating": "Đang cập nhật...",
     "itemsNeedAttention": "Món cần chú ý"
   },
   "recentOrders": {

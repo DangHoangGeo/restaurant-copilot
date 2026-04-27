@@ -197,6 +197,8 @@ export const organizationSharedMenuItemSchema = z.object({
   price: z.number().min(0),
   image_url: z.string().url("Invalid image URL").nullable().optional(),
   available: z.boolean().optional(),
+  weekday_visibility: z.array(z.number().int().min(1).max(7)).optional(),
+  stock_level: z.number().int().min(0).nullable().optional(),
   position: z.number().int().min(0).optional(),
   sizes: z.array(organizationSharedMenuItemSizeSchema).optional(),
   toppings: z.array(organizationSharedMenuItemToppingSchema).optional(),

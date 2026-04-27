@@ -25,6 +25,7 @@ import { FEATURE_FLAGS } from "@/config/feature-flags";
 import { useRestaurantSettings } from "@/contexts/RestaurantContext";
 import { cn } from "@/lib/utils";
 import { buildBranchPath } from "@/lib/branch-paths";
+import type { OrgPermission } from "@/lib/server/organizations/types";
 
 interface AdminSidebarProps {
   restaurantSettings: {
@@ -34,6 +35,7 @@ interface AdminSidebarProps {
   };
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  branchPermissions: Record<OrgPermission, boolean>;
 }
 
 interface NavItemConfig {
@@ -42,6 +44,7 @@ interface NavItemConfig {
   href: string;
   exact?: boolean;
   featureFlag?: boolean;
+  requiredPermission?: OrgPermission;
 }
 
 interface NavSection {
@@ -61,118 +64,131 @@ export function AdminSidebar({
   restaurantSettings,
   isOpen,
   setIsOpen,
+  branchPermissions,
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const params = useParams();
   const t = useTranslations("owner.dashboard");
   const locale = (params.locale as string) || "en";
-  const branchId =
-    typeof params.branchId === "string" ? params.branchId : null;
+  const branchId = typeof params.branchId === "string" ? params.branchId : null;
   const { needsOnboarding } = useRestaurantSettings();
+  const canAccessItem = (item: NavItemConfig) =>
+    (item.featureFlag === undefined || item.featureFlag === true) &&
+    (!item.requiredPermission || branchPermissions[item.requiredPermission]);
 
-  const navSections: NavSection[] = needsOnboarding && FEATURE_FLAGS.onboarding
-    ? [
-        {
-          headingKey: "nav_group_start",
-          items: [
-            {
-              icon: Home,
-              labelKey: "admin_sidebar_dashboard",
-              href: "/branch",
-              exact: true,
-            },
-            {
-              icon: Sparkles,
-              labelKey: "admin_sidebar_onboarding",
-              href: "/control/onboarding",
-            },
-          ],
-        },
-      ]
-    : [
-        {
-          headingKey: "nav_group_today",
-          items: [
-            {
-              icon: Home,
-              labelKey: "admin_sidebar_dashboard",
-              href: "/branch",
-              exact: true,
-            },
-            {
-              icon: List,
-              labelKey: "admin_sidebar_orders",
-              href: "/branch/orders",
-            },
-            {
-              icon: ClipboardList,
-              labelKey: "admin_sidebar_menu_management",
-              href: "/branch/menu",
-            },
-            {
-              icon: TableSimpleIcon,
-              labelKey: "admin_sidebar_table_qr_management",
-              href: "/branch/tables",
-            },
-            {
-              icon: BookUser,
-              labelKey: "admin_sidebar_bookings_preorders",
-              href: "/branch/bookings",
-              featureFlag: FEATURE_FLAGS.tableBooking,
-            },
-            {
-              icon: BarChartBig,
-              labelKey: "admin_sidebar_reports_analytics",
-              href: "/branch/reports",
-            },
-          ],
-        },
-        {
-          headingKey: "nav_group_people",
-          items: [
-            {
-              icon: UserCog,
-              labelKey: "admin_sidebar_employees_schedules",
-              href: "/branch/employees",
-            },
-          ],
-        },
-        {
-          headingKey: "nav_group_money",
-          items: [
-            {
-              icon: ShoppingCart,
-              labelKey: "admin_sidebar_purchasing",
-              href: "/branch/purchasing",
-            },
-            {
-              icon: CircleDollarSign,
-              labelKey: "admin_sidebar_finance",
-              href: "/branch/finance",
-            },
-            {
-              icon: BadgePercent,
-              labelKey: "admin_sidebar_promotions",
-              href: "/branch/promotions",
-            },
-          ],
-        },
-        {
-          headingKey: "nav_group_settings",
-          items: [
-            {
-              icon: UserCog,
-              labelKey: "admin_sidebar_staff",
-              href: "/branch/staff",
-            },
-            {
-              icon: User,
-              labelKey: "admin_sidebar_profile",
-              href: "/branch/profile",
-            },
-          ],
-        },
-      ];
+  const navSections: NavSection[] =
+    needsOnboarding && FEATURE_FLAGS.onboarding
+      ? [
+          {
+            headingKey: "nav_group_start",
+            items: [
+              {
+                icon: Home,
+                labelKey: "admin_sidebar_dashboard",
+                href: "/branch",
+                exact: true,
+              },
+              {
+                icon: Sparkles,
+                labelKey: "admin_sidebar_onboarding",
+                href: "/branch/onboarding",
+                requiredPermission: "restaurant_settings",
+              },
+            ],
+          },
+        ]
+      : [
+          {
+            headingKey: "nav_group_today",
+            items: [
+              {
+                icon: Home,
+                labelKey: "admin_sidebar_dashboard",
+                href: "/branch",
+                exact: true,
+              },
+              {
+                icon: List,
+                labelKey: "admin_sidebar_orders",
+                href: "/branch/orders",
+              },
+              {
+                icon: ClipboardList,
+                labelKey: "admin_sidebar_menu_management",
+                href: "/branch/menu",
+                requiredPermission: "restaurant_settings",
+              },
+              {
+                icon: TableSimpleIcon,
+                labelKey: "admin_sidebar_table_qr_management",
+                href: "/branch/tables",
+                requiredPermission: "restaurant_settings",
+              },
+              {
+                icon: BookUser,
+                labelKey: "admin_sidebar_bookings_preorders",
+                href: "/branch/bookings",
+                featureFlag: FEATURE_FLAGS.tableBooking,
+              },
+              {
+                icon: BarChartBig,
+                labelKey: "admin_sidebar_reports_analytics",
+                href: "/branch/reports",
+                requiredPermission: "reports",
+              },
+            ],
+          },
+          {
+            headingKey: "nav_group_people",
+            items: [
+              {
+                icon: UserCog,
+                labelKey: "admin_sidebar_employees_schedules",
+                href: "/branch/employees",
+                requiredPermission: "employees",
+              },
+            ],
+          },
+          {
+            headingKey: "nav_group_money",
+            items: [
+              {
+                icon: ShoppingCart,
+                labelKey: "admin_sidebar_purchasing",
+                href: "/branch/purchasing",
+                requiredPermission: "purchases",
+              },
+              {
+                icon: CircleDollarSign,
+                labelKey: "admin_sidebar_finance",
+                href: "/branch/finance",
+                requiredPermission: "reports",
+              },
+              {
+                icon: BadgePercent,
+                labelKey: "admin_sidebar_promotions",
+                href: "/branch/promotions",
+                requiredPermission: "promotions",
+              },
+            ],
+          },
+          {
+            headingKey: "nav_group_settings",
+            items: [
+              {
+                icon: UserCog,
+                labelKey: "admin_sidebar_staff",
+                href: "/branch/staff",
+                requiredPermission: "employees",
+              },
+              {
+                icon: User,
+                labelKey: "admin_sidebar_profile",
+                href: "/branch/profile",
+              },
+            ],
+          },
+        ];
 
   const NavItem = ({
     icon: IconComponent,
@@ -189,30 +205,29 @@ export function AdminSidebar({
       : pathname.startsWith(fullHref);
 
     return (
-      <Link href={fullHref} passHref legacyBehavior>
-        <a
-          onClick={() => {
-            if (isOpen && window.innerWidth < 1024) setIsOpen(false);
-          }}
+      <Link
+        href={fullHref}
+        onClick={() => {
+          if (isOpen && window.innerWidth < 1024) setIsOpen(false);
+        }}
+        className={cn(
+          "group flex min-h-11 w-full items-center rounded-2xl px-3 py-2.5 text-sm transition-colors duration-150 ease-in-out",
+          isActive
+            ? "bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20"
+            : "text-[#8B6E5A] hover:bg-[#AB6E3C]/10 hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#AB6E3C]/15 dark:hover:text-[#F7F1E9]",
+          isUtility ? "font-normal" : "font-medium",
+        )}
+        aria-current={isActive ? "page" : undefined}
+      >
+        <IconComponent
           className={cn(
-            "group flex min-h-11 w-full items-center rounded-2xl px-3 py-2.5 text-sm transition-colors duration-150 ease-in-out",
+            "mr-3 h-5 w-5",
             isActive
-              ? "bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20"
-              : "text-[#8B6E5A] hover:bg-[#AB6E3C]/10 hover:text-[#AB6E3C] dark:text-[#B89078] dark:hover:bg-[#AB6E3C]/15 dark:hover:text-[#F7F1E9]",
-            isUtility ? "font-normal" : "font-medium",
+              ? "text-current"
+              : "text-[#AB6E3C]/55 group-hover:text-[#AB6E3C]",
           )}
-          aria-current={isActive ? "page" : undefined}
-        >
-          <IconComponent
-            className={cn(
-              "mr-3 h-5 w-5",
-              isActive
-                ? "text-current"
-                : "text-[#AB6E3C]/55 group-hover:text-[#AB6E3C]",
-            )}
-          />
-          <span>{t(labelKey)}</span>
-        </a>
+        />
+        <span>{t(labelKey)}</span>
       </Link>
     );
   };
@@ -262,26 +277,34 @@ export function AdminSidebar({
           </Button>
         </div>
         <nav className="flex-grow space-y-1.5 overflow-y-auto p-3">
-          {navSections.map((section, sectionIndex) => (
-            <div key={section.headingKey} className={cn(sectionIndex > 0 && "pt-3")}>
-              <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8B6E5A]/75 dark:text-[#B89078]/75">
-                {t(section.headingKey)}
-              </p>
-              <div className="space-y-1.5">
-                {section.items.map(
-                  (item) =>
-                    (item.featureFlag === undefined || item.featureFlag === true) && (
-                      <NavItem
-                        key={item.href}
-                        {...item}
-                        isUtility={section.headingKey === "nav_group_settings"}
-                      />
-                    ),
+          {navSections
+            .map((section) => ({
+              ...section,
+              items: section.items.filter(canAccessItem),
+            }))
+            .filter((section) => section.items.length > 0)
+            .map((section, sectionIndex, sections) => (
+              <div
+                key={section.headingKey}
+                className={cn(sectionIndex > 0 && "pt-3")}
+              >
+                <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8B6E5A]/75 dark:text-[#B89078]/75">
+                  {t(section.headingKey)}
+                </p>
+                <div className="space-y-1.5">
+                  {section.items.map((item) => (
+                    <NavItem
+                      key={item.href}
+                      {...item}
+                      isUtility={section.headingKey === "nav_group_settings"}
+                    />
+                  ))}
+                </div>
+                {sectionIndex < sections.length - 1 && (
+                  <hr className="my-3 border-[#AB6E3C]/10 dark:border-[#AB6E3C]/15" />
                 )}
               </div>
-              {sectionIndex < navSections.length - 1 && <hr className="my-3 border-[#AB6E3C]/10 dark:border-[#AB6E3C]/15" />}
-            </div>
-          ))}
+            ))}
         </nav>
       </aside>
       {isOpen && (
