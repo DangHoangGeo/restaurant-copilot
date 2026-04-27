@@ -962,6 +962,31 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     );
   };
 
+  const renderOptionPreview = (item: WorkspaceItem, className?: string) => {
+    const options = [...item.sizes, ...item.toppings];
+
+    if (options.length === 0) return null;
+
+    return (
+      <div className={cn("mt-2 flex max-w-full flex-wrap gap-1", className)}>
+        {options.slice(0, 3).map((option) => (
+          <Badge
+            key={option.id ?? `${item.id}-${option.name_en}`}
+            variant="secondary"
+            className="max-w-[8.5rem] truncate rounded-md border border-[#AB6E3C]/14 bg-[#FFF7E9] px-1.5 py-0 text-[11px] font-medium text-[#6F4D35] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F1DCC4]"
+          >
+            {localizeEntry(option, locale)}
+          </Badge>
+        ))}
+        {options.length > 3 ? (
+          <Badge className="rounded-md border border-[#AB6E3C]/14 bg-[#F5EAD8] px-1.5 py-0 text-[11px] font-medium text-[#6F4D35] dark:border-[#F1DCC4]/12 dark:bg-[#2B1A10] dark:text-[#F1DCC4]">
+            +{options.length - 3}
+          </Badge>
+        ) : null}
+      </div>
+    );
+  };
+
   const renderCategorySection = ({
     title,
     categories,
@@ -1157,6 +1182,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                       <p className="mt-1 truncate text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
                         {localizeEntry(category, locale)}
                       </p>
+                      {renderOptionPreview(item)}
                     </div>
                     <p className="shrink-0 text-sm font-semibold tabular-nums text-[#2E2117] dark:text-[#F7F1E9]">
                       {formatCurrency(item.price, "JPY", localeCode(locale))}
@@ -1202,19 +1228,16 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
         <table className="w-full table-fixed text-left text-sm">
           <thead className="sticky top-0 z-10 border-b border-[#AB6E3C]/12 bg-[#F5EAD8] text-xs text-[#8B6E5A] dark:border-[#F1DCC4]/12 dark:bg-[#2B1A10] dark:text-[#C9B7A0]">
             <tr>
-              <th className="w-[38%] px-3 py-2 font-medium sm:w-auto">
+              <th className="w-[48%] px-3 py-2 font-medium">
                 {copy.itemColumn}
               </th>
               <th className="hidden w-[18%] px-3 py-2 font-medium md:table-cell">
                 {copy.categoryColumn}
               </th>
-              <th className="w-[92px] px-2 py-2 font-medium sm:px-3">
+              <th className="w-[14%] px-2 py-2 font-medium sm:px-3">
                 {copy.priceColumn}
               </th>
-              <th className="hidden w-[20%] px-3 py-2 font-medium xl:table-cell">
-                {copy.optionColumn}
-              </th>
-              <th className="w-[156px] px-2 py-2 text-right font-medium sm:w-[220px] sm:px-3">
+              <th className="w-[20%] px-2 py-2 text-right font-medium sm:px-3">
                 {copy.actionColumn}
               </th>
             </tr>
@@ -1246,7 +1269,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                           <ImageOff className="h-4 w-4" />
                         ) : null}
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 pr-2">
                         <div className="flex min-w-0 items-center gap-2">
                           {renderStatusDot(item)}
                           <p className="truncate font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
@@ -1256,6 +1279,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                         <p className="mt-1 truncate text-xs text-[#8B6E5A] dark:text-[#C9B7A0] md:hidden">
                           {localizeEntry(category, locale)}
                         </p>
+                        {renderOptionPreview(item)}
                       </div>
                     </div>
                   </td>
@@ -1264,26 +1288,6 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                   </td>
                   <td className="px-2 py-3 text-right text-xs font-semibold tabular-nums text-[#2E2117] dark:text-[#F7F1E9] sm:px-3 sm:text-sm">
                     {formatCurrency(item.price, "JPY", localeCode(locale))}
-                  </td>
-                  <td className="hidden max-w-[320px] px-3 py-3 xl:table-cell">
-                    <div className="flex flex-wrap gap-1">
-                      {[...item.sizes, ...item.toppings]
-                        .slice(0, 4)
-                        .map((option) => (
-                          <Badge
-                            key={option.id ?? `${item.id}-${option.name_en}`}
-                            variant="secondary"
-                            className="rounded-md border border-[#AB6E3C]/14 bg-[#FFF7E9] text-[#6F4D35] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F1DCC4]"
-                          >
-                            {localizeEntry(option, locale)}
-                          </Badge>
-                        ))}
-                      {item.sizes.length + item.toppings.length > 4 ? (
-                        <Badge className="rounded-md border border-[#AB6E3C]/14 bg-[#F5EAD8] text-[#6F4D35] dark:border-[#F1DCC4]/12 dark:bg-[#2B1A10] dark:text-[#F1DCC4]">
-                          +{item.sizes.length + item.toppings.length - 4}
-                        </Badge>
-                      ) : null}
-                    </div>
                   </td>
                   <td className="px-2 py-3 text-right sm:px-3">
                     <div className="flex flex-wrap justify-end gap-1">
@@ -1328,7 +1332,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
             ) : (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={4}
                   className="px-3 py-14 text-center text-sm text-[#8B6E5A] dark:text-[#C9B7A0]"
                 >
                   <Layers3 className="mx-auto mb-3 h-8 w-8 text-[#B89078] dark:text-[#C9B7A0]" />
@@ -1408,7 +1412,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
+      <section className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
         <aside className="space-y-3 rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-3 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72 sm:p-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
