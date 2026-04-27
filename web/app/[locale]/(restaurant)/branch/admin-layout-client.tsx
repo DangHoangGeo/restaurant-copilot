@@ -3,12 +3,12 @@
 import { useState, ReactNode, useMemo } from "react";
 import { AdminHeader } from "@/components/features/admin/dashboard/layout/admin-header";
 import { AdminSidebar } from "@/components/features/admin/dashboard/layout/admin-sidebar";
-import { AdminBottomNav } from "@/components/features/admin/dashboard/layout/admin-bottom-nav";
 import {
   RestaurantProvider,
   RestaurantSettings,
 } from "@/contexts/RestaurantContext";
 import { createThemeProperties, sanitizeHexColor } from "@/lib/utils/colors";
+import type { OrgPermission } from "@/lib/server/organizations/types";
 
 interface AdminLayoutClientProps {
   children: ReactNode;
@@ -25,6 +25,7 @@ interface AdminLayoutClientProps {
   };
   locale: string;
   ownerControlHref?: string | null;
+  branchPermissions: Record<OrgPermission, boolean>;
 }
 
 export function AdminLayoutClient({
@@ -32,6 +33,7 @@ export function AdminLayoutClient({
   restaurantSettings,
   locale,
   ownerControlHref,
+  branchPermissions,
 }: AdminLayoutClientProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedLocale, setSelectedLocale] = useState(locale);
@@ -85,7 +87,7 @@ export function AdminLayoutClient({
   return (
     <RestaurantProvider initialSettings={fullRestaurantSettings}>
       <div
-        className="admin-route-surface flex h-dvh bg-[#FAF3EA] text-[#2E2117] [background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#FAF3EA_0%,#F5EAD8_50%,#EFE0CA_100%)] dark:bg-[#170F0C] dark:text-[#F7F1E9] dark:[background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#170F0C_0%,#1E1209_50%,#251810_100%)]"
+        className="admin-route-surface branch-route-surface flex h-dvh bg-[#FAF3EA] text-[#2E2117] [background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#FAF3EA_0%,#F5EAD8_50%,#EFE0CA_100%)] dark:bg-[#170F0C] dark:text-[#F7F1E9] dark:[background:radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(54,176,128,0.08)_0%,transparent_60%),linear-gradient(160deg,#170F0C_0%,#1E1209_50%,#251810_100%)]"
         style={themeProperties}
         data-theme-color={sanitizeHexColor(restaurantSettings.primaryColor)}
       >
@@ -93,6 +95,7 @@ export function AdminLayoutClient({
           restaurantSettings={restaurantSettings}
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
+          branchPermissions={branchPermissions}
         />
 
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -103,10 +106,9 @@ export function AdminLayoutClient({
             onLocaleChange={setSelectedLocale}
             ownerControlHref={ownerControlHref}
           />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-5 pb-24 sm:px-6 lg:px-8 lg:py-8">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-5 pb-8 sm:px-6 lg:px-8 lg:py-8">
             {children}
           </main>
-          <AdminBottomNav />
         </div>
       </div>
     </RestaurantProvider>

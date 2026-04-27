@@ -178,6 +178,8 @@
   "bottom_nav_more": "Thêm",
   "bottom_nav_more_title": "Thêm",
   "bottom_nav_more_description": "Mở các công cụ quản lý còn lại.",
+  "owner_control_back_label": "Quản lý chủ sở hữu",
+  "owner_control_back_aria_label": "Quay lại quản lý chủ sở hữu",
   "user_menu": {
     "admin_user_placeholder": "Người dùng quản trị",
     "my_account_label": "Tài khoản của tôi",

@@ -69,6 +69,12 @@ export async function PATCH(
     ...(input.data.available !== undefined
       ? { available: input.data.available }
       : {}),
+    ...(input.data.weekday_visibility !== undefined
+      ? { weekday_visibility: input.data.weekday_visibility }
+      : {}),
+    ...(input.data.stock_level !== undefined
+      ? { stock_level: input.data.stock_level }
+      : {}),
     ...(input.data.position !== undefined ? { position: input.data.position } : {}),
     ...(input.data.sizes !== undefined ? { sizes: input.data.sizes } : {}),
     ...(input.data.toppings !== undefined ? { toppings: input.data.toppings } : {}),

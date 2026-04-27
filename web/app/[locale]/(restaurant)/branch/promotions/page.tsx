@@ -3,8 +3,10 @@
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { resolveFounderControlContext } from "@/lib/server/control/access";
-import { resolvePromotionsAccess } from "@/lib/server/promotions/access";
+import {
+  resolvePromotionsAccess,
+  resolveScopedBranchPromotionsAccess,
+} from "@/lib/server/promotions/access";
 import { getPromotionList } from "@/lib/server/promotions/service";
 import { computeDiscounts } from "@/lib/server/finance/queries";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
@@ -28,13 +30,10 @@ export default async function PromotionsPage({
   params: Promise<{ locale: string; branchId?: string }>;
 }) {
   const { locale, branchId } = await params;
-  const founderContext = await resolveFounderControlContext();
 
-  if (founderContext) {
-    redirect(`/${locale}/control/promotions`);
-  }
-
-  const access = await resolvePromotionsAccess();
+  const access = branchId
+    ? await resolveScopedBranchPromotionsAccess(branchId)
+    : await resolvePromotionsAccess();
   if (!access) {
     redirect(buildBranchPath(locale, branchId));
   }

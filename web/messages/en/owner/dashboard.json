@@ -169,21 +169,23 @@
   "admin_sidebar_profile": "Profile",
   "admin_sidebar_settings": "Settings",
   "sidebar": {
-      "toggle_aria_label": "Toggle sidebar navigation",
-      "close_aria_label": "Close sidebar"
-    },
+    "toggle_aria_label": "Toggle sidebar navigation",
+    "close_aria_label": "Close sidebar"
+  },
   "bottom_nav_aria_label": "Primary navigation",
   "bottom_nav_money": "Money",
   "bottom_nav_people": "People",
   "bottom_nav_more": "More",
   "bottom_nav_more_title": "More",
   "bottom_nav_more_description": "Open the rest of your owner tools.",
+  "owner_control_back_label": "Owner control",
+  "owner_control_back_aria_label": "Back to owner control",
   "user_menu": {
-      "admin_user_placeholder": "Admin User",
-      "my_account_label": "My Account",
-      "profile_link": "Profile",
-      "settings_link": "Restaurant Settings",
-      "logout_button": "Logout"
-    },
-    "default_restaurant_name": "CoOrder"
+    "admin_user_placeholder": "Admin User",
+    "my_account_label": "My Account",
+    "profile_link": "Profile",
+    "settings_link": "Restaurant Settings",
+    "logout_button": "Logout"
+  },
+  "default_restaurant_name": "CoOrder"
 }

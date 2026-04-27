@@ -3,8 +3,10 @@
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { resolveFounderControlContext } from "@/lib/server/control/access";
-import { resolveFinanceAccess } from "@/lib/server/finance/access";
+import {
+  resolveFinanceAccess,
+  resolveScopedBranchFinanceAccess,
+} from "@/lib/server/finance/access";
 import {
   getMonthlyReport,
   listMonthlySnapshots,
@@ -33,13 +35,10 @@ export default async function FinancePage({
 }) {
   const { locale, branchId } = await params;
   const sp = await searchParams;
-  const founderContext = await resolveFounderControlContext();
 
-  if (founderContext) {
-    redirect(`/${locale}/control/finance`);
-  }
-
-  const access = await resolveFinanceAccess();
+  const access = branchId
+    ? await resolveScopedBranchFinanceAccess(branchId)
+    : await resolveFinanceAccess();
   if (!access) {
     redirect(buildBranchPath(locale, branchId));
   }

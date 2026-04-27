@@ -185,14 +185,17 @@
     "title": "メニューアイテム",
     "tabs": {
       "basic": "基本情報",
+      "basicShort": "品目",
       "variants": "バリアント＆オプション",
-      "advanced": "詳細設定"
+      "variantsShort": "オプション",
+      "advanced": "詳細設定",
+      "advancedShort": "保存"
     },
     "buttons": {
       "save": "保存",
       "cancel": "キャンセル",
-      "previous": "← 前へ",
-      "next": "次へ →"
+      "previous": "前へ",
+      "next": "次へ"
     },
     "saving": "保存中...",
     "basic": {

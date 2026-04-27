@@ -1,9 +1,13 @@
-import { notFound, redirect } from 'next/navigation';
-import { buildAuthorizationService } from '@/lib/server/authorization/service';
-import { getUserFromRequest, type AuthUser } from '@/lib/server/getUserFromRequest';
-import { buildBranchPath } from '@/lib/branch-paths';
-import { resolveOrgContext } from './service';
-import type { OrgContext } from './types';
+import { notFound, redirect } from "next/navigation";
+import { buildAuthorizationService } from "@/lib/server/authorization/service";
+import {
+  getUserFromRequest,
+  type AuthUser,
+} from "@/lib/server/getUserFromRequest";
+import { buildBranchPath } from "@/lib/branch-paths";
+import { getRequiredBranchRoutePermission } from "@/lib/branch-route-permissions";
+import { resolveOrgContext } from "./service";
+import type { OrgContext } from "./types";
 
 interface BranchRouteAccess {
   user: AuthUser;
@@ -11,13 +15,33 @@ interface BranchRouteAccess {
   branchId: string;
 }
 
+interface BranchRouteAccessDecision {
+  user: AuthUser | null;
+  access: BranchRouteAccess | null;
+  reason: "unauthenticated" | "forbidden" | null;
+}
+
 export async function resolveScopedBranchRouteAccess(
-  branchId: string
+  branchId: string,
+  suffix?: string,
 ): Promise<BranchRouteAccess | null> {
+  const decision = await resolveBranchRouteAccessDecision(branchId, suffix);
+
+  return decision.access;
+}
+
+export async function resolveBranchRouteAccessDecision(
+  branchId: string,
+  suffix?: string,
+): Promise<BranchRouteAccessDecision> {
   const user = await getUserFromRequest();
 
   if (!user) {
-    return null;
+    return {
+      user: null,
+      access: null,
+      reason: "unauthenticated",
+    };
   }
 
   const organizationContext = await resolveOrgContext();
@@ -25,29 +49,54 @@ export async function resolveScopedBranchRouteAccess(
 
   if (organizationContext) {
     if (!authz?.canAccessRestaurant(branchId)) {
-      return null;
+      return {
+        user,
+        access: null,
+        reason: "forbidden",
+      };
+    }
+
+    const requiredPermission = getRequiredBranchRoutePermission(suffix);
+    if (requiredPermission && !authz.can(requiredPermission)) {
+      return {
+        user,
+        access: null,
+        reason: "forbidden",
+      };
     }
 
     return {
       user,
-      organizationContext,
-      branchId,
+      access: {
+        user,
+        organizationContext,
+        branchId,
+      },
+      reason: null,
     };
   }
 
   const isLegacyBranchScopedUser =
     user.restaurantId === branchId &&
-    (user.role === 'owner' || user.role === 'manager');
+    (user.role === "owner" || user.role === "manager");
 
   if (isLegacyBranchScopedUser) {
     return {
       user,
-      organizationContext: null,
-      branchId,
+      access: {
+        user,
+        organizationContext: null,
+        branchId,
+      },
+      reason: null,
     };
   }
 
-  return null;
+  return {
+    user,
+    access: null,
+    reason: "forbidden",
+  };
 }
 
 export async function ensureBranchRouteContext(params: {
@@ -56,9 +105,13 @@ export async function ensureBranchRouteContext(params: {
   suffix?: string;
   searchParams?: Record<string, string | string[] | undefined>;
 }): Promise<BranchRouteAccess> {
-  const access = await resolveScopedBranchRouteAccess(params.branchId);
+  const decision = await resolveBranchRouteAccessDecision(
+    params.branchId,
+    params.suffix,
+  );
+  const access = decision.access;
 
-  if (!access?.user) {
+  if (decision.reason === "unauthenticated") {
     redirect(`/${params.locale}/login`);
   }
 
@@ -69,16 +122,21 @@ export async function ensureBranchRouteContext(params: {
   if (access.user.restaurantId !== params.branchId) {
     const search = new URLSearchParams();
     for (const [key, value] of Object.entries(params.searchParams ?? {})) {
-      if (typeof value === 'string' && value.length > 0) {
+      if (typeof value === "string" && value.length > 0) {
         search.set(key, value);
       }
     }
 
-    const targetPath = buildBranchPath(params.locale, params.branchId, params.suffix);
-    const nextPath = search.size > 0 ? `${targetPath}?${search.toString()}` : targetPath;
+    const targetPath = buildBranchPath(
+      params.locale,
+      params.branchId,
+      params.suffix,
+    );
+    const nextPath =
+      search.size > 0 ? `${targetPath}?${search.toString()}` : targetPath;
 
     redirect(
-      `/api/v1/owner/branch-route/activate?restaurantId=${encodeURIComponent(params.branchId)}&next=${encodeURIComponent(nextPath)}`
+      `/api/v1/owner/branch-route/activate?restaurantId=${encodeURIComponent(params.branchId)}&next=${encodeURIComponent(nextPath)}`,
     );
   }
 

@@ -8,15 +8,18 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sparkles, Upload, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
 import { toast } from 'sonner';
 import type { StreamlinedMenuItemFormData } from '../ItemModal';
+import type { MenuItemCategory } from '@/shared/types/menu';
 
 interface BasicInfoTabProps {
   form: UseFormReturn<StreamlinedMenuItemFormData>;
   ownerLanguage: 'en' | 'ja' | 'vi';
+  categories: MenuItemCategory[];
   showAiTools?: boolean;
   onTranslate?: (text: string, field: string, context: 'item' | 'topping') => Promise<{ en: string; ja: string; vi: string }>;
   onGenerateDescription?: (text: string, initialData: string) => Promise<{ en: string; ja: string; vi: string }>;
@@ -34,12 +37,14 @@ interface BasicInfoTabProps {
 export function BasicInfoTab({
   form,
   ownerLanguage,
+  categories,
   showAiTools = true,
   onTranslate,
   onGenerateDescription,
   onGenerateAI
 }: BasicInfoTabProps) {
   const t = useTranslations('owner.menu.itemModal.basic');
+  const advancedT = useTranslations('owner.menu.itemModal.advanced');
   const [isTranslating, setIsTranslating] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -206,16 +211,16 @@ export function BasicInfoTab({
                           ownerLanguage === 'ja' ? 'description_ja' : 'description_vi';
 
   return (
-    <div className="space-y-6 pb-6">
+    <div className="space-y-4 pb-4 sm:space-y-6 sm:pb-6">
       {/* Header */}
-      <div className="text-center mb-6">
+      <div className="mb-4 text-left sm:mb-6 sm:text-center">
         <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="hidden text-sm text-muted-foreground sm:block">
           {t('description')}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
         {/* Left Column: Text Fields */}
         <div className="space-y-4">
           {/* Item Name */}
@@ -235,6 +240,33 @@ export function BasicInfoTab({
                     value={field.value ?? ''}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="category_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm sm:text-base font-medium">
+                  {advancedT('category_label')} *
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="text-sm sm:text-base">
+                      <SelectValue placeholder={advancedT('select_category_placeholder')} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map(category => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -353,8 +385,8 @@ export function BasicInfoTab({
                   {t('itemPhotoLabel')}
                 </FormLabel>
                 <FormControl>
-                  <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors">
-                    <CardContent className="p-6">
+                  <Card className="border-2 border-dashed border-muted-foreground/25 transition-colors hover:border-muted-foreground/50">
+                    <CardContent className="p-3 sm:p-6">
                       {imagePreview ? (
                         <div className="space-y-4">
                           <div className="relative aspect-video w-full overflow-hidden rounded-lg">
@@ -365,7 +397,7 @@ export function BasicInfoTab({
                               className="object-cover"
                             />
                           </div>
-                          <div className="flex gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                             <Button
                               type="button"
                               variant="outline"
