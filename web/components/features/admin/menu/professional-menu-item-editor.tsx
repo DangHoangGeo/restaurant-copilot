@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useMemo,
   useState,
   type ChangeEvent,
@@ -170,7 +171,10 @@ function buildCopy(locale: string) {
       saved: "メニューを公開しました。",
       failed: "保存できませんでした。",
       externalPromptTitle: "外部AI用プロンプト",
+      externalPromptGuide:
+        "コピーしてChatGPTまたはGeminiに貼り付け、返ってきたJSONを下の欄に貼り付けてください。",
       copyPrompt: "プロンプトをコピー",
+      copiedPrompt: "コピー済み",
       promptCopied: "コピーしました。",
       pasteExternalResult: "外部AIのJSONを貼り付け",
       applyExternalResult: "反映",
@@ -226,7 +230,10 @@ function buildCopy(locale: string) {
       saved: "Đã đăng bán món.",
       failed: "Không thể lưu.",
       externalPromptTitle: "Prompt cho AI ngoài",
+      externalPromptGuide:
+        "Sao chép prompt này, dán vào ChatGPT hoặc Gemini, rồi dán JSON trả về vào ô bên dưới.",
       copyPrompt: "Sao chép prompt",
+      copiedPrompt: "Đã sao chép",
       promptCopied: "Đã sao chép prompt.",
       pasteExternalResult: "Dán JSON từ AI ngoài",
       applyExternalResult: "Áp dụng",
@@ -281,7 +288,10 @@ function buildCopy(locale: string) {
     saved: "Menu item published.",
     failed: "Could not save.",
     externalPromptTitle: "External AI prompt",
+    externalPromptGuide:
+      "Copy this prompt, paste it into ChatGPT or Gemini, then paste the JSON result into the box below.",
     copyPrompt: "Copy prompt",
+    copiedPrompt: "Copied",
     promptCopied: "Prompt copied.",
     pasteExternalResult: "Paste external AI JSON",
     applyExternalResult: "Apply",
@@ -388,6 +398,33 @@ function hasUsableGeneratedMenuCopy(data: GeneratedMenuCopy) {
     data.description_ja,
     data.description_vi,
   ].every((value) => !isGeneratedFailureText(value));
+}
+
+async function copyTextToClipboard(value: string) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch {
+      // Some browser contexts expose the Clipboard API but reject writes.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "-9999px";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    const copied = document.execCommand("copy");
+    if (!copied) throw new Error("Copy command failed");
+  } finally {
+    document.body.removeChild(textarea);
+  }
 }
 
 export function ProfessionalMenuItemEditor({
@@ -566,13 +603,15 @@ export function ProfessionalMenuItemEditor({
   };
 
   const handleCopyExternalPrompt = async () => {
-    if (!externalPrompt) return;
+    if (!externalPrompt) return false;
 
     try {
-      await navigator.clipboard.writeText(externalPrompt);
+      await copyTextToClipboard(externalPrompt);
       toast.success(copy.promptCopied);
+      return true;
     } catch {
       toast.error(copy.failed);
+      return false;
     }
   };
 
@@ -1140,11 +1179,16 @@ function ReviewStep({
   toppings: ToppingDraft[];
   updateTopping: (id: string, patch: Partial<ToppingDraft>) => void;
   externalPrompt: string | null;
-  onCopyExternalPrompt: () => void;
+  onCopyExternalPrompt: () => Promise<boolean>;
   onBack: () => void;
   onApprove: () => void;
 }) {
   const [externalResult, setExternalResult] = useState("");
+  const [isPromptCopied, setIsPromptCopied] = useState(false);
+
+  useEffect(() => {
+    setIsPromptCopied(false);
+  }, [externalPrompt]);
 
   const applyExternalResult = () => {
     try {
@@ -1214,17 +1258,29 @@ function ReviewStep({
       {externalPrompt ? (
         <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
-              {copy.externalPromptTitle}
-            </h2>
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+                {copy.externalPromptTitle}
+              </h2>
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.externalPromptGuide}
+              </p>
+            </div>
             <Button
               type="button"
               variant="outline"
               className="h-9 rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] px-3 text-xs text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
-              onClick={onCopyExternalPrompt}
+              onClick={async () => {
+                const copied = await onCopyExternalPrompt();
+                setIsPromptCopied(copied);
+              }}
             >
-              <Copy className="mr-1.5 h-3.5 w-3.5" />
-              {copy.copyPrompt}
+              {isPromptCopied ? (
+                <Check className="mr-1.5 h-3.5 w-3.5" />
+              ) : (
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              {isPromptCopied ? copy.copiedPrompt : copy.copyPrompt}
             </Button>
           </div>
           <Textarea
