@@ -37,7 +37,7 @@ export interface MenuItem {
   image_url?: string | null;
   available: boolean;
   weekday_visibility: number[]; // 1 (Mon) to 7 (Sun)
-  stock_level?: number;
+  stock_level?: number | null;
   position: number;
   averageRating?: number;
   reviewCount?: number;

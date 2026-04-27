@@ -39,6 +39,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { WeekdaySelector } from "@/components/features/admin/menu/WeekdaySelector";
 
 type PrimaryLanguage = "en" | "ja" | "vi";
 type EditorMode = "organization-shared" | "branch";
@@ -141,6 +142,9 @@ function buildCopy(locale: string) {
       originalDescription: "説明・主な材料",
       price: "基本価格",
       active: "販売中",
+      stock: "販売数",
+      stockPlaceholder: "無制限",
+      schedule: "販売曜日",
       image: "画像",
       upload: "画像を選択",
       replace: "画像を変更",
@@ -194,6 +198,9 @@ function buildCopy(locale: string) {
       originalDescription: "Mô tả / nguyên liệu chính",
       price: "Giá cơ bản",
       active: "Đang bán",
+      stock: "Số lượng bán",
+      stockPlaceholder: "Không giới hạn",
+      schedule: "Ngày bán",
       image: "Hình ảnh",
       upload: "Chọn ảnh",
       replace: "Đổi ảnh",
@@ -246,6 +253,9 @@ function buildCopy(locale: string) {
     originalDescription: "Description / main ingredients",
     price: "Base price",
     active: "Available",
+    stock: "Selling quantity",
+    stockPlaceholder: "Unlimited",
+    schedule: "Selling days",
     image: "Image",
     upload: "Choose image",
     replace: "Replace image",
@@ -303,6 +313,10 @@ function initialSizes(): SizeDraft[] {
     { key: "M", enabled: true, price: "" },
     { key: "L", enabled: false, price: "" },
   ];
+}
+
+function initialWeekdayVisibility() {
+  return [1, 2, 3, 4, 5, 6, 7];
 }
 
 function buildExternalAIPrompt({
@@ -393,6 +407,10 @@ export function ProfessionalMenuItemEditor({
   const [originalName, setOriginalName] = useState("");
   const [originalDescription, setOriginalDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [stockLevel, setStockLevel] = useState("");
+  const [weekdayVisibility, setWeekdayVisibility] = useState<number[]>(
+    initialWeekdayVisibility,
+  );
   const [available, setAvailable] = useState(true);
   const [useSizes, setUseSizes] = useState(false);
   const [sizes, setSizes] = useState<SizeDraft[]>(initialSizes);
@@ -499,7 +517,10 @@ export function ProfessionalMenuItemEditor({
       !originalName.trim() ||
       !originalDescription.trim() ||
       price.trim() === "" ||
-      Number(price) < 0
+      Number(price) < 0 ||
+      (stockLevel.trim() !== "" &&
+        (!Number.isFinite(Number(stockLevel)) || Number(stockLevel) < 0)) ||
+      weekdayVisibility.length === 0
     ) {
       toast.error(copy.required);
       return false;
@@ -671,7 +692,11 @@ export function ProfessionalMenuItemEditor({
         price: Number(price),
         image_url: imageUrl,
         available,
-        weekday_visibility: [1, 2, 3, 4, 5, 6, 7],
+        weekday_visibility: weekdayVisibility,
+        stock_level:
+          stockLevel.trim() === ""
+            ? undefined
+            : Math.max(0, Math.floor(Number(stockLevel))),
         position: selectedCategory?.itemCount ?? 0,
         sizes: selectedSizes.map((size, index) => ({
           size_key: size.key,
@@ -769,6 +794,10 @@ export function ProfessionalMenuItemEditor({
           setOriginalDescription={setOriginalDescription}
           price={price}
           setPrice={setPrice}
+          stockLevel={stockLevel}
+          setStockLevel={setStockLevel}
+          weekdayVisibility={weekdayVisibility}
+          setWeekdayVisibility={setWeekdayVisibility}
           available={available}
           setAvailable={setAvailable}
           useSizes={useSizes}
@@ -813,6 +842,8 @@ export function ProfessionalMenuItemEditor({
           reviewNames={reviewNames}
           reviewDescriptions={reviewDescriptions}
           price={price}
+          stockLevel={stockLevel}
+          weekdayVisibility={weekdayVisibility}
           available={available}
           useSizes={useSizes}
           sizes={selectedSizes}
@@ -856,6 +887,10 @@ function InputStep(props: {
   setOriginalDescription: (value: string) => void;
   price: string;
   setPrice: (value: string) => void;
+  stockLevel: string;
+  setStockLevel: (value: string) => void;
+  weekdayVisibility: number[];
+  setWeekdayVisibility: (value: number[]) => void;
   available: boolean;
   setAvailable: (value: boolean) => void;
   useSizes: boolean;
@@ -934,6 +969,29 @@ function InputStep(props: {
             <span>{copy.active}</span>
             <Switch checked={props.available} onCheckedChange={props.setAvailable} />
           </label>
+        </div>
+
+        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <label className="block space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
+            <span>{copy.stock}</span>
+            <Input
+              type="number"
+              min="0"
+              value={props.stockLevel}
+              onChange={(event) => props.setStockLevel(event.target.value)}
+              placeholder={copy.stockPlaceholder}
+              className="h-10 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] dark:placeholder:text-[#C9B7A0]"
+            />
+          </label>
+          <div className="mt-4 space-y-2 border-t border-[#AB6E3C]/12 pt-4 dark:border-[#F1DCC4]/10">
+            <p className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+              {copy.schedule}
+            </p>
+            <WeekdaySelector
+              selectedDays={props.weekdayVisibility}
+              onChange={props.setWeekdayVisibility}
+            />
+          </div>
         </div>
 
         <ImagePanel
@@ -1276,6 +1334,8 @@ function PublishStep({
   reviewNames,
   reviewDescriptions,
   price,
+  stockLevel,
+  weekdayVisibility,
   available,
   useSizes,
   sizes,
@@ -1291,6 +1351,8 @@ function PublishStep({
   reviewNames: Record<PrimaryLanguage, string>;
   reviewDescriptions: Record<PrimaryLanguage, string>;
   price: string;
+  stockLevel: string;
+  weekdayVisibility: number[];
   available: boolean;
   useSizes: boolean;
   sizes: SizeDraft[];
@@ -1325,6 +1387,22 @@ function PublishStep({
                 {copy.active}
               </p>
               <p className="mt-1 font-medium">{available ? copy.active : "-"}</p>
+            </div>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.stock}
+              </p>
+              <p className="mt-1 font-medium">
+                {stockLevel.trim() || copy.stockPlaceholder}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.schedule}
+              </p>
+              <p className="mt-1 font-medium">
+                {weekdayVisibility.length}/7
+              </p>
             </div>
             {imagePreview ? (
               <div className="aspect-[4/3] overflow-hidden rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">

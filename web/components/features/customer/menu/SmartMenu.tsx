@@ -121,7 +121,12 @@ const transformToSmartMenuItems = (
   return categories.flatMap((category) =>
     category.menu_items
       .filter(
-        (item) => item.available && item.weekday_visibility.includes(today),
+        (item) =>
+          item.available &&
+          item.weekday_visibility.includes(today) &&
+          (item.stock_level === undefined ||
+            item.stock_level === null ||
+            item.stock_level > 0),
       )
       .map((item): SmartMenuItem => {
         const isRecommended = recommendedItems.includes(item.id);
@@ -237,9 +242,17 @@ export function SmartMenu({
 
   // Prepare menu items for recommendations
   const availableMenuItems = useMemo(() => {
+    const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
     return activeCategories.flatMap((category) =>
       category.menu_items
-        .filter((item) => item.available)
+        .filter(
+          (item) =>
+            item.available &&
+            item.weekday_visibility.includes(today) &&
+            (item.stock_level === undefined ||
+              item.stock_level === null ||
+              item.stock_level > 0),
+        )
         .map((item) => ({
           id: item.id,
           name_en: item.name_en,

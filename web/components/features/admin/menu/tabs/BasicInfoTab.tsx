@@ -10,11 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sparkles, Upload, Image as ImageIcon } from 'lucide-react';
-import Image from 'next/image';
-import imageCompression from 'browser-image-compression';
 import { toast } from 'sonner';
 import type { StreamlinedMenuItemFormData } from '../ItemModal';
 import type { MenuItemCategory } from '@/shared/types/menu';
+import { optimizeMenuImageFile } from '@/lib/client/menu-image-processing';
 
 interface BasicInfoTabProps {
   form: UseFormReturn<StreamlinedMenuItemFormData>;
@@ -49,57 +48,84 @@ export function BasicInfoTab({
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [sourceImageFile, setSourceImageFile] = useState<File | null>(null);
+  const [sourceImagePreview, setSourceImagePreview] = useState<string | null>(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffsetX, setCropOffsetX] = useState(0);
+  const [cropOffsetY, setCropOffsetY] = useState(0);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   // Watch for image_url changes and update preview accordingly
   const imageUrl = form.watch("image_url");
   const imageFile = form.watch("imageFile");
   
   useEffect(() => {
-    // If there's an image file (newly uploaded), prioritize it
-    if (imageFile instanceof File) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(imageFile);
-    } 
-    // Otherwise, use the image_url if available
-    else if (imageUrl && imageUrl !== imagePreview) {
+    if (!imageFile && imageUrl && imageUrl !== imagePreview) {
       setImagePreview(imageUrl);
-    } 
-    // Clear preview if no image
-    else if (!imageUrl && !imageFile && imagePreview) {
+    } else if (!imageUrl && !imageFile && imagePreview) {
       setImagePreview(null);
     }
   }, [imageUrl, imageFile, imagePreview]);
 
-  // Helper function to handle file upload
-  const handleFileUpload = async (file: File, field: { onChange: (value: File | null) => void }) => {
+  const resetCropDraft = () => {
+    if (sourceImagePreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(sourceImagePreview);
+    }
+    setSourceImageFile(null);
+    setSourceImagePreview(null);
+    setCropZoom(1);
+    setCropOffsetX(0);
+    setCropOffsetY(0);
+  };
+
+  const handleFileUpload = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error(t('imageCompressError'));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t('imageCompressError'));
+      return;
+    }
+    resetCropDraft();
+    setSourceImageFile(file);
+    setSourceImagePreview(URL.createObjectURL(file));
+    setCropZoom(1);
+    setCropOffsetX(0);
+    setCropOffsetY(0);
+  };
+
+  const applyImageCrop = async (field: { onChange: (value: File | null) => void }) => {
+    if (!sourceImageFile) return;
     try {
-      const options = {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-      };
-      const compressedFile = await imageCompression(file, options);
-      const newFile = new File([compressedFile], file.name, {
-        type: compressedFile.type,
-        lastModified: Date.now(),
+      setIsProcessingImage(true);
+      const optimized = await optimizeMenuImageFile(sourceImageFile, {
+        zoom: cropZoom,
+        offsetX: cropOffsetX,
+        offsetY: cropOffsetY,
       });
-      
-      // Update form field
-      field.onChange(newFile);
-      
-      // Clear any existing image_url since we have a new file
+      if (imagePreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+      field.onChange(optimized.file);
       form.setValue("image_url", "");
-      
+      setImagePreview(optimized.previewUrl);
+      resetCropDraft();
       toast.success(t('imageUploadSuccess'));
     } catch (error) {
       toast.error(t('imageCompressError'));
       console.error(error);
+    } finally {
+      setIsProcessingImage(false);
     }
   };
 
   // Helper function to remove image
   const handleRemoveImage = (field: { onChange: (value: File | null) => void }) => {
+    resetCropDraft();
+    if (imagePreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setImagePreview(null);
     field.onChange(null);
     form.setValue("image_url", "");
@@ -387,14 +413,79 @@ export function BasicInfoTab({
                 <FormControl>
                   <Card className="border-2 border-dashed border-muted-foreground/25 transition-colors hover:border-muted-foreground/50">
                     <CardContent className="p-3 sm:p-6">
-                      {imagePreview ? (
+                      {sourceImagePreview ? (
                         <div className="space-y-4">
-                          <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                            <Image 
-                              src={imagePreview} 
-                              alt="Item preview" 
-                              fill
-                              className="object-cover"
+                          <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-[#d8c2a8] bg-[#f4e7d5] dark:border-white/10 dark:bg-black/30">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={sourceImagePreview}
+                              alt=""
+                              className="absolute object-cover"
+                              style={{
+                                width: `${100 * cropZoom}%`,
+                                height: `${100 * cropZoom}%`,
+                                left: `${50 + cropOffsetX * 0.35}%`,
+                                top: `${50 + cropOffsetY * 0.35}%`,
+                                transform: 'translate(-50%, -50%)',
+                              }}
+                            />
+                            <div className="pointer-events-none absolute inset-0 border border-white/50 dark:border-white/25" />
+                          </div>
+                          <div className="grid gap-3 rounded-xl border border-[#ead9c6] bg-[#fff8ee] p-3 dark:border-white/10 dark:bg-black/20">
+                            <ImageRangeControl
+                              label={t('cropZoomLabel')}
+                              min={1}
+                              max={3}
+                              step={0.05}
+                              value={cropZoom}
+                              onChange={setCropZoom}
+                            />
+                            <ImageRangeControl
+                              label={t('cropHorizontalLabel')}
+                              min={-100}
+                              max={100}
+                              step={1}
+                              value={cropOffsetX}
+                              onChange={setCropOffsetX}
+                            />
+                            <ImageRangeControl
+                              label={t('cropVerticalLabel')}
+                              min={-100}
+                              max={100}
+                              step={1}
+                              value={cropOffsetY}
+                              onChange={setCropOffsetY}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={resetCropDraft}
+                              className="rounded-lg border-[#d8c2a8] bg-white/75 dark:border-white/10 dark:bg-white/5"
+                            >
+                              {t('removeButton')}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => applyImageCrop(field)}
+                              disabled={isProcessingImage}
+                              className="rounded-lg bg-[#9b6339] text-white hover:bg-[#7d4d2a] dark:bg-[#f5b76d] dark:text-[#211610] dark:hover:bg-[#ffd08b]"
+                            >
+                              {isProcessingImage ? t('imageProcessing') : t('applyImageButton')}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : imagePreview ? (
+                        <div className="space-y-4">
+                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={imagePreview}
+                              alt=""
+                              className="h-full w-full object-cover"
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-2">
@@ -412,11 +503,12 @@ export function BasicInfoTab({
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
-                                onChange={async (e) => {
+                                onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (file) {
-                                    await handleFileUpload(file, field);
+                                    handleFileUpload(file);
                                   }
+                                  e.target.value = '';
                                 }}
                               />
                               <Button
@@ -437,11 +529,12 @@ export function BasicInfoTab({
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={async (e) => {
+                            onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (file) {
-                                await handleFileUpload(file, field);
+                                handleFileUpload(file);
                               }
+                              e.target.value = '';
                             }}
                           />
                           <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -609,5 +702,36 @@ export function BasicInfoTab({
         </Card>
       )}
     </div>
+  );
+}
+
+function ImageRangeControl({
+  label,
+  min,
+  max,
+  step,
+  value,
+  onChange,
+}: {
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="space-y-1.5 text-xs font-medium text-[#6f4d35] dark:text-[#f1d1b1]">
+      <span>{label}</span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="w-full accent-[#9b6339] dark:accent-[#f5b76d]"
+      />
+    </label>
   );
 }
