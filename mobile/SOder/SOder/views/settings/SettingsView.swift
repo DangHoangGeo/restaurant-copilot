@@ -4,12 +4,14 @@ struct SettingsView: View {
     @EnvironmentObject private var printerManager: PrinterManager
     @EnvironmentObject private var orderManager: OrderManager
     @EnvironmentObject private var supabaseManager: SupabaseManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @ObservedObject private var settingsManager = PrinterSettingsManager.shared
 
     @State private var autoPrintEnabled = false
     @State private var showingAllLogs = false
     @State private var showingSignOutConfirm = false
+    @State private var showingLanguageSelector = false
 
     var body: some View {
         NavigationStack {
@@ -17,6 +19,10 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingAllLogs) {
             AllPrintLogsView(printerManager: printerManager)
+        }
+        .sheet(isPresented: $showingLanguageSelector) {
+            LanguageSelectorView()
+                .environmentObject(localizationManager)
         }
         .onAppear {
             autoPrintEnabled = orderManager.autoPrintingEnabled
@@ -33,6 +39,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     headerSection
                         .padding(.horizontal, -Spacing.md)
+                    appSection
                     autoPrintSection
                     printingSection
 
@@ -60,7 +67,7 @@ struct SettingsView: View {
 
     private var headerSection: some View {
         AppOperationsHeader(
-            eyebrow: "system setup",
+            eyebrow: "settings_setup_eyebrow".localized,
             title: "tab_settings".localized,
             compactTitle: "tab_settings".localized,
             subtitle: nil,
@@ -87,6 +94,28 @@ struct SettingsView: View {
 
     private var isCompactLayout: Bool {
         UIDevice.current.userInterfaceIdiom == .phone || horizontalSizeClass == .compact
+    }
+
+    // MARK: - App Section
+
+    private var appSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("settings_app_section".localized)
+                .font(.sectionHeader)
+                .foregroundColor(.appTextPrimary)
+
+            Button {
+                showingLanguageSelector = true
+            } label: {
+                settingsLinkCard(
+                    icon: "globe",
+                    title: "language".localized,
+                    subtitle: "settings_language_subtitle".localized
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("language".localized)
+        }
     }
 
     // MARK: - Auto-Print (Prominent)
@@ -344,4 +373,5 @@ struct SettingsView: View {
         .environmentObject(PrinterManager.shared)
         .environmentObject(OrderManager.shared)
         .environmentObject(SupabaseManager.shared)
+        .environmentObject(LocalizationManager.shared)
 }

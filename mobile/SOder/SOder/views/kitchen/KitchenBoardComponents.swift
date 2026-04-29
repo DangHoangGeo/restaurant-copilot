@@ -232,7 +232,7 @@ struct CompactKitchenItemCard: View {
                         }
 
                         Text(item.itemName)
-                            .font(.cardTitle)
+                            .font(.compactPageTitle)
                             .foregroundColor(.appTextPrimary)
                             .multilineTextAlignment(.leading)
                             .lineLimit(3)
@@ -291,26 +291,26 @@ struct CompactKitchenItemCard: View {
                     HStack(spacing: Spacing.sm) {
                         Circle()
                             .fill(emphasisColor)
-                            .frame(width: 11, height: 11)
+                            .frame(width: 8, height: 8)
 
                         Text(nextActionText)
-                            .font(.bodyMedium.weight(.semibold))
+                            .font(.buttonSmall)
 
                         Spacer()
 
                         Image(systemName: "chevron.right")
-                            .font(.bodyMedium.weight(.semibold))
+                            .font(.caption.weight(.semibold))
                     }
                     .foregroundColor(.appTextPrimary)
-                    .padding(.horizontal, Spacing.md)
-                    .padding(.vertical, Spacing.md)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.sm)
                     .background(Color.appSurfaceSecondary.opacity(0.92))
                     .overlay(
                         RoundedRectangle(cornerRadius: CornerRadius.sm)
                             .stroke(Color.appBorderLight, lineWidth: 1)
                     )
                     .cornerRadius(CornerRadius.sm)
-                    .frame(minHeight: 54)
+                    .frame(minHeight: 36)
                 }
                 .buttonStyle(.plain)
             }
