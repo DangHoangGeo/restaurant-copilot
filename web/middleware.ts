@@ -285,18 +285,17 @@ const nextIntl = createNextIntlMiddleware(routing);
  * Add security headers to the response
  */
 function addSecurityHeaders(response: NextResponse, request: NextRequest) {
-  // Content Security Policy
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+  const supabaseWs = supabaseUrl.replace('https://', 'wss://');
 
-  // Build CSP based on environment and features
   const cspDirectives = [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.googletagmanager.com https://analytics.google.com https://va.vercel-scripts.com`,
+    `script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.googletagmanager.com https://analytics.google.com https://va.vercel-scripts.com`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `font-src 'self' https://fonts.gstatic.com data:`,
-    `img-src 'self' data: blob: https: ${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/*`,
-    `media-src 'self' blob: ${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/*`,
-    `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://api.stripe.com https://www.google.com https://www.gstatic.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://va.vercel-scripts.com https://vitals.vercel-insights.com wss://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "")}`,
+    `img-src 'self' data: blob: https: ${supabaseUrl}/storage/v1/object/public/*`,
+    `media-src 'self' blob: ${supabaseUrl}/storage/v1/object/public/*`,
+    `connect-src 'self' ${supabaseUrl} ${supabaseWs} https://generativelanguage.googleapis.com https://api.stripe.com https://www.google.com https://www.gstatic.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://va.vercel-scripts.com https://vitals.vercel-insights.com`,
     "frame-src 'self' https://js.stripe.com https://www.google.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -305,11 +304,7 @@ function addSecurityHeaders(response: NextResponse, request: NextRequest) {
     "upgrade-insecure-requests",
   ];
 
-  // Join directives with semicolons
-  const csp = cspDirectives.join("; ");
-
-  // Set security headers
-  response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("Content-Security-Policy", cspDirectives.join("; "));
   response.headers.set("X-DNS-Prefetch-Control", "on");
   response.headers.set(
     "Strict-Transport-Security",
@@ -323,9 +318,6 @@ function addSecurityHeaders(response: NextResponse, request: NextRequest) {
     "Permissions-Policy",
     "geolocation=(), microphone=(), camera=()",
   );
-
-  // Add nonce to allow specific inline scripts (if needed)
-  response.headers.set("X-CSP-Nonce", nonce);
 
   // Cache control for sensitive pages
   const pathname = request.nextUrl.pathname;

@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getUserFromRequest } from "@/lib/server/getUserFromRequest";
+import { cacheOrFetch } from "@/lib/server/cache";
+import {
+  CUSTOMER_MENU_TTL_SECONDS,
+  customerSignatureDishesCacheKey,
+  invalidateCustomerMenuCache,
+} from "@/lib/server/customer-cache";
+
+type SignatureDishesPayload = {
+  menuItems?: unknown[];
+  signature_dishes?: unknown[];
+};
 
 // GET - Fetch all menu items with signature status for a restaurant
 export async function GET() {
@@ -11,37 +22,48 @@ export async function GET() {
   }
 
   try {
-    const { data: menuItems, error } = await supabaseAdmin
-      .from("menu_items")
-      .select(`
-        id,
-        name_en,
-        name_ja,
-        name_vi,
-        description_en,
-        description_ja,
-        description_vi,
-        price,
-        image_url,
-        position,
-        is_signature,
-        available,
-        categories (
-          name_en,
-          name_ja,
-          name_vi
-        )
-      `)
-      .eq("restaurant_id", user.restaurantId)
-      .eq("available", true)
-      .order("position", { ascending: true });
+    const payload = await cacheOrFetch<SignatureDishesPayload>(
+      customerSignatureDishesCacheKey(user.restaurantId),
+      async () => {
+        const { data: menuItems, error } = await supabaseAdmin
+          .from("menu_items")
+          .select(`
+            id,
+            name_en,
+            name_ja,
+            name_vi,
+            description_en,
+            description_ja,
+            description_vi,
+            price,
+            image_url,
+            position,
+            is_signature,
+            available,
+            categories (
+              name_en,
+              name_ja,
+              name_vi
+            )
+          `)
+          .eq("restaurant_id", user.restaurantId)
+          .eq("available", true)
+          .order("position", { ascending: true });
 
-    if (error) {
-      console.error("Error fetching menu items:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+        if (error) {
+          throw new Error(error.message);
+        }
 
-    return NextResponse.json({ menuItems });
+        return { menuItems };
+      },
+      { ttlSeconds: CUSTOMER_MENU_TTL_SECONDS },
+    );
+
+    return NextResponse.json(payload, {
+      headers: {
+        "Cache-Control": `private, max-age=${CUSTOMER_MENU_TTL_SECONDS}`,
+      },
+    });
   } catch (error) {
     console.error("Error in menu items GET:", error);
     return NextResponse.json(
@@ -71,10 +93,15 @@ export async function PUT(req: NextRequest) {
     }
 
     // First, remove signature status from all items in this restaurant
-    await supabaseAdmin
+    const { error: clearError } = await supabaseAdmin
       .from("menu_items")
       .update({ is_signature: false })
       .eq("restaurant_id", user.restaurantId);
+
+    if (clearError) {
+      console.error("Error clearing signature dishes:", clearError);
+      return NextResponse.json({ error: clearError.message }, { status: 500 });
+    }
 
     // Then set signature status for selected items
     if (menu_item_ids.length > 0) {
@@ -86,6 +113,7 @@ export async function PUT(req: NextRequest) {
 
       if (error) {
         console.error("Error updating signature dishes:", error);
+        await invalidateCustomerMenuCache(user.restaurantId);
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
     }
@@ -117,8 +145,11 @@ export async function PUT(req: NextRequest) {
 
     if (fetchError) {
       console.error("Error fetching updated signature dishes:", fetchError);
+      await invalidateCustomerMenuCache(user.restaurantId);
       return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
+
+    await invalidateCustomerMenuCache(user.restaurantId);
 
     return NextResponse.json({ signature_dishes: dishes });
   } catch (error) {

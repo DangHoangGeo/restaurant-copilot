@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 
 export interface SalesDataPoint {
   date: string;
@@ -26,7 +26,7 @@ export async function GET() {
       const dateStr = date.toISOString().split('T')[0];
       
       // Fetch daily sales and order count
-      const { data: dailyOrders, error: dailyError } = await supabaseAdmin
+      const { data: dailyOrders, error: dailyError } = await supabaseReadAdmin
         .from('orders')
         .select('total_amount')
         .eq('restaurant_id', restaurantId)

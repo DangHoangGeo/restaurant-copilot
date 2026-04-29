@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { invalidateCustomerPublicCache } from '@/lib/server/customer-cache';
 
 // Validation schema for onboarding completion
 const onboardingCompleteSchema = z.object({
@@ -235,6 +236,7 @@ export async function POST(request: NextRequest) {
 
     if (fetchError) {
       console.error('Error fetching updated restaurant:', fetchError);
+      await invalidateCustomerPublicCache(user.restaurantId);
       // Return success anyway since onboarding completed
       return NextResponse.json({
         success: true,
@@ -243,6 +245,8 @@ export async function POST(request: NextRequest) {
         warnings: warnings.length > 0 ? warnings : undefined,
       });
     }
+
+    await invalidateCustomerPublicCache(user.restaurantId);
 
     return NextResponse.json({
       success: true,

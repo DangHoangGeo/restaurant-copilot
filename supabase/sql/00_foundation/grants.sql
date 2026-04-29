@@ -6,6 +6,7 @@
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC, anon, authenticated, service_role;
 
 GRANT EXECUTE ON FUNCTION public.get_request_restaurant_id() TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.get_request_session_id() TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.get_user_restaurant_id() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.is_service_role() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.user_has_restaurant_role(uuid, text[]) TO authenticated, service_role;

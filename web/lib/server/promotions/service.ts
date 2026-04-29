@@ -177,7 +177,7 @@ export async function applyPromo(params: {
   // Verify order belongs to this session + restaurant and is still open
   const { data: order } = await supabaseAdmin
     .from('orders')
-    .select('id, total_amount, status')
+    .select('id, created_at, total_amount, status')
     .eq('id', orderId)
     .eq('session_id', sessionId)
     .eq('restaurant_id', restaurantId)
@@ -212,6 +212,7 @@ export async function applyPromo(params: {
   await insertOrderDiscount({
     restaurant_id:     restaurantId,
     order_id:          orderId,
+    order_created_at:  order.created_at,
     promotion_id:      promo.id,
     promotion_code:    promo.code,
     discount_type:     promo.discount_type,

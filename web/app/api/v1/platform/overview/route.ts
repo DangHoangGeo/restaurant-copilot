@@ -2,12 +2,12 @@
 // Dashboard overview with key metrics and trends
 
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import {
   requirePlatformAdmin,
   platformApiResponse,
   platformApiError
 } from '@/lib/platform-admin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 import {
   buildDashboardOverview,
   getPlatformOverviewPeriodStart
@@ -26,20 +26,27 @@ export async function GET(request: NextRequest) {
     // Validate query parameters
     const query = getDashboardOverviewQuerySchema.parse(queryParams);
 
-    const supabase = await createClient();
     const currentDate = new Date().toISOString().split('T')[0];
     const periodStart = getPlatformOverviewPeriodStart(query.period);
 
     const [{ data: summary, error: summaryError }, { data: trends, error: trendsError }] =
       await Promise.all([
-        supabase.rpc('get_platform_overview_summary', {
-          p_period_start: periodStart,
-          p_target_date: currentDate,
-        }),
-        supabase.rpc('get_platform_overview_trends', {
-          p_period_start: periodStart,
-          p_target_date: currentDate,
-        }),
+        supabaseReadAdmin.rpc(
+          'get_platform_overview_summary',
+          {
+            p_period_start: periodStart,
+            p_target_date: currentDate,
+          },
+          { get: true },
+        ),
+        supabaseReadAdmin.rpc(
+          'get_platform_overview_trends',
+          {
+            p_period_start: periodStart,
+            p_target_date: currentDate,
+          },
+          { get: true },
+        ),
       ]);
 
     if (summaryError || trendsError) {

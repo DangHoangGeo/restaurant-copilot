@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 
 interface TopSellerResult {
   menu_item_id: string;
@@ -27,11 +27,11 @@ export async function GET() {
 
     // Try to use the database function first
     try {
-      const { data: popularItemsData, error: rpcError } = await supabaseAdmin
-        .rpc('get_top_sellers_7days', { 
+      const { data: popularItemsData, error: rpcError } = await supabaseReadAdmin
+        .rpc('get_top_sellers_7days', {
           p_restaurant_id: restaurantId,
           p_limit: 5
-        });
+        }, { get: true });
 
       if (!rpcError && popularItemsData && popularItemsData.length > 0) {
         const formattedItems: PopularItem[] = popularItemsData.map((item: TopSellerResult) => ({
@@ -50,7 +50,7 @@ export async function GET() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const { data: orderItemsData, error: orderItemsError } = await supabaseAdmin
+    const { data: orderItemsData, error: orderItemsError } = await supabaseReadAdmin
       .from('order_items')
       .select(`
         quantity,

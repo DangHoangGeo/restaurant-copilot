@@ -40,8 +40,12 @@ function buildInsertChain(result: unknown) {
 function buildUpdateChain(result: unknown) {
   const maybeSingle = jest.fn().mockResolvedValue(result);
   const select = jest.fn(() => ({ maybeSingle }));
-  const chain = {
-    eq: jest.fn(() => chain),
+  type UpdateChain = {
+    eq: jest.MockedFunction<() => UpdateChain>;
+    select: typeof select;
+  };
+  const chain: UpdateChain = {
+    eq: jest.fn((): UpdateChain => chain),
     select,
   };
   const update = jest.fn(() => chain);

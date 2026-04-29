@@ -27,6 +27,7 @@ export interface OrderDiscount {
   id: string;
   restaurant_id: string;
   order_id: string;
+  order_created_at: string;
   promotion_id: string | null;
   promotion_code: string;
   discount_type: DiscountType;

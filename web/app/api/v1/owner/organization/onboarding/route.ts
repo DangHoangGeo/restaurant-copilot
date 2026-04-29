@@ -12,6 +12,7 @@ import {
   updateOrganization,
 } from "@/lib/server/organizations/service";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { invalidateCustomerPublicCache } from "@/lib/server/customer-cache";
 
 export async function POST(request: NextRequest) {
   const ctx = await resolveOrgContext();
@@ -279,6 +280,8 @@ export async function POST(request: NextRequest) {
         updatedRestaurantError,
       );
     }
+
+    await invalidateCustomerPublicCache(branch.id);
 
     return NextResponse.json({
       success: true,

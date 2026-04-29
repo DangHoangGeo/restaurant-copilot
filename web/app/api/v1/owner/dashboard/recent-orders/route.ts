@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 
 export interface RecentOrdersResponse {
   id: string;
@@ -21,7 +21,7 @@ export async function GET() {
     const restaurantId = user.restaurantId;
 
     // Fetch recent orders with optimized query
-    const { data: orders, error: ordersError } = await supabaseAdmin
+    const { data: orders, error: ordersError } = await supabaseReadAdmin
       .from('orders')
       .select(`
         id, 

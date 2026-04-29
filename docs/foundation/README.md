@@ -52,6 +52,11 @@ Read these when relevant:
 - `12_security_and_scale_plan_10k.md`
   Security hardening plan and infrastructure roadmap to serve 10,000 restaurants.
   Required when touching RLS policies, caching, partitioning, async jobs, or load testing.
+- `13_growth_roadmap_owner_os_to_consumer_network.md`
+  Product expansion roadmap from Japan restaurant operating system to later
+  consumer ordering network. Required when touching marketplace, customer
+  accounts, cross-restaurant ordering, country expansion, growth milestones,
+  investor-readiness, or long-range product positioning.
 
 ## Working Rules
 
@@ -61,6 +66,7 @@ Read these when relevant:
 - Keep organization above branch.
 - Prefer org-aware APIs and services over legacy shortcuts.
 - Treat production readiness as part of the foundation, not a future cleanup.
+- Build the restaurant operating system before the consumer ordering network.
 
 ## Archive
 

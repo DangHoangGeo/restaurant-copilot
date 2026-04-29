@@ -290,8 +290,8 @@ export interface OrgEmployee {
     bank_name: string | null;
     bank_branch_name: string | null;
     bank_account_type: string | null;
-    bank_account_number: string | null;
     bank_account_holder: string | null;
+    // bank_account_number is encrypted at rest; retrieve via get_employee_bank_account() RPC, never returned in list/detail responses
     tax_social_number: string | null;
     insurance_number: string | null;
   } | null;

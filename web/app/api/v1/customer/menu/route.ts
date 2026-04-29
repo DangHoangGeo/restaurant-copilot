@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { resolvePublicRestaurantContext } from "@/lib/server/customer-entry";
+import { cacheOrFetch } from "@/lib/server/cache";
+import {
+  CUSTOMER_MENU_TTL_SECONDS,
+  customerMenuCacheKey,
+} from "@/lib/server/customer-cache";
+
+type CustomerMenuPayload = {
+  success: true;
+  categories: unknown[];
+};
 
 /**
  * Customer API: Get menu data by subdomain
@@ -77,40 +87,40 @@ export async function GET(req: NextRequest) {
       )
     `;
 
-    let query = supabaseAdmin
-      .from("categories")
-      .select(baseSelectQuery)
-      .eq("restaurant_id", restaurantId)
-      .order("position", { ascending: true })
-      .order("position", { foreignTable: "menu_items", ascending: true });
+    const payload = await cacheOrFetch<CustomerMenuPayload>(
+      customerMenuCacheKey({ restaurantId, lite }),
+      async () => {
+        let query = supabaseAdmin
+          .from("categories")
+          .select(baseSelectQuery)
+          .eq("restaurant_id", restaurantId)
+          .order("position", { ascending: true })
+          .order("position", { foreignTable: "menu_items", ascending: true });
 
-    // Only add ordering for sizes and toppings if not lite mode
-    if (!lite) {
-      query = query
-        .order("position", { foreignTable: "menu_items.menu_item_sizes", ascending: true })
-        .order("position", { foreignTable: "menu_items.toppings", ascending: true });
-    }
+        // Only add ordering for sizes and toppings if not lite mode
+        if (!lite) {
+          query = query
+            .order("position", { foreignTable: "menu_items.menu_item_sizes", ascending: true })
+            .order("position", { foreignTable: "menu_items.toppings", ascending: true });
+        }
 
-    const { data: categories, error: categoriesError } = await query;
+        const { data: categories, error: categoriesError } = await query;
 
-    if (categoriesError) {
-      console.error("Error fetching menu categories:", categoriesError);
-      return NextResponse.json({
-        error: "Failed to load menu",
-        details: categoriesError.message
-      }, { status: 500 });
-    }
+        if (categoriesError) {
+          throw new Error(categoriesError.message);
+        }
 
-    const response = NextResponse.json({
-      success: true,
-      categories: categories || []
-    });
+        return {
+          success: true,
+          categories: categories || [],
+        };
+      },
+      { ttlSeconds: CUSTOMER_MENU_TTL_SECONDS },
+    );
 
-    // Add cache-control headers
-    // Lite version can be cached longer (5 minutes) as it's less likely to change frequently
-    // Full version with sizes/toppings cached for 2 minutes
-    const maxAge = lite ? 300 : 120; // 5 minutes for lite, 2 minutes for full
-    response.headers.set('Cache-Control', `public, max-age=${maxAge}, s-maxage=${maxAge}, stale-while-revalidate=60`);
+    const response = NextResponse.json(payload);
+
+    response.headers.set('Cache-Control', `public, max-age=${CUSTOMER_MENU_TTL_SECONDS}, s-maxage=${CUSTOMER_MENU_TTL_SECONDS}, stale-while-revalidate=60`);
     
     return response;
 

@@ -21,9 +21,11 @@ CREATE POLICY "Anonymous can SELECT menu_item_sizes" ON public.menu_item_sizes F
 
 CREATE POLICY "Anonymous can SELECT menu_items" ON public.menu_items FOR SELECT TO anon USING ((restaurant_id = public.get_request_restaurant_id()));
 
-CREATE POLICY "Anonymous can SELECT order_items" ON public.order_items FOR SELECT TO anon USING ((restaurant_id = public.get_request_restaurant_id()));
+CREATE POLICY "Anonymous can SELECT own session order_items" ON public.order_items FOR SELECT TO anon USING (((restaurant_id = public.get_request_restaurant_id()) AND (EXISTS ( SELECT 1
+   FROM public.orders o
+  WHERE ((o.id = order_items.order_id) AND (o.created_at = order_items.order_created_at) AND (o.restaurant_id = public.get_request_restaurant_id()) AND (o.session_id = public.get_request_session_id()))))));
 
-CREATE POLICY "Anonymous can SELECT orders" ON public.orders FOR SELECT TO anon USING ((restaurant_id = public.get_request_restaurant_id()));
+CREATE POLICY "Anonymous can SELECT own session orders" ON public.orders FOR SELECT TO anon USING (((restaurant_id = public.get_request_restaurant_id()) AND (session_id = public.get_request_session_id())));
 
 CREATE POLICY "Anonymous can SELECT reviews" ON public.reviews FOR SELECT TO anon USING ((restaurant_id = public.get_request_restaurant_id()));
 
@@ -31,9 +33,13 @@ CREATE POLICY "Anonymous can SELECT tables" ON public.tables FOR SELECT TO anon 
 
 CREATE POLICY "Anonymous can SELECT toppings" ON public.toppings FOR SELECT TO anon USING ((restaurant_id = public.get_request_restaurant_id()));
 
-CREATE POLICY "Anonymous can UPDATE order_items" ON public.order_items FOR UPDATE TO anon USING ((restaurant_id = public.get_request_restaurant_id())) WITH CHECK ((restaurant_id = public.get_request_restaurant_id()));
+CREATE POLICY "Anonymous can UPDATE own session order_items" ON public.order_items FOR UPDATE TO anon USING (((restaurant_id = public.get_request_restaurant_id()) AND (EXISTS ( SELECT 1
+   FROM public.orders o
+  WHERE ((o.id = order_items.order_id) AND (o.created_at = order_items.order_created_at) AND (o.restaurant_id = public.get_request_restaurant_id()) AND (o.session_id = public.get_request_session_id())))))) WITH CHECK (((restaurant_id = public.get_request_restaurant_id()) AND (EXISTS ( SELECT 1
+   FROM public.orders o
+  WHERE ((o.id = order_items.order_id) AND (o.created_at = order_items.order_created_at) AND (o.restaurant_id = public.get_request_restaurant_id()) AND (o.session_id = public.get_request_session_id()))))));
 
-CREATE POLICY "Anonymous can UPDATE orders" ON public.orders FOR UPDATE TO anon USING ((restaurant_id = public.get_request_restaurant_id())) WITH CHECK ((restaurant_id = public.get_request_restaurant_id()));
+CREATE POLICY "Anonymous can UPDATE own session orders" ON public.orders FOR UPDATE TO anon USING (((restaurant_id = public.get_request_restaurant_id()) AND (session_id = public.get_request_session_id()))) WITH CHECK (((restaurant_id = public.get_request_restaurant_id()) AND (session_id = public.get_request_session_id())));
 
 CREATE POLICY "Authenticated can INSERT chat_logs" ON public.chat_logs FOR INSERT TO authenticated WITH CHECK ((restaurant_id = public.get_user_restaurant_id()));
 

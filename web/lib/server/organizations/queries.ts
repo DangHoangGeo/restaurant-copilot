@@ -1173,7 +1173,7 @@ export async function listOrganizationEmployees(
   const { data, error } = await supabaseAdmin
     .from("employees")
     .select(
-      "id, role, user_id, restaurant_id, is_active, created_at, restaurants(id, name, subdomain), users:users!employees_user_id_fkey(id, email, name), employee_private_profiles(gender, phone, contact_email, address, facebook_url, bank_name, bank_branch_name, bank_account_type, bank_account_number, bank_account_holder, tax_social_number, insurance_number)",
+      "id, role, user_id, restaurant_id, is_active, created_at, restaurants(id, name, subdomain), users:users!employees_user_id_fkey(id, email, name), employee_private_profiles(gender, phone, contact_email, address, facebook_url, bank_name, bank_branch_name, bank_account_type, bank_account_holder, tax_social_number, insurance_number)",
     )
     .in("restaurant_id", restaurantIds)
     .order("restaurant_id", { ascending: true });
@@ -1183,7 +1183,7 @@ export async function listOrganizationEmployees(
     return [];
   }
 
-  return (
+  const employees = (
     data as Array<{
       id: string;
       role: string;
@@ -1225,8 +1225,41 @@ export async function listOrganizationEmployees(
         restaurant_subdomain: restaurant.subdomain,
         is_active: row.is_active,
         created_at: row.created_at,
-        private_profile: profile ?? null,
+        private_profile: profile
+          ? {
+              ...profile,
+              bank_account_number: null,
+            }
+          : null,
       },
     ];
   });
+
+  return Promise.all(
+    employees.map(async (employee) => {
+      if (!employee.private_profile) return employee;
+
+      const { data: bankAccountNumber, error: bankAccountError } =
+        await supabaseAdmin.rpc("get_employee_bank_account", {
+          p_employee_id: employee.employee_id,
+        });
+
+      if (bankAccountError) {
+        console.error("Failed to decrypt employee bank account:", {
+          employeeId: employee.employee_id,
+          error: bankAccountError.message,
+        });
+        return employee;
+      }
+
+      return {
+        ...employee,
+        private_profile: {
+          ...employee.private_profile,
+          bank_account_number:
+            typeof bankAccountNumber === "string" ? bankAccountNumber : null,
+        },
+      };
+    }),
+  );
 }

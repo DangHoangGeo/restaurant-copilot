@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
 import { checkAuthorization } from '@/lib/server/rolePermissions';
 import { resolveScopedBranchRouteAccess } from '@/lib/server/organizations/branch-route';
+import { invalidateCustomerMenuCache } from '@/lib/server/customer-cache';
 
 // Schema for validating the request body when updating a category
 const categoryUpdateSchema = z.object({
@@ -78,6 +79,8 @@ export async function PUT(req: Request,{ params }: { params: Promise<{ categoryI
       }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error updating category', details: error.message }, { status: 500 });
     }
+
+    await invalidateCustomerMenuCache(restaurantId);
 
     return NextResponse.json({ message: 'Category updated successfully', category: data }, { status: 200 });
 
@@ -169,6 +172,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
       }, restaurantId, user.userId);
       return NextResponse.json({ message: 'Error deleting category', details: error.message }, { status: 500 });
     }
+
+    await invalidateCustomerMenuCache(restaurantId);
 
     return NextResponse.json({ message: 'Category deleted successfully' }, { status: 200 });
 

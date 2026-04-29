@@ -33,6 +33,41 @@ $function$;
 
 COMMENT ON FUNCTION public.get_request_restaurant_id() IS 'Resolve the branch restaurant id bound to the current anonymous or public request context';
 
+CREATE OR REPLACE FUNCTION public.get_request_session_id()
+ RETURNS uuid
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  headers jsonb;
+  raw_session_id text;
+BEGIN
+  BEGIN
+    headers := NULLIF(current_setting('request.headers', true), '')::jsonb;
+  EXCEPTION
+    WHEN others THEN
+      headers := NULL;
+  END;
+
+  raw_session_id := COALESCE(
+    headers ->> 'x-session-id',
+    NULLIF(current_setting('app.current_session_id', true), '')
+  );
+
+  IF raw_session_id IS NULL OR btrim(raw_session_id) = '' THEN
+    RETURN NULL;
+  END IF;
+
+  RETURN raw_session_id::uuid;
+EXCEPTION
+  WHEN invalid_text_representation THEN
+    RETURN NULL;
+END;
+$function$;
+
+COMMENT ON FUNCTION public.get_request_session_id() IS 'Resolve the customer order session id bound to the current anonymous or public request context';
+
 CREATE OR REPLACE FUNCTION public.is_service_role()
  RETURNS boolean
  LANGUAGE sql

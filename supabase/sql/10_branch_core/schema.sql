@@ -15,7 +15,7 @@ CREATE TABLE public.orders (
     tax_amount numeric DEFAULT 0,
     tip_amount numeric DEFAULT 0,
     total_amount numeric,
-    created_at timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now(),
     CONSTRAINT orders_discount_amount_check CHECK (((discount_amount IS NULL) OR (discount_amount >= (0)::numeric))),
     CONSTRAINT orders_guest_count_check CHECK ((guest_count > 0)),
@@ -23,7 +23,7 @@ CREATE TABLE public.orders (
     CONSTRAINT orders_tax_amount_check CHECK (((tax_amount IS NULL) OR (tax_amount >= (0)::numeric))),
     CONSTRAINT orders_tip_amount_check CHECK (((tip_amount IS NULL) OR (tip_amount >= (0)::numeric))),
     CONSTRAINT orders_total_amount_check CHECK ((total_amount >= (0)::numeric))
-);
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE public.analytics_snapshots (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
@@ -52,8 +52,8 @@ CREATE TABLE public.bookings (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     restaurant_id uuid NOT NULL,
     table_id uuid,
-    customer_name text NOT NULL,
-    customer_contact text NOT NULL,
+    customer_name text,
+    customer_contact text,
     customer_phone text,
     customer_email text,
     customer_note text,
@@ -63,11 +63,14 @@ CREATE TABLE public.bookings (
     preorder_items jsonb DEFAULT '[]'::jsonb,
     public_lookup_token uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     status text DEFAULT 'pending'::text NOT NULL,
+    pii_expires_at date GENERATED ALWAYS AS ((booking_date + 180)) STORED,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
     CONSTRAINT bookings_party_size_check CHECK ((party_size > 0)),
     CONSTRAINT bookings_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'canceled'::text])))
 );
+
+COMMENT ON COLUMN public.bookings.pii_expires_at IS 'Date after which customer booking personal data should be purged by the scheduled cleanup function.';
 
 CREATE TABLE public.categories (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
@@ -119,7 +122,7 @@ CREATE TABLE public.employee_private_profiles (
     bank_name text,
     bank_branch_name text,
     bank_account_type text,
-    bank_account_number text,
+    bank_account_number_encrypted bytea,
     bank_account_holder text,
     tax_social_number text,
     insurance_number text,
@@ -128,10 +131,13 @@ CREATE TABLE public.employee_private_profiles (
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
+COMMENT ON COLUMN public.employee_private_profiles.bank_account_number_encrypted IS 'Encrypted employee bank account number. Decrypt only through authorized helper functions.';
+
 CREATE TABLE public.feedback (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     restaurant_id uuid NOT NULL,
     order_id uuid NOT NULL,
+    order_created_at timestamp with time zone NOT NULL,
     user_id uuid,
     comments text,
     created_at timestamp with time zone DEFAULT now(),
@@ -209,6 +215,7 @@ CREATE TABLE public.order_items (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     restaurant_id uuid NOT NULL,
     order_id uuid NOT NULL,
+    order_created_at timestamp with time zone NOT NULL,
     menu_item_id uuid NOT NULL,
     menu_item_size_id uuid,
     quantity integer NOT NULL,
@@ -216,11 +223,11 @@ CREATE TABLE public.order_items (
     status text DEFAULT 'new'::text NOT NULL,
     topping_ids uuid[] DEFAULT '{}'::uuid[],
     price_at_order numeric NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now(),
     CONSTRAINT order_items_quantity_check CHECK ((quantity > 0)),
     CONSTRAINT order_items_status_check CHECK ((status = ANY (ARRAY['new'::text, 'preparing'::text, 'ready'::text, 'served'::text, 'canceled'::text])))
-);
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE public.restaurants (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,

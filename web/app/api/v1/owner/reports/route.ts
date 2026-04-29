@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 import { logger } from '@/lib/logger';
 import { checkAuthorization } from '@/lib/server/rolePermissions';
 import {
@@ -28,7 +28,7 @@ export async function GET() {
     // Resolve the branch's local day so "today's sales" reflects the restaurant's
     // wall clock instead of UTC. Phase 0 defaults to Asia/Tokyo if a branch has
     // no timezone set yet.
-    const { data: restaurantRow } = await supabaseAdmin
+    const { data: restaurantRow } = await supabaseReadAdmin
       .from('restaurants')
       .select('timezone')
       .eq('id', user.restaurantId)
@@ -40,7 +40,7 @@ export async function GET() {
     // Fetch dashboard metrics
     const [todaySalesResult, ordersCountResult, topSellerResult, lowStockResult] = await Promise.all([
       // Today's sales (restaurant-local day)
-      supabaseAdmin
+      supabaseReadAdmin
         .from('orders')
         .select('total_amount')
         .eq('restaurant_id', user.restaurantId)
@@ -49,20 +49,24 @@ export async function GET() {
         .eq('status', 'completed'),
 
       // Active orders count
-      supabaseAdmin
+      supabaseReadAdmin
         .from('orders')
         .select('id', { count: 'exact' })
         .eq('restaurant_id', user.restaurantId)
         .neq('status', 'completed'),
 
       // Top seller this week
-      supabaseAdmin.rpc('get_top_sellers_7days', {
-        p_restaurant_id: user.restaurantId,
-        p_limit: 1,
-      }),
+      supabaseReadAdmin.rpc(
+        'get_top_sellers_7days',
+        {
+          p_restaurant_id: user.restaurantId,
+          p_limit: 1,
+        },
+        { get: true },
+      ),
 
       // Low stock items count
-      supabaseAdmin
+      supabaseReadAdmin
         .from('inventory_items')
         .select('id, stock_level, threshold, menu_items!inner(name_en, name_ja, name_vi, categories!inner(name_en, name_ja, name_vi))')
         .eq('restaurant_id', user.restaurantId)

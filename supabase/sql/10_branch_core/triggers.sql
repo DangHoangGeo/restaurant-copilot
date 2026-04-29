@@ -17,7 +17,11 @@ CREATE TRIGGER trg_inventory_audit AFTER INSERT OR DELETE OR UPDATE ON public.in
 
 CREATE TRIGGER trg_menu_items_audit AFTER INSERT OR DELETE OR UPDATE ON public.menu_items FOR EACH ROW EXECUTE FUNCTION public.log_changes();
 
+CREATE TRIGGER trg_feedback_order_created_at BEFORE INSERT OR UPDATE OF order_id, restaurant_id, order_created_at ON public.feedback FOR EACH ROW EXECUTE FUNCTION public.set_order_created_at_from_order();
+
 CREATE TRIGGER trg_orders_audit AFTER INSERT OR DELETE OR UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION public.log_changes();
+
+CREATE TRIGGER trg_order_items_order_created_at BEFORE INSERT OR UPDATE OF order_id, restaurant_id, order_created_at ON public.order_items FOR EACH ROW EXECUTE FUNCTION public.set_order_created_at_from_order();
 
 CREATE TRIGGER trg_update_order_total AFTER INSERT OR DELETE OR UPDATE ON public.order_items FOR EACH ROW EXECUTE FUNCTION public.update_order_total();
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 
 export async function GET(request: NextRequest) {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get detailed items data
-    const { data: itemsData, error: itemsError } = await supabaseAdmin
+    const { data: itemsData, error: itemsError } = await supabaseReadAdmin
       .from('order_items')
       .select(`
         quantity,
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get reviews data for average ratings
-    const { data: reviewsData, error: reviewsError } = await supabaseAdmin
+    const { data: reviewsData, error: reviewsError } = await supabaseReadAdmin
       .from('reviews')
       .select(`
         menu_item_id,

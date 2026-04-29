@@ -9,6 +9,7 @@ import { categoryCreateSchema } from '@/shared/schemas/owner';
 import { categoriesGetQuerySchema, createPaginationMeta } from '@/lib/utils/validation';
 import { randomUUID } from 'crypto';
 import { resolveScopedBranchRouteAccess } from '@/lib/server/organizations/branch-route';
+import { invalidateCustomerMenuCache } from '@/lib/server/customer-cache';
 
 interface CategoryWithItems {
   id: string;
@@ -301,6 +302,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
       throw new Error(`Failed to create category: ${error.message}`);
     }
+
+    await invalidateCustomerMenuCache(restaurantId);
 
     return NextResponse.json(createApiSuccess({ category: data }, requestId), { status: 201 });
 

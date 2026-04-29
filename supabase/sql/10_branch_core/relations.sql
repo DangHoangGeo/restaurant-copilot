@@ -49,7 +49,7 @@ ALTER TABLE ONLY public.employee_private_profiles
     ADD CONSTRAINT employee_private_profiles_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id);
 
 ALTER TABLE ONLY public.feedback
-    ADD CONSTRAINT feedback_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id) ON DELETE CASCADE;
+    ADD CONSTRAINT feedback_order_id_fkey FOREIGN KEY (order_id, order_created_at) REFERENCES public.orders(id, created_at) ON DELETE CASCADE;
 
 ALTER TABLE ONLY public.feedback
     ADD CONSTRAINT feedback_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
@@ -84,22 +84,22 @@ ALTER TABLE ONLY public.menu_items
 ALTER TABLE ONLY public.menu_items
     ADD CONSTRAINT menu_items_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY public.order_items
+ALTER TABLE public.order_items
     ADD CONSTRAINT order_items_menu_item_id_fkey FOREIGN KEY (menu_item_id) REFERENCES public.menu_items(id) ON DELETE RESTRICT;
 
-ALTER TABLE ONLY public.order_items
+ALTER TABLE public.order_items
     ADD CONSTRAINT order_items_menu_item_size_id_fkey FOREIGN KEY (menu_item_size_id) REFERENCES public.menu_item_sizes(id);
 
-ALTER TABLE ONLY public.order_items
-    ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id) ON DELETE CASCADE;
+ALTER TABLE public.order_items
+    ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id, order_created_at) REFERENCES public.orders(id, created_at) ON DELETE CASCADE;
 
-ALTER TABLE ONLY public.order_items
+ALTER TABLE public.order_items
     ADD CONSTRAINT order_items_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY public.orders
+ALTER TABLE public.orders
     ADD CONSTRAINT orders_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY public.orders
+ALTER TABLE public.orders
     ADD CONSTRAINT orders_table_id_fkey FOREIGN KEY (table_id) REFERENCES public.tables(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY public.restaurants

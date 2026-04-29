@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
 import { checkAuthorization } from '@/lib/server/rolePermissions';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { invalidateCustomerMenuCache } from '@/lib/server/customer-cache';
 interface ReorderedCategory {
   id: string;
   position: number;
@@ -42,6 +43,8 @@ export async function POST(req: NextRequest) {
       // Consolidate error messages if needed, or just report the first one
       return NextResponse.json({ error: `Failed to update some categories: ${errors.map(e=>e.error?.message).join(', ')}` }, { status: 500 });
     }
+
+    await invalidateCustomerMenuCache(user.restaurantId);
 
     return NextResponse.json({ message: 'Categories reordered successfully' }, { status: 200 });
 

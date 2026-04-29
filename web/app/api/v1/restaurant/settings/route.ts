@@ -7,6 +7,7 @@ import {
 } from "@/lib/server/getUserFromRequest";
 import { normalizeOpeningHours } from "@/lib/utils/opening-hours";
 import { resolveRestaurantSettingsAccess } from "@/lib/server/restaurant-settings-access";
+import { invalidateCustomerRestaurantCache } from "@/lib/server/customer-cache";
 
 const settingsSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -280,6 +281,8 @@ export async function PATCH(req: NextRequest) {
         { status: 500 }
       );
     }
+
+    await invalidateCustomerRestaurantCache(user.restaurantId);
 
     return NextResponse.json(updatedRestaurant);
   } catch (error) {

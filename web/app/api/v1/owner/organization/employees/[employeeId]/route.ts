@@ -48,7 +48,6 @@ const profileKeys = [
   "bank_name",
   "bank_branch_name",
   "bank_account_type",
-  "bank_account_number",
   "bank_account_holder",
   "tax_social_number",
   "insurance_number",
@@ -77,9 +76,14 @@ export async function PATCH(
     );
   }
 
-  const hasProfileUpdate = profileKeys.some((key) =>
+  const hasPrivateProfileUpdate = profileKeys.some((key) =>
     Object.prototype.hasOwnProperty.call(parsed.data, key),
   );
+  const hasBankAccountUpdate = Object.prototype.hasOwnProperty.call(
+    parsed.data,
+    "bank_account_number",
+  );
+  const hasProfileUpdate = hasPrivateProfileUpdate || hasBankAccountUpdate;
 
   if (!parsed.data.name && !parsed.data.job_title && !hasProfileUpdate) {
     return NextResponse.json(
@@ -139,7 +143,7 @@ export async function PATCH(
     }
   }
 
-  if (hasProfileUpdate) {
+  if (hasPrivateProfileUpdate) {
     const profileUpdate = Object.fromEntries(
       profileKeys
         .filter((key) => Object.prototype.hasOwnProperty.call(parsed.data, key))
@@ -165,6 +169,22 @@ export async function PATCH(
     if (error) {
       return NextResponse.json(
         { error: "Failed to update employee profile" },
+        { status: 500 },
+      );
+    }
+  }
+
+  if (hasBankAccountUpdate) {
+    const bankAccountNumber = parsed.data.bank_account_number;
+    const { error } = await supabaseAdmin.rpc("set_employee_bank_account", {
+      p_employee_id: employeeId,
+      p_account_number: bankAccountNumber === "" ? null : bankAccountNumber,
+      p_updated_by: ctx!.member.user_id,
+    });
+
+    if (error) {
+      return NextResponse.json(
+        { error: "Failed to update employee bank account" },
         { status: 500 },
       );
     }

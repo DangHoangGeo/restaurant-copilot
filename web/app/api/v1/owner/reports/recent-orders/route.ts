@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
     // Get recent orders from the last 24 hours
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    const { data: recentOrders, error } = await supabaseAdmin
+    const { data: recentOrders, error } = await supabaseReadAdmin
       .from('orders')
       .select(`
         id,

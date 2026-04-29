@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { createApiSuccess, handleApiError } from '@/lib/server/apiError';
 import { randomUUID } from 'crypto';
@@ -70,7 +70,7 @@ export async function GET() {
     // so a JST shop that closes at 23:30 doesn't lose the last 9 hours of sales
     // to the next day. Phase 0 defaults to Asia/Tokyo; later phases will read
     // the per-branch timezone from the restaurants table.
-    const { data: restaurantRow } = await supabaseAdmin
+    const { data: restaurantRow } = await supabaseReadAdmin
       .from('restaurants')
       .select('timezone')
       .eq('id', restaurantId)
@@ -95,7 +95,7 @@ export async function GET() {
       topSellerData
     ] = await Promise.allSettled([
       // 1. Today's sales (restaurant-local day)
-      supabaseAdmin
+      supabaseReadAdmin
         .from('orders')
         .select('total_amount')
         .eq('restaurant_id', restaurantId)
@@ -104,14 +104,14 @@ export async function GET() {
         .eq('status', 'completed'),
 
       // 2. Active orders count
-      supabaseAdmin
+      supabaseReadAdmin
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('restaurant_id', restaurantId)
         .not('status', 'in', '("completed", "canceled")'),
 
       // 3. Recent orders (last 10)
-      supabaseAdmin
+      supabaseReadAdmin
         .from('orders')
         .select(`
           id,
@@ -132,13 +132,17 @@ export async function GET() {
         .limit(10),
 
       // 4. Popular items (last 7 days) - using RPC
-      supabaseAdmin.rpc('get_top_sellers_7days', {
-        p_restaurant_id: restaurantId,
-        p_limit: 5,
-      }),
+      supabaseReadAdmin.rpc(
+        'get_top_sellers_7days',
+        {
+          p_restaurant_id: restaurantId,
+          p_limit: 5,
+        },
+        { get: true },
+      ),
 
       // 5. Sales over time (last 7 local days)
-      supabaseAdmin
+      supabaseReadAdmin
         .from('orders')
         .select('total_amount, created_at')
         .eq('restaurant_id', restaurantId)
@@ -152,7 +156,7 @@ export async function GET() {
       // Skip rows with null stock_level / threshold to keep the payload tight —
       // mapInventoryRowsToLowStockItems would filter them anyway.
       FEATURE_FLAGS.lowStockAlerts
-        ? supabaseAdmin
+        ? supabaseReadAdmin
             .from('inventory_items')
             .select('id, stock_level, threshold, menu_items!inner(name_ja, name_en, name_vi, price, categories(name_en, name_ja, name_vi))')
             .eq('restaurant_id', restaurantId)
@@ -161,10 +165,14 @@ export async function GET() {
         : Promise.resolve({ data: [], error: null }),
 
       // 7. Top seller today - using RPC
-      supabaseAdmin.rpc('get_top_seller_for_day', {
-        p_restaurant_id: restaurantId,
-        p_date: today,
-      }),
+      supabaseReadAdmin.rpc(
+        'get_top_seller_for_day',
+        {
+          p_restaurant_id: restaurantId,
+          p_date: today,
+        },
+        { get: true },
+      ),
     ]);
 
     // Process results
