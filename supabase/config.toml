@@ -9,3 +9,7 @@ verify_jwt = false
 [functions.purge-expired-booking-pii]
 verify_jwt = false
 schedule = "0 18 * * *"
+
+[functions.create-monthly-partitions]
+verify_jwt = false
+schedule = "0 3 15 * *"

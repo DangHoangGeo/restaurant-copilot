@@ -2,12 +2,12 @@
 // Get aggregated usage metrics across platform or for specific restaurant
 
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import {
   requirePlatformAdmin,
   platformApiResponse,
   platformApiError
 } from '@/lib/platform-admin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 import { getUsageQuerySchema } from '@/shared/schemas/platform';
 import type { UsageSnapshot, PlatformUsageSummary } from '@/shared/types/platform';
 
@@ -23,11 +23,9 @@ export async function GET(request: NextRequest) {
     // Validate query parameters
     const query = getUsageQuerySchema.parse(queryParams);
 
-    const supabase = await createClient();
-
     // If restaurant_id is provided, return detailed usage for that restaurant
     if (query.restaurant_id) {
-      let dbQuery = supabase
+      let dbQuery = supabaseReadAdmin
         .from('tenant_usage_snapshots')
         .select(
           `
@@ -68,9 +66,13 @@ export async function GET(request: NextRequest) {
     // Otherwise, return platform-wide aggregated usage
     const targetDate = query.end_date || new Date().toISOString().split('T')[0];
 
-    const { data, error } = await supabase.rpc('get_platform_usage_summary', {
-      target_date: targetDate
-    });
+    const { data, error } = await supabaseReadAdmin.rpc(
+      'get_platform_usage_summary',
+      {
+        target_date: targetDate
+      },
+      { get: true },
+    );
 
     if (error) {
       console.error('Error fetching platform usage summary:', error);
@@ -99,11 +101,15 @@ export async function GET(request: NextRequest) {
 
     let trends: TrendPoint[] = [];
     if (query.start_date && query.end_date) {
-      const { data: trendData, error: trendError } = await supabase.rpc('get_platform_usage_trends', {
-        p_start_date: query.start_date,
-        p_end_date: query.end_date,
-        p_restaurant_id: null,
-      });
+      const { data: trendData, error: trendError } = await supabaseReadAdmin.rpc(
+        'get_platform_usage_trends',
+        {
+          p_start_date: query.start_date,
+          p_end_date: query.end_date,
+          p_restaurant_id: null,
+        },
+        { get: true },
+      );
 
       if (trendError) {
         console.error('Error fetching platform usage trends:', trendError);

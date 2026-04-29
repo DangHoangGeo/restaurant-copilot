@@ -107,6 +107,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 UPSTASH_REDIS_URL=your_upstash_redis_url
 UPSTASH_REDIS_TOKEN=your_upstash_redis_token
+QSTASH_TOKEN=your_qstash_token
+QSTASH_CURRENT_SIGNING_KEY=your_qstash_current_signing_key
+QSTASH_NEXT_SIGNING_KEY=your_qstash_next_signing_key
+
+SUPABASE_READ_REPLICA_URL=your_read_replica_or_api_load_balancer_url
+
+SENTRY_DSN=your_server_sentry_dsn
+NEXT_PUBLIC_SENTRY_DSN=your_browser_sentry_dsn
+SENTRY_ORG=your_sentry_org
+SENTRY_PROJECT=your_sentry_project
+SENTRY_AUTH_TOKEN=your_sentry_source_map_upload_token
 
 NEXT_PUBLIC_CAPTCHA_SITE_KEY=your_captcha_site_key
 NEXT_PRIVATE_CAPTCHA_SECRET=your_captcha_secret_key
@@ -126,6 +137,8 @@ NEXT_PRIVATE_OPENAI_API_KEY=your_openai_api_key
 ```
 
 `UPSTASH_REDIS_URL` and `UPSTASH_REDIS_TOKEN` are required in production. The app intentionally fails startup in production without them so auth and mutation rate limits cannot fall back to process-local memory on serverless infrastructure.
+
+`SUPABASE_READ_REPLICA_URL`, Sentry, and QStash values are optional for local development but required before marking the Phase 2/3 scale plan complete in staging or production. Without them the code falls back to safe primary reads or skipped background dispatch, and the status must remain partial.
 
 Refer to `/web/.env.example` for a template. CI/CD pipelines must inject real production/staging secrets—do not commit `.env.local`.
 

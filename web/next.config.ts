@@ -1,5 +1,6 @@
 import { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { withSentryConfig } from '@sentry/nextjs';
  
 const nextConfig: NextConfig = {
   images: {
@@ -47,7 +48,7 @@ const nextConfig: NextConfig = {
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' data: https://fonts.gstatic.com",
           "img-src 'self' data: blob: https://*.supabase.co https://placehold.co https://images.unsplash.com",
-          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://generativelanguage.googleapis.com https://www.google.com https://www.recaptcha.net https://*.vercel-insights.com",
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://generativelanguage.googleapis.com https://www.google.com https://www.recaptcha.net https://*.vercel-insights.com https://*.ingest.sentry.io https://*.sentry.io",
           "frame-src 'self' https://www.google.com https://www.recaptcha.net",
           "frame-ancestors 'none'",
         ].join('; '),
@@ -64,4 +65,15 @@ const nextConfig: NextConfig = {
 };
 
 const withNextIntl = createNextIntlPlugin();
-export default withNextIntl(nextConfig);
+export default withSentryConfig(withNextIntl(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
+});

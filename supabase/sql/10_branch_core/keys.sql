@@ -45,14 +45,11 @@ ALTER TABLE ONLY public.menu_items
 ALTER TABLE ONLY public.menu_items
     ADD CONSTRAINT menu_items_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY public.order_items
-    ADD CONSTRAINT order_items_pkey PRIMARY KEY (id);
+ALTER TABLE public.order_items
+    ADD CONSTRAINT order_items_pkey PRIMARY KEY (id, created_at);
 
-ALTER TABLE ONLY public.orders
-    ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY public.orders
-    ADD CONSTRAINT orders_session_id_key UNIQUE (session_id);
+ALTER TABLE public.orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (id, created_at);
 
 ALTER TABLE ONLY public.restaurants
     ADD CONSTRAINT restaurants_email_key UNIQUE (email);
@@ -146,6 +143,8 @@ CREATE INDEX idx_order_items_order ON public.order_items USING btree (order_id);
 
 CREATE INDEX idx_order_items_order_id ON public.order_items USING btree (order_id);
 
+CREATE INDEX idx_order_items_order_created_at ON public.order_items USING btree (order_id, order_created_at);
+
 CREATE INDEX idx_order_items_order_status ON public.order_items USING btree (order_id, status);
 
 CREATE INDEX idx_order_items_orders_reporting ON public.order_items USING btree (restaurant_id, created_at DESC);
@@ -162,11 +161,15 @@ CREATE INDEX idx_order_items_topping_ids ON public.order_items USING gin (toppin
 
 CREATE INDEX idx_orders_completed_date ON public.orders USING btree (restaurant_id, created_at DESC) WHERE (status = 'completed'::text);
 
+CREATE INDEX idx_orders_id ON public.orders USING btree (id);
+
 CREATE INDEX idx_orders_restaurant_created ON public.orders USING btree (restaurant_id, created_at DESC);
 
 CREATE INDEX idx_orders_restaurant_status ON public.orders USING btree (restaurant_id, status);
 
-CREATE UNIQUE INDEX idx_orders_single_active_session_per_table ON public.orders USING btree (restaurant_id, table_id) WHERE (status = ANY (ARRAY['new'::text, 'serving'::text]));
+CREATE INDEX idx_orders_session_id ON public.orders USING btree (session_id);
+
+CREATE INDEX idx_orders_single_active_session_per_table ON public.orders USING btree (restaurant_id, table_id) WHERE (status = ANY (ARRAY['new'::text, 'serving'::text]));
 
 CREATE INDEX idx_orders_restaurant_status_created ON public.orders USING btree (restaurant_id, status, created_at DESC) WHERE (status = ANY (ARRAY['new'::text, 'confirmed'::text, 'preparing'::text, 'ready'::text, 'serving'::text, 'completed'::text, 'canceled'::text]));
 

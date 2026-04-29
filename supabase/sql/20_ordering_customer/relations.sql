@@ -4,7 +4,7 @@
 \echo '20_ordering_customer/relations.sql'
 
 ALTER TABLE ONLY public.order_discounts
-    ADD CONSTRAINT order_discounts_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id) ON DELETE CASCADE;
+    ADD CONSTRAINT order_discounts_order_id_fkey FOREIGN KEY (order_id, order_created_at) REFERENCES public.orders(id, created_at) ON DELETE CASCADE;
 
 ALTER TABLE ONLY public.order_discounts
     ADD CONSTRAINT order_discounts_promotion_id_fkey FOREIGN KEY (promotion_id) REFERENCES public.promotions(id) ON DELETE SET NULL;

@@ -25,8 +25,11 @@ function buildInsertManyChain(result: unknown) {
 }
 
 function buildDeleteChain() {
-  const chain = {
-    eq: jest.fn(() => chain),
+  type DeleteChain = {
+    eq: jest.MockedFunction<() => DeleteChain>;
+  };
+  const chain: DeleteChain = {
+    eq: jest.fn((): DeleteChain => chain),
   };
   const deleteFn = jest.fn(() => chain);
   return { delete: deleteFn, chain };

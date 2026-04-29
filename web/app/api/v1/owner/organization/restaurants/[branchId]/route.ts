@@ -13,6 +13,7 @@ import {
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { logger } from '@/lib/logger';
 import { normalizeOpeningHours } from '@/lib/utils/opening-hours';
+import { invalidateCustomerRestaurantCache } from '@/lib/server/customer-cache';
 
 const branchSettingsSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -108,6 +109,8 @@ export async function PATCH(
     );
     return NextResponse.json({ error: 'Failed to update branch settings' }, { status: 500 });
   }
+
+  await invalidateCustomerRestaurantCache(branchId);
 
   return NextResponse.json({ success: true, branch: updated });
 }

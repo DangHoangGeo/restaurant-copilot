@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserFromRequest, AuthUser } from "@/lib/server/getUserFromRequest";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { invalidateMenuCache } from "@/lib/server/request-context";
+import { invalidateCustomerMenuCache } from "@/lib/server/customer-cache";
 import { logger } from "@/lib/logger";
 import { resolveScopedBranchRouteAccess } from "@/lib/server/organizations/branch-route";
 import { hasPermission } from "@/lib/server/rolePermissions";
@@ -296,8 +296,8 @@ export async function PUT(
       );
     }
 
-    // Invalidate menu cache since we updated a menu item
-    invalidateMenuCache(restaurantId);
+    // Invalidate customer menu cache since we updated a menu item
+    await invalidateCustomerMenuCache(restaurantId);
 
     return NextResponse.json(
       { message: "Menu item updated successfully", menuItem: completeMenuItem },
@@ -418,8 +418,8 @@ export async function DELETE(
       );
     }
 
-    // Invalidate menu cache since we deleted a menu item
-    invalidateMenuCache(restaurantId);
+    // Invalidate customer menu cache since we deleted a menu item
+    await invalidateCustomerMenuCache(restaurantId);
 
     return NextResponse.json(
       { message: "Menu item deleted successfully" },

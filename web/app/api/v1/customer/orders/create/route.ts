@@ -6,6 +6,7 @@ import {
   getCustomerSessionOrder,
   isCustomerSessionActiveStatus,
 } from "@/lib/server/customer-session";
+import { dispatchBackgroundJob } from "@/lib/server/jobs";
 import { protectEndpoint, RATE_LIMIT_CONFIGS } from "@/lib/server/rateLimit";
 
 const orderSchema = z.object({
@@ -89,6 +90,28 @@ export async function POST(req: NextRequest) {
         topping_ids: item.topping_ids ?? [],
       })),
     });
+
+    try {
+      await Promise.all([
+        dispatchBackgroundJob("receipt.confirmation", {
+          jobId: `${requestId}-receipt`,
+          restaurantId,
+          orderId: updatedOrder.order_id,
+          metadata: { sessionId },
+        }),
+        dispatchBackgroundJob("analytics.snapshot_rebuild", {
+          jobId: `${requestId}-analytics`,
+          restaurantId,
+          orderId: updatedOrder.order_id,
+        }),
+      ]);
+    } catch (jobError) {
+      await logger.warn("orders-create-api", "Order side-effect dispatch failed", {
+        error: serializeOrderCreationError(jobError),
+        orderId: updatedOrder.order_id,
+        restaurantId,
+      }, restaurantId);
+    }
 
     await endPerformanceTimer(requestId, 'orders-create-api', restaurantId);
     return NextResponse.json({

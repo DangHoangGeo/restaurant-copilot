@@ -9,6 +9,8 @@
 
 The current system can serve ~1,000 restaurants today if the right hardening is applied. The goal of this plan is to build the infrastructure that serves 10,000 restaurants — 10 million orders per day at peak — without degradation for any individual restaurant. Reaching that tier also means the 1,000-restaurant stage is over-provisioned and fast.
 
+This is the technical companion to `13_growth_roadmap_owner_os_to_consumer_network.md`. Use this file for security, database, caching, jobs, and load testing. Use the growth roadmap for product milestones, market sequencing, investor-readiness, and the timing of the later consumer ordering network.
+
 The architectural bet: keep Postgres as the single source of truth, add partitioning and caching around the hot path, and route expensive work off the request lifecycle. This avoids the distributed system complexity of the 100,000-restaurant tier until investment makes that necessary.
 
 This plan has three phases:
@@ -25,6 +27,8 @@ Each phase has explicit tasks, acceptance criteria, and database migration notes
 
 **Do this before any production growth. These are exploitable gaps, not future concerns.**
 
+Implementation status on 2026-04-30: repository code and forward-only migrations were added for Phase 1. Production environment tasks remain open where they require Vercel/Supabase access or live rollout verification.
+
 ### 1.1 Fix Anon UPDATE Orders Without Session Ownership (CRITICAL)
 
 **Problem:** The current RLS policy allows any anonymous user to UPDATE any order in a restaurant, not just their own session's order. The Supabase anon key is visible in the browser. A customer can call the Supabase REST API directly, bypass the Next.js API layer entirely, and update or cancel other tables' orders.
@@ -40,23 +44,44 @@ CREATE POLICY "Anonymous can UPDATE orders" ON public.orders
 
 **Task list:**
 
-- [ ] Add `public.get_request_session_id()` helper function to `supabase/sql/00_foundation/functions.sql`:
+- [x] Add `public.get_request_session_id()` helper function to `supabase/sql/00_foundation/functions.sql`:
 
 ```sql
 CREATE OR REPLACE FUNCTION public.get_request_session_id()
   RETURNS uuid
-  LANGUAGE sql
+  LANGUAGE plpgsql
   STABLE SECURITY DEFINER
   SET search_path TO 'public'
 AS $$
-  SELECT NULLIF(
-    current_setting('request.headers', true)::json->>'x-session-id',
-    ''
-  )::uuid;
+DECLARE
+  headers jsonb;
+  raw_session_id text;
+BEGIN
+  BEGIN
+    headers := NULLIF(current_setting('request.headers', true), '')::jsonb;
+  EXCEPTION
+    WHEN others THEN
+      headers := NULL;
+  END;
+
+  raw_session_id := COALESCE(
+    headers ->> 'x-session-id',
+    NULLIF(current_setting('app.current_session_id', true), '')
+  );
+
+  IF raw_session_id IS NULL OR btrim(raw_session_id) = '' THEN
+    RETURN NULL;
+  END IF;
+
+  RETURN raw_session_id::uuid;
+EXCEPTION
+  WHEN invalid_text_representation THEN
+    RETURN NULL;
+END;
 $$;
 ```
 
-- [ ] Update the anon UPDATE policy for `orders` in `supabase/sql/10_branch_core/policies.sql`:
+- [x] Update the anon UPDATE policy for `orders` in `supabase/sql/10_branch_core/policies.sql`:
 
 ```sql
 DROP POLICY "Anonymous can UPDATE orders" ON public.orders;
@@ -73,7 +98,7 @@ CREATE POLICY "Anonymous can UPDATE own session orders" ON public.orders
   );
 ```
 
-- [ ] Apply the same fix to `order_items`. An order item is owned by the session that owns its parent order. Use a subquery:
+- [x] Apply the same fix to `order_items`. An order item is owned by the session that owns its parent order. Use a subquery:
 
 ```sql
 DROP POLICY "Anonymous can UPDATE order_items" ON public.order_items;
@@ -98,9 +123,9 @@ CREATE POLICY "Anonymous can UPDATE own session order_items" ON public.order_ite
   );
 ```
 
-- [ ] Update the Next.js customer API routes that call Supabase directly (not via service role) to pass the `x-session-id` header on every request from the customer session.
+- [x] Update the Next.js customer API routes that call Supabase directly (not via service role) to pass the `x-session-id` header on every request from the customer session. Current customer order/session APIs use server-side service-role routes and RPCs, so no direct anon order route required a header change.
 
-- [ ] Write a forward-only migration: `supabase/migrations/202604301000_fix_anon_order_session_rls.sql`
+- [x] Write a forward-only migration: `supabase/migrations/202604301000_fix_anon_order_session_rls.sql`
 
 - [ ] Verify: attempt to UPDATE another session's order via the Supabase REST API and confirm it returns 403.
 
@@ -114,7 +139,7 @@ CREATE POLICY "Anonymous can UPDATE own session order_items" ON public.order_ite
 
 **Fix:** Restrict anon SELECT to session-scoped orders only.
 
-- [ ] Update `supabase/sql/10_branch_core/policies.sql`:
+- [x] Update `supabase/sql/10_branch_core/policies.sql`:
 
 ```sql
 DROP POLICY "Anonymous can SELECT orders" ON public.orders;
@@ -141,7 +166,7 @@ CREATE POLICY "Anonymous can SELECT own session order_items" ON public.order_ite
 
 - [ ] Verify that the customer ordering UI still works: the session-scoped SELECT should return exactly the current table's orders, which is all the UI needs.
 
-- [ ] Write forward-only migration: `supabase/migrations/202604301010_restrict_anon_order_select.sql`
+- [x] Write forward-only migration: `supabase/migrations/202604301010_restrict_anon_order_select.sql`
 
 ---
 
@@ -178,7 +203,7 @@ async headers() {
 },
 ```
 
-- [ ] Add headers block to `web/next.config.ts`
+- [x] Add headers block to `web/next.config.ts`
 - [ ] Verify with `curl -I` that headers are present in production
 - [ ] Run the app in dev and confirm no CSP violations break customer ordering or owner dashboard
 
@@ -190,7 +215,7 @@ async headers() {
 
 **Fix:** In production, fail hard if Redis is not configured.
 
-- [ ] Update `web/lib/server/rateLimit.ts` initialization:
+- [x] Update `web/lib/server/rateLimit.ts` initialization:
 
 ```ts
 if (process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN) {
@@ -203,7 +228,7 @@ if (process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN) {
 ```
 
 - [ ] Add `UPSTASH_REDIS_URL` and `UPSTASH_REDIS_TOKEN` to the Vercel production environment variables
-- [ ] Document the required env vars in the README dev setup section
+- [x] Document the required env vars in the README dev setup section
 - [ ] Verify: deploy without Redis env vars, confirm startup fails with a clear error
 
 ---
@@ -214,9 +239,9 @@ if (process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN) {
 
 **Fix:** Encrypt sensitive columns using `pgcrypto` with a key stored in Supabase Vault (not in the schema itself).
 
-- [ ] Enable `pgcrypto` extension (already in `00_extensions.sql` — verify it's present)
+- [x] Enable `pgcrypto` extension (already in `00_extensions.sql` — verify it's present)
 - [ ] Store an encryption key in Supabase Vault: `vault.secrets` table via the Supabase dashboard
-- [ ] Migrate `bank_account_number` to encrypted storage:
+- [x] Migrate `bank_account_number` to encrypted storage:
 
 ```sql
 -- Migration: 202604301030_encrypt_employee_bank_data.sql
@@ -224,22 +249,17 @@ ALTER TABLE public.employee_private_profiles
   ADD COLUMN bank_account_number_encrypted bytea;
 
 UPDATE public.employee_private_profiles
-SET bank_account_number_encrypted = pgp_sym_encrypt(
-  bank_account_number,
-  current_setting('app.encryption_key')
-)
+SET bank_account_number_encrypted =
+  public.encrypt_employee_bank_account_number(bank_account_number)
 WHERE bank_account_number IS NOT NULL;
 
 ALTER TABLE public.employee_private_profiles
   DROP COLUMN bank_account_number;
-
-ALTER TABLE public.employee_private_profiles
-  RENAME COLUMN bank_account_number_encrypted TO bank_account_number;
 ```
 
-- [ ] Create a helper function `get_employee_bank_account(employee_id uuid)` that decrypts and returns the value, callable only by authenticated owner/manager role
-- [ ] Update the app layer to call the helper rather than reading the column directly
-- [ ] Update `supabase/sql/10_branch_core/schema.sql` baseline
+- [x] Create a helper function `get_employee_bank_account(employee_id uuid)` that decrypts and returns the value, callable only by authenticated owner/manager role
+- [x] Update the app layer to call the helper rather than reading the column directly
+- [x] Update `supabase/sql/10_branch_core/schema.sql` baseline
 
 ---
 
@@ -249,18 +269,20 @@ ALTER TABLE public.employee_private_profiles
 
 **Fix:** Add an `expires_at` column and a scheduled cleanup job.
 
-- [ ] Add column to bookings table:
+- [x] Add column to bookings table:
 
 ```sql
 -- Migration: 202604301040_bookings_pii_expiry.sql
 ALTER TABLE public.bookings
-  ADD COLUMN pii_expires_at timestamptz
-    GENERATED ALWAYS AS (booking_date + interval '180 days') STORED;
+  ALTER COLUMN customer_name DROP NOT NULL,
+  ALTER COLUMN customer_contact DROP NOT NULL,
+  ADD COLUMN pii_expires_at date
+    GENERATED ALWAYS AS ((booking_date + 180)) STORED;
 ```
 
-- [ ] Create a Supabase Edge Function `supabase/functions/purge-expired-booking-pii/index.ts` that runs on a schedule and NULLs out `customer_name`, `customer_phone`, `customer_email` on bookings past `pii_expires_at`
-- [ ] Wire the function to run nightly via `supabase/functions/purge-expired-booking-pii/config.toml` cron schedule
-- [ ] Update baseline in `supabase/sql/10_branch_core/schema.sql`
+- [x] Create a Supabase Edge Function `supabase/functions/purge-expired-booking-pii/index.ts` that runs on a schedule and NULLs out `customer_name`, `customer_contact`, `customer_phone`, `customer_email`, and `customer_note` on bookings past `pii_expires_at`
+- [x] Wire the function to run nightly via `supabase/functions/purge-expired-booking-pii/config.toml` cron schedule
+- [x] Update baseline in `supabase/sql/10_branch_core/schema.sql`
 
 ---
 
@@ -272,13 +294,15 @@ ALTER TABLE public.bookings
 
 **Goal:** The system runs fast with zero degradation per restaurant at 1,000 tenants. Every restaurant gets the same sub-200ms response regardless of how busy the overall platform is.**
 
+Implementation status on 2026-04-30: Phase 2 is **mostly implemented in the development repository, not live-complete**. Redis-backed customer menu and restaurant metadata caching is implemented. `orders` and `order_items` now have a development-safe monthly partition design with composite partition foreign keys. Read-only reporting pressure has been moved toward the read client, a bounded analytics snapshot refresh RPC exists, and Sentry/QStash scaffolding exists. Live Supabase/Vercel configuration, full snapshot-only reporting route migration, production observability setup, and phase-gate load tests are still open.
+
 ### 2.1 Partition Orders and Order Items by Month
 
 **Why:** At 1,000 restaurants × 1,000 orders/day, `orders` accumulates ~1 million rows/day. By month 3 you have ~90 million rows in a single table. Postgres can still query this with indexes, but vacuuming, bloat, and reporting scans become painful. Partitioning by month caps the working set for any time-bounded query and makes old data archivable without migrations.
 
 **Tasks:**
 
-- [ ] Create the partitioned version of `orders`:
+- [x] Create the partitioned version of `orders`:
 
 ```sql
 -- Migration: 202605010900_partition_orders_by_month.sql
@@ -311,10 +335,12 @@ INSERT INTO public.orders SELECT * FROM public.orders_unpartitioned;
 DROP TABLE public.orders_unpartitioned;
 ```
 
-- [ ] Apply the same partition pattern to `order_items` (partition by `created_at`)
-- [ ] Create a Supabase Edge Function `supabase/functions/create-monthly-partitions/index.ts` that runs on the 20th of each month and creates the next two months' partitions automatically
-- [ ] Update `supabase/sql/10_branch_core/schema.sql` and `keys.sql` baselines
+- [x] Apply the same partition pattern to `order_items` (partition by `created_at`)
+- [x] Create a Supabase Edge Function `supabase/functions/create-monthly-partitions/index.ts` that runs on the 15th of each month and creates the next three months' partitions automatically once partitioned parent tables exist
+- [x] Update `supabase/sql/10_branch_core/schema.sql` and `keys.sql` baselines
 - [ ] Verify: query `EXPLAIN ANALYZE` on `SELECT * FROM orders WHERE restaurant_id = ? AND created_at > now() - interval '7 days'` and confirm it hits one or two partitions only, not all
+
+Current status: see `phase_2_1_order_partition_rollout_design.md`. The repository now uses the composite-key rollout: `orders(id, created_at)`, `order_items(id, created_at)`, and `order_created_at` on order-owned child tables. The forward migration is intentionally development-invasive because no real ordering data exists yet.
 
 ---
 
@@ -330,6 +356,8 @@ DROP TABLE public.orders_unpartitioned;
 - [ ] Ensure the `daily-usage-snapshot` Edge Function is scheduled to run at a known time (ideally 00:05 local restaurant time or a global UTC midnight equivalent)
 - [ ] Add a fallback: if today's snapshot is not yet populated, compute live but log a warning — never fail silently
 - [ ] Acceptance: run `EXPLAIN ANALYZE` on the owner analytics API responses. No raw `orders` table scans should appear in traces for any read-only dashboard query.
+
+Current status: selected owner/platform read-only routes now have read-replica plumbing, and legacy dashboard/report APIs now use the read client for pressure relief. `refresh_analytics_snapshot(restaurant_id, date)` now creates bounded daily analytics rows. This does not yet satisfy snapshot-only reporting for every owner dashboard/reporting route. A complete route rewrite pass and live `EXPLAIN ANALYZE` verification are still required.
 
 ---
 
@@ -354,12 +382,12 @@ DROP TABLE public.orders_unpartitioned;
 
 **Tasks:**
 
-- [ ] Create `web/lib/server/cache.ts` — a thin wrapper over the existing Upstash Redis client with typed `get<T>`, `set`, and `del` helpers, plus a `cacheOrFetch<T>` helper that checks cache before querying DB
-- [ ] Cache keys follow the pattern: `menu:{restaurantId}:categories`, `menu:{restaurantId}:items`, `restaurant:{restaurantId}:meta`
-- [ ] TTL: 5 minutes for menu data, 1 minute for restaurant open/closed status
-- [ ] On any owner menu mutation (create/update/delete menu item, toggle availability), invalidate the corresponding cache keys
-- [ ] On restaurant settings update, invalidate `restaurant:{restaurantId}:meta`
-- [ ] Add these four customer API routes to use the cache first:
+- [x] Create `web/lib/server/cache.ts` — a thin wrapper over the existing Upstash Redis client with typed `get<T>`, `set`, and `del` helpers, plus a `cacheOrFetch<T>` helper that checks cache before querying DB
+- [x] Cache keys follow the pattern: `menu:{restaurantId}:categories`, `menu:{restaurantId}:items`, `restaurant:{restaurantId}:meta`
+- [x] TTL: 5 minutes for menu data, 1 minute for restaurant open/closed status
+- [x] On any owner menu mutation (create/update/delete menu item, toggle availability), invalidate the corresponding cache keys
+- [x] On restaurant settings update, invalidate `restaurant:{restaurantId}:meta`
+- [x] Add these four customer API routes to use the cache first:
   - `GET /api/v1/customer/menu` (categories + items)
   - `GET /api/v1/customer/restaurant` (metadata)
   - `GET /api/v1/restaurant/homepage-data`
@@ -388,14 +416,16 @@ DROP TABLE public.orders_unpartitioned;
 
 **Tasks:**
 
-- [ ] Add Sentry to the Next.js app (`@sentry/nextjs`) — capture all unhandled errors and slow API responses (>500ms threshold)
-- [ ] Create a structured log format in `web/lib/client-logger.ts` that emits `restaurant_id`, `endpoint`, `duration_ms`, and `status` on every API response
+- [x] Add Sentry to the Next.js app (`@sentry/nextjs`) — capture all unhandled errors and slow API responses (>500ms threshold)
+- [x] Create a structured log format in `web/lib/client-logger.ts` that emits `restaurant_id`, `endpoint`, `duration_ms`, and `status` on every API response
 - [ ] Set up a Vercel Analytics dashboard for Core Web Vitals on customer-facing pages
 - [ ] Create a Supabase dashboard alert: trigger on any table with >1M rows added in a single day (abnormal spike detector)
-- [ ] Define SLOs before launch:
+- [x] Define SLOs before launch:
   - Customer menu load: p95 < 300ms
   - Order creation: p95 < 500ms
   - Owner dashboard load: p95 < 800ms
+
+Current status: Sentry code scaffolding and source-map upload wiring are implemented, but Sentry is not live until production DSNs and credentials are configured and verified.
 
 ---
 
@@ -407,6 +437,8 @@ DROP TABLE public.orders_unpartitioned;
 
 **Goal:** The system handles 10 million orders per day (~115 writes/sec average, ~1,200/sec at lunch peak). No single restaurant's experience degrades based on what other restaurants are doing. Infrastructure cost scales linearly with restaurant count, not super-linearly.**
 
+Implementation status on 2026-04-30: Phase 3 is **partially implemented in the development repository, not live-complete**. Repository support exists for read-replica routing, partition maintenance, Redis-backed customer API caching, QStash job dispatch/handler execution, Sentry observability, platform partition health checks, and k6 load-test scripts. Live read replica enablement, full owner GET route migration, remaining concrete async side-effect migration, ISR page conversion, Enterprise procurement, and measured load-test proof are still open.
+
 ### 3.1 Supabase Read Replica for Owner Dashboards
 
 **Why:** At 10,000 restaurants, owner dashboard queries (finance summaries, attendance reports, branch comparisons) compete with live order writes on the same Postgres instance. Read replicas separate these workloads completely.
@@ -414,13 +446,15 @@ DROP TABLE public.orders_unpartitioned;
 **Tasks:**
 
 - [ ] Enable Supabase read replica (available on Pro+ plans) in the same region (ap-northeast-1)
-- [ ] Create `web/lib/supabase/read-client.ts` — a Supabase client that connects to the read replica endpoint
+- [x] Create `web/lib/supabase/read-client.ts` — a Supabase client that connects to the read replica endpoint
 - [ ] Route all owner GET endpoints through the read client:
   - All finance and analytics APIs
   - All attendance and scheduling APIs
   - All branch comparison and org-level summary APIs
-- [ ] Keep all writes (order status updates, menu changes, employee actions) on the primary client
+- [x] Keep all writes (order status updates, menu changes, employee actions) on the primary client
 - [ ] Verify: primary Postgres CPU drops measurably under simulated owner dashboard load once read replica routing is live
+
+Current status: only selected owner/platform read-only routes use the read client. The full owner GET surface has not been migrated or verified against a live replica.
 
 ---
 
@@ -439,10 +473,12 @@ DROP TABLE public.orders_unpartitioned;
   - Low-stock notifications
   - Audit log writes (currently synchronous in some paths)
   - Trial expiry checks
-- [ ] Create `web/lib/server/jobs.ts` — typed job dispatchers for each job type
-- [ ] Each job handler must be idempotent: if it runs twice, the result is the same
-- [ ] Add job failure logging to the existing `logs` table with `level = 'error'` and `source = 'job'`
+- [x] Create `web/lib/server/jobs.ts` — typed job dispatchers for each job type
+- [x] Each job handler must be idempotent: if it runs twice, the result is the same
+- [x] Add job failure logging to the existing `logs` table with `level = 'error'` and `source = 'job'`
 - [ ] Acceptance: order creation p95 latency drops by at least 30% after async migration
+
+Current status: dispatchers and signed handlers are present. Analytics snapshot rebuild, low-stock scan, billing renewal checks, and async audit writes have concrete idempotent handlers. Receipt confirmation and AI menu suggestion handlers still acknowledge deferred work until their final business integrations exist, so Phase 3.2 remains open.
 
 ---
 
@@ -455,10 +491,12 @@ DROP TABLE public.orders_unpartitioned;
 - [ ] Convert customer menu page routes to use Next.js `generateStaticParams` + ISR with `revalidate: 300` (5-minute refresh)
   - `app/[subdomain]/menu/page.tsx` → ISR
   - `app/[subdomain]/page.tsx` → ISR
-- [ ] For dynamic per-table routes (which need the session), keep SSR but cache the underlying API response at the Redis layer (Phase 2.4)
-- [ ] Add `Cache-Control: public, s-maxage=300, stale-while-revalidate=60` to customer menu API responses
-- [ ] On menu item mutation, trigger a revalidation call to `next/cache` `revalidatePath` for the affected restaurant's menu page
+- [x] For dynamic per-table routes (which need the session), keep SSR but cache the underlying API response at the Redis layer (Phase 2.4)
+- [x] Add `Cache-Control: public, s-maxage=300, stale-while-revalidate=60` to customer menu API responses
+- [x] On menu item mutation, trigger a revalidation call to `next/cache` `revalidatePath` for the affected restaurant's menu page
 - [ ] Verify: after ISR warmup, a Vercel edge hit for a restaurant menu shows `x-vercel-cache: HIT` in response headers
+
+Current status: customer public/menu invalidation now calls `revalidatePath` for locale customer paths. The plan's `app/[subdomain]/*` ISR target does not match the current host-based customer route shape, so full ISR conversion needs a separate route design before it can be safely marked complete.
 
 ---
 
@@ -468,13 +506,15 @@ DROP TABLE public.orders_unpartitioned;
 
 **Tasks:**
 
-- [ ] Harden the `create-monthly-partitions` Edge Function from Phase 2.1:
+- [x] Harden the `create-monthly-partitions` Edge Function from Phase 2.1:
   - Run on the 15th of each month (not the 20th — gives more lead time)
   - Create 3 months of future partitions, not 2
   - On completion, log success to the `logs` table
   - On failure, send an alert to the platform admin notification channel
 - [ ] Create a monitoring check: if the current month's partition does not exist as of the 1st, trigger a PagerDuty/Slack alert immediately
-- [ ] Add a partition health check to the platform admin dashboard
+- [x] Add a partition health check API for the platform admin dashboard
+
+Current status: the Edge Function and service-role RPCs now target the partitioned parent tables. The platform admin API can read partition health at `GET /api/v1/platform/health/partitions`; a visible dashboard widget can be added on top of that API.
 
 ---
 
@@ -500,10 +540,10 @@ DROP TABLE public.orders_unpartitioned;
 
 **Tasks:**
 
-- [ ] Create `web/load-tests/` directory with k6 scripts
-- [ ] Script 1: `lunch-peak.js` — simulates the above scenario
-- [ ] Script 2: `owner-dashboard.js` — simulates 500 concurrent owner sessions running analytics
-- [ ] Script 3: `menu-browse.js` — simulates 5,000 concurrent menu browsers (read-only)
+- [x] Create `web/load-tests/` directory with k6 scripts
+- [x] Script 1: `lunch-peak.js` — simulates the above scenario
+- [x] Script 2: `owner-dashboard.js` — simulates 500 concurrent owner sessions running analytics
+- [x] Script 3: `menu-browse.js` — simulates 5,000 concurrent menu browsers (read-only)
 - [ ] Run all three scripts before declaring Phase 3 complete
 - [ ] Document results in `docs/foundation/load-test-results/`
 

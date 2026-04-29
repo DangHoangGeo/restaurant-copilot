@@ -15,7 +15,7 @@ CREATE TABLE public.orders (
     tax_amount numeric DEFAULT 0,
     tip_amount numeric DEFAULT 0,
     total_amount numeric,
-    created_at timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now(),
     CONSTRAINT orders_discount_amount_check CHECK (((discount_amount IS NULL) OR (discount_amount >= (0)::numeric))),
     CONSTRAINT orders_guest_count_check CHECK ((guest_count > 0)),
@@ -23,7 +23,7 @@ CREATE TABLE public.orders (
     CONSTRAINT orders_tax_amount_check CHECK (((tax_amount IS NULL) OR (tax_amount >= (0)::numeric))),
     CONSTRAINT orders_tip_amount_check CHECK (((tip_amount IS NULL) OR (tip_amount >= (0)::numeric))),
     CONSTRAINT orders_total_amount_check CHECK ((total_amount >= (0)::numeric))
-);
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE public.analytics_snapshots (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
@@ -137,6 +137,7 @@ CREATE TABLE public.feedback (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     restaurant_id uuid NOT NULL,
     order_id uuid NOT NULL,
+    order_created_at timestamp with time zone NOT NULL,
     user_id uuid,
     comments text,
     created_at timestamp with time zone DEFAULT now(),
@@ -214,6 +215,7 @@ CREATE TABLE public.order_items (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     restaurant_id uuid NOT NULL,
     order_id uuid NOT NULL,
+    order_created_at timestamp with time zone NOT NULL,
     menu_item_id uuid NOT NULL,
     menu_item_size_id uuid,
     quantity integer NOT NULL,
@@ -221,11 +223,11 @@ CREATE TABLE public.order_items (
     status text DEFAULT 'new'::text NOT NULL,
     topping_ids uuid[] DEFAULT '{}'::uuid[],
     price_at_order numeric NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now(),
     CONSTRAINT order_items_quantity_check CHECK ((quantity > 0)),
     CONSTRAINT order_items_status_check CHECK ((status = ANY (ARRAY['new'::text, 'preparing'::text, 'ready'::text, 'served'::text, 'canceled'::text])))
-);
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE public.restaurants (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,

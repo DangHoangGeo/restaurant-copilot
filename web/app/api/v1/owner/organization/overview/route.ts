@@ -7,7 +7,7 @@ import { resolveOrgContext } from '@/lib/server/organizations/service';
 import { buildAuthorizationService, requireOrgContext } from '@/lib/server/authorization/service';
 import { listOrganizationBranches } from '@/lib/server/organizations/queries';
 import { buildOrganizationOverview } from '@/lib/server/organizations/overview';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 import type { OrgOverviewResponse } from '@/shared/types/organization';
 
 export async function GET() {
@@ -45,12 +45,13 @@ export async function GET() {
 
   const restaurantIds = branches.map((b) => b.id);
   const today = new Date().toISOString().split('T')[0];
-  const { data: metrics, error } = await supabaseAdmin.rpc(
+  const { data: metrics, error } = await supabaseReadAdmin.rpc(
     'get_organization_branch_overview',
     {
       p_restaurant_ids: restaurantIds,
       p_target_date: today,
-    }
+    },
+    { get: true }
   );
 
   if (error) {

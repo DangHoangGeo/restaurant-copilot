@@ -7,6 +7,7 @@ CREATE TABLE public.order_discounts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     restaurant_id uuid NOT NULL,
     order_id uuid NOT NULL,
+    order_created_at timestamp with time zone NOT NULL,
     promotion_id uuid,
     promotion_code text NOT NULL,
     discount_type text NOT NULL,

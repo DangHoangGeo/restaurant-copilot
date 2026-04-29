@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import {
   mapInventoryRowsToLowStockItems,
@@ -30,7 +30,7 @@ export async function GET() {
 
     // Use the restaurant's local day so JST shops don't lose late-night sales
     // to the next UTC day. Defaults to Asia/Tokyo for Phase 0 launch markets.
-    const { data: restaurantRow } = await supabaseAdmin
+    const { data: restaurantRow } = await supabaseReadAdmin
       .from('restaurants')
       .select('timezone')
       .eq('id', restaurantId)
@@ -40,7 +40,7 @@ export async function GET() {
     const todayRange = getLocalDayRange(today, timezone);
 
     // 1. Today's Total Sales
-    const { data: salesData, error: salesError } = await supabaseAdmin
+    const { data: salesData, error: salesError } = await supabaseReadAdmin
       .from('orders')
       .select('total_amount')
       .eq('restaurant_id', restaurantId)
@@ -52,7 +52,7 @@ export async function GET() {
     const todaySales = salesData?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
 
     // 2. Active Orders Count
-    const { count: activeOrdersCount, error: activeOrdersError } = await supabaseAdmin
+    const { count: activeOrdersCount, error: activeOrdersError } = await supabaseReadAdmin
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('restaurant_id', restaurantId)
@@ -63,11 +63,11 @@ export async function GET() {
     // 3. Top-Selling Item Today (using RPC function if available, otherwise fallback)
     let topSellerToday: { name: string; metricValue: string } | null = null;
     try {
-      const { data: topSellerData, error: topSellerError } = await supabaseAdmin
+      const { data: topSellerData, error: topSellerError } = await supabaseReadAdmin
         .rpc('get_top_seller_for_day', {
           p_restaurant_id: restaurantId,
           p_date: today,
-        });
+        }, { get: true });
 
       if (!topSellerError && topSellerData && topSellerData.length > 0) {
         const topItem = topSellerData[0];
@@ -79,7 +79,7 @@ export async function GET() {
     } catch (error) {
       // Fallback to manual calculation if RPC doesn't exist
       console.warn('RPC function not available, using fallback calculation:', error);
-      const { data: topSellerRaw, error: topSellerError } = await supabaseAdmin
+      const { data: topSellerRaw, error: topSellerError } = await supabaseReadAdmin
         .from('order_items')
         .select(`
           quantity,
@@ -127,7 +127,7 @@ export async function GET() {
     let lowStockItemsCount = 0;
     if (FEATURE_FLAGS.lowStockAlerts) {
       try {
-        const { data: lowStockData, error: lowStockError } = await supabaseAdmin
+        const { data: lowStockData, error: lowStockError } = await supabaseReadAdmin
           .from('inventory_items')
           .select('id, stock_level, threshold, menu_items(name_en, name_ja, name_vi, categories(name_en, name_ja, name_vi))')
           .eq('restaurant_id', restaurantId)

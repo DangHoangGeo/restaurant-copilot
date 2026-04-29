@@ -332,10 +332,10 @@ BEGIN
   -- Insert order item
   INSERT INTO order_items (
     id, restaurant_id, order_id, menu_item_id, menu_item_size_id,
-    quantity, notes, topping_ids, price_at_order
+    quantity, notes, topping_ids, price_at_order, order_created_at
   ) VALUES (
     new_id, o_rec.restaurant_id, o_rec.id, input_menu_item_id, input_size_id,
-    input_quantity, input_notes, input_topping_ids, calculated_price
+    input_quantity, input_notes, input_topping_ids, calculated_price, o_rec.created_at
   );
 
   RETURN QUERY SELECT new_id, TRUE, 'Item added successfully';
@@ -629,3 +629,315 @@ BEGIN
   LEFT JOIN top_item ti ON true;
 END;
 $function$;
+
+CREATE OR REPLACE FUNCTION public.get_order_partition_health(p_start_date date DEFAULT CURRENT_DATE, p_months_ahead integer DEFAULT 3)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  normalized_month date;
+  month_start date;
+  month_end date;
+  month_offset integer;
+  parent_name text;
+  child_name text;
+  parent_oid oid;
+  child_oid oid;
+  parent_partitioned boolean;
+  child_attached boolean;
+  expected jsonb := '[]'::jsonb;
+  all_ready boolean := true;
+  parents_ready boolean := true;
+BEGIN
+  IF NOT public.is_service_role() THEN
+    RAISE EXCEPTION 'get_order_partition_health requires service_role'
+      USING ERRCODE = '42501';
+  END IF;
+
+  IF p_months_ahead < 0 OR p_months_ahead > 24 THEN
+    RAISE EXCEPTION 'p_months_ahead must be between 0 and 24'
+      USING ERRCODE = '22023';
+  END IF;
+
+  normalized_month := date_trunc('month', COALESCE(p_start_date, CURRENT_DATE))::date;
+
+  FOREACH parent_name IN ARRAY ARRAY['orders'::text, 'order_items'::text]
+  LOOP
+    parent_oid := to_regclass(format('public.%I', parent_name));
+
+    SELECT EXISTS (
+      SELECT 1
+      FROM pg_catalog.pg_partitioned_table pt
+      WHERE pt.partrelid = parent_oid
+    )
+    INTO parent_partitioned;
+
+    IF parent_oid IS NULL OR NOT parent_partitioned THEN
+      parents_ready := false;
+      all_ready := false;
+    END IF;
+
+    FOR month_offset IN 0..p_months_ahead LOOP
+      month_start := (normalized_month + make_interval(months => month_offset))::date;
+      month_end := (month_start + INTERVAL '1 month')::date;
+      child_name := parent_name || '_' || to_char(month_start, 'YYYY_MM');
+      child_oid := to_regclass(format('public.%I', child_name));
+
+      SELECT EXISTS (
+        SELECT 1
+        FROM pg_catalog.pg_inherits i
+        WHERE i.inhparent = parent_oid
+          AND i.inhrelid = child_oid
+      )
+      INTO child_attached;
+
+      IF parent_oid IS NULL OR NOT parent_partitioned OR child_oid IS NULL OR NOT child_attached THEN
+        all_ready := false;
+      END IF;
+
+      expected := expected || jsonb_build_object(
+        'table', parent_name,
+        'partition', child_name,
+        'month_start', month_start,
+        'month_end', month_end,
+        'parent_partitioned', COALESCE(parent_partitioned, false),
+        'exists', child_oid IS NOT NULL,
+        'attached', COALESCE(child_attached, false)
+      );
+    END LOOP;
+  END LOOP;
+
+  RETURN jsonb_build_object(
+    'healthy', all_ready,
+    'parents_partitioned', parents_ready,
+    'start_month', normalized_month,
+    'months_ahead', p_months_ahead,
+    'expected_partitions', expected
+  );
+END;
+$function$;
+
+COMMENT ON FUNCTION public.get_order_partition_health(date, integer) IS 'Service-role health check for current and future monthly orders/order_items partitions.';
+
+CREATE OR REPLACE FUNCTION public.create_monthly_order_partitions(p_start_date date DEFAULT CURRENT_DATE, p_months_ahead integer DEFAULT 3)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  normalized_month date;
+  month_start date;
+  month_end date;
+  month_offset integer;
+  parent_name text;
+  child_name text;
+  parent_oid oid;
+  child_oid oid;
+  parent_partitioned boolean;
+  child_attached boolean;
+  created_partitions jsonb := '[]'::jsonb;
+  health jsonb;
+BEGIN
+  IF NOT public.is_service_role() THEN
+    RAISE EXCEPTION 'create_monthly_order_partitions requires service_role'
+      USING ERRCODE = '42501';
+  END IF;
+
+  IF p_months_ahead < 0 OR p_months_ahead > 24 THEN
+    RAISE EXCEPTION 'p_months_ahead must be between 0 and 24'
+      USING ERRCODE = '22023';
+  END IF;
+
+  normalized_month := date_trunc('month', COALESCE(p_start_date, CURRENT_DATE))::date;
+
+  FOREACH parent_name IN ARRAY ARRAY['orders'::text, 'order_items'::text]
+  LOOP
+    parent_oid := to_regclass(format('public.%I', parent_name));
+
+    SELECT EXISTS (
+      SELECT 1
+      FROM pg_catalog.pg_partitioned_table pt
+      WHERE pt.partrelid = parent_oid
+    )
+    INTO parent_partitioned;
+
+    IF parent_oid IS NULL OR NOT parent_partitioned THEN
+      RAISE EXCEPTION 'Partition maintenance cannot run because public.% is not a partitioned table. Roll out Phase 2.1 partitioning before enabling this job.', parent_name
+        USING ERRCODE = '55000';
+    END IF;
+
+    FOR month_offset IN 0..p_months_ahead LOOP
+      month_start := (normalized_month + make_interval(months => month_offset))::date;
+      month_end := (month_start + INTERVAL '1 month')::date;
+      child_name := parent_name || '_' || to_char(month_start, 'YYYY_MM');
+      child_oid := to_regclass(format('public.%I', child_name));
+
+      IF child_oid IS NOT NULL THEN
+        SELECT EXISTS (
+          SELECT 1
+          FROM pg_catalog.pg_inherits i
+          WHERE i.inhparent = parent_oid
+            AND i.inhrelid = child_oid
+        )
+        INTO child_attached;
+
+        IF NOT child_attached THEN
+          RAISE EXCEPTION 'Partition maintenance found public.% but it is not attached to public.%', child_name, parent_name
+            USING ERRCODE = '55000';
+        END IF;
+      ELSE
+        EXECUTE format(
+          'CREATE TABLE %I.%I PARTITION OF %I.%I FOR VALUES FROM (%L) TO (%L)',
+          'public',
+          child_name,
+          'public',
+          parent_name,
+          month_start::text,
+          month_end::text
+        );
+
+        created_partitions := created_partitions || jsonb_build_object(
+          'table', parent_name,
+          'partition', child_name,
+          'month_start', month_start,
+          'month_end', month_end
+        );
+      END IF;
+    END LOOP;
+  END LOOP;
+
+  health := public.get_order_partition_health(normalized_month, p_months_ahead);
+
+  IF NOT COALESCE((health ->> 'healthy')::boolean, false) THEN
+    RAISE EXCEPTION 'Partition maintenance completed but health check is not healthy: %', health::text
+      USING ERRCODE = '55000';
+  END IF;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'created_partitions', created_partitions,
+    'health', health
+  );
+END;
+$function$;
+
+COMMENT ON FUNCTION public.create_monthly_order_partitions(date, integer) IS 'Service-role monthly maintenance helper that creates orders/order_items partitions only after Phase 2.1 partitioning exists.';
+
+CREATE OR REPLACE FUNCTION public.set_order_created_at_from_order()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+  IF NEW.order_created_at IS NULL THEN
+    SELECT o.created_at
+    INTO NEW.order_created_at
+    FROM public.orders o
+    WHERE o.id = NEW.order_id
+      AND o.restaurant_id = NEW.restaurant_id
+    ORDER BY o.created_at DESC
+    LIMIT 1;
+  END IF;
+
+  IF NEW.order_created_at IS NULL THEN
+    RAISE EXCEPTION 'Order % was not found for restaurant %', NEW.order_id, NEW.restaurant_id
+      USING ERRCODE = '23503';
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
+COMMENT ON FUNCTION public.set_order_created_at_from_order() IS 'Fills composite partition foreign-key column order_created_at from the referenced order before insert/update.';
+
+CREATE OR REPLACE FUNCTION public.refresh_analytics_snapshot(p_restaurant_id uuid, p_date date DEFAULT CURRENT_DATE)
+ RETURNS public.analytics_snapshots
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  branch_timezone text;
+  period_start timestamptz;
+  period_end timestamptz;
+  total_sales_value numeric := 0;
+  orders_count_value integer := 0;
+  top_seller_value uuid;
+  snapshot_row public.analytics_snapshots;
+BEGIN
+  IF NOT public.is_service_role() AND NOT public.can_access_restaurant_context(p_restaurant_id) THEN
+    RAISE EXCEPTION 'Not authorized to refresh analytics snapshot for restaurant %', p_restaurant_id
+      USING ERRCODE = '42501';
+  END IF;
+
+  SELECT COALESCE(timezone, 'Asia/Tokyo')
+  INTO branch_timezone
+  FROM public.restaurants
+  WHERE id = p_restaurant_id;
+
+  IF branch_timezone IS NULL THEN
+    RAISE EXCEPTION 'Restaurant % was not found', p_restaurant_id
+      USING ERRCODE = '22023';
+  END IF;
+
+  period_start := p_date::timestamp AT TIME ZONE branch_timezone;
+  period_end := (p_date + 1)::timestamp AT TIME ZONE branch_timezone;
+
+  SELECT
+    COALESCE(SUM(o.total_amount), 0),
+    COUNT(*)::integer
+  INTO total_sales_value, orders_count_value
+  FROM public.orders o
+  WHERE o.restaurant_id = p_restaurant_id
+    AND o.status = 'completed'
+    AND o.created_at >= period_start
+    AND o.created_at < period_end;
+
+  SELECT oi.menu_item_id
+  INTO top_seller_value
+  FROM public.order_items oi
+  JOIN public.orders o
+    ON o.id = oi.order_id
+   AND o.created_at = oi.order_created_at
+  WHERE oi.restaurant_id = p_restaurant_id
+    AND oi.status != 'canceled'
+    AND o.status = 'completed'
+    AND o.created_at >= period_start
+    AND o.created_at < period_end
+  GROUP BY oi.menu_item_id
+  ORDER BY SUM(oi.quantity) DESC, SUM(oi.quantity * oi.price_at_order) DESC
+  LIMIT 1;
+
+  INSERT INTO public.analytics_snapshots (
+    restaurant_id,
+    date,
+    total_sales,
+    top_seller_item,
+    orders_count,
+    updated_at
+  ) VALUES (
+    p_restaurant_id,
+    p_date,
+    total_sales_value,
+    top_seller_value,
+    orders_count_value,
+    now()
+  )
+  ON CONFLICT (restaurant_id, date)
+  DO UPDATE SET
+    total_sales = EXCLUDED.total_sales,
+    top_seller_item = EXCLUDED.top_seller_item,
+    orders_count = EXCLUDED.orders_count,
+    updated_at = now()
+  RETURNING *
+  INTO snapshot_row;
+
+  RETURN snapshot_row;
+END;
+$function$;
+
+COMMENT ON FUNCTION public.refresh_analytics_snapshot(uuid, date) IS 'Refreshes one restaurant-local daily analytics snapshot from completed orders.';

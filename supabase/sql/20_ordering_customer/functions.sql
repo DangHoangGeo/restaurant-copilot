@@ -141,6 +141,7 @@ BEGIN
       id,
       restaurant_id,
       order_id,
+      order_created_at,
       menu_item_id,
       menu_item_size_id,
       quantity,
@@ -154,6 +155,7 @@ BEGIN
       gen_random_uuid(),
       p_restaurant_id,
       v_order_id,
+      v_created_at,
       v_menu_item_id,
       v_menu_item_size_id,
       v_quantity,
@@ -209,7 +211,7 @@ BEGIN
     RAISE EXCEPTION 'order_items must be a non-empty JSON array';
   END IF;
 
-  SELECT o.id, o.total_amount, o.status
+  SELECT o.id, o.created_at, o.total_amount, o.status
   INTO v_order
   FROM orders AS o
   WHERE o.restaurant_id = p_restaurant_id
@@ -287,6 +289,7 @@ BEGIN
       id,
       restaurant_id,
       order_id,
+      order_created_at,
       menu_item_id,
       menu_item_size_id,
       quantity,
@@ -300,6 +303,7 @@ BEGIN
       gen_random_uuid(),
       p_restaurant_id,
       v_order.id,
+      v_order.created_at,
       v_menu_item_id,
       v_menu_item_size_id,
       v_quantity,

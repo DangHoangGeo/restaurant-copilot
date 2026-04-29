@@ -2,7 +2,7 @@ import {  NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { invalidateMenuCache } from '@/lib/server/request-context';
+import { invalidateCustomerMenuCache } from '@/lib/server/customer-cache';
 import { logger } from '@/lib/logger';
 import { checkAuthorization } from '@/lib/server/rolePermissions';
 import { resolveScopedBranchRouteAccess } from '@/lib/server/organizations/branch-route';
@@ -328,8 +328,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Menu item created but error fetching complete data', details: fetchError.message }, { status: 500 });
     }
 
-    // Invalidate menu cache since we created a new menu item
-    invalidateMenuCache(restaurantId);
+    // Invalidate customer menu cache since we created a new menu item
+    await invalidateCustomerMenuCache(restaurantId);
 
     return NextResponse.json({ message: 'Menu item created successfully', menuItem: completeMenuItem }, { status: 201 });
 

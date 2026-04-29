@@ -51,12 +51,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify menu items belong to restaurant and calculate total
-    let total_amount = 0;
+    // Verify menu items belong to restaurant before handing creation to the RPC.
     for (const item of order_items) {
       const { data: menuItem, error: menuError } = await supabaseAdmin
         .from("menu_items")
-        .select("price")
+        .select("id")
         .eq("id", item.menu_item_id)
         .eq("restaurant_id", user.restaurantId)
         .single();
@@ -67,22 +66,19 @@ export async function POST(req: NextRequest) {
           { status: 404 }
         );
       }
-
-      total_amount += menuItem.price * item.quantity;
     }
 
-    // Create the order
-    const { data: newOrder, error: orderError } = await supabaseAdmin
-      .from("orders")
-      .insert({
-        restaurant_id: user.restaurantId,
-        table_id,
-        status: "new",
-        total_amount,
-      })
-      .select()
-      .single();
+    // Create the order through the database function so partition keys,
+    // order totals, and order_items stay consistent.
+    const { data: newOrderRows, error: orderError } = await supabaseAdmin
+      .rpc("create_order", {
+        p_restaurant_id: user.restaurantId,
+        p_table_id: table_id,
+        p_guest_count: 1,
+        p_items: order_items,
+      });
 
+    const newOrder = newOrderRows?.[0];
     if (orderError || !newOrder) {
       console.error("Error creating order:", orderError);
       return NextResponse.json(
@@ -91,30 +87,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create order items
-    const orderItemsToInsert = order_items.map(item => ({
-      order_id: newOrder.id,
-      menu_item_id: item.menu_item_id,
-      quantity: item.quantity,
-      notes: item.notes || null,
-      status: "new" as const,
-    }));
-
-    const { error: itemsError } = await supabaseAdmin
-      .from("order_items")
-      .insert(orderItemsToInsert);
-
-    if (itemsError) {
-      console.error("Error creating order items:", itemsError);
-      // Rollback order creation
-      await supabaseAdmin.from("orders").delete().eq("id", newOrder.id);
-      return NextResponse.json(
-        { success: false, error: "Failed to create order items" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ success: true, order_id: newOrder.id });
+    return NextResponse.json({ success: true, order_id: newOrder.order_id });
   } catch (error) {
     console.error("Error in order creation:", error);
     return NextResponse.json(

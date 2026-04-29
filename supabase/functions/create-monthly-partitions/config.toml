@@ -1,0 +1,3 @@
+[functions.create-monthly-partitions]
+verify_jwt = false
+schedule = "0 3 15 * *"

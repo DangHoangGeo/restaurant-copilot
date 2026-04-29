@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/server/getUserFromRequest';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseReadAdmin } from '@/lib/supabase/read-client';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 
 export async function GET(request: NextRequest) {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get category sales data
-    const { data: categoryData, error: categoryError } = await supabaseAdmin
+    const { data: categoryData, error: categoryError } = await supabaseReadAdmin
       .from('order_items')
       .select(`
         quantity,

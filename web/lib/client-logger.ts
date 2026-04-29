@@ -9,6 +9,14 @@ interface ClientLogEntry {
   metadata?: Record<string, unknown>
 }
 
+interface ApiResponseLogInput {
+  restaurantId?: string | null
+  endpoint: string
+  durationMs: number
+  status: number
+  method?: string
+}
+
 class ClientLogger {
   private async sendLog(entry: ClientLogEntry): Promise<void> {
     // Only send logs in development or if explicitly enabled
@@ -47,6 +55,21 @@ class ClientLogger {
 
   async debug(endpoint: string, message: string, metadata?: Record<string, unknown>): Promise<void> {
     await this.sendLog({ level: 'DEBUG', endpoint, message, metadata })
+  }
+
+  async apiResponse(input: ApiResponseLogInput): Promise<void> {
+    await this.sendLog({
+      level: input.status >= 500 ? 'ERROR' : input.status >= 400 ? 'WARN' : 'INFO',
+      endpoint: input.endpoint,
+      message: 'API response completed',
+      metadata: {
+        restaurant_id: input.restaurantId ?? null,
+        endpoint: input.endpoint,
+        duration_ms: Math.round(input.durationMs),
+        status: input.status,
+        method: input.method ?? 'GET',
+      },
+    })
   }
 }
 
