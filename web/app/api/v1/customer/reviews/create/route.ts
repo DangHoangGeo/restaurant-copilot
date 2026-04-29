@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getRestaurantIdFromSubdomain } from "@/lib/server/restaurant-settings";
 import { getSubdomainFromHost } from "@/lib/utils";
 import { z } from "zod";
+import { protectEndpoint, RATE_LIMIT_CONFIGS } from "@/lib/server/rateLimit";
 
 const reviewSchema = z.object({
   menuItemId: z.string().uuid(),
@@ -13,6 +14,15 @@ const reviewSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const protectionError = await protectEndpoint(
+      req,
+      RATE_LIMIT_CONFIGS.MUTATION,
+      "customer-reviews-create",
+    );
+    if (protectionError) {
+      return protectionError;
+    }
+
     const body = await req.json();
     const parse = reviewSchema.safeParse(body);
     
