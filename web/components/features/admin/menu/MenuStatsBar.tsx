@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { MenuIcon, AlertTriangle, TrendingUp, CheckCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Category } from '@/shared/types/menu';
-import { getLocalizedText } from '@/lib/utils';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MenuIcon, AlertTriangle, TrendingUp, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Category } from "@/shared/types/menu";
+import { getLocalizedText } from "@/lib/utils";
 
 interface MenuStatsBarProps {
   categories: Category[];
@@ -13,19 +13,33 @@ interface MenuStatsBarProps {
   locale: string;
 }
 
-export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStatsBarProps) {
-  const t = useTranslations('owner.menu.stats');
+export function MenuStatsBar({
+  categories,
+  isLoading = false,
+  locale,
+}: MenuStatsBarProps) {
+  const t = useTranslations("owner.menu.stats");
 
   // Calculate stats
-  const totalItems = categories.reduce((acc, cat) => acc + cat.menu_items.length, 0);
-  const availableItems = categories.reduce((acc, cat) => 
-    acc + cat.menu_items.filter(item => item.available).length, 0
+  const totalItems = categories.reduce(
+    (acc, cat) => acc + cat.menu_items.length,
+    0,
+  );
+  const availableItems = categories.reduce(
+    (acc, cat) => acc + cat.menu_items.filter((item) => item.available).length,
+    0,
   );
   const unavailableItems = totalItems - availableItems;
-  const lowStockItems = categories.reduce((acc, cat) => 
-    acc + cat.menu_items.filter(item => 
-      item.stock_level !== undefined && item.stock_level < 10
-    ).length, 0
+  const lowStockItems = categories.reduce(
+    (acc, cat) =>
+      acc +
+      cat.menu_items.filter(
+        (item) =>
+          item.stock_level !== undefined &&
+          item.stock_level !== null &&
+          item.stock_level < 10,
+      ).length,
+    0,
   );
   const topCategories = categories
     .sort((a, b) => b.menu_items.length - a.menu_items.length)
@@ -58,8 +72,12 @@ export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStat
               <MenuIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Items</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalItems}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Total Items
+              </p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {totalItems}
+              </p>
             </div>
           </div>
 
@@ -69,8 +87,12 @@ export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStat
               <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{t('available')}</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{availableItems}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t("available")}
+              </p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {availableItems}
+              </p>
             </div>
           </div>
 
@@ -80,8 +102,12 @@ export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStat
               <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{t('unavailable')}</p>
-              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{unavailableItems}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t("unavailable")}
+              </p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {unavailableItems}
+              </p>
             </div>
           </div>
 
@@ -91,8 +117,12 @@ export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStat
               <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{t('low_stock')}</p>
-              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{lowStockItems}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t("low_stock")}
+              </p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                {lowStockItems}
+              </p>
             </div>
           </div>
         </div>
@@ -100,19 +130,25 @@ export function MenuStatsBar({ categories, isLoading = false, locale }: MenuStat
         {/* Top Categories */}
         {topCategories.length > 0 && (
           <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t('top_categories')}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              {t("top_categories")}
+            </p>
             <div className="flex flex-wrap gap-2">
               {topCategories.map((category, index) => (
-                <Badge 
-                  key={category.id} 
+                <Badge
+                  key={category.id}
                   variant={index === 0 ? "default" : "secondary"}
                   className="text-xs"
                 >
-                  {getLocalizedText({
-    name_en: category.name_en,
-    name_ja: category.name_ja || undefined,
-    name_vi: category.name_vi || undefined
-  }, locale)} ({category.menu_items.length})
+                  {getLocalizedText(
+                    {
+                      name_en: category.name_en,
+                      name_ja: category.name_ja || undefined,
+                      name_vi: category.name_vi || undefined,
+                    },
+                    locale,
+                  )}{" "}
+                  ({category.menu_items.length})
                 </Badge>
               ))}
             </div>
