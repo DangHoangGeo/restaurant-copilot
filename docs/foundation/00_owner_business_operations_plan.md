@@ -6,6 +6,8 @@ The product must let a founder run one or more restaurants from a phone without 
 
 This phase is not about adding every possible feature. It is about making the owner operating loop production-safe.
 
+The growth strategy is owner OS first, consumer ordering network later. The system should first help small restaurants and multi-branch founders operate the business. A network-wide customer ordering experience should be added only after enough restaurants already run their live menus, branch operations, and business workflows through the product.
+
 ## Product Foundation
 
 The owner foundation is complete only when the following product statements are true:
@@ -171,6 +173,8 @@ When tradeoffs appear, optimize in this order:
 3. trustworthy permissions and numbers
 4. safe setup and onboarding
 5. maintainable architecture
+
+Do not chase marketplace behavior before the restaurant operating system is strong. See `13_growth_roadmap_owner_os_to_consumer_network.md` for the staged expansion path from 1,000 Japan restaurants to a later 10,000-restaurant consumer ordering network.
 
 ## Current Production Interpretation
 

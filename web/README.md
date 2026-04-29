@@ -105,6 +105,8 @@ Create a `.env.local` (never commit secrets) with the following keys:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+UPSTASH_REDIS_URL=your_upstash_redis_url
+UPSTASH_REDIS_TOKEN=your_upstash_redis_token
 
 NEXT_PUBLIC_CAPTCHA_SITE_KEY=your_captcha_site_key
 NEXT_PRIVATE_CAPTCHA_SECRET=your_captcha_secret_key
@@ -122,6 +124,8 @@ NEXT_PRIVATE_STRIPE_SECRET_KEY=your_stripe_secret_key
 # If enabling AI later:
 NEXT_PRIVATE_OPENAI_API_KEY=your_openai_api_key
 ```
+
+`UPSTASH_REDIS_URL` and `UPSTASH_REDIS_TOKEN` are required in production. The app intentionally fails startup in production without them so auth and mutation rate limits cannot fall back to process-local memory on serverless infrastructure.
 
 Refer to `/web/.env.example` for a template. CI/CD pipelines must inject real production/staging secrets—do not commit `.env.local`.
 
