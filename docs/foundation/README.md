@@ -49,6 +49,9 @@ Read these when relevant:
 - `11_role_branch_access_scenarios_20260427.md`
   Required when the task touches organization roles, branch access, member
   scopes, employees, invites, permission defaults, or legacy role hardening.
+- `12_security_and_scale_plan_10k.md`
+  Security hardening plan and infrastructure roadmap to serve 10,000 restaurants.
+  Required when touching RLS policies, caching, partitioning, async jobs, or load testing.
 
 ## Working Rules
 
