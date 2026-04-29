@@ -267,6 +267,7 @@ export function OrderItemCard({
                   variant="outline"
                   onClick={handleCancelItem}
                   className="h-8 text-xs text-red-600 hover:text-red-700"
+                  aria-label={t('cancelItem')}
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -275,8 +276,9 @@ export function OrderItemCard({
               <>
                 <div className="flex flex-col gap-3 flex-1">
                   <div className="flex items-center gap-2">
-                    <label className="text-xs w-12">{t('qty')}:</label>
+                    <label htmlFor={`edit-qty-${item.id}`} className="text-xs w-12">{t('qty')}:</label>
                     <input
+                      id={`edit-qty-${item.id}`}
                       type="number"
                       value={editQuantity}
                       onChange={(e) => setEditQuantity(parseInt(e.target.value) || 1)}
@@ -289,7 +291,7 @@ export function OrderItemCard({
                     <div className="flex items-center gap-2">
                       <label className="text-xs">{t('size')}:</label>
                       <Select value={editSizeId} onValueChange={setEditSizeId}>
-                        <SelectTrigger className="w-32 h-8 text-xs">
+                        <SelectTrigger className="w-32 h-8 text-xs" aria-label={t('size')}>
                           <SelectValue placeholder={t('selectSize')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -337,6 +339,7 @@ export function OrderItemCard({
                     variant="outline"
                     onClick={handleSaveEdit}
                     className="h-8 text-xs"
+                    aria-label={t('save')}
                   >
                     <Check className="h-3 w-3" />
                   </Button>
@@ -350,6 +353,7 @@ export function OrderItemCard({
                       setEditToppingIds(item.topping_ids || []);
                     }}
                     className="h-8 text-xs"
+                    aria-label={t('cancel')}
                   >
                     <X className="h-3 w-3" />
                   </Button>

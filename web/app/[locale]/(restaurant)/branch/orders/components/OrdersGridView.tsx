@@ -99,7 +99,7 @@ export function OrdersGridView({
                         onValueChange={(newStatus) => handleStatusUpdate(order.id, newStatus)}
                         disabled={isUpdating}
                       >
-                        <SelectTrigger className="w-24 h-6 text-xs">
+                        <SelectTrigger className="w-24 h-6 text-xs" aria-label={t('orderStatus')}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
