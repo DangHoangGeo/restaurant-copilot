@@ -67,7 +67,7 @@ struct KitchenBoardView: View {
                         ProgressView()
                             .scaleEffect(1.2)
                         Text("kitchen_loading_data".localized)
-                            .font(.subheadline)
+                            .font(.bodyMedium)
                             .foregroundColor(.appTextSecondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)

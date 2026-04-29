@@ -337,7 +337,7 @@ struct OrdersView: View {
         if let errorMessage = orderManager.errorMessage {
             HStack(spacing: Spacing.sm) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.title3)
+                    .font(.sectionHeader)
                     .foregroundColor(.appError)
 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
@@ -406,16 +406,16 @@ struct OrdersView: View {
             } else {
                 VStack(spacing: 20) {
                     Image(systemName: "list.bullet.rectangle")
-                        .font(.system(size: 60))
+                        .font(.heroTitle)
                         .foregroundColor(Color.appTextSecondary.opacity(0.6))
-                    
+
                     Text("orders_select_order".localized)
-                        .font(.title2)
+                        .font(.compactPageTitle)
                         .fontWeight(.semibold)
                         .foregroundColor(.appTextPrimary)
-                    
+
                     Text("orders_select_order_desc".localized)
-                        .font(.subheadline)
+                        .font(.bodyMedium)
                         .foregroundColor(.appTextSecondary)
                         .multilineTextAlignment(.center)
                 }
@@ -479,7 +479,7 @@ struct OrdersView: View {
                     if let errorMessage = orderManager.errorMessage {
                         HStack(spacing: Spacing.sm) {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.title3)
+                                .font(.sectionHeader)
                                 .foregroundColor(.appError)
 
                             VStack(alignment: .leading, spacing: Spacing.xxs) {
@@ -774,7 +774,7 @@ struct SidebarOrderRowView: View {
 
                 Spacer()
 
-                Text("OPEN")
+                Text("order_status_open".localized)
                     .font(.monoLabel)
                     .foregroundColor(.appTextSecondary)
             }
@@ -857,7 +857,7 @@ struct SidebarOrderRowView: View {
     @ViewBuilder
     private func itemStatusIcon(for status: OrderItemStatus) -> some View {
         Image(systemName: itemStatusSymbol(for: status))
-            .font(.system(size: 10, weight: .semibold))
+            .font(.footnote.weight(.semibold))
             .foregroundColor(itemStatusTint(for: status))
             .frame(width: 12, height: 12)
     }

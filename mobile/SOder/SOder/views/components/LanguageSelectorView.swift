@@ -21,7 +21,7 @@ struct LanguageSelectorView: View {
                     }) {
                         HStack {
                             Text(localizationManager.supportedLanguageNames[languageCode] ?? languageCode)
-                                .foregroundColor(.primary)
+                                .foregroundColor(.appTextPrimary)
                             
                             Spacer()
                             

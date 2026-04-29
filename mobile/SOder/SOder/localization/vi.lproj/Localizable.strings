@@ -374,6 +374,7 @@
 "debug_tap_change_status" = "CHẠM ĐỂ THAY ĐỔI TRẠNG THÁI";
 
 // MARK: - Kitchen Board Components
+"kitchen_qty_label" = "SL";
 "kitchen_urgent" = "KHẨN CẤP";
 "kitchen_modifications" = "Sửa đổi:";
 "kitchen_tables" = "Bàn:";
@@ -545,6 +546,10 @@
 "print_language_not_supported" = "Hỗ trợ Hạn chế";
 "print_language_fallback_mode" = "Chế độ Dự phòng";
 "print_language_changed_success" = "Ngôn ngữ in đã được cập nhật thành công!";
+"print_language_capability_supported" = "Hỗ trợ";
+"print_language_capability_fallback" = "Dự phòng";
+"print_language_capability_untested" = "Chưa kiểm tra";
+"print_language_no_printer" = "Không có máy in";
 "print_language_fallback_note" = "Nếu máy in không hỗ trợ ngôn ngữ đã chọn, mã món sẽ được sử dụng thay vì tên.";
 
 // MARK: - Manual Printer Setup Localization
@@ -622,12 +627,18 @@
 "order_status_update_unsaved_changes_warning" = "⚠️ Bạn có thay đổi chưa lưu";
 
 // MARK: - Orders View
+"order_status_open" = "MỞ";
 "orders_guest_count_accessibility" = "%d khách";
 "orders_id_format" = "ID: %@";
 "orders_table_format" = "Bàn %@";
 
 // MARK: - POS Flow Tab
 "tab_new_order" = "Đơn hàng Mới";
+"menu_categories_empty" = "Không tìm thấy danh mục món ăn.";
+"menu_category_nav_title" = "Bàn %@ – Danh mục";
+"menu_category_cart_hint" = "Xem đơn nháp, %d món";
+"menu_category_cart_empty_hint" = "Xem đơn nháp (trống)";
+"menu_category_item_hint" = "Nhấn để xem món trong danh mục này";
 
 // MARK: - New Keys Added by AI Assistant
 "loading_items_for_%@..." = "Đang tải món cho %@...";

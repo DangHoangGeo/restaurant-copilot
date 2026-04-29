@@ -374,6 +374,7 @@
 "debug_tap_change_status" = "デバッグ：ステータス変更のためにタップ";
 
 // MARK: - Kitchen Board Components
+"kitchen_qty_label" = "数量";
 "kitchen_urgent" = "緊急";
 "kitchen_modifications" = "修正：";
 "kitchen_tables" = "テーブル：";
@@ -545,6 +546,10 @@
 "print_language_not_supported" = "制限付きサポート";
 "print_language_fallback_mode" = "フォールバックモード";
 "print_language_changed_success" = "印刷言語が正常に更新されました！";
+"print_language_capability_supported" = "対応済み";
+"print_language_capability_fallback" = "代替";
+"print_language_capability_untested" = "未確認";
+"print_language_no_printer" = "プリンターなし";
 "print_language_fallback_note" = "プリンターが選択した言語をサポートしていない場合、名前ではなくアイテムコードが使用されます。";
 
 // MARK: - Manual Printer Setup Localization
@@ -622,12 +627,18 @@
 "order_status_update_unsaved_changes_warning" = "⚠️ 保存されていない変更があります";
 
 // MARK: - Orders View
+"order_status_open" = "受付中";
 "orders_guest_count_accessibility" = "%d ゲスト";
 "orders_id_format" = "ID: %@";
 "orders_table_format" = "テーブル %@";
 
 // MARK: - POS Flow Tab
 "tab_new_order" = "新しい注文";
+"menu_categories_empty" = "メニューカテゴリが見つかりません。";
+"menu_category_nav_title" = "テーブル %@ – カテゴリ";
+"menu_category_cart_hint" = "下書き注文を見る、%d 件";
+"menu_category_cart_empty_hint" = "下書き注文を見る（空）";
+"menu_category_item_hint" = "タップしてこのカテゴリの商品を表示";
 
 // MARK: - New Keys Added by AI Assistant
 "loading_items_for_%@..." = "%@ のアイテムを読み込み中...";

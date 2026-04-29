@@ -180,7 +180,7 @@ struct KitchenHeaderView: View {
         HStack(spacing: Spacing.xs) {
             Button(action: onRefresh) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.title3)
+                    .font(.sectionHeader)
                     .foregroundColor(.appTextPrimary)
                     .frame(width: 36, height: 36)
             }
@@ -218,7 +218,7 @@ struct KitchenHeaderView: View {
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
-                    .font(.title2)
+                    .font(.bodyLarge)
                     .foregroundColor(.appTextPrimary)
             }
             .accessibilityLabel("kitchen_more_actions".localized)

@@ -37,10 +37,10 @@ struct StatusBadge: View {
         }
         .font(.captionBold)
         .padding(.horizontal, Spacing.sm)
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
         .background(display.color.opacity(0.15))
         .foregroundColor(display.color)
-        .cornerRadius(20)
+        .cornerRadius(CornerRadius.lg)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Status: \(display.text)")
     }
@@ -66,7 +66,7 @@ struct EnhancedStatusBadge: View {
     }
     
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: Spacing.xs) {
             Circle()
                 .fill(display.color)
                 .frame(width: 8, height: 8)
@@ -75,12 +75,12 @@ struct EnhancedStatusBadge: View {
         }
         .font(.monoLabel)
         .padding(.horizontal, Spacing.sm)
-        .padding(.vertical, 6)
+        .padding(.vertical, Spacing.xs)
         .background(display.backgroundColor)
         .foregroundColor(display.color)
-        .cornerRadius(14)
+        .cornerRadius(CornerRadius.sm)
         .overlay(
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: CornerRadius.sm)
                 .stroke(display.color.opacity(0.2), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
@@ -109,21 +109,21 @@ struct OrderItemStatusBadge: View {
     }
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Spacing.xs) {
             Image(systemName: display.icon)
-                .font(.caption2)
+                .font(.footnote)
                 .fontWeight(.medium)
             Text(display.text)
                 .fontWeight(.medium)
         }
-        .font(.caption)
+        .font(.captionRegular)
         .padding(.horizontal, Spacing.xs)
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
         .background(display.backgroundColor)
         .foregroundColor(display.color)
-        .cornerRadius(8)
+        .cornerRadius(CornerRadius.sm)
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: CornerRadius.sm)
                 .stroke(display.color.opacity(0.2), lineWidth: 0.5)
         )
         .accessibilityElement(children: .combine)
@@ -174,20 +174,20 @@ struct EmptyOrdersView: View {
     let filter: OrdersView.OrderFilter
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Spacing.md) {
             Image(systemName: emptyStateIcon)
-                .font(.system(size: 60))
+                .font(.heroTitle)
                 .foregroundColor(.appTextTertiary)
-            
+
             Text(emptyStateTitle)
                 .font(.cardTitle)
                 .foregroundColor(.appTextPrimary)
-            
+
             Text(emptyStateMessage)
                 .font(.bodyMedium)
                 .foregroundColor(.appTextSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+                .padding(.horizontal, Spacing.xxl)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appPanel(padding: Spacing.xl, cornerRadius: CornerRadius.xl)
@@ -344,7 +344,7 @@ struct OrderRowView: View {
 
                 Spacer()
 
-                Text("OPEN")
+                Text("order_status_open".localized)
                     .font(.monoLabel)
                     .foregroundColor(.appTextSecondary)
             }
@@ -418,7 +418,7 @@ struct OrderRowView: View {
     @ViewBuilder
     private func itemStatusIcon(for status: OrderItemStatus) -> some View {
         Image(systemName: itemStatusSymbol(for: status))
-            .font(.system(size: 10, weight: .semibold))
+            .font(.footnote.weight(.semibold))
             .foregroundColor(itemStatusTint(for: status))
             .frame(width: 12, height: 12)
     }
@@ -531,48 +531,48 @@ struct EnhancedOrderItemView: View {
     let showDetailedActions: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.menu_item?.displayName ?? "Unknown Item")
-                        .font(.subheadline)
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(item.menu_item?.displayName ?? "unknown_item_text".localized)
+                        .font(.bodyMedium)
                         .fontWeight(.medium)
-                    
+                        .foregroundColor(.appTextPrimary)
+
                     if let notes = item.notes, !notes.isEmpty {
                         Text(notes)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.captionRegular)
+                            .foregroundColor(.appTextSecondary)
                             .italic()
                     }
                 }
-                
+
                 Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
+
+                VStack(alignment: .trailing, spacing: Spacing.xs) {
                     Text("×\(item.quantity)")
-                        .font(.subheadline)
+                        .font(.bodyMedium)
                         .fontWeight(.medium)
-                    
+                        .foregroundColor(.appTextPrimary)
+
                     OrderItemStatusBadge(status: item.status)
                 }
             }
-            
+
             if showDetailedActions && item.status.rawValue != "served" && item.status.rawValue != "canceled" {
                 HStack {
                     Spacer()
-                    
+
                     Button("order_detail_update_status_button".localized) {
-                        Task {
-                            await updateItemStatus()
-                        }
+                        Task { await updateItemStatus() }
                     }
-                    .font(.caption)
+                    .font(.captionRegular)
                     .buttonStyle(.bordered)
-                    .buttonBorderShape(.roundedRectangle(radius: 6))
+                    .buttonBorderShape(.roundedRectangle(radius: CornerRadius.xs))
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
     }
     
     @MainActor

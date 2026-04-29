@@ -250,8 +250,8 @@ struct CompactKitchenItemCard: View {
 
                     Spacer(minLength: 0)
 
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("QTY")
+                    VStack(alignment: .trailing, spacing: Spacing.xs) {
+                        Text("kitchen_qty_label".localized)
                             .font(.monoCaption)
                             .foregroundColor(.appTextSecondary)
 
@@ -493,7 +493,7 @@ struct KitchenEmptyStateView: View {
     var body: some View {
         VStack(spacing: Spacing.lg) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 60))
+                .font(.heroTitle)
                 .foregroundColor(.appSuccess)
 
             VStack(spacing: Spacing.sm) {

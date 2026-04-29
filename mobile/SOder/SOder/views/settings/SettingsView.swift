@@ -85,7 +85,7 @@ struct SettingsView: View {
                 }
 
                 Image(systemName: printerManager.isConnected ? "checkmark.circle.fill" : "printer")
-                    .font(.title3)
+                    .font(.sectionHeader)
                     .foregroundColor(printerManager.isConnected ? .appSuccess : .appWarning)
                     .frame(width: 36, height: 36)
             }
@@ -262,7 +262,7 @@ struct SettingsView: View {
             } label: {
                 HStack(spacing: Spacing.md) {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
-                        .font(.title3)
+                        .font(.sectionHeader)
                         .foregroundColor(.appError)
                         .frame(width: 28)
 
@@ -311,7 +311,7 @@ struct SettingsView: View {
     ) -> some View {
         HStack(spacing: Spacing.md) {
             Image(systemName: icon)
-                .font(.title3)
+                .font(.sectionHeader)
                 .foregroundColor(.appPrimary)
                 .frame(width: 28)
 

@@ -28,7 +28,7 @@ struct DraftOrderView: View {
         VStack(spacing: 0) {
             if isLoading {
                 ProgressView("loading_draft_order_text".localized)
-                    .padding(16)
+                    .padding(Spacing.md)
             } else if let order = draftOrder {
                 // Show cart content whether items exist or not
                 VStack(spacing: 0) {
@@ -58,9 +58,9 @@ struct DraftOrderView: View {
                         .scrollContentBackground(.hidden)
                     } else {
                         // Empty cart state - show table info and empty state
-                        VStack(spacing: 16) {
+                        VStack(spacing: Spacing.md) {
                             Text(String(format: "draft_table_label_format".localized, table.name))
-                                .font(.title2)
+                                .font(.compactPageTitle)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.appTextPrimary)
                             Text("no_items_in_order_text".localized)
@@ -76,10 +76,11 @@ struct DraftOrderView: View {
                 }
             } else {
                 // No draft order - show loading or error state
-                VStack(spacing: 20) {
+                VStack(spacing: Spacing.md) {
                     Text(String(format: "draft_preparing_order_format".localized, table.name))
+                        .font(.bodyMedium)
                         .foregroundColor(.appTextSecondary)
-                        .padding(16)
+                        .padding(Spacing.md)
                 }
                 Spacer()
             }
@@ -134,11 +135,11 @@ struct DraftOrderView: View {
 
     @ViewBuilder
     private func orderItemRow(_ item: OrderItem) -> some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(item.menu_item?.displayName ?? "unknown_item_text".localized)
-                        .font(.cardTitle)
+                        .font(.sectionHeader)
                         .fontWeight(.semibold)
                     
                     // Show size and toppings if available
@@ -161,15 +162,15 @@ struct DraftOrderView: View {
                         Text(notes)
                             .font(.captionRegular)
                             .foregroundColor(.appTextSecondary)
-                            .padding(.top, 2)
+                            .padding(.top, Spacing.xxs)
                     }
                 }
                 
                 Spacer()
                 
-                VStack(alignment: .trailing, spacing: 4) {
+                VStack(alignment: .trailing, spacing: Spacing.xs) {
                     Text(AppCurrencyFormatter.format(item.price_at_order * Double(item.quantity)))
-                        .font(.headline)
+                        .font(.sectionHeader)
                         .fontWeight(.semibold)
                         .foregroundColor(.appTextPrimary)
 
@@ -182,69 +183,62 @@ struct DraftOrderView: View {
             // Quantity controls - compact design with gesture isolation
             HStack {
                 // Quantity stepper section
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     Button {
-                        print("➖ Minus button pressed - item: \(item.id), current: \(item.quantity)")
                         Task { await updateItemQuantity(item.id, newQuantity: max(1, item.quantity - 1)) }
                     } label: {
                         Image(systemName: "minus.circle.fill")
-                            .font(.title3)
+                            .font(.sectionHeader)
                             .foregroundColor(.appError)
                     }
                     .disabled(item.quantity <= 1)
                     .buttonStyle(.plain)
                     .frame(width: 32, height: 32)
-                    .background(Color.clear)
-                    
+
                     Text("\(item.quantity)")
-                        .font(.headline)
+                        .font(.sectionHeader)
                         .fontWeight(.semibold)
                         .frame(minWidth: 24)
-                    
+
                     Button {
-                        let newQty = item.quantity + 1
-                        print("🔥 Plus button pressed - item: \(item.id), current: \(item.quantity), new: \(newQty)")
-                        Task { await updateItemQuantity(item.id, newQuantity: newQty) }
+                        Task { await updateItemQuantity(item.id, newQuantity: item.quantity + 1) }
                     } label: {
                         Image(systemName: "plus.circle.fill")
-                            .font(.title3)
+                            .font(.sectionHeader)
                             .foregroundColor(.appPrimary)
                     }
                     .buttonStyle(.plain)
                     .frame(width: 32, height: 32)
-                    .background(Color.clear)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
                 .background(Color.appSurfaceSecondary)
-                .cornerRadius(8)
-                
+                .cornerRadius(CornerRadius.sm)
+
                 Spacer()
-                
-                // Delete button - isolated with different styling
+
                 Button {
-                    print("🗑️ Delete button pressed - item: \(item.id)")
                     Task { await removeOrderItem(item.id) }
                 } label: {
                     Image(systemName: "trash.circle.fill")
-                        .font(.title3)
+                        .font(.sectionHeader)
                         .foregroundColor(.appError)
                 }
                 .buttonStyle(.plain)
                 .frame(width: 36, height: 36)
                 .background(Color.appError.opacity(0.1))
-                .cornerRadius(8)
+                .cornerRadius(CornerRadius.sm)
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 4)
+        .padding(.vertical, Spacing.sm)
+        .padding(.horizontal, Spacing.xs)
     }
 
     @ViewBuilder
     private func actionButtons() -> some View {
         let hasItems = draftOrder?.order_items?.isEmpty == false
         
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.md) {
             Button {
                 if hasItems {
                     Task { await confirmOrderToKitchen() }
@@ -271,7 +265,7 @@ struct DraftOrderView: View {
             .accessibilityLabel("cancel_entire_order_accessibility_label".localized)
             .accessibilityHint("cancel_entire_order_accessibility_hint".localized)
         }
-        .padding(16)
+        .padding(Spacing.md)
     }
 
     // MARK: - Data Functions

@@ -374,6 +374,7 @@
 "debug_tap_change_status" = "DEBUG TAP TO CHANGE STATUS";
 
 // MARK: - Kitchen Board Components
+"kitchen_qty_label" = "QTY";
 "kitchen_urgent" = "URGENT";
 "kitchen_modifications" = "Modifications:";
 "kitchen_tables" = "Tables:";
@@ -546,6 +547,10 @@
 "print_language_fallback_mode" = "Fallback Mode";
 "print_language_changed_success" = "Print language has been updated successfully!";
 "print_language_fallback_note" = "If printer doesn't support the selected language, item codes will be used instead of names.";
+"print_language_capability_supported" = "Supported";
+"print_language_capability_fallback" = "Fallback";
+"print_language_capability_untested" = "Untested";
+"print_language_no_printer" = "No Printer";
 
 // MARK: - Manual Printer Setup Localization
 "manual_printer_setup_title" = "Add Network Printer";
@@ -631,12 +636,18 @@
 "order_status_update_unsaved_changes_warning" = "⚠️ You have unsaved changes";
 
 // MARK: - Orders View
+"order_status_open" = "OPEN";
 "orders_guest_count_accessibility" = "%d guests";
 "orders_id_format" = "ID: %@";
 "orders_table_format" = "Table %@";
 
 // MARK: - POS Flow Tab
 "tab_new_order" = "New Order";
+"menu_categories_empty" = "No menu categories found.";
+"menu_category_nav_title" = "Table %@ – Categories";
+"menu_category_cart_hint" = "View draft order, %d items";
+"menu_category_cart_empty_hint" = "View draft order, empty";
+"menu_category_item_hint" = "Tap to view items in this category";
 
 // MARK: - New Keys Added by AI Assistant
 "loading_items_for_%@..." = "Loading items for %@...";
