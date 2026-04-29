@@ -1,95 +1,60 @@
 {
-  "title": "テーブル予約",
-  "submission_thank_you_title": "予約確定しました！",
-  "book_table_button": "テーブルを予約する",
-  "submission_thank_you_message": "テーブルの予約が確定しました。ご来店をお待ちしております！",
+  "title": "席を予約",
+  "description": "ご来店希望日時をお知らせください。店舗から電話またはメールで予約を確認します。",
+  "book_table_button": "予約をリクエスト",
+  "process": {
+    "request": "1. リクエスト送信",
+    "requestDescription": "ご来店時間と連絡先を入力してください。",
+    "manager": "2. マネージャー確認",
+    "managerDescription": "店舗が空席状況を確認し、必要に応じて折り返し連絡してから確定またはキャンセルします。"
+  },
   "form": {
-    "validation_error_fill_fields": "必須項目をすべて入力してください。",
-    "table_select_placeholder": "テーブルを選択",
-    "table_capacity": "{count}名様",
-    "name_placeholder": "氏名（フルネーム）",
-    "contact_placeholder": "電話番号またはメールアドレス",
-    "preorder_optional_title": "事前注文（任意）",
-    "submit_button": "予約を確定する",
-    "party_size_placeholder": "人数",
-    "date_label": "予約日",
-    "time_label": "予約時間",
-    "special_requests_label": "特別なご要望",
-    "special_requests_placeholder": "アレルギー対応や座席の希望など..."
-  },
-  "booking_details": {
-    "customer_name": "お客様名",
-    "contact_info": "連絡先情報",
-    "party_size": "人数",
-    "booking_date": "日付",
-    "booking_time": "時間",
-    "table_info": "テーブル情報",
-    "special_requests": "特別なご要望",
-    "preorder_items": "事前注文した商品"
-  },
-  "table_selection": {
-    "available": "空席あり",
-    "occupied": "満席",
-    "reserved": "予約済み",
-    "capacity": "{count}席",
-    "outdoor": "テラス席",
-    "accessible": "車椅子対応",
-    "window": "窓側席",
-    "private": "個室"
-  },
-  "preorder": {
-    "title": "メニュー商品を事前注文する",
-    "description": "テーブルに事前注文したい商品を選択してください",
-    "add_item": "事前注文に追加",
-    "remove_item": "事前注文から削除",
-    "total": "事前注文合計",
-    "no_items": "事前注文された商品はありません"
-  },
-  "time_slots": {
-    "morning": "午前",
-    "afternoon": "午後",
-    "evening": "夜",
-    "available": "予約可能",
-    "fully_booked": "満席",
-    "closed": "休業"
-  },
-  "validation": {
-    "name_required": "氏名は必須です",
-    "contact_required": "連絡先情報は必須です",
-    "party_size_required": "人数は必須です",
-    "party_size_min": "人数は1名以上で入力してください",
-    "party_size_max": "人数がテーブルの定員を超えています",
-    "date_required": "予約日は必須です",
-    "date_future": "予約日は未来の日付で入力してください",
-    "time_required": "予約時間は必須です",
-    "table_required": "テーブルを選択してください",
-    "email_or_phone": "メールアドレスまたは電話番号を入力してください"
-  },
-  "notifications": {
-    "booking_success": "予約が正常に確定しました！",
-    "booking_failed": "予約の作成に失敗しました。もう一度お試しください。",
-    "table_unavailable": "選択されたテーブルはこの時間帯では利用できません",
-    "restaurant_closed": "選択された時間はレストランの営業時間外です"
+    "eyebrow": "予約リクエスト",
+    "title": "お客様情報",
+    "validation_error_fill_fields": "入力内容を確認してください。",
+    "name_label": "氏名",
+    "name_placeholder": "お名前（フルネーム）",
+    "phone_label": "電話番号",
+    "phone_placeholder": "+81 80 1234 5678",
+    "email_label": "メール",
+    "email_placeholder": "you@example.com",
+    "seats_label": "席数",
+    "date_label": "日付",
+    "time_label": "時間",
+    "special_requests_label": "メッセージ",
+    "special_requests_placeholder": "席の希望、アレルギー、ベビーカー利用など店舗に伝えたいこと。",
+    "submit_button": "予約リクエストを送信",
+    "submitting_button": "送信中..."
   },
   "status": {
-    "pending": "確認待ち",
-    "confirmed": "確定済み",
-    "canceled": "キャンセル済み",
-    "completed": "完了"
+    "loading": "予約状況を確認しています...",
+    "currentReservation": "お客様の予約",
+    "pending": "マネージャー確認待ち",
+    "confirmed": "予約確定",
+    "canceled": "予約キャンセル",
+    "pendingDescription": "リクエストは店舗に届いています。マネージャーが電話またはメールで最終時間を確認します。",
+    "confirmedDescription": "店舗が予約を確定しました。確定した時間にご来店ください。",
+    "canceledDescription": "店舗はこのリクエストを確定できませんでした。新しくリクエストするか、店舗へ直接ご連絡ください。",
+    "seats": "{count}席",
+    "fetchError": "予約状況を読み込めませんでした"
+  },
+  "validation": {
+    "name_required": "氏名を入力してください。",
+    "phone_or_email_required": "電話番号またはメールアドレスを入力してください。",
+    "phone_invalid": "有効な電話番号を入力してください。",
+    "email_invalid": "有効なメールアドレスを入力してください。",
+    "party_size_min": "席数は1席以上で入力してください。",
+    "date_required": "予約日を選択してください。",
+    "date_future": "今日以降の日付を選択してください。",
+    "time_required": "予約時間を選択してください。"
+  },
+  "notifications": {
+    "booking_success": "予約リクエストを送信しました。",
+    "booking_failed": "予約リクエストを送信できませんでした。もう一度お試しください。"
   },
   "actions": {
-    "modify_booking": "予約変更",
-    "cancel_booking": "予約キャンセル",
-    "confirm_booking": "予約確定"
-  },
-  "additional_form": {
-    "validation_error_fill_fields": "必須項目をすべて入力してください。",
-    "table_select_placeholder": "テーブルを選択",
-    "table_capacity": "{count}名様",
-    "name_placeholder": "氏名（フルネーム）",
-    "contact_placeholder": "電話番号またはメールアドレス",
-    "preorder_optional_title": "事前注文（任意）",
-    "submit_button": "予約を確定する",
-    "party_size_placeholder": "人数"
+    "modify_booking": "別のリクエストを送信",
+    "cancel_booking": "リクエストをキャンセル",
+    "confirm_booking": "予約を確定"
   }
 }

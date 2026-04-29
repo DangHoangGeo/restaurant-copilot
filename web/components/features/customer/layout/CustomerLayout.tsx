@@ -24,7 +24,7 @@ interface CustomerLayoutProps {
 }
 
 function CustomerLayoutContent({ children, locale }: CustomerLayoutProps) {
-  const t = useTranslations("customer");
+  const t = useTranslations("customer.home.session_management");
   const tSession = useTranslations("customer.session");
   //const params = useParams();
   const router = useRouter();

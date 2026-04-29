@@ -1,6 +1,6 @@
 {
   "title": "Booking Management",
-  "subtitle": "Manage table reservations and customer bookings",
+  "subtitle": "Review customer reservation requests, call back, adjust the final time, and confirm availability",
   "retry": "Retry",
   "table": {
     "customer_name": "Customer Name",
@@ -23,6 +23,17 @@
     "canceling": "Canceling..."
   },
   "details_title": "Booking Details",
+  "details": {
+    "phone": "Phone",
+    "email": "Email",
+    "note": "Guest note",
+    "no_note": "No note provided",
+    "not_provided": "Not provided",
+    "adjust_time_title": "Final reservation time",
+    "adjust_time_help": "After calling the guest, update the final date or time before confirming.",
+    "date_label": "Date",
+    "time_label": "Time"
+  },
   "notifications": {
     "update_success": "Booking status updated successfully",
     "update_failed": "Failed to update booking status: {error}",

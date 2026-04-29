@@ -15,7 +15,9 @@
   "copy_passcode": "パスコードをコピー",
   "session_total": "セッション合計",
   "subtotal": "小計",
+  "before_tax": "税抜",
   "tax": "税金",
+  "after_tax": "税込",
   "total": "合計",
   "items_count": "アイテム数",
   "total_items": "合計アイテム数",
@@ -45,6 +47,7 @@
   "status": {
     "new": "新規",
     "serving": "配膳中",
+    "ready": "準備完了",
     "completed": "完了",
     "canceled": "キャンセル"
   },
@@ -142,7 +145,9 @@
     "copy_passcode": "パスコードをコピー",
     "session_total": "セッション合計",
     "subtotal": "小計",
+    "before_tax": "税抜",
     "tax": "税金",
+    "after_tax": "税込",
     "total": "合計",
     "items_count": "アイテム数",
     "total_items": "合計アイテム数",
@@ -172,6 +177,7 @@
     "status": {
       "new": "新規",
       "serving": "配膳中",
+      "ready": "準備完了",
       "completed": "完了",
       "canceled": "キャンセル"
     },

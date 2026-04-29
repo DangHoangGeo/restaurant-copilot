@@ -6,6 +6,7 @@ import {
   ArrowRight,
   CalendarDays,
   Clock3,
+  Globe2,
   MapPin,
   Phone,
   Sparkles,
@@ -15,10 +16,8 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  createCustomerBrandTheme,
-  createCustomerThemeProperties,
-} from "@/lib/utils/colors";
+import { localeDetails } from "@/config/i18n.config";
+import { createCustomerThemeProperties } from "@/lib/utils/colors";
 import { cn } from "@/lib/utils";
 import type { CustomerHomepageData } from "@/shared/types";
 
@@ -133,6 +132,7 @@ function formatPrice(
 
 export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
   const t = await getTranslations({ locale, namespace: "customer.home" });
+  const commonT = await getTranslations({ locale, namespace: "common" });
 
   if (!initialData) {
     return (
@@ -154,12 +154,9 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
     initialData;
   const rawBrandColor =
     initialData.source === "branch"
-      ? currentBranch.brandColor ?? company.brandColor
-      : company.brandColor ?? currentBranch.brandColor;
-  const customerTheme = createCustomerBrandTheme(rawBrandColor);
-  const themeProperties = createCustomerThemeProperties(
-    customerTheme.primary,
-  );
+      ? (currentBranch.brandColor ?? company.brandColor)
+      : (company.brandColor ?? currentBranch.brandColor);
+  const themeProperties = createCustomerThemeProperties(rawBrandColor);
   const description =
     getLocalizedText(locale, {
       en: company.description_en,
@@ -182,6 +179,9 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
   const todayHours = getTodayHoursLabel(currentBranch.openingHours);
   const heroImages = gallery.length > 0 ? gallery.slice(0, 3) : [];
   const leadOwner = owners[0] ?? null;
+  const currentLocaleDetail =
+    localeDetails.find((localeDetail) => localeDetail.code === locale) ??
+    localeDetails[0];
 
   return (
     <div
@@ -199,236 +199,252 @@ export async function NewHomePage({ locale, initialData }: NewHomePageProps) {
         />
         <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
 
-        <main className="relative mx-auto flex max-w-7xl flex-col gap-10 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-          <section className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_420px] lg:gap-8">
-            <div className="rounded-[32px] border border-white/10 bg-white/8 p-5 backdrop-blur md:p-8">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
+        <main className="relative mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-8 overflow-hidden px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
+          <section className="min-w-0 overflow-hidden rounded-[28px] border border-white/10 bg-white/8 p-4 shadow-2xl shadow-black/25 backdrop-blur md:p-6">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+              <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+                <span className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">
                   <Sparkles className="h-3.5 w-3.5" />
                   {branches.length > 1
                     ? t("hero.companyBadge")
                     : t("hero.branchBadge")}
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-400/12 px-3 py-1 text-xs font-medium text-emerald-200">
-                  <Clock3 className="h-3.5 w-3.5" />
-                  {t("hero.openBranches", {
-                    count: openBranches,
-                    total: branches.length,
-                  })}
+                <span className="inline-flex min-h-9 max-w-[calc(100vw-4rem)] basis-full items-center gap-2 rounded-full bg-emerald-400/12 px-3 py-1 text-xs font-medium text-emerald-100 sm:basis-auto">
+                  <Clock3 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">
+                    {t("hero.openBranches", {
+                      count: openBranches,
+                      total: branches.length,
+                    })}
+                  </span>
                 </span>
               </div>
 
-              <div className="mt-6 flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-white/10 shadow-2xl shadow-black/30">
-                  {company.logoUrl ? (
-                    <Image
-                      src={company.logoUrl}
-                      alt={`${company.name} logo`}
-                      width={64}
-                      height={64}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Store className="h-7 w-7 text-white/80" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-300">
-                    {branches.length > 1
-                      ? t("hero.collectionLabel")
-                      : t("hero.branchLabel")}
-                  </p>
-                  <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-5xl">
-                    {company.name}
-                  </h1>
-                  <p className="mt-2 text-sm font-medium uppercase tracking-[0.2em] text-[var(--theme-primary)]">
-                    {t("locations.currentBranch")}: {currentBranch.name}
-                  </p>
-                </div>
-              </div>
-
-              {currentTagline ? (
-                <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-200 sm:text-xl">
-                  {currentTagline}
-                </p>
-              ) : null}
-
-              {description ? (
-                <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                  {description}
-                </p>
-              ) : null}
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    {t("hero.stats.branches")}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-white">
-                    {branches.length}
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    {t("hero.stats.featured")}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-white">
-                    {featuredItems.length}
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    {t("hero.stats.todayHours")}
-                  </p>
-                  <p className="mt-2 text-base font-medium text-white">
-                    {todayHours ?? t("hero.closedToday")}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  size="lg"
-                    className="h-12 rounded-2xl border-0 px-5 text-sm font-semibold shadow-lg shadow-black/30"
-                  style={{
-                    backgroundColor: "var(--customer-brand)",
-                    color: "var(--customer-brand-foreground)",
-                  }}
-                >
+              <nav
+                aria-label={commonT("language_switcher.toggle_label")}
+                className="flex min-h-9 items-center gap-1 rounded-full border border-white/12 bg-black/20 p-1"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full text-slate-300">
+                  <Globe2 className="h-3.5 w-3.5" />
+                </span>
+                {localeDetails.map((localeDetail) => (
                   <Link
-                    href={getMenuHref(
-                      locale,
-                      currentBranch.branchCode,
-                      currentBranch.subdomain,
-                    )}
-                  >
-                    <UtensilsCrossed className="h-4 w-4" />
-                    {t("hero.viewMenu")}
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="h-12 rounded-2xl border-white/15 bg-white/8 px-5 text-sm font-semibold text-white hover:bg-white/12"
-                >
-                  <Link href="#locations">
-                    <MapPin className="h-4 w-4" />
-                    {t("hero.viewLocations")}
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-2">
-                {branches.slice(0, 5).map((branch) => (
-                  <Link
-                    key={branch.id}
-                    href={getMenuHref(
-                      locale,
-                      branch.branchCode,
-                      branch.subdomain,
-                    )}
+                    key={localeDetail.code}
+                    href={`/${localeDetail.code}`}
+                    aria-current={
+                      localeDetail.code === currentLocaleDetail.code
+                        ? "page"
+                        : undefined
+                    }
                     className={cn(
-                      "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all",
-                      branch.isCurrent
-                        ? "border-white/20 bg-white/12 text-white"
-                        : "border-white/10 bg-black/20 text-slate-300 hover:border-white/20 hover:bg-white/8 hover:text-white",
+                      "inline-flex h-7 items-center rounded-full px-2.5 text-xs font-semibold transition-colors",
+                      localeDetail.code === currentLocaleDetail.code
+                        ? "bg-white/14 text-white"
+                        : "text-slate-300 hover:bg-white/8 hover:text-white",
                     )}
                   >
-                    <span className="h-2 w-2 rounded-full bg-[var(--theme-primary)]" />
-                    {branch.name}
+                    <span className="sm:hidden">
+                      {localeDetail.code.toUpperCase()}
+                    </span>
+                    <span className="hidden sm:inline">
+                      {commonT(`languageOption.${localeDetail.code}`)}
+                    </span>
                   </Link>
                 ))}
-              </div>
+              </nav>
             </div>
 
-            <div className="grid gap-4">
-              <div className="overflow-hidden rounded-[32px] border border-white/10 bg-white/8 backdrop-blur">
-                {heroImages[0] ? (
-                  <div className="relative aspect-[4/3]">
-                    <Image
-                      src={heroImages[0].imageUrl}
-                      alt={heroImages[0].altText}
-                      fill
-                      priority
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/15 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-5">
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-300">
-                        {t("hero.currentBranchLabel")}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold text-white">
-                        {currentBranch.name}
-                      </p>
-                      {currentBranch.address ? (
-                        <p className="mt-2 flex items-start gap-2 text-sm text-slate-200">
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                          <span>{currentBranch.address}</span>
-                        </p>
-                      ) : null}
-                    </div>
+            <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
+              <div className="min-w-0">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-white/10 shadow-xl shadow-black/25 sm:h-16 sm:w-16">
+                    {company.logoUrl ? (
+                      <Image
+                        src={company.logoUrl}
+                        alt={`${company.name} logo`}
+                        width={64}
+                        height={64}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Store className="h-6 w-6 text-white/80" />
+                    )}
                   </div>
-                ) : (
-                  <div
-                    className="flex aspect-[4/3] items-end p-5"
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-slate-300 sm:text-sm">
+                      {branches.length > 1
+                        ? t("hero.collectionLabel")
+                        : t("hero.branchLabel")}
+                    </p>
+                    <h1 className="text-3xl font-semibold leading-tight tracking-tight text-white sm:text-5xl">
+                      {company.name}
+                    </h1>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--theme-primary)] sm:text-sm">
+                      {t("locations.currentBranch")}: {currentBranch.name}
+                    </p>
+                  </div>
+                </div>
+
+                {currentTagline || description ? (
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg">
+                    {currentTagline || description}
+                  </p>
+                ) : null}
+
+                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+                  <div className="min-w-0 rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 sm:text-xs sm:tracking-[0.16em]">
+                      {t("hero.stats.branches")}
+                    </p>
+                    <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
+                      {branches.length}
+                    </p>
+                  </div>
+                  <div className="min-w-0 rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 sm:text-xs sm:tracking-[0.16em]">
+                      {t("hero.stats.featured")}
+                    </p>
+                    <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
+                      {featuredItems.length}
+                    </p>
+                  </div>
+                  <div className="col-span-2 min-w-0 rounded-2xl border border-white/10 bg-black/20 p-3 sm:col-span-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 sm:text-xs sm:tracking-[0.16em]">
+                      {t("hero.stats.todayHours")}
+                    </p>
+                    <p className="mt-1 truncate text-sm font-semibold tabular-nums text-white sm:text-base">
+                      {todayHours ?? t("hero.closedToday")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-12 rounded-2xl border-0 px-5 text-sm font-semibold shadow-lg shadow-black/30"
                     style={{
-                      background:
-                        "linear-gradient(135deg, var(--theme-primary-500), var(--customer-dark-surface))",
+                      backgroundColor: "var(--customer-brand)",
+                      color: "var(--customer-brand-foreground)",
                     }}
                   >
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-200">
-                        {t("hero.currentBranchLabel")}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold text-white">
-                        {currentBranch.name}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                    <Link
+                      href={getMenuHref(
+                        locale,
+                        currentBranch.branchCode,
+                        currentBranch.subdomain,
+                      )}
+                    >
+                      <UtensilsCrossed className="h-4 w-4" />
+                      {t("hero.viewMenu")}
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="h-12 rounded-2xl border-white/15 bg-white/8 px-5 text-sm font-semibold text-white hover:bg-white/12"
+                  >
+                    <Link href="#locations">
+                      <MapPin className="h-4 w-4" />
+                      {t("hero.viewLocations")}
+                    </Link>
+                  </Button>
+                </div>
+
+                <div className="mt-4 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {branches.slice(0, 5).map((branch) => (
+                    <Link
+                      key={branch.id}
+                      href={getMenuHref(
+                        locale,
+                        branch.branchCode,
+                        branch.subdomain,
+                      )}
+                      className={cn(
+                        "inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all",
+                        branch.isCurrent
+                          ? "border-white/20 bg-white/12 text-white"
+                          : "border-white/10 bg-black/20 text-slate-300 hover:border-white/20 hover:bg-white/8 hover:text-white",
+                      )}
+                    >
+                      <span className="h-2 w-2 rounded-full bg-[var(--theme-primary)]" />
+                      {branch.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                <div className="rounded-[28px] border border-white/10 bg-black/20 p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-2xl bg-white/10 p-3">
-                      <Phone className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                        {t("hero.contactLabel")}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-200">
-                        {currentBranch.phone ??
-                          company.phone ??
-                          t("common.unavailable")}
-                      </p>
+              <aside className="grid content-start gap-3">
+                {heroImages[0] ? (
+                  <div className="overflow-hidden rounded-[24px] border border-white/10 bg-white/8">
+                    <div className="relative aspect-[16/11] lg:aspect-[4/3]">
+                      <Image
+                        src={heroImages[0].imageUrl}
+                        alt={heroImages[0].altText}
+                        fill
+                        priority
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/15 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                          {t("hero.currentBranchLabel")}
+                        </p>
+                        <p className="mt-1 text-xl font-semibold text-white">
+                          {currentBranch.name}
+                        </p>
+                        {currentBranch.address ? (
+                          <p className="mt-2 flex items-start gap-2 text-sm text-slate-200">
+                            <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                            <span>{currentBranch.address}</span>
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="rounded-[28px] border border-white/10 bg-black/20 p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-2xl bg-white/10 p-3">
-                      <Star className="h-4 w-4 text-white" />
+                ) : null}
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="rounded-[22px] border border-white/10 bg-black/20 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-2xl bg-white/10 p-3">
+                        <Phone className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          {t("hero.contactLabel")}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-200">
+                          {currentBranch.phone ??
+                            company.phone ??
+                            t("common.unavailable")}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                        {t("hero.ratingLabel")}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-200">
-                        {currentBranch.googleRating
-                          ? t("hero.ratingValue", {
+                  </div>
+                  {currentBranch.googleRating ? (
+                    <div className="rounded-[22px] border border-white/10 bg-black/20 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-2xl bg-white/10 p-3">
+                          <Star className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                            {t("hero.ratingLabel")}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-200">
+                            {t("hero.ratingValue", {
                               rating: currentBranch.googleRating.toFixed(1),
                               count: currentBranch.googleReviewCount ?? 0,
-                            })
-                          : t("hero.ratingFallback")}
-                      </p>
+                            })}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
                 </div>
-              </div>
+              </aside>
             </div>
           </section>
 

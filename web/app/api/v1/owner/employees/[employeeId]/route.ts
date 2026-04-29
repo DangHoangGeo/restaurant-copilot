@@ -12,6 +12,7 @@ const updateEmployeeSchema = z.object({
     EMPLOYEE_JOB_TITLES.CHEF,
     EMPLOYEE_JOB_TITLES.SERVER,
     EMPLOYEE_JOB_TITLES.CASHIER,
+    EMPLOYEE_JOB_TITLES.PART_TIME,
   ]).optional(),
 });
 

@@ -40,8 +40,8 @@ const fetchSessionData = async (params: SessionParams): Promise<SessionData | nu
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        return null; // Session not found
+      if (response.status === 400 || response.status === 404) {
+        return null; // Missing, expired, or invalid session access should not trip the dev overlay.
       }
       throw new Error(`Failed to fetch session: ${response.status} ${response.statusText}`);
     }
@@ -72,7 +72,7 @@ const fetchSessionData = async (params: SessionParams): Promise<SessionData | nu
       }
     };
   } catch (error) {
-    console.error('Failed to fetch session data:', error);
+    console.warn('Failed to fetch session data:', error);
     return null;
   }
 };

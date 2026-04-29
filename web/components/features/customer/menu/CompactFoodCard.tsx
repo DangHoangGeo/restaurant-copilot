@@ -1,90 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, TrendingUp, Sparkles } from "lucide-react";
+import {
+  Check,
+  Plus,
+  Sparkles,
+  TrendingUp,
+  UtensilsCrossed,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { getLocalizedText, formatPrice } from "@/lib/customerUtils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { FoodItem } from "@/shared/types/menu";
-
-// Helper function to get appropriate food emoji based on item name
-const getFoodEmoji = (itemName: string): string => {
-  const name = itemName.toLowerCase();
-  
-  // Specific food mappings
-  if (name.includes('pizza')) return '🍕';
-  if (name.includes('burger') || name.includes('hamburger')) return '🍔';
-  if (name.includes('sushi') || name.includes('roll')) return '🍣';
-  if (name.includes('ramen') || name.includes('noodle')) return '🍜';
-  if (name.includes('rice') || name.includes('fried rice')) return '🍚';
-  if (name.includes('pasta') || name.includes('spaghetti')) return '🍝';
-  if (name.includes('taco')) return '🌮';
-  if (name.includes('sandwich') || name.includes('sub')) return '🥪';
-  if (name.includes('salad')) return '🥗';
-  if (name.includes('soup')) return '🍲';
-  if (name.includes('chicken') || name.includes('poultry')) return '🍗';
-  if (name.includes('beef') || name.includes('steak')) return '🥩';
-  if (name.includes('fish') || name.includes('salmon') || name.includes('tuna')) return '🐟';
-  if (name.includes('coffee') || name.includes('espresso')) return '☕';
-  if (name.includes('tea')) return '🍵';
-  if (name.includes('cake') || name.includes('dessert')) return '🍰';
-  if (name.includes('ice cream') || name.includes('gelato')) return '🍦';
-  if (name.includes('bread') || name.includes('toast')) return '🍞';
-  if (name.includes('egg')) return '🥚';
-  if (name.includes('fruit') || name.includes('apple') || name.includes('orange')) return '🍎';
-  if (name.includes('vegetable') || name.includes('veggie')) return '🥬';
-  if (name.includes('cheese')) return '🧀';
-  if (name.includes('wine')) return '🍷';
-  if (name.includes('beer')) return '🍺';
-  if (name.includes('cocktail') || name.includes('drink')) return '🍹';
-  
-  // Category-based fallbacks
-  if (name.includes('breakfast') || name.includes('morning')) return '🌅';
-  if (name.includes('lunch')) return '🍽️';
-  if (name.includes('dinner')) return '🌙';
-  if (name.includes('snack')) return '🥨';
-  if (name.includes('appetizer') || name.includes('starter')) return '🥟';
-  if (name.includes('main') || name.includes('entree')) return '🍽️';
-  if (name.includes('side')) return '🥄';
-  if (name.includes('hot') || name.includes('spicy')) return '🌶️';
-  if (name.includes('cold') || name.includes('iced')) return '🧊';
-  if (name.includes('fresh')) return '🌿';
-  if (name.includes('grilled') || name.includes('bbq')) return '🔥';
-  
-  // Default food emoji
-  return '🍽️';
-};
-
-// Helper function to get category-based pastel background colors
-const getCategoryPastelColor = (itemName: string): string => {
-  const name = itemName.toLowerCase();
-  
-  // Food type based colors
-  if (name.includes('coffee') || name.includes('tea') || name.includes('drink')) {
-    return 'from-amber-100 via-yellow-50 to-orange-100 dark:from-amber-900/20 dark:via-yellow-900/10 dark:to-orange-900/20';
-  }
-  if (name.includes('pizza') || name.includes('pasta') || name.includes('bread')) {
-    return 'from-red-100 via-orange-50 to-yellow-100 dark:from-red-900/20 dark:via-orange-900/10 dark:to-yellow-900/20';
-  }
-  if (name.includes('sushi') || name.includes('fish') || name.includes('seafood')) {
-    return 'from-emerald-100 via-teal-50 to-lime-100 dark:from-emerald-900/20 dark:via-teal-900/10 dark:to-lime-900/20';
-  }
-  if (name.includes('salad') || name.includes('vegetable') || name.includes('green')) {
-    return 'from-green-100 via-emerald-50 to-lime-100 dark:from-green-900/20 dark:via-emerald-900/10 dark:to-lime-900/20';
-  }
-  if (name.includes('cake') || name.includes('dessert') || name.includes('ice cream')) {
-    return 'from-rose-100 via-orange-50 to-amber-100 dark:from-rose-900/20 dark:via-orange-900/10 dark:to-amber-900/20';
-  }
-  if (name.includes('meat') || name.includes('beef') || name.includes('chicken')) {
-    return 'from-orange-100 via-red-50 to-pink-100 dark:from-orange-900/20 dark:via-red-900/10 dark:to-pink-900/20';
-  }
-  
-  // Default warm pastel
-  return 'from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-900/30 dark:via-amber-900/20 dark:to-yellow-900/30';
-};
+import { cn } from "@/lib/utils";
 
 interface CompactFoodCardProps {
   item: FoodItem;
@@ -98,6 +27,7 @@ interface CompactFoodCardProps {
   showBadge?: boolean;
   showPopularBadge?: boolean;
   showRecommendedBadge?: boolean;
+  priorityImage?: boolean;
 }
 
 export function CompactFoodCard({
@@ -112,226 +42,245 @@ export function CompactFoodCard({
   showBadge = true,
   showPopularBadge = false,
   showRecommendedBadge = false,
+  priorityImage = false,
 }: CompactFoodCardProps) {
   const tMenu = useTranslations("customer.menu");
   const itemName = getLocalizedText(
-    { name_en: item.name_en, name_vi: item.name_vi || '', name_ja: item.name_ja || '' },
+    {
+      name_en: item.name_en,
+      name_vi: item.name_vi || "",
+      name_ja: item.name_ja || "",
+    },
     locale,
   );
+  const sizeLabels = (item.menu_item_sizes || [])
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((size) =>
+      getLocalizedText(
+        {
+          name_en: size.name_en,
+          name_vi: size.name_vi || "",
+          name_ja: size.name_ja || "",
+        },
+        locale,
+      ),
+    )
+    .filter(Boolean);
+  const toppingLabels = (item.toppings || [])
+    .slice()
+    .sort((a, b) => (a.position || 0) - (b.position || 0))
+    .map((topping) =>
+      getLocalizedText(
+        {
+          name_en: topping.name_en,
+          name_vi: topping.name_vi || "",
+          name_ja: topping.name_ja || "",
+        },
+        locale,
+      ),
+    )
+    .filter(Boolean);
+  const hasSizeOptions = sizeLabels.length >= 2;
+  const visibleSizeLabels = hasSizeOptions ? sizeLabels.slice(0, 3) : [];
+  const visibleToppingLabels = hasSizeOptions ? [] : toppingLabels.slice(0, 2);
+  const hiddenToppingCount = hasSizeOptions
+    ? toppingLabels.length
+    : Math.max(toppingLabels.length - visibleToppingLabels.length, 0);
+  const hasOptions =
+    visibleSizeLabels.length > 0 ||
+    visibleToppingLabels.length > 0 ||
+    hiddenToppingCount > 0;
+  const priceText = formatPrice(item.price, currency, locale);
+  const toppingTypeLabel = tMenu("food_card.toppings");
+  const hiddenToppingLabel = locale.startsWith("ja")
+    ? `${toppingTypeLabel} +${hiddenToppingCount}`
+    : `+${hiddenToppingCount} ${toppingTypeLabel}`;
+  const isSoldOut =
+    item.stock_level !== undefined &&
+    item.stock_level !== null &&
+    item.stock_level <= 0;
+  const isOrderable = item.available && !isSoldOut;
 
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const handleAddClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!canAddItems || isAddingToCart) return;
-    
-    // If item has sizes or toppings, open detail view instead of adding directly
-    if ((item.menu_item_sizes && item.menu_item_sizes.length > 0) || 
-        (item.toppings && item.toppings.length > 0)) {
+  const handleAddClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!canAddItems || isAddingToCart || !isOrderable) return;
+
+    if (
+      (item.menu_item_sizes && item.menu_item_sizes.length > 0) ||
+      (item.toppings && item.toppings.length > 0)
+    ) {
       onCardClick();
       return;
     }
-    
-    // Animate the add button
+
     setIsAddingToCart(true);
     onAdd();
-    setTimeout(() => setIsAddingToCart(false), 600);
+    window.setTimeout(() => setIsAddingToCart(false), 520);
   };
 
   return (
-    <motion.button
-      type="button"
-      whileHover={{
-        scale: 1.03,
-        y: -2,
-        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
-      }}
-      whileTap={{ scale: 0.98 }}
-      transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 25,
-        duration: 0.2
-      }}
-      className="relative w-[180px] h-[240px] md:w-[280px] md:h-[380px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-md flex-shrink-0 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-400"
-      onClick={onCardClick}
-      aria-label={itemName}
+    <motion.article
+      whileHover={{ y: -4 }}
+      whileTap={{ scale: 0.995 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className={cn(
+        "group relative h-full rounded-[16px] text-left transition-transform duration-300",
+        !isOrderable && "opacity-[0.72]",
+      )}
+      style={
+        {
+          "--menu-card-accent": brandColor,
+        } as React.CSSProperties
+      }
     >
-      {/* Full-bleed image */}
-      <div className="absolute inset-0">
-        {item.image_url ? (
-          <Image
-            src={item.image_url}
-            alt={itemName}
-            fill
-            className="object-cover transition-opacity duration-300"
-            loading="lazy"
-            onLoad={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.opacity = '1';
-            }}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-            style={{ opacity: 0 }}
-          />
-        ) : (
-          <>
-            <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryPastelColor(itemName)}`} />
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.3, type: "spring" }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <span className="text-5xl md:text-7xl">{getFoodEmoji(itemName)}</span>
-            </motion.div>
-          </>
-        )}
-      </div>
-
-      {/* Bottom gradient — seamlessly blends image into the info area */}
-      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
-
-      {/* Badges — top left */}
-      {showBadge && (showPopularBadge || showRecommendedBadge) && (
-        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-          {showPopularBadge && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 shadow-md border-0 rounded-sm">
-                <TrendingUp className="h-2 w-2" />
-                <span>{tMenu("food_card.popular")}</span>
-              </Badge>
-            </motion.div>
+      <div
+        className="relative isolate overflow-hidden rounded-[16px] border border-[var(--co-menu-card-border)] bg-[var(--co-menu-card)] shadow-[var(--co-menu-card-shadow)]"
+      >
+        <div className="relative aspect-[1.18/1] w-full overflow-hidden bg-[var(--co-menu-subtle)]">
+          {item.image_url ? (
+            <Image
+              src={item.image_url}
+              alt={itemName}
+              fill
+              className="object-cover brightness-[1.04] saturate-[1.04] transition duration-500 group-hover:scale-[1.025]"
+              sizes="(max-width: 640px) 68vw, (max-width: 1280px) 264px, 292px"
+              priority={priorityImage}
+              loading={priorityImage ? undefined : "lazy"}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(233,163,94,0.26),transparent_32%),var(--co-menu-card)]">
+              <UtensilsCrossed className="h-10 w-10 text-[var(--co-menu-card-muted)]" />
+            </div>
           )}
-          {showRecommendedBadge && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.3 }}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[rgba(0,0,0,0.2)] to-transparent opacity-70" />
+          <p
+            className="pointer-events-none absolute right-3 top-3 z-20 grid h-9 min-w-[56px] place-items-center rounded-[12px] px-2.5 text-center text-[12px] font-semibold tabular-nums text-[var(--co-menu-price-text)] shadow-[0_12px_24px_-18px_rgba(31,26,20,0.72)] backdrop-blur-md"
+            style={{
+              backgroundColor: "var(--co-menu-price-bg)",
+            }}
+            aria-label={priceText}
+          >
+            {priceText}
+          </p>
+
+          {showBadge && (showPopularBadge || showRecommendedBadge) ? (
+            <div className="pointer-events-none absolute left-3 top-0 z-20 flex flex-wrap gap-1.5">
+              {showPopularBadge ? (
+                <span className="inline-flex h-8 items-start gap-1 bg-[var(--co-menu-hanko)] px-2.5 pt-1.5 text-[10px] font-semibold text-[var(--co-menu-hanko-text)] shadow-sm [clip-path:polygon(0_0,100%_0,100%_78%,58%_78%,50%_100%,42%_78%,0_78%)]">
+                  <TrendingUp className="h-3 w-3" />
+                  {tMenu("food_card.popular")}
+                </span>
+              ) : null}
+              {showRecommendedBadge ? (
+                <span className="inline-flex h-8 items-start gap-1 bg-[var(--co-menu-hanko)] px-2.5 pt-1.5 text-[10px] font-semibold text-[var(--co-menu-hanko-text)] shadow-sm [clip-path:polygon(0_0,100%_0,100%_78%,58%_78%,50%_100%,42%_78%,0_78%)]">
+                  <Sparkles className="h-3 w-3" />
+                  {tMenu("food_card.recommended")}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <button
+          type="button"
+          onClick={onCardClick}
+          className="absolute inset-0 z-10 rounded-[18px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--co-menu-focus-offset)]"
+          aria-label={itemName}
+        />
+
+        <div className="pointer-events-none relative z-20 min-h-[100px] space-y-2 bg-[var(--co-menu-card-footer)] px-4 pb-4 pt-3 pr-12 md:px-4 md:pb-4 md:pr-12">
+          <div className="min-w-0">
+            <h3
+              className="line-clamp-2 min-w-0 text-[15px] font-semibold leading-tight text-[var(--co-menu-card-text)] sm:text-[15px] md:text-base"
+              style={{ fontFamily: "var(--co-menu-display-font)" }}
             >
-              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 shadow-md border-0 rounded-sm">
-                <Sparkles className="h-2 w-2" />
-                <span>{tMenu("food_card.recommended")}</span>
-              </Badge>
-            </motion.div>
-          )}
-        </div>
-      )}
-
-      {/* Quantity indicator — top right */}
-      {qtyInCart > 0 && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 500, damping: 25 }}
-          className="absolute top-2 right-2 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-[10px] md:text-xs font-bold shadow-md border-2 border-white z-10"
-          style={{ backgroundColor: brandColor }}
-        >
-          {qtyInCart}
-        </motion.div>
-      )}
-
-      {/* Availability overlay */}
-      {!item.available && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-          <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {tMenu("food_card.out_of_stock")}
-          </span>
-        </div>
-      )}
-
-      {/* Info overlay — sits on top of the gradient at the bottom */}
-      <div className="absolute inset-x-0 bottom-0 z-10 p-3 md:p-5 flex flex-col gap-1 md:gap-2">
-        <div
-          className="font-semibold text-sm md:text-lg leading-tight text-white line-clamp-2"
-          title={itemName}
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            wordBreak: 'break-word',
-          }}
-        >
-          {itemName}
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="font-bold text-base md:text-xl text-white drop-shadow-md">
-            {formatPrice(item.price, currency, locale)}
+              {itemName}
+            </h3>
           </div>
-          {canAddItems && (
-            <motion.div
-              animate={isAddingToCart ? {
-                scale: [1, 1.15, 1.05, 1],
-                rotate: [0, 15, -15, 0]
-              } : {
-                scale: 1,
-                rotate: 0
-              }}
-              whileHover={{
-                scale: 1.1,
-                boxShadow: `0 8px 25px ${brandColor}40`
-              }}
-              whileTap={{
-                scale: 0.95,
-                transition: { duration: 0.1 }
-              }}
-              transition={isAddingToCart ? {
-                duration: 0.5,
-                type: "tween",
-                ease: "easeInOut",
-              } : {
-                duration: 0.2,
-                type: "spring",
-                stiffness: 400,
-                damping: 25,
-              }}
-            >
-              <Button
-                size="sm"
-                onClick={handleAddClick}
-                disabled={isAddingToCart}
-                className="h-11 w-11 rounded-full p-0 shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-white/20 focus:ring-2 focus:ring-offset-2 relative overflow-hidden"
-                style={{
-                  backgroundColor: brandColor,
-                  boxShadow: isAddingToCart
-                    ? `0 0 25px ${brandColor}80`
-                    : `0 4px 15px ${brandColor}40`
-                }}
-                aria-label={`Add ${itemName} to cart`}
-              >
-                {isAddingToCart && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0.8 }}
-                    animate={{ scale: 2, opacity: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="absolute inset-0 rounded-full bg-white"
-                  />
-                )}
-                <motion.div
-                  animate={isAddingToCart ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.2 }}
+
+          {hasOptions ? (
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5 pr-1 text-[var(--co-menu-card-muted)]">
+              {visibleSizeLabels.map((label) => (
+                <span
+                  key={`size-${label}`}
+                  className="grid h-5 min-w-7 place-items-center rounded-full bg-[var(--co-menu-subtle)] px-2 text-[9px] font-semibold text-[var(--co-menu-card-text)] backdrop-blur md:h-6 md:min-w-8 md:text-[10px]"
                 >
-                  <Plus className="h-4 w-4 md:h-5 md:w-5 text-white" />
-                </motion.div>
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={isAddingToCart ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
-                  className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm"
+                  {label}
+                </span>
+              ))}
+
+              {visibleToppingLabels.map((label) => (
+                <span
+                  key={`topping-${label}`}
+                  title={label}
+                  className="grid h-5 max-w-[7.5rem] place-items-center truncate rounded-full bg-[var(--co-menu-subtle)] px-2 text-[9px] font-semibold text-[var(--co-menu-card-text)] backdrop-blur md:h-6 md:max-w-[8.5rem] md:text-[10px]"
                 >
-                  ✓
-                </motion.div>
-              </Button>
-            </motion.div>
-          )}
+                  {label}
+                </span>
+              ))}
+
+              {hiddenToppingCount > 0 ? (
+                <span className="grid h-5 max-w-[7.5rem] place-items-center truncate rounded-full bg-[var(--co-menu-subtle)] px-2 text-[9px] font-semibold text-[var(--co-menu-card-text)] backdrop-blur md:h-6 md:max-w-[8.5rem] md:text-[10px]">
+                  {hiddenToppingLabel}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
+
+        {qtyInCart > 0 ? (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 420, damping: 24 }}
+            className="pointer-events-none absolute left-3 top-3 z-[22] flex h-6 min-w-6 items-center justify-center rounded-full bg-[var(--co-menu-accent)] px-1.5 text-[10px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(0,0,0,0.55)]"
+            style={{
+              backgroundColor: "var(--co-menu-accent)",
+            }}
+          >
+            {qtyInCart}
+          </motion.div>
+        ) : null}
+
+        {canAddItems ? (
+          <button
+            type="button"
+            onClick={handleAddClick}
+            disabled={isAddingToCart || !isOrderable}
+            className="absolute bottom-3 right-3 z-[22] grid h-9 w-9 place-items-center rounded-[12px] bg-[var(--co-menu-accent)] p-0 text-white shadow-[0_14px_28px_-18px_rgba(0,0,0,0.75)] transition-transform hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              backgroundColor: "var(--co-menu-accent)",
+            }}
+            aria-label={`${tMenu("food_card.add_to_cart")} ${itemName}`}
+          >
+            {isAddingToCart ? (
+              <Check className="h-3.5 w-3.5" />
+            ) : (
+              <Plus className="h-3.5 w-3.5" />
+            )}
+          </button>
+        ) : null}
+
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[24] rounded-[16px]"
+          style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)" }}
+        />
+
+        {!isOrderable ? (
+          <div
+            className="absolute inset-0 z-[26] flex items-center justify-center"
+            style={{ backgroundColor: "color-mix(in srgb, var(--co-menu-bg) 78%, transparent)" }}
+          >
+            <span className="rounded-full bg-[var(--co-menu-card)] px-3 py-1 text-xs font-semibold text-[var(--co-menu-card-text)]">
+              {tMenu("food_card.out_of_stock")}
+            </span>
+          </div>
+        ) : null}
       </div>
-    </motion.button>
+    </motion.article>
   );
 }

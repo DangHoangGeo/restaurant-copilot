@@ -18,33 +18,34 @@ export interface Topping {
 }
 
 export interface OrderItem {
-	id: string;
-	quantity: number;
-	notes?: string;
-	status: 'new' | 'preparing' | 'ready' | 'served';
-	created_at: string;
-	name_en: string;
-	name_ja: string;
-	name_vi: string;
-	unit_price: number;
-	total: number;
-	menu_item_id: string;
-	price_at_order?: number;
-	toppings?: Array<Topping>;
-	menu_item_sizes?: MenuItemSize | null;
+  id: string;
+  quantity: number;
+  notes?: string;
+  status: OrderItemStatus;
+  created_at: string;
+  name_en: string;
+  name_ja: string;
+  name_vi: string;
+  unit_price: number;
+  total: number;
+  menu_item_id: string;
+  price_at_order?: number;
+  toppings?: Array<Topping>;
+  menu_item_sizes?: MenuItemSize | null;
 }
 
 export interface Order {
-	id: string;
-	session_id: string;
-	session_code?: string;
-	guest_count: number;
-	status: string;
-	table_id: string | null;
-	table_name: string | null;
-	total_amount: number;
-	created_at: string;
-	items: OrderItem[];
+  id: string;
+  session_id: string;
+  session_code?: string;
+  guest_count: number;
+  status: string;
+  table_id: string | null;
+  table_name: string | null;
+  total_amount: number;
+  tax_amount?: number | null;
+  created_at: string;
+  items: OrderItem[];
 }
 
 export interface OrderHistoryResponse {
@@ -52,5 +53,16 @@ export interface OrderHistoryResponse {
   order: Order;
 }
 
-export type OrderStatus = 'new' | 'serving' | 'ready' | 'completed' | 'canceled';
-export type OrderItemStatus = 'new' | 'preparing' | 'ready' | 'served' | 'canceled';
+export type OrderStatus =
+  | "new"
+  | "serving"
+  | "ready"
+  | "completed"
+  | "canceled";
+export type OrderItemStatus =
+  | "new"
+  | "ordered"
+  | "preparing"
+  | "ready"
+  | "served"
+  | "canceled";

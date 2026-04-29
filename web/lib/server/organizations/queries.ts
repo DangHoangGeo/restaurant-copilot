@@ -5,6 +5,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/server/authorization/types";
+import { mapOrgRoleToLegacyUserAccess } from "./legacy-access";
 import type {
   Organization,
   OrganizationMember,
@@ -16,6 +17,179 @@ import type {
   CreateOrganizationInput,
   AddBranchInput,
 } from "./types";
+
+async function listOrganizationRestaurantIdsForAdmin(
+  orgId: string,
+): Promise<string[]> {
+  const { data, error } = await supabaseAdmin
+    .from("organization_restaurants")
+    .select("restaurant_id")
+    .eq("organization_id", orgId);
+
+  if (error || !data) {
+    console.error("Failed to list organization restaurant IDs:", error);
+    return [];
+  }
+
+  return (data as Array<{ restaurant_id: string }>).map(
+    (row) => row.restaurant_id,
+  );
+}
+
+export async function validateOrganizationRestaurantScope(
+  orgId: string,
+  restaurantIds: string[] | undefined,
+): Promise<{ valid: boolean; invalidRestaurantIds: string[] }> {
+  const requestedRestaurantIds = Array.from(new Set(restaurantIds ?? []));
+  if (requestedRestaurantIds.length === 0) {
+    return { valid: false, invalidRestaurantIds: [] };
+  }
+
+  const organizationRestaurantIds = new Set(
+    await listOrganizationRestaurantIdsForAdmin(orgId),
+  );
+  const invalidRestaurantIds = requestedRestaurantIds.filter(
+    (restaurantId) => !organizationRestaurantIds.has(restaurantId),
+  );
+
+  return {
+    valid: invalidRestaurantIds.length === 0,
+    invalidRestaurantIds,
+  };
+}
+
+export async function resolveLegacyRestaurantIdForOrgMember(
+  orgId: string,
+  shopScope: ShopScope,
+  selectedRestaurantIds?: string[],
+): Promise<string | null> {
+  if (shopScope === "selected_shops") {
+    return selectedRestaurantIds?.[0] ?? null;
+  }
+
+  const restaurantIds = await listOrganizationRestaurantIdsForAdmin(orgId);
+  return restaurantIds[0] ?? null;
+}
+
+async function listMemberScopedRestaurantIdsForAdmin(
+  memberId: string,
+): Promise<string[]> {
+  const { data, error } = await supabaseAdmin
+    .from("organization_member_shop_scopes")
+    .select("restaurant_id")
+    .eq("member_id", memberId);
+
+  if (error || !data) {
+    console.error("Failed to list member scoped restaurants:", error);
+    return [];
+  }
+
+  return (data as Array<{ restaurant_id: string }>).map(
+    (row) => row.restaurant_id,
+  );
+}
+
+async function syncLegacyUserAccessForOrganizationMember(
+  member: Pick<
+    OrganizationMember,
+    "id" | "organization_id" | "user_id" | "role" | "shop_scope"
+  >,
+  selectedRestaurantIds?: string[],
+): Promise<boolean> {
+  const effectiveSelectedRestaurantIds =
+    member.shop_scope === "selected_shops"
+      ? (selectedRestaurantIds ??
+        (await listMemberScopedRestaurantIdsForAdmin(member.id)))
+      : undefined;
+  const legacyRestaurantId = await resolveLegacyRestaurantIdForOrgMember(
+    member.organization_id,
+    member.shop_scope,
+    effectiveSelectedRestaurantIds,
+  );
+  const legacyAccess = mapOrgRoleToLegacyUserAccess(
+    member.role,
+    legacyRestaurantId,
+  );
+
+  const { error } = await supabaseAdmin
+    .from("users")
+    .update({
+      role: legacyAccess.role,
+      restaurant_id: legacyAccess.restaurantId,
+    })
+    .eq("id", member.user_id);
+
+  if (error) {
+    console.error("Failed to sync legacy user access:", error);
+    return false;
+  }
+
+  return true;
+}
+
+async function clearLegacyOrgAccessForUser(
+  userId: string,
+  orgId: string,
+): Promise<boolean> {
+  const organizationRestaurantIds = await listOrganizationRestaurantIdsForAdmin(
+    orgId,
+  );
+
+  if (organizationRestaurantIds.length === 0) {
+    return true;
+  }
+
+  const { data: userRow, error: userError } = await supabaseAdmin
+    .from("users")
+    .select("restaurant_id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (userError) {
+    console.error("Failed to load user before clearing legacy access:", userError);
+    return false;
+  }
+
+  const restaurantId = userRow?.restaurant_id as string | null | undefined;
+  if (!restaurantId || !organizationRestaurantIds.includes(restaurantId)) {
+    return true;
+  }
+
+  const { data: activeEmployee, error: employeeError } = await supabaseAdmin
+    .from("employees")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("restaurant_id", restaurantId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (employeeError) {
+    console.error(
+      "Failed to check employee access before clearing legacy access:",
+      employeeError,
+    );
+    return false;
+  }
+
+  if (activeEmployee) {
+    return true;
+  }
+
+  const { error } = await supabaseAdmin
+    .from("users")
+    .update({
+      role: "staff",
+      restaurant_id: null,
+    })
+    .eq("id", userId);
+
+  if (error) {
+    console.error("Failed to clear legacy organization access:", error);
+    return false;
+  }
+
+  return true;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Read queries (use RLS-scoped client)
@@ -468,6 +642,21 @@ export async function addOrganizationMember(
   shopScope: ShopScope,
   selectedRestaurantIds?: string[],
 ): Promise<OrganizationMember | null> {
+  if (shopScope === "selected_shops") {
+    const scopeValidation = await validateOrganizationRestaurantScope(
+      orgId,
+      selectedRestaurantIds,
+    );
+
+    if (!scopeValidation.valid) {
+      console.error("Invalid organization member shop scope:", {
+        orgId,
+        invalidRestaurantIds: scopeValidation.invalidRestaurantIds,
+      });
+      return null;
+    }
+  }
+
   const { data: member, error } = await supabaseAdmin
     .from("organization_members")
     .insert({
@@ -489,7 +678,7 @@ export async function addOrganizationMember(
 
   // If selected_shops, insert scope rows
   if (shopScope === "selected_shops" && selectedRestaurantIds?.length) {
-    const scopeRows = selectedRestaurantIds.map((rid) => ({
+    const scopeRows = Array.from(new Set(selectedRestaurantIds)).map((rid) => ({
       organization_id: orgId,
       member_id: member.id,
       restaurant_id: rid,
@@ -502,6 +691,11 @@ export async function addOrganizationMember(
       console.error("Failed to insert shop scopes:", scopeError);
     }
   }
+
+  await syncLegacyUserAccessForOrganizationMember(
+    member as OrganizationMember,
+    selectedRestaurantIds,
+  );
 
   return member as OrganizationMember;
 }
@@ -585,12 +779,35 @@ export async function createRestaurantInOrg(
 export async function deactivateOrganizationMember(
   memberId: string,
 ): Promise<boolean> {
+  const { data: memberBeforeDeactivate, error: fetchError } = await supabaseAdmin
+    .from("organization_members")
+    .select("user_id, organization_id")
+    .eq("id", memberId)
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error("Failed to load org member before deactivation:", fetchError);
+    return false;
+  }
+
   const { error } = await supabaseAdmin
     .from("organization_members")
     .update({ is_active: false, updated_at: new Date().toISOString() })
     .eq("id", memberId);
 
-  return !error;
+  if (error) {
+    console.error("Failed to deactivate org member:", error);
+    return false;
+  }
+
+  if (memberBeforeDeactivate?.user_id && memberBeforeDeactivate.organization_id) {
+    await clearLegacyOrgAccessForUser(
+      memberBeforeDeactivate.user_id as string,
+      memberBeforeDeactivate.organization_id as string,
+    );
+  }
+
+  return true;
 }
 
 async function syncOrganizationBrandingToRestaurants(
@@ -845,6 +1062,22 @@ export async function updateOrganizationMember(
 ): Promise<OrganizationMember | null> {
   const { role, shop_scope, selected_restaurant_ids } = updates;
 
+  if (shop_scope === "selected_shops") {
+    const scopeValidation = await validateOrganizationRestaurantScope(
+      orgId,
+      selected_restaurant_ids,
+    );
+
+    if (!scopeValidation.valid) {
+      console.error("Invalid organization member shop scope update:", {
+        orgId,
+        memberId,
+        invalidRestaurantIds: scopeValidation.invalidRestaurantIds,
+      });
+      return null;
+    }
+  }
+
   const patch: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   };
@@ -871,7 +1104,7 @@ export async function updateOrganizationMember(
       .delete()
       .eq("member_id", memberId);
 
-    const scopeRows = selected_restaurant_ids.map((rid) => ({
+    const scopeRows = Array.from(new Set(selected_restaurant_ids)).map((rid) => ({
       organization_id: orgId,
       member_id: memberId,
       restaurant_id: rid,
@@ -886,6 +1119,13 @@ export async function updateOrganizationMember(
       .delete()
       .eq("member_id", memberId);
   }
+
+  const currentScopeIds =
+    shop_scope === "selected_shops" ? selected_restaurant_ids : undefined;
+  await syncLegacyUserAccessForOrganizationMember(
+    member as OrganizationMember,
+    currentScopeIds,
+  );
 
   return member as OrganizationMember;
 }

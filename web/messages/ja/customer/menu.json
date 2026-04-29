@@ -10,6 +10,7 @@
   "item_notes": "メモ：{notes}",
   "total_price": "合計金額",
   "search_placeholder": "メニューを検索...",
+  "clear_search": "クリア",
   "popular_now": "今人気",
   "recommended": "おすすめ",
   "add_to_cart_success": "{itemName}をカートに追加しました。",
@@ -26,6 +27,17 @@
   "view_smart": "スマートメニューを見る",
   "view_classic": "クラシックメニューを見る",
   "browse_categories": "カテゴリを閲覧",
+  "table_label": "テーブル",
+  "item_count": "{count}品",
+  "scroll_previous": "前の料理へスクロール",
+  "scroll_next": "次の料理へスクロール",
+  "category_nav": {
+    "label": "メニューカテゴリ",
+    "all": "すべて",
+    "food": "料理",
+    "drinks": "飲み物",
+    "jump_to": "移動"
+  },
   "no_items_found": "このカテゴリにはアイテムがありません。",
   "item_load_error_title": "商品を開けませんでした",
   "item_load_error_description": "この商品のオプションを読み込めませんでした。もう一度お試しください。",
@@ -59,7 +71,10 @@
     "rating": "評価",
     "reviews_count": "{count}件のレビュー",
     "popular": "人気",
-    "recommended": "おすすめ"
+    "recommended": "おすすめ",
+    "sizes": "サイズ",
+    "toppings": "トッピング",
+    "more_options": "+{count}件"
   },
   "item_detail": {
     "choose_size": "サイズ",

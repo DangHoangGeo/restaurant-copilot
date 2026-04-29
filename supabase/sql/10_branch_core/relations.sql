@@ -16,7 +16,7 @@ ALTER TABLE ONLY public.bookings
     ADD CONSTRAINT bookings_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY public.bookings
-    ADD CONSTRAINT bookings_table_id_fkey FOREIGN KEY (table_id) REFERENCES public.tables(id) ON DELETE CASCADE;
+    ADD CONSTRAINT bookings_table_id_fkey FOREIGN KEY (table_id) REFERENCES public.tables(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY public.categories
     ADD CONSTRAINT categories_organization_menu_category_id_fkey FOREIGN KEY (organization_menu_category_id) REFERENCES public.organization_menu_categories(id) ON DELETE SET NULL;

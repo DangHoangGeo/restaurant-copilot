@@ -7,9 +7,12 @@ import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useMemo } from "react";
-import Image from "next/image";
 import { useCart } from "./CartContext";
-import { getLocalizedText, useGetCurrentLocale, formatPrice } from "@/lib/customerUtils";
+import {
+  getLocalizedText,
+  useGetCurrentLocale,
+  formatPrice,
+} from "@/lib/customerUtils";
 import { ItemDetailModal } from "./menu/ItemDetailModal";
 import type { CartItem } from "./CartContext";
 import type {
@@ -188,42 +191,24 @@ export function FloatingCart({
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 20 }}
-        className="flex items-start gap-3 py-3 border-b border-slate-200 dark:border-slate-600 last:border-b-0"
+        className="flex items-start gap-3 border-b py-3 last:border-b-0"
+        style={{ borderColor: "var(--co-cart-border, rgba(241,220,196,0.12))" }}
       >
-        {/* Item Image */}
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
-          {item.imageUrl ? (
-            <Image
-              src={item.imageUrl}
-              alt={localizedItemName}
-              width={48}
-              height={48}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <ShoppingCart className="h-5 w-5 text-slate-400" />
-            </div>
-          )}
-        </div>
-
-        {/* Item Details */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
               <button
                 onClick={() => handleEditItem(item)}
-                className="text-left w-full group hover:bg-slate-50 dark:hover:bg-slate-700 rounded p-1 -m-1 transition-colors"
+                className="group -m-1 w-full rounded-xl p-1 text-left transition-colors hover:bg-[var(--co-menu-subtle)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)]"
               >
                 <p
-                  className="truncate text-sm font-medium text-slate-800 group-hover:text-[var(--customer-brand)] dark:text-slate-100 dark:group-hover:text-[var(--customer-accent)]"
+                  className="truncate text-sm font-semibold text-[var(--co-cart-text)] group-hover:text-[var(--co-menu-accent)]"
                   title={localizedItemName}
                 >
                   {localizedItemName}
                   <Edit className="inline h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </p>
 
-                {/* Size and Toppings */}
                 {(item.selectedSize ||
                   (item.selectedToppings && item.selectedToppings.length > 0) ||
                   item.notes) && (
@@ -231,7 +216,7 @@ export function FloatingCart({
                     {item.selectedSize && (
                       <Badge
                         variant="secondary"
-                        className="bg-[var(--customer-brand-soft)] text-xs text-[var(--customer-brand)]"
+                        className="border-0 bg-[var(--co-menu-subtle)] text-xs text-[var(--co-cart-text)]"
                       >
                         {getLocalizedText(
                           {
@@ -248,7 +233,7 @@ export function FloatingCart({
                         <Badge
                           key={index}
                           variant="outline"
-                          className="text-xs border-green-200 text-green-700"
+                          className="border-0 bg-[var(--co-menu-subtle)] text-xs text-[var(--co-cart-text)]"
                         >
                           +
                           {getLocalizedText(
@@ -264,9 +249,9 @@ export function FloatingCart({
                     {item.notes && (
                       <Badge
                         variant="outline"
-                        className="text-xs border-orange-200 text-orange-700"
+                        className="border-0 bg-[var(--co-menu-subtle)] text-xs text-[var(--co-cart-text)]"
                       >
-                        📝{" "}
+                        <Edit className="mr-1 h-3 w-3" />
                         {item.notes.length > 20
                           ? `${item.notes.substring(0, 20)}...`
                           : item.notes}
@@ -275,13 +260,14 @@ export function FloatingCart({
                   </div>
                 )}
 
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {formatPrice(item.price, currency, currentLocale)} each
+                <p className="mt-1 text-xs text-[var(--co-cart-muted)]">
+                  {t("item_card.unit_price", {
+                    price: formatPrice(item.price, currency, currentLocale),
+                  })}
                 </p>
               </button>
             </div>
 
-            {/* Quantity Controls */}
             <div className="flex items-center space-x-2 ml-2">
               <Button
                 variant="outline"
@@ -289,12 +275,12 @@ export function FloatingCart({
                 onClick={() =>
                   handleUpdateQuantity(item.uniqueId, item.qty - 1)
                 }
-                className="h-11 w-11 p-0 rounded-full"
+                className="h-10 w-10 rounded-full border-0 bg-[var(--co-menu-subtle)] p-0 text-[var(--co-cart-text)] hover:brightness-105"
                 aria-label={t("decrease_quantity")}
               >
                 <Minus className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium min-w-[1.5rem] text-center">
+              <span className="min-w-[1.5rem] text-center text-sm font-semibold text-[var(--co-cart-text)]">
                 {item.qty}
               </span>
               <Button
@@ -303,7 +289,7 @@ export function FloatingCart({
                 onClick={() =>
                   handleUpdateQuantity(item.uniqueId, item.qty + 1)
                 }
-                className="h-11 w-11 p-0 rounded-full"
+                className="h-10 w-10 rounded-full border-0 bg-[var(--co-menu-subtle)] p-0 text-[var(--co-cart-text)] hover:brightness-105"
                 aria-label={t("increase_quantity")}
               >
                 <Plus className="h-4 w-4" />
@@ -332,16 +318,22 @@ export function FloatingCart({
               transition={{ duration: 0.2 }}
               className="mb-2"
             >
-              <Card className="p-4 shadow-2xl bg-white dark:bg-slate-800 border-2">
+              <Card
+                className="rounded-[20px] border p-4 text-[var(--co-cart-text)] shadow-[0_24px_80px_-44px_rgba(0,0,0,0.78)] backdrop-blur-xl"
+                style={{
+                  background: "var(--co-cart-panel-bg, var(--co-cart-bg))",
+                  borderColor: "var(--co-cart-border)",
+                }}
+              >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                  <h3 className="font-semibold text-[var(--co-cart-text)]">
                     {t("floating_cart.title")}
                   </h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleToggleExpanded}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 text-[var(--co-cart-text)] hover:bg-[var(--co-menu-subtle)]"
                     aria-label={tCommon("close_modal")}
                   >
                     <X className="h-4 w-4" />
@@ -356,23 +348,22 @@ export function FloatingCart({
                 </div>
 
                 {/* Total and Place Order */}
-                <div className="border-t border-slate-200 dark:border-slate-600 pt-3">
+                <div
+                  className="border-t pt-3"
+                  style={{ borderColor: "var(--co-cart-border)" }}
+                >
                   <div className="flex justify-between items-center mb-3">
-                    <span className="font-semibold text-slate-800 dark:text-slate-100">
+                    <span className="font-semibold text-[var(--co-cart-text)]">
                       {t("floating_cart.total", { amount: total.toFixed(0) })}
                     </span>
-                    <span
-                      className="font-bold text-lg"
-                      style={{ color: brandColor }}
-                    >
+                    <span className="text-lg font-bold tabular-nums text-[var(--co-menu-accent-strong)]">
                       {formatPrice(total, currency, currentLocale)}
                     </span>
                   </div>
                   <Button
                     onClick={handlePlaceOrder}
                     disabled={isPlacingOrder || count === 0}
-                    className="w-full text-white hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: brandColor }}
+                    className="h-12 w-full rounded-[14px] bg-[var(--co-menu-accent)] text-white shadow-[0_14px_34px_-18px_rgba(0,0,0,0.9)] transition-colors hover:bg-[var(--co-menu-accent-strong)]"
                   >
                     {isPlacingOrder ? (
                       <>
@@ -409,37 +400,43 @@ export function FloatingCart({
           transition={{ duration: 0.1 }}
         >
           <Card
-            className="shadow-2xl bg-opacity-100 dark:bg-opacity-100 border-2 overflow-hidden cursor-pointer"
+            className="cursor-pointer overflow-hidden rounded-[20px] border border-[#f1dcc4]/16 bg-[#18100b]/88 shadow-[0_22px_70px_-38px_rgba(0,0,0,0.98)] backdrop-blur-xl ring-1 ring-white/5"
             style={{
-              backgroundColor: brandColor,
-              borderColor: brandColor,
+              backgroundColor: "var(--co-cart-bg)",
+              borderColor: "var(--co-cart-border)",
             }}
           >
             <div className="px-4 py-3">
-              <div className="flex items-center justify-between text-white">
+              <div className="flex items-center justify-between text-[var(--co-cart-text)]">
                 <button
                   onClick={handleToggleExpanded}
-                  className="flex items-center space-x-3 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg"
+                  className="flex flex-1 items-center space-x-3 rounded-2xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#e9a35e]"
                   aria-expanded={isExpanded}
-                  aria-label={isExpanded ? t("floating_cart.title") : t("floating_cart.view_cart")}
+                  aria-label={
+                    isExpanded
+                      ? t("floating_cart.title")
+                      : t("floating_cart.view_cart")
+                  }
                 >
                   <div className="relative">
-                    <ShoppingCart className="h-6 w-6" />
+                    <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[var(--co-menu-accent)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+                      <ShoppingCart className="h-5 w-5" />
+                    </span>
                     <motion.div
                       key={count}
                       initial={{ scale: 1.5 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-2 -right-2 bg-white text-slate-800 rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold"
+                      className="absolute -right-1 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--co-menu-accent-strong)] text-xs font-bold text-white"
                     >
                       {count}
                     </motion.div>
                   </div>
 
                   <div className="flex-1">
-                    <p className="font-semibold text-sm">
+                    <p className="text-sm font-semibold text-[var(--co-cart-text)]">
                       {t("floating_cart.items_count", { count })}
                     </p>
-                    <p className="text-xs opacity-90">
+                    <p className="text-xs text-[var(--co-cart-muted)]">
                       {t("floating_cart.total", { amount: total.toFixed(0) })}
                     </p>
                   </div>
@@ -454,9 +451,13 @@ export function FloatingCart({
                     onClick={handleToggleExpanded}
                     variant="ghost"
                     size="sm"
-                    className="text-white hover:bg-white/20 h-8 w-8 p-0"
+                    className="h-9 w-9 rounded-full p-0 text-[var(--co-cart-text)] hover:bg-[var(--co-menu-subtle)]"
                     aria-expanded={isExpanded}
-                    aria-label={isExpanded ? tCommon("close_modal") : t("floating_cart.view_cart")}
+                    aria-label={
+                      isExpanded
+                        ? tCommon("close_modal")
+                        : t("floating_cart.view_cart")
+                    }
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -496,6 +497,7 @@ export function FloatingCart({
             }}
             locale={currentLocale}
             brandColor={brandColor}
+            currency={currency}
             onAddToCart={handleSaveEditedItem}
             canAddItems={true}
             isEditMode={true}

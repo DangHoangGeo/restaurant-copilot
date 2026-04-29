@@ -12,7 +12,28 @@ export interface PurchasingAccess {
 
 export async function resolvePurchasingAccess(): Promise<PurchasingAccess | null> {
   const user = await getUserFromRequest();
+  const ctx = await resolveOrgContext();
+  const authz = buildAuthorizationService(ctx);
 
+  if (ctx && authz) {
+    const activeBranchId = await getActiveBranchId(ctx);
+    if (!activeBranchId || !authz.canAccessRestaurant(activeBranchId)) return null;
+
+    const canRead =
+      authz.can('purchases') ||
+      authz.can('reports') ||
+      authz.can('finance_exports');
+
+    if (!canRead) return null;
+
+    return {
+      restaurantId: activeBranchId,
+      userId: ctx.member.user_id,
+      canWrite: authz.can('purchases'),
+    };
+  }
+
+  // Legacy branch-scoped path remains only for users without org membership.
   if (
     user?.restaurantId &&
     [USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(user.role as 'owner' | 'manager')
@@ -24,25 +45,7 @@ export async function resolvePurchasingAccess(): Promise<PurchasingAccess | null
     };
   }
 
-  const ctx = await resolveOrgContext();
-  const authz = buildAuthorizationService(ctx);
-  if (!ctx || !authz) return null;
-
-  const activeBranchId = await getActiveBranchId(ctx);
-  if (!activeBranchId || !authz.canAccessRestaurant(activeBranchId)) return null;
-
-  const canRead =
-    authz.can('purchases') ||
-    authz.can('reports') ||
-    authz.can('finance_exports');
-
-  if (!canRead) return null;
-
-  return {
-    restaurantId: activeBranchId,
-    userId: ctx.member.user_id,
-    canWrite: authz.can('purchases'),
-  };
+  return null;
 }
 
 export async function resolveScopedBranchPurchasingAccess(

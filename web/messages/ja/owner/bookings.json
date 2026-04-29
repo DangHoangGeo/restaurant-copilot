@@ -1,6 +1,6 @@
 {
   "title": "予約管理",
-  "subtitle": "テーブル予約と顧客の予約を管理します",
+  "subtitle": "予約リクエストを確認し、折り返し連絡して最終時間を調整し、空席状況を確定します",
   "retry": "再試行",
   "table": {
     "customer_name": "顧客名",
@@ -23,6 +23,17 @@
     "canceling": "キャンセル中..."
   },
   "details_title": "予約詳細",
+  "details": {
+    "phone": "電話番号",
+    "email": "メール",
+    "note": "お客様メモ",
+    "no_note": "メモはありません",
+    "not_provided": "未入力",
+    "adjust_time_title": "最終予約時間",
+    "adjust_time_help": "お客様に連絡した後、確定前に最終の日付または時間を更新してください。",
+    "date_label": "日付",
+    "time_label": "時間"
+  },
   "notifications": {
     "update_success": "予約ステータスが正常に更新されました",
     "update_failed": "予約ステータスの更新に失敗しました: {error}",

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
@@ -51,11 +51,16 @@ interface QueryProviderProps {
 
 export function QueryProvider({ children }: QueryProviderProps) {
   const queryClient = getQueryClient();
+  const [showDevtools, setShowDevtools] = useState(false);
+
+  useEffect(() => {
+    setShowDevtools(process.env.NEXT_PUBLIC_SHOW_DEV_TOOLS === 'true');
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {process.env.REACT_APP_SHOW_DEV_TOOLS && (
+      {showDevtools && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}
     </QueryClientProvider>

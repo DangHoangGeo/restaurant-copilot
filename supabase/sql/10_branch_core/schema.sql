@@ -51,13 +51,17 @@ CREATE TABLE public.audit_logs (
 CREATE TABLE public.bookings (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     restaurant_id uuid NOT NULL,
-    table_id uuid NOT NULL,
+    table_id uuid,
     customer_name text NOT NULL,
     customer_contact text NOT NULL,
+    customer_phone text,
+    customer_email text,
+    customer_note text,
     booking_date date NOT NULL,
     booking_time time without time zone NOT NULL,
     party_size integer NOT NULL,
     preorder_items jsonb DEFAULT '[]'::jsonb,
+    public_lookup_token uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     status text DEFAULT 'pending'::text NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
@@ -357,7 +361,7 @@ CREATE TABLE public.toppings (
 
 CREATE TABLE public.users (
     id uuid NOT NULL,
-    restaurant_id uuid NOT NULL,
+    restaurant_id uuid,
     email text NOT NULL,
     name text,
     role text NOT NULL,
@@ -365,5 +369,7 @@ CREATE TABLE public.users (
     two_factor_enabled boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     photo_url text,
-    CONSTRAINT users_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'chef'::text, 'server'::text, 'cashier'::text, 'manager'::text])))
+    CONSTRAINT users_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'chef'::text, 'server'::text, 'cashier'::text, 'manager'::text, 'part_time'::text, 'employee'::text, 'staff'::text])))
 );
+
+COMMENT ON COLUMN public.users.restaurant_id IS 'Legacy primary branch context. Nullable for organization-only members such as accountant_readonly who must not inherit branch-route authority.';

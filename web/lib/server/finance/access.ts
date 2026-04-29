@@ -32,18 +32,40 @@ export interface OrganizationFinanceAccess {
 }
 
 export async function resolveFinanceAccess(): Promise<FinanceAccess | null> {
-  // Fast path: restaurant-scoped JWT (owner or manager)
   const user = await getUserFromRequest();
+  const ctx = await resolveOrgContext();
+  const authz = buildAuthorizationService(ctx);
 
+  if (ctx && authz) {
+    const activeBranchId = await getActiveBranchId(ctx);
+    if (!activeBranchId || !authz.canAccessRestaurant(activeBranchId)) return null;
+
+    const canAccess = authz.can('reports') || authz.can('finance_exports');
+    if (!canAccess) return null;
+
+    const currency = await getBranchCurrency(activeBranchId);
+
+    return {
+      restaurantId: activeBranchId,
+      organizationId: ctx.organization?.id ?? null,
+      userId: ctx.member.user_id,
+      currency,
+      canExport: authz.can('finance_exports'),
+      canClose:
+        ctx.member.role === 'founder_full_control' &&
+        authz.can('finance_exports'),
+    };
+  }
+
+  // Legacy branch-scoped path remains only for users without org membership.
   if (
     user?.restaurantId &&
     [USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(user.role as 'owner' | 'manager')
   ) {
-    const orgContext = await resolveOrgContext();
     const currency = await getBranchCurrency(user.restaurantId);
     return {
       restaurantId: user.restaurantId,
-      organizationId: orgContext?.organization.id ?? null,
+      organizationId: null,
       userId: user.userId,
       currency,
       canExport: user.role === USER_ROLES.OWNER,
@@ -51,29 +73,7 @@ export async function resolveFinanceAccess(): Promise<FinanceAccess | null> {
     };
   }
 
-  // Org-context path (multi-branch)
-  const ctx = await resolveOrgContext();
-  const authz = buildAuthorizationService(ctx);
-  if (!ctx || !authz) return null;
-
-  const activeBranchId = await getActiveBranchId(ctx);
-  if (!activeBranchId || !authz.canAccessRestaurant(activeBranchId)) return null;
-
-  const canAccess = authz.can('reports') || authz.can('finance_exports');
-  if (!canAccess) return null;
-
-  const currency = await getBranchCurrency(activeBranchId);
-
-  return {
-    restaurantId: activeBranchId,
-    organizationId: ctx.organization?.id ?? null,
-    userId: ctx.member.user_id,
-    currency,
-    canExport: authz.can('finance_exports'),
-    canClose:
-      ctx.member.role === 'founder_full_control' &&
-      authz.can('finance_exports'),
-  };
+  return null;
 }
 
 export async function resolveScopedBranchFinanceAccess(

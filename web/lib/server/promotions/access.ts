@@ -14,7 +14,24 @@ export interface PromotionsAccess {
 
 export async function resolvePromotionsAccess(): Promise<PromotionsAccess | null> {
   const user = await getUserFromRequest();
+  const ctx = await resolveOrgContext();
+  const authz = buildAuthorizationService(ctx);
 
+  if (ctx && authz) {
+    const activeBranchId = await getActiveBranchId(ctx);
+    if (!activeBranchId || !authz.canAccessRestaurant(activeBranchId))
+      return null;
+
+    if (!authz.can("promotions")) return null;
+
+    return {
+      restaurantId: activeBranchId,
+      userId: ctx.member.user_id,
+      canWrite: authz.can("promotions"),
+    };
+  }
+
+  // Legacy branch-scoped path remains only for users without org membership.
   if (
     user?.restaurantId &&
     [USER_ROLES.OWNER, USER_ROLES.MANAGER].includes(
@@ -28,22 +45,7 @@ export async function resolvePromotionsAccess(): Promise<PromotionsAccess | null
     };
   }
 
-  const ctx = await resolveOrgContext();
-  const authz = buildAuthorizationService(ctx);
-  if (!ctx || !authz) return null;
-
-  const activeBranchId = await getActiveBranchId(ctx);
-  if (!activeBranchId || !authz.canAccessRestaurant(activeBranchId))
-    return null;
-
-  const canRead = authz.can("promotions");
-  if (!canRead) return null;
-
-  return {
-    restaurantId: activeBranchId,
-    userId: ctx.member.user_id,
-    canWrite: authz.can("promotions"),
-  };
+  return null;
 }
 
 export async function resolveScopedBranchPromotionsAccess(

@@ -11,23 +11,21 @@ import React, {
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDebounce } from "use-debounce";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Search,
   Clock,
+  Moon,
   TrendingUp,
   Sparkles,
   ChefHat,
-  ArrowRight,
   Heart,
   RefreshCw,
-  UtensilsCrossed,
-  Moon,
+  SlidersHorizontal,
   Sun,
+  UtensilsCrossed,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { getLocalizedText } from "@/lib/customerUtils";
 import {
   createCustomerBrandTheme,
@@ -79,7 +77,6 @@ interface SmartCategory {
   count: number;
 }
 
-
 interface SmartMenuProps {
   categories?: Category[]; // Optional fallback data
   onAddToCart?: (item: SmartMenuItem) => void;
@@ -97,17 +94,149 @@ interface SmartMenuProps {
   restaurantId?: string;
   logoUrl?: string | null;
   allowOrderNotes?: boolean;
+  timezone?: string | null;
+}
+
+const DEFAULT_CUSTOMER_MENU_TIMEZONE = "Asia/Tokyo";
+
+function getHourInTimezone(timezone?: string | null) {
+  const safeTimezone = timezone || DEFAULT_CUSTOMER_MENU_TIMEZONE;
+
+  try {
+    const hourPart = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      hour12: false,
+      timeZone: safeTimezone,
+    })
+      .formatToParts(new Date())
+      .find((part) => part.type === "hour");
+    const hour = Number(hourPart?.value);
+    return Number.isFinite(hour) ? hour % 24 : new Date().getHours();
+  } catch {
+    return new Date().getHours();
+  }
 }
 
 // Helper function to get time of day classification
-const getTimeOfDay = (): string => {
-  const hour = new Date().getHours();
+const getTimeOfDay = (timezone?: string | null): string => {
+  const hour = getHourInTimezone(timezone);
   if (hour >= 6 && hour < 11) return "breakfast";
   if (hour >= 11 && hour < 15) return "lunch";
   if (hour >= 15 && hour < 17) return "afternoon";
   if (hour >= 17 && hour < 22) return "dinner";
   return "late";
 };
+
+type CustomerMenuTone = "light" | "dark";
+
+function getMenuTone(timeOfDay: string): CustomerMenuTone {
+  return timeOfDay === "dinner" || timeOfDay === "late" ? "dark" : "light";
+}
+
+function getToneProperties(tone: CustomerMenuTone) {
+  if (tone === "dark") {
+    return {
+      "--co-menu-tone": "dark",
+      "--co-menu-display-font":
+        '"Fraunces", "Cormorant Garamond", "Noto Serif", "Yu Mincho", Georgia, serif',
+      "--co-menu-body-font":
+        '"Geist", "Noto Sans", "Helvetica Neue", Arial, sans-serif',
+      "--co-menu-bg": "#0B0A08",
+      "--co-menu-bg-image":
+        "linear-gradient(180deg,#12100D 0%,#0B0A08 48%,#080705 100%)",
+      "--co-menu-bg-position": "center top",
+      "--co-menu-bg-size": "auto",
+      "--co-menu-bg-repeat": "no-repeat",
+      "--co-menu-hero": "transparent",
+      "--co-menu-nav": "rgba(11,10,8,0.82)",
+      "--co-menu-text": "#F8EEDB",
+      "--co-menu-muted": "#D6C4A6",
+      "--co-menu-subtle": "rgba(248,238,219,0.08)",
+      "--co-menu-chip": "rgba(248,238,219,0.08)",
+      "--co-menu-chip-text": "#F6E8D3",
+      "--co-menu-chip-border": "rgba(248,238,219,0.16)",
+      "--co-menu-card":
+        "linear-gradient(180deg,rgba(23,17,13,0.9) 0%,rgba(12,10,8,0.94) 100%)",
+      "--co-menu-card-footer":
+        "linear-gradient(180deg,rgba(24,17,12,0.96) 0%,rgba(14,11,8,0.98) 100%)",
+      "--co-menu-card-text": "#F8EEDB",
+      "--co-menu-card-muted": "#D6C4A6",
+      "--co-menu-card-border": "rgba(248,238,219,0.12)",
+      "--co-menu-card-shadow": "0 22px 52px -38px rgba(0,0,0,0.9)",
+      "--co-menu-price-bg": "rgba(14,12,9,0.58)",
+      "--co-menu-price-text": "#F8EEDB",
+      "--co-menu-accent": "var(--customer-brand)",
+      "--co-menu-accent-strong": "var(--customer-brand-hover)",
+      "--co-menu-hanko": "rgba(14,12,9,0.52)",
+      "--co-menu-hanko-border": "transparent",
+      "--co-menu-hanko-text": "#FFF7E9",
+      "--co-menu-count-bg": "rgba(248,238,219,0.11)",
+      "--co-menu-count-text": "#F6E8D3",
+      "--co-menu-focus-offset": "#0E0C09",
+      "--co-cart-bg": "rgba(18,13,9,0.9)",
+      "--co-cart-panel-bg": "#120D09",
+      "--co-cart-text": "#F8EEDB",
+      "--co-cart-muted": "#D6C4A6",
+      "--co-cart-border": "rgba(248,238,219,0.16)",
+    };
+  }
+
+  return {
+    "--co-menu-tone": "light",
+    "--co-menu-display-font":
+      '"Fraunces", "Cormorant Garamond", "Noto Serif", "Yu Mincho", Georgia, serif',
+    "--co-menu-body-font":
+      '"Geist", "Noto Sans", "Helvetica Neue", Arial, sans-serif',
+    "--co-menu-bg": "#F5F4EF",
+    "--co-menu-bg-image":
+      "linear-gradient(180deg,#FAF9F5 0%,#F5F4EF 48%,#EDEAE3 100%)",
+    "--co-menu-bg-position": "center top",
+    "--co-menu-bg-size": "auto",
+    "--co-menu-bg-repeat": "no-repeat",
+    "--co-menu-hero": "transparent",
+    "--co-menu-nav": "rgba(245,244,239,0.86)",
+    "--co-menu-text": "#211C17",
+    "--co-menu-muted": "#6F685E",
+    "--co-menu-subtle": "rgba(33,28,23,0.055)",
+    "--co-menu-chip": "rgba(255,255,252,0.82)",
+    "--co-menu-chip-text": "#2E2821",
+    "--co-menu-chip-border": "rgba(33,28,23,0.095)",
+    "--co-menu-card": "#FFFFFC",
+    "--co-menu-card-footer": "#FFFFFC",
+    "--co-menu-card-text": "#211C17",
+    "--co-menu-card-muted": "#6F685E",
+    "--co-menu-card-border": "rgba(33,28,23,0.095)",
+    "--co-menu-card-shadow":
+      "0 18px 38px -31px rgba(33,28,23,0.34), 0 1px 0 rgba(255,255,255,0.96) inset",
+    "--co-menu-hanko": "rgba(36,23,15,0.56)",
+    "--co-menu-hanko-border": "transparent",
+    "--co-menu-hanko-text": "#FFF7E9",
+    "--co-menu-price-bg": "rgba(255,255,252,0.88)",
+    "--co-menu-price-text": "#211C17",
+    "--co-menu-accent": "var(--customer-brand)",
+    "--co-menu-accent-strong": "var(--customer-brand-hover)",
+    "--co-menu-count-bg": "rgba(255,255,252,0.78)",
+    "--co-menu-count-text": "#3D352C",
+    "--co-menu-focus-offset": "#F5F4EF",
+    "--co-cart-bg": "rgba(255,255,252,0.94)",
+    "--co-cart-panel-bg": "#FFFFFC",
+    "--co-cart-text": "#211C17",
+    "--co-cart-muted": "#6F685E",
+    "--co-cart-border": "rgba(33,28,23,0.11)",
+  };
+}
+
+function categoryDomId(categoryId: string) {
+  return `menu-category-${categoryId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function getRestaurantBusinessDay() {
+  return new Date().getDay() === 0 ? 7 : new Date().getDay();
+}
+
+function isMenuItemVisibleToday(item: FoodItem, day: number) {
+  return item.available && item.weekday_visibility.includes(day);
+}
 
 // Transform categories into enhanced smart menu items
 const transformToSmartMenuItems = (
@@ -116,18 +245,11 @@ const transformToSmartMenuItems = (
   recommendedItems: string[] = [],
   recommendationReasons: Record<string, string> = {},
 ): SmartMenuItem[] => {
-  const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
+  const today = getRestaurantBusinessDay();
 
   return categories.flatMap((category) =>
     category.menu_items
-      .filter(
-        (item) =>
-          item.available &&
-          item.weekday_visibility.includes(today) &&
-          (item.stock_level === undefined ||
-            item.stock_level === null ||
-            item.stock_level > 0),
-      )
+      .filter((item) => isMenuItemVisibleToday(item, today))
       .map((item): SmartMenuItem => {
         const isRecommended = recommendedItems.includes(item.id);
 
@@ -163,7 +285,6 @@ const transformToSmartMenuItems = (
 export function SmartMenu({
   categories: fallbackCategories = [],
   onAddToCart,
-  searchPlaceholder = "Search menu items...",
   locale,
   brandColor,
   canAddItems,
@@ -177,9 +298,9 @@ export function SmartMenu({
   logoUrl,
   allowOrderNotes = true,
   currency,
+  timezone,
 }: SmartMenuProps) {
   const { addToCart, getQuantityByItemId, cart } = useCart();
-  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [selectedLocale, setSelectedLocale] = useState(locale);
 
@@ -205,8 +326,6 @@ export function SmartMenu({
     [customerTheme.primary],
   );
   const safeBrandColor = customerTheme.primary;
-  // Search input ref for focus management
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const itemDetailRequestRef = useRef(0);
 
   // Data fetching hooks
@@ -230,7 +349,21 @@ export function SmartMenu({
     restaurantId,
   });
 
-  const timeOfDay = useMemo(() => getTimeOfDay(), []);
+  const [timeOfDay, setTimeOfDay] = useState(() => getTimeOfDay(timezone));
+  const automaticMenuTone = useMemo(() => getMenuTone(timeOfDay), [timeOfDay]);
+  const [menuToneOverride, setMenuToneOverride] =
+    useState<CustomerMenuTone | null>(null);
+  const menuTone = menuToneOverride ?? automaticMenuTone;
+  const menuToneProperties = useMemo(
+    () => getToneProperties(menuTone),
+    [menuTone],
+  );
+  const toggleMenuTone = useCallback(() => {
+    setMenuToneOverride((current) => {
+      const activeTone = current ?? automaticMenuTone;
+      return activeTone === "dark" ? "light" : "dark";
+    });
+  }, [automaticMenuTone]);
   const cartItems = useMemo(
     () => cart.map((item: { itemId: string }) => item.itemId),
     [cart],
@@ -240,19 +373,25 @@ export function SmartMenu({
   const activeCategories =
     fetchedCategories.length > 0 ? fetchedCategories : fallbackCategories;
 
+  useEffect(() => {
+    const updateTimeOfDay = () => {
+      setTimeOfDay((current) => {
+        const next = getTimeOfDay(timezone);
+        return current === next ? current : next;
+      });
+    };
+
+    updateTimeOfDay();
+    const intervalId = window.setInterval(updateTimeOfDay, 60_000);
+    return () => window.clearInterval(intervalId);
+  }, [timezone]);
+
   // Prepare menu items for recommendations
   const availableMenuItems = useMemo(() => {
-    const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
+    const today = getRestaurantBusinessDay();
     return activeCategories.flatMap((category) =>
       category.menu_items
-        .filter(
-          (item) =>
-            item.available &&
-            item.weekday_visibility.includes(today) &&
-            (item.stock_level === undefined ||
-              item.stock_level === null ||
-              item.stock_level > 0),
-        )
+        .filter((item) => isMenuItemVisibleToday(item, today))
         .map((item) => ({
           id: item.id,
           name_en: item.name_en,
@@ -294,6 +433,23 @@ export function SmartMenu({
       recommendationReasons,
     );
   }, [activeCategories, locale, recommendedItems, recommendationReasons]);
+
+  const visibleMenuCategories = useMemo(() => {
+    const itemCounts = new Map<string, number>();
+    allMenuItems.forEach((item) => {
+      itemCounts.set(
+        item.categoryId,
+        (itemCounts.get(item.categoryId) || 0) + 1,
+      );
+    });
+
+    return activeCategories
+      .map((category) => ({
+        category,
+        count: itemCounts.get(category.id) || 0,
+      }))
+      .filter(({ count }) => count > 0);
+  }, [activeCategories, allMenuItems]);
 
   // Smart categorization logic with enhanced algorithms
   const smartCategories = useMemo((): Record<string, SmartCategory> => {
@@ -467,7 +623,7 @@ export function SmartMenu({
       selectedToppings?: Topping[],
       notes?: string,
     ) => {
-        addToCart(
+      addToCart(
         item as SmartMenuItem,
         quantity,
         selectedSize,
@@ -558,8 +714,14 @@ export function SmartMenu({
   useEffect(() => {
     const previousValues = new Map<string, string>();
 
-    Object.entries(customerThemeProperties).forEach(([key, value]) => {
-      previousValues.set(key, document.documentElement.style.getPropertyValue(key));
+    Object.entries({
+      ...customerThemeProperties,
+      ...menuToneProperties,
+    }).forEach(([key, value]) => {
+      previousValues.set(
+        key,
+        document.documentElement.style.getPropertyValue(key),
+      );
       document.documentElement.style.setProperty(key, value);
     });
 
@@ -572,7 +734,7 @@ export function SmartMenu({
         }
       });
     };
-  }, [customerThemeProperties]);
+  }, [customerThemeProperties, menuToneProperties]);
 
   // Auto-switch to recommended when recommendations load (only if user hasn't interacted)
   useEffect(() => {
@@ -616,254 +778,257 @@ export function SmartMenu({
 
   return (
     <div
-      className="min-h-screen bg-[var(--customer-background)] text-slate-900 dark:bg-slate-900 dark:text-slate-100"
-      style={customerThemeProperties as React.CSSProperties}
+      className="relative min-h-screen overflow-hidden text-[var(--co-menu-text)]"
+      style={
+        {
+          ...customerThemeProperties,
+          ...menuToneProperties,
+          backgroundColor: "var(--co-menu-bg)",
+          backgroundImage: "var(--co-menu-bg-image)",
+          backgroundPosition: "var(--co-menu-bg-position)",
+          backgroundSize: "var(--co-menu-bg-size)",
+          backgroundRepeat: "var(--co-menu-bg-repeat)",
+          fontFamily: "var(--co-menu-body-font)",
+        } as React.CSSProperties
+      }
     >
-      {/* Restaurant Hero Header */}
-      <div
-        className="relative overflow-hidden"
-        style={{ background: "var(--customer-menu-hero-gradient)" }}
-      >
-        {/* Decorative blobs */}
-        <div
-          className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10"
-          style={{ filter: "blur(28px)" }}
-        />
-        <div
-          className="absolute -bottom-8 -left-6 w-36 h-36 rounded-full bg-white/10"
-          style={{ filter: "blur(22px)" }}
-        />
-        {/* Subtle dot pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, white 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
-          }}
-        />
-
-        {/* ── Action bar: language / theme / history ── */}
-        <div
-          className="relative z-10 flex items-center justify-end gap-1 px-3"
-          style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 10px)" }}
-        >
-          {sessionId && (
-            <button
-              onClick={() =>
-                setView("history", { tableId, sessionId, tableNumber })
-              }
-              className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
-              aria-label={t("order_history_label")}
-            >
-              <Clock className="h-4 w-4" />
-            </button>
-          )}
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-10 w-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
-            aria-label={
-              theme === "dark"
-                ? t("switch_to_light_mode")
-                : t("switch_to_dark_mode")
-            }
-          >
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-          </button>
-          <div className="[&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:h-10 [&_button]:rounded-full [&_button]:bg-white/15">
-            <LanguageSwitcher
-              currentLocale={selectedLocale}
-              onLocaleChange={setSelectedLocale}
-            />
-          </div>
-        </div>
-
+      {/* Restaurant header */}
+      <div className="relative z-10 overflow-hidden bg-[var(--co-menu-hero)]">
         {/* Main content */}
-        <div className="relative px-4 pt-2 pb-8">
-          <div className="flex items-center gap-3">
-            {/* Logo or initial */}
-            <motion.div
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="flex-shrink-0"
-            >
-              {logoUrl ? (
-                <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-white/40 shadow-xl">
-                  <Image
-                    src={logoUrl}
-                    alt={restaurantName}
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-12 h-12 rounded-xl bg-white/20 border-2 border-white/30 shadow-xl flex items-center justify-center">
-                  <UtensilsCrossed className="h-6 w-6 text-white/80" />
-                </div>
-              )}
-            </motion.div>
-
-            {/* Restaurant name + branch */}
-            <div className="flex-1 min-w-0">
-              <motion.h1
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="font-bold text-white text-lg leading-tight truncate"
-                style={{ textShadow: "0 1px 4px rgba(0,0,0,0.15)" }}
+        <div className="relative mx-auto w-full max-w-7xl px-4 py-4 md:px-6 md:py-6 lg:px-8">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
+              {/* Logo or initial */}
+              <motion.div
+                initial={{ scale: 0.7, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="flex-shrink-0"
               >
-                {restaurantName}
-              </motion.h1>
-              {branchName && branchName !== restaurantName && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.16 }}
-                  className="inline-flex items-center rounded-full bg-white/18 px-2 py-0.5 text-xs font-medium text-white/90 mt-0.5"
+                {logoUrl ? (
+                  <div className="h-9 w-9 overflow-hidden rounded-[12px] bg-[var(--co-menu-chip)] p-1 shadow-[0_16px_34px_-26px_rgba(116,63,42,0.65)] sm:h-11 sm:w-11 md:h-12 md:w-12">
+                    <Image
+                      src={logoUrl}
+                      alt={restaurantName}
+                      width={48}
+                      height={48}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--co-menu-chip)] shadow-[0_16px_34px_-26px_rgba(116,63,42,0.65)] sm:h-11 sm:w-11 md:h-12 md:w-12">
+                    <UtensilsCrossed className="h-4 w-4 text-[var(--co-menu-muted)] sm:h-5 sm:w-5" />
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Restaurant name + branch */}
+              <div className="min-w-0 flex-1">
+                <motion.h1
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="truncate text-[1.55rem] font-medium leading-none text-[var(--co-menu-text)] sm:text-[2.05rem] md:text-[2.35rem]"
+                  style={{
+                    fontFamily: "var(--co-menu-display-font)",
+                    textShadow:
+                      menuTone === "dark"
+                        ? "0 1px 8px rgba(0,0,0,0.35)"
+                        : "none",
+                  }}
                 >
-                  {branchName}
-                </motion.span>
-              )}
+                  {restaurantName}
+                </motion.h1>
+                {branchName && branchName !== restaurantName && (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.16 }}
+                    className="mt-1 inline-flex max-w-full items-center truncate rounded-[10px] border border-[var(--co-menu-chip-border)] bg-[var(--co-menu-subtle)] px-2.5 py-1 text-[11px] font-medium text-[var(--co-menu-muted)]"
+                  >
+                    {branchName}
+                  </motion.span>
+                )}
+              </div>
             </div>
 
-            {/* Table badge */}
-            {tableNumber && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.18 }}
-                className="flex-shrink-0 bg-white/20 border border-white/30 rounded-xl px-3 py-1.5 text-center shadow-md backdrop-blur-sm"
+            <div className="flex w-auto shrink-0 items-center justify-end gap-1 self-auto">
+              {sessionId && (
+                <button
+                  onClick={() =>
+                    setView("history", { tableId, sessionId, tableNumber })
+                  }
+                  className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-[var(--co-menu-chip-border)] bg-[var(--co-menu-chip)] text-[var(--co-menu-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] transition-colors hover:bg-[var(--co-menu-subtle)] sm:h-10 sm:w-10 sm:rounded-[14px]"
+                  aria-label={t("order_history_label")}
+                >
+                  <Clock className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={toggleMenuTone}
+                className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-[var(--co-menu-chip-border)] bg-[var(--co-menu-chip)] text-[var(--co-menu-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] transition-colors hover:bg-[var(--co-menu-subtle)] sm:h-10 sm:w-10 sm:rounded-[14px]"
+                aria-label={
+                  menuTone === "dark"
+                    ? t("switch_to_light_mode")
+                    : t("switch_to_dark_mode")
+                }
+                title={
+                  menuTone === "dark"
+                    ? t("switch_to_light_mode")
+                    : t("switch_to_dark_mode")
+                }
               >
-                <p className="text-white/60 text-[10px] uppercase tracking-widest font-medium leading-none">
-                  Table
-                </p>
-                <p className="text-white font-bold text-lg leading-none mt-0.5">
-                  {tableNumber}
-                </p>
-              </motion.div>
-            )}
+                {menuTone === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </button>
+              <div className="[&_button]:h-9 [&_button]:w-10 [&_button]:rounded-[13px] [&_button]:border [&_button]:border-[var(--co-menu-chip-border)] [&_button]:bg-[var(--co-menu-chip)] [&_button]:px-0 [&_button]:text-[13px] [&_button]:font-semibold [&_button]:text-[var(--co-menu-text)] [&_button]:shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] [&_button]:hover:bg-[var(--co-menu-subtle)] sm:[&_button]:h-10 sm:[&_button]:w-11 sm:[&_button]:rounded-[14px]">
+                <LanguageSwitcher
+                  currentLocale={selectedLocale}
+                  onLocaleChange={setSelectedLocale}
+                  labelMode="code"
+                  showFlag
+                  triggerMode="flag"
+                />
+              </div>
+              {/* Table badge */}
+              {tableNumber && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.18 }}
+                  className="flex h-9 flex-shrink-0 items-center gap-1 rounded-[13px] border border-[var(--co-menu-chip-border)] bg-[var(--co-menu-chip)] px-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-sm sm:h-10 sm:gap-1.5 sm:rounded-[14px] sm:px-3.5"
+                >
+                  <p className="hidden text-[8px] font-medium uppercase leading-none tracking-[0.14em] text-[var(--co-menu-muted)] sm:block">
+                    {tMenu("table_label")}
+                  </p>
+                  <p className="text-[15px] font-semibold leading-none text-[var(--co-menu-text)] sm:text-base">
+                    {tableNumber}
+                  </p>
+                </motion.div>
+              )}
+            </div>
           </div>
-        </div>
-
-        {/* Wave bottom divider */}
-        <div className="absolute bottom-0 left-0 right-0 h-6 overflow-hidden">
-          <svg
-            viewBox="0 0 1440 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-full"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M0 24L80 20C160 16 320 8 480 6C640 4 800 8 960 12C1120 16 1280 20 1360 22L1440 24V24H1360C1280 24 1120 24 960 24C800 24 640 24 480 24C320 24 160 24 80 24H0Z"
-              className="fill-slate-50 dark:fill-slate-900"
-            />
-          </svg>
         </div>
       </div>
 
-      {/* ── Sticky search + category bar ── */}
-      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm">
-        {/* Search bar */}
-        <div className="px-4 pt-3 pb-0">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <Input
-              ref={searchInputRef}
-              type="search"
-              placeholder={searchPlaceholder}
+      <div className="relative z-20 px-4 pb-3 md:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <label className="relative flex h-12 items-center rounded-[16px] border border-[var(--co-menu-chip-border)] bg-[var(--co-menu-chip)] px-4 shadow-[0_18px_40px_-34px_rgba(0,0,0,0.72)] backdrop-blur-xl">
+            <Search className="h-4 w-4 shrink-0 text-[var(--co-menu-muted)]" />
+            <input
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 pr-12 w-full h-11 text-base rounded-xl border border-gray-200 dark:border-slate-700 focus:border-[var(--brand-color)] transition-colors bg-slate-50 dark:bg-slate-800"
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setHasUserInteracted(true);
+              }}
+              placeholder={tMenu("search_placeholder")}
+              className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-[var(--co-menu-text)] outline-none placeholder:text-[var(--co-menu-muted)]"
+              type="search"
             />
-            {searchTerm && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="absolute inset-y-0 right-3 flex items-center"
+            {searchTerm ? (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="mr-1 rounded-full px-2 py-1 text-xs font-semibold text-[var(--co-menu-muted)] transition-colors hover:text-[var(--co-menu-text)]"
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSearchTerm("")}
-                  className="h-6 w-6 p-0 rounded-full"
-                >
-                  ×
-                </Button>
-              </motion.div>
-            )}
-          </div>
+                {tMenu("clear_search")}
+              </button>
+            ) : null}
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[11px] border border-[var(--co-menu-chip-border)] bg-[var(--co-menu-subtle)] text-[var(--co-menu-text)]">
+              <SlidersHorizontal className="h-4 w-4" />
+            </span>
+          </label>
         </div>
+      </div>
 
-        {/* Category pills */}
-        {activeCategories.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-hide">
+      {visibleMenuCategories.length > 0 && (
+        <nav className="sticky top-0 z-30 border-y border-[var(--co-menu-chip-border)] bg-[var(--co-menu-nav)] px-4 py-2 backdrop-blur-xl md:px-6 lg:px-8">
+          <div
+            className="mx-auto flex max-w-7xl gap-1.5 overflow-x-auto scrollbar-hide"
+            aria-label={tMenu("category_nav.label")}
+          >
             <button
-              onClick={() => setActiveCategoryFilter(null)}
-              className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-slate-400"
+              type="button"
+              onClick={() => {
+                setActiveCategoryFilter(null);
+                setHasUserInteracted(true);
+              }}
+              className="flex h-9 shrink-0 items-center gap-1.5 rounded-[12px] border border-[var(--co-menu-chip-border)] px-3 text-[11px] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)]"
               style={
                 !activeCategoryFilter
                   ? {
-                      backgroundColor: safeBrandColor,
-                      borderColor: safeBrandColor,
-                      color: customerTheme.primaryForeground,
+                      backgroundColor: "var(--co-menu-accent)",
+                      color: "#FFF7E9",
                     }
                   : {
-                      backgroundColor: "transparent",
-                      borderColor: "#e2e8f0",
-                      color: "#64748b",
+                      backgroundColor: "var(--co-menu-chip)",
+                      color: "var(--co-menu-chip-text)",
                     }
               }
             >
-              {t("menu.show_all_categories")}
+              <span className="grid h-4 w-4 shrink-0 place-items-center rounded-[5px] border border-current/35">
+                <UtensilsCrossed className="h-3 w-3" />
+              </span>
+              {tMenu("category_nav.all")}
             </button>
-            {activeCategories.map((cat) => {
+
+            {visibleMenuCategories.map(({ category, count }) => {
               const label = getLocalizedText(
                 {
-                  name_en: cat.name_en || "",
-                  name_ja: cat.name_ja || "",
-                  name_vi: cat.name_vi || "",
+                  name_en: category.name_en || "",
+                  name_ja: category.name_ja || "",
+                  name_vi: category.name_vi || "",
                 },
                 locale,
               );
-              const isActive = activeCategoryFilter === cat.id;
+              const isActive = activeCategoryFilter === category.id;
+
               return (
                 <button
-                  key={cat.id}
-                  onClick={() =>
-                    setActiveCategoryFilter(isActive ? null : cat.id)
-                  }
-                  className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-slate-400"
+                  key={category.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategoryFilter(isActive ? null : category.id);
+                    setHasUserInteracted(true);
+                  }}
+                  className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[12px] border border-[var(--co-menu-chip-border)] px-3 text-[11px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)]"
                   style={
                     isActive
                       ? {
-                          backgroundColor: safeBrandColor,
-                          borderColor: safeBrandColor,
-                          color: customerTheme.primaryForeground,
+                          backgroundColor: "var(--co-menu-accent)",
+                          color: "#FFF7E9",
                         }
                       : {
-                          backgroundColor: "transparent",
-                          borderColor: "#e2e8f0",
-                          color: "#64748b",
+                          backgroundColor: "var(--co-menu-chip)",
+                          color: "var(--co-menu-chip-text)",
                         }
                   }
                 >
-                  {label}
+                  <span>{label}</span>
+                  <span
+                    className="grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] tabular-nums"
+                    style={{
+                      backgroundColor: isActive
+                        ? "rgba(255,247,233,0.18)"
+                        : "var(--co-menu-subtle)",
+                      color: isActive ? "#FFF7E9" : "var(--co-menu-muted)",
+                    }}
+                  >
+                    {count}
+                  </span>
                 </button>
               );
             })}
           </div>
-        )}
-      </div>
+        </nav>
+      )}
 
       {/* ── Scrollable content ── */}
-      <div className="container mx-auto px-4 py-4">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-32 pt-6 md:px-6 lg:px-8">
         {/* Smart Category Tabs - Hidden when not searching */}
         {debouncedSearchTerm && (
           <div className="mb-8">
@@ -943,7 +1108,7 @@ export function SmartMenu({
                 <motion.p
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-sm text-gray-600 mt-2 text-center"
+                  className="mt-2 text-center text-sm text-[var(--co-menu-muted)]"
                 >
                   {smartCategories[activeSmartCategory].description}
                 </motion.p>
@@ -961,10 +1126,10 @@ export function SmartMenu({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="px-4"
+                className="px-1"
               >
                 {filteredItems.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 lg:grid-cols-5 xl:grid-cols-6">
                     {filteredItems.map((item, index) => (
                       <motion.div
                         key={item.id}
@@ -980,6 +1145,7 @@ export function SmartMenu({
                           onCardClick={() => handleItemClick(item)}
                           brandColor={safeBrandColor}
                           locale={locale}
+                          currency={currency}
                           canAddItems={canAddItems}
                           showBadge={false}
                         />
@@ -987,14 +1153,14 @@ export function SmartMenu({
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <div className="text-gray-400 mb-4">
+                  <div className="py-16 text-center">
+                    <div className="mb-4 text-[var(--co-menu-muted)]">
                       <Search className="h-16 w-16 mx-auto" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">
+                    <h3 className="mb-2 text-xl font-semibold text-[var(--co-menu-text)]">
                       {t("menu.no_items_found")}
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="mb-4 text-[var(--co-menu-muted)]">
                       {t("menu.try_adjusting_search")}
                     </p>
                     <Button
@@ -1011,11 +1177,16 @@ export function SmartMenu({
               </motion.div>
             ) : (
               /* Sectioned layout when not searching - optimized spacing for mobile */
-              <div className="space-y-6">
+              <div className="space-y-12 md:space-y-14">
                 {/* Show filtered content when category filter is active */}
                 {activeCategoryFilter ? (
                   /* Single category view */
                   <MenuSection
+                    sectionId={
+                      activeCategoryFilter
+                        ? categoryDomId(activeCategoryFilter)
+                        : undefined
+                    }
                     title={getLocalizedText(
                       {
                         name_en:
@@ -1041,6 +1212,7 @@ export function SmartMenu({
                     onItemClick={handleItemClick}
                     onAddToCart={handleAddToCart}
                     getQuantity={getQuantityByItemId}
+                    eagerImages
                   />
                 ) : (
                   /* Normal sectioned view */
@@ -1049,6 +1221,7 @@ export function SmartMenu({
                     {smartCategories.popular &&
                       smartCategories.popular.count > 0 && (
                         <MenuSection
+                          sectionId="menu-category-popular"
                           title={t("menu.popular")}
                           description={t("menu.popular_description")}
                           items={smartCategories.popular.items}
@@ -1061,6 +1234,7 @@ export function SmartMenu({
                           getQuantity={getQuantityByItemId}
                           showPopularBadge={true}
                           icon={<TrendingUp className="h-5 w-5" />}
+                          eagerImages
                         />
                       )}
 
@@ -1068,6 +1242,7 @@ export function SmartMenu({
                     {smartCategories.recommended &&
                       smartCategories.recommended.count > 0 && (
                         <MenuSection
+                          sectionId="menu-category-recommended"
                           title={t("menu.perfect_for_you")}
                           description={t("menu.perfect_for_you_description")}
                           items={smartCategories.recommended.items}
@@ -1084,55 +1259,44 @@ export function SmartMenu({
                       )}
 
                     {/* Regular Categories */}
-                    {activeCategories.map((category) => {
-                      const categoryItems = allMenuItems.filter(
-                        (item) => item.categoryId === category.id,
-                      );
-                      if (categoryItems.length === 0) return null;
+                    {visibleMenuCategories.map(
+                      ({ category }, categoryIndex) => {
+                        const categoryItems = allMenuItems.filter(
+                          (item) => item.categoryId === category.id,
+                        );
+                        if (categoryItems.length === 0) return null;
 
-                      return (
-                        <MenuSection
-                          key={category.id}
-                          title={getLocalizedText(
-                            {
-                              name_en: category.name_en || "",
-                              name_ja: category.name_ja || "",
-                              name_vi: category.name_vi || "",
-                            },
-                            locale,
-                          )}
-                          items={categoryItems}
-                          brandColor={safeBrandColor}
-                          locale={locale}
-                          currency={currency}
-                          canAddItems={canAddItems}
-                          onItemClick={handleItemClick}
-                          onAddToCart={handleAddToCart}
-                          getQuantity={getQuantityByItemId}
-                        />
-                      );
-                    })}
+                        return (
+                          <MenuSection
+                            key={category.id}
+                            sectionId={categoryDomId(category.id)}
+                            title={getLocalizedText(
+                              {
+                                name_en: category.name_en || "",
+                                name_ja: category.name_ja || "",
+                                name_vi: category.name_vi || "",
+                              },
+                              locale,
+                            )}
+                            items={categoryItems}
+                            brandColor={safeBrandColor}
+                            locale={locale}
+                            currency={currency}
+                            canAddItems={canAddItems}
+                            onItemClick={handleItemClick}
+                            onAddToCart={handleAddToCart}
+                            getQuantity={getQuantityByItemId}
+                            eagerImages={categoryIndex === 0}
+                          />
+                        );
+                      },
+                    )}
                   </>
                 )}
               </div>
             )}
           </AnimatePresence>
         </Suspense>
-
-        {/* Quick Access Actions */}
-        {sessionId && (
-          <div className="mt-12 flex justify-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() =>
-                setView("history", { tableId, sessionId, tableNumber })
-              }
-            >
-              {t("view_history")}
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Item Detail Modal */}
