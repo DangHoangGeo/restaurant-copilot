@@ -7,12 +7,12 @@ struct ItemDetailView: View {
     let onComplete: () -> Void
     let onPrintResult: (String) -> Void
     let onStatusAdvance: () -> Void
-    
+
     @State private var isAdvancingStatus = false
     @State private var timeAgoText: String = ""
 
     private let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
-    
+
     var body: some View {
         GeometryReader { proxy in
             let isCompact = proxy.size.width < 520
@@ -20,18 +20,32 @@ struct ItemDetailView: View {
             ZStack {
                 Color.black.opacity(0.34)
                     .ignoresSafeArea()
-                    .onTapGesture {
-                        onComplete()
-                    }
+                    .onTapGesture { onComplete() }
 
                 VStack(spacing: 0) {
-                    headerSection(isCompact: isCompact)
+                    headerBar(isCompact: isCompact)
 
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: Spacing.md) {
-                            itemSummarySection
-                            statusManagementSection
-                            actionButtonsSection
+                            if !item.tableNames.isEmpty {
+                                tablesSection
+                            }
+
+                            quantityAndSizeSection
+
+                            if !item.toppings.isEmpty {
+                                toppingsSection
+                            }
+
+                            if !item.displayNotes.isEmpty {
+                                notesSection
+                            }
+
+                            Divider()
+                                .padding(.vertical, Spacing.xs)
+
+                            statusSection
+                            actionsSection
                         }
                         .padding(.horizontal, isCompact ? Spacing.md : Spacing.lg)
                         .padding(.top, Spacing.md)
@@ -49,18 +63,16 @@ struct ItemDetailView: View {
             }
         }
         .onAppear(perform: updateTimeAgoText)
-        .onReceive(timer) { _ in
-            updateTimeAgoText()
-        }
+        .onReceive(timer) { _ in updateTimeAgoText() }
     }
-    
-    // MARK: - Sections
 
-    private func headerSection(isCompact: Bool) -> some View {
+    // MARK: - Header
+
+    private func headerBar(isCompact: Bool) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(alignment: .top, spacing: Spacing.md) {
                 Text(item.itemName)
-                    .font(.cardTitle)
+                    .font(.compactPageTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.appTextPrimary)
                     .lineLimit(3)
@@ -109,206 +121,269 @@ struct ItemDetailView: View {
             alignment: .bottom
         )
     }
-    
-    private var itemSummarySection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("item_detail_item_details_title".localized)
+
+    // MARK: - Tables Section
+
+    private var tablesSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("item_detail_tables_label".localized.uppercased())
                 .font(.monoCaption)
-                .fontWeight(.semibold)
                 .foregroundColor(.appTextSecondary)
-            
-            VStack(alignment: .leading, spacing: Spacing.md) {
-                KitchenDetailInfoRow(
-                    label: "item_detail_name_label".localized,
-                    value: item.itemName
-                )
 
-                KitchenDetailInfoRow(
-                    label: "item_detail_quantity_label".localized,
-                    value: "\(item.quantity)",
-                    valueColor: .appPrimary,
-                    emphasize: true
-                )
-
-                if let size = item.size {
-                    KitchenDetailInfoRow(
-                        label: "pos_size_section_title".localized,
-                        value: size
-                    )
-                }
-
-                if !item.toppings.isEmpty {
-                    KitchenDetailInfoRow(
-                        label: "pos_toppings_section_title".localized,
-                        value: item.toppings.joined(separator: ", "),
-                        valueColor: .appInfo
-                    )
-                }
-
-                if !item.tableNames.isEmpty {
-                    KitchenDetailInfoRow(
-                        label: "item_detail_tables_label".localized,
-                        value: item.tableSummary
-                    )
-                }
-                
-                if !item.displayNotes.isEmpty {
-                    KitchenDetailInfoRow(
-                        label: "item_detail_notes_label".localized,
-                        value: item.displayNotes,
-                        valueColor: .appWarning,
-                        emphasize: true
-                    )
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.sm) {
+                    ForEach(item.tableNames, id: \.self) { table in
+                        Text(table)
+                            .font(.sectionHeader)
+                            .foregroundColor(.appTextPrimary)
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.vertical, Spacing.sm)
+                            .background(Color.appPrimary.opacity(0.10))
+                            .cornerRadius(CornerRadius.sm)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.sm)
+                                    .stroke(Color.appPrimary.opacity(0.22), lineWidth: 1)
+                            )
+                    }
                 }
             }
         }
-        .padding(.vertical, Spacing.sm)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.md)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(Color.appBorderLight, lineWidth: 1)
+        )
     }
-    
-    private var statusManagementSection: some View {
+
+    // MARK: - Quantity + Size
+
+    private var quantityAndSizeSection: some View {
+        HStack(alignment: .center, spacing: 0) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("item_detail_quantity_label".localized.uppercased())
+                    .font(.monoCaption)
+                    .foregroundColor(.appTextSecondary)
+
+                Text("\(item.quantity)")
+                    .font(.metricValue)
+                    .foregroundColor(statusColor)
+                    .monospacedDigit()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let size = item.size {
+                Rectangle()
+                    .fill(Color.appBorderLight)
+                    .frame(width: 1, height: 48)
+                    .padding(.horizontal, Spacing.md)
+
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("pos_size_section_title".localized.uppercased())
+                        .font(.monoCaption)
+                        .foregroundColor(.appTextSecondary)
+
+                    Text(size)
+                        .font(.sectionHeader)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.appTextPrimary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.md)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(Color.appBorderLight, lineWidth: 1)
+        )
+    }
+
+    // MARK: - Toppings
+
+    private var toppingsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("pos_toppings_section_title".localized.uppercased())
+                .font(.monoCaption)
+                .foregroundColor(.appTextSecondary)
+
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                ForEach(item.toppings, id: \.self) { topping in
+                    HStack(spacing: Spacing.sm) {
+                        Circle()
+                            .fill(Color.appInfo)
+                            .frame(width: 5, height: 5)
+
+                        Text(topping)
+                            .font(.sectionHeader)
+                            .foregroundColor(.appTextPrimary)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.md)
+        .background(Color.appSurface)
+        .cornerRadius(CornerRadius.md)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(Color.appBorderLight, lineWidth: 1)
+        )
+    }
+
+    // MARK: - Notes
+
+    private var notesSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text("item_detail_notes_label".localized.uppercased())
+                .font(.monoCaption)
+                .foregroundColor(.appWarning)
+
+            Text(item.displayNotes)
+                .font(.bodyMedium.weight(.semibold))
+                .foregroundColor(.appWarning)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.md)
+        .background(Color.appWarning.opacity(0.08))
+        .cornerRadius(CornerRadius.md)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(Color.appWarning.opacity(0.22), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Status Progress
+
+    private var statusSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("item_detail_status_management_title".localized)
                 .font(.monoCaption)
                 .fontWeight(.semibold)
                 .foregroundColor(.appTextSecondary)
-            
-            VStack(spacing: Spacing.sm) {
-                // Current status display
-                KitchenDetailInfoRow(
-                    label: "order_item_detail_current_status".localized,
-                    value: item.status.displayName,
-                    valueColor: statusColor,
-                    emphasize: true
-                )
-                
-                // Status progression
-                StatusProgressView(currentStatus: item.status)
-                
-                // Status advance button
-                Button(action: {
-                    isAdvancingStatus = true
-                    onStatusAdvance()
-                    
-                    // Add small delay before closing to show feedback
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        isAdvancingStatus = false
-                        onComplete()
-                    }
-                }) {
-                    HStack {
-                        if isAdvancingStatus {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                                .foregroundColor(.white)
-                        } else {
-                            Image(systemName: statusIcon)
-                        }
-                        
-                        Text(isAdvancingStatus ? "item_detail_updating_status".localized : "order_item_detail_mark_as".localized(with: nextStatusText))
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(isAdvancingStatus ? Color.gray : statusColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                }
-                .disabled(item.status == .served || isAdvancingStatus)
-            }
+
+            StatusProgressView(currentStatus: item.status)
         }
-        .padding(.vertical, Spacing.sm)
     }
-    
-    private var actionButtonsSection: some View {
+
+    // MARK: - Action Buttons
+
+    private var actionsSection: some View {
         VStack(spacing: Spacing.sm) {
-        
             Button(action: {
-                Task {
-                    await printKitchenSlip()
+                isAdvancingStatus = true
+                onStatusAdvance()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    isAdvancingStatus = false
+                    onComplete()
                 }
             }) {
-                HStack {
+                HStack(spacing: Spacing.sm) {
+                    if isAdvancingStatus {
+                        ProgressView()
+                            .scaleEffect(0.85)
+                            .tint(.white)
+                    } else {
+                        Image(systemName: statusIcon)
+                            .font(.bodyMedium.weight(.semibold))
+                    }
+
+                    Text(isAdvancingStatus
+                         ? "item_detail_updating_status".localized
+                         : "order_item_detail_mark_as".localized(with: nextStatusText))
+                        .font(.buttonLarge)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(isAdvancingStatus ? Color.appDisabled : statusColor)
+                .foregroundColor(.white)
+                .cornerRadius(CornerRadius.lg)
+                .shadow(
+                    color: (isAdvancingStatus ? Color.clear : statusColor).opacity(0.22),
+                    radius: 10,
+                    y: 4
+                )
+            }
+            .disabled(item.status == .served || isAdvancingStatus)
+            .accessibilityLabel("order_item_detail_mark_as".localized(with: nextStatusText))
+
+            Button(action: {
+                Task { await printKitchenSlip() }
+            }) {
+                HStack(spacing: Spacing.sm) {
                     Image(systemName: "doc.text")
                     Text("item_detail_print_kitchen_slip".localized)
                         .fontWeight(.medium)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
-                .background(Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(8)
+                .font(.buttonMedium)
+                .foregroundColor(.appTextPrimary)
+                .background(Color.appSurfaceSecondary)
+                .cornerRadius(CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .stroke(Color.appBorderLight, lineWidth: 1)
+                )
             }
+            .accessibilityLabel("item_detail_print_kitchen_slip".localized)
         }
-        .padding(.vertical, Spacing.sm)
     }
-    
+
     // MARK: - Computed Properties
-    
+
     private func updateTimeAgoText() {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
         timeAgoText = formatter.localizedString(for: item.orderTime, relativeTo: Date())
     }
-    
+
     private var statusColor: Color {
         switch item.status {
-        case .draft: return .appTextSecondary
-        case .new: return .appInfo
+        case .draft:    return .appTextSecondary
+        case .new:      return .appInfo
         case .preparing: return .appWarning
-        case .ready: return .appSuccess
-        case .served: return .appTextSecondary
+        case .ready:    return .appSuccess
+        case .served:   return .appTextSecondary
         case .canceled: return .appError
         }
     }
 
     private var timeColor: Color {
         let minutes = Int(Date().timeIntervalSince(item.orderTime) / 60)
-
-        if minutes < 10 {
-            return .appSuccess
-        }
-
-        if minutes < 20 {
-            return .appWarning
-        }
-
+        if minutes < 10 { return .appSuccess }
+        if minutes < 20 { return .appWarning }
         return .appError
     }
-    
+
     private var statusIcon: String {
         switch item.status {
-        case .draft: return "doc.plaintext"
-        case .new: return "flame"
+        case .draft:     return "doc.plaintext"
+        case .new:       return "flame"
         case .preparing: return "checkmark.circle"
-        case .ready: return "checkmark.circle.fill"
-        case .served: return "checkmark.seal.fill"
-        case .canceled: return "xmark.seal.fill"
+        case .ready:     return "checkmark.circle.fill"
+        case .served:    return "checkmark.seal.fill"
+        case .canceled:  return "xmark.seal.fill"
         }
     }
-    
+
     private var nextStatusText: String {
         switch item.status {
-        case .draft: return OrderItemStatus.new.displayName
-        case .new: return OrderItemStatus.preparing.displayName
+        case .draft:     return OrderItemStatus.new.displayName
+        case .new:       return OrderItemStatus.preparing.displayName
         case .preparing: return OrderItemStatus.ready.displayName
-        case .ready: return OrderItemStatus.served.displayName
-        case .served: return OrderStatus.completed.displayName
-        case .canceled: return OrderItemStatus.canceled.displayName
+        case .ready:     return OrderItemStatus.served.displayName
+        case .served:    return OrderStatus.completed.displayName
+        case .canceled:  return OrderItemStatus.canceled.displayName
         }
     }
-    
-    // MARK: - Helper Functions
-    
-    @MainActor
-    private func printItemSummary() async {
-        do {
-            try await printerManager.printKitchenItemSummary(item)
-            onPrintResult("item_detail_print_success".localized)
-        } catch {
-            onPrintResult("item_detail_print_failure".localized(with: error.localizedDescription))
-        }
-    }
-    
+
+    // MARK: - Actions
+
     @MainActor
     private func printKitchenSlip() async {
         do {
@@ -321,30 +396,6 @@ struct ItemDetailView: View {
 }
 
 // MARK: - Supporting Views
-
-private struct KitchenDetailInfoRow: View {
-    let label: String
-    let value: String
-    var valueColor: Color = .appTextPrimary
-    var emphasize = false
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
-            Text(label.uppercased())
-                .font(.monoCaption)
-                .foregroundColor(.appTextSecondary)
-                .frame(width: 82, alignment: .leading)
-
-            Text(value)
-                .font(emphasize ? .bodyMedium.weight(.semibold) : .bodyMedium)
-                .foregroundColor(valueColor)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 2)
-    }
-}
 
 private struct KitchenDetailChip: View {
     let icon: String
@@ -371,88 +422,44 @@ private struct KitchenDetailChipWrap<Content: View>: View {
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            HStack(spacing: spacing) {
-                content
-            }
-
-            VStack(alignment: .leading, spacing: spacing) {
-                content
-            }
-        }
-    }
-}
-
-struct OrderItemDetailRow: View {
-    let orderItem: OrderItem
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Order #\(orderItem.id.prefix(8))")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                Text("Quantity: \(orderItem.quantity)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                if let notes = orderItem.notes, !notes.isEmpty {
-                    Text("Notes: \(notes)")
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                }
-            }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: 4) {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 12, height: 12)
-                
-                Text(orderItem.status.displayName)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(8)
-    }
-    
-    private var statusColor: Color {
-        switch orderItem.status {
-        case .draft: return .gray
-        case .new: return .blue
-        case .preparing: return .orange
-        case .ready: return .green
-        case .served: return .gray
-        case .canceled: return .red
+            HStack(spacing: spacing) { content }
+            VStack(alignment: .leading, spacing: spacing) { content }
         }
     }
 }
 
 struct StatusProgressView: View {
     let currentStatus: OrderItemStatus
-    
+
     private let allStatuses: [OrderItemStatus] = [.new, .preparing, .ready, .served]
-    
+
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.xs) {
             ForEach(allStatuses, id: \.self) { status in
-                VStack(spacing: 4) {
+                VStack(spacing: Spacing.xs) {
                     Circle()
-                        .fill(status <= currentStatus ? statusColor(for: status) : Color.gray.opacity(0.3))
-                        .frame(width: 16, height: 16)
-                    
+                        .fill(status <= currentStatus ? designColor(for: status) : Color.appTextSecondary.opacity(0.25))
+                        .frame(width: 14, height: 14)
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    status <= currentStatus ? designColor(for: status).opacity(0.3) : Color.clear,
+                                    lineWidth: 3
+                                )
+                                .scaleEffect(1.5)
+                        )
+
                     Text(status.displayName)
-                        .font(.caption2)
-                        .foregroundColor(status <= currentStatus ? .primary : .secondary)
+                        .font(.footnote)
+                        .foregroundColor(status <= currentStatus ? designColor(for: status) : .appTextSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
-                
+                .frame(maxWidth: .infinity)
+
                 if status != allStatuses.last {
                     Rectangle()
-                        .fill(status < currentStatus ? Color.green : Color.gray.opacity(0.3))
+                        .fill(status < currentStatus ? designColor(for: status) : Color.appTextSecondary.opacity(0.2))
                         .frame(height: 2)
                         .frame(maxWidth: .infinity)
                 }
@@ -460,15 +467,15 @@ struct StatusProgressView: View {
         }
         .padding(.vertical, Spacing.xs)
     }
-    
-    private func statusColor(for status: OrderItemStatus) -> Color {
+
+    private func designColor(for status: OrderItemStatus) -> Color {
         switch status {
-        case .draft: return .gray
-        case .new: return .blue
-        case .preparing: return .orange
-        case .ready: return .green
-        case .served: return .gray
-        case .canceled: return .red
+        case .draft:     return .appTextSecondary
+        case .new:       return .appInfo
+        case .preparing: return .appWarning
+        case .ready:     return .appSuccess
+        case .served:    return .appTextSecondary
+        case .canceled:  return .appError
         }
     }
 }
