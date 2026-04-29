@@ -185,14 +185,17 @@
     "title": "Menu Item",
     "tabs": {
       "basic": "Basic Info",
+      "basicShort": "Item",
       "variants": "Variants & Options",
-      "advanced": "Advanced Settings"
+      "variantsShort": "Options",
+      "advanced": "Advanced Settings",
+      "advancedShort": "Save"
     },
     "buttons": {
       "save": "Save",
       "cancel": "Cancel",
-      "previous": "← Previous",
-      "next": "Next →"
+      "previous": "Previous",
+      "next": "Next"
     },
     "saving": "Saving...",
     "basic": {
@@ -216,6 +219,11 @@
       "uploadTitle": "Click or drag file to this area to upload",
       "uploadHint": "Recommended: 600x400px, max 5MB",
       "chooseFileButton": "Choose File",
+      "cropZoomLabel": "Zoom",
+      "cropHorizontalLabel": "Horizontal",
+      "cropVerticalLabel": "Vertical",
+      "applyImageButton": "Use image",
+      "imageProcessing": "Processing...",
       "aiContentTitle": "AI-Generated Content",
       "englishLabel": "English",
       "englishNamePlaceholder": "English item name",

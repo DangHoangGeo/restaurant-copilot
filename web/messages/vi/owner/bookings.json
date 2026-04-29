@@ -1,6 +1,6 @@
 {
   "title": "Quản Lý Đặt Bàn",
-  "subtitle": "Quản lý các đặt bàn và đặt chỗ của khách hàng",
+  "subtitle": "Xem yêu cầu đặt chỗ, gọi lại cho khách, điều chỉnh giờ cuối cùng và xác nhận chỗ trống",
   "retry": "Thử lại",
   "table": {
     "customer_name": "Tên Khách Hàng",
@@ -23,6 +23,17 @@
     "canceling": "Đang Hủy..."
   },
   "details_title": "Chi Tiết Đặt Bàn",
+  "details": {
+    "phone": "Điện thoại",
+    "email": "Email",
+    "note": "Ghi chú của khách",
+    "no_note": "Không có ghi chú",
+    "not_provided": "Chưa cung cấp",
+    "adjust_time_title": "Thời gian đặt chỗ cuối cùng",
+    "adjust_time_help": "Sau khi gọi cho khách, hãy cập nhật ngày hoặc giờ cuối cùng trước khi xác nhận.",
+    "date_label": "Ngày",
+    "time_label": "Giờ"
+  },
   "notifications": {
     "update_success": "Trạng thái đặt bàn được cập nhật thành công",
     "update_failed": "Không thể cập nhật trạng thái đặt bàn: {error}",

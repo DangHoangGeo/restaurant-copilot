@@ -12,7 +12,12 @@
 
 import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { addOrganizationMember } from './queries';
+import {
+  addOrganizationMember,
+  resolveLegacyRestaurantIdForOrgMember,
+  validateOrganizationRestaurantScope,
+} from './queries';
+import { mapOrgRoleToLegacyUserAccess } from './legacy-access';
 import type { PendingInvite, OrgMemberRole, ShopScope } from './types';
 import { sendInviteEmail, sendResendInviteEmail } from '@/lib/server/email';
 
@@ -39,6 +44,21 @@ export async function createPendingInvite(
   orgName?: string
 ): Promise<PendingInvite | null> {
   const token = generateInviteToken();
+
+  if (shopScope === 'selected_shops') {
+    const scopeValidation = await validateOrganizationRestaurantScope(
+      orgId,
+      selectedRestaurantIds
+    );
+
+    if (!scopeValidation.valid) {
+      console.error('Invalid pending invite shop scope:', {
+        orgId,
+        invalidRestaurantIds: scopeValidation.invalidRestaurantIds,
+      });
+      return null;
+    }
+  }
 
   const { data, error } = await supabaseAdmin
     .from('organization_pending_invites')
@@ -257,34 +277,23 @@ export async function acceptPendingInvite(
     userId = newAuth.user.id;
     newUserCreated = true;
 
-    // Map org role → legacy users.role and decide whether the new user gets a
-    // restaurant_id in the users table (which gates legacy branch-scoped route access).
-    //
-    // Rules:
-    //   founder_full_control / founder_operations
-    //     → role='owner', gets a restaurant_id (full legacy access to branch routes)
-    //   founder_finance / branch_general_manager
-    //     → role='manager', gets a restaurant_id (branch ops access, not org settings)
-    //   accountant_readonly
-    //     → role='staff', restaurant_id=null  (NO legacy branch route access — this
-    //       role reads finance data only through org-level permission-gated API routes)
-    //
-    // This prevents accountant_readonly and similarly restricted org roles from
-    // inheriting write access to branch-scoped routes that still authorize via
-    // the legacy getUserFromRequest() + restaurantId path.
-    const { legacyRole, assignRestaurantId } = orgRoleToLegacyMapping(invite.role);
-
-    const restaurantId = assignRestaurantId
-      ? await resolveFirstAccessibleRestaurant(invite)
-      : null;
+    const restaurantId = await resolveLegacyRestaurantIdForOrgMember(
+      invite.organization_id,
+      invite.shop_scope,
+      invite.selected_restaurant_ids ?? undefined
+    );
+    const legacyAccess = mapOrgRoleToLegacyUserAccess(
+      invite.role,
+      restaurantId
+    );
 
     // Create the users row
     const { error: userInsertError } = await supabaseAdmin.from('users').insert({
       id: userId,
       email,
       name,
-      restaurant_id: restaurantId,
-      role: legacyRole,
+      restaurant_id: legacyAccess.restaurantId,
+      role: legacyAccess.role,
     });
 
     if (userInsertError) {
@@ -334,57 +343,4 @@ export async function acceptPendingInvite(
   }
 
   return { success: true, user_id: userId, new_user_created: newUserCreated };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Map an org role to the legacy users.role value and whether the new users row
- * should receive a restaurant_id.
- *
- * restaurant_id in the users table is what gives the legacy owner API routes
- * branch-scoped access.  Roles that must NOT have write access to branch ops
- * (accountant_readonly) receive restaurant_id = null so those routes gate them out.
- */
-function orgRoleToLegacyMapping(orgRole: OrgMemberRole): {
-  legacyRole: string;
-  assignRestaurantId: boolean;
-} {
-  switch (orgRole) {
-    case 'founder_full_control':
-    case 'founder_operations':
-      return { legacyRole: 'owner', assignRestaurantId: true };
-    case 'founder_finance':
-    case 'branch_general_manager':
-      return { legacyRole: 'manager', assignRestaurantId: true };
-    case 'accountant_readonly':
-      // No restaurant_id — this role must not inherit legacy branch-write access.
-      // Access to finance read data goes through org-permission-gated routes only.
-      return { legacyRole: 'staff', assignRestaurantId: false };
-  }
-}
-
-/**
- * Resolve the first accessible restaurant_id for a new invited user.
- * Used when creating a users row for someone onboarding via invite
- * (they have no existing restaurant of their own).
- */
-async function resolveFirstAccessibleRestaurant(
-  invite: PendingInvite
-): Promise<string | null> {
-  if (invite.shop_scope === 'selected_shops' && invite.selected_restaurant_ids?.length) {
-    return invite.selected_restaurant_ids[0];
-  }
-
-  // For all_shops: find the org's first restaurant
-  const { data: orgRestaurants } = await supabaseAdmin
-    .from('organization_restaurants')
-    .select('restaurant_id')
-    .eq('organization_id', invite.organization_id)
-    .order('added_at', { ascending: true })
-    .limit(1);
-
-  return orgRestaurants?.[0]?.restaurant_id ?? null;
 }

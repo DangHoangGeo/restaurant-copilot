@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Eye, CalendarX, Loader2, AlertTriangle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -20,11 +22,58 @@ interface Booking {
   id: string
   customerName: string
   contact: string
+  phone: string
+  email: string
+  note: string
   date: string
   time: string
+  rawDate: string
+  rawTime: string
   partySize: number
   status: string
   preOrderItems: PreOrderItem[]
+}
+
+interface BookingApiRow {
+  id: string
+  customer_name: string
+  customer_contact?: string | null
+  customer_phone?: string | null
+  customer_email?: string | null
+  customer_note?: string | null
+  booking_date: string
+  booking_time: string
+  party_size: number
+  status: string
+  preorder_items?: PreOrderItem[]
+  pre_order_items?: PreOrderItem[]
+}
+
+function formatBookingDate(value: string) {
+  const parsed = new Date(`${value}T00:00:00`)
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString()
+}
+
+function mapBooking(row: BookingApiRow): Booking {
+  const phone = row.customer_phone || ''
+  const email = row.customer_email || ''
+  const rawTime = row.booking_time?.slice(0, 5) || row.booking_time
+
+  return {
+    id: row.id,
+    customerName: row.customer_name,
+    contact: [phone, email].filter(Boolean).join(' / ') || row.customer_contact || '',
+    phone,
+    email,
+    note: row.customer_note || '',
+    date: formatBookingDate(row.booking_date),
+    time: rawTime,
+    rawDate: row.booking_date,
+    rawTime,
+    partySize: row.party_size,
+    status: row.status,
+    preOrderItems: row.preorder_items || row.pre_order_items || []
+  }
 }
 
 import { BookingsSkeleton } from '@/components/ui/skeletons';
@@ -55,6 +104,8 @@ export function BookingsClientContent() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [editedDate, setEditedDate] = useState('')
+  const [editedTime, setEditedTime] = useState('')
 
   const loadBookings = useCallback(async () => {
     setError(null);
@@ -70,27 +121,7 @@ export function BookingsClientContent() {
       
       const data = await response.json();
       
-      // Transform the data to match our interface
-      const transformedBookings = data.bookings?.map((b: {
-        id: string;
-        customer_name: string;
-        customer_contact?: string;
-        booking_date: string;
-        booking_time: string;
-        party_size: number;
-        status: string;
-        preorder_items?: PreOrderItem[];
-        pre_order_items?: PreOrderItem[];
-      }) => ({
-        id: b.id,
-        customerName: b.customer_name,
-        contact: b.customer_contact || '',
-        date: new Date(b.booking_date).toLocaleDateString(),
-        time: b.booking_time,
-        partySize: b.party_size,
-        status: b.status,
-        preOrderItems: b.preorder_items || b.pre_order_items || []
-      })) || [];
+      const transformedBookings = data.bookings?.map(mapBooking) || [];
       
       setBookings(transformedBookings);
     } catch (err) {
@@ -114,32 +145,49 @@ export function BookingsClientContent() {
 
   const handleViewDetails = (booking: Booking) => {
     setSelectedBooking(booking)
+    setEditedDate(booking.rawDate)
+    setEditedTime(booking.rawTime)
     setIsDetailModalOpen(true)
   }
 
-  const handleUpdateStatus = async (bookingId: string, status: 'confirmed' | 'canceled') => {
+  const handleUpdateBooking = async (
+    bookingId: string,
+    payload: { status?: 'confirmed' | 'canceled'; bookingDate?: string; bookingTime?: string },
+  ) => {
     setIsUpdatingStatus(true);
     try {
       const res = await fetch(`/api/v1/owner/bookings/${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         const updatedBooking = await res.json();
-        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: updatedBooking.booking.status } : b));
-        if (selectedBooking?.id === bookingId) setSelectedBooking({ ...selectedBooking, status: updatedBooking.booking.status });
+        const mappedBooking = mapBooking(updatedBooking.booking)
+        setBookings(prev => prev.map(b => b.id === bookingId ? mappedBooking : b));
+        if (selectedBooking?.id === bookingId) {
+          setSelectedBooking(mappedBooking)
+          setEditedDate(mappedBooking.rawDate)
+          setEditedTime(mappedBooking.rawTime)
+        }
         toast.success(t('notifications.update_success'));
-        if (status === 'confirmed' || status === 'canceled') setIsDetailModalOpen(false);
+        if (payload.status === 'confirmed' || payload.status === 'canceled') setIsDetailModalOpen(false);
       } else {
         const errorData = await res.json().catch(() => ({}));
-        toast.error(t('notifications.update_failed', { error: errorData.message || 'Unknown error' }));
+        toast.error(t('notifications.update_failed', { error: errorData.error || errorData.message || 'Unknown error' }));
       }
     } catch (e) {
       toast.error(t('notifications.update_failed', { error: e instanceof Error ? e.message : 'Unknown error' }));
     } finally {
       setIsUpdatingStatus(false);
     }
+  }
+
+  const handleUpdateStatus = async (bookingId: string, status: 'confirmed' | 'canceled') => {
+    await handleUpdateBooking(bookingId, {
+      status,
+      ...(status === 'confirmed' ? { bookingDate: editedDate, bookingTime: editedTime } : {})
+    })
   }
 
   const statusBadge = (status: string) => {
@@ -210,12 +258,48 @@ export function BookingsClientContent() {
             <DialogTitle>{t('details_title')}</DialogTitle>
           </DialogHeader>
           {selectedBooking && (
-            <div className="space-y-2">
-              <p><strong>{t('table.customer_name')}:</strong> {selectedBooking.customerName}</p>
-              <p><strong>{t('table.contact')}:</strong> {selectedBooking.contact}</p>
-              <p><strong>{t('table.date_time')}:</strong> {selectedBooking.date} @ {selectedBooking.time}</p>
-              <p><strong>{t('table.party_size')}:</strong> {selectedBooking.partySize}</p>
-              <p><strong>{t('table.status')}:</strong> {statusBadge(selectedBooking.status)}</p>
+            <div className="space-y-4">
+              <div className="rounded-xl border border-[#AB6E3C]/15 bg-[#FEFAF6]/70 p-4 text-sm text-[#2E2117] dark:border-[#AB6E3C]/20 dark:bg-[#170F0C]/60 dark:text-[#F7F1E9]">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <p><strong>{t('table.customer_name')}:</strong> {selectedBooking.customerName}</p>
+                  <p><strong>{t('table.party_size')}:</strong> {selectedBooking.partySize}</p>
+                  <p><strong>{t('details.phone')}:</strong> {selectedBooking.phone || t('details.not_provided')}</p>
+                  <p><strong>{t('details.email')}:</strong> {selectedBooking.email || t('details.not_provided')}</p>
+                  <p><strong>{t('table.status')}:</strong> {statusBadge(selectedBooking.status)}</p>
+                </div>
+                <p className="mt-3"><strong>{t('details.note')}:</strong> {selectedBooking.note || t('details.no_note')}</p>
+              </div>
+
+              <div className="rounded-xl border border-[#AB6E3C]/15 bg-[#FEFAF6]/70 p-4 dark:border-[#AB6E3C]/20 dark:bg-[#170F0C]/60">
+                <p className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+                  {t('details.adjust_time_title')}
+                </p>
+                <p className="mt-1 text-xs text-[#8B6E5A] dark:text-[#B89078]">
+                  {t('details.adjust_time_help')}
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="booking-date">{t('details.date_label')}</Label>
+                    <Input
+                      id="booking-date"
+                      type="date"
+                      value={editedDate}
+                      onChange={(event) => setEditedDate(event.target.value)}
+                      disabled={selectedBooking.status !== 'pending' || isUpdatingStatus}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="booking-time">{t('details.time_label')}</Label>
+                    <Input
+                      id="booking-time"
+                      type="time"
+                      value={editedTime}
+                      onChange={(event) => setEditedTime(event.target.value)}
+                      disabled={selectedBooking.status !== 'pending' || isUpdatingStatus}
+                    />
+                  </div>
+                </div>
+              </div>
               {selectedBooking.preOrderItems?.length === 0 && <p className="text-sm mt-2 text-[#8B6E5A] dark:text-[#B89078]">{t('preorder.no_preorder_items')}</p>}
             </div>
           )}

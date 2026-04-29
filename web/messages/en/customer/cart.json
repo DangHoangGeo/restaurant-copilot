@@ -16,6 +16,7 @@
     "notes": "Notes: {notes}",
     "size": "Size: {size}",
     "toppings": "Toppings: {toppings}",
+    "unit_price": "{price} each",
     "edit_item": "Edit Item",
     "remove_item": "Remove Item"
   },

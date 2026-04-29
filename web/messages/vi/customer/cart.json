@@ -16,6 +16,7 @@
     "notes": "Ghi chú: {notes}",
     "size": "Kích cỡ: {size}",
     "toppings": "Topping: {toppings}",
+    "unit_price": "{price} / món",
     "edit_item": "Sửa Món",
     "remove_item": "Xóa Món"
   },

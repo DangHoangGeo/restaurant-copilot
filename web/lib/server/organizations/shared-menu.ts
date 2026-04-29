@@ -12,6 +12,8 @@ export interface OrganizationSharedMenuItem {
   price: number;
   image_url: string | null;
   available: boolean;
+  weekday_visibility: number[];
+  stock_level: number | null;
   position: number;
   sizes: OrganizationSharedMenuItemSize[];
   toppings: OrganizationSharedMenuItemTopping[];
@@ -101,6 +103,8 @@ type SharedMenuItemInsert = {
   price: number;
   image_url?: string | null;
   available?: boolean;
+  weekday_visibility?: number[];
+  stock_level?: number | null;
   position?: number;
   sizes?: SharedMenuItemSizeInsert[];
   toppings?: SharedMenuItemToppingInsert[];
@@ -154,6 +158,8 @@ export async function listOrganizationSharedMenu(
         price,
         image_url,
         available,
+        weekday_visibility,
+        stock_level,
         position,
         organization_menu_item_sizes (
           id,
@@ -208,6 +214,8 @@ export async function listOrganizationSharedMenu(
       price: Number(item.price ?? 0),
       image_url: item.image_url,
       available: item.available,
+      weekday_visibility: item.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
+      stock_level: item.stock_level ?? null,
       position: item.position,
       sizes: (item.organization_menu_item_sizes ?? []).map((size) => ({
         id: size.id,
@@ -392,6 +400,8 @@ export async function createOrganizationSharedMenuItem(
       price: input.price,
       image_url: input.image_url ?? null,
       available: input.available ?? true,
+      weekday_visibility: input.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
+      stock_level: input.stock_level ?? null,
       position: input.position ?? 0,
     })
     .select(
@@ -407,6 +417,8 @@ export async function createOrganizationSharedMenuItem(
       price,
       image_url,
       available,
+      weekday_visibility,
+      stock_level,
       position,
       organization_menu_item_sizes (
         id,
@@ -507,6 +519,8 @@ export async function createOrganizationSharedMenuItem(
     price: Number(data.price ?? 0),
     image_url: data.image_url,
     available: data.available,
+    weekday_visibility: data.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
+    stock_level: data.stock_level ?? null,
     position: data.position,
     sizes: [],
     toppings: [],
@@ -532,6 +546,8 @@ async function getOrganizationSharedMenuItem(
       price,
       image_url,
       available,
+      weekday_visibility,
+      stock_level,
       position,
       organization_menu_item_sizes (
         id,
@@ -575,6 +591,8 @@ async function getOrganizationSharedMenuItem(
     price: Number(data.price ?? 0),
     image_url: data.image_url,
     available: data.available,
+    weekday_visibility: data.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
+    stock_level: data.stock_level ?? null,
     position: data.position,
     sizes: (data.organization_menu_item_sizes ?? []).map((size) => ({
       id: size.id,

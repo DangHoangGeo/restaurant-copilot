@@ -187,6 +187,7 @@ BEGIN
     'guest_count',   o.guest_count,
     'status',        o.status,
     'total_amount',  COALESCE(o.total_amount, 0),
+    'tax_amount',    COALESCE(o.tax_amount, 0),
     'created_at',    o.created_at,
     'items', (
       SELECT jsonb_agg(

@@ -1,95 +1,60 @@
 {
-  "title": "Table Booking",
-  "submission_thank_you_title": "Booking Confirmed!",
-  "book_table_button": "Book a Table",
-  "submission_thank_you_message": "Your table booking has been successfully confirmed. We look forward to seeing you!",
+  "title": "Reserve a table",
+  "description": "Tell us when you would like to visit. The branch will confirm your reservation by phone or email.",
+  "book_table_button": "Request a reservation",
+  "process": {
+    "request": "1. Send a request",
+    "requestDescription": "Choose your visit time and leave your contact details.",
+    "manager": "2. Manager confirms",
+    "managerDescription": "The branch reviews availability, calls back if needed, then confirms or cancels the request."
+  },
   "form": {
-    "validation_error_fill_fields": "Please fill in all required fields.",
-    "table_select_placeholder": "Select a Table",
-    "table_capacity": "{count} people",
-    "name_placeholder": "Your Full Name",
-    "contact_placeholder": "Your Phone or Email",
-    "preorder_optional_title": "Pre-order (Optional)",
-    "submit_button": "Confirm Booking",
-    "party_size_placeholder": "Party Size",
-    "date_label": "Booking Date",
-    "time_label": "Booking Time",
-    "special_requests_label": "Special Requests",
-    "special_requests_placeholder": "Any special dietary requirements or seating preferences..."
-  },
-  "booking_details": {
-    "customer_name": "Customer Name",
-    "contact_info": "Contact Information", 
-    "party_size": "Party Size",
-    "booking_date": "Date",
-    "booking_time": "Time",
-    "table_info": "Table Information",
-    "special_requests": "Special Requests",
-    "preorder_items": "Pre-ordered Items"
-  },
-  "table_selection": {
-    "available": "Available",
-    "occupied": "Occupied",
-    "reserved": "Reserved",
-    "capacity": "Seats {count}",
-    "outdoor": "Outdoor Seating",
-    "accessible": "Wheelchair Accessible",
-    "window": "Window View",
-    "private": "Private Dining"
-  },
-  "preorder": {
-    "title": "Pre-order Menu Items",
-    "description": "Select items you'd like to pre-order for your table",
-    "add_item": "Add to Pre-order",
-    "remove_item": "Remove from Pre-order",
-    "total": "Pre-order Total",
-    "no_items": "No items pre-ordered"
-  },
-  "time_slots": {
-    "morning": "Morning",
-    "afternoon": "Afternoon", 
-    "evening": "Evening",
-    "available": "Available",
-    "fully_booked": "Fully Booked",
-    "closed": "Closed"
-  },
-  "validation": {
-    "name_required": "Name is required",
-    "contact_required": "Contact information is required",
-    "party_size_required": "Party size is required",
-    "party_size_min": "Party size must be at least 1",
-    "party_size_max": "Party size cannot exceed table capacity",
-    "date_required": "Booking date is required",
-    "date_future": "Booking date must be in the future",
-    "time_required": "Booking time is required",
-    "table_required": "Please select a table",
-    "email_or_phone": "Please provide either email or phone number"
-  },
-  "notifications": {
-    "booking_success": "Booking confirmed successfully!",
-    "booking_failed": "Failed to create booking. Please try again.",
-    "table_unavailable": "Selected table is no longer available for this time",
-    "restaurant_closed": "Restaurant is closed at the selected time"
+    "eyebrow": "Reservation request",
+    "title": "Your details",
+    "validation_error_fill_fields": "Please check the highlighted fields.",
+    "name_label": "Name",
+    "name_placeholder": "Your full name",
+    "phone_label": "Phone",
+    "phone_placeholder": "+81 80 1234 5678",
+    "email_label": "Email",
+    "email_placeholder": "you@example.com",
+    "seats_label": "Seats",
+    "date_label": "Date",
+    "time_label": "Time",
+    "special_requests_label": "Message",
+    "special_requests_placeholder": "Preferred seating, allergies, stroller space, or anything the manager should know.",
+    "submit_button": "Send reservation request",
+    "submitting_button": "Sending request..."
   },
   "status": {
-    "pending": "Pending Confirmation",
-    "confirmed": "Confirmed", 
-    "canceled": "Canceled",
-    "completed": "Completed"
+    "loading": "Checking your reservation status...",
+    "currentReservation": "Your reservation",
+    "pending": "Waiting for manager confirmation",
+    "confirmed": "Reservation confirmed",
+    "canceled": "Reservation canceled",
+    "pendingDescription": "Your request has reached the branch. A manager will call or email you to confirm the final time.",
+    "confirmedDescription": "The branch has confirmed your reservation. Please arrive at the confirmed time.",
+    "canceledDescription": "The branch could not confirm this request. Please send a new request or call the branch directly.",
+    "seats": "{count, plural, one {# seat} other {# seats}}",
+    "fetchError": "Could not load reservation status"
+  },
+  "validation": {
+    "name_required": "Enter your name.",
+    "phone_or_email_required": "Enter a phone number or email address.",
+    "phone_invalid": "Enter a valid phone number.",
+    "email_invalid": "Enter a valid email address.",
+    "party_size_min": "Seats must be at least 1.",
+    "date_required": "Choose a reservation date.",
+    "date_future": "Choose today or a future date.",
+    "time_required": "Choose a reservation time."
+  },
+  "notifications": {
+    "booking_success": "Reservation request sent.",
+    "booking_failed": "Could not send the reservation request. Please try again."
   },
   "actions": {
-    "modify_booking": "Modify Booking",
-    "cancel_booking": "Cancel Booking",
-    "confirm_booking": "Confirm Booking"
-  },
-  "additional_form": {
-    "validation_error_fill_fields": "Please fill in all required fields.",
-    "table_select_placeholder": "Select a Table",
-    "table_capacity": "{count} people",
-    "name_placeholder": "Your Full Name",
-    "contact_placeholder": "Your Phone or Email",
-    "preorder_optional_title": "Pre-order (Optional)",
-    "submit_button": "Confirm Booking",
-    "party_size_placeholder": "Party Size"
+    "modify_booking": "Send another request",
+    "cancel_booking": "Cancel request",
+    "confirm_booking": "Confirm reservation"
   }
 }

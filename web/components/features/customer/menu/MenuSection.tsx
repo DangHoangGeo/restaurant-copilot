@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useRef } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CompactFoodCard } from "./CompactFoodCard";
 import { FoodItem } from "@/shared/types/menu";
-// Enhanced interfaces for smart features
+import { useTranslations } from "next-intl";
+
 interface SmartMenuItem extends FoodItem {
   categoryId: string;
   categoryName: string;
@@ -29,11 +30,12 @@ interface MenuSectionProps {
   showPopularBadge?: boolean;
   showRecommendedBadge?: boolean;
   icon?: React.ReactNode;
+  sectionId?: string;
+  eagerImages?: boolean;
 }
 
 export function MenuSection({
   title,
-  description,
   items,
   brandColor,
   locale,
@@ -45,185 +47,105 @@ export function MenuSection({
   showPopularBadge = false,
   showRecommendedBadge = false,
   icon,
+  sectionId,
+  eagerImages = false,
 }: MenuSectionProps) {
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const rafRef = useRef<number | null>(null);
-
-  const checkScrollability = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }
-  };
-
-  const resetItemScales = useCallback(() => {
-    itemRefs.current.forEach((el) => {
-      if (!el) return;
-      el.style.transform = 'scale(1)';
-      el.style.zIndex = '';
-    });
-  }, []);
-
-  const updateItemScales = useCallback(() => {
-    // Scale effect only on mobile; on larger screens keep cards at natural size
-    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-      resetItemScales();
-      return;
-    }
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const containerCenter = container.scrollLeft + container.clientWidth / 2;
-    const fadeDistance = container.clientWidth * 0.52;
-
-    itemRefs.current.forEach((el) => {
-      if (!el) return;
-      const itemCenter = el.offsetLeft + el.offsetWidth / 2;
-      const distance = Math.abs(itemCenter - containerCenter);
-      const progress = Math.max(0, 1 - distance / fadeDistance);
-      const eased = progress * (2 - progress);
-      const scale = 0.9 + 0.24 * eased;
-      el.style.transform = `scale(${scale.toFixed(3)})`;
-      el.style.zIndex = String(Math.round(eased * 10));
-    });
-  }, [resetItemScales]);
-
-  const handleScroll = useCallback(() => {
-    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(updateItemScales);
-  }, [updateItemScales]);
-
-  useEffect(() => {
-    checkScrollability();
-    updateItemScales();
-    const container = scrollContainerRef.current;
-    const handleResize = () => updateItemScales();
-    window.addEventListener('resize', handleResize, { passive: true });
-    if (container) {
-      container.addEventListener('scroll', checkScrollability);
-      container.addEventListener('scroll', handleScroll, { passive: true });
-      return () => {
-        container.removeEventListener('scroll', checkScrollability);
-        container.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('resize', handleResize);
-        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-      };
-    }
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [items, handleScroll, updateItemScales]);
+  const tMenu = useTranslations("customer.menu");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const canScroll = items.length > 1;
 
   if (items.length === 0) return null;
 
+  const handleScroll = (direction: "previous" | "next") => {
+    scrollRef.current?.scrollBy({
+      left: direction === "previous" ? -360 : 360,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <motion.section
-      initial={{ opacity: 0, y: 20 }}
+      id={sectionId}
+      initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-3"
+      transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full scroll-mt-32 space-y-3 md:scroll-mt-8"
     >
-      {/* Enhanced Section Header with better visual hierarchy */}
-      <div className="flex items-center gap-3 px-4">
-        {icon && (
-          <div 
-            className="p-2 rounded-lg bg-gradient-to-br opacity-90"
-            style={{ 
-              background: `linear-gradient(135deg, ${brandColor}20, ${brandColor}10)`,
-              color: brandColor 
-            }}
-          >
-            {icon}
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2.5">
+            {icon ? (
+              <div className="flex h-8 w-8 items-center justify-center rounded-[12px] bg-[var(--co-menu-subtle)] text-[var(--co-menu-accent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                {icon}
+              </div>
+            ) : null}
+            <h2
+              className="text-[1.45rem] font-semibold leading-[1.04] text-[var(--co-menu-text)] sm:text-[1.7rem] md:text-[2rem]"
+              style={{ fontFamily: "var(--co-menu-display-font)" }}
+            >
+              {title}
+            </h2>
           </div>
-        )}
-        <div className="flex-1">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
-            {title}
-          </h3>
-          {description && (
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
-              {description}
-            </p>
-          )}
         </div>
-        <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full">
-          {items.length} items
+
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="flex h-8 items-center rounded-[12px] bg-[var(--co-menu-count-bg)] px-3 text-[11px] font-medium text-[var(--co-menu-count-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+            {tMenu("item_count", { count: items.length })}
+          </div>
+          {canScroll ? (
+            <div className="hidden items-center gap-1 sm:flex">
+              <button
+                type="button"
+                onClick={() => handleScroll("previous")}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--co-menu-chip)] text-[var(--co-menu-text)] transition-colors hover:bg-[var(--co-menu-subtle)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)]"
+                aria-label={tMenu("scroll_previous")}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleScroll("next")}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--co-menu-chip)] text-[var(--co-menu-text)] transition-colors hover:bg-[var(--co-menu-subtle)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)]"
+                aria-label={tMenu("scroll_next")}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
 
-      {/* Enhanced Horizontal Scrolling Items with better indicators */}
-      <div className="relative">
-        {/* Right-edge fade gradient to signal more cards are scrollable */}
-        {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
-        )}
-        <div
-          ref={scrollContainerRef}
-          className="flex gap-4 overflow-x-auto py-4 px-4 scrollbar-hide scroll-smooth"
-          style={{ scrollBehavior: 'smooth' }}
-        >
-          {items.map((item, index) => (
-            <div
-              key={item.id}
-              ref={(el) => { itemRefs.current[index] = el; }}
-              style={{ willChange: 'transform', transition: 'transform 0.12s ease-out', flexShrink: 0 }}
-            >
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: index * 0.05,
-                  duration: 0.3,
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30
-                }}
-              >
-                <CompactFoodCard
-                  item={item}
-                  qtyInCart={getQuantity(item.id)}
-                  onAdd={() => onAddToCart(item)}
-                  onCardClick={() => onItemClick(item)}
-                  brandColor={brandColor}
-                  locale={locale}
-                  currency={currency}
-                  canAddItems={canAddItems}
-                  showPopularBadge={showPopularBadge}
-                  showRecommendedBadge={showRecommendedBadge}
-                />
-              </motion.div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Left scroll indicator */}
-        {canScrollLeft && (
-          <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-            <motion.div
-              animate={{ x: [-3, 3, -3] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="bg-white/80 dark:bg-slate-800/80 rounded-full p-1.5 shadow-md backdrop-blur-sm"
-            >
-              <ChevronRight className="h-3 w-3 text-slate-500 dark:text-slate-400 transform rotate-180" />
-            </motion.div>
-          </div>
-        )}
-
-        {/* Right scroll indicator */}
-        {canScrollRight && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-            <motion.div
-              animate={{ x: [-3, 3, -3] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="bg-white/80 dark:bg-slate-800/80 rounded-full p-1.5 shadow-md backdrop-blur-sm"
-            >
-              <ChevronRight className="h-3 w-3 text-slate-500 dark:text-slate-400" />
-            </motion.div>
-          </div>
-        )}
+      <div
+        ref={scrollRef}
+        className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4 scrollbar-hide md:gap-4 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-1 xl:grid-cols-5"
+      >
+        {items.map((item, index) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: Math.min(index * 0.035, 0.24),
+              duration: 0.32,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="w-[68vw] min-w-[220px] max-w-[286px] shrink-0 snap-start sm:w-[252px] sm:max-w-[270px] md:w-[264px] md:max-w-[286px] lg:w-auto lg:min-w-0 lg:max-w-none"
+          >
+            <CompactFoodCard
+              item={item}
+              qtyInCart={getQuantity(item.id)}
+              onAdd={() => onAddToCart(item)}
+              onCardClick={() => onItemClick(item)}
+              brandColor={brandColor}
+              locale={locale}
+              currency={currency}
+              canAddItems={canAddItems}
+              showPopularBadge={showPopularBadge}
+              showRecommendedBadge={showRecommendedBadge}
+              priorityImage={eagerImages && index < 2}
+            />
+          </motion.div>
+        ))}
       </div>
     </motion.section>
   );

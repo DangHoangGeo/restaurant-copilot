@@ -1,22 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import {
-  Clock,
-  Users,
-  MapPin,
-  Receipt,
   ArrowLeft,
-  Share2,
+  Clock,
   Copy,
+  MapPin,
   Printer,
+  Share2,
+  UtensilsCrossed,
+  Users,
 } from "lucide-react";
 import { useCustomerData } from "@/components/features/customer/layout/CustomerDataContext";
 import { formatPrice } from "@/lib/customerUtils";
@@ -24,15 +21,31 @@ import { QRCodeDialog } from "@/components/features/customer/QRCodeDialog";
 import type {
   OrderHistoryResponse,
   OrderItem,
+  OrderItemStatus,
   OrderStatus,
   Topping,
 } from "./types";
 import { buildCustomerPath } from "@/lib/customer-branch";
-import { createCustomerBrandTheme } from "@/lib/utils/colors";
+import {
+  createCustomerBrandTheme,
+  createCustomerThemeProperties,
+} from "@/lib/utils/colors";
 
 interface HistoryPageClientProps {
   locale: string;
 }
+
+const ORDER_ITEM_STATUSES: OrderItemStatus[] = [
+  "new",
+  "ordered",
+  "preparing",
+  "ready",
+  "served",
+  "canceled",
+];
+
+const isOrderItemStatus = (status: string): status is OrderItemStatus =>
+  ORDER_ITEM_STATUSES.includes(status as OrderItemStatus);
 
 export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   const router = useRouter();
@@ -54,7 +67,6 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
   const [isPrinting, setIsPrinting] = useState(false);
   const [passcodeCopied, setPasscodeCopied] = useState(false);
 
-  // Get sessionId from URL params or context
   const sessionId = searchParams.get("sessionId") || sessionData.sessionId;
 
   const TERMINAL_STATUSES = ["completed", "canceled"];
@@ -80,12 +92,16 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
           `/api/v1/customer/orders/session-info?${params.toString()}`,
         );
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Failed to fetch order history");
+        if (!response.ok)
+          throw new Error(data.error || "Failed to fetch order history");
         if (data.success) setHistoryData(data);
         else throw new Error(data.error || "Failed to load order history");
       } catch (err) {
         console.error("Error fetching order history:", err);
-        if (!silent) setError(err instanceof Error ? err.message : "Failed to load order history");
+        if (!silent)
+          setError(
+            err instanceof Error ? err.message : "Failed to load order history",
+          );
       } finally {
         if (!silent) setIsLoading(false);
       }
@@ -93,7 +109,6 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
     fetchOrderHistory();
 
-    // Poll every 30 s while the order is still in progress
     const interval = setInterval(() => {
       const currentStatus = historyData?.order?.status;
       if (!currentStatus || TERMINAL_STATUSES.includes(currentStatus)) return;
@@ -104,24 +119,17 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, restaurantSettings?.id, contextLoading]);
 
-  // Helper function to get passcode from orderId
-  const getPasscode = () => {
-    if (historyData?.order?.session_code) {
-      return historyData.order.session_code;
-    }
-    return "";
-  };
+  const getPasscode = () => historyData?.order?.session_code ?? "";
 
   const copyPasscode = async () => {
     const passcode = getPasscode();
-    if (passcode) {
-      try {
-        await navigator.clipboard.writeText(passcode);
-        setPasscodeCopied(true);
-        window.setTimeout(() => setPasscodeCopied(false), 1500);
-      } catch (err) {
-        console.error("Failed to copy passcode:", err);
-      }
+    if (!passcode) return;
+    try {
+      await navigator.clipboard.writeText(passcode);
+      setPasscodeCopied(true);
+      window.setTimeout(() => setPasscodeCopied(false), 1500);
+    } catch (err) {
+      console.error("Failed to copy passcode:", err);
     }
   };
 
@@ -135,7 +143,6 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
   const handlePrintReceipt = async () => {
     if (!historyData?.order) return;
-
     setIsPrinting(true);
     try {
       const printWindow = window.open("", "_blank");
@@ -143,12 +150,24 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
       const order = historyData.order;
       const currency = restaurantSettings?.currency || "JPY";
-      const formatPrice = (amount: number) =>
+      const fpLocal = (amount: number) =>
         new Intl.NumberFormat(locale, {
           style: "currency",
           currency,
           maximumFractionDigits: 0,
         }).format(amount);
+      const receiptItemSubtotal = (order.items || []).reduce((sum, item) => {
+        const itemStatus = getItemStatus(item.status);
+        const itemTotal =
+          item.total ??
+          (item.price_at_order ?? item.unit_price) * item.quantity;
+        return itemStatus === "canceled" ? sum : sum + itemTotal;
+      }, 0);
+      const receiptTax = order.tax_amount ?? 0;
+      const receiptSubtotal =
+        receiptItemSubtotal ||
+        Math.max((order.total_amount || 0) - receiptTax, 0);
+      const receiptTotal = receiptSubtotal + receiptTax;
 
       const receiptHtml = `
         <!DOCTYPE html>
@@ -187,34 +206,35 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
             ${(order.items || [])
               .map((item) => {
                 const sizeName = getSizeName(item);
+                const itemStatus = getItemStatus(item.status);
                 const quantityDisplay = sizeName
                   ? `× ${item.quantity} (${escHtml(sizeName)})`
                   : `× ${item.quantity}`;
-                const itemTotal = item.total || (item.price_at_order || item.unit_price) * item.quantity;
-
+                const itemTotal =
+                  item.total ??
+                  (item.price_at_order ?? item.unit_price) * item.quantity;
                 return `
-                <div class="item">
-                  <div class="item-header">
-                    <div class="item-name">${escHtml(getMenuItemName(item))}</div>
-                    <div class="item-price">${escHtml(formatPrice(itemTotal))}</div>
+                  <div class="item">
+                    <div class="item-header">
+                      <div class="item-name">${escHtml(getMenuItemName(item))}</div>
+                      <div class="item-price">${escHtml(fpLocal(itemTotal))}</div>
+                    </div>
+                    <div class="item-details">${escHtml(t(`item_status.${itemStatus}`))}</div>
+                    <div class="quantity-size">
+                      <span>${quantityDisplay}</span>
+                    </div>
+                    ${item.toppings && item.toppings.length > 0 ? `<div class="item-details">${escHtml(t("toppings"))}: ${item.toppings.map((tp) => escHtml(getToppingName(tp))).join(", ")}</div>` : ""}
+                    ${item.notes ? `<div class="item-details">${escHtml(t("notes"))}: ${escHtml(item.notes)}</div>` : ""}
                   </div>
-                  <div class="quantity-size">
-                    <span>${quantityDisplay}</span>
-                  </div>
-                  ${
-                    item.toppings && item.toppings.length > 0
-                      ? `<div class="item-details">${escHtml(t("toppings"))}: ${item.toppings.map((tp) => escHtml(getToppingName(tp))).join(", ")}</div>`
-                      : ""
-                  }
-                  ${item.notes ? `<div class="item-details">${escHtml(t("notes"))}: ${escHtml(item.notes)}</div>` : ""}
-                </div>
-              `;
+                `;
               })
               .join("")}
           </div>
           <div class="total">
-            <div style="border-top: 1px solid #333; padding-top: 8px; font-size: 20px;">
-              <span>${escHtml(t("total"))}: ${escHtml(formatPrice(order.total_amount || 0))}</span>
+            <div style="border-top: 1px solid #333; padding-top: 8px;">
+              <div>${escHtml(t("before_tax"))}: ${escHtml(fpLocal(receiptSubtotal))}</div>
+              <div>${escHtml(t("tax"))}: ${escHtml(fpLocal(receiptTax))}</div>
+              <div style="font-size: 20px; margin-top: 4px;">${escHtml(t("after_tax"))}: ${escHtml(fpLocal(receiptTotal))}</div>
             </div>
           </div>
         </body>
@@ -232,37 +252,61 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
     }
   };
 
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString(locale, {
+  const formatTime = (dateString: string) =>
+    new Date(dateString).toLocaleTimeString(locale, {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(locale, {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
 
-  const getStatusColor = (status: OrderStatus): string => {
+  const getStatusStyle = (status: OrderStatus): string => {
     switch (status) {
       case "new":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-[#60a5fa]/12 border border-[#60a5fa]/30 text-[#93c5fd]";
       case "serving":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+        return "bg-[#f59e0b]/12 border border-[#f59e0b]/30 text-[#fcd34d]";
       case "ready":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        return "bg-[#4ade80]/12 border border-[#4ade80]/30 text-[#86efac]";
       case "completed":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "bg-[#f6e8d3]/8 border border-[#f1dcc4]/20 text-[#c9b7a0]";
       case "canceled":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+        return "bg-[#f87171]/12 border border-[#f87171]/30 text-[#fca5a5]";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "bg-[#f6e8d3]/8 border border-[#f1dcc4]/20 text-[#c9b7a0]";
     }
   };
+
+  const getItemStatusStyle = (status: OrderItemStatus): string => {
+    switch (status) {
+      case "new":
+      case "ordered":
+        return "bg-[#60a5fa]/12 border border-[#60a5fa]/30 text-[#93c5fd]";
+      case "preparing":
+        return "bg-[#f59e0b]/12 border border-[#f59e0b]/30 text-[#fcd34d]";
+      case "ready":
+        return "bg-[#4ade80]/12 border border-[#4ade80]/30 text-[#86efac]";
+      case "served":
+        return "bg-[#f6e8d3]/8 border border-[#f1dcc4]/20 text-[#c9b7a0]";
+      case "canceled":
+        return "bg-[#f87171]/12 border border-[#f87171]/30 text-[#fca5a5]";
+      default:
+        return "bg-[#f6e8d3]/8 border border-[#f1dcc4]/20 text-[#c9b7a0]";
+    }
+  };
+
+  const getItemStatus = (status?: string | null): OrderItemStatus => {
+    if (!status) return "new";
+    return isOrderItemStatus(status) ? status : "new";
+  };
+
+  const getItemTotal = (item: OrderItem) =>
+    item.total ?? (item.price_at_order ?? item.unit_price) * item.quantity;
 
   const getMenuItemName = (item: OrderItem) => {
     switch (locale) {
@@ -277,7 +321,6 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
   const getSizeName = (item: OrderItem) => {
     if (!item.menu_item_sizes) return null;
-
     switch (locale) {
       case "ja":
         return item.menu_item_sizes.name_ja || item.menu_item_sizes.name_en;
@@ -301,29 +344,58 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
   const currency = restaurantSettings?.currency;
   const fp = (amount: number) => formatPrice(amount, currency, locale);
-
-  const totalAmount = historyData?.order?.total_amount || 0;
+  const orderItems = historyData?.order?.items ?? [];
+  const itemSubtotalAmount = orderItems.reduce((sum, item) => {
+    if (getItemStatus(item.status) === "canceled") return sum;
+    return sum + getItemTotal(item);
+  }, 0);
+  const orderTotalAmount = historyData?.order?.total_amount ?? 0;
+  const taxAmount = historyData?.order?.tax_amount ?? 0;
+  const subtotalAmount =
+    itemSubtotalAmount || Math.max(orderTotalAmount - taxAmount, 0);
+  const totalAmount = subtotalAmount + taxAmount;
 
   const customerTheme = useMemo(
     () => createCustomerBrandTheme(restaurantSettings?.primaryColor),
     [restaurantSettings?.primaryColor],
   );
-  const histBrandColor = customerTheme.primary;
-  const spinnerStyle = { borderBottomColor: histBrandColor };
-  const btnStyle = {
-    backgroundColor: histBrandColor,
-    borderColor: histBrandColor,
-    color: customerTheme.primaryForeground,
+  const customerThemeProperties = useMemo(
+    () => createCustomerThemeProperties(customerTheme.primary),
+    [customerTheme.primary],
+  );
+  const brandColor = customerTheme.primary;
+  const companyName =
+    restaurantSettings?.companyName || restaurantSettings?.name || "";
+
+  const navigateToMenu = () => {
+    const menuUrl = new URLSearchParams();
+    if (sessionId && sessionData.sessionStatus === "active") {
+      menuUrl.set("sessionId", sessionId);
+    }
+    router.push(
+      buildCustomerPath({
+        locale,
+        path: "menu",
+        branchCode: activeBranchCode,
+        searchParams: menuUrl,
+      }),
+    );
   };
+
+  const spinnerStyle = { borderBottomColor: brandColor };
 
   if (isLoading || contextLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={spinnerStyle}></div>
-            <p className="text-gray-600">{t("loading")}</p>
-          </div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#0B0A08" }}
+      >
+        <div className="text-center">
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4"
+            style={spinnerStyle}
+          />
+          <p className="text-[#c9b7a0] text-sm">{t("loading")}</p>
         </div>
       </div>
     );
@@ -331,331 +403,319 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
 
   if (error || !historyData) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-64">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-red-600 mb-2">
-              {t("error_title")}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {error || t("error_message")}
-            </p>
-            <Button
-              className="text-white"
-              style={btnStyle}
-              onClick={() => {
-                const menuUrl = new URLSearchParams();
-                if (sessionId && sessionData.sessionStatus === "active") {
-                  menuUrl.set("sessionId", sessionId);
-                }
-                router.push(
-                  buildCustomerPath({
-                    locale,
-                    path: "menu",
-                    branchCode: activeBranchCode,
-                    searchParams: menuUrl,
-                  }),
-                );
-              }}
-            >
-              {t("back_to_menu")}
-            </Button>
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ backgroundColor: "#0B0A08" }}
+      >
+        <div className="text-center max-w-sm">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-[#f1dcc4]/14 bg-[#f6e8d3]/8">
+            <UtensilsCrossed className="h-6 w-6 text-[#c9b7a0]" />
           </div>
+          <h2 className="text-xl font-semibold text-[#fff7e9] mb-2">
+            {t("error_title")}
+          </h2>
+          <p className="text-[#c9b7a0] text-sm mb-6">
+            {error || t("error_message")}
+          </p>
+          <Button
+            onClick={navigateToMenu}
+            className="h-11 rounded-2xl text-white font-semibold"
+            style={{ backgroundColor: brandColor, borderColor: brandColor }}
+          >
+            {t("back_to_menu")}
+          </Button>
         </div>
       </div>
     );
   }
 
-  const brandColor = customerTheme.primary;
-  const companyName = restaurantSettings?.companyName || restaurantSettings?.name || "";
+  const orderStatus = historyData.order?.status as OrderStatus | undefined;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Slim brand header */}
+    <div
+      className="min-h-screen text-[#fff7e9]"
+      style={
+        {
+          ...customerThemeProperties,
+          background:
+            "linear-gradient(180deg,#12100D 0%,#0B0A08 48%,#080705 100%)",
+        } as CSSProperties
+      }
+    >
+      {/* Header */}
       <header
-        className="sticky top-0 z-40 bg-white dark:bg-slate-900 shadow-sm"
+        className="sticky top-0 z-40 border-b border-[#f1dcc4]/10 bg-[#0B0A08]/90 backdrop-blur-xl"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-          {restaurantSettings?.logoUrl ? (
-            <div className="h-8 w-8 relative overflow-hidden rounded-md flex-shrink-0">
-              <Image src={restaurantSettings.logoUrl} alt={companyName} fill className="object-cover" />
-            </div>
-          ) : (
-            <div
-              className="h-8 w-8 rounded-md flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-              style={{
-                backgroundColor: brandColor,
-                color: customerTheme.primaryForeground,
-              }}
-            >
-              {companyName.charAt(0) || "R"}
-            </div>
-          )}
-          <span className="font-semibold text-slate-900 dark:text-white truncate">{companyName}</span>
+        <div className="mx-auto max-w-3xl px-4 py-3 flex items-center gap-3">
+          {/* Back */}
+          <button
+            onClick={navigateToMenu}
+            className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-[#f1dcc4]/14 bg-[#f6e8d3]/8 text-[#fff7e9] transition-colors hover:bg-[#f6e8d3]/14 flex-shrink-0"
+            aria-label={t("back_to_menu")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+
+          {/* Logo + name */}
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            {restaurantSettings?.logoUrl ? (
+              <div className="h-8 w-8 overflow-hidden rounded-[10px] border border-[#f1dcc4]/20 flex-shrink-0">
+                <Image
+                  src={restaurantSettings.logoUrl}
+                  alt={companyName}
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ) : (
+              <div
+                className="h-8 w-8 rounded-[10px] flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                style={{ backgroundColor: brandColor }}
+              >
+                {companyName.charAt(0) || "R"}
+              </div>
+            )}
+            <span className="font-semibold text-[#fff7e9] truncate text-sm">
+              {companyName}
+            </span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {sessionId && (
+              <button
+                onClick={() => setShowQRDialog(true)}
+                className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-[#f1dcc4]/14 bg-[#f6e8d3]/8 text-[#fff7e9] transition-colors hover:bg-[#f6e8d3]/14"
+                aria-label={t("share_session")}
+                title={t("share_session")}
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+            )}
+            {orderStatus === "completed" && (
+              <button
+                onClick={handlePrintReceipt}
+                disabled={isPrinting}
+                className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-[#f1dcc4]/14 bg-[#f6e8d3]/8 text-[#fff7e9] transition-colors hover:bg-[#f6e8d3]/14 disabled:opacity-40"
+                aria-label={t("print_receipt")}
+                title={isPrinting ? t("printing_receipt") : t("print_receipt")}
+              >
+                <Printer className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              const menuUrl = new URLSearchParams();
-              // Only include sessionId if the session is still active (not completed)
-              if (sessionId && sessionData.sessionStatus === "active") {
-                menuUrl.set("sessionId", sessionId);
-              }
-              router.push(
-                buildCustomerPath({
-                  locale,
-                  path: "menu",
-                  branchCode: activeBranchCode,
-                  searchParams: menuUrl,
-                }),
-              );
-            }}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t("back_to_menu")}
-          </Button>
-        </div>
-
-        {/* Action Buttons in Header */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowQRDialog(true)}
-            className="flex items-center gap-2"
-          >
-            <Share2 className="h-4 w-4" />
-            {t("share_session")}
-          </Button>
-
-          {historyData?.order?.status === "completed" && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrintReceipt}
-              disabled={isPrinting}
-              className="flex items-center gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              {isPrinting ? t("printing_receipt") : t("print_receipt")}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <h1 className="text-2xl font-bold mb-6">{t("title")}</h1>
-
-      {/* Session Information */}
-      {historyData.order && (
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Receipt className="h-5 w-5" />
-                {historyData.order.status === "completed"
+      {/* Scrollable content */}
+      <div className="mx-auto max-w-3xl px-4 py-6 pb-24 space-y-4 md:px-6">
+        {/* Session info block */}
+        {historyData.order && (
+          <div className="rounded-[20px] border border-[#f1dcc4]/12 bg-[#f6e8d3]/5 p-5 space-y-4 shadow-[0_24px_80px_-58px_rgba(0,0,0,0.95)]">
+            {/* Title + status */}
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-semibold text-[#fff7e9] text-base leading-tight">
+                {orderStatus === "completed"
                   ? `${t("order")} #${historyData.order.id.slice(-6)}`
                   : t("current_session")}
-              </CardTitle>
-              {/* Show order status in header */}
-              <Badge
-                className={getStatusColor(
-                  historyData.order.status as OrderStatus,
-                )}
-              >
-                {t(`status.${historyData.order.status}`)}
-              </Badge>
+              </h2>
+              {orderStatus && (
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(orderStatus)}`}
+                >
+                  {t(`status.${orderStatus}`)}
+                </span>
+              )}
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <span className="font-medium">
-                    {historyData.order?.table_name || "Unknown Table"}
+
+            {/* Info rows */}
+            <div className="space-y-2.5">
+              {historyData.order.table_name && (
+                <div className="flex items-center gap-2.5 text-sm">
+                  <MapPin className="h-4 w-4 text-[#e9a35e] flex-shrink-0" />
+                  <span className="text-[#fff7e9]">
+                    {historyData.order.table_name}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
+              )}
+              {historyData.order.guest_count && (
+                <div className="flex items-center gap-2.5 text-sm text-[#c9b7a0]">
+                  <Users className="h-4 w-4 text-[#e9a35e] flex-shrink-0" />
                   <span>
-                    {t("guests", {
-                      count: historyData.order?.guest_count || 1,
-                    })}
+                    {t("guests", { count: historyData.order.guest_count })}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
+              )}
+              {historyData.order.created_at && (
+                <div className="flex items-center gap-2.5 text-sm text-[#c9b7a0]">
+                  <Clock className="h-4 w-4 text-[#e9a35e] flex-shrink-0" />
                   <span>
                     {t("started_at", {
-                      date: formatDate(
-                        historyData.order?.created_at ||
-                          new Date().toISOString(),
-                      ),
-                      time: formatTime(
-                        historyData.order?.created_at ||
-                          new Date().toISOString(),
-                      ),
+                      date: formatDate(historyData.order.created_at),
+                      time: formatTime(historyData.order.created_at),
                     })}
                   </span>
                 </div>
-              </div>
+              )}
+            </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between rounded-lg bg-[var(--customer-brand-soft)] p-3">
-                  <div>
-                    <p className="text-sm text-[var(--customer-brand)]">
-                      {t("passcode")}
-                    </p>
-                    <p className="font-mono font-bold text-lg">
+            {/* Passcode + Price breakdown */}
+            <div className="grid gap-3 pt-1 sm:grid-cols-2">
+              {getPasscode() && (
+                <div className="rounded-[16px] border border-[#f1dcc4]/12 bg-[#f6e8d3]/8 px-4 py-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#c9b7a0] mb-1.5">
+                    {t("passcode")}
+                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-lg font-bold tracking-widest text-[#e9a35e]">
                       {getPasscode()}
+                    </span>
+                    <button
+                      onClick={copyPasscode}
+                      className="h-7 w-7 flex items-center justify-center rounded-xl border border-[#f1dcc4]/14 bg-[#f6e8d3]/8 text-[#c9b7a0] hover:text-[#fff7e9] transition-colors"
+                      aria-label={t("copy_passcode")}
+                      title={passcodeCopied ? t("copied") : t("copy_passcode")}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  {passcodeCopied && (
+                    <p className="mt-1 text-[10px] text-[#86efac]">
+                      {t("copied")}
                     </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={copyPasscode}
-                    className="flex items-center gap-2"
-                  >
-                    <Copy className="h-4 w-4" />
-                    {passcodeCopied ? t("copied") : t("copy_passcode")}
-                  </Button>
+                  )}
                 </div>
+              )}
 
-                {/* Financial Breakdown */}
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2">
-                  <div className="border-t pt-2 flex justify-between font-semibold">
-                    <span>{t("total")}</span>
-                    <span>{fp(totalAmount)}</span>
+              <div className="rounded-[16px] border border-[#f1dcc4]/12 bg-[#f6e8d3]/8 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#c9b7a0] mb-1.5">
+                  {t("session_total")}
+                </p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <span className="text-[#c9b7a0]">{t("before_tax")}</span>
+                    <span className="font-semibold tabular-nums text-[#fff7e9]">
+                      {fp(subtotalAmount)}
+                    </span>
                   </div>
-                  <div className="text-right text-xs text-gray-500 dark:text-gray-400">
-                    {historyData.order?.items?.length || 0} {t("items_count")}
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <span className="text-[#c9b7a0]">{t("tax")}</span>
+                    <span className="font-semibold tabular-nums text-[#fff7e9]">
+                      {fp(taxAmount)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-[#f1dcc4]/12 pt-1.5">
+                    <span className="text-xs font-semibold text-[#fff7e9]">
+                      {t("after_tax")}
+                    </span>
+                    <span className="text-lg font-bold text-[#e9a35e] tabular-nums">
+                      {fp(totalAmount)}
+                    </span>
                   </div>
                 </div>
+                <p className="text-[10px] text-[#c9b7a0] mt-0.5">
+                  {historyData.order.items?.length || 0} {t("items_count")}
+                </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      {/* Order Items */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">{t("your_order")}</h2>
+        {/* Order items */}
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#c9b7a0] px-1">
+            {t("your_order")}
+          </p>
 
-        {!historyData.order ? (
-          <Card>
-            <CardContent className="py-8">
-              <div className="text-center text-gray-500">
-                <p>{t("no_orders")}</p>
-                <Button
-                  className="mt-4"
-                  onClick={() => {
-                    const menuUrl = new URLSearchParams();
-                    // Only include sessionId if the session is still active (not completed)
-                    if (sessionId && sessionData.sessionStatus === "active") {
-                      menuUrl.set("sessionId", sessionId);
-                    }
-                    router.push(
-                      buildCustomerPath({
-                        locale,
-                        path: "menu",
-                        branchCode: activeBranchCode,
-                        searchParams: menuUrl,
-                      }),
-                    );
-                  }}
-                >
-                  {t("start_ordering")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {(historyData.order.items || []).map((item, index) => (
-                  <div key={item.id}>
-                    {index > 0 && <Separator className="my-3" />}
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{getMenuItemName(item)}</h4>
+          {!historyData.order ? (
+            <div className="rounded-[24px] border border-[#f1dcc4]/12 bg-[#f6e8d3]/5 p-8 text-center">
+              <UtensilsCrossed className="h-8 w-8 mx-auto mb-3 text-[#c9b7a0]" />
+              <p className="text-[#c9b7a0] text-sm mb-5">{t("no_orders")}</p>
+              <Button
+                onClick={navigateToMenu}
+                className="h-10 rounded-2xl text-white font-semibold text-sm"
+                style={{ backgroundColor: brandColor, borderColor: brandColor }}
+              >
+                {t("start_ordering")}
+              </Button>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-[20px] border border-[#f1dcc4]/12 bg-[#f6e8d3]/5 shadow-[0_24px_80px_-58px_rgba(0,0,0,0.95)]">
+              {(historyData.order.items || []).map((item, index) => {
+                const itemTotal = getItemTotal(item);
+                const sizeName = getSizeName(item);
+                const itemStatus = getItemStatus(item.status);
 
-                        {/* Size and Toppings */}
-                        {(item.menu_item_sizes ||
-                          (item.toppings && item.toppings.length > 0)) && (
-                          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {item.menu_item_sizes && (
-                              <p>
-                                {t("size")}: {getSizeName(item)}
-                              </p>
-                            )}
-                            {item.toppings && item.toppings.length > 0 && (
-                              <p>
-                                {t("toppings")}:{" "}
-                                {item.toppings.map(getToppingName).join(", ")}
-                              </p>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Notes */}
-                        {item.notes && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {t("notes")}: {item.notes}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="text-right">
-                        <p className="font-medium">×{item.quantity}</p>
-                        <p className="text-sm font-semibold">
-                          {fp(item.total || (item.price_at_order || item.unit_price) * item.quantity)}
+                return (
+                  <div
+                    key={item.id}
+                    className={`flex items-start justify-between gap-4 px-5 py-4 ${index > 0 ? "border-t border-[#f1dcc4]/10" : ""}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium text-[#fff7e9] leading-snug">
+                          {getMenuItemName(item)}
                         </p>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${getItemStatusStyle(itemStatus)}`}
+                        >
+                          {t(`item_status.${itemStatus}`)}
+                        </span>
                       </div>
+
+                      {(sizeName ||
+                        (item.toppings && item.toppings.length > 0)) && (
+                        <div className="mt-1 space-y-0.5 text-sm text-[#c9b7a0]">
+                          {sizeName && (
+                            <p>
+                              {t("size")}: {sizeName}
+                            </p>
+                          )}
+                          {item.toppings && item.toppings.length > 0 && (
+                            <p>
+                              {t("toppings")}:{" "}
+                              {item.toppings.map(getToppingName).join(", ")}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {item.notes && (
+                        <p className="mt-1 text-sm text-[#c9b7a0]">
+                          {t("notes")}: {item.notes}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm text-[#c9b7a0]">×{item.quantity}</p>
+                      <p className="font-semibold text-[#e9a35e] tabular-nums">
+                        {fp(itemTotal)}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Action Buttons */}
-      {historyData?.order?.status !== "completed" && (
-        <div className="mt-8 flex justify-center">
-          <Button
-            variant="outline"
-            onClick={() => {
-              const menuUrl = new URLSearchParams();
-              // Only include sessionId if the session is still active (not completed)
-              if (sessionId && sessionData.sessionStatus === "active") {
-                menuUrl.set("sessionId", sessionId);
-              }
-              router.push(
-                buildCustomerPath({
-                  locale,
-                  path: "menu",
-                  branchCode: activeBranchCode,
-                  searchParams: menuUrl,
-                }),
-              );
-            }}
-            className="flex items-center gap-2"
-          >
-            {t("add_more_items")}
-          </Button>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Add more items */}
+        {historyData?.order?.status !== "completed" &&
+          sessionData.sessionStatus === "active" && (
+            <div className="pt-2 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={navigateToMenu}
+                className="h-11 rounded-2xl border-[#f1dcc4]/16 bg-[#f6e8d3]/8 text-[#fff7e9] hover:bg-[#f6e8d3]/14 px-6"
+              >
+                {t("add_more_items")}
+              </Button>
+            </div>
+          )}
+      </div>
 
       {/* QR Code Dialog */}
       {sessionId && (
@@ -666,7 +726,6 @@ export function HistoryPageClient({ locale }: HistoryPageClientProps) {
           restaurantSubdomain={restaurantSettings?.subdomain || "restaurant"}
         />
       )}
-    </div>
     </div>
   );
 }

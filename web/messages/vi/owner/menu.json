@@ -185,14 +185,17 @@
     "title": "Món",
     "tabs": {
       "basic": "Thông tin cơ bản",
+      "basicShort": "Món",
       "variants": "Biến thể & Tùy chọn",
-      "advanced": "Cài đặt nâng cao"
+      "variantsShort": "Tùy chọn",
+      "advanced": "Cài đặt nâng cao",
+      "advancedShort": "Lưu"
     },
     "buttons": {
       "save": "Lưu",
       "cancel": "Hủy",
-      "previous": "← Trước",
-      "next": "Tiếp →"
+      "previous": "Trước",
+      "next": "Tiếp"
     },
     "saving": "Đang lưu...",
     "basic": {
@@ -216,6 +219,11 @@
       "uploadTitle": "Kéo thả hoặc nhấn để tải lên",
       "uploadHint": "Gợi ý: 600×400px, tối đa 5MB",
       "chooseFileButton": "Chọn tệp",
+      "cropZoomLabel": "Phóng to",
+      "cropHorizontalLabel": "Ngang",
+      "cropVerticalLabel": "Dọc",
+      "applyImageButton": "Dùng hình này",
+      "imageProcessing": "Đang xử lý...",
       "aiContentTitle": "Nội dung AI tạo",
       "englishLabel": "Tiếng Anh",
       "englishNamePlaceholder": "Tên tiếng Anh",

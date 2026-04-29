@@ -307,6 +307,70 @@
   --control-shadow: none;
 }
 
+.branch-route-surface {
+  --background: #faf3ea;
+  --foreground: #2e2117;
+  --card: rgba(255, 247, 233, 0.78);
+  --card-foreground: #2e2117;
+  --popover: #fff7e9;
+  --popover-foreground: #2e2117;
+  --primary: #ab6e3c;
+  --primary-foreground: #fff7e9;
+  --secondary: #f5ead8;
+  --secondary-foreground: #4f3827;
+  --muted: #f5ead8;
+  --muted-foreground: #8b6e5a;
+  --accent: #f5ead8;
+  --accent-foreground: #6f4d35;
+  --border: rgba(171, 110, 60, 0.16);
+  --input: rgba(171, 110, 60, 0.2);
+  --ring: rgba(171, 110, 60, 0.38);
+  --control-ink: #2e2117;
+  --control-text: #4f3827;
+  --control-muted: #8b6e5a;
+  --control-soft-muted: #b89078;
+  --control-surface: rgba(255, 247, 233, 0.72);
+  --control-surface-strong: rgba(255, 247, 233, 0.9);
+  --control-surface-soft: rgba(245, 234, 216, 0.66);
+  --control-line: rgba(171, 110, 60, 0.16);
+  --control-line-soft: rgba(171, 110, 60, 0.1);
+  --control-copper: #ab6e3c;
+  --control-shadow: 0 18px 54px -34px rgba(91, 58, 32, 0.42);
+  color-scheme: light;
+}
+
+.dark .branch-route-surface {
+  --background: #170f0c;
+  --foreground: #f7f1e9;
+  --card: rgba(37, 24, 16, 0.78);
+  --card-foreground: #f7f1e9;
+  --popover: #170f0c;
+  --popover-foreground: #f7f1e9;
+  --primary: #e9a35e;
+  --primary-foreground: #170f0c;
+  --secondary: #2b1a10;
+  --secondary-foreground: #efe0ca;
+  --muted: #251810;
+  --muted-foreground: #c9b7a0;
+  --accent: #332116;
+  --accent-foreground: #f1dcc4;
+  --border: rgba(241, 220, 196, 0.16);
+  --input: rgba(241, 220, 196, 0.18);
+  --ring: rgba(233, 163, 94, 0.42);
+  --control-ink: #f7f1e9;
+  --control-text: #efe0ca;
+  --control-muted: #c9b7a0;
+  --control-soft-muted: #b89078;
+  --control-surface: rgba(37, 24, 16, 0.78);
+  --control-surface-strong: rgba(43, 26, 16, 0.9);
+  --control-surface-soft: rgba(51, 33, 22, 0.74);
+  --control-line: rgba(241, 220, 196, 0.18);
+  --control-line-soft: rgba(241, 220, 196, 0.12);
+  --control-copper: #c8773e;
+  --control-shadow: none;
+  color-scheme: dark;
+}
+
 /* Print styles for legal pages */
 @media print {
   body {

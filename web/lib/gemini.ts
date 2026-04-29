@@ -65,7 +65,7 @@ export interface ChatResponse {
   confidence?: number;
 }
 
-const DEFAULT_GEMINI_TEXT_MODEL = "gemini-2.5-flash";
+const DEFAULT_GEMINI_TEXT_MODEL = "gemini-3.1-flash-preview";
 
 const GEMINI_TEXT_MODEL_ALIASES: Record<string, string> = {
   "gemini-3.1-flash-preview": DEFAULT_GEMINI_TEXT_MODEL,

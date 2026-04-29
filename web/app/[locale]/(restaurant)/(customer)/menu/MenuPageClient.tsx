@@ -9,7 +9,12 @@ import type {
 } from "@/components/features/customer/screens/types";
 import { useCustomerData } from "@/components/features/customer/layout/CustomerDataContext";
 import { useTranslations } from "next-intl";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSubdomainFromHost } from "@/lib/utils";
@@ -70,6 +75,10 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
   const companyName =
     restaurantSettings?.companyName ?? restaurantSettings?.name ?? "";
   const branchName = restaurantSettings?.name ?? "";
+  const activeSessionId =
+    sessionData.sessionId || sessionParams.sessionId || "";
+  const activeTableNumber =
+    sessionData.tableNumber || sessionParams.tableNumber || "";
 
   // Handle session resolution for QR codes and session parameters
   useEffect(() => {
@@ -106,9 +115,15 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
             setTableId(result.table.id);
 
             if (result.activeSessionId) {
-              setPendingSessionId(result.activeSessionId);
-              setRequirePasscode(result.requirePasscode || false);
-              setShowJoinDialog(true);
+              if (sessionData.sessionId === result.activeSessionId) {
+                setPendingSessionId("");
+                setRequirePasscode(false);
+                setShowJoinDialog(false);
+              } else {
+                setPendingSessionId(result.activeSessionId);
+                setRequirePasscode(result.requirePasscode || false);
+                setShowJoinDialog(true);
+              }
             } else {
               setShowGuestDialog(true);
             }
@@ -127,10 +142,16 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
             setTableId(result.tableId);
 
             if (result.activeSessionId) {
-              // There's an active session - need to join it
-              setPendingSessionId(result.activeSessionId);
-              setRequirePasscode(result.requirePasscode || false);
-              setShowJoinDialog(true);
+              if (sessionData.sessionId === result.activeSessionId) {
+                setPendingSessionId("");
+                setRequirePasscode(false);
+                setShowJoinDialog(false);
+              } else {
+                // There's an active session - need to join it
+                setPendingSessionId(result.activeSessionId);
+                setRequirePasscode(result.requirePasscode || false);
+                setShowJoinDialog(true);
+              }
             } else {
               // New session from QR code - show guest count dialog
               setShowGuestDialog(true);
@@ -153,6 +174,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     sessionParams.code,
     sessionParams.sessionId,
     sessionParams.table,
+    sessionData.sessionId,
     t,
   ]);
 
@@ -245,7 +267,10 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         currentUrl.searchParams.set("sessionId", data.sessionId);
         window.history.replaceState({}, "", currentUrl.toString());
       } else {
-        if (data.error === "Invalid passcode" || data.error === "Invalid session code") {
+        if (
+          data.error === "Invalid passcode" ||
+          data.error === "Invalid session code"
+        ) {
           setJoinError(t("invalid_passcode_error"));
         } else if (data.error === "Session is no longer active") {
           setJoinError(t("session_expired_message"));
@@ -300,16 +325,20 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
 
   const handleSetView = useCallback(
     (view: ViewType, props?: ViewProps) => {
-      const baseParams = new URLSearchParams({
-        locale,
-        view,
-        sessionId: sessionData.sessionId || "",
-        tableNumber: sessionData.tableNumber || "",
-      });
+      const baseParams = new URLSearchParams();
+      baseParams.set("view", view);
+
+      if (activeSessionId) {
+        baseParams.set("sessionId", activeSessionId);
+      }
+
+      if (activeTableNumber) {
+        baseParams.set("tableNumber", activeTableNumber);
+      }
 
       if (props) {
         Object.entries(props).forEach(([key, value]) => {
-          if (value !== undefined) {
+          if (value !== undefined && value !== null && value !== "") {
             baseParams.set(key, String(value));
           }
         });
@@ -367,13 +396,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           );
       }
     },
-    [
-      activeBranchCode,
-      locale,
-      router,
-      sessionData.sessionId,
-      sessionData.tableNumber,
-    ],
+    [activeBranchCode, activeSessionId, activeTableNumber, locale, router],
   );
 
   const spinnerStyle = { borderBottomColor: brandColor };
@@ -384,7 +407,10 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={spinnerStyle}></div>
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4"
+            style={spinnerStyle}
+          ></div>
           <p className="text-gray-600">{t("loading")}</p>
         </div>
       </div>
@@ -402,7 +428,11 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             {t("invalid_session_message")}
           </p>
-          <Button onClick={() => router.push(`/${locale}/`)} className="text-white" style={btnStyle}>
+          <Button
+            onClick={() => router.push(`/${locale}/`)}
+            className="text-white"
+            style={btnStyle}
+          >
             {t("scan_qr_again")}
           </Button>
         </div>
@@ -420,7 +450,11 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             {resolveError}
           </p>
-          <Button onClick={() => router.push(`/${locale}/`)} className="text-white" style={btnStyle}>
+          <Button
+            onClick={() => router.push(`/${locale}/`)}
+            className="text-white"
+            style={btnStyle}
+          >
             {t("scan_qr_again")}
           </Button>
         </div>
@@ -445,7 +479,10 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={spinnerStyle}></div>
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4"
+            style={spinnerStyle}
+          ></div>
           <p className="text-gray-600">{t("redirecting_to_history")}</p>
         </div>
       </div>
@@ -456,8 +493,8 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
     <>
       <SmartMenu
         locale={locale}
-        sessionId={sessionData.sessionId || ""}
-        tableNumber={sessionData.tableNumber || ""}
+        sessionId={activeSessionId}
+        tableNumber={activeTableNumber}
         canAddItems={sessionData.canAddItems}
         brandColor={brandColor}
         currency={restaurantSettings?.currency}
@@ -467,32 +504,33 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
         branchName={branchName}
         logoUrl={restaurantSettings?.logoUrl}
         allowOrderNotes={restaurantSettings?.allowOrderNotes ?? true}
+        timezone={restaurantSettings?.timezone}
       />
 
       {/* Guest Count + Passcode Dialog (combined 2-step) */}
       <Dialog open={showGuestDialog} onOpenChange={handleGuestDialogOpenChange}>
-        <DialogContent className="sm:max-w-sm p-0 overflow-hidden">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[360px] overflow-hidden rounded-[28px] border border-[#f1dcc4]/16 bg-[#14100b]/96 p-0 text-[#fff7e9] shadow-[0_30px_90px_-45px_rgba(0,0,0,0.95)] backdrop-blur-xl ring-1 ring-white/5 sm:max-w-[380px] [&>button]:text-[#c9b7a0] [&>button]:hover:text-[#fff7e9]">
           {guestDialogStep === "guests" ? (
             <div
               key="guests"
-              className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200"
+              className="animate-in fade-in-0 zoom-in-95 max-h-[calc(100dvh-2rem)] space-y-5 overflow-y-auto px-5 py-6 text-center duration-200"
             >
               <DialogTitle className="sr-only">
                 {t("guest_count_title")}
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                {t("guest_count_description")}
+              </DialogDescription>
 
               {/* Welcome header */}
               <div className="mb-6">
-                <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-                  style={{ backgroundColor: customerTheme.soft }}
-                >
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#f1dcc4]/14 bg-[#f6e8d3]/10">
                   <svg
                     className="w-7 h-7"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.8}
-                    stroke={brandColor}
+                    stroke="#E9A35E"
                   >
                     <path
                       strokeLinecap="round"
@@ -501,12 +539,12 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                     />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-balance text-xl font-semibold leading-tight text-[#fff7e9]">
                   {companyName
                     ? `${t("welcome_to")} ${companyName}`
                     : t("welcome_greeting")}
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="mx-auto mt-2 max-w-[25ch] text-sm leading-5 text-[#c9b7a0]">
                   {branchName && branchName !== companyName
                     ? `${branchName} · ${t("welcome_subtitle")}`
                     : t("welcome_subtitle")}
@@ -514,31 +552,27 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               </div>
 
               {/* Guest count description */}
-              <p className="text-sm text-gray-600 mb-5">
+              <p className="mx-auto max-w-[26ch] text-sm leading-5 text-[#c9b7a0]">
                 {t("guest_count_description")}
               </p>
 
               {/* Stepper */}
-              <div className="flex items-center justify-center gap-8 mb-8">
+              <div className="flex items-center justify-center gap-6">
                 <button
                   type="button"
                   aria-label={t("decrease_guests")}
                   onClick={() => setGuestCount((c) => Math.max(1, c - 1))}
                   disabled={guestCount <= 1}
-                  className="w-14 h-14 rounded-full text-3xl font-medium border-2 transition-all duration-150 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed select-none"
-                  style={{ borderColor: brandColor, color: brandColor }}
+                  className="h-14 w-14 select-none rounded-full border border-[#e9a35e]/70 bg-[#f6e8d3]/6 text-3xl font-medium text-[#e9a35e] transition-all duration-150 active:scale-90 disabled:cursor-not-allowed disabled:opacity-25"
                 >
                   −
                 </button>
 
                 <div className="text-center min-w-[3.5rem]">
-                  <span
-                    className="text-6xl font-bold tabular-nums leading-none block transition-all duration-150"
-                    style={{ color: brandColor }}
-                  >
+                  <span className="block text-6xl font-bold leading-none text-[#e9a35e] tabular-nums transition-all duration-150">
                     {guestCount}
                   </span>
-                  <span className="text-xs text-gray-400 mt-1 block">
+                  <span className="mt-1 block text-xs text-[#c9b7a0]">
                     {t("guests_label")}
                   </span>
                 </div>
@@ -548,8 +582,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                   aria-label={t("increase_guests")}
                   onClick={() => setGuestCount((c) => Math.min(20, c + 1))}
                   disabled={guestCount >= 20}
-                  className="w-14 h-14 rounded-full text-3xl font-medium border-2 transition-all duration-150 active:scale-90 disabled:opacity-25 disabled:cursor-not-allowed select-none"
-                  style={{ borderColor: brandColor, color: brandColor }}
+                  className="h-14 w-14 select-none rounded-full border border-[#e9a35e]/70 bg-[#f6e8d3]/6 text-3xl font-medium text-[#e9a35e] transition-all duration-150 active:scale-90 disabled:cursor-not-allowed disabled:opacity-25"
                 >
                   +
                 </button>
@@ -558,36 +591,36 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               <Button
                 onClick={startSession}
                 disabled={isStartingSession}
-                className="w-full h-12 text-base font-semibold text-white"
+                className="h-12 w-full rounded-2xl text-base font-semibold text-white shadow-[0_16px_36px_-24px_rgba(0,0,0,0.9)]"
                 style={{ backgroundColor: brandColor, borderColor: brandColor }}
               >
                 {isStartingSession ? t("starting") : t("start_session")}
               </Button>
 
               {startSessionError && (
-                <p className="mt-3 text-sm text-red-600">{startSessionError}</p>
+                <p className="text-sm text-[#ffd6ad]">{startSessionError}</p>
               )}
             </div>
           ) : (
             <div
               key="passcode"
-              className="text-center p-6 animate-in fade-in-0 zoom-in-95 duration-200"
+              className="animate-in fade-in-0 zoom-in-95 max-h-[calc(100dvh-2rem)] space-y-5 overflow-y-auto px-5 py-6 text-center duration-200"
             >
               <DialogTitle className="sr-only">
                 {t("session_created_title")}
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                {t("passcode_share_instructions")}
+              </DialogDescription>
 
               {/* Success icon */}
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ backgroundColor: customerTheme.soft }}
-              >
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#f1dcc4]/14 bg-[#f6e8d3]/10">
                 <svg
                   className="w-9 h-9"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={2.5}
-                  stroke={brandColor}
+                  stroke="#E9A35E"
                 >
                   <path
                     strokeLinecap="round"
@@ -597,30 +630,24 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 </svg>
               </div>
 
-              <h2 className="text-xl font-bold text-gray-900 mb-1">
+              <h2 className="text-balance text-xl font-semibold leading-tight text-[#fff7e9]">
                 {t("session_ready_title")}
               </h2>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="mx-auto max-w-[26ch] text-sm leading-5 text-[#c9b7a0]">
                 {t("passcode_share_instructions")}
               </p>
 
               {/* Passcode display */}
-              <div
-                className="rounded-2xl px-6 py-5 mb-4"
-                style={{ backgroundColor: customerTheme.softer }}
-              >
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
+              <div className="rounded-2xl border border-[#f1dcc4]/12 bg-[#f6e8d3]/8 px-4 py-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#c9b7a0]">
                   {t("table_passcode_label")}
                 </p>
-                <div
-                  className="text-5xl font-bold tracking-[0.3em] pl-[0.3em]"
-                  style={{ color: brandColor }}
-                >
+                <div className="break-all text-center text-4xl font-bold tracking-[0.16em] text-[#e9a35e]">
                   {sessionPasscode}
                 </div>
               </div>
 
-              <p className="text-xs text-gray-400 mb-6">
+              <p className="mx-auto max-w-[28ch] text-xs leading-5 text-[#c9b7a0]">
                 {t("passcode_instructions")}
               </p>
 
@@ -628,14 +655,14 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 type="button"
                 variant="outline"
                 onClick={handleCopyPasscode}
-                className="w-full h-11 mb-3"
+                className="h-11 w-full rounded-2xl border-[#f1dcc4]/14 bg-[#f6e8d3]/8 text-[#fff7e9] hover:bg-[#f6e8d3]/14"
               >
                 {passcodeCopied ? t("copied") : t("copy_passcode")}
               </Button>
 
               <Button
                 onClick={handleContinueToMenu}
-                className="w-full h-12 text-base font-semibold text-white"
+                className="h-12 w-full rounded-2xl text-base font-semibold text-white shadow-[0_16px_36px_-24px_rgba(0,0,0,0.9)]"
                 style={{ backgroundColor: brandColor, borderColor: brandColor }}
               >
                 {t("start_ordering")}
@@ -647,18 +674,15 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
 
       {/* Join Session Dialog */}
       <Dialog open={showJoinDialog} onOpenChange={handleJoinDialogOpenChange}>
-        <DialogContent className="sm:max-w-sm p-0 overflow-hidden">
-          <div className="text-center p-6">
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ backgroundColor: customerTheme.soft }}
-            >
+        <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[360px] overflow-hidden rounded-[28px] border border-[#f1dcc4]/16 bg-[#14100b]/96 p-0 text-[#fff7e9] shadow-[0_30px_90px_-45px_rgba(0,0,0,0.95)] backdrop-blur-xl ring-1 ring-white/5 sm:max-w-[380px] [&>button]:text-[#c9b7a0] [&>button]:hover:text-[#fff7e9]">
+          <div className="max-h-[calc(100dvh-2rem)] overflow-y-auto px-5 py-6 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#f1dcc4]/14 bg-[#f6e8d3]/10">
               <svg
                 className="w-7 h-7"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.8}
-                stroke={brandColor}
+                stroke="#E9A35E"
               >
                 <path
                   strokeLinecap="round"
@@ -668,10 +692,13 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
               </svg>
             </div>
 
-            <DialogTitle className="text-xl font-bold text-gray-900 mb-1">
+            <DialogTitle className="mb-1 text-balance text-xl font-semibold leading-tight text-[#fff7e9]">
               {t("join_session_title")}
             </DialogTitle>
-            <p className="text-sm text-gray-500 mb-6">
+            <DialogDescription className="sr-only">
+              {t("join_session_description")}
+            </DialogDescription>
+            <p className="mx-auto mb-6 max-w-[26ch] text-sm leading-5 text-[#c9b7a0]">
               {t("join_session_description")}
             </p>
 
@@ -693,16 +720,18 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                   }
                 }}
                 autoFocus
-                className="w-full text-center text-2xl font-bold tracking-[0.4em] h-14 mb-6"
+                className="mb-6 h-14 w-full rounded-2xl border-[#f1dcc4]/14 bg-[#f6e8d3]/8 text-center text-2xl font-bold uppercase tracking-[0.25em] text-[#fff7e9] placeholder:text-[#c9b7a0]/45 focus-visible:ring-[#e9a35e]"
               />
             )}
 
             {joinError && (
-              <p className="text-sm text-red-600 mb-4">{joinError}</p>
+              <p className="mb-4 rounded-2xl border border-[#e9a35e]/30 bg-[#e9a35e]/10 px-4 py-3 text-sm leading-5 text-[#ffd6ad]">
+                {joinError}
+              </p>
             )}
 
             {requirePasscode && !joinError && (
-              <p className="text-xs text-gray-500 mb-4">
+              <p className="mx-auto mb-4 max-w-[28ch] text-xs leading-5 text-[#c9b7a0]">
                 {t("ask_for_passcode_instruction")}
               </p>
             )}
@@ -714,7 +743,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
                 (requirePasscode &&
                   passcode.length !== CUSTOMER_SESSION_CODE_LENGTH)
               }
-              className="w-full h-12 text-base font-semibold text-white mb-3"
+              className="mb-3 h-12 w-full rounded-2xl text-base font-semibold text-white shadow-[0_16px_36px_-24px_rgba(0,0,0,0.9)]"
               style={{ backgroundColor: brandColor, borderColor: brandColor }}
             >
               {isJoiningSession ? t("starting") : t("join")}
@@ -722,7 +751,7 @@ export function MenuPageClient({ locale }: MenuPageClientProps) {
             <Button
               variant="ghost"
               onClick={() => setShowJoinDialog(false)}
-              className="w-full h-10 text-sm text-gray-500"
+              className="h-10 w-full rounded-2xl text-sm text-[#c9b7a0] hover:bg-[#f6e8d3]/8 hover:text-[#fff7e9]"
             >
               {t("cancel")}
             </Button>

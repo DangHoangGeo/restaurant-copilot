@@ -9,7 +9,10 @@ import {
   getSuppliers,
   getPurchaseSummaryForPeriod,
 } from "@/lib/server/purchasing/service";
-import { resolvePurchasingAccess } from "@/lib/server/purchasing/access";
+import {
+  resolvePurchasingAccess,
+  resolveScopedBranchPurchasingAccess,
+} from "@/lib/server/purchasing/access";
 import { PurchasingDashboard } from "@/components/features/admin/purchasing/PurchasingDashboard";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { buildBranchPath } from "@/lib/branch-paths";
@@ -31,7 +34,9 @@ export default async function PurchasingPage({
 }) {
   const { locale, branchId } = await params;
 
-  const access = await resolvePurchasingAccess();
+  const access = branchId
+    ? await resolveScopedBranchPurchasingAccess(branchId)
+    : await resolvePurchasingAccess();
   if (!access) {
     redirect(buildBranchPath(locale, branchId));
   }

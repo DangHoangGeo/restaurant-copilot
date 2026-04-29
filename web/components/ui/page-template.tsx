@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface PageTemplateProps {
   title: string;
@@ -8,38 +8,32 @@ interface PageTemplateProps {
   className?: string;
 }
 
-export function PageTemplate({ 
-  title, 
-  subtitle, 
-  action, 
-  children, 
-  className = ""
+export function PageTemplate({
+  title,
+  subtitle,
+  action,
+  children,
+  className = "",
 }: PageTemplateProps) {
   return (
-    <div className={`container mx-auto py-10 px-4 sm:px-6 lg:px-8 ${className}`}>
-      <header className="mb-8">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+    <div className={`mx-auto w-full max-w-[1440px] ${className}`}>
+      <header className="mb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-semibold leading-tight text-[#2E2117] dark:text-[#F7F1E9]">
               {title}
             </h1>
             {subtitle && (
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#8B6E5A] dark:text-[#C9B7A0]">
                 {subtitle}
               </p>
             )}
           </div>
-          {action && (
-            <div className="ml-4">
-              {action}
-            </div>
-          )}
+          {action && <div className="shrink-0">{action}</div>}
         </div>
       </header>
-      
-      <main>
-        {children}
-      </main>
+
+      <main>{children}</main>
     </div>
   );
 }

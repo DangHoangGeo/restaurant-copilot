@@ -10,6 +10,7 @@
   "item_notes": "Ghi chú: {notes}",
   "total_price": "Tổng giá",
   "search_placeholder": "Tìm kiếm món...",
+  "clear_search": "Xóa",
   "popular_now": "Phổ biến hiện tại",
   "recommended": "Gợi ý",
   "add_to_cart_success": "{itemName} đã thêm vào giỏ.",
@@ -26,6 +27,17 @@
   "view_smart": "Xem thực đơn thông minh",
   "view_classic": "Xem thực đơn cổ điển",
   "browse_categories": "Duyệt danh mục",
+  "table_label": "Bàn",
+  "item_count": "{count} món",
+  "scroll_previous": "Cuộn tới món trước",
+  "scroll_next": "Cuộn tới món tiếp theo",
+  "category_nav": {
+    "label": "Danh mục thực đơn",
+    "all": "Tất cả",
+    "food": "Món ăn",
+    "drinks": "Đồ uống",
+    "jump_to": "Đi tới"
+  },
   "no_items_found": "Không tìm thấy món nào trong danh mục này.",
   "item_load_error_title": "Không thể mở món này",
   "item_load_error_description": "Không thể tải tùy chọn của món này. Vui lòng thử lại.",
@@ -59,7 +71,10 @@
     "rating": "Đánh giá",
     "reviews_count": "{count} đánh giá",
     "popular": "Phổ biến",
-    "recommended": "Gợi ý"
+    "recommended": "Gợi ý",
+    "sizes": "Kích cỡ",
+    "toppings": "Topping",
+    "more_options": "+{count} nữa"
   },
   "item_detail": {
     "choose_size": "SIZE",

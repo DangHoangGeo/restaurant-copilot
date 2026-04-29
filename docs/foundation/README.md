@@ -46,6 +46,9 @@ Read these when relevant:
   Current actor-by-actor production readiness review for owner, platform admin, staff, and public customer flows.
 - `10_review_execution_20260422.md`
   Current implementation status for the production hardening work executed from the April 22 review.
+- `11_role_branch_access_scenarios_20260427.md`
+  Required when the task touches organization roles, branch access, member
+  scopes, employees, invites, permission defaults, or legacy role hardening.
 
 ## Working Rules
 

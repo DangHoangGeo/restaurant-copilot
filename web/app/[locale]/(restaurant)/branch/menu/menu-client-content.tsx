@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import {
   AlertTriangle,
   CheckCircle2,
+  Eye,
+  EyeOff,
   ImageOff,
   Layers3,
   Pencil,
@@ -46,6 +48,7 @@ import type { MenuItemCategory, MenuItem } from "@/shared/types/menu";
 
 type PrimaryLanguage = "en" | "ja" | "vi";
 type SourceFilter = "all" | "organization" | "branch";
+type StatusFilter = "all" | "available" | "hidden";
 
 interface WorkspaceSize {
   id?: string;
@@ -121,6 +124,11 @@ interface WorkspaceResponse {
   summary: WorkspaceSummary;
 }
 
+interface MenuRow {
+  item: WorkspaceItem;
+  category: WorkspaceCategory;
+}
+
 interface MenuClientContentProps {
   branchId: string;
 }
@@ -131,6 +139,9 @@ function buildCopy(locale: string) {
       title: "支店メニュー",
       categories: "カテゴリ",
       allCategories: "すべてのカテゴリ",
+      categoryFilter: "カテゴリ",
+      sourceFilter: "管理元",
+      statusFilter: "状態",
       inherited: "会社継承",
       local: "支店ローカル",
       totalItems: "全メニュー",
@@ -159,13 +170,42 @@ function buildCopy(locale: string) {
       deleteCategoryConfirm: "この空のカテゴリを削除しますか？",
       unavailable: "非表示",
       available: "表示中",
+      soldOut: "売り切れ",
+      inactive: "停止中",
       missingImage: "画像未設定",
       remove: "削除",
       edit: "編集",
       hide: "非表示",
       show: "表示",
       save: "保存",
+      cancel: "キャンセル",
+      saving: "保存中",
+      workspaceUnavailable: "メニューを読み込めません",
+      loadFailed: "支店メニューの読み込みに失敗しました。",
+      translationFailed: "翻訳に失敗しました。",
+      descriptionGenerationFailed: "説明文の生成に失敗しました。",
+      aiGenerationFailed: "AI生成に失敗しました。",
+      editBranchItem: "支店メニューを編集",
+      itemUpdated: "メニューを更新しました。",
+      itemUpdateFailed: "メニューの更新に失敗しました。",
       itemCount: "件",
+      itemsTable: "メニュー一覧",
+      branchItemsTable: "支店で管理するメニュー",
+      sharedItemsTable: "会社共有メニュー",
+      branchItemsEmpty: "この条件に合う支店メニューはありません。",
+      sharedItemsEmpty: "この条件に合う共有メニューはありません。",
+      branchCategoriesTitle: "支店カテゴリ",
+      sharedCategoriesTitle: "会社カテゴリ",
+      branchCategoriesEmpty: "支店カテゴリはまだありません。",
+      sharedCategoriesEmpty: "会社カテゴリはまだありません。",
+      itemColumn: "メニュー",
+      categoryColumn: "カテゴリ",
+      sourceColumn: "管理元",
+      statusColumn: "状態",
+      priceColumn: "価格",
+      optionColumn: "サイズ・トッピング",
+      actionColumn: "操作",
+      imageReady: "画像あり",
     };
   }
 
@@ -174,6 +214,9 @@ function buildCopy(locale: string) {
       title: "Thực đơn chi nhánh",
       categories: "Danh mục",
       allCategories: "Tất cả danh mục",
+      categoryFilter: "Danh mục",
+      sourceFilter: "Nguồn quản lý",
+      statusFilter: "Trạng thái",
       inherited: "Kế thừa công ty",
       local: "Món riêng chi nhánh",
       totalItems: "Tổng món",
@@ -202,13 +245,42 @@ function buildCopy(locale: string) {
       deleteCategoryConfirm: "Xóa danh mục trống này?",
       unavailable: "Đang ẩn",
       available: "Đang hiển thị",
+      soldOut: "Hết món",
+      inactive: "Tạm dừng",
       missingImage: "Thiếu ảnh",
       remove: "Xóa",
       edit: "Sửa",
       hide: "Ẩn",
       show: "Hiện",
       save: "Lưu",
+      cancel: "Hủy",
+      saving: "Đang lưu",
+      workspaceUnavailable: "Không tải được thực đơn",
+      loadFailed: "Không thể tải thực đơn của chi nhánh.",
+      translationFailed: "Dịch thất bại.",
+      descriptionGenerationFailed: "Tạo mô tả thất bại.",
+      aiGenerationFailed: "Tạo nội dung AI thất bại.",
+      editBranchItem: "Sửa món của chi nhánh",
+      itemUpdated: "Đã cập nhật món.",
+      itemUpdateFailed: "Không thể cập nhật món.",
       itemCount: "món",
+      itemsTable: "Danh sách món",
+      branchItemsTable: "Món riêng của chi nhánh",
+      sharedItemsTable: "Món dùng chung từ công ty",
+      branchItemsEmpty: "Không có món riêng nào khớp bộ lọc.",
+      sharedItemsEmpty: "Không có món dùng chung nào khớp bộ lọc.",
+      branchCategoriesTitle: "Danh mục của chi nhánh",
+      sharedCategoriesTitle: "Danh mục từ công ty",
+      branchCategoriesEmpty: "Chi nhánh chưa có danh mục riêng.",
+      sharedCategoriesEmpty: "Chưa có danh mục công ty.",
+      itemColumn: "Món",
+      categoryColumn: "Danh mục",
+      sourceColumn: "Nguồn",
+      statusColumn: "Trạng thái",
+      priceColumn: "Giá",
+      optionColumn: "Kích cỡ / topping",
+      actionColumn: "Thao tác",
+      imageReady: "Có ảnh",
     };
   }
 
@@ -216,6 +288,9 @@ function buildCopy(locale: string) {
     title: "Branch menu",
     categories: "Categories",
     allCategories: "All categories",
+    categoryFilter: "Category",
+    sourceFilter: "Source",
+    statusFilter: "Status",
     inherited: "Inherited",
     local: "Local",
     totalItems: "Total items",
@@ -244,20 +319,43 @@ function buildCopy(locale: string) {
     deleteCategoryConfirm: "Delete this empty local category?",
     unavailable: "Hidden",
     available: "Live",
+    soldOut: "Sold out",
+    inactive: "Inactive",
     missingImage: "No image",
     remove: "Remove",
     edit: "Edit",
     hide: "Hide",
     show: "Show",
     save: "Save",
+    cancel: "Cancel",
+    saving: "Saving",
+    workspaceUnavailable: "Menu workspace unavailable",
+    loadFailed: "Failed to load the branch menu workspace.",
+    translationFailed: "Translation failed.",
+    descriptionGenerationFailed: "Description generation failed.",
+    aiGenerationFailed: "AI generation failed.",
+    editBranchItem: "Edit branch item",
+    itemUpdated: "Menu item updated.",
+    itemUpdateFailed: "Failed to update item.",
     itemCount: "items",
+    itemsTable: "Menu items",
+    branchItemsTable: "Branch-owned items",
+    sharedItemsTable: "Shared company items",
+    branchItemsEmpty: "No branch-owned items match the filters.",
+    sharedItemsEmpty: "No shared items match the filters.",
+    branchCategoriesTitle: "Branch categories",
+    sharedCategoriesTitle: "Company categories",
+    branchCategoriesEmpty: "This branch has no local categories yet.",
+    sharedCategoriesEmpty: "No company categories are available yet.",
+    itemColumn: "Item",
+    categoryColumn: "Category",
+    sourceColumn: "Source",
+    statusColumn: "Status",
+    priceColumn: "Price",
+    optionColumn: "Sizes / toppings",
+    actionColumn: "Action",
+    imageReady: "Image ready",
   };
-}
-
-function sourceBadgeClass(source: "organization" | "branch") {
-  return source === "organization"
-    ? "bg-slate-900 text-white hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-100"
-    : "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/15";
 }
 
 function normalizeLocale(locale: string) {
@@ -280,28 +378,16 @@ function localizeEntry(
   );
 }
 
-function localizeDescription(
-  entry: {
-    description_en?: string | null;
-    description_ja?: string | null;
-    description_vi?: string | null;
-  },
-  locale: string,
-) {
-  return getLocalizedText(
-    {
-      name_en: entry.description_en ?? undefined,
-      name_ja: entry.description_ja ?? undefined,
-      name_vi: entry.description_vi ?? undefined,
-    },
-    locale,
-  );
-}
-
 function localeCode(locale: string) {
   if (locale === "vi") return "vi-VN";
   if (locale === "ja") return "ja-JP";
   return "en-US";
+}
+
+function getItemStatus(item: WorkspaceItem) {
+  if (item.available) return "active";
+  if (item.stock_level === 0) return "soldOut";
+  return "inactive";
 }
 
 export function MenuClientContent({ branchId }: MenuClientContentProps) {
@@ -319,7 +405,9 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showMissingImagesOnly, setShowMissingImagesOnly] = useState(false);
+  const [showSharedCategories, setShowSharedCategories] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
@@ -367,7 +455,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to load menu workspace");
+          throw new Error(data.error ?? copy.loadFailed);
         }
 
         const data = (await response.json()) as WorkspaceResponse;
@@ -375,16 +463,14 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
         setError(null);
       } catch (fetchError) {
         setError(
-          fetchError instanceof Error
-            ? fetchError.message
-            : "Failed to load menu workspace",
+          fetchError instanceof Error ? fetchError.message : copy.loadFailed,
         );
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);
       }
     },
-    [branchId],
+    [branchId, copy.loadFailed],
   );
 
   useEffect(() => {
@@ -392,11 +478,16 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
   }, [loadWorkspace]);
 
   useEffect(() => {
+    if (selectedCategoryId === "all") return;
+
+    const selectedCategory = (workspace?.categories ?? []).find(
+      (category) => category.id === selectedCategoryId,
+    );
+
     if (
-      selectedCategoryId !== "all" &&
-      !(workspace?.categories ?? []).some(
-        (category) => category.id === selectedCategoryId,
-      )
+      !selectedCategory ||
+      (selectedCategory.source === "organization" &&
+        selectedCategory.menu_items.length === 0)
     ) {
       setSelectedCategoryId("all");
     }
@@ -471,12 +562,60 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     showMissingImagesOnly,
   ]);
 
-  const missingImageCount = useMemo(
+  const menuRows = useMemo(
     () =>
-      (workspace?.categories ?? []).reduce(
-        (count, category) =>
-          count + category.menu_items.filter((item) => !item.image_url).length,
-        0,
+      visibleCategories
+        .flatMap((category) =>
+          category.menu_items.map((item) => ({
+            item,
+            category,
+          })),
+        )
+        .filter(({ item }) => {
+          if (statusFilter === "available") {
+            return item.available;
+          }
+
+          if (statusFilter === "hidden") {
+            return !item.available;
+          }
+
+          return true;
+        })
+        .sort((left, right) => {
+          const categoryPosition =
+            left.category.position - right.category.position;
+          if (categoryPosition !== 0) {
+            return categoryPosition;
+          }
+
+          return left.item.position - right.item.position;
+        }),
+    [statusFilter, visibleCategories],
+  );
+
+  const branchMenuRows = useMemo(
+    () => menuRows.filter(({ item }) => item.source === "branch"),
+    [menuRows],
+  );
+
+  const sharedMenuRows = useMemo(
+    () => menuRows.filter(({ item }) => item.source === "organization"),
+    [menuRows],
+  );
+
+  const branchCategories = useMemo(
+    () =>
+      (workspace?.categories ?? []).filter(
+        (category) => category.source === "branch",
+      ),
+    [workspace?.categories],
+  );
+
+  const sharedCategories = useMemo(
+    () =>
+      (workspace?.categories ?? []).filter(
+        (category) => category.source === "organization",
       ),
     [workspace?.categories],
   );
@@ -492,7 +631,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     });
 
     if (!response.ok) {
-      throw new Error("Translation failed");
+      throw new Error(copy.translationFailed);
     }
 
     return (await response.json()) as { en: string; ja: string; vi: string };
@@ -515,7 +654,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     });
 
     if (!response.ok) {
-      throw new Error("Description generation failed");
+      throw new Error(copy.descriptionGenerationFailed);
     }
 
     return (await response.json()) as { en: string; ja: string; vi: string };
@@ -538,7 +677,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     });
 
     if (!response.ok) {
-      throw new Error("AI generation failed");
+      throw new Error(copy.aiGenerationFailed);
     }
 
     const result = await response.json();
@@ -651,7 +790,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(
-          data.error?.message ?? data.message ?? "Failed to save category",
+          data.error?.message ?? data.message ?? copy.categoryRequired,
         );
       }
 
@@ -665,7 +804,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
       toast.error(
         submitError instanceof Error
           ? submitError.message
-          : "Failed to save category",
+          : copy.categoryRequired,
       );
     } finally {
       setIsSubmittingCategory(false);
@@ -688,7 +827,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       toast.error(
-        data.error?.message ?? data.message ?? "Failed to delete category",
+        data.error?.message ?? data.message ?? copy.deleteCategoryConfirm,
       );
       return;
     }
@@ -712,7 +851,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
 
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
-      toast.error(data.message ?? data.error ?? "Failed to delete item");
+      toast.error(data.message ?? data.error ?? copy.deleteItemConfirm);
       return;
     }
 
@@ -720,8 +859,6 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
   };
 
   const handleToggleAvailability = async (item: WorkspaceItem) => {
-    if (item.source === "organization") return;
-
     const response = await fetch(
       `/api/v1/owner/menu/menu-items/${item.id}?branchId=${encodeURIComponent(branchId)}`,
       {
@@ -733,9 +870,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
 
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
-      toast.error(
-        data.message ?? data.error ?? "Failed to update item availability",
-      );
+      toast.error(data.message ?? data.error ?? copy.itemUpdateFailed);
       return;
     }
 
@@ -760,7 +895,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
         const sessionResponse = await fetch("/api/v1/auth/session");
         const sessionData = await sessionResponse.json();
         if (!sessionData.authenticated || !sessionData.user?.restaurantId) {
-          throw new Error("User not authenticated or missing restaurant ID");
+          throw new Error(copy.itemUpdateFailed);
         }
 
         const fileName = `${Date.now()}-${optimizedImage.file.name}`;
@@ -800,21 +935,441 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
 
       if (!response.ok) {
         const result = await response.json().catch(() => ({}));
-        throw new Error(result.message ?? "Failed to save menu item");
+        throw new Error(result.message ?? copy.itemUpdateFailed);
       }
 
-      toast.success("Menu item updated.");
+      toast.success(copy.itemUpdated);
       setEditingItem(null);
       setIsEditModalOpen(false);
       await loadWorkspace("refresh");
     } catch (saveError) {
       toast.error(
-        saveError instanceof Error ? saveError.message : "Failed to save item",
+        saveError instanceof Error ? saveError.message : copy.itemUpdateFailed,
       );
     } finally {
       setIsSavingEdit(false);
     }
   };
+
+  const renderStatusDot = (item: WorkspaceItem) => {
+    const status = getItemStatus(item);
+
+    return (
+      <span
+        aria-hidden="true"
+        className={cn(
+          "inline-flex h-2.5 w-2.5 shrink-0 rounded-full shadow-sm ring-2 ring-[#FFF7E9] dark:ring-[#170F0C]",
+          status === "active" && "bg-[#3F7A4D]",
+          status === "soldOut" && "bg-[#D4872D]",
+          status === "inactive" && "bg-[#B42318]",
+        )}
+      />
+    );
+  };
+
+  const renderOptionPreview = (item: WorkspaceItem, className?: string) => {
+    const options = [...item.sizes, ...item.toppings];
+
+    if (options.length === 0) return null;
+
+    return (
+      <div className={cn("mt-2 flex max-w-full flex-wrap gap-1", className)}>
+        {options.slice(0, 3).map((option) => (
+          <Badge
+            key={option.id ?? `${item.id}-${option.name_en}`}
+            variant="secondary"
+            className="max-w-[8.5rem] truncate rounded-md border border-[#AB6E3C]/14 bg-[#FFF7E9] px-1.5 py-0 text-[11px] font-medium text-[#6F4D35] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F1DCC4]"
+          >
+            {localizeEntry(option, locale)}
+          </Badge>
+        ))}
+        {options.length > 3 ? (
+          <Badge className="rounded-md border border-[#AB6E3C]/14 bg-[#F5EAD8] px-1.5 py-0 text-[11px] font-medium text-[#6F4D35] dark:border-[#F1DCC4]/12 dark:bg-[#2B1A10] dark:text-[#F1DCC4]">
+            +{options.length - 3}
+          </Badge>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderCategorySection = ({
+    title,
+    categories,
+    emptyMessage,
+    description,
+    isOpen = true,
+    onToggle,
+  }: {
+    title: string;
+    categories: WorkspaceCategory[];
+    emptyMessage: string;
+    description?: string;
+    isOpen?: boolean;
+    onToggle?: () => void;
+  }) => (
+    <div className="overflow-hidden rounded-xl border border-[#AB6E3C]/12 dark:border-[#F1DCC4]/10">
+      <div className="flex items-start justify-between gap-3 border-b border-[#AB6E3C]/10 bg-[#F5EAD8]/64 px-3 py-2.5 dark:border-[#F1DCC4]/10 dark:bg-[#2B1A10]/70">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+            {title}
+          </h3>
+          {description ? (
+            <p className="mt-1 text-xs leading-5 text-[#8B6E5A] dark:text-[#C9B7A0]">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Badge className="rounded-md border border-[#AB6E3C]/14 bg-[#FFF7E9] text-[#6F4D35] hover:bg-[#FFF7E9] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F1DCC4]">
+            {categories.length}
+          </Badge>
+          {onToggle ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-lg border-[#AB6E3C]/20 bg-[#FEFAF6] px-2 text-xs text-[#6F4D35] hover:bg-[#FFF7E9] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
+              onClick={onToggle}
+            >
+              {isOpen ? (
+                <EyeOff className="h-3.5 w-3.5" />
+              ) : (
+                <Eye className="h-3.5 w-3.5" />
+              )}
+              {isOpen ? copy.hide : copy.show}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      {isOpen ? (
+        <div className="max-h-[220px] overflow-y-auto xl:max-h-[340px]">
+        <table className="w-full table-fixed text-left text-sm">
+          <tbody className="divide-y divide-[#AB6E3C]/10 dark:divide-[#F1DCC4]/10">
+            {categories.length > 0 ? (
+              categories.map((category) => {
+                const isSelected = selectedCategoryId === category.id;
+                const isEmptyCompanyCategory =
+                  category.source === "organization" &&
+                  category.menu_items.length === 0;
+
+                return (
+                  <tr
+                    key={category.id}
+                    className={cn(
+                      "transition-colors",
+                      isSelected && !isEmptyCompanyCategory
+                        ? "bg-[#2E2117] text-[#FFF7E9] dark:bg-[#F1DCC4] dark:text-[#170F0C]"
+                        : isEmptyCompanyCategory
+                          ? "bg-[#FEFAF6]/42 text-[#B89078] dark:bg-[#2B1A10]/30 dark:text-[#8B6E5A]"
+                          : "bg-[#FEFAF6]/62 hover:bg-[#F5EAD8]/75 dark:bg-[#2B1A10]/45 dark:hover:bg-[#332116]",
+                    )}
+                  >
+                    {category.source === "branch" ? (
+                      <>
+                        <td className="p-0">
+                          <button
+                            type="button"
+                            className="block w-full min-w-0 px-3 py-3 text-left font-medium leading-5 text-inherit transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AB6E3C]/30"
+                            onClick={() => setSelectedCategoryId(category.id)}
+                          >
+                            {localizeEntry(category, locale)}
+                          </button>
+                        </td>
+                        <td className="w-[148px] px-3 py-3 text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              title={copy.edit}
+                              className={cn(
+                                "h-8 rounded-lg px-2 text-xs",
+                                isSelected
+                                  ? "text-[#FFF7E9] hover:bg-white/10 hover:text-[#FFF7E9] dark:text-[#170F0C] dark:hover:bg-[#EBD9C4] dark:hover:text-[#170F0C]"
+                                  : "text-[#6F4D35] hover:bg-[#F5EAD8] hover:text-[#2E2117] dark:text-[#F1DCC4] dark:hover:bg-[#332116] dark:hover:text-[#F7F1E9]",
+                              )}
+                              onClick={() => openEditCategoryDialog(category)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              {copy.edit}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              title={copy.remove}
+                              className={cn(
+                                "h-8 rounded-lg px-2 text-xs disabled:text-[#B89078]",
+                                isSelected
+                                  ? "text-[#FFD7CC] hover:bg-white/10 hover:text-white dark:text-[#7A1F16] dark:hover:bg-[#EBD9C4] dark:hover:text-[#7A1F16]"
+                                  : "text-[#B42318] hover:bg-[#FDECEC] hover:text-[#B42318] dark:text-[#FFB4A8] dark:hover:bg-[#7A1F16]/18 dark:hover:text-[#FFB4A8]",
+                              )}
+                              disabled={category.menu_items.length > 0}
+                              onClick={() => handleDeleteCategory(category)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              {copy.remove}
+                            </Button>
+                          </div>
+                        </td>
+                      </>
+                    ) : (
+                      <td className="p-0" colSpan={2}>
+                        <button
+                          type="button"
+                          className={cn(
+                            "block w-full min-w-0 px-3 py-3 text-left font-medium leading-5 text-inherit transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AB6E3C]/30",
+                            isEmptyCompanyCategory
+                              ? "cursor-not-allowed opacity-70"
+                              : "cursor-pointer",
+                          )}
+                          disabled={isEmptyCompanyCategory}
+                          onClick={() => setSelectedCategoryId(category.id)}
+                        >
+                          {localizeEntry(category, locale)}
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td
+                  colSpan={2}
+                  className="px-3 py-8 text-center text-sm text-[#8B6E5A] dark:text-[#C9B7A0]"
+                >
+                  {emptyMessage}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        </div>
+      ) : null}
+    </div>
+  );
+
+  const renderMenuItemsSection = ({
+    title,
+    rows,
+    emptyMessage,
+    description,
+  }: {
+    title: string;
+    rows: MenuRow[];
+    emptyMessage: string;
+    description?: string;
+  }) => (
+    <section className="overflow-hidden rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+      <div className="flex items-start justify-between gap-3 border-b border-[#AB6E3C]/12 px-4 py-3 dark:border-[#F1DCC4]/12">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+            {title}
+          </h2>
+          {description ? (
+            <p className="mt-1 max-w-[60ch] text-xs leading-5 text-[#8B6E5A] dark:text-[#C9B7A0]">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        <Badge className="shrink-0 rounded-md border border-[#AB6E3C]/14 bg-[#F5EAD8] text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/12 dark:bg-[#2B1A10] dark:text-[#F1DCC4]">
+          {rows.length}
+        </Badge>
+      </div>
+
+      <div className="divide-y divide-[#AB6E3C]/10 sm:hidden dark:divide-[#F1DCC4]/10">
+        {rows.length > 0 ? (
+          rows.map(({ item, category }) => (
+            <article key={item.id} className="space-y-3 px-3 py-4">
+              <div className="flex gap-3">
+                <div
+                  className={cn(
+                    "relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#AB6E3C]/14 bg-[#F5EAD8] bg-cover bg-center dark:border-[#F1DCC4]/12 dark:bg-[#170F0C]",
+                    !item.image_url && "text-[#B89078] dark:text-[#C9B7A0]",
+                  )}
+                  style={
+                    item.image_url
+                      ? { backgroundImage: `url(${item.image_url})` }
+                      : undefined
+                  }
+                >
+                  {!item.image_url ? <ImageOff className="h-4 w-4" /> : null}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 items-center gap-2">
+                        {renderStatusDot(item)}
+                        <p className="truncate font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+                          {localizeEntry(item, locale)}
+                        </p>
+                      </div>
+                      <p className="mt-1 truncate text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                        {localizeEntry(category, locale)}
+                      </p>
+                      {renderOptionPreview(item)}
+                    </div>
+                    <p className="shrink-0 text-sm font-semibold tabular-nums text-[#2E2117] dark:text-[#F7F1E9]">
+                      {formatCurrency(item.price, "JPY", localeCode(locale))}
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {item.source === "branch" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-8 rounded-lg border-[#AB6E3C]/20 bg-[#FEFAF6] px-3 text-xs text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
+                    onClick={() => handleEditItem(item)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    {copy.edit}
+                  </Button>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-8 rounded-lg border-[#AB6E3C]/20 bg-[#FEFAF6] px-3 text-xs text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
+                  onClick={() => handleToggleAvailability(item)}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  {item.available ? copy.hide : copy.show}
+                </Button>
+              </div>
+            </article>
+          ))
+        ) : (
+          <div className="px-3 py-14 text-center text-sm text-[#8B6E5A] dark:text-[#C9B7A0]">
+            <Layers3 className="mx-auto mb-3 h-8 w-8 text-[#B89078] dark:text-[#C9B7A0]" />
+            {emptyMessage}
+          </div>
+        )}
+      </div>
+
+      <div className="hidden max-h-[640px] overflow-y-auto sm:block">
+        <table className="w-full table-fixed text-left text-sm">
+          <thead className="sticky top-0 z-10 border-b border-[#AB6E3C]/12 bg-[#F5EAD8] text-xs text-[#8B6E5A] dark:border-[#F1DCC4]/12 dark:bg-[#2B1A10] dark:text-[#C9B7A0]">
+            <tr>
+              <th className="w-[48%] px-3 py-2 font-medium">
+                {copy.itemColumn}
+              </th>
+              <th className="hidden w-[18%] px-3 py-2 font-medium md:table-cell">
+                {copy.categoryColumn}
+              </th>
+              <th className="w-[14%] px-2 py-2 font-medium sm:px-3">
+                {copy.priceColumn}
+              </th>
+              <th className="w-[20%] px-2 py-2 text-right font-medium sm:px-3">
+                {copy.actionColumn}
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#AB6E3C]/10 dark:divide-[#F1DCC4]/10">
+            {rows.length > 0 ? (
+              rows.map(({ item, category }) => (
+                <tr
+                  key={item.id}
+                  className="align-top transition-colors hover:bg-[#F5EAD8]/60 dark:hover:bg-[#332116]/70"
+                >
+                  <td className="px-3 py-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div
+                        className={cn(
+                          "relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#AB6E3C]/14 bg-[#F5EAD8] bg-cover bg-center dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] sm:h-12 sm:w-12",
+                          !item.image_url &&
+                            "text-[#B89078] dark:text-[#C9B7A0]",
+                        )}
+                        style={
+                          item.image_url
+                            ? {
+                                backgroundImage: `url(${item.image_url})`,
+                              }
+                            : undefined
+                        }
+                      >
+                        {!item.image_url ? (
+                          <ImageOff className="h-4 w-4" />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0 flex-1 pr-2">
+                        <div className="flex min-w-0 items-center gap-2">
+                          {renderStatusDot(item)}
+                          <p className="truncate font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+                            {localizeEntry(item, locale)}
+                          </p>
+                        </div>
+                        <p className="mt-1 truncate text-xs text-[#8B6E5A] dark:text-[#C9B7A0] md:hidden">
+                          {localizeEntry(category, locale)}
+                        </p>
+                        {renderOptionPreview(item)}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="hidden px-3 py-3 text-[#6F4D35] dark:text-[#F1DCC4] md:table-cell">
+                    {localizeEntry(category, locale)}
+                  </td>
+                  <td className="px-2 py-3 text-right text-xs font-semibold tabular-nums text-[#2E2117] dark:text-[#F7F1E9] sm:px-3 sm:text-sm">
+                    {formatCurrency(item.price, "JPY", localeCode(locale))}
+                  </td>
+                  <td className="px-2 py-3 text-right sm:px-3">
+                    <div className="flex flex-wrap justify-end gap-1">
+                      {item.source === "branch" ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          title={copy.edit}
+                          className="h-8 rounded-lg px-2 text-xs text-[#6F4D35] hover:bg-[#F5EAD8] dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
+                          onClick={() => handleEditItem(item)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          {copy.edit}
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        title={item.available ? copy.hide : copy.show}
+                        className="h-8 rounded-lg px-2 text-xs text-[#6F4D35] hover:bg-[#F5EAD8] dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
+                        onClick={() => handleToggleAvailability(item)}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        {item.available ? copy.hide : copy.show}
+                      </Button>
+                      {item.source === "branch" ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          title={copy.remove}
+                          className="h-8 rounded-lg px-2 text-xs text-[#B42318] hover:bg-[#FDECEC] dark:text-[#FFB4A8] dark:hover:bg-[#7A1F16]/18"
+                          onClick={() => handleDeleteItem(item)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          {copy.remove}
+                        </Button>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-3 py-14 text-center text-sm text-[#8B6E5A] dark:text-[#C9B7A0]"
+                >
+                  <Layers3 className="mx-auto mb-3 h-8 w-8 text-[#B89078] dark:text-[#C9B7A0]" />
+                  {emptyMessage}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
 
   if (isLoading) {
     return <MenuSkeleton />;
@@ -824,26 +1379,24 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     return (
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Menu workspace unavailable</AlertTitle>
-        <AlertDescription>
-          {error ?? "Failed to load the branch menu workspace."}
-        </AlertDescription>
+        <AlertTitle>{copy.workspaceUnavailable}</AlertTitle>
+        <AlertDescription>{error ?? copy.loadFailed}</AlertDescription>
       </Alert>
     );
   }
 
   return (
-    <div className="space-y-5">
-      <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(15,23,42,0.04),_transparent_46%),linear-gradient(160deg,rgba(255,255,255,0.98),rgba(248,250,252,0.9))] p-5 shadow-[0_20px_60px_-28px_rgba(15,23,42,0.28)] dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.12),_transparent_44%),linear-gradient(160deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))]">
+    <div className="space-y-4 text-[#2E2117] dark:text-[#F7F1E9]">
+      <section className="overflow-hidden rounded-2xl border border-[#AB6E3C]/15 bg-[#FEFAF6]/80 p-4 shadow-[0_18px_48px_-32px_rgba(91,58,32,0.45)] backdrop-blur dark:border-[#AB6E3C]/20 dark:bg-[#251810]/78 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="rounded-full bg-slate-900 text-white hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-100">
+              <Badge className="rounded-md border border-[#AB6E3C]/25 bg-[#2E2117] text-[#FFF7E9] hover:bg-[#2E2117] dark:border-[#F1DCC4]/20 dark:bg-[#F1DCC4] dark:text-[#170F0C] dark:hover:bg-[#F1DCC4]">
                 <Store className="mr-1.5 h-3.5 w-3.5" />
                 {workspace.branch.name}
               </Badge>
             </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
+            <h1 className="mt-3 text-2xl font-semibold text-[#2E2117] sm:text-3xl dark:text-[#F7F1E9]">
               {copy.title}
             </h1>
           </div>
@@ -852,7 +1405,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
             <Button
               type="button"
               variant="outline"
-              className="rounded-xl border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
+              className="rounded-xl border-[#AB6E3C]/20 bg-[#FFF7E9]/80 text-[#6F4D35] shadow-sm hover:bg-[#F5EAD8] hover:text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
               onClick={() => loadWorkspace("refresh")}
               disabled={isRefreshing}
             >
@@ -864,7 +1417,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
             <Button
               type="button"
               variant="outline"
-              className="rounded-xl border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
+              className="rounded-xl border-[#AB6E3C]/20 bg-[#FFF7E9]/80 text-[#6F4D35] shadow-sm hover:bg-[#F5EAD8] hover:text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
               onClick={openCreateCategoryDialog}
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -872,8 +1425,10 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
             </Button>
             <Button
               type="button"
-              className="rounded-xl bg-slate-950 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
-              onClick={() => router.push(`/${locale}/branch/${branchId}/menu/new`)}
+              className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
+              onClick={() =>
+                router.push(`/${locale}/branch/${branchId}/menu/new`)
+              }
             >
               <Sparkles className="mr-2 h-4 w-4" />
               {copy.newItem}
@@ -882,430 +1437,146 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: copy.totalItems, value: workspace.summary.totalItems },
-          { label: copy.inherited, value: workspace.summary.inheritedItems },
-          { label: copy.local, value: workspace.summary.localItems },
-          { label: copy.missingImages, value: missingImageCount },
-        ].map((stat) => (
-          <article
-            key={stat.label}
-            className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/90"
-          >
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-              {stat.label}
-            </p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
-              {stat.value}
-            </p>
-          </article>
-        ))}
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/90 sm:p-5">
+      <section className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <aside className="space-y-3 rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-3 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72 sm:p-4">
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                {copy.categories}
-              </p>
-              <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-slate-50">
-                {workspace.categories.length}
-              </p>
-            </div>
+            <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+              {copy.categories}
+            </h2>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10] dark:text-[#F1DCC4]"
               onClick={openCreateCategoryDialog}
             >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="mt-4 space-y-2">
-            <button
-              type="button"
-              onClick={() => setSelectedCategoryId("all")}
-              className={cn(
-                "flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition-colors",
-                selectedCategoryId === "all"
-                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950"
-                  : "bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:bg-slate-900",
-              )}
-            >
-              <span className="font-medium">{copy.allCategories}</span>
-              <span className="text-sm tabular-nums">
-                {workspace.summary.totalItems}
-              </span>
-            </button>
-
-            {workspace.categories.map((category) => (
-              <div
-                key={category.id}
-                className={cn(
-                  "rounded-2xl border px-3 py-3 transition-colors",
-                  selectedCategoryId === category.id
-                    ? "border-slate-900 bg-slate-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                    : "border-slate-200 bg-white text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200",
-                )}
-              >
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategoryId(category.id)}
-                  className="w-full text-left"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">
-                        {localizeEntry(category, locale)}
-                      </p>
-                      <p
-                        className={cn(
-                          "mt-1 text-xs",
-                          selectedCategoryId === category.id
-                            ? "text-slate-200 dark:text-slate-700"
-                            : "text-slate-500 dark:text-slate-400",
-                        )}
-                      >
-                        {category.menu_items.length} {copy.itemCount}
-                      </p>
-                    </div>
-                    <Badge
-                      className={cn(
-                        "rounded-full",
-                        sourceBadgeClass(category.source),
-                      )}
-                    >
-                      {category.source === "organization"
-                        ? copy.companyManaged
-                        : copy.branchManaged}
-                    </Badge>
-                  </div>
-                </button>
-                {category.source === "branch" ? (
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-9 rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                      onClick={() => openEditCategoryDialog(category)}
-                    >
-                      <Pencil className="mr-2 h-3.5 w-3.5" />
-                      {copy.edit}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
-                      disabled={category.menu_items.length > 0}
-                      onClick={() => handleDeleteCategory(category)}
-                    >
-                      <Trash2 className="mr-2 h-3.5 w-3.5" />
-                      {copy.remove}
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
-            ))}
-          </div>
+          {renderCategorySection({
+            title: copy.branchCategoriesTitle,
+            categories: branchCategories,
+            emptyMessage: copy.branchCategoriesEmpty,
+          })}
+          {renderCategorySection({
+            title: copy.sharedCategoriesTitle,
+            categories: sharedCategories,
+            emptyMessage: copy.sharedCategoriesEmpty,
+            isOpen: showSharedCategories,
+            onToggle: () => setShowSharedCategories((current) => !current),
+          })}
         </aside>
 
         <div className="space-y-4">
-          <section className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/90 sm:p-5">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <section className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-3 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72 sm:p-4">
+            <div className="space-y-2.5">
               <Input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder={copy.searchPlaceholder}
-                className="h-11 rounded-2xl border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 lg:max-w-md"
+                className="h-10 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] dark:placeholder:text-[#C9B7A0] sm:h-11"
               />
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-[minmax(180px,1fr)_150px_140px_auto]">
+                <Select
+                  value={selectedCategoryId}
+                  onValueChange={setSelectedCategoryId}
+                >
+                  <SelectTrigger className="h-9 min-w-0 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] sm:h-10">
+                    <SelectValue placeholder={copy.categoryFilter} />
+                  </SelectTrigger>
+                  <SelectContent className="border-[#AB6E3C]/20 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
+                    <SelectItem value="all">{copy.allCategories}</SelectItem>
+                    {workspace.categories.map((category) => {
+                      const isEmptyCompanyCategory =
+                        category.source === "organization" &&
+                        category.menu_items.length === 0;
 
-              <div className="flex flex-wrap gap-2">
-                {(
-                  [
-                    ["all", copy.all],
-                    ["organization", copy.companyOnly],
-                    ["branch", copy.branchOnly],
-                  ] as const
-                ).map(([value, label]) => (
-                  <Button
-                    key={value}
-                    type="button"
-                    variant={sourceFilter === value ? "default" : "outline"}
-                    className={cn(
-                      "rounded-xl border-slate-200 dark:border-slate-700",
-                      sourceFilter === value
-                        ? "bg-slate-900 text-white hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-100"
-                        : "bg-white dark:bg-slate-900/80 dark:text-slate-100",
-                    )}
-                    onClick={() => setSourceFilter(value)}
-                  >
-                    {label}
-                  </Button>
-                ))}
+                      return (
+                        <SelectItem
+                          key={category.id}
+                          value={category.id}
+                          disabled={isEmptyCompanyCategory}
+                        >
+                          {localizeEntry(category, locale)}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={sourceFilter}
+                  onValueChange={(value) =>
+                    setSourceFilter(value as SourceFilter)
+                  }
+                >
+                  <SelectTrigger className="h-9 min-w-0 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] sm:h-10">
+                    <SelectValue placeholder={copy.sourceFilter} />
+                  </SelectTrigger>
+                  <SelectContent className="border-[#AB6E3C]/20 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
+                    <SelectItem value="all">{copy.all}</SelectItem>
+                    <SelectItem value="organization">
+                      {copy.companyOnly}
+                    </SelectItem>
+                    <SelectItem value="branch">{copy.branchOnly}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(value) =>
+                    setStatusFilter(value as StatusFilter)
+                  }
+                >
+                  <SelectTrigger className="h-9 min-w-0 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] sm:h-10">
+                    <SelectValue placeholder={copy.statusFilter} />
+                  </SelectTrigger>
+                  <SelectContent className="border-[#AB6E3C]/20 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
+                    <SelectItem value="all">{copy.all}</SelectItem>
+                    <SelectItem value="available">{copy.available}</SelectItem>
+                    <SelectItem value="hidden">{copy.unavailable}</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button
                   type="button"
                   variant={showMissingImagesOnly ? "default" : "outline"}
+                  title={copy.missingOnly}
                   className={cn(
-                    "rounded-xl border-slate-200 dark:border-slate-700",
+                    "h-9 min-w-0 rounded-xl border-[#AB6E3C]/20 px-3 text-sm dark:border-[#F1DCC4]/16 sm:h-10",
                     showMissingImagesOnly
-                      ? "bg-amber-500 text-slate-950 hover:bg-amber-400 dark:bg-amber-400 dark:hover:bg-amber-300"
-                      : "bg-white dark:bg-slate-900/80 dark:text-slate-100",
+                      ? "bg-[#E9A35E] text-[#2E2117] hover:bg-[#F0B676] dark:bg-[#E9A35E] dark:hover:bg-[#F0B676]"
+                      : "bg-[#FEFAF6] text-[#6F4D35] hover:bg-[#F5EAD8] dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]",
                   )}
                   onClick={() =>
                     setShowMissingImagesOnly((current) => !current)
                   }
                 >
-                  <ImageOff className="mr-2 h-4 w-4" />
-                  {copy.missingOnly}
+                  <ImageOff className="h-4 w-4" />
+                  <span className="truncate sm:hidden">
+                    {copy.missingImage}
+                  </span>
+                  <span className="hidden truncate sm:inline">
+                    {copy.missingOnly}
+                  </span>
                 </Button>
               </div>
             </div>
           </section>
 
-          <section className="space-y-4">
-            {visibleCategories.length > 0 ? (
-              visibleCategories.map((category) => (
-                <article
-                  key={category.id}
-                  className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/90"
-                >
-                  <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="truncate text-lg font-semibold text-slate-950 dark:text-slate-50">
-                          {localizeEntry(category, locale)}
-                        </h3>
-                        <Badge
-                          className={cn(
-                            "rounded-full",
-                            sourceBadgeClass(category.source),
-                          )}
-                        >
-                          {category.source === "organization"
-                            ? copy.companyManaged
-                            : copy.branchManaged}
-                        </Badge>
-                        <Badge
-                          variant="secondary"
-                          className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                        >
-                          {category.menu_items.length} {copy.itemCount}
-                        </Badge>
-                        {category.menu_items.some((item) => !item.image_url) ? (
-                          <Badge className="rounded-full bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/15 dark:text-amber-200 dark:hover:bg-amber-500/15">
-                            <ImageOff className="mr-1.5 h-3.5 w-3.5" />
-                            {
-                              category.menu_items.filter(
-                                (item) => !item.image_url,
-                              ).length
-                            }
-                          </Badge>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
+          {sourceFilter === "all" || sourceFilter === "branch"
+            ? renderMenuItemsSection({
+                title: copy.branchItemsTable,
+                rows: branchMenuRows,
+                emptyMessage: copy.branchItemsEmpty,
+              })
+            : null}
 
-                  <div className="space-y-3 p-4 sm:p-5">
-                    {category.menu_items.length > 0 ? (
-                      category.menu_items.map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70"
-                        >
-                          {(() => {
-                            const localizedDescription = localizeDescription(
-                              item,
-                              locale,
-                            );
-
-                            return (
-                              <div className="grid gap-4 md:grid-cols-[88px_minmax(0,1fr)] xl:grid-cols-[88px_minmax(0,1fr)_auto]">
-                                <div
-                                  className={cn(
-                                    "flex h-[88px] w-[88px] items-center justify-center overflow-hidden rounded-[22px] border border-slate-200 bg-slate-100 bg-cover bg-center dark:border-slate-800 dark:bg-slate-900",
-                                    !item.image_url &&
-                                      "text-slate-400 dark:text-slate-500",
-                                  )}
-                                  style={
-                                    item.image_url
-                                      ? {
-                                          backgroundImage: `url(${item.image_url})`,
-                                        }
-                                      : undefined
-                                  }
-                                >
-                                  {!item.image_url ? (
-                                    <ImageOff className="h-5 w-5" />
-                                  ) : null}
-                                </div>
-
-                                <div className="min-w-0">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <p className="text-base font-semibold text-slate-950 dark:text-slate-50">
-                                      {localizeEntry(item, locale)}
-                                    </p>
-                                    <Badge
-                                      className={cn(
-                                        "rounded-full",
-                                        sourceBadgeClass(item.source),
-                                      )}
-                                    >
-                                      {item.source === "organization"
-                                        ? copy.companyManaged
-                                        : copy.branchManaged}
-                                    </Badge>
-                                    <Badge
-                                      variant="secondary"
-                                      className={cn(
-                                        "rounded-full",
-                                        item.available
-                                          ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/15"
-                                          : "bg-slate-200 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-800",
-                                      )}
-                                    >
-                                      {item.available
-                                        ? copy.available
-                                        : copy.unavailable}
-                                    </Badge>
-                                    {!item.image_url ? (
-                                      <Badge className="rounded-full bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/15 dark:text-amber-200 dark:hover:bg-amber-500/15">
-                                        {copy.missingImage}
-                                      </Badge>
-                                    ) : null}
-                                  </div>
-                                  {localizedDescription ? (
-                                    <p className="mt-2 hidden text-sm leading-6 text-slate-600 dark:text-slate-300 md:block">
-                                      {localizedDescription}
-                                    </p>
-                                  ) : null}
-                                  <div className="mt-3 flex flex-wrap gap-2">
-                                    {item.sizes.map((size) => (
-                                      <Badge
-                                        key={
-                                          size.id ??
-                                          `${item.id}-${size.size_key}`
-                                        }
-                                        variant="secondary"
-                                        className="rounded-full border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
-                                      >
-                                        {localizeEntry(size, locale)}{" "}
-                                        {formatCurrency(
-                                          size.price,
-                                          "JPY",
-                                          localeCode(locale),
-                                        )}
-                                      </Badge>
-                                    ))}
-                                    {item.toppings.map((topping) => (
-                                      <Badge
-                                        key={
-                                          topping.id ??
-                                          `${item.id}-${topping.name_en}`
-                                        }
-                                        variant="secondary"
-                                        className="rounded-full border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
-                                      >
-                                        {localizeEntry(topping, locale)} +
-                                        {formatCurrency(
-                                          topping.price,
-                                          "JPY",
-                                          localeCode(locale),
-                                        )}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                <div className="flex shrink-0 flex-col items-start gap-3 xl:items-end">
-                                  <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-                                    {formatCurrency(
-                                      item.price,
-                                      "JPY",
-                                      localeCode(locale),
-                                    )}
-                                  </p>
-
-                                  {item.source === "branch" ? (
-                                    <div className="flex flex-wrap gap-2">
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                                        onClick={() => handleEditItem(item)}
-                                      >
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        {copy.edit}
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                                        onClick={() =>
-                                          handleToggleAvailability(item)
-                                        }
-                                      >
-                                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                                        {item.available ? copy.hide : copy.show}
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        className="rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
-                                        onClick={() => handleDeleteItem(item)}
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        {copy.remove}
-                                      </Button>
-                                    </div>
-                                  ) : null}
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="rounded-[24px] border border-dashed border-slate-200 px-5 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                        {copy.empty}
-                      </div>
-                    )}
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className="rounded-[30px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
-                <Layers3 className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
-                <p className="mt-4 text-base font-medium text-slate-700 dark:text-slate-200">
-                  {copy.empty}
-                </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                    onClick={openCreateCategoryDialog}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {copy.newCategory}
-                  </Button>
-                  <Button
-                    type="button"
-                    className="rounded-xl bg-slate-950 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
-                    onClick={() => router.push(`/${locale}/branch/${branchId}/menu/new`)}
-                  >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    {copy.newItem}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </section>
+          {sourceFilter === "all" || sourceFilter === "organization"
+            ? renderMenuItemsSection({
+                title: copy.sharedItemsTable,
+                rows: sharedMenuRows,
+                emptyMessage: copy.sharedItemsEmpty,
+              })
+            : null}
         </div>
       </section>
 
@@ -1318,7 +1589,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
           }
         }}
       >
-        <DialogContent className="rounded-[30px] border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 sm:max-w-xl">
+        <DialogContent className="rounded-2xl border border-[#AB6E3C]/18 bg-[#FFF7E9] text-[#2E2117] shadow-[0_24px_70px_-36px_rgba(91,58,32,0.55)] dark:border-[#F1DCC4]/14 dark:bg-[#251810] dark:text-[#F7F1E9] sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>
               {editingCategory
@@ -1330,7 +1601,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-[0.9fr_1.1fr]">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                <p className="text-sm font-medium text-[#6F4D35] dark:text-[#F1DCC4]">
                   {copy.primaryLanguage}
                 </p>
                 <Select
@@ -1342,10 +1613,10 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                     }))
                   }
                 >
-                  <SelectTrigger className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                  <SelectTrigger className="h-11 rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                  <SelectContent className="border-[#AB6E3C]/20 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
                     <SelectItem value="en">English</SelectItem>
                     <SelectItem value="ja">日本語</SelectItem>
                     <SelectItem value="vi">Tiếng Việt</SelectItem>
@@ -1353,7 +1624,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                <p className="text-sm font-medium text-[#6F4D35] dark:text-[#F1DCC4]">
                   {copy.categoryName}
                 </p>
                 <Input
@@ -1364,7 +1635,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                       primaryName: event.target.value,
                     }))
                   }
-                  className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="h-11 rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]"
                   placeholder={copy.categoryPlaceholder}
                 />
               </div>
@@ -1379,7 +1650,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                     name_en: event.target.value,
                   }))
                 }
-                className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]"
                 placeholder="English"
               />
               <Input
@@ -1390,7 +1661,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                     name_ja: event.target.value,
                   }))
                 }
-                className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]"
                 placeholder="日本語"
               />
               <Input
@@ -1401,7 +1672,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                     name_vi: event.target.value,
                   }))
                 }
-                className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]"
                 placeholder="Tiếng Việt"
               />
             </div>
@@ -1410,12 +1681,12 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
           <DialogFooter className="sm:justify-end">
             <Button
               type="button"
-              className="rounded-xl bg-slate-950 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
+              className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
               onClick={handleSaveCategory}
               disabled={isSubmittingCategory}
             >
               {isSubmittingCategory
-                ? `${copy.save}...`
+                ? `${copy.saving}...`
                 : editingCategory
                   ? copy.save
                   : copy.newCategory}
@@ -1508,11 +1779,11 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
         categories={categoryOptions}
         onSave={handleSaveEdit}
         texts={{
-          saveButton: isSavingEdit ? "Saving..." : "Save",
-          cancelButton: "Cancel",
-          title: "Edit branch item",
-          successMessage: "Menu item updated.",
-          errorMessage: "Failed to update item.",
+          saveButton: isSavingEdit ? `${copy.saving}...` : copy.save,
+          cancelButton: copy.cancel,
+          title: copy.editBranchItem,
+          successMessage: copy.itemUpdated,
+          errorMessage: copy.itemUpdateFailed,
         }}
         ownerLanguage={ownerLanguage}
         onTranslate={(text, _field, context) => handleTranslate(text, context)}

@@ -5,7 +5,11 @@ import { z } from 'zod';
 import { getUserFromRequest, AuthUser } from '@/lib/server/getUserFromRequest';
 import { USER_ROLES } from '@/lib/constants';
 
-const statusSchema = z.object({ status: z.enum(['confirmed', 'canceled']) });
+const statusSchema = z.object({
+  status: z.enum(['confirmed', 'canceled']).optional(),
+  bookingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  bookingTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+});
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ bookingId: string }> }) {
   const supabase = createRouteHandlerClient({ cookies });
@@ -30,6 +34,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ bo
     return NextResponse.json({ error: 'Invalid input.', details: validation.error.flatten() }, { status: 400 });
   }
 
+  if (!validation.data.status && !validation.data.bookingDate && !validation.data.bookingTime) {
+    return NextResponse.json({ error: 'No booking update provided.' }, { status: 400 });
+  }
+
   try {
     const { data: existing, error: fetchError } = await supabase
       .from('bookings')
@@ -42,10 +50,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ bo
       return NextResponse.json({ error: 'Booking not found.' }, { status: 404 });
     }
 
+    const updatePayload: {
+      status?: 'confirmed' | 'canceled';
+      booking_date?: string;
+      booking_time?: string;
+    } = {};
+
+    if (validation.data.status) updatePayload.status = validation.data.status;
+    if (validation.data.bookingDate) updatePayload.booking_date = validation.data.bookingDate;
+    if (validation.data.bookingTime) updatePayload.booking_time = validation.data.bookingTime;
+
     const { data, error } = await supabase
       .from('bookings')
-      .update({ status: validation.data.status })
+      .update(updatePayload)
       .eq('id', bookingId)
+      .eq('restaurant_id', user.restaurantId)
       .select()
       .single();
 

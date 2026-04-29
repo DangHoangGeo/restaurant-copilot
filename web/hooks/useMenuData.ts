@@ -18,14 +18,12 @@ interface MenuDataResponse {
   lastUpdated: string;
 }
 
-// Process menu data for performance - lite variant excludes sizes/toppings
+// Process menu data while preserving customization metadata for menu cards.
 const trimMenuItems = (categories: Category[]): Category[] => {
   return categories.map(category => ({
     ...category,
     menu_items: category.menu_items.map(item => ({
       ...item,
-      // Lite variant from API already excludes sizes/toppings
-      // Sizes and toppings are loaded on-demand via fetchItemDetails
     }))
   }));
 };
@@ -44,10 +42,7 @@ const fetchMenuData = async (params: MenuDataParams): Promise<MenuDataResponse> 
       searchParams.set('restaurantId', restaurantId);
     }
     
-    // Add lite=1 parameter for faster loading (excludes sizes/toppings)
-    searchParams.set('lite', '1');
-    
-    // Use the existing customer menu API with lite variant
+    // Use the full customer menu payload so cards can preview sizes/toppings.
     const menuResponse = await fetch(`/api/v1/customer/menu?${searchParams.toString()}`, {
       method: 'GET',
       headers: {

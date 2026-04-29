@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1200" viewBox="0 0 1440 1200" fill="none">
+  <defs>
+    <radialGradient id="sun" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1180 132) rotate(90) scale(220)">
+      <stop stop-color="#E8C67B" stop-opacity="0.46"/>
+      <stop offset="0.62" stop-color="#D9A85D" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#D9A85D" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="paper" x1="0" x2="0" y1="0" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5EBD8"/>
+      <stop offset="0.5" stop-color="#F1E6D0"/>
+      <stop offset="1" stop-color="#EAD9B9"/>
+    </linearGradient>
+    <filter id="grain" x="0" y="0" width="1440" height="1200" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.74" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+      <feFuncA type="table" tableValues="0 0.025"/>
+      </feComponentTransfer>
+    </filter>
+    <pattern id="seigaiha" width="116" height="58" patternUnits="userSpaceOnUse">
+      <path d="M0 58c0-32.03 25.97-58 58-58s58 25.97 58 58" stroke="#6D5130" stroke-opacity="0.038" stroke-width="1.5"/>
+      <path d="M20 58c0-20.99 17.01-38 38-38s38 17.01 38 38" stroke="#6D5130" stroke-opacity="0.032" stroke-width="1.5"/>
+      <path d="M39 58c0-10.49 8.51-19 19-19s19 8.51 19 19" stroke="#6D5130" stroke-opacity="0.03" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+
+  <rect width="1440" height="1200" fill="url(#paper)"/>
+  <rect width="1440" height="1200" filter="url(#grain)"/>
+  <rect x="0" y="0" width="1440" height="1200" fill="url(#seigaiha)" opacity="0.24"/>
+  <circle cx="1180" cy="132" r="220" fill="url(#sun)"/>
+  <text x="1048" y="612" fill="#1F1A14" fill-opacity="0.04" font-family="'Yu Mincho', 'Hiragino Mincho ProN', serif" font-size="360" font-weight="600">和</text>
+
+  <g opacity="0.22">
+    <path d="M146 120H1320M146 270H1320M146 420H1320M146 570H1320M146 720H1320" stroke="#5B432D" stroke-opacity="0.06"/>
+    <path d="M350 70V800M590 70V800M830 70V800M1070 70V800M1310 70V800" stroke="#5B432D" stroke-opacity="0.06"/>
+  </g>
+
+  <g opacity="0.16">
+    <path d="M1156 40V312" stroke="#8D4B29" stroke-opacity="0.26" stroke-width="3"/>
+    <path d="M1064 138H1248" stroke="#8D4B29" stroke-opacity="0.22" stroke-width="3"/>
+    <path d="M1098 72c42 62 42 170 0 232" stroke="#8D4B29" stroke-opacity="0.18" stroke-width="3" stroke-linecap="round"/>
+    <path d="M1214 72c-42 62-42 170 0 232" stroke="#8D4B29" stroke-opacity="0.18" stroke-width="3" stroke-linecap="round"/>
+    <path d="M1156 312c-78 104-154 176-232 228" stroke="#8D4B29" stroke-opacity="0.1" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.2" stroke="#6D5130" stroke-linecap="round">
+    <path d="M1310 58v192" stroke-opacity="0.18" stroke-width="3"/>
+    <path d="M1272 98h76" stroke-opacity="0.16" stroke-width="3"/>
+    <path d="M1290 52h92" stroke-opacity="0.13" stroke-width="2"/>
+    <path d="M1300 250h32" stroke-opacity="0.12" stroke-width="2"/>
+    <path d="M1340 250h32" stroke-opacity="0.12" stroke-width="2"/>
+  </g>
+</svg>

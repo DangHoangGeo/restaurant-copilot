@@ -12,7 +12,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { X, Star, Minus, Plus, ShoppingCart, Check } from "lucide-react";
+import {
+  X,
+  Star,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Check,
+  UtensilsCrossed,
+} from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getLocalizedText, formatPrice } from "@/lib/customerUtils";
@@ -92,7 +100,6 @@ export function ItemDetailModal({
   );
   const [notes, setNotes] = useState(initialNotes);
   const [isAdding, setIsAdding] = useState(false);
-  const [descExpanded, setDescExpanded] = useState(false);
 
   // Reset state every time a new item opens
   useEffect(() => {
@@ -105,7 +112,6 @@ export function ItemDetailModal({
       setSelectedSize(defaultSize?.id ? defaultSize : null);
       setSelectedToppings([...initialSelectedToppings]);
       setNotes(initialNotes);
-      setDescExpanded(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, item?.id]);
@@ -144,9 +150,9 @@ export function ItemDetailModal({
     if (!displayItem) return "";
     return getLocalizedText(
       {
-        en: displayItem.description_en || "",
-        vi: displayItem.description_vi || "",
-        ja: displayItem.description_ja || "",
+        name_en: displayItem.description_en || "",
+        name_vi: displayItem.description_vi || "",
+        name_ja: displayItem.description_ja || "",
       },
       locale,
     );
@@ -204,8 +210,6 @@ export function ItemDetailModal({
 
   const availableSizes = displayItem?.menu_item_sizes ?? [];
   const availableToppings = displayItem?.toppings ?? [];
-  const DESC_LIMIT = 130;
-  const isDescLong = itemDescription.length > DESC_LIMIT;
 
   return createPortal(
     <AnimatePresence>
@@ -218,7 +222,7 @@ export function ItemDetailModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-[9998] bg-black/60"
+            className="fixed inset-0 z-[9998] bg-black/72 backdrop-blur-[2px]"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -240,11 +244,16 @@ export function ItemDetailModal({
               stiffness: 340,
               mass: 0.9,
             }}
-            className="fixed bottom-0 left-0 right-0 z-[9999] flex flex-col bg-white dark:bg-slate-900 rounded-t-[16px] focus:outline-none sm:left-1/2 sm:max-w-lg sm:w-full sm:-translate-x-1/2 sm:bottom-5 sm:rounded-2xl overflow-hidden"
-            style={{ minHeight: "67dvh", maxHeight: "92dvh" }}
+            className="fixed bottom-0 left-0 right-0 z-[9999] flex flex-col overflow-hidden rounded-t-[24px] border text-[var(--co-menu-card-text)] shadow-[0_30px_100px_-50px_rgba(0,0,0,0.72)] backdrop-blur-xl focus:outline-none sm:bottom-5 sm:left-1/2 sm:w-full sm:max-w-xl sm:-translate-x-1/2 sm:rounded-[24px] md:max-w-3xl"
+            style={{
+              minHeight: "67dvh",
+              maxHeight: "92dvh",
+              background: "var(--co-menu-card)",
+              borderColor: "var(--co-menu-card-border)",
+            }}
           >
             {/* ── Image ── */}
-            <div className="relative w-full flex-shrink-0 h-[220px] sm:h-[300px]">
+            <div className="relative aspect-[4/3] max-h-[42dvh] min-h-[220px] w-full flex-shrink-0 overflow-hidden rounded-t-[inherit] bg-[var(--co-menu-card-footer)] sm:aspect-video sm:min-h-0">
               {displayItem.image_url ? (
                 <Image
                   src={displayItem.image_url}
@@ -255,13 +264,13 @@ export function ItemDetailModal({
                   sizes="(max-width: 512px) 100vw, 512px"
                 />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-900/20 dark:to-yellow-900/20 flex items-center justify-center">
-                  <span className="text-8xl opacity-40">🍽️</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-[var(--co-menu-subtle)]">
+                  <UtensilsCrossed className="h-16 w-16 text-[var(--co-menu-card-muted)]" />
                 </div>
               )}
               {/* Rating pill */}
               {displayItem.averageRating && displayItem.averageRating > 0 && (
-                <div className="absolute top-3 left-3 flex items-center gap-1 bg-black/65 text-white px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
+                <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-[var(--co-menu-price-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--co-menu-price-text)] backdrop-blur-xl">
                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                   {displayItem.averageRating.toFixed(1)}
                 </div>
@@ -269,7 +278,7 @@ export function ItemDetailModal({
 
               {/* Unavailable overlay */}
               {!displayItem.available && (
-                <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center bg-[rgba(20,12,8,0.72)]">
                   <Badge
                     variant="destructive"
                     className="text-sm px-4 py-2 font-semibold"
@@ -282,7 +291,7 @@ export function ItemDetailModal({
               {/* Close button */}
               <button
                 onClick={onClose}
-                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/45 flex items-center justify-center text-white hover:bg-black/65 transition-colors"
+                className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--co-menu-price-bg)] text-[var(--co-menu-price-text)] backdrop-blur-xl transition-colors hover:brightness-110"
                 aria-label={tCommon("close_modal")}
               >
                 <X className="h-5 w-5" />
@@ -291,45 +300,31 @@ export function ItemDetailModal({
 
             {/* ── Scrollable body ── */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
-              <div className="px-5 pt-3 pb-4 space-y-5">
+              <div className="space-y-5 px-5 pb-4 pt-4">
                 {/* Name + base price */}
                 <div className="flex items-start justify-between gap-3">
                   <h1
                     id="item-modal-title"
-                    className="text-xl font-bold text-slate-900 dark:text-white leading-snug flex-1"
+                    className="flex-1 text-xl font-semibold leading-snug text-[var(--co-menu-card-text)]"
+                    style={{ fontFamily: "var(--co-menu-display-font)" }}
                   >
                     {itemName}
                   </h1>
-                  <span
-                    className="text-xl font-bold flex-shrink-0 pt-0.5"
-                    style={{ color: brandColor }}
-                  >
+                  <span className="flex-shrink-0 pt-0.5 text-xl font-semibold tabular-nums text-[var(--co-menu-accent-strong)]">
                     {fp(selectedSize ? selectedSize.price : displayItem.price)}
                   </span>
                 </div>
 
-                {/* Description */}
-                {itemDescription.trim() && (
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed -mt-2">
-                    {isDescLong && !descExpanded
-                      ? `${itemDescription.slice(0, DESC_LIMIT).trimEnd()}…`
-                      : itemDescription}
-                    {isDescLong && (
-                      <button
-                        onClick={() => setDescExpanded((p) => !p)}
-                        className="ml-1.5 text-xs font-medium underline-offset-2 hover:underline transition-colors"
-                        style={{ color: brandColor }}
-                      >
-                        {descExpanded ? t("show_less") : t("show_more")}
-                      </button>
-                    )}
+                {itemDescription ? (
+                  <p className="max-w-prose text-sm leading-6 text-[var(--co-menu-card-muted)]">
+                    {itemDescription}
                   </p>
-                )}
+                ) : null}
 
                 {/* ── Size selector ── */}
                 {availableSizes.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--co-menu-card-muted)]">
                       {t("choose_size")}
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -350,18 +345,14 @@ export function ItemDetailModal({
                               key={size.id}
                               onClick={() => selectSize(size)}
                               aria-pressed={active}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-medium transition-all"
-                              style={{
-                                borderColor: active ? brandColor : "#e2e8f0",
-                                backgroundColor: active ? `${brandColor}15` : "transparent",
-                                color: active ? brandColor : "#64748b",
-                              }}
+                              className={
+                                active
+                                  ? "inline-flex min-h-11 items-center gap-1.5 rounded-[14px] border border-[var(--co-menu-accent)] bg-[var(--co-menu-accent)] px-4 py-2 text-xs font-medium text-white transition-all"
+                                  : "inline-flex min-h-11 items-center gap-1.5 rounded-[14px] border border-[var(--co-menu-card-border)] bg-[var(--co-menu-subtle)] px-4 py-2 text-xs font-medium text-[var(--co-menu-card-text)] transition-all hover:brightness-105"
+                              }
                             >
                               {sizeName}
-                              <span
-                                className="opacity-70"
-                                style={{ color: active ? brandColor : "#94a3b8" }}
-                              >
+                              <span className="opacity-70">
                                 {fp(size.price)}
                               </span>
                             </button>
@@ -374,7 +365,7 @@ export function ItemDetailModal({
                 {/* ── Topping selector ── */}
                 {availableToppings.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--co-menu-card-muted)]">
                       {t("add_toppings")}
                     </p>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -397,18 +388,18 @@ export function ItemDetailModal({
                               key={topping.id}
                               onClick={() => toggleTopping(topping)}
                               aria-pressed={active}
-                              className="flex items-center gap-2 h-10 px-3 rounded-lg border text-left transition-all"
-                              style={{
-                                borderColor: active ? brandColor : "#e2e8f0",
-                                backgroundColor: active ? `${brandColor}12` : "transparent",
-                              }}
+                              className={
+                                active
+                                  ? "flex h-11 items-center gap-2 rounded-[14px] border border-[var(--co-menu-accent)] bg-[var(--co-menu-accent)] px-3 text-left text-white transition-all"
+                                  : "flex h-11 items-center gap-2 rounded-[14px] border border-[var(--co-menu-card-border)] bg-[var(--co-menu-subtle)] px-3 text-left transition-all hover:brightness-105"
+                              }
                             >
                               <span
-                                className="w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all"
-                                style={{
-                                  borderColor: active ? brandColor : "#cbd5e1",
-                                  backgroundColor: active ? brandColor : "transparent",
-                                }}
+                                className={
+                                  active
+                                    ? "flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-white/25 transition-all"
+                                    : "flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border border-[var(--co-menu-card-muted)] bg-transparent transition-all"
+                                }
                               >
                                 {active && (
                                   <Check
@@ -418,10 +409,10 @@ export function ItemDetailModal({
                                 )}
                               </span>
                               <span className="flex-1 min-w-0 flex items-baseline justify-between gap-1">
-                                <span className="text-xs text-slate-700 dark:text-slate-200 truncate">
+                                <span className="truncate text-xs text-[var(--co-menu-card-text)]">
                                   {name}
                                 </span>
-                                <span className="text-[10px] text-slate-400 flex-shrink-0">
+                                <span className="flex-shrink-0 text-[10px] text-[var(--co-menu-card-muted)]">
                                   +{fp(topping.price)}
                                 </span>
                               </span>
@@ -435,14 +426,14 @@ export function ItemDetailModal({
                 {/* ── Special Request ── */}
                 {showOrderNotes && (
                   <div className="space-y-2">
-                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--co-menu-card-muted)]">
                       {t("special_instructions")}
                     </p>
                     <Textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder={t("special_instructions_placeholder")}
-                      className="min-h-[60px] resize-none rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus-visible:ring-1 placeholder:text-slate-400"
+                      className="min-h-[60px] resize-none rounded-2xl border-0 bg-[var(--co-menu-subtle)] text-xs text-[var(--co-menu-card-text)] placeholder:text-[var(--co-menu-card-muted)] focus-visible:ring-1"
                       style={{ "--tw-ring-color": brandColor } as React.CSSProperties}
                       maxLength={200}
                     />
@@ -453,32 +444,33 @@ export function ItemDetailModal({
 
             {/* ── Sticky footer: qty + CTA ── */}
             <div
-              className="flex-shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-4"
+              className="flex-shrink-0 px-5 py-4 shadow-[0_-18px_45px_-34px_rgba(0,0,0,0.42)] backdrop-blur-xl"
               style={{
                 paddingBottom: "max(16px, env(safe-area-inset-bottom, 0px))",
+                background: "var(--co-menu-card)",
               }}
             >
               <div className="flex items-center gap-3">
                 {/* Quantity stepper */}
-                <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden flex-shrink-0">
+                <div className="flex flex-shrink-0 items-center overflow-hidden rounded-2xl bg-[var(--co-menu-subtle)]">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={decQty}
                     disabled={quantity <= 1}
-                    className="w-10 h-11 rounded-none hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"
+                    className="h-11 w-10 rounded-none text-[var(--co-menu-card-text)] hover:bg-[var(--co-menu-subtle)] disabled:opacity-40"
                     aria-label={t("decrease_quantity")}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-8 text-center font-bold text-slate-900 dark:text-white text-base select-none">
+                  <span className="w-8 select-none text-center text-base font-bold text-[var(--co-menu-card-text)]">
                     {quantity}
                   </span>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={incQty}
-                    className="w-10 h-11 rounded-none hover:bg-slate-200 dark:hover:bg-slate-700"
+                    className="h-11 w-10 rounded-none text-[var(--co-menu-card-text)] hover:bg-[var(--co-menu-subtle)]"
                     aria-label={t("increase_quantity")}
                   >
                     <Plus className="h-4 w-4" />
@@ -489,7 +481,7 @@ export function ItemDetailModal({
                 <button
                   onClick={handleAddToCart}
                   disabled={!canAddItems || !displayItem.available || isAdding}
-                  className="flex-1 h-11 rounded-xl text-white font-bold text-sm flex items-center justify-between px-4 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex h-11 flex-1 items-center justify-between rounded-2xl px-4 text-sm font-bold text-white transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   style={{ backgroundColor: brandColor }}
                   aria-label={`${isEditMode ? t("update") : t("add_to_cart")} — ${fp(totalPrice)}`}
                 >
@@ -499,9 +491,11 @@ export function ItemDetailModal({
                     ) : (
                       <ShoppingCart className="h-4 w-4" />
                     )}
-                    <span>{isEditMode ? t("update") : t("add_to_cart")}</span>
+                    <span className="whitespace-nowrap">
+                      {isEditMode ? t("update") : t("add_to_cart")}
+                    </span>
                   </div>
-                  <span className="bg-white/20 px-2.5 py-0.5 rounded-lg font-bold text-sm">
+                  <span className="shrink-0 rounded-lg bg-white/20 px-2.5 py-0.5 text-sm font-bold">
                     {fp(totalPrice)}
                   </span>
                 </button>

@@ -6,7 +6,9 @@ export const USER_ROLES = {
   CHEF: 'chef',
   SERVER: 'server',
   CASHIER: 'cashier',
+  PART_TIME: 'part_time',
   EMPLOYEE: 'employee', // General employee role for users table
+  STAFF: 'staff', // Non-operational org-only profile role
 } as const;
 
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
@@ -16,6 +18,7 @@ export const EMPLOYEE_JOB_TITLES = {
   CHEF: 'chef',
   SERVER: 'server',
   CASHIER: 'cashier',
+  PART_TIME: 'part_time',
 } as const;
 
 export type EmployeeJobTitle = typeof EMPLOYEE_JOB_TITLES[keyof typeof EMPLOYEE_JOB_TITLES];

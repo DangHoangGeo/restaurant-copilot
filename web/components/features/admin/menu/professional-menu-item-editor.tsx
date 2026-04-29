@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useMemo,
   useState,
   type ChangeEvent,
@@ -12,6 +13,7 @@ import {
   ArrowLeft,
   Check,
   ChevronLeft,
+  Copy,
   Image as ImageIcon,
   Plus,
   Sparkles,
@@ -35,15 +37,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { WeekdaySelector } from "@/components/features/admin/menu/WeekdaySelector";
 
 type PrimaryLanguage = "en" | "ja" | "vi";
 type EditorMode = "organization-shared" | "branch";
@@ -77,6 +74,16 @@ interface ProfessionalMenuItemEditorProps {
   locale: string;
   returnHref: string;
   restaurantName?: string | null;
+}
+
+interface GeneratedMenuCopy {
+  name_en?: unknown;
+  name_ja?: unknown;
+  name_vi?: unknown;
+  description_en?: unknown;
+  description_ja?: unknown;
+  description_vi?: unknown;
+  error?: string;
 }
 
 const LANGUAGES: PrimaryLanguage[] = ["en", "ja", "vi"];
@@ -129,12 +136,16 @@ function buildCopy(locale: string) {
       publish: "公開",
       saving: "保存中...",
       generating: "確認中...",
+      aiFallbackReady: "外部AI用プロンプトを用意しました。",
       category: "カテゴリ",
       inputLanguage: "入力言語",
       originalName: "メニュー名",
       originalDescription: "説明・主な材料",
       price: "基本価格",
       active: "販売中",
+      stock: "販売数",
+      stockPlaceholder: "無制限",
+      schedule: "販売曜日",
       image: "画像",
       upload: "画像を選択",
       replace: "画像を変更",
@@ -159,6 +170,16 @@ function buildCopy(locale: string) {
       required: "カテゴリ、メニュー名、説明、価格が必要です。",
       saved: "メニューを公開しました。",
       failed: "保存できませんでした。",
+      externalPromptTitle: "外部AI用プロンプト",
+      externalPromptGuide:
+        "コピーしてChatGPTまたはGeminiに貼り付け、返ってきたJSONを下の欄に貼り付けてください。",
+      copyPrompt: "プロンプトをコピー",
+      copiedPrompt: "コピー済み",
+      promptCopied: "コピーしました。",
+      pasteExternalResult: "外部AIのJSONを貼り付け",
+      applyExternalResult: "反映",
+      externalResultApplied: "反映しました。",
+      externalResultInvalid: "JSON形式を確認してください。",
       english: "英語",
       japanese: "日本語",
       vietnamese: "ベトナム語",
@@ -174,12 +195,16 @@ function buildCopy(locale: string) {
       publish: "Đăng bán",
       saving: "Đang lưu...",
       generating: "Đang duyệt...",
+      aiFallbackReady: "Đã chuẩn bị prompt cho AI ngoài.",
       category: "Danh mục",
       inputLanguage: "Ngôn ngữ nhập",
       originalName: "Tên món",
       originalDescription: "Mô tả / nguyên liệu chính",
       price: "Giá cơ bản",
       active: "Đang bán",
+      stock: "Số lượng bán",
+      stockPlaceholder: "Không giới hạn",
+      schedule: "Ngày bán",
       image: "Hình ảnh",
       upload: "Chọn ảnh",
       replace: "Đổi ảnh",
@@ -204,6 +229,16 @@ function buildCopy(locale: string) {
       required: "Cần danh mục, tên món, mô tả và giá.",
       saved: "Đã đăng bán món.",
       failed: "Không thể lưu.",
+      externalPromptTitle: "Prompt cho AI ngoài",
+      externalPromptGuide:
+        "Sao chép prompt này, dán vào ChatGPT hoặc Gemini, rồi dán JSON trả về vào ô bên dưới.",
+      copyPrompt: "Sao chép prompt",
+      copiedPrompt: "Đã sao chép",
+      promptCopied: "Đã sao chép prompt.",
+      pasteExternalResult: "Dán JSON từ AI ngoài",
+      applyExternalResult: "Áp dụng",
+      externalResultApplied: "Đã điền kết quả AI.",
+      externalResultInvalid: "Kết quả AI chưa đúng định dạng JSON.",
       english: "Tiếng Anh",
       japanese: "Tiếng Nhật",
       vietnamese: "Tiếng Việt",
@@ -218,12 +253,16 @@ function buildCopy(locale: string) {
     publish: "Publish",
     saving: "Saving...",
     generating: "Reviewing...",
+    aiFallbackReady: "External AI prompt is ready.",
     category: "Category",
     inputLanguage: "Input language",
     originalName: "Item name",
     originalDescription: "Description / main ingredients",
     price: "Base price",
     active: "Available",
+    stock: "Selling quantity",
+    stockPlaceholder: "Unlimited",
+    schedule: "Selling days",
     image: "Image",
     upload: "Choose image",
     replace: "Replace image",
@@ -248,6 +287,16 @@ function buildCopy(locale: string) {
     required: "Category, item name, description, and price are required.",
     saved: "Menu item published.",
     failed: "Could not save.",
+    externalPromptTitle: "External AI prompt",
+    externalPromptGuide:
+      "Copy this prompt, paste it into ChatGPT or Gemini, then paste the JSON result into the box below.",
+    copyPrompt: "Copy prompt",
+    copiedPrompt: "Copied",
+    promptCopied: "Prompt copied.",
+    pasteExternalResult: "Paste external AI JSON",
+    applyExternalResult: "Apply",
+    externalResultApplied: "External AI result applied.",
+    externalResultInvalid: "Check the JSON format.",
     english: "English",
     japanese: "Japanese",
     vietnamese: "Vietnamese",
@@ -276,6 +325,108 @@ function initialSizes(): SizeDraft[] {
   ];
 }
 
+function initialWeekdayVisibility() {
+  return [1, 2, 3, 4, 5, 6, 7];
+}
+
+function buildExternalAIPrompt({
+  restaurantName,
+  categoryName,
+  itemName,
+  description,
+  toppings,
+}: {
+  restaurantName?: string | null;
+  categoryName: string;
+  itemName: string;
+  description: string;
+  toppings: ToppingDraft[];
+}) {
+  const toppingNames = toppings
+    .map((topping) => topping.originalName.trim())
+    .filter(Boolean);
+
+  return [
+    "You are writing customer-facing restaurant menu copy.",
+    "Create polished menu content in English, Japanese, and Vietnamese.",
+    "Keep the dish identity accurate. Do not invent allergens, meat types, or ingredients that are not implied by the notes.",
+    "",
+    `Restaurant: ${restaurantName?.trim() || "Restaurant"}`,
+    `Category: ${categoryName || "Menu category"}`,
+    `Original item name: ${itemName.trim()}`,
+    `Original description or ingredients: ${description.trim()}`,
+    `Toppings to translate: ${toppingNames.length > 0 ? toppingNames.join(", ") : "None"}`,
+    "",
+    "Return only valid JSON in this exact shape:",
+    "{",
+    '  "name": { "en": "", "ja": "", "vi": "" },',
+    '  "description": { "en": "", "ja": "", "vi": "" },',
+    '  "toppings": [',
+    '    { "original": "", "name": { "en": "", "ja": "", "vi": "" } }',
+    "  ]",
+    "}",
+  ].join("\n");
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function isGeneratedFailureText(value: unknown) {
+  const normalized = stringValue(value).toLowerCase();
+  if (!normalized) return true;
+
+  return [
+    "could not be generated",
+    "cannot be generated",
+    "could not generate",
+    "cannot generate",
+    "không thể tạo",
+    "hiện không thể",
+    "không tạo được",
+    "生成できません",
+    "生成できない",
+  ].some((phrase) => normalized.includes(phrase));
+}
+
+function hasUsableGeneratedMenuCopy(data: GeneratedMenuCopy) {
+  return [
+    data.name_en,
+    data.name_ja,
+    data.name_vi,
+    data.description_en,
+    data.description_ja,
+    data.description_vi,
+  ].every((value) => !isGeneratedFailureText(value));
+}
+
+async function copyTextToClipboard(value: string) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch {
+      // Some browser contexts expose the Clipboard API but reject writes.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "-9999px";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    const copied = document.execCommand("copy");
+    if (!copied) throw new Error("Copy command failed");
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 export function ProfessionalMenuItemEditor({
   mode,
   branchId,
@@ -293,6 +444,10 @@ export function ProfessionalMenuItemEditor({
   const [originalName, setOriginalName] = useState("");
   const [originalDescription, setOriginalDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [stockLevel, setStockLevel] = useState("");
+  const [weekdayVisibility, setWeekdayVisibility] = useState<number[]>(
+    initialWeekdayVisibility,
+  );
   const [available, setAvailable] = useState(true);
   const [useSizes, setUseSizes] = useState(false);
   const [sizes, setSizes] = useState<SizeDraft[]>(initialSizes);
@@ -311,6 +466,7 @@ export function ProfessionalMenuItemEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [reviewNames, setReviewNames] = useState(emptyTranslations);
   const [reviewDescriptions, setReviewDescriptions] = useState(emptyTranslations);
+  const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
 
   const selectedCategory = categories.find((category) => category.id === categoryId);
   const selectedSizes = useSizes
@@ -398,7 +554,10 @@ export function ProfessionalMenuItemEditor({
       !originalName.trim() ||
       !originalDescription.trim() ||
       price.trim() === "" ||
-      Number(price) < 0
+      Number(price) < 0 ||
+      (stockLevel.trim() !== "" &&
+        (!Number.isFinite(Number(stockLevel)) || Number(stockLevel) < 0)) ||
+      weekdayVisibility.length === 0
     ) {
       toast.error(copy.required);
       return false;
@@ -420,6 +579,42 @@ export function ProfessionalMenuItemEditor({
     return response.json() as Promise<Record<PrimaryLanguage, string>>;
   };
 
+  const seedManualReview = () => {
+    setReviewNames({
+      en: originalLanguage === "en" ? originalName.trim() : "",
+      ja: originalLanguage === "ja" ? originalName.trim() : "",
+      vi: originalLanguage === "vi" ? originalName.trim() : "",
+    });
+    setReviewDescriptions({
+      en: originalLanguage === "en" ? originalDescription.trim() : "",
+      ja: originalLanguage === "ja" ? originalDescription.trim() : "",
+      vi: originalLanguage === "vi" ? originalDescription.trim() : "",
+    });
+    setToppings((current) =>
+      current.map((topping) => ({
+        ...topping,
+        translations: {
+          en: originalLanguage === "en" ? topping.originalName.trim() : "",
+          ja: originalLanguage === "ja" ? topping.originalName.trim() : "",
+          vi: originalLanguage === "vi" ? topping.originalName.trim() : "",
+        },
+      })),
+    );
+  };
+
+  const handleCopyExternalPrompt = async () => {
+    if (!externalPrompt) return false;
+
+    try {
+      await copyTextToClipboard(externalPrompt);
+      toast.success(copy.promptCopied);
+      return true;
+    } catch {
+      toast.error(copy.failed);
+      return false;
+    }
+  };
+
   const handleAIReview = async () => {
     if (!validateInput()) return;
 
@@ -438,24 +633,20 @@ export function ProfessionalMenuItemEditor({
             : "",
         }),
       });
-      const data = await response.json();
+      const data = (await response.json()) as GeneratedMenuCopy;
       if (!response.ok) throw new Error(data.error ?? copy.failed);
+      if (!hasUsableGeneratedMenuCopy(data)) throw new Error(copy.aiFallbackReady);
+      setExternalPrompt(null);
 
       setReviewNames({
-        en: data.name_en || (originalLanguage === "en" ? originalName : originalName),
-        ja: data.name_ja || (originalLanguage === "ja" ? originalName : originalName),
-        vi: data.name_vi || (originalLanguage === "vi" ? originalName : originalName),
+        en: stringValue(data.name_en) || originalName,
+        ja: stringValue(data.name_ja) || originalName,
+        vi: stringValue(data.name_vi) || originalName,
       });
       setReviewDescriptions({
-        en:
-          data.description_en ||
-          (originalLanguage === "en" ? originalDescription : originalDescription),
-        ja:
-          data.description_ja ||
-          (originalLanguage === "ja" ? originalDescription : originalDescription),
-        vi:
-          data.description_vi ||
-          (originalLanguage === "vi" ? originalDescription : originalDescription),
+        en: stringValue(data.description_en) || originalDescription,
+        ja: stringValue(data.description_ja) || originalDescription,
+        vi: stringValue(data.description_vi) || originalDescription,
       });
 
       const translatedToppings = await Promise.all(
@@ -485,8 +676,21 @@ export function ProfessionalMenuItemEditor({
       );
       setToppings(translatedToppings);
       setStep(1);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : copy.failed);
+    } catch {
+      setExternalPrompt(
+        buildExternalAIPrompt({
+          restaurantName,
+          categoryName: selectedCategory
+            ? localizedName(locale, selectedCategory)
+            : "",
+          itemName: originalName,
+          description: originalDescription,
+          toppings,
+        }),
+      );
+      seedManualReview();
+      setStep(1);
+      toast(copy.aiFallbackReady);
     } finally {
       setIsGenerating(false);
     }
@@ -527,7 +731,11 @@ export function ProfessionalMenuItemEditor({
         price: Number(price),
         image_url: imageUrl,
         available,
-        weekday_visibility: [1, 2, 3, 4, 5, 6, 7],
+        weekday_visibility: weekdayVisibility,
+        stock_level:
+          stockLevel.trim() === ""
+            ? undefined
+            : Math.max(0, Math.floor(Number(stockLevel))),
         position: selectedCategory?.itemCount ?? 0,
         sizes: selectedSizes.map((size, index) => ({
           size_key: size.key,
@@ -577,19 +785,19 @@ export function ProfessionalMenuItemEditor({
   };
 
   return (
-    <section className="space-y-4 text-[#F8EEDF]">
+    <section className="space-y-4 text-[#2E2117] dark:text-[#F7F1E9]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Button
             type="button"
             variant="ghost"
-            className="mb-2 rounded-lg text-[#D7BFA4] hover:bg-white/10 hover:text-white"
+            className="mb-2 rounded-lg text-[#8B6E5A] hover:bg-[#F5EAD8] hover:text-[#2E2117] dark:text-[#C9B7A0] dark:hover:bg-[#332116] dark:hover:text-[#F7F1E9]"
             onClick={() => router.push(returnHref)}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {copy.back}
           </Button>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h1 className="text-2xl font-semibold sm:text-3xl">
             {copy.title}
           </h1>
         </div>
@@ -600,8 +808,8 @@ export function ProfessionalMenuItemEditor({
               className={cn(
                 "rounded-md border px-3 py-1",
                 index === step
-                  ? "border-[#F5B76D]/50 bg-[#F5B76D]/18 text-[#FFE2B8]"
-                  : "border-white/10 bg-white/8 text-[#B99C7D]",
+                  ? "border-[#AB6E3C]/35 bg-[#AB6E3C] text-white hover:bg-[#AB6E3C] dark:border-[#F1DCC4]/20 dark:bg-[#F1DCC4] dark:text-[#170F0C] dark:hover:bg-[#F1DCC4]"
+                  : "border-[#AB6E3C]/14 bg-[#FFF7E9] text-[#8B6E5A] hover:bg-[#FFF7E9] dark:border-[#F1DCC4]/12 dark:bg-[#2B1A10] dark:text-[#C9B7A0]",
               )}
             >
               {index + 1}. {label}
@@ -625,6 +833,10 @@ export function ProfessionalMenuItemEditor({
           setOriginalDescription={setOriginalDescription}
           price={price}
           setPrice={setPrice}
+          stockLevel={stockLevel}
+          setStockLevel={setStockLevel}
+          weekdayVisibility={weekdayVisibility}
+          setWeekdayVisibility={setWeekdayVisibility}
           available={available}
           setAvailable={setAvailable}
           useSizes={useSizes}
@@ -654,6 +866,8 @@ export function ProfessionalMenuItemEditor({
           setReviewDescriptions={setReviewDescriptions}
           toppings={toppings}
           updateTopping={updateTopping}
+          externalPrompt={externalPrompt}
+          onCopyExternalPrompt={handleCopyExternalPrompt}
           onBack={() => setStep(0)}
           onApprove={() => setStep(2)}
         />
@@ -667,6 +881,8 @@ export function ProfessionalMenuItemEditor({
           reviewNames={reviewNames}
           reviewDescriptions={reviewDescriptions}
           price={price}
+          stockLevel={stockLevel}
+          weekdayVisibility={weekdayVisibility}
           available={available}
           useSizes={useSizes}
           sizes={selectedSizes}
@@ -710,6 +926,10 @@ function InputStep(props: {
   setOriginalDescription: (value: string) => void;
   price: string;
   setPrice: (value: string) => void;
+  stockLevel: string;
+  setStockLevel: (value: string) => void;
+  weekdayVisibility: number[];
+  setWeekdayVisibility: (value: number[]) => void;
   available: boolean;
   setAvailable: (value: boolean) => void;
   useSizes: boolean;
@@ -729,24 +949,116 @@ function InputStep(props: {
 }) {
   const { copy } = props;
   return (
-    <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+    <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+      <aside className="space-y-4">
+        <div className="overflow-hidden rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <div className="flex items-center justify-between gap-3 border-b border-[#AB6E3C]/12 bg-[#F5EAD8]/64 px-4 py-3 dark:border-[#F1DCC4]/10 dark:bg-[#2B1A10]/70">
+            <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+              {copy.category}
+            </h2>
+            <Badge className="rounded-md border border-[#AB6E3C]/14 bg-[#FEFAF6] text-[#6F4D35] hover:bg-[#FEFAF6] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F1DCC4]">
+              {props.categories.length}
+            </Badge>
+          </div>
+          <div className="max-h-[360px] overflow-y-auto p-2">
+            {props.categories.map((category) => {
+              const isSelected = props.categoryId === category.id;
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  className={cn(
+                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm transition-colors",
+                    isSelected
+                      ? "bg-[#2E2117] text-[#FFF7E9] dark:bg-[#F1DCC4] dark:text-[#170F0C]"
+                      : "text-[#2E2117] hover:bg-[#F5EAD8] dark:text-[#F7F1E9] dark:hover:bg-[#332116]",
+                  )}
+                  onClick={() => props.setCategoryId(category.id)}
+                >
+                  <span className="min-w-0 truncate font-medium">
+                    {localizedName(props.locale, category)}
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-md border px-2 py-0.5 text-xs",
+                      isSelected
+                        ? "border-[#FFF7E9]/20 text-[#FFF7E9] dark:border-[#170F0C]/20 dark:text-[#170F0C]"
+                        : "border-[#AB6E3C]/14 text-[#8B6E5A] dark:border-[#F1DCC4]/12 dark:text-[#C9B7A0]",
+                    )}
+                  >
+                    {category.itemCount}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] px-3 py-3 text-sm dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+            <span className="text-[#8B6E5A] dark:text-[#C9B7A0]">
+              {copy.inputLanguage}
+            </span>
+            <p className="mt-1 font-medium text-[#2E2117] dark:text-[#F7F1E9]">
+              {languageLabel(copy, props.originalLanguage)}
+            </p>
+          </div>
+
+          <label className="mt-3 flex items-center justify-between rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] px-3 py-3 text-sm font-medium text-[#2E2117] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
+            <span>{copy.active}</span>
+            <Switch checked={props.available} onCheckedChange={props.setAvailable} />
+          </label>
+        </div>
+
+        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <label className="block space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
+            <span>{copy.stock}</span>
+            <Input
+              type="number"
+              min="0"
+              value={props.stockLevel}
+              onChange={(event) => props.setStockLevel(event.target.value)}
+              placeholder={copy.stockPlaceholder}
+              className="h-10 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] dark:placeholder:text-[#C9B7A0]"
+            />
+          </label>
+          <div className="mt-4 space-y-2 border-t border-[#AB6E3C]/12 pt-4 dark:border-[#F1DCC4]/10">
+            <p className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+              {copy.schedule}
+            </p>
+            <WeekdaySelector
+              selectedDays={props.weekdayVisibility}
+              onChange={props.setWeekdayVisibility}
+            />
+          </div>
+        </div>
+
+        <ImagePanel
+          copy={copy}
+          imageFile={props.imageFile}
+          imagePreview={props.imagePreview}
+          imageInfo={props.imageInfo}
+          handleImageSelect={props.handleImageSelect}
+        />
+      </aside>
+
       <div className="space-y-4">
-        <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
-          <label className="space-y-2 text-sm font-medium">
+        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <label className="space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
             <span>{copy.originalName}</span>
             <Input
               value={props.originalName}
               onChange={(event) => props.setOriginalName(event.target.value)}
-              className="h-11 rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+              className="h-11 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]"
             />
           </label>
-          <label className="mt-4 block space-y-2 text-sm font-medium">
+          <label className="mt-4 block space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
             <span>{copy.originalDescription}</span>
             <Textarea
               value={props.originalDescription}
               onChange={(event) => props.setOriginalDescription(event.target.value)}
               rows={5}
-              className="min-h-32 rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+              className="min-h-32 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]"
             />
           </label>
         </div>
@@ -759,21 +1071,25 @@ function InputStep(props: {
           removeTopping={props.removeTopping}
         />
 
-        <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
-          <label className="block space-y-2 text-sm font-medium">
+        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <label className="block space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
             <span>{copy.price}</span>
             <Input
               type="number"
               min="0"
               value={props.price}
               onChange={(event) => props.setPrice(event.target.value)}
-              className="h-10 rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+              className="h-10 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]"
             />
           </label>
-          <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#AB6E3C]/12 pt-4 dark:border-[#F1DCC4]/10">
             <div>
-              <h2 className="text-sm font-semibold text-white">{copy.sizes}</h2>
-              <p className="mt-1 text-xs text-[#B99C7D]">{copy.mediumRule}</p>
+              <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+                {copy.sizes}
+              </h2>
+              <p className="mt-1 text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.mediumRule}
+              </p>
             </div>
             <label className="flex shrink-0 items-center gap-2 text-sm font-medium">
               <span>{copy.useSizes}</span>
@@ -785,14 +1101,14 @@ function InputStep(props: {
               {props.sizes.map((size) => (
                 <div
                   key={size.key}
-                  className="rounded-lg border border-white/10 bg-black/20 p-3"
+                  className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]"
                 >
                   <label className="flex items-center justify-between gap-2 text-sm font-medium">
                     <span>
                       {size.key} · {SIZE_NAMES[size.key][props.originalLanguage]}
                     </span>
                     {size.key === "M" ? (
-                      <Badge className="rounded-md border border-[#F5B76D]/40 bg-[#F5B76D]/18 text-[#FFE2B8]">
+                      <Badge className="rounded-md border border-[#AB6E3C]/20 bg-[#F5EAD8] text-[#6F4D35] dark:border-[#F1DCC4]/12 dark:bg-[#2B1A10] dark:text-[#F1DCC4]">
                         {copy.defaultSize}
                       </Badge>
                     ) : (
@@ -812,7 +1128,7 @@ function InputStep(props: {
                     onChange={(event) =>
                       props.updateSize(size.key, { price: event.target.value })
                     }
-                    className="mt-3 h-9 rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+                    className="mt-3 h-9 rounded-xl border-[#AB6E3C]/18 bg-[#FFF7E9] text-[#2E2117] disabled:opacity-70 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]"
                   />
                 </div>
               ))}
@@ -823,7 +1139,7 @@ function InputStep(props: {
         <div className="flex justify-end">
           <Button
             type="button"
-            className="rounded-lg bg-[#F5B76D] text-[#23160E] hover:bg-[#FFD08B]"
+            className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
             onClick={props.handleAIReview}
             disabled={props.isGenerating}
           >
@@ -835,52 +1151,6 @@ function InputStep(props: {
             {props.isGenerating ? copy.generating : copy.next}
           </Button>
         </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
-          <div className="grid gap-3">
-            <label className="space-y-2 text-sm font-medium">
-              <span>{copy.category}</span>
-              <Select value={props.categoryId} onValueChange={props.setCategoryId}>
-                <SelectTrigger className="h-10 w-full rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]">
-                  <span>
-                    {props.selectedCategory
-                      ? localizedName(props.locale, props.selectedCategory)
-                      : copy.category}
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  {props.categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {localizedName(props.locale, category)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-
-            <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-3 text-sm">
-              <span className="text-[#B99C7D]">{copy.inputLanguage}</span>
-              <p className="mt-1 font-medium">
-                {languageLabel(copy, props.originalLanguage)}
-              </p>
-            </div>
-
-            <label className="flex items-center justify-between rounded-lg border border-white/10 bg-black/20 px-3 py-3 text-sm font-medium">
-              <span>{copy.active}</span>
-              <Switch checked={props.available} onCheckedChange={props.setAvailable} />
-            </label>
-          </div>
-        </div>
-
-        <ImagePanel
-          copy={copy}
-          imageFile={props.imageFile}
-          imagePreview={props.imagePreview}
-          imageInfo={props.imageInfo}
-          handleImageSelect={props.handleImageSelect}
-        />
       </div>
     </div>
   );
@@ -895,6 +1165,8 @@ function ReviewStep({
   setReviewDescriptions,
   toppings,
   updateTopping,
+  externalPrompt,
+  onCopyExternalPrompt,
   onBack,
   onApprove,
 }: {
@@ -906,11 +1178,137 @@ function ReviewStep({
   setReviewDescriptions: Dispatch<SetStateAction<Record<PrimaryLanguage, string>>>;
   toppings: ToppingDraft[];
   updateTopping: (id: string, patch: Partial<ToppingDraft>) => void;
+  externalPrompt: string | null;
+  onCopyExternalPrompt: () => Promise<boolean>;
   onBack: () => void;
   onApprove: () => void;
 }) {
+  const [externalResult, setExternalResult] = useState("");
+  const [isPromptCopied, setIsPromptCopied] = useState(false);
+
+  useEffect(() => {
+    setIsPromptCopied(false);
+  }, [externalPrompt]);
+
+  const applyExternalResult = () => {
+    try {
+      const normalizedResult = externalResult
+        .trim()
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/```$/i, "")
+        .trim();
+      const parsed = JSON.parse(normalizedResult) as {
+        name?: Partial<Record<PrimaryLanguage, unknown>>;
+        description?: Partial<Record<PrimaryLanguage, unknown>>;
+        toppings?: Array<{
+          original?: unknown;
+          name?: Partial<Record<PrimaryLanguage, unknown>>;
+        }>;
+      };
+
+      const stringValue = (value: unknown) =>
+        typeof value === "string" ? value.trim() : "";
+
+      setReviewNames((current) => ({
+        en: stringValue(parsed.name?.en) || current.en,
+        ja: stringValue(parsed.name?.ja) || current.ja,
+        vi: stringValue(parsed.name?.vi) || current.vi,
+      }));
+      setReviewDescriptions((current) => ({
+        en: stringValue(parsed.description?.en) || current.en,
+        ja: stringValue(parsed.description?.ja) || current.ja,
+        vi: stringValue(parsed.description?.vi) || current.vi,
+      }));
+
+      if (Array.isArray(parsed.toppings)) {
+        parsed.toppings.forEach((externalTopping) => {
+          const original = stringValue(externalTopping.original).toLowerCase();
+          if (!original) return;
+
+          const matchingTopping = toppings.find(
+            (topping) =>
+              topping.originalName.trim().toLowerCase() === original,
+          );
+          if (!matchingTopping) return;
+
+          updateTopping(matchingTopping.id, {
+            translations: {
+              en:
+                stringValue(externalTopping.name?.en) ||
+                matchingTopping.translations.en,
+              ja:
+                stringValue(externalTopping.name?.ja) ||
+                matchingTopping.translations.ja,
+              vi:
+                stringValue(externalTopping.name?.vi) ||
+                matchingTopping.translations.vi,
+            },
+          });
+        });
+      }
+
+      toast.success(copy.externalResultApplied);
+    } catch {
+      toast.error(copy.externalResultInvalid);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {externalPrompt ? (
+        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+                {copy.externalPromptTitle}
+              </h2>
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.externalPromptGuide}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] px-3 text-xs text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
+              onClick={async () => {
+                const copied = await onCopyExternalPrompt();
+                setIsPromptCopied(copied);
+              }}
+            >
+              {isPromptCopied ? (
+                <Check className="mr-1.5 h-3.5 w-3.5" />
+              ) : (
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              {isPromptCopied ? copy.copiedPrompt : copy.copyPrompt}
+            </Button>
+          </div>
+          <Textarea
+            readOnly
+            value={externalPrompt}
+            rows={10}
+            className="mt-3 max-h-[300px] rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] font-mono text-xs leading-5 text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]"
+          />
+          <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <Textarea
+              value={externalResult}
+              onChange={(event) => setExternalResult(event.target.value)}
+              placeholder={copy.pasteExternalResult}
+              rows={5}
+              className="rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] font-mono text-xs leading-5 text-[#2E2117] placeholder:text-[#B89078] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9] dark:placeholder:text-[#C9B7A0]"
+            />
+            <Button
+              type="button"
+              className="h-10 self-start rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
+              onClick={applyExternalResult}
+              disabled={!externalResult.trim()}
+            >
+              {copy.applyExternalResult}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       <LocalizedFieldsPanel
         title={copy.aiNames}
         values={reviewNames}
@@ -928,11 +1326,16 @@ function ReviewStep({
         rows={5}
       />
       {toppings.length > 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
-          <h2 className="text-sm font-semibold text-white">{copy.aiToppings}</h2>
+        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+          <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+            {copy.aiToppings}
+          </h2>
           <div className="mt-3 space-y-3">
             {toppings.map((topping) => (
-              <div key={topping.id} className="rounded-lg border border-white/10 bg-black/20 p-3">
+              <div
+                key={topping.id}
+                className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]"
+              >
                 <div className="grid gap-2 lg:grid-cols-3">
                   {orderedLanguages(displayLanguage).map((language) => (
                     <label key={language} className="space-y-2 text-sm font-medium">
@@ -947,7 +1350,7 @@ function ReviewStep({
                             },
                           })
                         }
-                        className="h-10 rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+                        className="h-10 rounded-xl border-[#AB6E3C]/18 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]"
                       />
                     </label>
                   ))}
@@ -961,7 +1364,7 @@ function ReviewStep({
         <Button
           type="button"
           variant="outline"
-          className="rounded-lg border-white/15 bg-white/8 text-[#F8EEDF] hover:bg-white/14"
+          className="rounded-xl border-[#AB6E3C]/20 bg-[#FFF7E9]/80 text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
           onClick={onBack}
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
@@ -969,7 +1372,7 @@ function ReviewStep({
         </Button>
         <Button
           type="button"
-          className="rounded-lg bg-[#F5B76D] text-[#23160E] hover:bg-[#FFD08B]"
+          className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
           onClick={onApprove}
         >
           <Check className="mr-2 h-4 w-4" />
@@ -987,6 +1390,8 @@ function PublishStep({
   reviewNames,
   reviewDescriptions,
   price,
+  stockLevel,
+  weekdayVisibility,
   available,
   useSizes,
   sizes,
@@ -1002,6 +1407,8 @@ function PublishStep({
   reviewNames: Record<PrimaryLanguage, string>;
   reviewDescriptions: Record<PrimaryLanguage, string>;
   price: string;
+  stockLevel: string;
+  weekdayVisibility: number[];
   available: boolean;
   useSizes: boolean;
   sizes: SizeDraft[];
@@ -1013,24 +1420,48 @@ function PublishStep({
 }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
-        <h2 className="text-sm font-semibold text-white">{copy.summary}</h2>
+      <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+        <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+          {copy.summary}
+        </h2>
         <div className="mt-4 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
           <div className="space-y-3">
-            <div className="rounded-lg border border-white/10 bg-black/20 p-3">
-              <p className="text-xs text-[#B99C7D]">{copy.category}</p>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.category}
+              </p>
               <p className="mt-1 font-medium">{categoryName}</p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-black/20 p-3">
-              <p className="text-xs text-[#B99C7D]">{copy.price}</p>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.price}
+              </p>
               <p className="mt-1 font-medium">{price}</p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-black/20 p-3">
-              <p className="text-xs text-[#B99C7D]">{copy.active}</p>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.active}
+              </p>
               <p className="mt-1 font-medium">{available ? copy.active : "-"}</p>
             </div>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.stock}
+              </p>
+              <p className="mt-1 font-medium">
+                {stockLevel.trim() || copy.stockPlaceholder}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.schedule}
+              </p>
+              <p className="mt-1 font-medium">
+                {weekdayVisibility.length}/7
+              </p>
+            </div>
             {imagePreview ? (
-              <div className="aspect-[4/3] overflow-hidden rounded-lg border border-white/10 bg-black/20">
+              <div className="aspect-[4/3] overflow-hidden rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagePreview} alt="" className="h-full w-full object-cover" />
               </div>
@@ -1038,10 +1469,15 @@ function PublishStep({
           </div>
           <div className="space-y-3">
             {orderedLanguages(displayLanguage).map((language) => (
-              <div key={language} className="rounded-lg border border-white/10 bg-black/20 p-3">
-                <p className="text-xs text-[#B99C7D]">{languageLabel(copy, language)}</p>
+              <div
+                key={language}
+                className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]"
+              >
+                <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                  {languageLabel(copy, language)}
+                </p>
                 <p className="mt-1 font-semibold">{reviewNames[language]}</p>
-                <p className="mt-2 text-sm leading-5 text-[#D7BFA4]">
+                <p className="mt-2 text-sm leading-5 text-[#6F4D35] dark:text-[#F1DCC4]">
                   {reviewDescriptions[language]}
                 </p>
               </div>
@@ -1080,7 +1516,7 @@ function PublishStep({
         <Button
           type="button"
           variant="outline"
-          className="rounded-lg border-white/15 bg-white/8 text-[#F8EEDF] hover:bg-white/14"
+          className="rounded-xl border-[#AB6E3C]/20 bg-[#FFF7E9]/80 text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
           onClick={onBack}
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
@@ -1088,7 +1524,7 @@ function PublishStep({
         </Button>
         <Button
           type="button"
-          className="rounded-lg bg-[#F5B76D] text-[#23160E] hover:bg-[#FFD08B]"
+          className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
           onClick={onSave}
           disabled={isSaving}
         >
@@ -1115,8 +1551,10 @@ function LocalizedFieldsPanel({
   rows: number;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
-      <h2 className="text-sm font-semibold text-white">{title}</h2>
+    <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+      <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+        {title}
+      </h2>
       <div className="mt-3 grid gap-3 lg:grid-cols-3">
         {languages.map((language) => (
           <label key={language} className="space-y-2 text-sm font-medium">
@@ -1130,7 +1568,7 @@ function LocalizedFieldsPanel({
                 }))
               }
               rows={rows}
-              className="rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+              className="rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]"
             />
           </label>
         ))}
@@ -1153,21 +1591,23 @@ function ImagePanel({
   handleImageSelect: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
+    <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-white">{copy.image}</p>
+        <p className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+          {copy.image}
+        </p>
       </div>
       <div className="mt-3 flex items-center gap-3">
-        <div className="flex aspect-[4/3] w-28 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-black/20">
+        <div className="flex aspect-[4/3] w-28 items-center justify-center overflow-hidden rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
           {imagePreview ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imagePreview} alt="" className="h-full w-full object-cover" />
           ) : (
-            <ImageIcon className="h-7 w-7 text-[#B99C7D]" />
+            <ImageIcon className="h-7 w-7 text-[#8B6E5A] dark:text-[#C9B7A0]" />
           )}
         </div>
         <label className="cursor-pointer">
-          <span className="inline-flex h-10 items-center rounded-lg border border-white/15 bg-white/8 px-4 text-sm font-medium text-[#F8EEDF] hover:bg-white/14">
+          <span className="inline-flex h-10 items-center rounded-xl border border-[#AB6E3C]/20 bg-[#FEFAF6] px-4 text-sm font-medium text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]">
             {imageFile ? copy.replace : copy.upload}
           </span>
           <input
@@ -1178,7 +1618,7 @@ function ImagePanel({
           />
         </label>
       </div>
-      {imageInfo ? <div className="mt-3 h-1 rounded-full bg-[#F5B76D]/70" /> : null}
+      {imageInfo ? <div className="mt-3 h-1 rounded-full bg-[#AB6E3C]/70" /> : null}
     </div>
   );
 }
@@ -1212,17 +1652,17 @@ function ImageCropDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-white/10 bg-[#211712]/95 text-[#F8EEDF] sm:max-w-3xl">
+      <DialogContent className="border-[#AB6E3C]/15 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F7F1E9] sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{copy.cropImage}</DialogTitle>
-          <DialogDescription className="text-[#B99C7D]">
+          <DialogDescription className="text-[#8B6E5A] dark:text-[#C9B7A0]">
             {copy.cropImageDescription}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="rounded-lg border border-white/10 bg-black/30 p-3">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-md border border-[#F5B76D]/30 bg-[#120C08]">
+          <div className="rounded-2xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#251810]">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-[#AB6E3C]/20 bg-[#F5EAD8] dark:border-[#F1DCC4]/14 dark:bg-[#120C08]">
               {sourceImagePreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -1238,15 +1678,15 @@ function ImageCropDialog({
                   }}
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-[#B99C7D]">
+                <div className="flex h-full items-center justify-center text-[#8B6E5A] dark:text-[#C9B7A0]">
                   <ImageIcon className="h-8 w-8" />
                 </div>
               )}
-              <div className="pointer-events-none absolute inset-0 border border-white/30" />
+              <div className="pointer-events-none absolute inset-0 border border-white/45 dark:border-white/30" />
             </div>
           </div>
 
-          <div className="space-y-4 rounded-lg border border-white/10 bg-black/20 p-4">
+          <div className="space-y-4 rounded-2xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-4 dark:border-[#F1DCC4]/10 dark:bg-[#251810]">
             <RangeControl
               label={copy.zoom}
               min={1}
@@ -1277,7 +1717,7 @@ function ImageCropDialog({
         <DialogFooter>
           <Button
             type="button"
-            className="rounded-lg bg-[#F5B76D] text-[#23160E] hover:bg-[#FFD08B]"
+            className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
             onClick={onApply}
             disabled={!sourceImagePreview || isProcessingImage}
           >
@@ -1308,7 +1748,9 @@ function RangeControl({
     <label className="grid gap-2 text-sm font-medium">
       <span className="flex items-center justify-between gap-3">
         <span>{label}</span>
-        <span className="text-xs text-[#B99C7D]">{value.toFixed(step < 1 ? 2 : 0)}</span>
+        <span className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+          {value.toFixed(step < 1 ? 2 : 0)}
+        </span>
       </span>
       <input
         type="range"
@@ -1317,7 +1759,7 @@ function RangeControl({
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="h-2 w-full cursor-pointer accent-[#F5B76D]"
+        className="h-2 w-full cursor-pointer accent-[#AB6E3C]"
       />
     </label>
   );
@@ -1338,14 +1780,16 @@ function ToppingInputPanel({
   removeTopping: (id: string) => void;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
+    <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-white">{copy.toppings}</h2>
+        <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+          {copy.toppings}
+        </h2>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="rounded-lg border-white/15 bg-white/8 text-[#F8EEDF] hover:bg-white/14"
+          className="rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
           onClick={addTopping}
         >
           <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -1354,7 +1798,10 @@ function ToppingInputPanel({
       </div>
       <div className="mt-3 space-y-3">
         {toppings.map((topping) => (
-          <div key={topping.id} className="rounded-lg border border-white/10 bg-black/20 p-3">
+          <div
+            key={topping.id}
+            className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]"
+          >
             <div className="grid gap-2 sm:grid-cols-[1fr_0.45fr_auto]">
               <Input
                 value={topping.originalName}
@@ -1362,7 +1809,7 @@ function ToppingInputPanel({
                 onChange={(event) =>
                   updateTopping(topping.id, { originalName: event.target.value })
                 }
-                className="h-9 rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+                className="h-9 rounded-xl border-[#AB6E3C]/18 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]"
               />
               <Input
                 value={topping.price}
@@ -1372,7 +1819,7 @@ function ToppingInputPanel({
                 onChange={(event) =>
                   updateTopping(topping.id, { price: event.target.value })
                 }
-                className="h-9 rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+                className="h-9 rounded-xl border-[#AB6E3C]/18 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]"
               />
               <Button
                 type="button"
@@ -1399,13 +1846,17 @@ function SummaryList({
   rows: Array<{ label: string; value: string }>;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
-      <h2 className="text-sm font-semibold text-white">{title}</h2>
-      <div className="mt-3 divide-y divide-white/10 rounded-lg border border-white/10">
+    <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+      <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+        {title}
+      </h2>
+      <div className="mt-3 divide-y divide-[#AB6E3C]/10 rounded-xl border border-[#AB6E3C]/12 dark:divide-[#F1DCC4]/10 dark:border-[#F1DCC4]/10">
         {rows.map((row) => (
           <div key={row.label} className="flex justify-between gap-3 px-3 py-2 text-sm">
             <span>{row.label}</span>
-            <span className="text-[#D7BFA4]">{row.value}</span>
+            <span className="text-[#6F4D35] dark:text-[#F1DCC4]">
+              {row.value}
+            </span>
           </div>
         ))}
       </div>

@@ -185,14 +185,17 @@
     "title": "メニューアイテム",
     "tabs": {
       "basic": "基本情報",
+      "basicShort": "品目",
       "variants": "バリアント＆オプション",
-      "advanced": "詳細設定"
+      "variantsShort": "オプション",
+      "advanced": "詳細設定",
+      "advancedShort": "保存"
     },
     "buttons": {
       "save": "保存",
       "cancel": "キャンセル",
-      "previous": "← 前へ",
-      "next": "次へ →"
+      "previous": "前へ",
+      "next": "次へ"
     },
     "saving": "保存中...",
     "basic": {
@@ -216,6 +219,11 @@
       "uploadTitle": "クリックまたはドラッグしてファイルをアップロード",
       "uploadHint": "推奨: 600x400px、最大5MB",
       "chooseFileButton": "ファイルを選択",
+      "cropZoomLabel": "ズーム",
+      "cropHorizontalLabel": "左右",
+      "cropVerticalLabel": "上下",
+      "applyImageButton": "この画像を使う",
+      "imageProcessing": "処理中...",
       "aiContentTitle": "AI生成コンテンツ",
       "englishLabel": "英語",
       "englishNamePlaceholder": "英語アイテム名",

@@ -76,6 +76,8 @@ type ItemEditFormState = {
   price: string;
   image_url: string;
   available: boolean;
+  stock_level: string;
+  weekday_visibility: number[];
   useSizes: boolean;
   sizes: ItemSizeEditFormState[];
   toppings: ItemToppingEditFormState[];
@@ -309,6 +311,8 @@ function buildCopy(locale: string) {
       descriptions: "説明",
       image: "画像",
       imageUrl: "画像URL",
+      stock: "在庫",
+      schedule: "曜日",
       chooseImage: "画像を選択",
       cropImage: "画像を調整",
       applyImage: "画像を適用",
@@ -324,6 +328,7 @@ function buildCopy(locale: string) {
       small: "小サイズ",
       medium: "中サイズ",
       large: "大サイズ",
+      weekdays: ["月", "火", "水", "木", "金", "土", "日"],
     };
   }
 
@@ -399,6 +404,8 @@ function buildCopy(locale: string) {
       descriptions: "Mô tả",
       image: "Hình ảnh",
       imageUrl: "Link hình ảnh",
+      stock: "Tồn kho",
+      schedule: "Ngày bán",
       chooseImage: "Chọn ảnh",
       cropImage: "Căn hình ảnh",
       applyImage: "Dùng hình này",
@@ -414,6 +421,7 @@ function buildCopy(locale: string) {
       small: "Nhỏ",
       medium: "Vừa",
       large: "Lớn",
+      weekdays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
     };
   }
 
@@ -488,6 +496,8 @@ function buildCopy(locale: string) {
     descriptions: "Descriptions",
     image: "Image",
     imageUrl: "Image URL",
+    stock: "Stock",
+    schedule: "Days",
     chooseImage: "Choose image",
     cropImage: "Crop image",
     applyImage: "Use image",
@@ -503,6 +513,7 @@ function buildCopy(locale: string) {
     small: "Small",
     medium: "Medium",
     large: "Large",
+    weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   };
 }
 
@@ -727,6 +738,10 @@ export function ControlSharedMenuPanel({
       price: itemPrice,
       image_url: item.image_url ?? "",
       available: item.available,
+      stock_level: item.stock_level === null ? "" : String(item.stock_level),
+      weekday_visibility: item.weekday_visibility?.length
+        ? item.weekday_visibility
+        : [1, 2, 3, 4, 5, 6, 7],
       useSizes: item.sizes.length > 0,
       sizes:
         item.sizes.length > 0
@@ -871,6 +886,11 @@ export function ControlSharedMenuPanel({
             price: Number(itemForm.price || 0),
             image_url: itemForm.image_url.trim() || null,
             available: itemForm.available,
+            stock_level:
+              itemForm.stock_level.trim() === ""
+                ? null
+                : Number(itemForm.stock_level || 0),
+            weekday_visibility: itemForm.weekday_visibility,
             sizes: itemForm.useSizes
               ? itemForm.sizes
                   .filter((size) => size.size_key.trim() && size.name_en.trim())
@@ -1603,6 +1623,64 @@ export function ControlSharedMenuPanel({
                           }
                         />
                       </label>
+
+                      <label className="space-y-2 text-sm font-medium">
+                        <span>{copy.stock}</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={itemForm.stock_level}
+                          onChange={(event) =>
+                            setItemForm((current) =>
+                              current
+                                ? { ...current, stock_level: event.target.value }
+                                : current,
+                            )
+                          }
+                          className="h-10 rounded-lg border-white/10 bg-black/20 text-[#F8EEDF]"
+                        />
+                      </label>
+
+                      <div className="space-y-2 text-sm font-medium">
+                        <span>{copy.schedule}</span>
+                        <div className="flex flex-wrap gap-2">
+                          {copy.weekdays.map((weekday, index) => {
+                            const dayValue = index + 1;
+                            const selected =
+                              itemForm.weekday_visibility.includes(dayValue);
+                            return (
+                              <button
+                                key={weekday}
+                                type="button"
+                                className={cn(
+                                  "h-9 rounded-lg border px-3 text-sm transition-colors",
+                                  selected
+                                    ? "border-[#F5B76D] bg-[#F5B76D]/20 text-[#FFE8C4]"
+                                    : "border-white/10 bg-black/20 text-[#D7BFA4] hover:bg-white/10",
+                                )}
+                                onClick={() =>
+                                  setItemForm((current) => {
+                                    if (!current) return current;
+                                    const nextDays = selected
+                                      ? current.weekday_visibility.filter(
+                                          (day) => day !== dayValue,
+                                        )
+                                      : [...current.weekday_visibility, dayValue];
+                                    return {
+                                      ...current,
+                                      weekday_visibility: nextDays.sort(
+                                        (a, b) => a - b,
+                                      ),
+                                    };
+                                  })
+                                }
+                              >
+                                {weekday}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   </div>
 

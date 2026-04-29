@@ -108,6 +108,8 @@ export async function POST(req: NextRequest) {
         price: input.price,
         image_url: input.image_url ?? null,
         available: input.available,
+        weekday_visibility: input.weekday_visibility,
+        stock_level: input.stock_level,
         position: input.position,
         sizes: input.sizes,
         toppings: input.toppings,

@@ -1,95 +1,60 @@
 {
-  "title": "Đặt Bàn",
-  "submission_thank_you_title": "Đặt Bàn Thành Công!",
-  "book_table_button": "Đặt Bàn",
-  "submission_thank_you_message": "Việc đặt bàn của bạn đã được xác nhận thành công. Chúng tôi mong được đón tiếp bạn!",
+  "title": "Đặt chỗ",
+  "description": "Cho chúng tôi biết thời gian bạn muốn đến. Chi nhánh sẽ xác nhận đặt chỗ qua điện thoại hoặc email.",
+  "book_table_button": "Gửi yêu cầu đặt chỗ",
+  "process": {
+    "request": "1. Gửi yêu cầu",
+    "requestDescription": "Chọn thời gian ghé thăm và để lại thông tin liên hệ.",
+    "manager": "2. Quản lý xác nhận",
+    "managerDescription": "Chi nhánh kiểm tra chỗ trống, liên hệ lại nếu cần, rồi xác nhận hoặc hủy yêu cầu."
+  },
   "form": {
-    "validation_error_fill_fields": "Vui lòng điền đầy đủ các trường bắt buộc.",
-    "table_select_placeholder": "Chọn Bàn",
-    "table_capacity": "{count} người",
-    "name_placeholder": "Họ và Tên",
-    "contact_placeholder": "Số Điện Thoại hoặc Email",
-    "preorder_optional_title": "Đặt Món Trước (Tùy Chọn)",
-    "submit_button": "Xác Nhận Đặt Bàn",
-    "party_size_placeholder": "Số Lượng Người",
-    "date_label": "Ngày Đặt",
-    "time_label": "Giờ Đặt",
-    "special_requests_label": "Yêu Cầu Đặc Biệt",
-    "special_requests_placeholder": "Bất kỳ yêu cầu về chế độ ăn uống hoặc vị trí ngồi đặc biệt..."
-  },
-  "booking_details": {
-    "customer_name": "Tên Khách Hàng",
-    "contact_info": "Thông Tin Liên Hệ",
-    "party_size": "Số Lượng Người",
-    "booking_date": "Ngày",
-    "booking_time": "Giờ",
-    "table_info": "Thông Tin Bàn",
-    "special_requests": "Yêu Cầu Đặc Biệt",
-    "preorder_items": "Món Đặt Trước"
-  },
-  "table_selection": {
-    "available": "Còn Trống",
-    "occupied": "Đã Có Khách",
-    "reserved": "Đã Đặt",
-    "capacity": "Sức Chứa {count}",
-    "outdoor": "Ghế Ngoài Trời",
-    "accessible": "Phù Hợp Xe Lăn",
-    "window": "Cạnh Cửa Sổ",
-    "private": "Phòng Riêng"
-  },
-  "preorder": {
-    "title": "Đặt Món Trước",
-    "description": "Chọn các món bạn muốn đặt trước cho bàn của mình",
-    "add_item": "Thêm Vào Đơn Đặt Trước",
-    "remove_item": "Xóa Khỏi Đơn Đặt Trước",
-    "total": "Tổng Đơn Đặt Trước",
-    "no_items": "Chưa Có Món Đặt Trước"
-  },
-  "time_slots": {
-    "morning": "Buổi Sáng",
-    "afternoon": "Buổi Chiều",
-    "evening": "Buổi Tối",
-    "available": "Còn Trống",
-    "fully_booked": "Đã Đặt Hết",
-    "closed": "Đóng Cửa"
-  },
-  "validation": {
-    "name_required": "Tên là bắt buộc",
-    "contact_required": "Thông tin liên hệ là bắt buộc",
-    "party_size_required": "Số lượng người là bắt buộc",
-    "party_size_min": "Số lượng người phải ít nhất là 1",
-    "party_size_max": "Số lượng người không được vượt quá sức chứa của bàn",
-    "date_required": "Ngày đặt là bắt buộc",
-    "date_future": "Ngày đặt phải là trong tương lai",
-    "time_required": "Giờ đặt là bắt buộc",
-    "table_required": "Vui lòng chọn một bàn",
-    "email_or_phone": "Vui lòng cung cấp email hoặc số điện thoại"
-  },
-  "notifications": {
-    "booking_success": "Đặt bàn thành công!",
-    "booking_failed": "Không thể tạo đặt bàn. Vui lòng thử lại.",
-    "table_unavailable": "Bàn đã chọn không còn trống vào thời điểm này",
-    "restaurant_closed": "Nhà hàng đóng cửa vào thời điểm đã chọn"
+    "eyebrow": "Yêu cầu đặt chỗ",
+    "title": "Thông tin của bạn",
+    "validation_error_fill_fields": "Vui lòng kiểm tra các trường được đánh dấu.",
+    "name_label": "Tên",
+    "name_placeholder": "Họ và tên",
+    "phone_label": "Điện thoại",
+    "phone_placeholder": "+81 80 1234 5678",
+    "email_label": "Email",
+    "email_placeholder": "you@example.com",
+    "seats_label": "Số ghế",
+    "date_label": "Ngày",
+    "time_label": "Giờ",
+    "special_requests_label": "Tin nhắn",
+    "special_requests_placeholder": "Vị trí ngồi mong muốn, dị ứng, xe đẩy em bé hoặc điều cần báo cho quản lý.",
+    "submit_button": "Gửi yêu cầu đặt chỗ",
+    "submitting_button": "Đang gửi..."
   },
   "status": {
-    "pending": "Đang Chờ Xác Nhận",
-    "confirmed": "Đã Xác Nhận",
-    "canceled": "Đã Hủy",
-    "completed": "Đã Hoàn Thành"
+    "loading": "Đang kiểm tra trạng thái đặt chỗ...",
+    "currentReservation": "Đặt chỗ của bạn",
+    "pending": "Chờ quản lý xác nhận",
+    "confirmed": "Đã xác nhận đặt chỗ",
+    "canceled": "Đã hủy đặt chỗ",
+    "pendingDescription": "Yêu cầu đã được gửi tới chi nhánh. Quản lý sẽ gọi hoặc email để xác nhận giờ cuối cùng.",
+    "confirmedDescription": "Chi nhánh đã xác nhận đặt chỗ. Vui lòng đến đúng giờ đã xác nhận.",
+    "canceledDescription": "Chi nhánh chưa thể xác nhận yêu cầu này. Vui lòng gửi yêu cầu mới hoặc gọi trực tiếp cho chi nhánh.",
+    "seats": "{count} ghế",
+    "fetchError": "Không thể tải trạng thái đặt chỗ"
+  },
+  "validation": {
+    "name_required": "Vui lòng nhập tên.",
+    "phone_or_email_required": "Vui lòng nhập số điện thoại hoặc email.",
+    "phone_invalid": "Vui lòng nhập số điện thoại hợp lệ.",
+    "email_invalid": "Vui lòng nhập email hợp lệ.",
+    "party_size_min": "Số ghế phải ít nhất là 1.",
+    "date_required": "Vui lòng chọn ngày đặt chỗ.",
+    "date_future": "Vui lòng chọn hôm nay hoặc ngày trong tương lai.",
+    "time_required": "Vui lòng chọn giờ đặt chỗ."
+  },
+  "notifications": {
+    "booking_success": "Đã gửi yêu cầu đặt chỗ.",
+    "booking_failed": "Không thể gửi yêu cầu đặt chỗ. Vui lòng thử lại."
   },
   "actions": {
-    "modify_booking": "Sửa Đặt Bàn",
-    "cancel_booking": "Hủy Đặt Bàn",
-    "confirm_booking": "Xác Nhận Đặt Bàn"
-  },
-  "additional_form": {
-    "validation_error_fill_fields": "Vui lòng điền đầy đủ các trường bắt buộc.",
-    "table_select_placeholder": "Chọn Bàn",
-    "table_capacity": "{count} người",
-    "name_placeholder": "Họ và Tên",
-    "contact_placeholder": "Số Điện Thoại hoặc Email",
-    "preorder_optional_title": "Đặt Món Trước (Tùy Chọn)",
-    "submit_button": "Xác Nhận Đặt Bàn",
-    "party_size_placeholder": "Số Lượng Người"
+    "modify_booking": "Gửi yêu cầu khác",
+    "cancel_booking": "Hủy yêu cầu",
+    "confirm_booking": "Xác nhận đặt chỗ"
   }
 }

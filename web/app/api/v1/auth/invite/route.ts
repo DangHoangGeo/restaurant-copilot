@@ -7,7 +7,7 @@ import { USER_ROLES } from '@/lib/constants'; // Assuming a constants file for r
 // Define a schema for the request body
 const inviteUserSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
-  target_role: z.enum([USER_ROLES.EMPLOYEE, USER_ROLES.MANAGER, USER_ROLES.CHEF, USER_ROLES.SERVER, USER_ROLES.CASHIER, USER_ROLES.OWNER]), // Add other roles if they can be invited directly
+  target_role: z.enum([USER_ROLES.EMPLOYEE, USER_ROLES.MANAGER, USER_ROLES.CHEF, USER_ROLES.SERVER, USER_ROLES.CASHIER, USER_ROLES.PART_TIME, USER_ROLES.OWNER]), // Add other roles if they can be invited directly
 });
 
 // Define allowed roles for inviting users
