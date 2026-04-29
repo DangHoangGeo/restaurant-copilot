@@ -245,8 +245,7 @@ export function ControlPeopleClient({
         selectedEmployee.private_profile?.bank_branch_name ?? "",
       bank_account_type:
         selectedEmployee.private_profile?.bank_account_type ?? "",
-      bank_account_number:
-        selectedEmployee.private_profile?.bank_account_number ?? "",
+      bank_account_number: "",
       bank_account_holder:
         selectedEmployee.private_profile?.bank_account_holder ?? "",
       tax_social_number:
@@ -1155,8 +1154,9 @@ export function ControlPeopleClient({
                           ],
                           [
                             "Account number",
-                            selectedEmployee.private_profile
-                              ?.bank_account_number,
+                            selectedEmployee.private_profile?.bank_account_holder
+                              ? "••••••••"
+                              : undefined,
                           ],
                           [
                             "Account holder",

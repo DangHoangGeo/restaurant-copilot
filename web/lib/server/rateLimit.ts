@@ -11,8 +11,10 @@ if (process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN) {
     url: process.env.UPSTASH_REDIS_URL,
     token: process.env.UPSTASH_REDIS_TOKEN,
   });
+} else if (process.env.NODE_ENV === 'production') {
+  throw new Error('UPSTASH_REDIS_URL and UPSTASH_REDIS_TOKEN are required in production');
 } else {
-  console.warn('Upstash Redis environment variables not set. Falling back to in-memory rate limiting.');
+  console.warn('Rate limiting using in-memory store. Not suitable for production.');
 }
 
 /**

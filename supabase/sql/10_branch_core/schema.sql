@@ -52,8 +52,8 @@ CREATE TABLE public.bookings (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     restaurant_id uuid NOT NULL,
     table_id uuid,
-    customer_name text NOT NULL,
-    customer_contact text NOT NULL,
+    customer_name text,
+    customer_contact text,
     customer_phone text,
     customer_email text,
     customer_note text,
@@ -63,11 +63,14 @@ CREATE TABLE public.bookings (
     preorder_items jsonb DEFAULT '[]'::jsonb,
     public_lookup_token uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     status text DEFAULT 'pending'::text NOT NULL,
+    pii_expires_at date GENERATED ALWAYS AS ((booking_date + 180)) STORED,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
     CONSTRAINT bookings_party_size_check CHECK ((party_size > 0)),
     CONSTRAINT bookings_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'canceled'::text])))
 );
+
+COMMENT ON COLUMN public.bookings.pii_expires_at IS 'Date after which customer booking personal data should be purged by the scheduled cleanup function.';
 
 CREATE TABLE public.categories (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
@@ -119,7 +122,7 @@ CREATE TABLE public.employee_private_profiles (
     bank_name text,
     bank_branch_name text,
     bank_account_type text,
-    bank_account_number text,
+    bank_account_number_encrypted bytea,
     bank_account_holder text,
     tax_social_number text,
     insurance_number text,
@@ -127,6 +130,8 @@ CREATE TABLE public.employee_private_profiles (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
+
+COMMENT ON COLUMN public.employee_private_profiles.bank_account_number_encrypted IS 'Encrypted employee bank account number. Decrypt only through authorized helper functions.';
 
 CREATE TABLE public.feedback (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,

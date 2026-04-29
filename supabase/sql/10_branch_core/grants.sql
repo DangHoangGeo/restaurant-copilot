@@ -11,4 +11,6 @@ GRANT EXECUTE ON FUNCTION public.verify_order_session_passcode(uuid, text) TO se
 GRANT EXECUTE ON FUNCTION public.add_item_to_order(uuid, uuid, integer, text, uuid, uuid[]) TO service_role;
 GRANT EXECUTE ON FUNCTION public.update_order_item_status(uuid, uuid, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.calculate_order_total(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.get_employee_bank_account(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.set_employee_bank_account(uuid, text, uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.get_daily_sales_analytics(uuid, date) TO service_role;

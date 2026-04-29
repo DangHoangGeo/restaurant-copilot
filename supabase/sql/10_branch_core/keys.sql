@@ -90,6 +90,8 @@ CREATE INDEX idx_analytics_restaurant_date_range ON public.analytics_snapshots U
 
 CREATE INDEX idx_bookings_restaurant_date ON public.bookings USING btree (restaurant_id, booking_date);
 
+CREATE INDEX idx_bookings_pii_expiry ON public.bookings USING btree (pii_expires_at) WHERE (pii_expires_at IS NOT NULL);
+
 CREATE INDEX idx_bookings_restaurant_public_lookup_token ON public.bookings USING btree (restaurant_id, public_lookup_token);
 
 CREATE INDEX idx_categories_restaurant_org_menu_category ON public.categories USING btree (restaurant_id, organization_menu_category_id);

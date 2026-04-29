@@ -5,3 +5,7 @@ verify_jwt = false
 
 [functions.trial-notifications]
 verify_jwt = false
+
+[functions.purge-expired-booking-pii]
+verify_jwt = false
+schedule = "0 18 * * *"
