@@ -1,0 +1,90 @@
+
+> web@0.1.0 dev /app/web
+> next dev --turbopack
+
+[@sentry/nextjs] WARNING: You are using the Sentry SDK with Turbopack. The Sentry SDK is compatible with Turbopack on Next.js version 15.4.1 or later. You are currently on 15.3.9. Please upgrade to a newer Next.js version to use the Sentry SDK with Turbopack.
+   ▲ Next.js 15.3.9 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+   - Experiments (use with caution):
+     · clientTraceMetadata
+
+ ✓ Starting...
+[@sentry/nextjs] WARNING: You are using the Sentry SDK with Turbopack. The Sentry SDK is compatible with Turbopack on Next.js version 15.4.1 or later. You are currently on 15.3.9. Please upgrade to a newer Next.js version to use the Sentry SDK with Turbopack.
+ ○ Compiling instrumentation Node.js ...
+ ✓ Compiled instrumentation Node.js in 2.4s
+ ○ Compiling instrumentation Edge ...
+ ✓ Compiled instrumentation Edge in 819ms
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 702ms
+[@sentry/nextjs] WARNING: You are using the Sentry SDK with Turbopack. The Sentry SDK is compatible with Turbopack on Next.js version 15.4.1 or later. You are currently on 15.3.9. Please upgrade to a newer Next.js version to use the Sentry SDK with Turbopack.
+ ✓ Ready in 6.3s
+[@sentry/nextjs] WARNING: You are using the Sentry SDK with Turbopack. The Sentry SDK is compatible with Turbopack on Next.js version 15.4.1 or later. You are currently on 15.3.9. Please upgrade to a newer Next.js version to use the Sentry SDK with Turbopack.
+ ⨯ Error: Missing Supabase environment variables.
+    at [project]/lib/supabaseAdmin.ts [middleware-edge] (ecmascript) (lib/supabaseAdmin.ts:7:8)
+    at [project]/middleware.ts [middleware-edge] (ecmascript) (middleware.ts:6:0)
+   5 |
+   6 | if (!supabaseUrl || !supabaseServiceRoleKey) {
+>  7 |   throw new Error("Missing Supabase environment variables.");
+     |        ^
+   8 | }
+   9 |
+  10 | export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+ ⚠ ./node_modules/.pnpm/@opentelemetry+instrumentation@0.207.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node
+Package import-in-the-middle can't be external
+The request import-in-the-middle matches serverExternalPackages (or the default list).
+The request could not be resolved by Node.js from the project directory.
+Packages that should be external need to be installed in the project directory, so they can be resolved from the output files.
+Try to install it into the project directory by running npm install import-in-the-middle from the project directory.
+
+
+ ⚠ ./node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node
+Package import-in-the-middle can't be external
+The request import-in-the-middle matches serverExternalPackages (or the default list).
+The request could not be resolved by Node.js from the project directory.
+Packages that should be external need to be installed in the project directory, so they can be resolved from the output files.
+Try to install it into the project directory by running npm install import-in-the-middle from the project directory.
+
+
+ ⚠ ./node_modules/.pnpm/@opentelemetry+instrumentation@0.214.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node
+Package import-in-the-middle can't be external
+The request import-in-the-middle matches serverExternalPackages (or the default list).
+The request could not be resolved by Node.js from the project directory.
+Packages that should be external need to be installed in the project directory, so they can be resolved from the output files.
+Try to install it into the project directory by running npm install import-in-the-middle from the project directory.
+
+
+ ⚠ ./node_modules/.pnpm/@sentry+node-core@10.51.0_@opentelemetry+api@1.9.1_@opentelemetry+core@2.7.1_@opentelem_a0d33439c2817b8f0c663908cfddeb2c/node_modules/@sentry/node-core/build/cjs/sdk
+Package import-in-the-middle can't be external
+The request import-in-the-middle matches serverExternalPackages (or the default list).
+The request could not be resolved by Node.js from the project directory.
+Packages that should be external need to be installed in the project directory, so they can be resolved from the output files.
+Try to install it into the project directory by running npm install import-in-the-middle from the project directory.
+
+
+ ⚠ ./node_modules/.pnpm/@opentelemetry+instrumentation@0.207.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node
+Package require-in-the-middle can't be external
+The request require-in-the-middle matches serverExternalPackages (or the default list).
+The request could not be resolved by Node.js from the project directory.
+Packages that should be external need to be installed in the project directory, so they can be resolved from the output files.
+Try to install it into the project directory by running npm install require-in-the-middle from the project directory.
+
+
+ ⚠ ./node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node
+Package require-in-the-middle can't be external
+The request require-in-the-middle matches serverExternalPackages (or the default list).
+The request could not be resolved by Node.js from the project directory.
+Packages that should be external need to be installed in the project directory, so they can be resolved from the output files.
+Try to install it into the project directory by running npm install require-in-the-middle from the project directory.
+
+
+ ⚠ ./node_modules/.pnpm/@opentelemetry+instrumentation@0.214.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node
+Package require-in-the-middle can't be external
+The request require-in-the-middle matches serverExternalPackages (or the default list).
+The request could not be resolved by Node.js from the project directory.
+Packages that should be external need to be installed in the project directory, so they can be resolved from the output files.
+Try to install it into the project directory by running npm install require-in-the-middle from the project directory.
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1555ms
