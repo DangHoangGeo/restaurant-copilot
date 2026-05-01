@@ -161,7 +161,6 @@ export function CompactFoodCard({
             style={{
               backgroundColor: "var(--co-menu-price-bg)",
             }}
-            aria-label={priceText}
           >
             {priceText}
           </p>
@@ -188,7 +187,7 @@ export function CompactFoodCard({
           type="button"
           onClick={onCardClick}
           className="absolute inset-0 z-10 rounded-[18px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--co-menu-focus-offset)]"
-          aria-label={itemName}
+          aria-label={`${tMenu("food_card.view_details")}: ${itemName}`}
         />
 
         <div className="pointer-events-none relative z-20 min-h-[100px] space-y-2 bg-[var(--co-menu-card-footer)] px-4 pb-4 pt-3 pr-12 md:px-4 md:pb-4 md:pr-12">
