@@ -327,6 +327,7 @@ export function SmartMenu({
   );
   const safeBrandColor = customerTheme.primary;
   const itemDetailRequestRef = useRef(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Data fetching hooks
   const {
@@ -918,28 +919,39 @@ export function SmartMenu({
       <div className="relative z-20 px-4 pb-3 md:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <label className="relative flex h-12 items-center rounded-[16px] border border-[var(--co-menu-chip-border)] bg-[var(--co-menu-chip)] px-4 shadow-[0_18px_40px_-34px_rgba(0,0,0,0.72)] backdrop-blur-xl">
-            <Search className="h-4 w-4 shrink-0 text-[var(--co-menu-muted)]" />
+            <Search
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-[var(--co-menu-muted)]"
+            />
             <input
+              ref={searchInputRef}
               value={searchTerm}
               onChange={(event) => {
                 setSearchTerm(event.target.value);
                 setHasUserInteracted(true);
               }}
               placeholder={tMenu("search_placeholder")}
+              aria-label={tMenu("search_placeholder")}
               className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-[var(--co-menu-text)] outline-none placeholder:text-[var(--co-menu-muted)]"
               type="search"
             />
             {searchTerm ? (
               <button
                 type="button"
-                onClick={() => setSearchTerm("")}
+                onClick={() => {
+                  setSearchTerm("");
+                  searchInputRef.current?.focus();
+                }}
                 className="mr-1 rounded-full px-2 py-1 text-xs font-semibold text-[var(--co-menu-muted)] transition-colors hover:text-[var(--co-menu-text)]"
               >
                 {tMenu("clear_search")}
               </button>
             ) : null}
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[11px] border border-[var(--co-menu-chip-border)] bg-[var(--co-menu-subtle)] text-[var(--co-menu-text)]">
-              <SlidersHorizontal className="h-4 w-4" />
+              <SlidersHorizontal
+                aria-hidden="true"
+                className="h-4 w-4"
+              />
             </span>
           </label>
         </div>
@@ -958,6 +970,7 @@ export function SmartMenu({
                 setHasUserInteracted(true);
               }}
               className="flex h-9 shrink-0 items-center gap-1.5 rounded-[12px] border border-[var(--co-menu-chip-border)] px-3 text-[11px] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)]"
+              aria-pressed={!activeCategoryFilter}
               style={
                 !activeCategoryFilter
                   ? {
@@ -996,6 +1009,7 @@ export function SmartMenu({
                     setHasUserInteracted(true);
                   }}
                   className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[12px] border border-[var(--co-menu-chip-border)] px-3 text-[11px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--co-menu-accent)]"
+                  aria-pressed={isActive}
                   style={
                     isActive
                       ? {
@@ -1035,6 +1049,7 @@ export function SmartMenu({
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <Button
                 variant={activeSmartCategory === "all" ? "default" : "outline"}
+                aria-pressed={activeSmartCategory === "all"}
                 onClick={() => {
                   setActiveSmartCategory("all");
                   setHasUserInteracted(true);
@@ -1066,6 +1081,7 @@ export function SmartMenu({
                   <Button
                     key={categoryKey}
                     variant={isActive ? "default" : "outline"}
+                    aria-pressed={isActive}
                     onClick={() => {
                       setActiveSmartCategory(categoryKey);
                       setHasUserInteracted(true);
