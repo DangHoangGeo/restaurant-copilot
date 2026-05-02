@@ -5,8 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import {
   AlertTriangle,
   CheckCircle2,
-  Eye,
-  EyeOff,
   ImageOff,
   Layers3,
   Pencil,
@@ -407,7 +405,6 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showMissingImagesOnly, setShowMissingImagesOnly] = useState(false);
-  const [showSharedCategories, setShowSharedCategories] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
@@ -604,20 +601,12 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     [menuRows],
   );
 
-  const branchCategories = useMemo(
+  const selectedCategory = useMemo(
     () =>
-      (workspace?.categories ?? []).filter(
-        (category) => category.source === "branch",
-      ),
-    [workspace?.categories],
-  );
-
-  const sharedCategories = useMemo(
-    () =>
-      (workspace?.categories ?? []).filter(
-        (category) => category.source === "organization",
-      ),
-    [workspace?.categories],
+      (workspace?.categories ?? []).find(
+        (category) => category.id === selectedCategoryId,
+      ) ?? null,
+    [workspace?.categories, selectedCategoryId],
   );
 
   const handleTranslate = async (
@@ -992,162 +981,6 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
     );
   };
 
-  const renderCategorySection = ({
-    title,
-    categories,
-    emptyMessage,
-    description,
-    isOpen = true,
-    onToggle,
-  }: {
-    title: string;
-    categories: WorkspaceCategory[];
-    emptyMessage: string;
-    description?: string;
-    isOpen?: boolean;
-    onToggle?: () => void;
-  }) => (
-    <div className="overflow-hidden rounded-xl border border-[#AB6E3C]/12 dark:border-[#F1DCC4]/10">
-      <div className="flex items-start justify-between gap-3 border-b border-[#AB6E3C]/10 bg-[#F5EAD8]/64 px-3 py-2.5 dark:border-[#F1DCC4]/10 dark:bg-[#2B1A10]/70">
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
-            {title}
-          </h3>
-          {description ? (
-            <p className="mt-1 text-xs leading-5 text-[#8B6E5A] dark:text-[#C9B7A0]">
-              {description}
-            </p>
-          ) : null}
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Badge className="rounded-md border border-[#AB6E3C]/14 bg-[#FFF7E9] text-[#6F4D35] hover:bg-[#FFF7E9] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F1DCC4]">
-            {categories.length}
-          </Badge>
-          {onToggle ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-lg border-[#AB6E3C]/20 bg-[#FEFAF6] px-2 text-xs text-[#6F4D35] hover:bg-[#FFF7E9] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
-              onClick={onToggle}
-            >
-              {isOpen ? (
-                <EyeOff className="h-3.5 w-3.5" />
-              ) : (
-                <Eye className="h-3.5 w-3.5" />
-              )}
-              {isOpen ? copy.hide : copy.show}
-            </Button>
-          ) : null}
-        </div>
-      </div>
-      {isOpen ? (
-        <div className="max-h-[220px] overflow-y-auto xl:max-h-[340px]">
-        <table className="w-full table-fixed text-left text-sm">
-          <tbody className="divide-y divide-[#AB6E3C]/10 dark:divide-[#F1DCC4]/10">
-            {categories.length > 0 ? (
-              categories.map((category) => {
-                const isSelected = selectedCategoryId === category.id;
-                const isEmptyCompanyCategory =
-                  category.source === "organization" &&
-                  category.menu_items.length === 0;
-
-                return (
-                  <tr
-                    key={category.id}
-                    className={cn(
-                      "transition-colors",
-                      isSelected && !isEmptyCompanyCategory
-                        ? "bg-[#2E2117] text-[#FFF7E9] dark:bg-[#F1DCC4] dark:text-[#170F0C]"
-                        : isEmptyCompanyCategory
-                          ? "bg-[#FEFAF6]/42 text-[#B89078] dark:bg-[#2B1A10]/30 dark:text-[#8B6E5A]"
-                          : "bg-[#FEFAF6]/62 hover:bg-[#F5EAD8]/75 dark:bg-[#2B1A10]/45 dark:hover:bg-[#332116]",
-                    )}
-                  >
-                    {category.source === "branch" ? (
-                      <>
-                        <td className="p-0">
-                          <button
-                            type="button"
-                            className="block w-full min-w-0 px-3 py-3 text-left font-medium leading-5 text-inherit transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AB6E3C]/30"
-                            onClick={() => setSelectedCategoryId(category.id)}
-                          >
-                            {localizeEntry(category, locale)}
-                          </button>
-                        </td>
-                        <td className="w-[148px] px-3 py-3 text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              title={copy.edit}
-                              className={cn(
-                                "h-8 rounded-lg px-2 text-xs",
-                                isSelected
-                                  ? "text-[#FFF7E9] hover:bg-white/10 hover:text-[#FFF7E9] dark:text-[#170F0C] dark:hover:bg-[#EBD9C4] dark:hover:text-[#170F0C]"
-                                  : "text-[#6F4D35] hover:bg-[#F5EAD8] hover:text-[#2E2117] dark:text-[#F1DCC4] dark:hover:bg-[#332116] dark:hover:text-[#F7F1E9]",
-                              )}
-                              onClick={() => openEditCategoryDialog(category)}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                              {copy.edit}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              title={copy.remove}
-                              className={cn(
-                                "h-8 rounded-lg px-2 text-xs disabled:text-[#B89078]",
-                                isSelected
-                                  ? "text-[#FFD7CC] hover:bg-white/10 hover:text-white dark:text-[#7A1F16] dark:hover:bg-[#EBD9C4] dark:hover:text-[#7A1F16]"
-                                  : "text-[#B42318] hover:bg-[#FDECEC] hover:text-[#B42318] dark:text-[#FFB4A8] dark:hover:bg-[#7A1F16]/18 dark:hover:text-[#FFB4A8]",
-                              )}
-                              disabled={category.menu_items.length > 0}
-                              onClick={() => handleDeleteCategory(category)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              {copy.remove}
-                            </Button>
-                          </div>
-                        </td>
-                      </>
-                    ) : (
-                      <td className="p-0" colSpan={2}>
-                        <button
-                          type="button"
-                          className={cn(
-                            "block w-full min-w-0 px-3 py-3 text-left font-medium leading-5 text-inherit transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AB6E3C]/30",
-                            isEmptyCompanyCategory
-                              ? "cursor-not-allowed opacity-70"
-                              : "cursor-pointer",
-                          )}
-                          disabled={isEmptyCompanyCategory}
-                          onClick={() => setSelectedCategoryId(category.id)}
-                        >
-                          {localizeEntry(category, locale)}
-                        </button>
-                      </td>
-                    )}
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td
-                  colSpan={2}
-                  className="px-3 py-8 text-center text-sm text-[#8B6E5A] dark:text-[#C9B7A0]"
-                >
-                  {emptyMessage}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        </div>
-      ) : null}
-    </div>
-  );
-
   const renderMenuItemsSection = ({
     title,
     rows,
@@ -1437,37 +1270,7 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="space-y-3 rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-3 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72 sm:p-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
-              {copy.categories}
-            </h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="rounded-xl border-[#AB6E3C]/20 bg-[#FEFAF6] text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10] dark:text-[#F1DCC4]"
-              onClick={openCreateCategoryDialog}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {renderCategorySection({
-            title: copy.branchCategoriesTitle,
-            categories: branchCategories,
-            emptyMessage: copy.branchCategoriesEmpty,
-          })}
-          {renderCategorySection({
-            title: copy.sharedCategoriesTitle,
-            categories: sharedCategories,
-            emptyMessage: copy.sharedCategoriesEmpty,
-            isOpen: showSharedCategories,
-            onToggle: () => setShowSharedCategories((current) => !current),
-          })}
-        </aside>
-
+      <section className="space-y-4">
         <div className="space-y-4">
           <section className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-3 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72 sm:p-4">
             <div className="space-y-2.5">
@@ -1559,6 +1362,41 @@ export function MenuClientContent({ branchId }: MenuClientContentProps) {
                   </span>
                 </Button>
               </div>
+              {selectedCategory?.source === "branch" ? (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] px-3 py-2 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
+                      {localizeEntry(selectedCategory, locale)}
+                    </p>
+                    <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                      {selectedCategory.menu_items.length} {copy.itemCount}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-lg border-[#AB6E3C]/20 bg-[#FFF7E9] px-2 text-xs text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]"
+                      onClick={() => openEditCategoryDialog(selectedCategory)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      {copy.edit}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-lg border-[#B42318]/20 bg-[#FFF7E9] px-2 text-xs text-[#B42318] hover:bg-[#FDECEC] dark:border-[#FFB4A8]/20 dark:bg-[#2B1A10]/80 dark:text-[#FFB4A8] dark:hover:bg-[#7A1F16]/18"
+                      disabled={selectedCategory.menu_items.length > 0}
+                      onClick={() => handleDeleteCategory(selectedCategory)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {copy.remove}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </section>
 

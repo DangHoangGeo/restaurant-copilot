@@ -63,6 +63,10 @@ export async function PATCH(
       ? { description_vi: input.data.description_vi || null }
       : {}),
     ...(input.data.price !== undefined ? { price: input.data.price } : {}),
+    ...(input.data.tags !== undefined ? { tags: input.data.tags } : {}),
+    ...(input.data.prep_station !== undefined
+      ? { prep_station: input.data.prep_station }
+      : {}),
     ...(input.data.image_url !== undefined
       ? { image_url: input.data.image_url ?? null }
       : {}),

@@ -12,6 +12,12 @@
   "itemsView": "Danh sách gọi món",
   "tableView": "Bảng",
   "orderView": "Danh sách đơn",
+  "station": {
+    "all": "Tất cả",
+    "food": "Món ăn",
+    "drink": "Đồ uống",
+    "other": "Khác"
+  },
   "searchOrdersOrId": "Tìm theo bàn, mã đơn (6 ký tự cuối)...",
   "orderTime": "Thời gian đặt",
   "totalAmount": "Tổng tiền",

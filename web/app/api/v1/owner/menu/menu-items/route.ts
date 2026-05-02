@@ -36,6 +36,7 @@ const menuItemSchema = z.object({
   description_ja: z.string().max(500).optional(),
   description_vi: z.string().max(500).optional(),
   tags: z.array(z.string().min(1).max(100)).optional(),
+  prep_station: z.enum(["food", "drink", "other"]).optional(),
   price: z.number().min(0),
   image_url: z.string().url().optional().nullable(),
   available: z.boolean().optional(),
@@ -88,6 +89,8 @@ export async function GET(req: Request) {
         description_ja,
         description_vi,
         price,
+        tags,
+        prep_station,
         image_url,
         available,
         weekday_visibility,
@@ -176,6 +179,7 @@ export async function POST(req: Request) {
       description_ja,
       description_vi,
       tags,
+      prep_station,
       price,
       image_url,
       available,
@@ -202,19 +206,17 @@ export async function POST(req: Request) {
       restaurant_id: restaurantId,
       category_id,
       name_en,
+      name_ja: name_ja?.trim() || name_en,
+      name_vi: name_vi?.trim() || name_en,
       price,
       available: available ?? true,
+      tags: tags ?? [],
+      prep_station: prep_station ?? "food",
       weekday_visibility: weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
       position: position ?? 0,
     };
 
     // Add optional fields if they are provided
-    if (name_ja !== undefined && name_ja.trim() !== '') {
-      menuItemData.name_ja = name_ja;
-    }
-    if (name_vi !== undefined && name_vi.trim() !== '') {
-      menuItemData.name_vi = name_vi;
-    }
     if (description_en !== undefined && description_en.trim() !== '') {
       menuItemData.description_en = description_en;
     }
@@ -229,9 +231,6 @@ export async function POST(req: Request) {
     }
     if (stock_level !== undefined) {
       menuItemData.stock_level = stock_level;
-    }
-    if (tags && tags.length > 0) {
-      menuItemData.tags = tags;
     }
 
     // Start a transaction to create menu item and its related data
@@ -257,8 +256,8 @@ export async function POST(req: Request) {
         restaurant_id: restaurantId,
         menu_item_id: menuItemId,
         name_en: topping.name_en,
-        name_ja: topping.name_ja || topping.name_en,
-        name_vi: topping.name_vi || topping.name_en,
+        name_ja: topping.name_ja?.trim() || topping.name_en,
+        name_vi: topping.name_vi?.trim() || topping.name_en,
         price: topping.price,
         position: topping.position ?? index,
       }));
@@ -286,8 +285,8 @@ export async function POST(req: Request) {
         menu_item_id: menuItemId,
         size_key: size.size_key,
         name_en: size.name_en,
-        name_ja: size.name_ja || size.name_en,
-        name_vi: size.name_vi || size.name_en,
+        name_ja: size.name_ja?.trim() || size.name_en,
+        name_vi: size.name_vi?.trim() || size.name_en,
         price: size.price,
         position: size.position ?? index,
       }));

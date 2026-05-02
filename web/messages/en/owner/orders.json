@@ -12,6 +12,12 @@
   "itemsView": "Items View",
   "tableView": "Table View",
   "orderView": "Order View",
+  "station": {
+    "all": "All",
+    "food": "Food",
+    "drink": "Drinks",
+    "other": "Other"
+  },
   "searchOrdersOrId": "Search by table, order ID (last 6 chars)...",
   "orderTime": "Order Time",
   "totalAmount": "Total Amount",

@@ -1292,6 +1292,14 @@
 
 // MARK: - Kitchen Live Label
 "kitchen_live_label" = "live kitchen";
+"kitchen_station_all" = "All";
+"kitchen_station_food" = "Food";
+"kitchen_station_drink" = "Drinks";
+"kitchen_station_other" = "Other";
+"kitchen_station_filter_hint" = "Double tap to focus this kitchen device on this station.";
+"menu_prep_station_food" = "Food";
+"menu_prep_station_drink" = "Drinks";
+"menu_prep_station_other" = "Other";
 
 // MARK: - Timeout Error
 "timeout_error" = "Request timed out";

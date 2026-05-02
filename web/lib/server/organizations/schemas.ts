@@ -180,6 +180,13 @@ const organizationSharedMenuItemToppingSchema = z.object({
   position: z.number().int().min(0).optional(),
 });
 
+const menuItemTagSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(40)
+  .regex(/^[\p{L}\p{N}_ -]+$/u, "Tags can use letters, numbers, spaces, hyphens, and underscores");
+
 const onboardingSharedMenuCategorySchema = z.object({
   name_en: z.string().min(1, "Category name is required").max(100),
   name_ja: z.string().max(100).nullable().optional(),
@@ -195,6 +202,8 @@ export const organizationSharedMenuItemSchema = z.object({
   description_ja: z.string().max(500).optional().or(z.literal("")),
   description_vi: z.string().max(500).optional().or(z.literal("")),
   price: z.number().min(0),
+  tags: z.array(menuItemTagSchema).max(16).optional(),
+  prep_station: z.enum(["food", "drink", "other"]).optional(),
   image_url: z.string().url("Invalid image URL").nullable().optional(),
   available: z.boolean().optional(),
   weekday_visibility: z.array(z.number().int().min(1).max(7)).optional(),

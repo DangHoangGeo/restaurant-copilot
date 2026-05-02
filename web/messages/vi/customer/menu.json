@@ -38,6 +38,22 @@
     "drinks": "Đồ uống",
     "jump_to": "Đi tới"
   },
+  "smart": {
+    "perfect_for_you": "Gợi ý phù hợp",
+    "perfect_for_you_description": "Món được ưu tiên theo thời điểm, số khách và xu hướng bán của chi nhánh.",
+    "customer_favorites": "Món khách hay chọn",
+    "customer_favorites_description": "Những món thường được khách gọi lại.",
+    "breakfast": "Hợp cho buổi sáng",
+    "breakfast_description": "Món nhẹ và đồ uống cho buổi sáng.",
+    "lunch": "Hợp cho bữa trưa",
+    "lunch_description": "Set trưa, món nhanh và món chính.",
+    "afternoon": "Hợp cho buổi chiều",
+    "afternoon_description": "Món nhẹ, đồ ngọt và đồ uống.",
+    "dinner": "Hợp cho bữa tối",
+    "dinner_description": "Món chính, set menu và món dễ chia sẻ.",
+    "late": "Hợp cho giờ muộn",
+    "late_description": "Món nhẹ, đơn giản và hợp với đồ uống."
+  },
   "no_items_found": "Không tìm thấy món nào trong danh mục này.",
   "item_load_error_title": "Không thể mở món này",
   "item_load_error_description": "Không thể tải tùy chọn của món này. Vui lòng thử lại.",

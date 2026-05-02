@@ -30,6 +30,7 @@ const streamlinedMenuItemSchema = z.object({
   imageFile: z.instanceof(File).optional().nullable(),
   image_url: z.string().optional(),
   tags: z.array(z.string()).optional(), // AI-generated food tags
+  prep_station: z.enum(["food", "drink", "other"]).optional(),
   
   // Variants & Options Tab (Optional)
   toppings: z.array(z.object({
@@ -140,6 +141,7 @@ export function ItemModal({
       toppings: [],
       sizes: [],
       tags: [],
+      prep_station: 'food',
       position: 0,
       imageFile: null,
     },
@@ -165,6 +167,7 @@ export function ItemModal({
         toppings: initialData?.toppings || [],
         sizes: initialData?.menu_item_sizes || [],
         tags: initialData?.tags || [],
+        prep_station: initialData?.prep_station || 'food',
         position: initialData?.position || 0,
         imageFile: null,
       };

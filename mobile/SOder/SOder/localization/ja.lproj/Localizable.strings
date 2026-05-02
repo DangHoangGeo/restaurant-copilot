@@ -1225,6 +1225,14 @@
 
 // MARK: - Kitchen Live Label
 "kitchen_live_label" = "ライブキッチン";
+"kitchen_station_all" = "すべて";
+"kitchen_station_food" = "フード";
+"kitchen_station_drink" = "ドリンク";
+"kitchen_station_other" = "その他";
+"kitchen_station_filter_hint" = "ダブルタップして、この端末をこの担当に絞り込みます。";
+"menu_prep_station_food" = "フード";
+"menu_prep_station_drink" = "ドリンク";
+"menu_prep_station_other" = "その他";
 
 // MARK: - Timeout Error
 "timeout_error" = "リクエストがタイムアウトしました";

@@ -23,6 +23,65 @@ enum KitchenViewMode: String, CaseIterable {
     }
 }
 
+enum KitchenStationFocus: String, CaseIterable {
+    case all
+    case food
+    case drink
+    case other
+
+    var displayName: String {
+        switch self {
+        case .all:
+            return "kitchen_station_all".localized
+        case .food:
+            return "kitchen_station_food".localized
+        case .drink:
+            return "kitchen_station_drink".localized
+        case .other:
+            return "kitchen_station_other".localized
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .all:
+            return "square.grid.2x2"
+        case .food:
+            return "fork.knife"
+        case .drink:
+            return "cup.and.saucer"
+        case .other:
+            return "shippingbox"
+        }
+    }
+
+    func includes(_ orderItem: OrderItem) -> Bool {
+        switch self {
+        case .all:
+            return true
+        case .food:
+            return orderItem.prepStation == .food
+        case .drink:
+            return orderItem.prepStation == .drink
+        case .other:
+            return orderItem.prepStation == .other
+        }
+    }
+}
+
+extension MenuPrepStation {
+    var stationFocus: KitchenStationFocus {
+        switch self {
+        case .food:
+            return .food
+        case .drink:
+            return .drink
+        case .other:
+            return .other
+        }
+    }
+}
+
 struct CategoryGroup: Identifiable {
     let id = UUID()
     let categoryName: String
@@ -101,7 +160,10 @@ struct GroupedItem: Identifiable, Equatable, Hashable {
 }
 
 struct KitchenGroupingEngine {
-    static func buildCategoryGroups(from orders: [Order]) -> [CategoryGroup] {
+    static func buildCategoryGroups(
+        from orders: [Order],
+        stationFocus: KitchenStationFocus = .all
+    ) -> [CategoryGroup] {
         var groupedItemsByKey: [String: GroupedItem] = [:]
 
         let sortedOrders = orders.sorted { lhs, rhs in
@@ -112,6 +174,7 @@ struct KitchenGroupingEngine {
             for orderItem in order.order_items ?? [] {
                 guard let menuItem = orderItem.menu_item else { continue }
                 guard KitchenBoardConfig.visibleStatuses.contains(orderItem.status) else { continue }
+                guard stationFocus.includes(orderItem) else { continue }
 
                 let itemTime = date(from: orderItem.created_at)
                 let groupingKey = itemGroupingKey(menuItem: menuItem, orderItem: orderItem)

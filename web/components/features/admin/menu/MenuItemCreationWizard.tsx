@@ -36,6 +36,7 @@ import { createClient } from "@/lib/supabase/client";
 import { optimizeMenuImageFile } from "@/lib/client/menu-image-processing";
 
 type PrimaryLanguage = "en" | "ja" | "vi";
+type PrepStation = "food" | "drink" | "other";
 
 interface WizardCategory {
   id: string;
@@ -79,6 +80,21 @@ const SIZE_KEY_NAMES: Record<string, string> = {
   L: "Large",
   XL: "Extra Large",
 };
+
+const RECOMMENDATION_TAGS = [
+  "breakfast",
+  "lunch",
+  "afternoon",
+  "dinner",
+  "late",
+  "set_menu",
+  "main_dish",
+  "best_seller",
+  "quick",
+  "sharing",
+  "drink",
+  "dessert",
+] as const;
 
 function createEmptyTranslations(): LocalizedFields {
   return { en: "", ja: "", vi: "" };
@@ -148,6 +164,11 @@ function buildLocaleCopy(locale: string) {
       sharedSavedMessage: "共有メニューを追加しました。",
       sharedScopeTitle: "会社の共有メニュー",
       sharedScopeDescription: "保存後、継承対象の支店メニューへ同期されます。",
+      station: "提供先",
+      foodStation: "キッチン",
+      drinkStation: "ドリンク",
+      otherStation: "その他",
+      recommendationTags: "おすすめタグ",
     };
   }
 
@@ -198,6 +219,11 @@ function buildLocaleCopy(locale: string) {
       sharedScopeTitle: "Thực đơn dùng chung của công ty",
       sharedScopeDescription:
         "Sau khi lưu, món sẽ đồng bộ tới các chi nhánh đang kế thừa.",
+      station: "Khu chuẩn bị",
+      foodStation: "Bếp món ăn",
+      drinkStation: "Quầy đồ uống",
+      otherStation: "Khác",
+      recommendationTags: "Thẻ gợi ý",
     };
   }
 
@@ -248,6 +274,11 @@ function buildLocaleCopy(locale: string) {
     sharedScopeTitle: "Company shared menu",
     sharedScopeDescription:
       "After saving, inherited branch menus receive this reviewed item.",
+    station: "Prep station",
+    foodStation: "Kitchen food",
+    drinkStation: "Drinks bar",
+    otherStation: "Other station",
+    recommendationTags: "Recommendation tags",
   };
 }
 
@@ -360,6 +391,8 @@ export function MenuItemCreationWizard({
     basePrice: "",
     sizes: [] as OptionDraft[],
     toppings: [] as OptionDraft[],
+    tags: [] as string[],
+    prepStation: "food" as PrepStation,
     reviewNames: createEmptyTranslations(),
     reviewDescriptions: createEmptyTranslations(),
   });
@@ -385,6 +418,8 @@ export function MenuItemCreationWizard({
       basePrice: "",
       sizes: [],
       toppings: [],
+      tags: [],
+      prepStation: "food",
       reviewNames: createEmptyTranslations(),
       reviewDescriptions: createEmptyTranslations(),
     });
@@ -484,6 +519,15 @@ export function MenuItemCreationWizard({
     setForm((current) => ({
       ...current,
       [type]: current[type].filter((option) => option.id !== optionId),
+    }));
+  };
+
+  const toggleTag = (tag: string) => {
+    setForm((current) => ({
+      ...current,
+      tags: current.tags.includes(tag)
+        ? current.tags.filter((currentTag) => currentTag !== tag)
+        : [...current.tags, tag],
     }));
   };
 
@@ -679,6 +723,8 @@ export function MenuItemCreationWizard({
               ...nameFields,
               ...descriptionFields,
               price: currencyValue(form.basePrice),
+              tags: form.tags,
+              prep_station: form.prepStation,
               image_url: imageUrl,
               available: true,
               position: selectedCategory?.itemCount ?? 0,
@@ -718,6 +764,8 @@ export function MenuItemCreationWizard({
                 ...nameFields,
                 ...descriptionFields,
                 price: currencyValue(form.basePrice),
+                tags: form.tags,
+                prep_station: form.prepStation,
                 image_url: imageUrl,
                 available: true,
                 weekday_visibility: [1, 2, 3, 4, 5, 6, 7],
@@ -1048,6 +1096,58 @@ export function MenuItemCreationWizard({
                 </div>
               </div>
 
+              <div className="grid gap-4 lg:grid-cols-[0.7fr_1.3fr]">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                    {copy.station}
+                  </p>
+                  <Select
+                    value={form.prepStation}
+                    onValueChange={(value) =>
+                      setForm((current) => ({
+                        ...current,
+                        prepStation: value as PrepStation,
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="h-11 rounded-2xl border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="border-slate-200 bg-white text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                      <SelectItem value="food">{copy.foodStation}</SelectItem>
+                      <SelectItem value="drink">{copy.drinkStation}</SelectItem>
+                      <SelectItem value="other">{copy.otherStation}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                    {copy.recommendationTags}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {RECOMMENDATION_TAGS.map((tag) => {
+                      const selected = form.tags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleTag(tag)}
+                          className={cn(
+                            "rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors",
+                            selected
+                              ? "border-slate-900 bg-slate-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900",
+                          )}
+                        >
+                          {tag.replace(/_/g, " ")}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
               {/* Description */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
@@ -1074,7 +1174,7 @@ export function MenuItemCreationWizard({
                   </p>
                   <div className="flex items-center gap-3">
                     {imagePreview ? (
-                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
+                      <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={imagePreview}
@@ -1096,7 +1196,7 @@ export function MenuItemCreationWizard({
                         </button>
                       </div>
                     ) : (
-                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
+                      <div className="flex aspect-video w-28 shrink-0 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
                         <ImageIcon className="h-6 w-6 text-slate-400" />
                       </div>
                     )}

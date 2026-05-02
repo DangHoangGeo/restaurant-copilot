@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
         position,
         category_id,
         tags,
+        prep_station,
         stock_level${lite ? '' : `,
         menu_item_sizes (
           id,

@@ -38,6 +38,22 @@
     "drinks": "Drinks",
     "jump_to": "Jump to"
   },
+  "smart": {
+    "perfect_for_you": "Perfect for You",
+    "perfect_for_you_description": "Picks matched to the time, party size, and this branch's selling pattern.",
+    "customer_favorites": "Customer Favorites",
+    "customer_favorites_description": "Items guests come back for most often.",
+    "breakfast": "Perfect for Breakfast",
+    "breakfast_description": "Morning-friendly items and drinks.",
+    "lunch": "Perfect for Lunch",
+    "lunch_description": "Lunch sets, quick items, and main dishes.",
+    "afternoon": "Perfect for Afternoon",
+    "afternoon_description": "Light bites, sweets, and drinks.",
+    "dinner": "Perfect for Dinner",
+    "dinner_description": "Main dishes, sets, and shareable plates.",
+    "late": "Perfect for Late Hours",
+    "late_description": "Simple, light, and drink-friendly picks."
+  },
   "no_items_found": "No items found in this category.",
   "item_load_error_title": "Unable to open item",
   "item_load_error_description": "We couldn't load this item's options. Please try again.",

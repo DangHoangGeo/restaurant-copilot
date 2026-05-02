@@ -31,7 +31,6 @@ import {
   createCustomerBrandTheme,
   createCustomerThemeProperties,
 } from "@/lib/utils/colors";
-import { generateContextualInfo } from "@/components/common/ContextualGreeting";
 import { ItemDetailModal } from "@/components/features/customer/menu/ItemDetailModal";
 import {
   SmartMenuSkeleton,
@@ -401,6 +400,8 @@ export function SmartMenu({
           description_ja: item.description_ja || undefined,
           description_vi: item.description_vi || undefined,
           categoryId: category.id,
+          tags: item.tags || [],
+          prep_station: item.prep_station,
         })),
     );
   }, [activeCategories]);
@@ -413,16 +414,13 @@ export function SmartMenu({
     sessionId,
     tableId,
     timeOfDay,
+    timezone,
+    guestCount: sessionData?.guestCount,
     currentCartItems: cartItems,
     previousOrders: sessionData?.orderHistory || [],
     restaurantId,
     availableMenuItems,
   });
-
-  // Generate contextual information
-  const contextualInfo = useMemo(() => {
-    return generateContextualInfo(restaurantName, locale);
-  }, [restaurantName, locale]);
 
   // Transform categories into smart menu items
   const allMenuItems = useMemo((): SmartMenuItem[] => {
@@ -492,25 +490,25 @@ export function SmartMenu({
     return {
       recommended: {
         id: "recommended",
-        name: "Perfect for You",
+        name: tMenu("smart.perfect_for_you"),
         items: recommendedItemsData,
         icon: Sparkles,
         color: "from-purple-500 to-pink-500",
-        description: `AI-curated picks for ${contextualInfo.timeContext.toLowerCase()}`,
+        description: tMenu("smart.perfect_for_you_description"),
         count: recommendedItemsData.length,
       },
       popular: {
         id: "popular",
-        name: "Customer Favorites",
+        name: tMenu("smart.customer_favorites"),
         items: popularItems,
         icon: TrendingUp,
         color: "from-orange-500 to-red-500",
-        description: "Most loved by our customers",
+        description: tMenu("smart.customer_favorites_description"),
         count: popularItems.length,
       },
       [timeOfDay]: {
         id: timeOfDay,
-        name: `Perfect for ${timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}`,
+        name: tMenu(`smart.${timeOfDay}`),
         items: timeBasedItems,
         icon:
           timeOfDay === "breakfast"
@@ -524,11 +522,11 @@ export function SmartMenu({
             : timeOfDay === "lunch"
               ? "from-emerald-500 to-lime-500"
               : "from-[#c8773e] to-[#743f4b]",
-        description: `Ideal choices for your ${timeOfDay} cravings`,
+        description: tMenu(`smart.${timeOfDay}_description`),
         count: timeBasedItems.length,
       },
     };
-  }, [allMenuItems, contextualInfo.timeContext, timeOfDay]);
+  }, [allMenuItems, tMenu, timeOfDay]);
 
   // Filtered items based on search, category, and active smart category
   const filteredItems = useMemo(() => {

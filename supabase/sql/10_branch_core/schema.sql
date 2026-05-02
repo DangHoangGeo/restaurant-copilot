@@ -196,6 +196,7 @@ CREATE TABLE public.menu_items (
     description_vi text,
     price numeric NOT NULL,
     tags text[] DEFAULT '{}'::text[],
+    prep_station text DEFAULT 'food'::text NOT NULL,
     image_url text,
     stock_level integer DEFAULT 0,
     available boolean DEFAULT true NOT NULL,
@@ -205,11 +206,14 @@ CREATE TABLE public.menu_items (
     updated_at timestamp with time zone DEFAULT now(),
     is_signature boolean DEFAULT false NOT NULL,
     organization_menu_item_id uuid,
+    CONSTRAINT menu_items_prep_station_check CHECK ((prep_station = ANY (ARRAY['food'::text, 'drink'::text, 'other'::text]))),
     CONSTRAINT menu_items_price_check CHECK ((price >= (0)::numeric)),
     CONSTRAINT menu_items_stock_level_check CHECK ((stock_level >= 0))
 );
 
 COMMENT ON COLUMN public.menu_items.organization_menu_item_id IS 'When present, this branch menu item is inherited from an organization shared menu item.';
+COMMENT ON COLUMN public.menu_items.prep_station IS 'Operational station classification used by branch kitchen/bar order screens.';
+COMMENT ON COLUMN public.menu_items.tags IS 'Owner-managed tags for customer recommendations, menu grouping, and operational filtering.';
 
 CREATE TABLE public.order_items (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,

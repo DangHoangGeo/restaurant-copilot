@@ -38,6 +38,22 @@
     "drinks": "飲み物",
     "jump_to": "移動"
   },
+  "smart": {
+    "perfect_for_you": "今のおすすめ",
+    "perfect_for_you_description": "時間帯、人数、この店舗の注文傾向に合わせたおすすめです。",
+    "customer_favorites": "人気メニュー",
+    "customer_favorites_description": "お客様によく選ばれているメニューです。",
+    "breakfast": "朝におすすめ",
+    "breakfast_description": "朝に合う軽食とドリンクです。",
+    "lunch": "ランチにおすすめ",
+    "lunch_description": "ランチセット、早く出せる料理、主菜を優先しています。",
+    "afternoon": "午後におすすめ",
+    "afternoon_description": "軽食、甘味、ドリンクを中心に表示します。",
+    "dinner": "ディナーにおすすめ",
+    "dinner_description": "主菜、セット、シェアしやすい料理です。",
+    "late": "遅い時間におすすめ",
+    "late_description": "軽めでドリンクに合うメニューです。"
+  },
   "no_items_found": "このカテゴリにはアイテムがありません。",
   "item_load_error_title": "商品を開けませんでした",
   "item_load_error_description": "この商品のオプションを読み込めませんでした。もう一度お試しください。",

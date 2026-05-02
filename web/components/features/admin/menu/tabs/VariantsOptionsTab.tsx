@@ -172,7 +172,7 @@ export function VariantsOptionsTab({
                 name={`sizes.${index}.name_en`}
                 render={({ field: f }) => (
                   <FormItem>
-                    <FormLabel>{t('sizes_name_label')}</FormLabel>
+                    <FormLabel>{t('sizes_name_label')} EN</FormLabel>
                     <FormControl>
                       <Input placeholder={t('sizes_name_placeholder')} {...f} className={inputClass} />
                     </FormControl>
@@ -180,6 +180,44 @@ export function VariantsOptionsTab({
                   </FormItem>
                 )}
               />
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name={`sizes.${index}.name_ja`}
+                  render={({ field: f }) => (
+                    <FormItem>
+                      <FormLabel>{t('toppings_ja_name_label')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="小サイズ"
+                          {...f}
+                          value={f.value ?? ''}
+                          className={inputClass}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`sizes.${index}.name_vi`}
+                  render={({ field: f }) => (
+                    <FormItem>
+                      <FormLabel>{t('toppings_vi_name_label')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Nhỏ"
+                          {...f}
+                          value={f.value ?? ''}
+                          className={inputClass}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           ))}
         </div>

@@ -29,22 +29,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { WeekdaySelector } from "@/components/features/admin/menu/WeekdaySelector";
 
 type PrimaryLanguage = "en" | "ja" | "vi";
 type EditorMode = "organization-shared" | "branch";
 type SizeKey = "S" | "M" | "L";
+type PrepStation = "food" | "drink" | "other";
+type RecommendationTag =
+  | "breakfast"
+  | "lunch"
+  | "dinner"
+  | "all_day"
+  | "quick"
+  | "sharing";
 
 interface EditorCategory {
   id: string;
@@ -103,6 +110,15 @@ const SIZE_PERSISTENCE_ORDER: Record<SizeKey, number> = {
   L: 2,
 };
 
+const RECOMMENDATION_TAGS: RecommendationTag[] = [
+  "breakfast",
+  "lunch",
+  "dinner",
+  "all_day",
+  "quick",
+  "sharing",
+];
+
 function primaryLanguage(locale: string): PrimaryLanguage {
   if (locale.toLowerCase().startsWith("ja")) return "ja";
   if (locale.toLowerCase().startsWith("vi")) return "vi";
@@ -149,12 +165,6 @@ function buildCopy(locale: string) {
       image: "画像",
       upload: "画像を選択",
       replace: "画像を変更",
-      cropImage: "画像を調整",
-      cropImageDescription: "顧客メニュー用に画像を切り抜き、軽量化します。",
-      zoom: "ズーム",
-      horizontal: "左右",
-      vertical: "上下",
-      applyImage: "画像を適用",
       sizes: "サイズ",
       useSizes: "サイズを使う",
       defaultSize: "標準",
@@ -166,6 +176,18 @@ function buildCopy(locale: string) {
       aiNames: "AI提案タイトル",
       aiDescriptions: "AI提案説明",
       aiToppings: "トッピング翻訳",
+      station: "提供先",
+      stationFood: "キッチン",
+      stationDrink: "ドリンク",
+      stationOther: "その他",
+      recommendationTags: "おすすめタグ",
+      recommendationTagsHint: "販売時間、早く出せる料理、シェア向け料理を選ぶと顧客メニューの表示順に使われます。",
+      tagBreakfast: "朝食",
+      tagLunch: "昼食",
+      tagDinner: "夕食",
+      tagAllDay: "終日",
+      tagQuick: "早い提供",
+      tagSharing: "シェア向け",
       summary: "公開内容",
       required: "カテゴリ、メニュー名、説明、価格が必要です。",
       saved: "メニューを公開しました。",
@@ -208,12 +230,6 @@ function buildCopy(locale: string) {
       image: "Hình ảnh",
       upload: "Chọn ảnh",
       replace: "Đổi ảnh",
-      cropImage: "Căn hình ảnh",
-      cropImageDescription: "Cắt và nén hình để dùng nhanh trên menu khách hàng.",
-      zoom: "Phóng to",
-      horizontal: "Ngang",
-      vertical: "Dọc",
-      applyImage: "Dùng hình này",
       sizes: "Kích cỡ",
       useSizes: "Dùng kích cỡ",
       defaultSize: "Mặc định",
@@ -225,6 +241,19 @@ function buildCopy(locale: string) {
       aiNames: "Tên AI đề xuất",
       aiDescriptions: "Mô tả AI đề xuất",
       aiToppings: "Dịch topping",
+      station: "Khu chuẩn bị",
+      stationFood: "Bếp món ăn",
+      stationDrink: "Quầy đồ uống",
+      stationOther: "Khác",
+      recommendationTags: "Thẻ gợi ý",
+      recommendationTagsHint:
+        "Chọn buổi bán, món ra nhanh hoặc món để ăn chung để menu khách ưu tiên đúng món.",
+      tagBreakfast: "Bữa sáng",
+      tagLunch: "Bữa trưa",
+      tagDinner: "Bữa tối",
+      tagAllDay: "Cả ngày",
+      tagQuick: "Ra món nhanh",
+      tagSharing: "Đi nhóm",
       summary: "Nội dung đăng bán",
       required: "Cần danh mục, tên món, mô tả và giá.",
       saved: "Đã đăng bán món.",
@@ -266,12 +295,6 @@ function buildCopy(locale: string) {
     image: "Image",
     upload: "Choose image",
     replace: "Replace image",
-    cropImage: "Crop image",
-    cropImageDescription: "Crop and compress the image for the customer menu.",
-    zoom: "Zoom",
-    horizontal: "Horizontal",
-    vertical: "Vertical",
-    applyImage: "Use image",
     sizes: "Sizes",
     useSizes: "Use sizes",
     defaultSize: "Default",
@@ -283,6 +306,19 @@ function buildCopy(locale: string) {
     aiNames: "AI-reviewed titles",
     aiDescriptions: "AI-reviewed descriptions",
     aiToppings: "Topping translations",
+    station: "Prep station",
+    stationFood: "Kitchen food",
+    stationDrink: "Drinks bar",
+    stationOther: "Other station",
+    recommendationTags: "Recommendation tags",
+    recommendationTagsHint:
+      "Use meal periods, quick items, and sharing items to guide customer menu recommendations.",
+    tagBreakfast: "Breakfast",
+    tagLunch: "Lunch",
+    tagDinner: "Dinner",
+    tagAllDay: "All day",
+    tagQuick: "Quick",
+    tagSharing: "Sharing",
     summary: "Publish summary",
     required: "Category, item name, description, and price are required.",
     saved: "Menu item published.",
@@ -309,6 +345,18 @@ function languageLabel(copy: ReturnType<typeof buildCopy>, language: PrimaryLang
   return copy.english;
 }
 
+function recommendationTagLabel(
+  copy: ReturnType<typeof buildCopy>,
+  tag: RecommendationTag,
+) {
+  if (tag === "breakfast") return copy.tagBreakfast;
+  if (tag === "lunch") return copy.tagLunch;
+  if (tag === "dinner") return copy.tagDinner;
+  if (tag === "all_day") return copy.tagAllDay;
+  if (tag === "quick") return copy.tagQuick;
+  return copy.tagSharing;
+}
+
 function orderedLanguages(primary: PrimaryLanguage): PrimaryLanguage[] {
   return [primary, ...LANGUAGES.filter((language) => language !== primary)];
 }
@@ -319,9 +367,9 @@ function optionId() {
 
 function initialSizes(): SizeDraft[] {
   return [
-    { key: "S", enabled: false, price: "" },
+    { key: "S", enabled: true, price: "" },
     { key: "M", enabled: true, price: "" },
-    { key: "L", enabled: false, price: "" },
+    { key: "L", enabled: true, price: "" },
   ];
 }
 
@@ -438,7 +486,9 @@ export function ProfessionalMenuItemEditor({
   const router = useRouter();
   const supabase = createClient();
   const copy = useMemo(() => buildCopy(locale), [locale]);
-  const originalLanguage = primaryLanguage(locale);
+  const defaultLanguage = primaryLanguage(locale);
+  const [originalLanguage, setOriginalLanguage] =
+    useState<PrimaryLanguage>(defaultLanguage);
   const [step, setStep] = useState(0);
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [originalName, setOriginalName] = useState("");
@@ -449,19 +499,14 @@ export function ProfessionalMenuItemEditor({
     initialWeekdayVisibility,
   );
   const [available, setAvailable] = useState(true);
+  const [prepStation, setPrepStation] = useState<PrepStation>("food");
+  const [tags, setTags] = useState<string[]>([]);
   const [useSizes, setUseSizes] = useState(false);
   const [sizes, setSizes] = useState<SizeDraft[]>(initialSizes);
   const [toppings, setToppings] = useState<ToppingDraft[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageInfo, setImageInfo] = useState<OptimizedMenuImage | null>(null);
-  const [sourceImageFile, setSourceImageFile] = useState<File | null>(null);
-  const [sourceImagePreview, setSourceImagePreview] = useState<string | null>(null);
-  const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
-  const [cropZoom, setCropZoom] = useState(1);
-  const [cropOffsetX, setCropOffsetX] = useState(0);
-  const [cropOffsetY, setCropOffsetY] = useState(0);
-  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [reviewNames, setReviewNames] = useState(emptyTranslations);
@@ -469,6 +514,13 @@ export function ProfessionalMenuItemEditor({
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
 
   const selectedCategory = categories.find((category) => category.id === categoryId);
+  const canReviewWithAI =
+    Boolean(categoryId) &&
+    originalName.trim().length > 0 &&
+    originalDescription.trim().length > 0 &&
+    price.trim().length > 0 &&
+    Number.isFinite(Number(price)) &&
+    Number(price) >= 0;
   const selectedSizes = useSizes
     ? sizes.filter((size) => size.enabled || size.key === "M")
         .sort(
@@ -506,6 +558,23 @@ export function ProfessionalMenuItemEditor({
     setToppings((current) => current.filter((topping) => topping.id !== id));
   };
 
+  const toggleTag = (tag: string) => {
+    setTags((current) =>
+      current.includes(tag)
+        ? current.filter((currentTag) => currentTag !== tag)
+        : [...current, tag],
+    );
+  };
+
+  const handleUseSizesChange = (checked: boolean) => {
+    setUseSizes(checked);
+    if (checked) {
+      setSizes((current) =>
+        current.map((size) => ({ ...size, enabled: true })),
+      );
+    }
+  };
+
   const handleImageSelect = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -515,36 +584,16 @@ export function ProfessionalMenuItemEditor({
       return;
     }
 
-    if (sourceImagePreview?.startsWith("blob:")) {
-      URL.revokeObjectURL(sourceImagePreview);
-    }
-    setSourceImageFile(file);
-    setSourceImagePreview(URL.createObjectURL(file));
-    setCropZoom(1);
-    setCropOffsetX(0);
-    setCropOffsetY(0);
-    setIsCropDialogOpen(true);
-    event.target.value = "";
-  };
-
-  const applyImageCrop = async () => {
-    if (!sourceImageFile) return;
-    setIsProcessingImage(true);
     try {
-      const optimized = await optimizeMenuImageFile(sourceImageFile, {
-        zoom: cropZoom,
-        offsetX: cropOffsetX,
-        offsetY: cropOffsetY,
-      });
+      const optimized = await optimizeMenuImageFile(file);
       if (imagePreview?.startsWith("blob:")) URL.revokeObjectURL(imagePreview);
       setImageFile(optimized.file);
       setImagePreview(optimized.previewUrl);
       setImageInfo(optimized);
-      setIsCropDialogOpen(false);
     } catch {
       toast.error(copy.failed);
     } finally {
-      setIsProcessingImage(false);
+      event.target.value = "";
     }
   };
 
@@ -712,7 +761,20 @@ export function ProfessionalMenuItemEditor({
 
   const handleSave = async () => {
     if (!validateInput()) return;
-    if (!reviewNames.en.trim()) {
+    const fallbackName =
+      reviewNames[originalLanguage].trim() ||
+      reviewNames.en.trim() ||
+      reviewNames.ja.trim() ||
+      reviewNames.vi.trim() ||
+      originalName.trim();
+    const fallbackDescription =
+      reviewDescriptions[originalLanguage].trim() ||
+      reviewDescriptions.en.trim() ||
+      reviewDescriptions.ja.trim() ||
+      reviewDescriptions.vi.trim() ||
+      originalDescription.trim();
+
+    if (!fallbackName) {
       toast.error(copy.required);
       return;
     }
@@ -722,13 +784,15 @@ export function ProfessionalMenuItemEditor({
       const imageUrl = await uploadImage();
       const payload = {
         category_id: categoryId,
-        name_en: reviewNames.en.trim(),
-        name_ja: reviewNames.ja.trim(),
-        name_vi: reviewNames.vi.trim(),
-        description_en: reviewDescriptions.en.trim(),
-        description_ja: reviewDescriptions.ja.trim(),
-        description_vi: reviewDescriptions.vi.trim(),
+        name_en: reviewNames.en.trim() || fallbackName,
+        name_ja: reviewNames.ja.trim() || fallbackName,
+        name_vi: reviewNames.vi.trim() || fallbackName,
+        description_en: reviewDescriptions.en.trim() || fallbackDescription,
+        description_ja: reviewDescriptions.ja.trim() || fallbackDescription,
+        description_vi: reviewDescriptions.vi.trim() || fallbackDescription,
         price: Number(price),
+        tags,
+        prep_station: prepStation,
         image_url: imageUrl,
         available,
         weekday_visibility: weekdayVisibility,
@@ -749,8 +813,14 @@ export function ProfessionalMenuItemEditor({
           .filter((topping) => topping.originalName.trim())
           .map((topping, index) => ({
             name_en: topping.translations.en || topping.originalName,
-            name_ja: topping.translations.ja || topping.originalName,
-            name_vi: topping.translations.vi || topping.originalName,
+            name_ja:
+              topping.translations.ja ||
+              topping.translations.en ||
+              topping.originalName,
+            name_vi:
+              topping.translations.vi ||
+              topping.translations.en ||
+              topping.originalName,
             price: Number(topping.price || 0),
             position: index,
           })),
@@ -785,7 +855,7 @@ export function ProfessionalMenuItemEditor({
   };
 
   return (
-    <section className="space-y-4 text-[#2E2117] dark:text-[#F7F1E9]">
+    <section className="professional-menu-item-editor space-y-4 text-[var(--control-ink)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Button
@@ -827,6 +897,7 @@ export function ProfessionalMenuItemEditor({
           categoryId={categoryId}
           setCategoryId={setCategoryId}
           originalLanguage={originalLanguage}
+          setOriginalLanguage={setOriginalLanguage}
           originalName={originalName}
           setOriginalName={setOriginalName}
           originalDescription={originalDescription}
@@ -835,12 +906,10 @@ export function ProfessionalMenuItemEditor({
           setPrice={setPrice}
           stockLevel={stockLevel}
           setStockLevel={setStockLevel}
-          weekdayVisibility={weekdayVisibility}
-          setWeekdayVisibility={setWeekdayVisibility}
           available={available}
           setAvailable={setAvailable}
           useSizes={useSizes}
-          setUseSizes={setUseSizes}
+          setUseSizes={handleUseSizesChange}
           sizes={sizes}
           updateSize={updateSize}
           toppings={toppings}
@@ -852,6 +921,7 @@ export function ProfessionalMenuItemEditor({
           imageInfo={imageInfo}
           handleImageSelect={handleImageSelect}
           isGenerating={isGenerating}
+          canReviewWithAI={canReviewWithAI}
           handleAIReview={handleAIReview}
         />
       ) : null}
@@ -883,7 +953,13 @@ export function ProfessionalMenuItemEditor({
           price={price}
           stockLevel={stockLevel}
           weekdayVisibility={weekdayVisibility}
+          setWeekdayVisibility={setWeekdayVisibility}
           available={available}
+          setAvailable={setAvailable}
+          prepStation={prepStation}
+          setPrepStation={setPrepStation}
+          tags={tags}
+          toggleTag={toggleTag}
           useSizes={useSizes}
           sizes={selectedSizes}
           toppings={toppings}
@@ -894,20 +970,6 @@ export function ProfessionalMenuItemEditor({
         />
       ) : null}
 
-      <ImageCropDialog
-        copy={copy}
-        open={isCropDialogOpen}
-        onOpenChange={setIsCropDialogOpen}
-        sourceImagePreview={sourceImagePreview}
-        cropZoom={cropZoom}
-        setCropZoom={setCropZoom}
-        cropOffsetX={cropOffsetX}
-        setCropOffsetX={setCropOffsetX}
-        cropOffsetY={cropOffsetY}
-        setCropOffsetY={setCropOffsetY}
-        isProcessingImage={isProcessingImage}
-        onApply={applyImageCrop}
-      />
     </section>
   );
 }
@@ -920,6 +982,7 @@ function InputStep(props: {
   categoryId: string;
   setCategoryId: (value: string) => void;
   originalLanguage: PrimaryLanguage;
+  setOriginalLanguage: (value: PrimaryLanguage) => void;
   originalName: string;
   setOriginalName: (value: string) => void;
   originalDescription: string;
@@ -928,8 +991,6 @@ function InputStep(props: {
   setPrice: (value: string) => void;
   stockLevel: string;
   setStockLevel: (value: string) => void;
-  weekdayVisibility: number[];
-  setWeekdayVisibility: (value: number[]) => void;
   available: boolean;
   setAvailable: (value: boolean) => void;
   useSizes: boolean;
@@ -945,105 +1006,52 @@ function InputStep(props: {
   imageInfo: OptimizedMenuImage | null;
   handleImageSelect: (event: ChangeEvent<HTMLInputElement>) => void;
   isGenerating: boolean;
+  canReviewWithAI: boolean;
   handleAIReview: () => void;
 }) {
   const { copy } = props;
   return (
-    <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-      <aside className="space-y-4">
-        <div className="overflow-hidden rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
-          <div className="flex items-center justify-between gap-3 border-b border-[#AB6E3C]/12 bg-[#F5EAD8]/64 px-4 py-3 dark:border-[#F1DCC4]/10 dark:bg-[#2B1A10]/70">
-            <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
-              {copy.category}
-            </h2>
-            <Badge className="rounded-md border border-[#AB6E3C]/14 bg-[#FEFAF6] text-[#6F4D35] hover:bg-[#FEFAF6] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F1DCC4]">
-              {props.categories.length}
-            </Badge>
+    <div className="space-y-4">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+            <div className="mb-4 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+              <label className="min-w-0 space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
+              <span>{copy.category}</span>
+              <Select value={props.categoryId} onValueChange={props.setCategoryId}>
+                <SelectTrigger className="h-11 w-full rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-[#AB6E3C]/20 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
+                  {props.categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {localizedName(props.locale, category)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+            <label className="min-w-0 space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
+              <span>{copy.inputLanguage}</span>
+              <Select
+                value={props.originalLanguage}
+                onValueChange={(value) =>
+                  props.setOriginalLanguage(value as PrimaryLanguage)
+                }
+              >
+                <SelectTrigger className="h-11 w-full rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-[#AB6E3C]/20 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/16 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
+                  {LANGUAGES.map((language) => (
+                    <SelectItem key={language} value={language}>
+                      {languageLabel(copy, language)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
           </div>
-          <div className="max-h-[360px] overflow-y-auto p-2">
-            {props.categories.map((category) => {
-              const isSelected = props.categoryId === category.id;
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  className={cn(
-                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm transition-colors",
-                    isSelected
-                      ? "bg-[#2E2117] text-[#FFF7E9] dark:bg-[#F1DCC4] dark:text-[#170F0C]"
-                      : "text-[#2E2117] hover:bg-[#F5EAD8] dark:text-[#F7F1E9] dark:hover:bg-[#332116]",
-                  )}
-                  onClick={() => props.setCategoryId(category.id)}
-                >
-                  <span className="min-w-0 truncate font-medium">
-                    {localizedName(props.locale, category)}
-                  </span>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-md border px-2 py-0.5 text-xs",
-                      isSelected
-                        ? "border-[#FFF7E9]/20 text-[#FFF7E9] dark:border-[#170F0C]/20 dark:text-[#170F0C]"
-                        : "border-[#AB6E3C]/14 text-[#8B6E5A] dark:border-[#F1DCC4]/12 dark:text-[#C9B7A0]",
-                    )}
-                  >
-                    {category.itemCount}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
-          <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] px-3 py-3 text-sm dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
-            <span className="text-[#8B6E5A] dark:text-[#C9B7A0]">
-              {copy.inputLanguage}
-            </span>
-            <p className="mt-1 font-medium text-[#2E2117] dark:text-[#F7F1E9]">
-              {languageLabel(copy, props.originalLanguage)}
-            </p>
-          </div>
-
-          <label className="mt-3 flex items-center justify-between rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] px-3 py-3 text-sm font-medium text-[#2E2117] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
-            <span>{copy.active}</span>
-            <Switch checked={props.available} onCheckedChange={props.setAvailable} />
-          </label>
-        </div>
-
-        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
-          <label className="block space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
-            <span>{copy.stock}</span>
-            <Input
-              type="number"
-              min="0"
-              value={props.stockLevel}
-              onChange={(event) => props.setStockLevel(event.target.value)}
-              placeholder={copy.stockPlaceholder}
-              className="h-10 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] dark:placeholder:text-[#C9B7A0]"
-            />
-          </label>
-          <div className="mt-4 space-y-2 border-t border-[#AB6E3C]/12 pt-4 dark:border-[#F1DCC4]/10">
-            <p className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
-              {copy.schedule}
-            </p>
-            <WeekdaySelector
-              selectedDays={props.weekdayVisibility}
-              onChange={props.setWeekdayVisibility}
-            />
-          </div>
-        </div>
-
-        <ImagePanel
-          copy={copy}
-          imageFile={props.imageFile}
-          imagePreview={props.imagePreview}
-          imageInfo={props.imageInfo}
-          handleImageSelect={props.handleImageSelect}
-        />
-      </aside>
-
-      <div className="space-y-4">
-        <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
           <label className="space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
             <span>{copy.originalName}</span>
             <Input
@@ -1062,14 +1070,6 @@ function InputStep(props: {
             />
           </label>
         </div>
-
-        <ToppingInputPanel
-          copy={copy}
-          toppings={props.toppings}
-          addTopping={props.addTopping}
-          updateTopping={props.updateTopping}
-          removeTopping={props.removeTopping}
-        />
 
         <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
           <label className="block space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
@@ -1136,21 +1136,59 @@ function InputStep(props: {
           ) : null}
         </div>
 
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
-            onClick={props.handleAIReview}
-            disabled={props.isGenerating}
-          >
-            {props.isGenerating ? (
-              <Sparkles className="mr-2 h-4 w-4 animate-pulse" />
-            ) : (
-              <WandSparkles className="mr-2 h-4 w-4" />
-            )}
-            {props.isGenerating ? copy.generating : copy.next}
-          </Button>
+        <ToppingInputPanel
+          copy={copy}
+          toppings={props.toppings}
+          addTopping={props.addTopping}
+          updateTopping={props.updateTopping}
+          removeTopping={props.removeTopping}
+        />
+
         </div>
+
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-[#AB6E3C]/15 bg-[#FFF7E9]/72 p-4 shadow-sm backdrop-blur dark:border-[#F1DCC4]/12 dark:bg-[#251810]/72">
+            <label className="flex items-center justify-between rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] px-3 py-3 text-sm font-medium text-[#2E2117] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C] dark:text-[#F7F1E9]">
+              <span>{copy.active}</span>
+              <Switch checked={props.available} onCheckedChange={props.setAvailable} />
+            </label>
+            <label className="mt-3 block space-y-2 text-sm font-medium text-[#2E2117] dark:text-[#F7F1E9]">
+              <span>{copy.stock}</span>
+              <Input
+                type="number"
+                min="0"
+                value={props.stockLevel}
+                onChange={(event) => props.setStockLevel(event.target.value)}
+                placeholder={copy.stockPlaceholder}
+                className="h-10 rounded-xl border-[#AB6E3C]/18 bg-[#FEFAF6] text-[#2E2117] placeholder:text-[#B89078] focus-visible:ring-[#AB6E3C]/25 dark:border-[#F1DCC4]/16 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] dark:placeholder:text-[#C9B7A0]"
+              />
+            </label>
+          </div>
+
+          <ImagePanel
+            copy={copy}
+            imageFile={props.imageFile}
+            imagePreview={props.imagePreview}
+            imageInfo={props.imageInfo}
+            handleImageSelect={props.handleImageSelect}
+          />
+        </aside>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
+          onClick={props.handleAIReview}
+          disabled={props.isGenerating || !props.canReviewWithAI}
+        >
+          {props.isGenerating ? (
+            <Sparkles className="mr-2 h-4 w-4 animate-pulse" />
+          ) : (
+            <WandSparkles className="mr-2 h-4 w-4" />
+          )}
+          {props.isGenerating ? copy.generating : copy.next}
+        </Button>
       </div>
     </div>
   );
@@ -1392,7 +1430,13 @@ function PublishStep({
   price,
   stockLevel,
   weekdayVisibility,
+  setWeekdayVisibility,
   available,
+  setAvailable,
+  prepStation,
+  setPrepStation,
+  tags,
+  toggleTag,
   useSizes,
   sizes,
   toppings,
@@ -1409,7 +1453,13 @@ function PublishStep({
   price: string;
   stockLevel: string;
   weekdayVisibility: number[];
+  setWeekdayVisibility: (value: number[]) => void;
   available: boolean;
+  setAvailable: (value: boolean) => void;
+  prepStation: PrepStation;
+  setPrepStation: (value: PrepStation) => void;
+  tags: string[];
+  toggleTag: (tag: string) => void;
   useSizes: boolean;
   sizes: SizeDraft[];
   toppings: ToppingDraft[];
@@ -1424,7 +1474,7 @@ function PublishStep({
         <h2 className="text-sm font-semibold text-[#2E2117] dark:text-[#F7F1E9]">
           {copy.summary}
         </h2>
-        <div className="mt-4 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <div className="space-y-3">
             <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
               <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
@@ -1439,10 +1489,36 @@ function PublishStep({
               <p className="mt-1 font-medium">{price}</p>
             </div>
             <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <label className="flex items-center justify-between gap-3">
+                <span className="text-sm font-medium">{copy.active}</span>
+                <Switch checked={available} onCheckedChange={setAvailable} />
+              </label>
+            </div>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
               <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
-                {copy.active}
+                {copy.station}
               </p>
-              <p className="mt-1 font-medium">{available ? copy.active : "-"}</p>
+              <div className="mt-2 grid gap-2">
+                {([
+                  ["food", copy.stationFood],
+                  ["drink", copy.stationDrink],
+                  ["other", copy.stationOther],
+                ] as const).map(([station, label]) => (
+                  <button
+                    key={station}
+                    type="button"
+                    onClick={() => setPrepStation(station)}
+                    className={cn(
+                      "rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors",
+                      prepStation === station
+                        ? "border-[#AB6E3C]/35 bg-[#2E2117] text-[#FFF7E9] dark:border-[#F1DCC4]/20 dark:bg-[#F1DCC4] dark:text-[#170F0C]"
+                        : "border-[#AB6E3C]/12 bg-[#FFF7E9] text-[#2E2117] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/10 dark:bg-[#2B1A10]/80 dark:text-[#F7F1E9] dark:hover:bg-[#332116]",
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
               <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
@@ -1452,16 +1528,8 @@ function PublishStep({
                 {stockLevel.trim() || copy.stockPlaceholder}
               </p>
             </div>
-            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
-              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
-                {copy.schedule}
-              </p>
-              <p className="mt-1 font-medium">
-                {weekdayVisibility.length}/7
-              </p>
-            </div>
             {imagePreview ? (
-              <div className="aspect-[4/3] overflow-hidden rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <div className="aspect-video overflow-hidden rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagePreview} alt="" className="h-full w-full object-cover" />
               </div>
@@ -1482,6 +1550,45 @@ function PublishStep({
                 </p>
               </div>
             ))}
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.recommendationTags}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.recommendationTagsHint}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {RECOMMENDATION_TAGS.map((tag) => {
+                  const selected = tags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      className={cn(
+                        "rounded-md border px-2 py-1 text-xs font-semibold transition-colors",
+                        selected
+                          ? "border-[#AB6E3C]/30 bg-[#AB6E3C] text-white dark:border-[#F1DCC4]/20 dark:bg-[#F1DCC4] dark:text-[#170F0C]"
+                          : "border-[#AB6E3C]/12 bg-[#FFF7E9] text-[#6F4D35] hover:bg-[#F5EAD8] dark:border-[#F1DCC4]/10 dark:bg-[#2B1A10]/80 dark:text-[#F1DCC4] dark:hover:bg-[#332116]",
+                      )}
+                    >
+                      {recommendationTagLabel(copy, tag)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+              <p className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
+                {copy.schedule}
+              </p>
+              <div className="mt-2">
+                <WeekdaySelector
+                  selectedDays={weekdayVisibility}
+                  onChange={setWeekdayVisibility}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1598,7 +1705,7 @@ function ImagePanel({
         </p>
       </div>
       <div className="mt-3 flex items-center gap-3">
-        <div className="flex aspect-[4/3] w-28 items-center justify-center overflow-hidden rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
+        <div className="flex aspect-video w-32 items-center justify-center overflow-hidden rounded-xl border border-[#AB6E3C]/12 bg-[#FEFAF6] dark:border-[#F1DCC4]/10 dark:bg-[#170F0C]">
           {imagePreview ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imagePreview} alt="" className="h-full w-full object-cover" />
@@ -1622,149 +1729,6 @@ function ImagePanel({
     </div>
   );
 }
-
-function ImageCropDialog({
-  copy,
-  open,
-  onOpenChange,
-  sourceImagePreview,
-  cropZoom,
-  setCropZoom,
-  cropOffsetX,
-  setCropOffsetX,
-  cropOffsetY,
-  setCropOffsetY,
-  isProcessingImage,
-  onApply,
-}: {
-  copy: ReturnType<typeof buildCopy>;
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  sourceImagePreview: string | null;
-  cropZoom: number;
-  setCropZoom: (value: number) => void;
-  cropOffsetX: number;
-  setCropOffsetX: (value: number) => void;
-  cropOffsetY: number;
-  setCropOffsetY: (value: number) => void;
-  isProcessingImage: boolean;
-  onApply: () => void;
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-[#AB6E3C]/15 bg-[#FFF7E9] text-[#2E2117] dark:border-[#F1DCC4]/12 dark:bg-[#170F0C] dark:text-[#F7F1E9] sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{copy.cropImage}</DialogTitle>
-          <DialogDescription className="text-[#8B6E5A] dark:text-[#C9B7A0]">
-            {copy.cropImageDescription}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="rounded-2xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-3 dark:border-[#F1DCC4]/10 dark:bg-[#251810]">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-[#AB6E3C]/20 bg-[#F5EAD8] dark:border-[#F1DCC4]/14 dark:bg-[#120C08]">
-              {sourceImagePreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={sourceImagePreview}
-                  alt=""
-                  className="absolute object-cover"
-                  style={{
-                    width: `${100 * cropZoom}%`,
-                    height: `${100 * cropZoom}%`,
-                    left: `${50 + cropOffsetX * 0.35}%`,
-                    top: `${50 + cropOffsetY * 0.35}%`,
-                    transform: "translate(-50%, -50%)",
-                  }}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-[#8B6E5A] dark:text-[#C9B7A0]">
-                  <ImageIcon className="h-8 w-8" />
-                </div>
-              )}
-              <div className="pointer-events-none absolute inset-0 border border-white/45 dark:border-white/30" />
-            </div>
-          </div>
-
-          <div className="space-y-4 rounded-2xl border border-[#AB6E3C]/12 bg-[#FEFAF6] p-4 dark:border-[#F1DCC4]/10 dark:bg-[#251810]">
-            <RangeControl
-              label={copy.zoom}
-              min={1}
-              max={3}
-              step={0.05}
-              value={cropZoom}
-              onChange={setCropZoom}
-            />
-            <RangeControl
-              label={copy.horizontal}
-              min={-100}
-              max={100}
-              step={1}
-              value={cropOffsetX}
-              onChange={setCropOffsetX}
-            />
-            <RangeControl
-              label={copy.vertical}
-              min={-100}
-              max={100}
-              step={1}
-              value={cropOffsetY}
-              onChange={setCropOffsetY}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button
-            type="button"
-            className="rounded-xl bg-[#AB6E3C] text-white shadow-sm shadow-[#AB6E3C]/20 hover:bg-[#965B2E] dark:bg-[#C8773E] dark:hover:bg-[#D4894E]"
-            onClick={onApply}
-            disabled={!sourceImagePreview || isProcessingImage}
-          >
-            {isProcessingImage ? copy.saving : copy.applyImage}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function RangeControl({
-  label,
-  min,
-  max,
-  step,
-  value,
-  onChange,
-}: {
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-medium">
-      <span className="flex items-center justify-between gap-3">
-        <span>{label}</span>
-        <span className="text-xs text-[#8B6E5A] dark:text-[#C9B7A0]">
-          {value.toFixed(step < 1 ? 2 : 0)}
-        </span>
-      </span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-        className="h-2 w-full cursor-pointer accent-[#AB6E3C]"
-      />
-    </label>
-  );
-}
-
 
 function ToppingInputPanel({
   copy,

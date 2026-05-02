@@ -20,6 +20,7 @@ struct KitchenBoardView: View {
     @State private var printMessage = ""
     @State private var refreshTimer: Timer?
     @State private var viewMode: KitchenViewMode = .statusColumns
+    @AppStorage("kitchen_station_focus") private var selectedStationFocusRaw = KitchenStationFocus.all.rawValue
     
     var body: some View {
         ZStack {
@@ -34,11 +35,18 @@ struct KitchenBoardView: View {
                     selectedCategoryFilter: selectedCategoryFilter,
                     categories: Array(Set(groupedByCategory.map { $0.categoryName })),
                     categoryCounts: categoryCounts,
+                    stationFocus: selectedStationFocus,
+                    stationCounts: stationCounts,
                     viewMode: viewMode,
                     isCompactLayout: isPhoneLayout,
                     showsLayoutSwitcher: !isPhoneLayout,
                     onCategoryFilterChange: { category in
                         selectedCategoryFilter = category
+                    },
+                    onStationFocusChange: { station in
+                        selectedStationFocusRaw = station.rawValue
+                        selectedCategoryFilter = "kitchen_all".localized
+                        computeCategoryGrouping()
                     },
                     onViewModeChange: { mode in
                         viewMode = mode
@@ -162,6 +170,9 @@ struct KitchenBoardView: View {
         .onChange(of: orderManager.orders) { _, _ in
             computeCategoryGrouping()
         }
+        .onChange(of: selectedStationFocusRaw) { _, _ in
+            computeCategoryGrouping()
+        }
         .onDisappear {
             stopRefreshTimer()
         }
@@ -176,6 +187,10 @@ struct KitchenBoardView: View {
 
     private var isPhoneLayout: Bool {
         UIDevice.current.userInterfaceIdiom == .phone
+    }
+
+    private var selectedStationFocus: KitchenStationFocus {
+        KitchenStationFocus(rawValue: selectedStationFocusRaw) ?? .all
     }
     
     private var totalItemsCount: Int {
@@ -206,13 +221,33 @@ struct KitchenBoardView: View {
         return counts
     }
 
+    private var stationCounts: [KitchenStationFocus: Int] {
+        var counts = Dictionary(uniqueKeysWithValues: KitchenStationFocus.allCases.map { ($0, 0) })
+
+        for order in orderManager.orders {
+            for orderItem in order.order_items ?? [] {
+                guard KitchenBoardConfig.visibleStatuses.contains(orderItem.status) else { continue }
+
+                let quantity = max(orderItem.quantity, 1)
+                counts[.all, default: 0] += quantity
+                counts[orderItem.prepStation.stationFocus, default: 0] += quantity
+            }
+        }
+
+        return counts
+    }
+
     // MARK: - Helper Methods
 
     private func computeCategoryGrouping() {
         let orders = orderManager.orders
+        let stationFocus = selectedStationFocus
 
         Task.detached(priority: .userInitiated) {
-            let grouped = KitchenGroupingEngine.buildCategoryGroups(from: orders)
+            let grouped = KitchenGroupingEngine.buildCategoryGroups(
+                from: orders,
+                stationFocus: stationFocus
+            )
             await MainActor.run {
                 groupedByCategory = grouped
             }

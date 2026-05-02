@@ -1,5 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+export type MenuItemPrepStation = "food" | "drink" | "other";
+
 export interface OrganizationSharedMenuItem {
   id: string;
   category_id: string;
@@ -10,6 +12,8 @@ export interface OrganizationSharedMenuItem {
   description_ja: string | null;
   description_vi: string | null;
   price: number;
+  tags: string[];
+  prep_station: MenuItemPrepStation;
   image_url: string | null;
   available: boolean;
   weekday_visibility: number[];
@@ -101,6 +105,8 @@ type SharedMenuItemInsert = {
   description_ja?: string | null;
   description_vi?: string | null;
   price: number;
+  tags?: string[];
+  prep_station?: MenuItemPrepStation;
   image_url?: string | null;
   available?: boolean;
   weekday_visibility?: number[];
@@ -133,6 +139,20 @@ function normalizeCategoryName(value: string | null | undefined) {
   return value?.trim().toLowerCase() ?? "";
 }
 
+function normalizeTags(tags: string[] | null | undefined) {
+  if (!tags) return [];
+
+  const seen = new Set<string>();
+  return tags
+    .map((tag) => tag.trim().toLowerCase().replace(/\s+/g, "_"))
+    .filter((tag) => {
+      if (!tag || seen.has(tag)) return false;
+      seen.add(tag);
+      return true;
+    })
+    .slice(0, 16);
+}
+
 export async function listOrganizationSharedMenu(
   organizationId: string,
 ): Promise<OrganizationSharedMenuCategory[]> {
@@ -156,6 +176,8 @@ export async function listOrganizationSharedMenu(
         description_ja,
         description_vi,
         price,
+        tags,
+        prep_station,
         image_url,
         available,
         weekday_visibility,
@@ -212,6 +234,8 @@ export async function listOrganizationSharedMenu(
       description_ja: item.description_ja,
       description_vi: item.description_vi,
       price: Number(item.price ?? 0),
+      tags: normalizeTags(item.tags ?? []),
+      prep_station: (item.prep_station ?? "food") as MenuItemPrepStation,
       image_url: item.image_url,
       available: item.available,
       weekday_visibility: item.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
@@ -398,6 +422,8 @@ export async function createOrganizationSharedMenuItem(
       description_ja: input.description_ja ?? null,
       description_vi: input.description_vi ?? null,
       price: input.price,
+      tags: normalizeTags(input.tags),
+      prep_station: input.prep_station ?? "food",
       image_url: input.image_url ?? null,
       available: input.available ?? true,
       weekday_visibility: input.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
@@ -415,6 +441,8 @@ export async function createOrganizationSharedMenuItem(
       description_ja,
       description_vi,
       price,
+      tags,
+      prep_station,
       image_url,
       available,
       weekday_visibility,
@@ -517,6 +545,8 @@ export async function createOrganizationSharedMenuItem(
     description_ja: data.description_ja,
     description_vi: data.description_vi,
     price: Number(data.price ?? 0),
+    tags: normalizeTags(data.tags ?? []),
+    prep_station: (data.prep_station ?? "food") as MenuItemPrepStation,
     image_url: data.image_url,
     available: data.available,
     weekday_visibility: data.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
@@ -544,6 +574,8 @@ async function getOrganizationSharedMenuItem(
       description_ja,
       description_vi,
       price,
+      tags,
+      prep_station,
       image_url,
       available,
       weekday_visibility,
@@ -589,6 +621,8 @@ async function getOrganizationSharedMenuItem(
     description_ja: data.description_ja,
     description_vi: data.description_vi,
     price: Number(data.price ?? 0),
+    tags: normalizeTags(data.tags ?? []),
+    prep_station: (data.prep_station ?? "food") as MenuItemPrepStation,
     image_url: data.image_url,
     available: data.available,
     weekday_visibility: data.weekday_visibility ?? [1, 2, 3, 4, 5, 6, 7],
@@ -674,6 +708,9 @@ export async function updateOrganizationSharedMenuItem(
   const { sizes, toppings, ...itemUpdate } = input;
   const updatePayload = {
     ...itemUpdate,
+    ...(itemUpdate.tags !== undefined
+      ? { tags: normalizeTags(itemUpdate.tags) }
+      : {}),
     updated_at: new Date().toISOString(),
   };
 

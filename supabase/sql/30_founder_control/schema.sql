@@ -75,16 +75,21 @@ CREATE TABLE public.organization_menu_items (
     description_ja text,
     description_vi text,
     price numeric(12,2) DEFAULT 0 NOT NULL,
+    tags text[] DEFAULT '{}'::text[] NOT NULL,
+    prep_station text DEFAULT 'food'::text NOT NULL,
     image_url text,
     available boolean DEFAULT true NOT NULL,
     weekday_visibility integer[] DEFAULT ARRAY[1, 2, 3, 4, 5, 6, 7] NOT NULL,
     stock_level integer,
     "position" integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT organization_menu_items_prep_station_check CHECK ((prep_station = ANY (ARRAY['food'::text, 'drink'::text, 'other'::text])))
 );
 
 COMMENT ON TABLE public.organization_menu_items IS 'Organization-level shared menu items. Branch menus remain independent until copied or applied separately.';
+COMMENT ON COLUMN public.organization_menu_items.tags IS 'Owner-managed shared tags copied into branch menu items for recommendations and menu grouping.';
+COMMENT ON COLUMN public.organization_menu_items.prep_station IS 'Default station classification copied into branch menu items for food/drink order screens.';
 COMMENT ON COLUMN public.organization_menu_items.weekday_visibility IS 'Default visible weekdays for organization shared menu inheritance. Branch menu items may override after sync.';
 COMMENT ON COLUMN public.organization_menu_items.stock_level IS 'Default stock value for organization shared menu inheritance. Branch inventory remains branch-local after sync.';
 
