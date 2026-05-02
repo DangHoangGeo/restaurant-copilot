@@ -12,6 +12,12 @@
   "itemsView": "アイテム一覧",
   "tableView": "テーブルビュー",
   "orderView": "注文一覧",
+  "station": {
+    "all": "すべて",
+    "food": "料理",
+    "drink": "ドリンク",
+    "other": "その他"
+  },
   "searchOrdersOrId": "テーブル、注文ID（末尾6桁）で検索…",
   "orderTime": "注文時間",
   "totalAmount": "合計金額",

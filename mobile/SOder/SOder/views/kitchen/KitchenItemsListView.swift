@@ -94,10 +94,13 @@ struct KitchenHeaderView: View {
     let selectedCategoryFilter: String
     let categories: [String]
     let categoryCounts: [String: Int]
+    let stationFocus: KitchenStationFocus
+    let stationCounts: [KitchenStationFocus: Int]
     let viewMode: KitchenViewMode
     let isCompactLayout: Bool
     let showsLayoutSwitcher: Bool
     let onCategoryFilterChange: (String) -> Void
+    let onStationFocusChange: (KitchenStationFocus) -> Void
     let onViewModeChange: (KitchenViewMode) -> Void
     let onRefresh: () -> Void
     let onPrintSummary: () -> Void
@@ -118,6 +121,22 @@ struct KitchenHeaderView: View {
             ) {
                 headerActionsContent
             }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.sm) {
+                    ForEach(KitchenStationFocus.allCases, id: \.self) { station in
+                        KitchenStationFilterChip(
+                            station: station,
+                            count: stationCounts[station] ?? 0,
+                            isSelected: stationFocus == station
+                        ) {
+                            onStationFocusChange(station)
+                        }
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            .padding(.horizontal, Spacing.md)
 
             HStack(spacing: Spacing.sm) {
                 ScrollView(.horizontal, showsIndicators: false) {

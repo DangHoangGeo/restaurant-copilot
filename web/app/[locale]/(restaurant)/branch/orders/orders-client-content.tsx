@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
@@ -33,6 +33,23 @@ interface OrdersData {
   categories: Category[];
 }
 
+type StationFilter = "all" | "food" | "drink" | "other";
+const STATION_FILTER_STORAGE_KEY = "coorder.orders.stationFilter";
+
+function getOrderItemStation(item: OrderItem): StationFilter {
+  const station = item.menu_items?.prep_station ?? item.menu_item?.prep_station;
+  if (station === "food" || station === "drink" || station === "other") {
+    return station;
+  }
+
+  const tags = [
+    ...(item.menu_items?.tags ?? []),
+    ...(item.menu_item?.tags ?? []),
+  ].map((tag) => tag.toLowerCase());
+
+  return tags.includes("drink") ? "drink" : "food";
+}
+
 export function OrdersClientContent() {
   const t = useTranslations("owner.orders");
   const params = useParams();
@@ -43,11 +60,28 @@ export function OrdersClientContent() {
   const [viewType, setViewType] = useState<"items" | "orders" | "grid">("grid");
   const [itemStatus, setItemStatus] = useState<string>("all");
   const [orderStatus, setOrderStatus] = useState<string>("all");
+  const [stationFilter, setStationFilter] = useState<StationFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(Date.now() - 86400000), // Default to yesterday
     to: new Date(Date.now()),
   });
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(STATION_FILTER_STORAGE_KEY);
+    if (
+      stored === "all" ||
+      stored === "food" ||
+      stored === "drink" ||
+      stored === "other"
+    ) {
+      setStationFilter(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(STATION_FILTER_STORAGE_KEY, stationFilter);
+  }, [stationFilter]);
 
   // Build dynamic endpoint with query parameters
   const buildEndpoint = () => {
@@ -237,9 +271,21 @@ export function OrdersClientContent() {
     return matchesSearch && matchesStatus && matchesDateRange;
   });
 
+  const stationScopedOrders =
+    stationFilter === "all"
+      ? filteredOrders
+      : filteredOrders
+          .map((order) => ({
+            ...order,
+            order_items: order.order_items.filter(
+              (item) => getOrderItemStation(item) === stationFilter,
+            ),
+          }))
+          .filter((order) => order.order_items.length > 0);
+
   // Calculate statistics
-  const totalOrders = filteredOrders.length;
-  const totalRevenue = filteredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+  const totalOrders = stationScopedOrders.length;
+  const totalRevenue = stationScopedOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   return (
@@ -296,6 +342,22 @@ export function OrdersClientContent() {
         avgOrderValue={avgOrderValue}
       />
 
+      <div className="mb-4 rounded-xl border border-[#ead9c6] bg-[#fff8ee] p-2 dark:border-white/10 dark:bg-white/[0.04]">
+        <div className="grid grid-cols-4 gap-2">
+          {(["all", "food", "drink", "other"] as StationFilter[]).map((station) => (
+            <Button
+              key={station}
+              type="button"
+              variant={stationFilter === station ? "default" : "outline"}
+              onClick={() => setStationFilter(station)}
+              className="min-w-0 px-2 text-xs sm:text-sm"
+            >
+              <span className="truncate">{t(`station.${station}`)}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+
       {/* Filters - Mobile Optimized */}
       <OrdersFilters
         searchTerm={searchTerm}
@@ -339,7 +401,7 @@ export function OrdersClientContent() {
       </div>
 
       {/* Content Area - Show empty state if no orders */}
-      {filteredOrders.length === 0 ? (
+      {stationScopedOrders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="text-gray-400 mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -368,9 +430,9 @@ export function OrdersClientContent() {
         <>
           {viewType === "grid" && (
             <OrdersGridView
-              orders={filteredOrders}
+              orders={stationScopedOrders}
               onOrderClick={(orderId) => {
-                const order = filteredOrders.find(o => o.id === orderId);
+                const order = stationScopedOrders.find(o => o.id === orderId);
                 if (order) setSelectedOrderForDetail(order);
               }}
               onOrderStatusUpdate={handleOrderStatusUpdate}
@@ -381,7 +443,7 @@ export function OrdersClientContent() {
 
           {viewType === "items" && (
             <OrdersListView
-              orders={filteredOrders}
+              orders={stationScopedOrders}
               onItemStatusUpdate={handleItemStatusUpdate}
               onItemEdit={handleItemEdit}
               getItemStatusBadgeVariant={getItemStatusBadgeVariant}
@@ -391,9 +453,9 @@ export function OrdersClientContent() {
 
           {viewType === "orders" && (
             <OrdersTableView
-              orders={filteredOrders}
+              orders={stationScopedOrders}
               onOrderClick={(orderId) => {
-                const order = filteredOrders.find(o => o.id === orderId);
+                const order = stationScopedOrders.find(o => o.id === orderId);
                 if (order) setSelectedOrderForDetail(order);
               }}
               onOrderStatusUpdate={handleOrderStatusUpdate}

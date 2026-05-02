@@ -96,6 +96,51 @@ struct CategoryFilterChip: View {
     }
 }
 
+struct KitchenStationFilterChip: View {
+    let station: KitchenStationFocus
+    let count: Int
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: station.icon)
+                    .font(.caption.weight(.semibold))
+
+                Text(station.displayName)
+                    .font(.captionBold)
+                    .fontWeight(.medium)
+
+                if count > 0 {
+                    Text("\(count)")
+                        .font(.captionBold)
+                        .monospacedDigit()
+                        .foregroundColor(isSelected ? .appOnHighlight : .appTextSecondary)
+                        .padding(.horizontal, Spacing.xs)
+                        .padding(.vertical, 3)
+                        .background(isSelected ? Color.white.opacity(0.16) : Color.appSurfaceSecondary)
+                        .cornerRadius(CornerRadius.sm)
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, 8)
+            .foregroundColor(isSelected ? .appOnHighlight : .appTextPrimary)
+            .background(isSelected ? Color.appHighlight : Color.appSurface)
+            .cornerRadius(CornerRadius.md)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .stroke(isSelected ? Color.appHighlight.opacity(0.2) : Color.appBorderLight, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(station.displayName)
+        .accessibilityValue(count > 0 ? String(format: "kitchen_category_count_format".localized, count) : "kitchen_category_no_items".localized)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint("kitchen_station_filter_hint".localized)
+    }
+}
+
 struct StatusColumnsView: View {
     let items: [GroupedItem]
     let onItemStatusTap: (GroupedItem) -> Void

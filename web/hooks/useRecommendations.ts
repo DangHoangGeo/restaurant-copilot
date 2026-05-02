@@ -12,6 +12,8 @@ interface RecommendationParams {
   previousOrders?: string[];
   currentCartItems?: string[];
   restaurantId?: string;
+  guestCount?: number;
+  timezone?: string | null;
   availableMenuItems?: Array<{
     id: string;
     name_en?: string;
@@ -21,6 +23,8 @@ interface RecommendationParams {
     description_ja?: string;
     description_vi?: string;
     categoryId: string;
+    tags?: string[];
+    prep_station?: "food" | "drink" | "other";
   }>;
 }
 
@@ -38,22 +42,33 @@ const fetchRecommendations = async (params: RecommendationParams): Promise<Recom
   }
 
   try {
-    // For now, we'll use a simplified approach since the AI recommendations RPC
-    // is designed for admin use (apply_recommendations) not customer recommendations
-    // In the future, you could create a dedicated customer recommendations API
-    
-    // Try to get popular items from the existing reports API (if accessible)
-    // This is a simplified approach - in production you'd want a dedicated endpoint
-    
-    // For now, fallback to time-based recommendations with restaurant context
-    const recommendations = getTimeBasedRecommendations(params);
-    
-    // Add restaurant-specific confidence boost
-    return {
-      ...recommendations,
-      confidence: 0.75, // Higher confidence than pure fallback
-      categories: ['contextual', 'time_based']
-    };
+    const response = await fetch('/api/v1/customer/menu/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        restaurantId: params.restaurantId,
+        timeOfDay: params.timeOfDay,
+        timezone: params.timezone || undefined,
+        guestCount: params.guestCount || 1,
+        currentCartItems: params.currentCartItems || [],
+        availableMenuItems: (params.availableMenuItems || []).map((item) => ({
+          id: item.id,
+          tags: item.tags || [],
+          prep_station: item.prep_station,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load customer recommendations');
+    }
+
+    const recommendations = (await response.json()) as RecommendationResponse;
+    if (recommendations.items.length > 0) {
+      return recommendations;
+    }
+
+    return getTimeBasedRecommendations(params);
   } catch (error) {
     console.error('Failed to fetch recommendations:', error);
     return getTimeBasedRecommendations(params);
@@ -71,13 +86,27 @@ const getTimeBasedRecommendations = (params: RecommendationParams): Recommendati
   };
 
   const keywords = timeBasedKeywords[params.timeOfDay as keyof typeof timeBasedKeywords] || [];
+  const timeTags = new Set([
+    params.timeOfDay,
+    ...keywords,
+    ...(params.timeOfDay === 'lunch' ? ['set_menu', 'main_dish', 'quick'] : []),
+    ...(params.timeOfDay === 'dinner' ? ['set_menu', 'main_dish', 'sharing'] : []),
+  ]);
   
   // If we have menu items available, filter by keywords and return actual IDs
   if (params.availableMenuItems && params.availableMenuItems.length > 0) {
     const matchingItems = params.availableMenuItems
       .filter(item => {
         const searchText = `${item.name_en || ''} ${item.name_ja || ''} ${item.name_vi || ''} ${item.description_en || ''}`.toLowerCase();
-        return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+        const tags = new Set((item.tags || []).map((tag) => tag.toLowerCase()));
+        const matchesTime = Array.from(timeTags).some((keyword) =>
+          tags.has(keyword.toLowerCase()) ||
+          searchText.includes(keyword.toLowerCase())
+        );
+        const matchesGuestCount =
+          (params.guestCount || 1) >= 4 &&
+          (tags.has('sharing') || tags.has('set_menu'));
+        return matchesTime || matchesGuestCount;
       })
       .slice(0, 6) // Limit to 6 recommendations
       .map(item => item.id);
@@ -116,7 +145,7 @@ export function useRecommendations(params: RecommendationParams) {
     error,
     refetch
   } = useQuery({
-    queryKey: ['recommendations', params.sessionId, params.timeOfDay, params.currentCartItems, params.restaurantId],
+    queryKey: ['recommendations', params.sessionId, params.timeOfDay, params.guestCount, params.currentCartItems, params.restaurantId],
     queryFn: () => fetchRecommendations(params),
     staleTime: 2 * 60 * 1000, // 2 minutes - recommendations can be more dynamic
     gcTime: 5 * 60 * 1000, // 5 minutes

@@ -31,6 +31,8 @@ export interface BranchWorkspaceItem {
   description_ja: string | null;
   description_vi: string | null;
   price: number;
+  tags: string[];
+  prep_station: "food" | "drink" | "other";
   image_url: string | null;
   available: boolean;
   weekday_visibility: number[];
@@ -67,6 +69,21 @@ export interface BranchMenuWorkspaceData {
 
 function defaultWeekdayVisibility() {
   return [1, 2, 3, 4, 5, 6, 7];
+}
+
+function requiredLocalizedText(
+  primary: string | null | undefined,
+  fallback: string | null | undefined,
+) {
+  const trimmedPrimary = primary?.trim();
+  if (trimmedPrimary) return trimmedPrimary;
+
+  const trimmedFallback = fallback?.trim();
+  return trimmedFallback || "";
+}
+
+function normalizeOptionKey(value: string | null | undefined) {
+  return value?.trim().toLowerCase() ?? "";
 }
 
 function isMissingInheritanceColumnError(
@@ -118,6 +135,8 @@ async function loadSharedMenuForSync(organizationId: string) {
         description_ja,
         description_vi,
         price,
+        tags,
+        prep_station,
         image_url,
         available,
         weekday_visibility,
@@ -173,6 +192,8 @@ async function loadSharedMenuForSync(organizationId: string) {
       description_ja: item.description_ja,
       description_vi: item.description_vi,
       price: Number(item.price ?? 0),
+      tags: item.tags ?? [],
+      prep_station: (item.prep_station ?? "food") as "food" | "drink" | "other",
       image_url: item.image_url,
       available: item.available,
       weekday_visibility: item.weekday_visibility ?? defaultWeekdayVisibility(),
@@ -218,63 +239,190 @@ async function syncInheritedMenuItemOptions(params: {
 }) {
   const { restaurantId, menuItemId, sizes, toppings } = params;
 
-  const [{ error: deleteSizesError }, { error: deleteToppingsError }] =
+  const [
+    { data: existingSizes, error: existingSizesError },
+    { data: existingToppings, error: existingToppingsError },
+  ] =
     await Promise.all([
       supabaseAdmin
         .from("menu_item_sizes")
-        .delete()
+        .select("id, size_key")
         .eq("restaurant_id", restaurantId)
         .eq("menu_item_id", menuItemId),
       supabaseAdmin
         .from("toppings")
-        .delete()
+        .select("id, name_en")
         .eq("restaurant_id", restaurantId)
         .eq("menu_item_id", menuItemId),
     ]);
 
-  if (deleteSizesError) {
-    throw new Error(deleteSizesError.message);
+  if (existingSizesError) {
+    throw new Error(existingSizesError.message);
   }
 
-  if (deleteToppingsError) {
-    throw new Error(deleteToppingsError.message);
+  if (existingToppingsError) {
+    throw new Error(existingToppingsError.message);
   }
 
-  if (sizes.length > 0) {
-    const { error } = await supabaseAdmin.from("menu_item_sizes").insert(
-      sizes.map((size, index) => ({
-        restaurant_id: restaurantId,
-        menu_item_id: menuItemId,
-        size_key: size.size_key,
-        name_en: size.name_en,
-        name_ja: size.name_ja ?? size.name_en,
-        name_vi: size.name_vi ?? size.name_en,
-        price: size.price,
-        position: size.position ?? index,
-      })),
-    );
+  const existingSizeByKey = new Map(
+    (existingSizes ?? []).map((size) => [size.size_key, size.id]),
+  );
+  const desiredSizeKeys = new Set(sizes.map((size) => size.size_key));
+
+  for (const [index, size] of sizes.entries()) {
+    const payload = {
+      restaurant_id: restaurantId,
+      menu_item_id: menuItemId,
+      size_key: size.size_key,
+      name_en: requiredLocalizedText(size.name_en, size.size_key),
+      name_ja: requiredLocalizedText(size.name_ja, size.name_en),
+      name_vi: requiredLocalizedText(size.name_vi, size.name_en),
+      price: size.price,
+      position: size.position ?? index,
+    };
+    const existingSizeId = existingSizeByKey.get(size.size_key);
+
+    const { error } = existingSizeId
+      ? await supabaseAdmin
+          .from("menu_item_sizes")
+          .update(payload)
+          .eq("restaurant_id", restaurantId)
+          .eq("menu_item_id", menuItemId)
+          .eq("id", existingSizeId)
+      : await supabaseAdmin.from("menu_item_sizes").insert(payload);
 
     if (error) {
       throw new Error(error.message);
     }
   }
 
-  if (toppings.length > 0) {
-    const { error } = await supabaseAdmin.from("toppings").insert(
-      toppings.map((topping, index) => ({
-        restaurant_id: restaurantId,
-        menu_item_id: menuItemId,
-        name_en: topping.name_en,
-        name_ja: topping.name_ja ?? topping.name_en,
-        name_vi: topping.name_vi ?? topping.name_en,
-        price: topping.price,
-        position: topping.position ?? index,
-      })),
+  const staleSizeIds = (existingSizes ?? [])
+    .filter((size) => !desiredSizeKeys.has(size.size_key))
+    .map((size) => size.id);
+
+  if (staleSizeIds.length > 0) {
+    const { data: referencedSizes, error: referencedSizesError } =
+      await supabaseAdmin
+        .from("order_items")
+        .select("menu_item_size_id")
+        .eq("restaurant_id", restaurantId)
+        .in("menu_item_size_id", staleSizeIds);
+
+    if (referencedSizesError) {
+      throw new Error(referencedSizesError.message);
+    }
+
+    const referencedSizeIds = new Set(
+      (referencedSizes ?? [])
+        .map((row) => row.menu_item_size_id)
+        .filter((id): id is string => Boolean(id)),
     );
+    const deletableSizeIds = staleSizeIds.filter(
+      (id) => !referencedSizeIds.has(id),
+    );
+
+    if (deletableSizeIds.length > 0) {
+      const { error } = await supabaseAdmin
+        .from("menu_item_sizes")
+        .delete()
+        .eq("restaurant_id", restaurantId)
+        .eq("menu_item_id", menuItemId)
+        .in("id", deletableSizeIds);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    }
+  }
+
+  const existingToppingByName = new Map(
+    (existingToppings ?? []).map((topping) => [
+      normalizeOptionKey(topping.name_en),
+      topping.id,
+    ]),
+  );
+  const desiredToppingKeys = new Set(
+    toppings.map((topping) => normalizeOptionKey(topping.name_en)),
+  );
+
+  for (const [index, topping] of toppings.entries()) {
+    const payload = {
+      restaurant_id: restaurantId,
+      menu_item_id: menuItemId,
+      name_en: requiredLocalizedText(topping.name_en, "Topping"),
+      name_ja: requiredLocalizedText(topping.name_ja, topping.name_en),
+      name_vi: requiredLocalizedText(topping.name_vi, topping.name_en),
+      price: topping.price,
+      position: topping.position ?? index,
+    };
+    const existingToppingId = existingToppingByName.get(
+      normalizeOptionKey(topping.name_en),
+    );
+
+    const { error } = existingToppingId
+      ? await supabaseAdmin
+          .from("toppings")
+          .update(payload)
+          .eq("restaurant_id", restaurantId)
+          .eq("menu_item_id", menuItemId)
+          .eq("id", existingToppingId)
+      : await supabaseAdmin.from("toppings").insert(payload);
 
     if (error) {
       throw new Error(error.message);
     }
+  }
+
+  const staleToppingIds = (existingToppings ?? [])
+    .filter(
+      (topping) =>
+        !desiredToppingKeys.has(normalizeOptionKey(topping.name_en)),
+    )
+    .map((topping) => topping.id);
+
+  if (staleToppingIds.length > 0) {
+    const { error } = await supabaseAdmin
+      .from("toppings")
+      .delete()
+      .eq("restaurant_id", restaurantId)
+      .eq("menu_item_id", menuItemId)
+      .in("id", staleToppingIds);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+}
+
+export async function deleteInheritedBranchMenuItemCopies(params: {
+  organizationId: string;
+  organizationMenuItemId: string;
+}): Promise<void> {
+  const { organizationId, organizationMenuItemId } = params;
+  const { data: linkedRestaurants, error: linkedRestaurantsError } =
+    await supabaseAdmin
+      .from("organization_restaurants")
+      .select("restaurant_id")
+      .eq("organization_id", organizationId);
+
+  if (linkedRestaurantsError) {
+    throw new Error(linkedRestaurantsError.message);
+  }
+
+  const restaurantIds = (linkedRestaurants ?? []).map(
+    (link) => link.restaurant_id as string,
+  );
+
+  if (restaurantIds.length === 0) return;
+
+  const { error } = await supabaseAdmin
+    .from("menu_items")
+    .delete()
+    .eq("organization_menu_item_id", organizationMenuItemId)
+    .in("restaurant_id", restaurantIds);
+
+  if (error) {
+    throw new Error(error.message);
   }
 }
 
@@ -300,6 +448,8 @@ async function getLegacyBranchMenuWorkspace(
         description_ja,
         description_vi,
         price,
+        tags,
+        prep_station,
         image_url,
         available,
         weekday_visibility,
@@ -363,6 +513,8 @@ async function getLegacyBranchMenuWorkspace(
       description_ja: item.description_ja,
       description_vi: item.description_vi,
       price: Number(item.price ?? 0),
+      tags: item.tags ?? [],
+      prep_station: (item.prep_station ?? "food") as "food" | "drink" | "other",
       image_url: item.image_url,
       available: item.available,
       weekday_visibility: item.weekday_visibility ?? defaultWeekdayVisibility(),
@@ -479,8 +631,14 @@ export async function syncOrganizationSharedMenuToBranches(params: {
           .from("categories")
           .update({
             name_en: sharedCategory.name_en,
-            name_ja: sharedCategory.name_ja,
-            name_vi: sharedCategory.name_vi,
+            name_ja: requiredLocalizedText(
+              sharedCategory.name_ja,
+              sharedCategory.name_en,
+            ),
+            name_vi: requiredLocalizedText(
+              sharedCategory.name_vi,
+              sharedCategory.name_en,
+            ),
           })
           .eq("id", existingCategoryId)
           .eq("restaurant_id", restaurantId);
@@ -495,8 +653,14 @@ export async function syncOrganizationSharedMenuToBranches(params: {
             restaurant_id: restaurantId,
             organization_menu_category_id: sharedCategory.id,
             name_en: sharedCategory.name_en,
-            name_ja: sharedCategory.name_ja,
-            name_vi: sharedCategory.name_vi,
+            name_ja: requiredLocalizedText(
+              sharedCategory.name_ja,
+              sharedCategory.name_en,
+            ),
+            name_vi: requiredLocalizedText(
+              sharedCategory.name_vi,
+              sharedCategory.name_en,
+            ),
             position: claimNextCategoryPosition(),
           })
           .select("id")
@@ -551,12 +715,14 @@ export async function syncOrganizationSharedMenuToBranches(params: {
         const payload = {
           category_id: branchCategoryId,
           name_en: sharedItem.name_en,
-          name_ja: sharedItem.name_ja,
-          name_vi: sharedItem.name_vi,
+          name_ja: requiredLocalizedText(sharedItem.name_ja, sharedItem.name_en),
+          name_vi: requiredLocalizedText(sharedItem.name_vi, sharedItem.name_en),
           description_en: sharedItem.description_en,
           description_ja: sharedItem.description_ja,
           description_vi: sharedItem.description_vi,
           price: sharedItem.price,
+          tags: sharedItem.tags ?? [],
+          prep_station: sharedItem.prep_station ?? "food",
           image_url: sharedItem.image_url,
           available: existingItem?.available ?? sharedItem.available,
           weekday_visibility:
@@ -729,6 +895,8 @@ export async function getBranchMenuWorkspace(
         description_ja,
         description_vi,
         price,
+        tags,
+        prep_station,
         image_url,
         available,
         weekday_visibility,
@@ -795,6 +963,8 @@ export async function getBranchMenuWorkspace(
       description_ja: item.description_ja,
       description_vi: item.description_vi,
       price: Number(item.price ?? 0),
+      tags: item.tags ?? [],
+      prep_station: (item.prep_station ?? "food") as "food" | "drink" | "other",
       image_url: item.image_url,
       available: item.available,
       weekday_visibility: item.weekday_visibility ?? defaultWeekdayVisibility(),

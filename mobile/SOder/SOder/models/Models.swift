@@ -177,6 +177,23 @@ enum OrderItemStatus: String, Codable, CaseIterable, Comparable { // Changed to 
     }
 }
 
+enum MenuPrepStation: String, Codable, CaseIterable, Hashable {
+    case food
+    case drink
+    case other
+
+    var displayName: String {
+        switch self {
+        case .food:
+            return "menu_prep_station_food".localized
+        case .drink:
+            return "menu_prep_station_drink".localized
+        case .other:
+            return "menu_prep_station_other".localized
+        }
+    }
+}
+
 // MARK: - Category Model
 struct Category: Codable, Identifiable, Hashable { // Changed to Codable, added Hashable
     let id: String
@@ -216,6 +233,7 @@ struct MenuItem: Codable, Identifiable, Hashable { // Changed to Codable, added 
     let description_vi: String? // Made optional
     let price: Double
     let tags: [String]?
+    var prep_station: String? = nil
     let image_url: String?
     let stock_level: Int? // Made optional as it might not always be tracked
     let available: Bool
@@ -251,6 +269,23 @@ struct MenuItem: Codable, Identifiable, Hashable { // Changed to Codable, added 
         default:
             return description_en
         }
+    }
+
+    var prepStation: MenuPrepStation {
+        if let rawStation = prep_station?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+           let station = MenuPrepStation(rawValue: rawStation) {
+            return station
+        }
+
+        let normalizedTags = (tags ?? []).map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        }
+
+        if normalizedTags.contains("drink") || normalizedTags.contains("drinks") {
+            return .drink
+        }
+
+        return .food
     }
 
     var staffSecondaryName: String? {
@@ -592,6 +627,7 @@ struct MenuItemResponse: Decodable { // Should remain Decodable
     let description_vi: String?
     let price: Double
     let tags: [String]?
+    let prep_station: String?
     let image_url: String?
     let stock_level: Int?
     let available: Bool
@@ -616,6 +652,7 @@ struct MenuItemResponse: Decodable { // Should remain Decodable
             description_vi: description_vi,
             price: price,
             tags: tags,
+            prep_station: prep_station,
             image_url: image_url,
             stock_level: stock_level,
             available: available,
@@ -757,5 +794,9 @@ extension OrderItem {
     
     var price: Double {
         return price_at_order
+    }
+
+    var prepStation: MenuPrepStation {
+        menu_item?.prepStation ?? .food
     }
 }

@@ -294,6 +294,47 @@
   backdrop-filter: blur(18px);
 }
 
+.admin-route-surface .professional-menu-item-editor {
+  color: var(--control-ink);
+}
+
+.admin-route-surface
+  .professional-menu-item-editor
+  :is(
+    [class*="bg-[#FFF7E9]"],
+    [class*="bg-[#FEFAF6]"],
+    [class*="bg-[#F5EAD8]"]
+  ) {
+  background-color: var(--control-surface) !important;
+  color: var(--control-text);
+}
+
+.admin-route-surface
+  .professional-menu-item-editor
+  :is([class*="text-[#2E2117]"], [class*="text-[#6F4D35]"]) {
+  color: var(--control-ink) !important;
+}
+
+.admin-route-surface
+  .professional-menu-item-editor
+  :is([class*="text-[#8B6E5A]"], [class*="text-[#B89078]"]) {
+  color: var(--control-muted) !important;
+}
+
+.admin-route-surface
+  .professional-menu-item-editor
+  :is(input, textarea, [role="combobox"]) {
+  background-color: rgba(255, 247, 233, 0.08) !important;
+  border-color: var(--control-line) !important;
+  color: var(--control-ink) !important;
+}
+
+.admin-route-surface
+  .professional-menu-item-editor
+  :is(input, textarea)::placeholder {
+  color: var(--control-soft-muted) !important;
+}
+
 .dark .admin-route-surface {
   --control-ink: #f7f1e9;
   --control-text: #efe0ca;

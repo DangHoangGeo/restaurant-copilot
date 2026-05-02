@@ -16,7 +16,10 @@ import {
   deleteOrganizationSharedMenuItem,
   listOrganizationSharedMenu,
 } from "@/lib/server/organizations/shared-menu";
-import { syncOrganizationSharedMenuToBranches } from "@/lib/server/organizations/menu-inheritance";
+import {
+  deleteInheritedBranchMenuItemCopies,
+  syncOrganizationSharedMenuToBranches,
+} from "@/lib/server/organizations/menu-inheritance";
 import { resolveOrgContext } from "@/lib/server/organizations/service";
 
 export async function GET() {
@@ -106,6 +109,8 @@ export async function POST(req: NextRequest) {
         description_ja: input.description_ja || null,
         description_vi: input.description_vi || null,
         price: input.price,
+        tags: input.tags,
+        prep_station: input.prep_station,
         image_url: input.image_url ?? null,
         available: input.available,
         weekday_visibility: input.weekday_visibility,
@@ -128,6 +133,17 @@ export async function POST(req: NextRequest) {
         });
       } catch (error) {
         console.error("Failed to sync shared item to branches:", error);
+        try {
+          await deleteInheritedBranchMenuItemCopies({
+            organizationId: ctx!.organization.id,
+            organizationMenuItemId: item.id,
+          });
+        } catch (cleanupError) {
+          console.error(
+            "Failed to clean up inherited branch item copies:",
+            cleanupError,
+          );
+        }
         await deleteOrganizationSharedMenuItem(ctx!.organization.id, item.id);
         return NextResponse.json(
           {

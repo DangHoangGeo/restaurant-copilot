@@ -7,6 +7,7 @@ interface SessionData {
   tableId?: string;
   tableNumber?: string;
   restaurantId: string;
+  guestCount?: number;
   customerName?: string;
   orderHistory: string[];
   preferences: {
@@ -59,6 +60,7 @@ const fetchSessionData = async (params: SessionParams): Promise<SessionData | nu
       tableId: sessionInfo.tableId || params.tableId,
       tableNumber: sessionInfo.tableNumber,
       restaurantId: params.restaurantId || 'default',
+      guestCount: sessionInfo.guestCount,
       orderHistory: [], // Could be populated from order history API
       preferences: {
         dietary: [],

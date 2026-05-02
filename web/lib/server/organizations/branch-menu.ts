@@ -33,6 +33,8 @@ export interface BranchMenuItem {
   description_ja: string | null;
   description_vi: string | null;
   price: number;
+  tags: string[];
+  prep_station: "food" | "drink" | "other";
   image_url: string | null;
   available: boolean;
   weekday_visibility: number[];
@@ -85,7 +87,7 @@ async function fetchBranchMenu(restaurantId: string): Promise<BranchMenuCategory
       menu_items(
         id, name_en, name_ja, name_vi,
         description_en, description_ja, description_vi,
-        price, image_url, available, weekday_visibility, position,
+        price, tags, prep_station, image_url, available, weekday_visibility, position,
         menu_item_sizes(size_key, name_en, name_ja, name_vi, price, position),
         toppings(name_en, name_ja, name_vi, price, position)
       )
@@ -121,6 +123,8 @@ async function fetchBranchMenu(restaurantId: string): Promise<BranchMenuCategory
           description_ja: string | null;
           description_vi: string | null;
           price: number;
+          tags?: string[];
+          prep_station?: string;
           image_url: string | null;
           available: boolean;
           weekday_visibility: number[];
@@ -137,6 +141,8 @@ async function fetchBranchMenu(restaurantId: string): Promise<BranchMenuCategory
           description_ja: i.description_ja,
           description_vi: i.description_vi,
           price: i.price,
+          tags: i.tags ?? [],
+          prep_station: (i.prep_station ?? "food") as "food" | "drink" | "other",
           image_url: i.image_url,
           available: i.available,
           weekday_visibility: i.weekday_visibility,
@@ -261,6 +267,8 @@ export async function copyMenuToTargetBranch(
           description_ja: sourceItem.description_ja,
           description_vi: sourceItem.description_vi,
           price: sourceItem.price,
+          tags: sourceItem.tags,
+          prep_station: sourceItem.prep_station,
           image_url: sourceItem.image_url,
           available: sourceItem.available,
           weekday_visibility: sourceItem.weekday_visibility,

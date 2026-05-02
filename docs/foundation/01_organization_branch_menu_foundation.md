@@ -159,6 +159,16 @@ Inheritance must stay:
 - detachable only by an explicit workflow
 - auditable
 
+Shared and branch menu items may carry owner-managed recommendation tags
+and a prep-station classification. Tags support customer-facing ordering such
+as breakfast, lunch, dinner, all day, quick, and sharing. Meal-period tags help
+surface the right items at the right time; quick and sharing help suggest items
+for customers ordering together.
+Prep station separates branch order screens for food, drinks, or other
+stations. These fields must remain additive metadata on branch-resolved menu
+items; they must not replace category ownership, availability, pricing, or the
+customer order validation path.
+
 ## Money And Reporting Rules
 
 - branch expenses and purchases stay branch-scoped

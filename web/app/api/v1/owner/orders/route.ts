@@ -38,6 +38,8 @@ interface OrderItem {
     description_ja?: string;
     description_vi?: string;
     price: number;
+    prep_station?: "food" | "drink" | "other";
+    tags?: string[];
     updated_at: string;
   }>;
   menu_item_sizes: Array<{
@@ -286,6 +288,8 @@ export async function GET(request: Request) {
             description_ja,
             description_vi,
             price,
+            prep_station,
+            tags,
             updated_at
           ),
           menu_item_sizes (

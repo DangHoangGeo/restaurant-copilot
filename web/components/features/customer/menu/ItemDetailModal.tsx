@@ -100,6 +100,7 @@ export function ItemDetailModal({
   );
   const [notes, setNotes] = useState(initialNotes);
   const [isAdding, setIsAdding] = useState(false);
+  const [isPortraitImage, setIsPortraitImage] = useState(false);
 
   // Reset state every time a new item opens
   useEffect(() => {
@@ -112,6 +113,7 @@ export function ItemDetailModal({
       setSelectedSize(defaultSize?.id ? defaultSize : null);
       setSelectedToppings([...initialSelectedToppings]);
       setNotes(initialNotes);
+      setIsPortraitImage(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, item?.id]);
@@ -253,16 +255,35 @@ export function ItemDetailModal({
             }}
           >
             {/* ── Image ── */}
-            <div className="relative aspect-[4/3] max-h-[42dvh] min-h-[220px] w-full flex-shrink-0 overflow-hidden rounded-t-[inherit] bg-[var(--co-menu-card-footer)] sm:aspect-video sm:min-h-0">
+            <div className="relative aspect-video max-h-[42dvh] min-h-[190px] w-full flex-shrink-0 overflow-hidden rounded-t-[inherit] bg-[var(--co-menu-card-footer)] sm:min-h-0">
               {displayItem.image_url ? (
-                <Image
-                  src={displayItem.image_url}
-                  alt={itemName}
-                  fill
-                  className="object-cover"
-                  priority
-                  sizes="(max-width: 512px) 100vw, 512px"
-                />
+                <>
+                  {isPortraitImage && (
+                    <Image
+                      src={displayItem.image_url}
+                      alt=""
+                      fill
+                      aria-hidden="true"
+                      className="scale-110 object-cover opacity-30 blur-xl"
+                      sizes="(max-width: 640px) 100vw, (max-width: 900px) 90vw, 768px"
+                    />
+                  )}
+                  <Image
+                    src={displayItem.image_url}
+                    alt={itemName}
+                    fill
+                    className={
+                      isPortraitImage ? "object-contain" : "object-cover"
+                    }
+                    priority
+                    sizes="(max-width: 640px) 100vw, (max-width: 900px) 90vw, 768px"
+                    onLoadingComplete={(image) => {
+                      setIsPortraitImage(
+                        image.naturalHeight > image.naturalWidth * 1.1,
+                      );
+                    }}
+                  />
+                </>
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-[var(--co-menu-subtle)]">
                   <UtensilsCrossed className="h-16 w-16 text-[var(--co-menu-card-muted)]" />
@@ -270,7 +291,7 @@ export function ItemDetailModal({
               )}
               {/* Rating pill */}
               {displayItem.averageRating && displayItem.averageRating > 0 && (
-                <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-[var(--co-menu-price-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--co-menu-price-text)] backdrop-blur-xl">
+                <div className="absolute left-3 top-3 z-20 flex items-center gap-1 rounded-full bg-[var(--co-menu-price-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--co-menu-price-text)] backdrop-blur-xl">
                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                   {displayItem.averageRating.toFixed(1)}
                 </div>
@@ -278,7 +299,7 @@ export function ItemDetailModal({
 
               {/* Unavailable overlay */}
               {!displayItem.available && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[rgba(20,12,8,0.72)]">
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-[rgba(20,12,8,0.72)]">
                   <Badge
                     variant="destructive"
                     className="text-sm px-4 py-2 font-semibold"
@@ -291,7 +312,7 @@ export function ItemDetailModal({
               {/* Close button */}
               <button
                 onClick={onClose}
-                className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--co-menu-price-bg)] text-[var(--co-menu-price-text)] backdrop-blur-xl transition-colors hover:brightness-110"
+                className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--co-menu-price-bg)] text-[var(--co-menu-price-text)] backdrop-blur-xl transition-colors hover:brightness-110"
                 aria-label={tCommon("close_modal")}
               >
                 <X className="h-5 w-5" />

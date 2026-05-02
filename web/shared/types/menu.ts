@@ -43,6 +43,7 @@ export interface MenuItem {
   reviewCount?: number;
   category_id?: string;
   tags?: string[];
+  prep_station?: "food" | "drink" | "other";
   code?: string;
   restaurant_id?: string;
   created_at?: string;

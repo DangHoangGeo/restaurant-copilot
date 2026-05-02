@@ -1225,6 +1225,14 @@
 
 // MARK: - Kitchen Live Label
 "kitchen_live_label" = "bếp trực tiếp";
+"kitchen_station_all" = "Tất cả";
+"kitchen_station_food" = "Món ăn";
+"kitchen_station_drink" = "Đồ uống";
+"kitchen_station_other" = "Khác";
+"kitchen_station_filter_hint" = "Nhấn đúp để thiết bị bếp này chỉ tập trung vào khu vực này.";
+"menu_prep_station_food" = "Món ăn";
+"menu_prep_station_drink" = "Đồ uống";
+"menu_prep_station_other" = "Khác";
 
 // MARK: - Timeout Error
 "timeout_error" = "Yêu cầu đã hết thời gian chờ";

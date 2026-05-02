@@ -13,13 +13,15 @@ export interface MenuImageCropSettings {
   offsetY: number;
 }
 
-export const MENU_IMAGE_TARGET_WIDTH = 960;
+export const MENU_IMAGE_TARGET_WIDTH = 1280;
 export const MENU_IMAGE_TARGET_HEIGHT = 720;
+export const MENU_IMAGE_MIN_WIDTH = 720;
 export const MENU_IMAGE_MAX_BYTES = 300 * 1024;
 
-const MIN_WEBP_QUALITY = 0.02;
-const WEBP_QUALITY_STEP = 0.05;
-const DEFAULT_WEBP_QUALITY = 0.82;
+const MIN_WEBP_QUALITY = 0.68;
+const WEBP_QUALITY_STEP = 0.04;
+const DEFAULT_WEBP_QUALITY = 0.9;
+const TARGET_ASPECT_RATIO = MENU_IMAGE_TARGET_WIDTH / MENU_IMAGE_TARGET_HEIGHT;
 
 function fileBaseName(fileName: string) {
   return fileName
@@ -66,81 +68,38 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) 
 
 export async function optimizeMenuImageFile(
   file: File,
-  crop: MenuImageCropSettings = { zoom: 1, offsetX: 0, offsetY: 0 },
+  _crop: MenuImageCropSettings = { zoom: 1, offsetX: 0, offsetY: 0 },
 ): Promise<OptimizedMenuImage> {
   if (!file.type.startsWith("image/")) {
     throw new Error("Invalid image file");
   }
 
   const bitmap = await loadBitmap(file);
-  const sourceAspect = bitmap.width / bitmap.height;
-  const targetAspect = MENU_IMAGE_TARGET_WIDTH / MENU_IMAGE_TARGET_HEIGHT;
-  let baseSourceWidth = bitmap.width;
-  let baseSourceHeight = bitmap.height;
-
-  if (sourceAspect > targetAspect) {
-    baseSourceWidth = Math.round(bitmap.height * targetAspect);
-  } else if (sourceAspect < targetAspect) {
-    baseSourceHeight = Math.round(bitmap.width / targetAspect);
-  }
-
-  const zoom = Math.max(1, Math.min(crop.zoom, 3));
-  const sourceWidth = Math.round(baseSourceWidth / zoom);
-  const sourceHeight = Math.round(baseSourceHeight / zoom);
-  const maxSourceX = Math.max(0, bitmap.width - sourceWidth);
-  const maxSourceY = Math.max(0, bitmap.height - sourceHeight);
-  const centeredX = maxSourceX / 2;
-  const centeredY = maxSourceY / 2;
-  const sourceX = Math.round(
-    Math.max(
-      0,
-      Math.min(
-        maxSourceX,
-        centeredX + (Math.max(-100, Math.min(crop.offsetX, 100)) / 100) * centeredX,
-      ),
-    ),
+  const naturalFrameWidth = Math.round(
+    Math.max(bitmap.width, bitmap.height * TARGET_ASPECT_RATIO),
   );
-  const sourceY = Math.round(
-    Math.max(
-      0,
-      Math.min(
-        maxSourceY,
-        centeredY + (Math.max(-100, Math.min(crop.offsetY, 100)) / 100) * centeredY,
-      ),
-    ),
-  );
-
-  const canvas = document.createElement("canvas");
-  canvas.width = MENU_IMAGE_TARGET_WIDTH;
-  canvas.height = MENU_IMAGE_TARGET_HEIGHT;
-  const context = canvas.getContext("2d", { alpha: false });
-  if (!context) {
-    throw new Error("Image processing is not available");
-  }
-
-  context.imageSmoothingEnabled = true;
-  context.imageSmoothingQuality = "high";
-  context.fillStyle = "#20130D";
-  context.fillRect(0, 0, MENU_IMAGE_TARGET_WIDTH, MENU_IMAGE_TARGET_HEIGHT);
-  context.drawImage(
-    bitmap,
-    sourceX,
-    sourceY,
-    sourceWidth,
-    sourceHeight,
-    0,
-    0,
-    MENU_IMAGE_TARGET_WIDTH,
-    MENU_IMAGE_TARGET_HEIGHT,
-  );
-  bitmap.close();
+  let outputWidth = Math.min(MENU_IMAGE_TARGET_WIDTH, naturalFrameWidth);
+  let outputHeight = Math.round(outputWidth / TARGET_ASPECT_RATIO);
+  let canvas = renderMenuImageCanvas(bitmap, outputWidth, outputHeight);
 
   let quality = DEFAULT_WEBP_QUALITY;
   let blob = await canvasToBlob(canvas, "image/webp", quality);
+
+  while (blob.size > MENU_IMAGE_MAX_BYTES && outputWidth > MENU_IMAGE_MIN_WIDTH) {
+    outputWidth = Math.max(MENU_IMAGE_MIN_WIDTH, Math.round(outputWidth * 0.85));
+    outputHeight = Math.round(outputWidth / TARGET_ASPECT_RATIO);
+    canvas = renderMenuImageCanvas(bitmap, outputWidth, outputHeight);
+    quality = DEFAULT_WEBP_QUALITY;
+    blob = await canvasToBlob(canvas, "image/webp", quality);
+  }
+
   while (blob.size > MENU_IMAGE_MAX_BYTES && quality > MIN_WEBP_QUALITY) {
     quality = Math.max(MIN_WEBP_QUALITY, quality - WEBP_QUALITY_STEP);
     blob = await canvasToBlob(canvas, "image/webp", quality);
   }
+
+  bitmap.close();
+
   if (blob.size > MENU_IMAGE_MAX_BYTES) {
     throw new Error("Optimized image is still too large");
   }
@@ -157,9 +116,37 @@ export async function optimizeMenuImageFile(
   return {
     file: optimizedFile,
     previewUrl: URL.createObjectURL(blob),
-    width: MENU_IMAGE_TARGET_WIDTH,
-    height: MENU_IMAGE_TARGET_HEIGHT,
+    width: outputWidth,
+    height: outputHeight,
     originalBytes: file.size,
     optimizedBytes: optimizedFile.size,
   };
+}
+
+function renderMenuImageCanvas(
+  bitmap: ImageBitmap,
+  width: number,
+  height: number,
+) {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d", { alpha: false });
+  if (!context) {
+    throw new Error("Image processing is not available");
+  }
+
+  const scale = Math.min(width / bitmap.width, height / bitmap.height);
+  const drawWidth = Math.round(bitmap.width * scale);
+  const drawHeight = Math.round(bitmap.height * scale);
+  const drawX = Math.round((width - drawWidth) / 2);
+  const drawY = Math.round((height - drawHeight) / 2);
+
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  context.fillStyle = "#20130D";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(bitmap, drawX, drawY, drawWidth, drawHeight);
+
+  return canvas;
 }

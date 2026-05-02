@@ -44,6 +44,8 @@ export interface OrderItemFromRPC {
     description_en: string | null;
     description_ja: string | null;
     price: number;
+    prep_station?: "food" | "drink" | "other";
+    tags?: string[];
     updated_at: string;
   };
 }
@@ -69,6 +71,8 @@ export interface OrderItem {
     description_en: string | null;
     description_ja: string | null;
     price: number;
+    prep_station?: "food" | "drink" | "other";
+    tags?: string[];
     updated_at: string;
   };
   // Legacy structure for backward compatibility
@@ -79,6 +83,8 @@ export interface OrderItem {
     name_vi: string;
     category_id: string;
     price: number;
+    prep_station?: "food" | "drink" | "other";
+    tags?: string[];
     categories?: {
       id: string;
       name_en: string;
